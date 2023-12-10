@@ -6,6 +6,7 @@
 #define ASH_AMBIENT_TEST_AMBIENT_ASH_TEST_BASE_H_
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -22,11 +23,11 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_ash_web_view_factory.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom-shared.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/functional/callback.h"
 #include "base/time/time.h"
 #include "chromeos/ash/components/login/auth/auth_events_recorder.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -160,7 +161,7 @@ class AmbientAshTestBase : public AshTestBase {
   // Approximately how much of the lock screen inactivity timeout is left.
   // Bounded to [0,1], 1 meaning that the timer just started. If the lock screen
   // inactivity timer is not running, returns null.
-  absl::optional<float> GetRemainingLockScreenTimeoutFraction();
+  std::optional<float> GetRemainingLockScreenTimeoutFraction();
 
   // Advance the task environment timer to load the next photo, scaled by
   // `factor`.
@@ -222,8 +223,8 @@ class AmbientAshTestBase : public AshTestBase {
   AmbientInfoView* GetAmbientInfoView();
   AmbientSlideshowPeripheralUi* GetAmbientSlideshowPeripheralUi();
 
-  const std::map<int, ::ambient::PhotoCacheEntry>& GetCachedFiles();
-  const std::map<int, ::ambient::PhotoCacheEntry>& GetBackupCachedFiles();
+  std::map<int, ::ambient::PhotoCacheEntry> GetCachedFiles();
+  std::map<int, ::ambient::PhotoCacheEntry> GetBackupCachedFiles();
 
   AmbientController* ambient_controller();
 
@@ -234,8 +235,6 @@ class AmbientAshTestBase : public AshTestBase {
   AmbientManagedPhotoController* managed_photo_controller();
 
   ScreensaverImagesPolicyHandler* managed_policy_handler();
-
-  AmbientPhotoCache* photo_cache();
 
   AmbientWeatherController* weather_controller();
 
@@ -258,9 +257,9 @@ class AmbientAshTestBase : public AshTestBase {
 
   void ClearDownloadPhotoData();
 
-  void SetBackupDownloadPhotoData(std::string data);
-
-  void ClearBackupDownloadPhotoData();
+  // Takes priority over `SetDownloadPhotoData()`, which applies to all urls if
+  // a specific `SetDownloadPhotoDataForUrl()` was not made.
+  void SetDownloadPhotoDataForUrl(GURL url, std::string data);
 
   void SetPhotoDownloadDelay(base::TimeDelta delay);
 
@@ -291,6 +290,8 @@ class AmbientAshTestBase : public AshTestBase {
   TestImageDownloader image_downloader_;
   std::unique_ptr<ash::AuthEventsRecorder> recorder_;
   std::unique_ptr<FakePhotoDownloadServer> fake_photo_download_server_;
+  base::ScopedTempDir primary_cache_dir_;
+  base::ScopedTempDir backup_cache_dir_;
 };
 
 }  // namespace ash

@@ -409,6 +409,12 @@ chromium-metrics-reviews@google.com.
              database"/>
 </enum>
 
+<enum name="OutdatedGMSDialogDismissalReason">
+  <int value="0" label="Other"/>
+  <int value="1" label="Accepted"/>
+  <int value="2" label="Rejected"/>
+</enum>
+
 <enum name="PasswordAddLoginSyncError">
   <int value="0" label="None"/>
   <int value="1" label="DB Not Available"/>
@@ -877,6 +883,7 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Web password manager promo"/>
   <int value="2" label="Add shortcut promo"/>
   <int value="3" label="Access on any device promo"/>
+  <int value="4" label="Relaunch Chrome"/>
 </enum>
 
 <enum name="PasswordManagerShortcutMetric">
@@ -1145,6 +1152,7 @@ chromium-metrics-reviews@google.com.
   <int value="0" label="Uncategorized"/>
   <int value="1" label="AuthErrorResolvable"/>
   <int value="2" label="AuthErrorUnresolvable"/>
+  <int value="3" label="KeychainError"/>
 </enum>
 
 <enum name="PasswordSubmissionEvent">

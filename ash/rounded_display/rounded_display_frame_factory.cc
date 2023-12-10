@@ -307,7 +307,7 @@ void RoundedDisplayFrameFactory::Paint(
     const RoundedDisplayGutter& gutter,
     RoundedDisplayUiResource* resource) const {
   gfx::GpuMemoryBuffer* buffer = resource->gpu_memory_buffer.get();
-  std::unique_ptr<gpu::SharedImageInterface::ScopedMapping> mapping;
+  std::unique_ptr<gpu::ClientSharedImage::ScopedMapping> mapping;
 
   gfx::Canvas canvas(gutter.bounds().size(), 1.0, true);
   gutter.Paint(&canvas);
@@ -315,10 +315,8 @@ void RoundedDisplayFrameFactory::Paint(
   if (base::FeatureList::IsEnabled(
           kUseMappableSIInRoundedDisplayFrameFactory)) {
     DCHECK(!buffer);
-    gpu::SharedImageInterface* sii =
-        resource->context_provider->SharedImageInterface();
     CHECK(resource->client_shared_image());
-    mapping = sii->MapSharedImage(resource->client_shared_image());
+    mapping = resource->client_shared_image()->Map();
     if (!mapping) {
       return;
     }
@@ -368,7 +366,7 @@ void RoundedDisplayFrameFactory::AppendQuad(
                      /*layer_rect=*/layer_rect,
                      /*visible_layer_rect=*/layer_rect,
                      /*filter_info=*/gfx::MaskFilterInfo(),
-                     /*clip=*/absl::nullopt, /*contents_opaque=*/false,
+                     /*clip=*/std::nullopt, /*contents_opaque=*/false,
                      /*opacity_f=*/1.f,
                      /*blend=*/SkBlendMode::kSrcOver,
                      /*sorting_context=*/0,

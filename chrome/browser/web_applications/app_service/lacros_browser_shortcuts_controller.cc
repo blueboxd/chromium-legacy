@@ -170,6 +170,7 @@ void LacrosBrowserShortcutsController::InitializeOnControllerReady(
       base::BindOnce(&OnInitialBrowserShortcutsPublished));
 
   install_manager_observation_.Observe(&provider_->install_manager());
+  registrar_observation_.Observe(&provider_->registrar_unsafe());
 }
 
 void LacrosBrowserShortcutsController::MaybePublishBrowserShortcuts(
@@ -207,9 +208,15 @@ void LacrosBrowserShortcutsController::MaybePublishBrowserShortcuts(
     shortcut->name =
         provider_->registrar_unsafe().GetAppShortName(web_app->app_id());
     shortcut->shortcut_source = apps::ShortcutSource::kUser;
-    // TODO(b/306295113): Add shortcut specific icon masking.
-    shortcut->icon_key =
-        apps::IconKey(raw_icon_updated, apps::IconEffects::kCrOsStandardMask);
+
+    apps::IconEffects icon_effects = apps::IconEffects::kRoundCorners;
+    icon_effects |= web_app->is_generated_icon()
+                        ? apps::IconEffects::kCrOsStandardMask
+                        : apps::IconEffects::kCrOsStandardIcon;
+    shortcut->icon_key = apps::IconKey(raw_icon_updated, icon_effects);
+
+    shortcut->allow_removal =
+        provider_->registrar_unsafe().CanUserUninstallWebApp(web_app->app_id());
 
     shortcuts.push_back(std::move(shortcut));
   }
@@ -292,6 +299,16 @@ void LacrosBrowserShortcutsController::OnWebAppUninstalled(
   remote_publisher->ShortcutRemoved(
       apps::GenerateShortcutId(app_constants::kLacrosAppId, app_id).value(),
       base::DoNothing());
+}
+
+void LacrosBrowserShortcutsController::OnAppRegistrarDestroyed() {
+  registrar_observation_.Reset();
+}
+
+void LacrosBrowserShortcutsController::OnWebAppUserDisplayModeChanged(
+    const webapps::AppId& app_id,
+    mojom::UserDisplayMode user_display_mode) {
+  MaybePublishBrowserShortcuts({app_id});
 }
 
 }  // namespace web_app

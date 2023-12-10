@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_RESOURCE_ATTRIBUTION_QUERY_RESULTS_H_
 #define COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_RESOURCE_ATTRIBUTION_QUERY_RESULTS_H_
 
+#include <compare>
 #include <map>
 #include <vector>
 
@@ -19,12 +20,34 @@ namespace performance_manager::resource_attribution {
 // The Resource Attribution result and metadata structs described in
 // https://bit.ly/resource-attribution-api#heading=h.k8fjwkwxxdj6.
 
-// TODO(crbug.com/1471683): Add MeasurementAlgorithm to metadata
+// The methods used to produce a result.
+enum class MeasurementAlgorithm {
+  // The values in this result were measured directly, such as with an
+  // OS system call.
+  kDirectMeasurement,
+
+  // The values in this result are estimates derived by subdividing direct
+  // measurements of a context between several related contexts, such as with
+  // SplitResourceAmongFramesAndWorkers().
+  kSplit,
+
+  // The values in this result are estimates derived by summing kSplit estimates
+  // over a collection of contexts.
+  kSum,
+};
 
 // Metadata about the measurement that produced a result.
 struct ResultMetadata {
   // The time this measurement was taken.
   base::TimeTicks measurement_time;
+
+  // Method used to assign measurement results to the resource context.
+  MeasurementAlgorithm algorithm;
+
+  friend constexpr auto operator<=>(const ResultMetadata&,
+                                    const ResultMetadata&) = default;
+  friend constexpr bool operator==(const ResultMetadata&,
+                                   const ResultMetadata&) = default;
 };
 
 // The result of a kCPUTime query.
@@ -43,9 +66,26 @@ struct CPUTimeResult {
   // SysInfo::NumberOfProcessors(), the same as
   // ProcessMetrics::GetPlatformIndependentCPUUsage().
   base::TimeDelta cumulative_cpu;
+
+  friend constexpr auto operator<=>(const CPUTimeResult&,
+                                    const CPUTimeResult&) = default;
+  friend constexpr bool operator==(const CPUTimeResult&,
+                                   const CPUTimeResult&) = default;
 };
 
-using QueryResult = absl::variant<CPUTimeResult>;
+// Results of a kMemorySummary query.
+struct MemorySummaryResult {
+  ResultMetadata metadata;
+  uint64_t resident_set_size_kb = 0;
+  uint64_t private_footprint_kb = 0;
+
+  friend constexpr auto operator<=>(const MemorySummaryResult&,
+                                    const MemorySummaryResult&) = default;
+  friend constexpr bool operator==(const MemorySummaryResult&,
+                                   const MemorySummaryResult&) = default;
+};
+
+using QueryResult = absl::variant<CPUTimeResult, MemorySummaryResult>;
 using QueryResults = std::vector<QueryResult>;
 using QueryResultMap = std::map<ResourceContext, QueryResults>;
 
@@ -81,31 +121,6 @@ constexpr base::optional_ref<T> AsResult(QueryResults& results) {
 template <typename T>
 constexpr base::optional_ref<const T> AsResult(const QueryResults& results) {
   return internal::GetFromVariantVector<T>(results);
-}
-
-inline bool operator==(const ResultMetadata& a, const ResultMetadata& b) {
-  static_assert(sizeof(ResultMetadata) ==
-                    sizeof(decltype(ResultMetadata::measurement_time)),
-                "update operator== when changing ResultMetadata");
-  return a.measurement_time == b.measurement_time;
-}
-
-inline bool operator!=(const ResultMetadata& a, const ResultMetadata& b) {
-  return !(a == b);
-}
-
-inline bool operator==(const CPUTimeResult& a, const CPUTimeResult& b) {
-  static_assert(sizeof(CPUTimeResult) ==
-                    sizeof(decltype(CPUTimeResult::metadata)) +
-                        sizeof(decltype(CPUTimeResult::start_time)) +
-                        sizeof(decltype(CPUTimeResult::cumulative_cpu)),
-                "update operator== when changing CPUTimeResult");
-  return a.metadata == b.metadata && a.start_time == b.start_time &&
-         a.cumulative_cpu == b.cumulative_cpu;
-}
-
-inline bool operator!=(const CPUTimeResult& a, const CPUTimeResult& b) {
-  return !(a == b);
 }
 
 }  // namespace performance_manager::resource_attribution

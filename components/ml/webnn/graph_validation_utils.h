@@ -21,13 +21,15 @@ namespace webnn {
 // Represents the `MLOperand` which describes not only input and constant
 // operand, but also the output operand of operator.
 struct Operand {
-  // Represents the `MLOperandType` in the WebIDL definition.
+  // Represents the `MLOperandDataType` in the WebIDL definition.
   enum DataType {
     kMinValue = 0,
     kFloat32 = 0,
     kFloat16,
     kInt32,
     kUint32,
+    kInt64,
+    kUint64,
     kInt8,
     kUint8,
     kMaxValue = kUint8,
@@ -63,7 +65,16 @@ static constexpr DataTypeConstraintSet kFloat = {Operand::DataType::kFloat32,
                                                  Operand::DataType::kFloat16};
 
 static constexpr DataTypeConstraintSet kSignedInteger = {
+    Operand::DataType::kInt32, Operand::DataType::kInt64,
+    Operand::DataType::kInt8};
+
+static constexpr DataTypeConstraintSet kSignedNumber = {
+    Operand::DataType::kFloat32, Operand::DataType::kFloat16,
     Operand::DataType::kInt32, Operand::DataType::kInt8};
+
+static constexpr DataTypeConstraintSet kGatherOperatorIndexDataTypes = {
+    Operand::DataType::kInt32, Operand::DataType::kUint32,
+    Operand::DataType::kInt64, Operand::DataType::kUint64};
 
 }  // namespace DataTypeConstraint
 
@@ -120,6 +131,27 @@ struct Padding2d {
   Size2d<uint32_t> beginning;
   // The height and width padding at the ending of input tensor.
   Size2d<uint32_t> ending;
+};
+
+// Contains the attributes of batchNormalization operator.
+struct BatchNormalizationAttributes {
+  BatchNormalizationAttributes();
+  ~BatchNormalizationAttributes();
+
+  BatchNormalizationAttributes(BatchNormalizationAttributes&& other);
+  BatchNormalizationAttributes& operator=(BatchNormalizationAttributes&& other);
+
+  BatchNormalizationAttributes(const BatchNormalizationAttributes&) = delete;
+  BatchNormalizationAttributes& operator=(const BatchNormalizationAttributes&) =
+      delete;
+
+  // The 1-D tensor of the scaling values.
+  absl::optional<Operand> scale;
+  // The 1-D tensor of the bias values.
+  absl::optional<Operand> bias;
+  // The number which specifies the index to the feature count dimension of the
+  // input shape for which the mean and variance values are.
+  uint32_t axis = 1;
 };
 
 // Contains the attributes of conv2d operator.
@@ -233,6 +265,46 @@ struct GemmAttributes {
   bool b_transpose = false;
 };
 
+// Contains the attributes of instanceNormalization operator.
+struct InstanceNormalizationAttributes {
+  InstanceNormalizationAttributes();
+  ~InstanceNormalizationAttributes();
+
+  InstanceNormalizationAttributes(InstanceNormalizationAttributes&& other);
+  InstanceNormalizationAttributes& operator=(
+      InstanceNormalizationAttributes&& other);
+
+  InstanceNormalizationAttributes(const InstanceNormalizationAttributes&) =
+      delete;
+  InstanceNormalizationAttributes& operator=(
+      const InstanceNormalizationAttributes&) = delete;
+
+  // The scale operand.
+  absl::optional<Operand> scale;
+  // The bias operand.
+  absl::optional<Operand> bias;
+  // The layout format of the input.
+  InputOperandLayout layout = InputOperandLayout::kNchw;
+};
+
+// Contains the attributes of layerNormalization operator.
+struct LayerNormalizationAttributes {
+  LayerNormalizationAttributes();
+  ~LayerNormalizationAttributes();
+
+  LayerNormalizationAttributes(LayerNormalizationAttributes&& other);
+  LayerNormalizationAttributes& operator=(LayerNormalizationAttributes&& other);
+
+  LayerNormalizationAttributes(const LayerNormalizationAttributes&) = delete;
+  LayerNormalizationAttributes& operator=(const LayerNormalizationAttributes&) =
+      delete;
+
+  // The scale operand.
+  absl::optional<Operand> scale;
+  // The bias operand.
+  absl::optional<Operand> bias;
+};
+
 struct SliceAttributes {
   SliceAttributes();
   ~SliceAttributes();
@@ -250,6 +322,14 @@ struct SliceAttributes {
   // to slice of each input dimension.
   std::vector<uint32_t> sizes;
 };
+
+// Validate and infer output information of argMin and argMax operator defined
+// in
+// https://pr-preview.s3.amazonaws.com/webmachinelearning/webnn/pull/478.html#api-mlgraphbuilder-argminmax
+base::expected<Operand, std::string> ValidateArgMinMaxAndInferOutput(
+    const Operand& input,
+    base::span<const uint32_t> axes,
+    bool keep_dimensions = false);
 
 // Validate softmax operator defined in WebIDL here
 // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-softmax
@@ -274,6 +354,14 @@ struct SplitAttribute {
 base::expected<std::vector<Operand>, std::string> ValidateSplitAndInferOutput(
     const Operand& input,
     const SplitAttribute& attributes);
+
+// Validate and infer output information of batchNormalization operator defined
+// in WebIDL here https://www.w3.org/TR/webnn/#api-mlgraphbuilder-batchnorm.
+base::expected<Operand, std::string> ValidateBatchNormalizationAndInferOutput(
+    const Operand& input,
+    const Operand& mean,
+    const Operand& variance,
+    const BatchNormalizationAttributes& attributes);
 
 // Validate and infer output information of 2-D convolution operator defined in
 // WebIDL here https://www.w3.org/TR/webnn/#api-mlgraphbuilder-conv2d
@@ -317,12 +405,34 @@ base::expected<Operand, std::string> ValidateResample2dAndInferOutput(
         scales_or_sizes,
     base::span<const uint32_t> axes);
 
+// Validate and infer output information of gather operator defined in
+// WebIDL here https://www.w3.org/TR/webnn/#api-mlgraphbuilder-gather
+base::expected<Operand, std::string> ValidateGatherAndInferOutput(
+    const Operand& input,
+    const Operand& indices,
+    const uint32_t axis);
+
 // Validate gemm operator defined in WebIDL here
 // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-gemm
 base::expected<Operand, std::string> ValidateGemmAndInferOutput(
     const Operand& a,
     const Operand& b,
     const GemmAttributes& attributes);
+
+// Validate and infer output information of instanceNormalization operator
+// defined in WebIDL here
+// https://www.w3.org/TR/webnn/#api-mlgraphbuilder-instancenorm.
+base::expected<Operand, std::string>
+ValidateInstanceNormalizationAndInferOutput(
+    const Operand& input,
+    const InstanceNormalizationAttributes& attributes);
+
+// Validate and infer output information of layerNormalization operator defined
+// in WebIDL here https://www.w3.org/TR/webnn/#api-mlgraphbuilder-layernorm.
+base::expected<Operand, std::string> ValidateLayerNormalizationAndInferOutput(
+    const Operand& input,
+    base::span<const uint32_t> axes,
+    const LayerNormalizationAttributes& attributes);
 
 // Validate concat operator defined in WebIDL here
 // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-concat
@@ -356,6 +466,14 @@ base::expected<Operand, std::string> ValidateReduceAndInferOutput(
     base::span<const uint32_t> axes,
     bool keepDimensions = false);
 
+// TODO(crbug.com/1273291): Add the link of the where operator definition in
+// WebIDL.
+// Validate where operator.
+base::expected<Operand, std::string> ValidateWhereAndInferOutput(
+    const Operand& condition,
+    const Operand& true_value,
+    const Operand& false_value);
+
 base::expected<size_t, std::string> ValidateAndCalculateElementsNumber(
     base::span<const uint32_t> dimensions);
 
@@ -366,7 +484,7 @@ base::expected<size_t, std::string> ValidateAndCalculateByteLength(
 // Validate that the axes are within the range of [0, rank - 1] without
 // duplication.
 base::expected<void, std::string> ValidateAxes(base::span<const uint32_t> axes,
-                                               uint32_t rank);
+                                               const size_t rank);
 
 // Broadcast the input shapes and return the output shape.
 // If bidirectional is true, its behavior follows the numpy-broadcasting-rule:

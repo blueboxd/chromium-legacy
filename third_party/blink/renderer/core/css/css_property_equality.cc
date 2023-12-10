@@ -336,7 +336,7 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kDominantBaseline:
       return a.DominantBaseline() == b.DominantBaseline();
     case CSSPropertyID::kDynamicRangeLimit:
-      return a.DynamicRangeLimit() == b.DynamicRangeLimit();
+      return a.GetDynamicRangeLimit() == b.GetDynamicRangeLimit();
     case CSSPropertyID::kEmptyCells:
       return a.EmptyCells() == b.EmptyCells();
     case CSSPropertyID::kFill:
@@ -460,11 +460,13 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kHyphens:
       return a.GetHyphens() == b.GetHyphens();
     case CSSPropertyID::kImageOrientation:
-      return a.RespectImageOrientation() == b.RespectImageOrientation();
+      return a.ImageOrientation() == b.ImageOrientation();
     case CSSPropertyID::kImageRendering:
       return a.ImageRendering() == b.ImageRendering();
     case CSSPropertyID::kInitialLetter:
       return a.InitialLetter() == b.InitialLetter();
+    case CSSPropertyID::kInsetArea:
+      return a.GetInsetArea() == b.GetInsetArea();
     case CSSPropertyID::kIsolation:
       return a.Isolation() == b.Isolation();
     case CSSPropertyID::kJustifyContent:

@@ -4,12 +4,14 @@
 
 #include <memory>
 
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_observer.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_service.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_session.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
@@ -74,6 +76,7 @@ class TabOrganizationServiceTest : public BrowserWithTestWindowTest {
 
  private:
   void SetUp() override {
+    feature_list_.InitWithFeatures({features::kTabOrganization}, {});
     profile_ = std::make_unique<TestingProfile>();
     service_ = std::make_unique<TabOrganizationService>(profile_.get());
   }
@@ -87,6 +90,7 @@ class TabOrganizationServiceTest : public BrowserWithTestWindowTest {
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<TabOrganizationService> service_;
   std::vector<std::unique_ptr<Browser>> browsers_;
+  base::test::ScopedFeatureList feature_list_;
 };
 
 class MockTabOrganizationObserver : public TabOrganizationObserver {
@@ -229,4 +233,33 @@ TEST_F(TabOrganizationServiceTest,
   TabOrganizationSession::ID session_id_2 =
       service()->ResetSessionForBrowser(browser1)->session_id();
   EXPECT_NE(session_id_1, session_id_2);
+}
+
+TEST_F(TabOrganizationServiceTest, SecondRequestAfterCompletionDoesntCrash) {
+  Browser* browser1 = AddBrowser();
+  for (int i = 0; i < 4; i++) {
+    AddValidTabToBrowser(browser1, 0);
+  }
+
+  service()->StartRequest(browser1);
+  auto* const session = service()->GetSessionForBrowser(browser1);
+  ASSERT_EQ(session->tab_organizations().size(), 1u);
+  session->GetNextTabOrganization()->Accept();
+  ASSERT_TRUE(session->IsComplete());
+
+  service()->StartRequest(browser1);
+}
+
+TEST_F(TabOrganizationServiceTest, SecondRequestAfterStartingDoesntCrash) {
+  Browser* browser1 = AddBrowser();
+  for (int i = 0; i < 4; i++) {
+    AddValidTabToBrowser(browser1, 0);
+  }
+
+  service()->StartRequest(browser1);
+  auto* const session = service()->GetSessionForBrowser(browser1);
+  ASSERT_EQ(session->tab_organizations().size(), 1u);
+  ASSERT_FALSE(session->IsComplete());
+
+  service()->StartRequest(browser1);
 }

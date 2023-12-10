@@ -151,9 +151,7 @@ class CONTENT_EXPORT PrefetchContainer {
     const GURL prefetch_url_;
   };
 
-  Key GetPrefetchContainerKey() const {
-    return Key(referring_document_token_, prefetch_url_);
-  }
+  const Key& GetPrefetchContainerKey() const { return key_; }
 
   // The ID of the RenderFrameHost that triggered the prefetch.
   GlobalRenderFrameHostId GetReferringRenderFrameHostId() const {
@@ -161,7 +159,7 @@ class CONTENT_EXPORT PrefetchContainer {
   }
 
   // The initial URL that was requested to be prefetched.
-  GURL GetURL() const { return prefetch_url_; }
+  const GURL& GetURL() const { return key_.prefetch_url(); }
 
   // The current URL being fetched.
   GURL GetCurrentURL() const;
@@ -334,7 +332,8 @@ class CONTENT_EXPORT PrefetchContainer {
   // Called when |PrefetchService::OnPrefetchComplete| is called for the
   // prefetch. This happens when |loader_| fully downloads the requested
   // resource.
-  void OnPrefetchComplete();
+  void OnPrefetchComplete(
+      const network::URLLoaderCompletionStatus& completion_status);
 
   // Allows for a timer to be used to limit the maximum amount of time that a
   // navigation can be blocked waiting for the head of this prefetch to be
@@ -557,10 +556,10 @@ class CONTENT_EXPORT PrefetchContainer {
 
   // The ID of the RenderFrameHost/Document that triggered the prefetch.
   const GlobalRenderFrameHostId referring_render_frame_host_id_;
-  const blink::DocumentToken referring_document_token_;
 
-  // The URL that was requested to be prefetch.
-  const GURL prefetch_url_;
+  // The key used to match this PrefetchContainer, including the URL that was
+  // requested to prefetch.
+  const PrefetchContainer::Key key_;
 
   // The type of this prefetch. This controls some specific details about how
   // the prefetch is handled, including whether an isolated network context or
@@ -611,7 +610,7 @@ class CONTENT_EXPORT PrefetchContainer {
   // any prefetched resources will not be served.
   bool is_decoy_ = false;
 
-  // The redirect chain resulting from prefetching |prefetch_url_|.
+  // The redirect chain resulting from prefetching |GetURL()|.
   std::vector<std::unique_ptr<SinglePrefetch>> redirect_chain_;
 
   // The network contexts used for this prefetch. They key corresponds to the

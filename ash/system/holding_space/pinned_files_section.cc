@@ -77,11 +77,9 @@ bool ShouldShowPlaceholder(PrefService* prefs) {
   // If the model is empty and the holding space wallpaper nudge is enabled,
   // then we need to show the placeholder so that there is something when the
   // user clicks the force-shown tray.
-  // TODO(http://b/307787722): Replace this with the desired final behavior for
-  // holding space wallpaper nudge.
   if (features::IsHoldingSpaceWallpaperNudgeEnabled() &&
       HoldingSpaceController::Get()->model() &&
-      !HoldingSpaceController::Get()->model()->items().empty()) {
+      HoldingSpaceController::Get()->model()->items().empty()) {
     return true;
   }
 
@@ -109,6 +107,8 @@ std::u16string GetPlaceholderText(bool drive_disabled) {
 // FilesAppChip ----------------------------------------------------------------
 
 class FilesAppChip : public views::Button {
+  METADATA_HEADER(FilesAppChip, views::Button)
+
  public:
   explicit FilesAppChip(views::Button::PressedCallback pressed_callback)
       : views::Button(std::move(pressed_callback)) {
@@ -176,6 +176,9 @@ class FilesAppChip : public views::Button {
         kColorAshControlBackgroundColorInactive, kFilesAppChipHeight / 2.f));
   }
 };
+
+BEGIN_METADATA(FilesAppChip, views::Button)
+END_METADATA
 
 }  // namespace
 
@@ -296,7 +299,7 @@ void PinnedFilesSection::OnFilesAppChipPressed(const ui::Event& event) {
   }
 }
 
-BEGIN_METADATA(PinnedFilesSection)
+BEGIN_METADATA(PinnedFilesSection, HoldingSpaceItemViewsSection)
 END_METADATA
 
 }  // namespace ash

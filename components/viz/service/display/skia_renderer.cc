@@ -103,6 +103,38 @@ namespace viz {
 
 namespace {
 
+enum VertexOpacityUsage {
+  kNone = 0,
+  kConstant = 1,
+  kLeftRight = 2,
+  kTopBottom = 3,
+  kMaxValue = kTopBottom,
+  kCount,
+};
+
+// TODO(crbug.com/1506077): If histograms were significantly cheaper we would
+// not need to write custom submitting code like the accumulator below.
+void SubmitOrAccumulateVertexUsageUMA(VertexOpacityUsage usage) {
+  static uint32_t vertex_usage_counter = 0;
+  static std::array<bool, VertexOpacityUsage::kCount> vertex_usage = {};
+  constexpr uint32_t kMaxNumberAccumulations = 1000;
+  vertex_usage_counter++;
+  vertex_usage[usage] = true;
+
+  if (vertex_usage_counter > kMaxNumberAccumulations) {
+    for (int i = VertexOpacityUsage::kNone; i < VertexOpacityUsage::kCount;
+         i++) {
+      if (vertex_usage[i]) {
+        UMA_HISTOGRAM_ENUMERATION("Compositing.SkiaRenderer.VertexOpacityUsage",
+                                  static_cast<VertexOpacityUsage>(i));
+        vertex_usage[i] = false;
+      }
+    }
+
+    vertex_usage_counter = 0;
+  }
+}
+
 // Smallest unit that impacts anti-aliasing output. We use this to determine
 // when an exterior edge (with AA) has been clipped (no AA). The specific value
 // was chosen to match that used by gl_renderer.
@@ -812,29 +844,16 @@ void SkiaRenderer::DrawRPDQParams::SetBackdropFilterClip(
   }
 
   const bool aa = params->aa_flags != SkCanvas::kNone_QuadAAFlags;
-  if (backdrop_filter_bounds) {
-    // The final backdrop content is complex, so excess filter values will be
-    // erased from within the layer. Only clip to the aggregate bounds.
-    canvas->clipRect(filter_bounds, aa);
-  } else {
-    // The backdrop content is restricted to the draw region and visible_rect
-    // (or bypass clip_rect, which corresponds to the visible_rect of the quad
-    // that had the filter on it).
-    canvas->clipRect(GetContentBounds(params), aa);
-  }
-  if (params->draw_region) {
-    SkPath clip_path = params->draw_region_in_path();
-    if (bypass_geometry) {
-      clip_path.transform(bypass_geometry->transform);
-    }
-    canvas->clipPath(clip_path, aa);
-  }
+  // filter_bounds is either a conservative bounding box that will not restrict
+  // the output of any forward-filters applied to the RPDQ, or it is exactly
+  // the content bounds that the backdrop filter should be limited to.
+  canvas->clipRect(filter_bounds, aa);
 }
 
 void SkiaRenderer::DrawRPDQParams::ClearOutsideBackdropBounds(
     SkCanvas* canvas,
     const DrawQuadParams* params) const {
-  if (!backdrop_filter || !backdrop_filter_bounds) {
+  if (!backdrop_filter) {
     return;  // Nothing to clear within the layer
   }
 
@@ -844,10 +863,12 @@ void SkiaRenderer::DrawRPDQParams::ClearOutsideBackdropBounds(
   // the shape with the kDifference op and then clearing the canvas, per shape
   const bool aa = params->aa_flags != SkCanvas::kNone_QuadAAFlags;
 
-  canvas->save();
-  canvas->clipRRect(*backdrop_filter_bounds, SkClipOp::kDifference, aa);
-  canvas->clear(SK_ColorTRANSPARENT);
-  canvas->restore();
+  if (backdrop_filter_bounds) {
+    canvas->save();
+    canvas->clipRRect(*backdrop_filter_bounds, SkClipOp::kDifference, aa);
+    canvas->clear(SK_ColorTRANSPARENT);
+    canvas->restore();
+  }
 
   if (params->draw_region) {
     canvas->save();
@@ -857,12 +878,15 @@ void SkiaRenderer::DrawRPDQParams::ClearOutsideBackdropBounds(
     canvas->restore();
   } else {
     SkRect content = GetContentBounds(params);
-    if (!content.contains(backdrop_filter_bounds->rect())) {
+    if (!content.contains(filter_bounds) &&
+        (!backdrop_filter_bounds ||
+         !content.contains(backdrop_filter_bounds->rect()))) {
       // If the |draw_region| is defined, it's already a subset of |rect|, so
-      // we don't have to clear both. Similarly, if |backdrop_filter_bounds|
-      // is contained within the quad, the first clear was sufficient.
-      // Otherwise, have some excess backdrop content that must still be
-      // erased.
+      // we don't have to clear both. Similarly, if |filter_bounds| is contained
+      // within the quad, the clip set in BackdropFilterClip() discards anything
+      // that would be cleared here. And if |backdrop_filter_bounds| is
+      // contained within the quad, the first clear was sufficient. Otherwise,
+      // there is some excess backdrop content that must still be erased.
       canvas->save();
       canvas->clipRect(content, SkClipOp::kDifference, aa);
       canvas->clear(SK_ColorTRANSPARENT);
@@ -1280,8 +1304,8 @@ void SkiaRenderer::BindFramebufferToTexture(
   RenderPassBacking& backing = iter->second;
   current_canvas_ = skia_output_surface_->BeginPaintRenderPass(
       render_pass_id, backing.size, backing.format, backing.alpha_type,
-      backing.generate_mipmap, backing.scanout_dcomp_surface,
-      RenderPassBackingSkColorSpace(backing),
+      backing.generate_mipmap ? skgpu::Mipmapped::kYes : skgpu::Mipmapped::kNo,
+      backing.scanout_dcomp_surface, RenderPassBackingSkColorSpace(backing),
       /*is_overlay=*/is_root, backing.mailbox);
 
   if (is_root && debug_settings_->show_overdraw_feedback) {
@@ -2564,6 +2588,7 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
     // This is a simple texture draw and can go into the batching system
     DCHECK(!MustFlushBatchedQuads(quad, rpdq_params, *params));
     AddQuadToBatch(image, valid_texel_bounds, params);
+    SubmitOrAccumulateVertexUsageUMA(VertexOpacityUsage::kNone);
     return;
   }
 
@@ -2596,6 +2621,7 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
         quad->vertex_opacity[0] == quad->vertex_opacity[2] &&
         quad->vertex_opacity[0] == quad->vertex_opacity[3]) {
       quad_alpha *= quad->vertex_opacity[0];
+      SubmitOrAccumulateVertexUsageUMA(VertexOpacityUsage::kConstant);
     } else {
       // The only occurrences of non-constant vertex opacities come from unit
       // tests and src/chrome/browser/android/compositor/decoration_title.cc,
@@ -2609,6 +2635,8 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
             params->visible_rect.y() + 0.5f * params->visible_rect.height();
         gradient_pts[0] = {params->visible_rect.x(), y};
         gradient_pts[1] = {params->visible_rect.right(), y};
+
+        SubmitOrAccumulateVertexUsageUMA(VertexOpacityUsage::kLeftRight);
       } else if (quad->vertex_opacity[0] == quad->vertex_opacity[3] &&
                  quad->vertex_opacity[1] == quad->vertex_opacity[2]) {
         // Top to bottom gradient
@@ -2616,6 +2644,8 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
             params->visible_rect.x() + 0.5f * params->visible_rect.width();
         gradient_pts[0] = {x, params->visible_rect.y()};
         gradient_pts[1] = {x, params->visible_rect.bottom()};
+        SubmitOrAccumulateVertexUsageUMA(VertexOpacityUsage::kTopBottom);
+
       } else {
         // Not sure how to emulate
         NOTIMPLEMENTED();
@@ -2634,6 +2664,8 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
       // any color filter chain needed for background blending
       quad_alpha = 1.f;
     }
+  } else {
+    SubmitOrAccumulateVertexUsageUMA(VertexOpacityUsage::kNone);
   }
 
   if (needs_color_conversion_filter) {
@@ -2993,23 +3025,6 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
   local_matrix.setTranslate(quad->filters_origin.x(), quad->filters_origin.y());
   local_matrix.postScale(quad->filters_scale.x(), quad->filters_scale.y());
 
-  // Calculate local clip bounds. Note that doing this here is redundant with
-  // letting SkCanvas reject clipped-out draws, but detecting it early means
-  // SkiaRenderer does not have to prepare renderpass backings in those cases.
-  absl::optional<SkRect> local_clip_rect;
-  if (!params->content_device_transform.HasPerspective() &&
-      params->content_device_transform.IsInvertible()) {
-    // The |clip_rect| and |output_rect| are in target space, so map to
-    // device space, then inverse-map to quad space.
-    gfx::RectF clip_rect = target_to_device.MapRect(
-        gfx::RectF(quad->shared_quad_state->clip_rect.value_or(
-            current_frame()->current_render_pass->output_rect)));
-    local_clip_rect = gfx::RectFToSkRect(
-        cc::MathUtil::InverseMapQuadToLocalSpace(
-            params->content_device_transform, gfx::QuadF(clip_rect))
-            .BoundingBox());
-  }
-
   auto to_sk_image_filter =
       [](sk_sp<cc::PaintFilter> paint_filter,
          const SkMatrix& local_matrix) -> sk_sp<SkImageFilter> {
@@ -3032,13 +3047,6 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
       // grow or move the area touched by the base quad.
       rpdq_params.filter_bounds = rpdq_params.image_filter->computeFastBounds(
           rpdq_params.filter_bounds);
-
-      // If after applying the filter we would be clipped out, skip the draw.
-      if (local_clip_rect) {
-        if (!rpdq_params.filter_bounds.intersect(*local_clip_rect)) {
-          return {};
-        }
-      }
 
       // Attempt to simplify the image filter to a color filter, which enables
       // the RPDQ effects to be applied more efficiently.
@@ -3117,11 +3125,6 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
           }
         }
       }
-    }
-
-    if (local_clip_rect && !backdrop_rect.intersect(*local_clip_rect)) {
-      rpdq_params.backdrop_filter = nullptr;
-      return rpdq_params;
     }
 
     // Besides ensuring the output of the backdrop filter doesn't go beyond its
@@ -3638,22 +3641,27 @@ void SkiaRenderer::PrepareRenderPassOverlay(
         flat_quad_to_target_transform.GetCheckedInverse();
   }
 
-  // The |clip_rect| is in the device coordinate and with all transforms
-  // (translation, scaling, rotation, etc), so remove them.
+  // The |clip_rect| is in the target coordinate space with all transforms
+  // (translation, scaling, rotation, etc), so remove them since we are
+  // later updating the quad-to-target transform to be the identity. These
+  // properties must stay in sync with the transform in case they are used
+  // in Calculate[RPDQ|DrawQuad]Params(), and so we can restrict the overlay
+  // backing size to just what is visible.
   absl::optional<base::AutoReset<absl::optional<gfx::Rect>>>
       auto_reset_clip_rect;
-  if (shared_quad_state->clip_rect) {
-    gfx::RectF clip_rect(*shared_quad_state->clip_rect);
-    if (quad_to_target_transform_inverse) {
-      clip_rect = quad_to_target_transform_inverse->MapRect(clip_rect);
-      auto_reset_clip_rect.emplace(&shared_quad_state->clip_rect,
-                                   gfx::ToEnclosedRect(clip_rect));
-    } else {
-      // If we can't position the clip rect into render pass space, we shouldn't
-      // use it when rendering.
-      auto_reset_clip_rect.emplace(&shared_quad_state->clip_rect,
-                                   absl::nullopt);
-    }
+  if (quad_to_target_transform_inverse) {
+    // |output_rect| is also in the original target space and is the default
+    // clip that we should include since we have to manually apply that as
+    // well for overlay sizing.
+    gfx::RectF clip_rect(quad->shared_quad_state->clip_rect.value_or(
+        current_frame()->current_render_pass->output_rect));
+    clip_rect = quad_to_target_transform_inverse->MapRect(clip_rect);
+    auto_reset_clip_rect.emplace(&shared_quad_state->clip_rect,
+                                 gfx::ToEnclosedRect(clip_rect));
+  } else {
+    // If we can't position the clip rect into render pass space, we shouldn't
+    // use it when rendering.
+    auto_reset_clip_rect.emplace(&shared_quad_state->clip_rect, absl::nullopt);
   }
 
   // The |mask_filter_info| is in the device coordinate and with all transforms
@@ -3691,11 +3699,15 @@ void SkiaRenderer::PrepareRenderPassOverlay(
     rpdq_params = CalculateRPDQParams(target_to_device, quad, &params);
   }
 
-  const gfx::Rect filter_bounds =
+  gfx::Rect filter_bounds =
       gfx::SkIRectToRect(rpdq_params.filter_bounds.roundOut());
-
-  // |filter_bounds| is the content space bounds that includes any filtered
-  // extents. If empty, the draw can be skipped.
+  // Apply the clip that is normally handled indirectly via SkCanvas::clipRect.
+  // Since |shared_quad_state->quad_to_target_transform| and |clip_rect| were
+  // modified above, it is in the same coordinate space as |filter_bounds| now.
+  if (shared_quad_state->clip_rect) {
+    filter_bounds.Intersect(*shared_quad_state->clip_rect);
+  }
+  // If empty, the draw can be skipped
   if (filter_bounds.IsEmpty()) {
     return;
   }
@@ -3761,7 +3773,7 @@ void SkiaRenderer::PrepareRenderPassOverlay(
     current_canvas_ = skia_output_surface_->BeginPaintRenderPass(
         quad->render_pass_id, dst_overlay_backing.size,
         dst_overlay_backing.format, dst_overlay_backing.alpha_type,
-        /*mipmap=*/false, /*scanout_dcomp_surface=*/false,
+        skgpu::Mipmapped::kNo, /*scanout_dcomp_surface=*/false,
         RenderPassBackingSkColorSpace(dst_overlay_backing),
         /*is_overlay=*/true, overlay->mailbox);
     if (!current_canvas_) {

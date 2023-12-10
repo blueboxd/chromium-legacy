@@ -16,9 +16,9 @@
 #import "ios/chrome/browser/find_in_page/model/find_tab_helper.h"
 #import "ios/chrome/browser/find_in_page/model/java_script_find_tab_helper.h"
 #import "ios/chrome/browser/find_in_page/model/util.h"
-#import "ios/chrome/browser/lens/lens_browser_agent.h"
-#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
-#import "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
+#import "ios/chrome/browser/lens/model/lens_browser_agent.h"
+#import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper.h"
+#import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper_delegate.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/sessions/fake_tab_restore_service.h"
 #import "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
@@ -38,7 +38,7 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_api.h"
 #import "ios/web/common/uikit_ui_util.h"
-#import "ios/web/find_in_page/java_script_find_in_page_manager_impl.h"
+#import "ios/web/public/find_in_page/java_script_find_in_page_manager.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/fake_navigation_manager.h"
 #import "ios/web/public/test/fakes/fake_web_frames_manager.h"
@@ -52,19 +52,12 @@
 #import "third_party/ocmock/ocmock_extensions.h"
 #import "ui/base/l10n/l10n_util.h"
 
-namespace {
-
-std::unique_ptr<KeyedService> BuildFakeTabRestoreService(
-    web::BrowserState* browser_state) {
-  return std::make_unique<FakeTabRestoreService>();
-}
-
 class KeyCommandsProviderTest : public PlatformTest {
  protected:
   KeyCommandsProviderTest() {
     TestChromeBrowserState::Builder builder;
     builder.AddTestingFactory(IOSChromeTabRestoreServiceFactory::GetInstance(),
-                              base::BindRepeating(BuildFakeTabRestoreService));
+                              FakeTabRestoreService::GetTestingFactory());
     builder.AddTestingFactory(
         ios::LocalOrSyncableBookmarkModelFactory::GetInstance(),
         ios::LocalOrSyncableBookmarkModelFactory::GetDefaultFactory());
@@ -290,7 +283,7 @@ TEST_F(KeyCommandsProviderTest, CanPerform_FindInPageActions) {
     web_state->SetWebFramesManager(
         web::ContentWorld::kIsolatedWorld,
         std::make_unique<web::FakeWebFramesManager>());
-    web::JavaScriptFindInPageManagerImpl::CreateForWebState(web_state);
+    web::JavaScriptFindInPageManager::CreateForWebState(web_state);
     JavaScriptFindTabHelper::CreateForWebState(web_state);
   }
 
@@ -922,7 +915,7 @@ TEST_F(KeyCommandsProviderTest, ValidateCommands) {
     web_state->SetWebFramesManager(
         web::ContentWorld::kIsolatedWorld,
         std::make_unique<web::FakeWebFramesManager>());
-    web::JavaScriptFindInPageManagerImpl::CreateForWebState(web_state);
+    web::JavaScriptFindInPageManager::CreateForWebState(web_state);
     JavaScriptFindTabHelper::CreateForWebState(web_state);
   }
 
@@ -1002,5 +995,3 @@ TEST_F(KeyCommandsProviderTest, ClearingBrowserDoesntCrash) {
 
   EXPECT_FALSE(CanPerform(@"keyCommand_showNextTab"));
 }
-
-}  // namespace

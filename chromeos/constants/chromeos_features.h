@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_CONSTANTS_CHROMEOS_FEATURES_H_
 #define CHROMEOS_CONSTANTS_CHROMEOS_FEATURES_H_
 
+#include "base/auto_reset.h"
 #include "base/component_export.h"
 #include "base/feature_list.h"
 #include "build/buildflag.h"
@@ -42,8 +43,6 @@ BASE_DECLARE_FEATURE(kCrosWebAppInstallDialog);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 BASE_DECLARE_FEATURE(kCrosWebAppShortcutUiUpdate);
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-BASE_DECLARE_FEATURE(kSeparateWebAppShortcutBadgeIcon);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) BASE_DECLARE_FEATURE(kDeskProfiles);
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
@@ -54,6 +53,7 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 BASE_DECLARE_FEATURE(kDisableOfficeEditingComponentApp);
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 BASE_DECLARE_FEATURE(kDisableQuickAnswersV2Translation);
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) BASE_DECLARE_FEATURE(kEssentialSearch);
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 BASE_DECLARE_FEATURE(kExperimentalWebAppStoragePartitionIsolation);
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
@@ -93,6 +93,7 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 bool IsDataControlsFileAccessDefaultDenyEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 bool IsDeskProfilesEnabled();
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsEssentialSearchEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 bool IsIWAForTelemetryExtensionAPIEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsJellyEnabled();
@@ -116,6 +117,9 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 bool IsUploadOfficeToCloudForEnterpriseEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 bool IsMicrosoftOneDriveIntegrationForEnterpriseEnabled();
+
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+base::AutoReset<bool> SetAppInstallServiceUriEnabledForTesting();
 
 }  // namespace features
 }  // namespace chromeos

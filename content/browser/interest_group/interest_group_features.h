@@ -11,6 +11,9 @@
 namespace features {
 // Please keep features in alphabetical order.
 
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kEnableIFrameAdAuctionHeaders);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(
+    kEnableUpdatingExecutionModeToFrozenContext);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kEnableUpdatingUserBiddingSignals);
 
 }  // namespace features

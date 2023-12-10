@@ -4,6 +4,8 @@
 
 #include "components/exo/shell_surface.h"
 
+#include <optional>
+
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/scoped_animation_disabler.h"
@@ -413,6 +415,9 @@ void ShellSurface::MaybeActivateSurface() {
   // `host_window()`'s layer doesn't have a SurfaceId yet, so set it to embed
   // the upcoming CompositorFrame.
   if (!host_window()->layer()->GetSurfaceId()) {
+    DCHECK(host_window()->GetLocalSurfaceId().parent_sequence_number() ==
+               GetCurrentLocalSurfaceId().parent_sequence_number() ||
+           !pending_configs_.empty());
     host_window()->layer()->SetShowSurface(
         host_window()->GetSurfaceId(), host_window()->bounds().size(),
         SK_ColorWHITE, cc::DeadlinePolicy::UseDefaultDeadline(),
@@ -919,15 +924,18 @@ void ShellSurface::Configure(bool ends_drag) {
 
   if (!configure_callback_.is_null()) {
     if (window_state) {
-      serial = configure_callback_.Run(GetClientBoundsInScreen(widget_),
-                                       window_state->GetStateType(),
-                                       IsResizing(), widget_->IsActive(),
-                                       origin_offset, pending_raster_scale_);
+      auto restore_state_type = std::optional<chromeos::WindowStateType>{
+          window_state->GetRestoreWindowState()};
+      serial = configure_callback_.Run(
+          GetClientBoundsInScreen(widget_), window_state->GetStateType(),
+          IsResizing(), widget_->IsActive(), origin_offset,
+          pending_raster_scale_, restore_state_type);
     } else {
       auto state = chromeos::ToWindowStateType(initial_show_state_);
       gfx::Rect bounds = GetInitialBoundsForState(state);
-      serial = configure_callback_.Run(bounds, state, false, false,
-                                       origin_offset, pending_raster_scale_);
+      serial =
+          configure_callback_.Run(bounds, state, false, false, origin_offset,
+                                  pending_raster_scale_, std::nullopt);
     }
   }
 
@@ -1075,13 +1083,18 @@ void ShellSurface::UpdateLayerSurfaceRange(
     layer->SetOldestAcceptableFallback(
         viz::SurfaceId(frame_sink_id_, current_lsi));
   } else {
-    // `current_lsi` has caught up to `layer`. Allow the shell_surface to modify
-    // the surface layer bounds, clear the oldest fallback and disable stretch.
-    layer->SetShowSurface(viz::SurfaceId(frame_sink_id_, current_lsi),
-                          layer->bounds().size(), SK_ColorWHITE,
-                          cc::DeadlinePolicy::UseDefaultDeadline(),
-                          false /* stretch_content_to_fill_bounds */);
-    layer->SetOldestAcceptableFallback(viz::SurfaceId{});
+    viz::SurfaceId surface_id(frame_sink_id_, current_lsi);
+    // Update the surface only when the surface id changes, which indicates that
+    // the change needs to be synchronized due to size change or scale change.
+    if (!layer->GetSurfaceId() || *layer->GetSurfaceId() != surface_id) {
+      // `current_lsi` has caught up to `layer`. Allow the shell_surface to
+      // modify the surface layer bounds, clear the oldest fallback and disable
+      // stretch.
+      layer->SetShowSurface(surface_id, layer->bounds().size(), SK_ColorWHITE,
+                            cc::DeadlinePolicy::UseDefaultDeadline(),
+                            false /* stretch_content_to_fill_bounds */);
+      layer->SetOldestAcceptableFallback(viz::SurfaceId{});
+    }
   }
 }
 

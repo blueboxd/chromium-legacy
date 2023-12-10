@@ -7,14 +7,16 @@
 
 #include <stdint.h>
 
+#include <string_view>
+
 #include "base/component_export.h"
-#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/types/expected.h"
 #include "base/values.h"
 #include "components/attribution_reporting/aggregation_keys.h"
 #include "components/attribution_reporting/constants.h"
 #include "components/attribution_reporting/destination_set.h"
+#include "components/attribution_reporting/event_level_epsilon.h"
 #include "components/attribution_reporting/event_report_windows.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/max_event_level_reports.h"
@@ -36,7 +38,7 @@ struct COMPONENT_EXPORT(ATTRIBUTION_REPORTING) SourceRegistration {
 
   // Logs metric on parsing failures.
   static base::expected<SourceRegistration, mojom::SourceRegistrationError>
-  Parse(base::StringPiece json, mojom::SourceType);
+  Parse(std::string_view json, mojom::SourceType);
 
   explicit SourceRegistration(DestinationSet);
 
@@ -75,6 +77,7 @@ struct COMPONENT_EXPORT(ATTRIBUTION_REPORTING) SourceRegistration {
   bool debug_reporting = false;
   mojom::TriggerDataMatching trigger_data_matching =
       mojom::TriggerDataMatching::kModulus;
+  EventLevelEpsilon event_level_epsilon;
 };
 
 }  // namespace attribution_reporting

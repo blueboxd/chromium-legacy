@@ -382,7 +382,8 @@ void SkiaOutputSurfaceImpl::RecreateRootDDLRecorder() {
   }
   GrSurfaceCharacterization characterization =
       CreateGrSurfaceCharacterizationCurrentFrame(
-          size_, color_type_, alpha_type_, /*mipmap=*/false, sk_color_space_);
+          size_, color_type_, alpha_type_, skgpu::Mipmapped::kNo,
+          sk_color_space_);
   CHECK(characterization.isValid());
   root_ddl_recorder_.emplace(characterization);
   // This will trigger the lazy initialization of the recorder
@@ -489,7 +490,7 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintCurrentFrame() {
     // CopyDst usage. So don't treat it like a root surface which generally
     // won't have or support those usages.
     skgpu::graphite::TextureInfo texture_info =
-        gpu::GetGraphiteTextureInfo(gr_context_type_, format_);
+        gpu::GraphiteBackendTextureInfo(gr_context_type_, format_);
     CHECK(texture_info.isValid());
     current_paint_.emplace(graphite_recorder_, image_info, texture_info);
   } else {
@@ -570,11 +571,11 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromYUV(
       // texture info for fallback. Fallback textures are not considered YUV
       // planes since they are allocated separately and need write usage.
       context->SetImage(
-          nullptr, {gpu::GetGraphiteTextureInfo(gr_context_type_, format)});
+          nullptr, {gpu::GraphitePromiseTextureInfo(gr_context_type_, format)});
 
       texture_infos[i] =
-          gpu::GetGraphiteTextureInfo(gr_context_type_, format,
-                                      /*plane_index=*/0, /*is_yuv_plane=*/true);
+          gpu::GraphitePromiseTextureInfo(gr_context_type_, format,
+                                          /*plane_index=*/0);
       fulfills[i] = new FulfillForPlane(context);
     }
     skgpu::graphite::YUVABackendTextureInfo yuva_backend_info(
@@ -632,9 +633,8 @@ void SkiaOutputSurfaceImpl::MakePromiseSkImageSinglePlane(
           ? gpu::ToClosestSkColorTypeExternalSampler(format)
           : ToClosestSkColorType(/*gpu_compositing=*/true, format);
   if (graphite_recorder_) {
-    skgpu::graphite::TextureInfo texture_info =
-        gpu::GetGraphiteTextureInfo(gr_context_type_, format, /*plane_index=*/0,
-                                    /*is_yuv_plane=*/false, mipmap);
+    skgpu::graphite::TextureInfo texture_info = gpu::GraphitePromiseTextureInfo(
+        gr_context_type_, format, /*plane_index=*/0, mipmap);
     SkColorInfo color_info(color_type, image_context->alpha_type(),
                            image_context->color_space());
     skgpu::Origin origin = image_context->origin() == kTopLeft_GrSurfaceOrigin
@@ -684,8 +684,8 @@ void SkiaOutputSurfaceImpl::MakePromiseSkImageMultiPlane(
          plane_index++) {
       CHECK_EQ(image_context->origin(), kTopLeft_GrSurfaceOrigin);
       fulfills[plane_index] = new FulfillForPlane(image_context, plane_index);
-      texture_infos.emplace_back(gpu::GetGraphiteTextureInfo(
-          gr_context_type_, format, plane_index, /*is_yuv_plane=*/true));
+      texture_infos.emplace_back(gpu::GraphitePromiseTextureInfo(
+          gr_context_type_, format, plane_index));
     }
 
     skgpu::graphite::YUVABackendTextureInfo yuva_backend_info(
@@ -752,8 +752,10 @@ SkiaOutputSurfaceImpl::CreateImageContext(
       /*is_for_render_pass=*/false, raw_draw_if_possible);
 }
 
-DBG_FLAG_FBOOL("skia_gpu.swap_buffers.force_disable_makecurrent",
-               force_disable_makecurrent)
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+DBG_FLAG_FBOOL("skia_gpu.swap_buffers.force_calling_makecurrent",
+               force_makecurrent)
+#endif
 
 void SkiaOutputSurfaceImpl::SwapBuffers(OutputSurfaceFrame frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -781,7 +783,19 @@ void SkiaOutputSurfaceImpl::SwapBuffers(OutputSurfaceFrame frame) {
   auto callback =
       base::BindOnce(&SkiaOutputSurfaceImplOnGpu::SwapBuffers,
                      base::Unretained(impl_on_gpu_.get()), std::move(frame));
-  bool make_current = !force_disable_makecurrent();
+  bool make_current =
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+      // Normally we don't need MakeCurrent for SwapBuffers, but it is done
+      // historically and there are edge cases too.
+      // For lacros, we do not call MakeCurrent here, and delay it where
+      // appropriated.
+      //
+      // TODO(crbug.com/1494032): Extend that approach for other platforms.
+      force_makecurrent();  // Defaults to false.
+#else
+      true;
+#endif
+
   EnqueueGpuTask(std::move(callback), std::move(resource_sync_tokens_),
                  make_current,
                  /*need_framebuffer=*/!dependency_->IsOffscreen());
@@ -841,7 +855,7 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
     const gfx::Size& surface_size,
     SharedImageFormat format,
     RenderPassAlphaType alpha_type,
-    bool mipmap,
+    skgpu::Mipmapped mipmap,
     bool scanout_dcomp_surface,
     sk_sp<SkColorSpace> color_space,
     bool is_overlay,
@@ -857,9 +871,10 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
     SkImageInfo image_info =
         SkImageInfo::Make(gfx::SizeToSkISize(surface_size), color_type,
                           static_cast<SkAlphaType>(alpha_type), color_space);
-    skgpu::graphite::TextureInfo texture_info = gpu::GetGraphiteTextureInfo(
+    skgpu::graphite::TextureInfo texture_info = gpu::GraphiteBackendTextureInfo(
         gr_context_type_, format, /*plane_index=*/0,
-        /*is_yuv_plane=*/false, mipmap, scanout_dcomp_surface);
+        /*is_yuv_plane=*/false, mipmap == skgpu::Mipmapped::kYes,
+        scanout_dcomp_surface);
     if (!texture_info.isValid()) {
       DLOG(ERROR) << "BeginPaintRenderPass: invalid Graphite TextureInfo";
       return nullptr;
@@ -907,7 +922,7 @@ SkCanvas* SkiaOutputSurfaceImpl::RecordOverdrawForCurrentPaint() {
 
   GrSurfaceCharacterization characterization =
       CreateGrSurfaceCharacterizationRenderPass(
-          size_, color_type_with_alpha, alpha_type_, /*mipmap=*/false,
+          size_, color_type_with_alpha, alpha_type_, skgpu::Mipmapped::kNo,
           sk_color_space_, /*is_overlay=*/false,
           /*scanout_dcomp_surface=*/false);
   if (characterization.isValid()) {
@@ -1193,7 +1208,7 @@ SkiaOutputSurfaceImpl::CreateGrSurfaceCharacterizationRenderPass(
     const gfx::Size& surface_size,
     SkColorType color_type,
     SkAlphaType alpha_type,
-    bool mipmap,
+    skgpu::Mipmapped mipmap,
     sk_sp<SkColorSpace> color_space,
     bool is_overlay,
     bool scanout_dcomp_surface) const {
@@ -1234,7 +1249,7 @@ SkiaOutputSurfaceImpl::CreateGrSurfaceCharacterizationRenderPass(
       cache_max_resource_bytes, image_info, backend_format, sample_count,
       kTopLeft_GrSurfaceOrigin, surface_props, mipmap,
       /*willUseGLFBO0=*/scanout_dcomp_surface,
-      /*isTextureable=*/!scanout_dcomp_surface, GrProtected::kNo);
+      /*isTextureable=*/!scanout_dcomp_surface, skgpu::Protected::kNo);
   DCHECK(characterization.isValid());
   return characterization;
 }
@@ -1244,7 +1259,7 @@ SkiaOutputSurfaceImpl::CreateGrSurfaceCharacterizationCurrentFrame(
     const gfx::Size& surface_size,
     SkColorType color_type,
     SkAlphaType alpha_type,
-    bool mipmap,
+    skgpu::Mipmapped mipmap,
     sk_sp<SkColorSpace> color_space) const {
   if (!gr_context_thread_safe_) {
     DLOG(ERROR) << "gr_context_thread_safe_ is null.";
@@ -1288,7 +1303,7 @@ SkiaOutputSurfaceImpl::CreateGrSurfaceCharacterizationCurrentFrame(
       cache_max_resource_bytes, image_info, backend_format, sample_count,
       surface_origin, surface_props, mipmap,
       capabilities_.uses_default_gl_framebuffer, is_textureable,
-      GrProtected::kNo, /*vkRTSupportsInputAttachment=*/false,
+      skgpu::Protected::kNo, /*vkRTSupportsInputAttachment=*/false,
       capabilities_.root_is_vulkan_secondary_command_buffer);
 #if BUILDFLAG(ENABLE_VULKAN)
   VkFormat vk_format = VK_FORMAT_UNDEFINED;
@@ -1529,13 +1544,10 @@ GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
 #endif  // BUILDFLAG(ENABLE_VULKAN)
     CHECK_EQ(gr_context_type_, gpu::GrContextType::kGL);
     // Convert internal format from GLES2 to platform GL.
-    bool use_angle_rgbx_format = impl_on_gpu_->GetFeatureInfo()
-                                     ->feature_flags()
-                                     .angle_rgbx_internal_format;
+    gpu::GLFormatCaps caps(impl_on_gpu_->GetFeatureInfo());
     auto gl_format_desc = si_format.PrefersExternalSampler()
-                              ? gpu::ToGLFormatDescExternalSampler(si_format)
-                              : gpu::ToGLFormatDesc(si_format, plane_index,
-                                                    use_angle_rgbx_format);
+                              ? caps.ToGLFormatDescExternalSampler(si_format)
+                              : caps.ToGLFormatDesc(si_format, plane_index);
     auto gl_storage_internal_format = gl_format_desc.storage_internal_format;
     unsigned int texture_storage_format = gpu::GetGrGLBackendTextureFormat(
         impl_on_gpu_->GetFeatureInfo(), gl_storage_internal_format,

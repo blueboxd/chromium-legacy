@@ -28,13 +28,13 @@ using chromeos::network_config::mojom::ApnState;
 using chromeos::network_config::mojom::ApnType;
 using chromeos::network_config::mojom::ManagedApnPropertiesPtr;
 
-absl::optional<ApnPropertiesPtr> GetPreRevampApnFromDict(
+std::optional<ApnPropertiesPtr> GetPreRevampApnFromDict(
     const base::Value::Dict* cellular_dict,
     const char* key) {
   const base::Value::Dict* apn_dict =
       chromeos::network_config::GetDictionary(cellular_dict, key);
   if (!apn_dict) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   // Pre-revamp APNs with empty kAccessPointName will be ignored as they
@@ -44,7 +44,7 @@ absl::optional<ApnPropertiesPtr> GetPreRevampApnFromDict(
   const std::string* access_point_name =
       apn_dict->FindString(::onc::cellular_apn::kAccessPointName);
   if (!access_point_name || access_point_name->empty()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   return chromeos::network_config::GetApnProperties(
@@ -239,8 +239,8 @@ void ApnMigrator::OnGetManagedProperties(
     std::string iccid,
     std::string guid,
     const std::string& service_path,
-    absl::optional<base::Value::Dict> properties,
-    absl::optional<std::string> error) {
+    std::optional<base::Value::Dict> properties,
+    std::optional<std::string> error) {
   if (error.has_value()) {
     NET_LOG(ERROR) << "Error fetching managed properties for " << iccid
                    << ", error: " << error.value();
@@ -290,7 +290,7 @@ void ApnMigrator::OnGetManagedProperties(
   const base::Value::Dict* cellular_dict =
       chromeos::network_config::GetDictionary(&properties.value(),
                                               ::onc::network_config::kCellular);
-  absl::optional<ApnPropertiesPtr> last_connected_attach_apn =
+  std::optional<ApnPropertiesPtr> last_connected_attach_apn =
       GetPreRevampApnFromDict(cellular_dict,
                               ::onc::cellular::kLastConnectedAttachApnProperty);
   NET_LOG(EVENT) << "last_connected_attach_apn: "
@@ -298,7 +298,7 @@ void ApnMigrator::OnGetManagedProperties(
                          ? (*last_connected_attach_apn)->access_point_name
                          : "none");
 
-  absl::optional<ApnPropertiesPtr> last_connected_default_apn =
+  std::optional<ApnPropertiesPtr> last_connected_default_apn =
       GetPreRevampApnFromDict(
           cellular_dict, ::onc::cellular::kLastConnectedDefaultApnProperty);
   NET_LOG(EVENT) << "last_connected_default_apn: "
@@ -370,7 +370,7 @@ void ApnMigrator::OnGetManagedProperties(
   }
 
   if (!has_last_connected_attach && !has_last_connected_default) {
-    absl::optional<ApnPropertiesPtr> last_good_apn =
+    std::optional<ApnPropertiesPtr> last_good_apn =
         GetPreRevampApnFromDict(cellular_dict, ::onc::cellular::kLastGoodAPN);
 
     if (last_good_apn && pre_revamp_custom_apn->access_point_name ==
@@ -419,20 +419,21 @@ void ApnMigrator::OnGetManagedProperties(
   }
 
   if (has_last_connected_attach && is_last_connected_default_custom) {
-    NET_LOG(EVENT) << "Only last_connected_default_apn matches "
-                      "pre_revamp_custom_apn, last_connected_attach_apn exists "
-                      "but does not match pre_revamp_custom_apn, migrating "
-                      "last_connected_default_apn APN in enabled state with "
-                      "Default type and last_connected_attach_apn APN in "
-                      "disabled state with Attach type for network: "
-                   << guid;
+    NET_LOG(EVENT)
+        << "Only last_connected_default_apn matches "
+           "pre_revamp_custom_apn, last_connected_attach_apn exists "
+           "but does not match pre_revamp_custom_apn, migrating "
+           "last_connected_default_apn APN in enabled state with "
+           "Default and Attach type, and last_connected_attach_apn APN in "
+           "enabled state with Attach type for network: "
+        << guid;
     CellularNetworkMetricsLogger::LogUnmanagedCustomApnMigrationType(
         CellularNetworkMetricsLogger::UnmanagedApnMigrationType::
             kMatchesLastConnectedDefaultOnlyAndAttachExists);
 
     CreateDefaultThenAttachCustomApns(std::move(*last_connected_attach_apn),
-                                      /*enable_attach=*/false,
                                       std::move(*last_connected_default_apn),
+                                      /*can_use_default_apn_as_attach=*/true,
                                       guid, iccid);
     return;
   }
@@ -445,8 +446,8 @@ void ApnMigrator::OnGetManagedProperties(
         CellularNetworkMetricsLogger::UnmanagedApnMigrationType::
             kMatchesLastConnectedAttachOnlyAndDefaultExists);
     CreateDefaultThenAttachCustomApns(std::move(*last_connected_attach_apn),
-                                      /*enable_attach=*/true,
                                       std::move(*last_connected_default_apn),
+                                      /*can_use_default_apn_as_attach=*/false,
                                       guid, iccid);
     return;
   }
@@ -465,24 +466,29 @@ void ApnMigrator::OnGetManagedProperties(
 
 void ApnMigrator::CreateDefaultThenAttachCustomApns(
     chromeos::network_config::mojom::ApnPropertiesPtr attach_apn,
-    bool enable_attach,
     chromeos::network_config::mojom::ApnPropertiesPtr default_apn,
+    bool can_use_default_apn_as_attach,
     const std::string& guid,
     const std::string& iccid) {
   DCHECK(!attach_apn.is_null());
   DCHECK(!default_apn.is_null());
   NET_LOG(EVENT) << "Migrating default_apn: " << default_apn->access_point_name
-                 << " in the enabled state, and then attach_apn: "
+                 << " in the enabled state; default_apn is also type attach: "
+                 << can_use_default_apn_as_attach
+                 << ". Then, migrate attach_apn: "
                  << attach_apn->access_point_name
-                 << ", enabled: " << enable_attach
-                 << " for Network with guid: " << guid
+                 << " in the enabled state for Network with guid: " << guid
                  << " and iccid: " << iccid;
 
-  attach_apn->state = enable_attach ? ApnState::kEnabled : ApnState::kDisabled;
+  attach_apn->state = ApnState::kEnabled;
   attach_apn->apn_types = {ApnType::kAttach};
 
   default_apn->state = ApnState::kEnabled;
-  default_apn->apn_types = {ApnType::kDefault};
+  if (can_use_default_apn_as_attach) {
+    default_apn->apn_types = {ApnType::kAttach, ApnType::kDefault};
+  } else {
+    default_apn->apn_types = {ApnType::kDefault};
+  }
 
   // Migrate default APN first, then attach APN in case both are to
   // be enabled; enabled default APN must be created before enabled attach APN.
@@ -491,7 +497,7 @@ void ApnMigrator::CreateDefaultThenAttachCustomApns(
   // once, when both APNs have been migrated.
   auto create_custom_attach_apn_callback =
       base::BindOnce(&ApnMigrator::CreateCustomApn, weak_factory_.GetWeakPtr(),
-                     iccid, guid, std::move(attach_apn), absl::nullopt);
+                     iccid, guid, std::move(attach_apn), std::nullopt);
 
   auto on_create_default_apn_callback =
       base::BindOnce(
@@ -524,7 +530,7 @@ void ApnMigrator::CreateCustomApn(
     const std::string& iccid,
     const std::string& network_guid,
     chromeos::network_config::mojom::ApnPropertiesPtr apn,
-    absl::optional<base::OnceCallback<void(bool)>> success_callback) {
+    std::optional<base::OnceCallback<void(bool)>> success_callback) {
   remote_cros_network_config_->CreateCustomApn(
       network_guid, std::move(apn),
       success_callback ? std::move(*success_callback)

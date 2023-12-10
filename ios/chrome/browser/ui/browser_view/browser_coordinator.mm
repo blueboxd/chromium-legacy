@@ -20,6 +20,7 @@
 #import "components/infobars/core/infobar_manager.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/password_manager/core/common/password_manager_features.h"
+#import "components/plus_addresses/features.h"
 #import "components/prefs/pref_service.h"
 #import "components/profile_metrics/browser_profile_type.h"
 #import "components/safe_browsing/core/common/features.h"
@@ -40,26 +41,27 @@
 #import "ios/chrome/browser/find_in_page/model/find_tab_helper.h"
 #import "ios/chrome/browser/find_in_page/model/java_script_find_tab_helper.h"
 #import "ios/chrome/browser/find_in_page/model/util.h"
-#import "ios/chrome/browser/follow/follow_browser_agent.h"
-#import "ios/chrome/browser/follow/followed_web_site.h"
-#import "ios/chrome/browser/infobars/infobar_ios.h"
-#import "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/follow/model/follow_browser_agent.h"
+#import "ios/chrome/browser/follow/model/followed_web_site.h"
+#import "ios/chrome/browser/infobars/model/infobar_ios.h"
+#import "ios/chrome/browser/infobars/model/infobar_manager_impl.h"
 #import "ios/chrome/browser/intents/intents_donation_helper.h"
-#import "ios/chrome/browser/metrics/tab_usage_recorder_browser_agent.h"
-#import "ios/chrome/browser/ntp/new_tab_page_state.h"
-#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
+#import "ios/chrome/browser/metrics/model/tab_usage_recorder_browser_agent.h"
+#import "ios/chrome/browser/ntp/model/new_tab_page_state.h"
+#import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/overscroll_actions/model/overscroll_actions_tab_helper.h"
 #import "ios/chrome/browser/parcel_tracking/parcel_tracking_infobar_delegate.h"
 #import "ios/chrome/browser/parcel_tracking/parcel_tracking_step.h"
 #import "ios/chrome/browser/parcel_tracking/parcel_tracking_util.h"
 #import "ios/chrome/browser/parcel_tracking/tracking_source.h"
 #import "ios/chrome/browser/passwords/model/password_controller_delegate.h"
+#import "ios/chrome/browser/plus_addresses/coordinator/plus_address_bottom_sheet_coordinator.h"
 #import "ios/chrome/browser/prerender/model/preload_controller_delegate.h"
 #import "ios/chrome/browser/prerender/model/prerender_service.h"
 #import "ios/chrome/browser/prerender/model/prerender_service_factory.h"
 #import "ios/chrome/browser/promos_manager/features.h"
 #import "ios/chrome/browser/reading_list/model/reading_list_browser_agent.h"
-#import "ios/chrome/browser/segmentation_platform/segmentation_platform_service_factory.h"
+#import "ios/chrome/browser/segmentation_platform/model/segmentation_platform_service_factory.h"
 #import "ios/chrome/browser/shared/coordinator/alert/repost_form_coordinator.h"
 #import "ios/chrome/browser/shared/coordinator/alert/repost_form_coordinator_delegate.h"
 #import "ios/chrome/browser/shared/coordinator/default_browser_promo/non_modal_default_browser_promo_scheduler_scene_agent.h"
@@ -152,6 +154,7 @@
 #import "ios/chrome/browser/ui/download/vcard_coordinator.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_controller_ios.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_coordinator.h"
+#import "ios/chrome/browser/ui/first_run/omnibox_position/omnibox_position_choice_coordinator.h"
 #import "ios/chrome/browser/ui/follow/first_follow_coordinator.h"
 #import "ios/chrome/browser/ui/follow/follow_iph_coordinator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
@@ -197,7 +200,7 @@
 #import "ios/chrome/browser/ui/sharing/sharing_positioner.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_mediator.h"
 #import "ios/chrome/browser/ui/spotlight_debugger/spotlight_debugger_coordinator.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_strip/tab_strip_coordinator.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_strip/coordinator/tab_strip_coordinator.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/text_fragments/text_fragments_coordinator.h"
 #import "ios/chrome/browser/ui/text_zoom/text_zoom_coordinator.h"
@@ -340,6 +343,9 @@ enum class ToolbarKind {
 // Coordinator in charge of the presenting autofill options in a bottom sheet.
 @property(nonatomic, strong) PaymentsSuggestionBottomSheetCoordinator*
     paymentsSuggestionBottomSheetCoordinator;
+
+@property(nonatomic, strong)
+    PlusAddressBottomSheetCoordinator* plusAddressBottomSheetCoordinator;
 
 // Coordinator for the choice screen.
 @property(nonatomic, strong) ChromeCoordinator* choiceCoordinator;
@@ -522,6 +528,7 @@ enum class ToolbarKind {
   WebNavigationBrowserAgent* _webNavigationBrowserAgent;
   UrlLoadingBrowserAgent* _urlLoadingBrowserAgent;
   AddContactsCoordinator* _addContactsCoordinator;
+  OmniboxPositionChoiceCoordinator* _omniboxPositionChoiceCoordinator;
 }
 
 #pragma mark - ChromeCoordinator
@@ -670,6 +677,9 @@ enum class ToolbarKind {
   [self.paymentsSuggestionBottomSheetCoordinator stop];
   self.paymentsSuggestionBottomSheetCoordinator = nil;
 
+  [self.plusAddressBottomSheetCoordinator stop];
+  self.plusAddressBottomSheetCoordinator = nil;
+
   [_sendTabToSelfCoordinator stop];
   _sendTabToSelfCoordinator = nil;
 
@@ -730,6 +740,13 @@ enum class ToolbarKind {
   [self.storeKitCoordinator stop];
   self.storeKitCoordinator.delegate = nil;
   self.storeKitCoordinator = nil;
+}
+
+// Stops the coordinator for password manager settings.
+- (void)stopPasswordSettingsCoordinator {
+  [self.passwordSettingsCoordinator stop];
+  self.passwordSettingsCoordinator.delegate = nil;
+  self.passwordSettingsCoordinator = nil;
 }
 
 - (void)setWebUsageEnabled:(BOOL)webUsageEnabled {
@@ -1034,6 +1051,7 @@ enum class ToolbarKind {
   _viewController.omniboxCommandsHandler = _omniboxCommandsHandler;
 
   _legacyTabStripCoordinator.baseViewController = self.viewController;
+  _tabStripCoordinator.baseViewController = self.viewController;
   _NTPCoordinator.baseViewController = self.viewController;
 
   _bubblePresenter.toolbarCommandsHandler =
@@ -1294,6 +1312,9 @@ enum class ToolbarKind {
   [self.paymentsSuggestionBottomSheetCoordinator stop];
   self.paymentsSuggestionBottomSheetCoordinator = nil;
 
+  [self.plusAddressBottomSheetCoordinator stop];
+  self.plusAddressBottomSheetCoordinator = nil;
+
   [self.printCoordinator stop];
   self.printCoordinator = nil;
 
@@ -1477,6 +1498,10 @@ enum class ToolbarKind {
 }
 
 - (void)sharePage {
+  // Defocus Find-In-Page before opening the share sheet. This will result in
+  // closing the Find-In-Page for some OS versions.
+  [self defocusFindInPage];
+
   if (!self.sharingCoordinator) {
     [self stopAndStartSharingCoordinator];
   } else {
@@ -1537,6 +1562,14 @@ enum class ToolbarKind {
                             delegate:self];
   self.passwordSuggestionBottomSheetCoordinator.delegate = self;
   [self.passwordSuggestionBottomSheetCoordinator start];
+}
+
+- (void)showPlusAddressesBottomSheet {
+  self.plusAddressBottomSheetCoordinator =
+      [[PlusAddressBottomSheetCoordinator alloc]
+          initWithBaseViewController:self.viewController
+                             browser:self.browser];
+  [self.plusAddressBottomSheetCoordinator start];
 }
 
 - (void)showPaymentsBottomSheet:(const autofill::FormActivityParams&)params {
@@ -1676,8 +1709,7 @@ enum class ToolbarKind {
 }
 
 - (void)showSendTabToSelfUI:(const GURL&)url title:(NSString*)title {
-  // TODO(crbug.com/1488763): Convert to CHECK.
-  DUMP_WILL_BE_CHECK(!_sendTabToSelfCoordinator);
+  CHECK(!_sendTabToSelfCoordinator);
 
   _sendTabToSelfCoordinator = [[SendTabToSelfCoordinator alloc]
       initWithBaseViewController:self.viewController
@@ -1775,22 +1807,39 @@ enum class ToolbarKind {
   self.paymentsSuggestionBottomSheetCoordinator = nil;
 }
 
-- (void)showChoice {
-  if (!ios::provider::IsChoiceEnabled()) {
-    return;
-  }
-
-  if (!self.choiceCoordinator) {
-    self.choiceCoordinator =
-        ios::provider::CreateChoiceCoordinatorWithViewController(
-            self.viewController, self.browser);
-  }
-  [self.choiceCoordinator start];
+- (void)dismissPlusAddressBottomSheet {
+  [self.plusAddressBottomSheetCoordinator stop];
+  self.plusAddressBottomSheetCoordinator = nil;
 }
 
-- (void)dismissChoice {
-  [self.choiceCoordinator stop];
-  self.choiceCoordinator = nil;
+- (void)showPlusAddressManagementPage {
+  GURL managementUrl(plus_addresses::kPlusAddressManagementUrl.Get());
+  UrlLoadParams params = UrlLoadParams::InNewTab(managementUrl);
+  params.append_to = OpenPosition::kCurrentTab;
+  params.user_initiated = NO;
+  params.in_incognito = self.browser->GetBrowserState()->IsOffTheRecord();
+  _urlLoadingBrowserAgent->Load(params);
+}
+
+- (void)showOmniboxPositionChoice {
+  CHECK(IsBottomOmniboxPromoFlagEnabled(BottomOmniboxPromoType::kAppLaunch));
+
+  if (!_omniboxPositionChoiceCoordinator) {
+    _omniboxPositionChoiceCoordinator =
+        [[OmniboxPositionChoiceCoordinator alloc]
+            initWithBaseViewController:self.viewController
+                               browser:self.browser];
+    _omniboxPositionChoiceCoordinator.promosUIHandler =
+        self.promosManagerCoordinator;
+  } else {
+    [_omniboxPositionChoiceCoordinator stop];
+  }
+  [_omniboxPositionChoiceCoordinator start];
+}
+
+- (void)dismissOmniboxPositionChoice {
+  [_omniboxPositionChoiceCoordinator stop];
+  _omniboxPositionChoiceCoordinator = nil;
 }
 
 #pragma mark - DefaultBrowserPromoCommands
@@ -2018,10 +2067,6 @@ enum class ToolbarKind {
   self.whatsNewCoordinator.shouldShowBubblePromoOnDismiss = YES;
 }
 
-- (void)showChoicePromo {
-  [self showChoice];
-}
-
 - (void)maybeDisplayDefaultBrowserPromo {
   if (self.defaultBrowserPromoManager) {
     // The default browser promo manager is already being displayed. Early
@@ -2046,6 +2091,11 @@ enum class ToolbarKind {
       self.promosManagerCoordinator;
   self.defaultBrowserPromoManager.promoWasFromRemindMeLater = YES;
   [self.defaultBrowserPromoManager start];
+}
+
+- (void)showOmniboxPositionChoicePromo {
+  CHECK(IsBottomOmniboxPromoFlagEnabled(BottomOmniboxPromoType::kAppLaunch));
+  [self showOmniboxPositionChoice];
 }
 
 #pragma mark - PageInfoCommands
@@ -2718,7 +2768,10 @@ enum class ToolbarKind {
     (syncer::TrustedVaultUserActionTriggerForUMA)trigger {
   [HandlerForProtocol(self.dispatcher, ApplicationCommands)
       showTrustedVaultReauthForFetchKeysFromViewController:self.viewController
-                                                   trigger:trigger];
+                                                   trigger:trigger
+                                               accessPoint:
+                                                   signin_metrics::AccessPoint::
+                                                       ACCESS_POINT_SETTINGS];
 }
 
 - (void)showTrustedVaultReauthForDegradedRecoverabilityWithTrigger:
@@ -2726,8 +2779,11 @@ enum class ToolbarKind {
   [HandlerForProtocol(self.dispatcher, ApplicationCommands)
       showTrustedVaultReauthForDegradedRecoverabilityFromViewController:
           self.viewController
-                                                                trigger:
-                                                                    trigger];
+                                                                trigger:trigger
+                                                            accessPoint:
+                                                                signin_metrics::
+                                                                    AccessPoint::
+                                                                        ACCESS_POINT_SETTINGS];
 }
 
 #pragma mark - SigninPresenter
@@ -2739,7 +2795,7 @@ enum class ToolbarKind {
 }
 
 #pragma mark - SnapshotGeneratorDelegate methods
-// TODO(crbug.com/1272491): Refactor snapshot generation into (probably) a
+// TODO(crbug.com/1272491): Refactor SnapshotGenerator into (probably) a
 // mediator with a narrowly-defined API to get UI-layer information from the
 // BVC.
 
@@ -2944,9 +3000,14 @@ enum class ToolbarKind {
 - (void)passwordSettingsCoordinatorDidRemove:
     (PasswordSettingsCoordinator*)coordinator {
   DCHECK_EQ(self.passwordSettingsCoordinator, coordinator);
-  [self.passwordSettingsCoordinator stop];
-  self.passwordSettingsCoordinator.delegate = nil;
-  self.passwordSettingsCoordinator = nil;
+
+  [self stopPasswordSettingsCoordinator];
+}
+
+#pragma mark - PasswordManagerReauthenticationDelegate
+
+- (void)dismissPasswordManagerAfterFailedReauthentication {
+  [self stopPasswordSettingsCoordinator];
 }
 
 #pragma mark - ReadingListCoordinatorDelegate
@@ -2995,6 +3056,14 @@ enum class ToolbarKind {
   // occurring will cut the animation short.
   web::WebState* activeWebState = self.activeWebState;
   DCHECK(activeWebState);
+  ChromeBrowserState* browserState = self.browser->GetBrowserState();
+  feature_engagement::Tracker* engagementTracker =
+      feature_engagement::TrackerFactory::GetForBrowserState(browserState);
+  if (engagementTracker) {
+    engagementTracker->NotifyEvent(
+        feature_engagement::events::kIOSPullToRefreshUsed);
+  }
+
   SnapshotTabHelper::FromWebState(activeWebState)->IgnoreNextLoad();
   _webNavigationBrowserAgent->Reload();
 }

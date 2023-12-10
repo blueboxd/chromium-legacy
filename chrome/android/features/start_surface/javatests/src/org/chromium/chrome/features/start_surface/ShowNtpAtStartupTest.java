@@ -33,6 +33,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.MathUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
@@ -72,9 +73,7 @@ import java.util.concurrent.TimeoutException;
 
 /** Integration tests of showing a NTP with Start surface UI at startup. */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@Restriction({
-    Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE
-})
+@Restriction({Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE})
 @EnableFeatures({
     ChromeFeatureList.START_SURFACE_ON_TABLET,
     ChromeFeatureList.SHOW_NTP_AT_STARTUP_ANDROID,
@@ -152,7 +151,7 @@ public class ShowNtpAtStartupTest {
     public void testShowNtpAtStartupWithNtpExist() throws IOException {
         // The existing NTP isn't the last active Tab.
         String modifiedNtpUrl = UrlConstants.NTP_URL + "/1";
-        Assert.assertTrue(UrlUtilities.isNTPUrl(modifiedNtpUrl));
+        Assert.assertTrue(UrlUtilities.isNtpUrl(modifiedNtpUrl));
 
         HistogramWatcher histogram =
                 HistogramWatcher.newBuilder()
@@ -180,7 +179,7 @@ public class ShowNtpAtStartupTest {
     public void testShowNtpAtStartupWithActiveNtpExist() throws IOException {
         // The existing NTP is set as the last active Tab.
         String modifiedNtpUrl = UrlConstants.NTP_URL + "/1";
-        Assert.assertTrue(UrlUtilities.isNTPUrl(modifiedNtpUrl));
+        Assert.assertTrue(UrlUtilities.isNtpUrl(modifiedNtpUrl));
         HistogramWatcher histogram =
                 HistogramWatcher.newBuilder()
                         .expectBooleanRecord(HOME_SURFACE_SHOWN_AT_STARTUP_UMA, true)
@@ -815,6 +814,23 @@ public class ShowNtpAtStartupTest {
         View mvTileItem2 = ((ViewGroup) mvTilesLayout).getChildAt(1);
         int mvTilesItemWidth = mvTileItem1.getWidth();
 
+        // Orientation changes are not supported on automotive.
+        if (BuildInfo.getInstance().isAutomotive) {
+            // Verifies the margins added for the most visited tiles are correct.
+            verifyMostVisitedTileMarginImpl(
+                    ntpLayout,
+                    mvTilesContainer,
+                    mvTilesLayout,
+                    mvTileItem1,
+                    mvTileItem2,
+                    expectedContainerTwoSideMarginLandScape,
+                    expectedContainerRightExtraMargin,
+                    expectedEdgeMarginLandScape,
+                    mvTilesItemWidth,
+                    isScrollable);
+            return;
+        }
+
         // Start off in landscape screen orientation.
         mActivityTestRule
                 .getActivity()
@@ -1058,6 +1074,13 @@ public class ShowNtpAtStartupTest {
         NewTabPageLayout ntpLayout = ntp.getNewTabPageLayout();
         View searchBoxLayout = ntpLayout.findViewById(R.id.search_box);
 
+        // Orientation changes are not supported on automotive.
+        if (BuildInfo.getInstance().isAutomotive) {
+            verifyFakeSearchBoxWidthForCurrentOrientation(
+                    expectedLandScapeWidth, expectedPortraitWidth, ntpLayout, searchBoxLayout);
+            return;
+        }
+
         // Start off in landscape screen orientation.
         mActivityTestRule
                 .getActivity()
@@ -1077,6 +1100,29 @@ public class ShowNtpAtStartupTest {
                 expectedPortraitWidth, ntpLayout.getWidth() - searchBoxLayout.getWidth());
     }
 
+    private void verifyFakeSearchBoxWidthForCurrentOrientation(
+            int expectedLandScapeWidth,
+            int expectedPortraitWidth,
+            NewTabPageLayout ntpLayout,
+            View searchBoxLayout) {
+        int expectedWidth;
+        try {
+            String orientation = screenOrientation();
+            if ("\"landscape\"".equals(orientation)) {
+                expectedWidth = expectedLandScapeWidth;
+            } else if ("\"portrait\"".equals(orientation)) {
+                expectedWidth = expectedPortraitWidth;
+            } else {
+                throw new IllegalStateException(
+                        "The device should either be in portrait or landscape mode.");
+            }
+        } catch (TimeoutException ex) {
+            throw new CriteriaNotSatisfiedException(ex);
+        }
+
+        Assert.assertEquals(expectedWidth, ntpLayout.getWidth() - searchBoxLayout.getWidth());
+    }
+
     private void verifyMostVisitedTileMarginForSurfacePolish(
             int expectedContainerWidth,
             int expectedEdgeMargin,
@@ -1092,22 +1138,56 @@ public class ShowNtpAtStartupTest {
                 ((MarginLayoutParams) ((ViewGroup) mvTilesLayout).getChildAt(1).getLayoutParams())
                         .leftMargin;
 
+        // Orientation changes are not supported on automotive.
+        if (BuildInfo.getInstance().isAutomotive) {
+            verifyTileMargin(
+                    expectedContainerWidth,
+                    expectedEdgeMargin,
+                    expectedIntervalMargin,
+                    ntpLayout,
+                    mvtContainer,
+                    mvt1LeftMargin,
+                    mvt2LeftMargin);
+            return;
+        }
+
         // Start off in landscape screen orientation.
         mActivityTestRule
                 .getActivity()
                 .setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         waitForScreenOrientation("\"landscape\"");
-        // Verifies there is no additional margins added for the mv tiles container.
-        Assert.assertEquals(expectedContainerWidth, ntpLayout.getWidth() - mvtContainer.getWidth());
-        // Verifies the inner margins of the mv tiles module.
-        assertTrue(mvt1LeftMargin >= expectedEdgeMargin);
-        Assert.assertEquals(expectedIntervalMargin, mvt2LeftMargin);
+        verifyTileMargin(
+                expectedContainerWidth,
+                expectedEdgeMargin,
+                expectedIntervalMargin,
+                ntpLayout,
+                mvtContainer,
+                mvt1LeftMargin,
+                mvt2LeftMargin);
 
         // Start off in portrait screen orientation.
         mActivityTestRule
                 .getActivity()
                 .setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         waitForScreenOrientation("\"portrait\"");
+        verifyTileMargin(
+                expectedContainerWidth,
+                expectedEdgeMargin,
+                expectedIntervalMargin,
+                ntpLayout,
+                mvtContainer,
+                mvt1LeftMargin,
+                mvt2LeftMargin);
+    }
+
+    private void verifyTileMargin(
+            int expectedContainerWidth,
+            int expectedEdgeMargin,
+            int expectedIntervalMargin,
+            NewTabPageLayout ntpLayout,
+            View mvtContainer,
+            int mvt1LeftMargin,
+            int mvt2LeftMargin) {
         // Verifies there is no additional margins added for the mv tiles container.
         Assert.assertEquals(expectedContainerWidth, ntpLayout.getWidth() - mvtContainer.getWidth());
         // Verifies the inner margins of the mv tiles module.

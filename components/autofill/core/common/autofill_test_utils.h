@@ -213,10 +213,25 @@ inline constexpr char kIbanValue_2[] = "CH93 0076 2011 6238 5295 7";
 [[nodiscard]] FormData CreateTestIbanFormData(
     std::string_view value = kIbanValue);
 
+// Creates a `form_data` with a single unclassified field.
+[[nodiscard]] FormData CreateTestUnclassifiedFormData();
+
 MATCHER_P(DeepEqualsFormData,
           form_data,
           negation ? "does not equal" : "equals") {
   return FormData::DeepEqual(arg, form_data);
+}
+
+MATCHER_P(SameFieldsAs, fields, negation ? "does not equal" : "equals") {
+  if (fields.size() != arg.fields.size()) {
+    return false;
+  }
+  for (size_t i = 0; i < arg.fields.size(); ++i) {
+    if (!arg.fields[i].SameFieldAs(fields[i])) {
+      return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace test

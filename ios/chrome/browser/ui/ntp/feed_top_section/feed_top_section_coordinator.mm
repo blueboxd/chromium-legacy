@@ -84,14 +84,13 @@
                           syncService:syncService
                           accessPoint:signin_metrics::AccessPoint::
                                           ACCESS_POINT_NTP_FEED_TOP_PROMO
-                            presenter:self];
+                      signinPresenter:self
+             accountSettingsPresenter:nil];
 
     if (base::FeatureList::IsEnabled(
             syncer::kReplaceSyncPromosWithSignInPromos)) {
       self.signinPromoMediator.signinPromoAction =
-          accountManagerService->HasIdentities()
-              ? SigninPromoAction::kSigninSheet
-              : SigninPromoAction::kInstantSignin;
+          SigninPromoAction::kSigninWithNoDefaultIdentity;
     }
     self.signinPromoMediator.consumer = self.feedTopSectionMediator;
     self.feedTopSectionMediator.signinPromoMediator = self.signinPromoMediator;

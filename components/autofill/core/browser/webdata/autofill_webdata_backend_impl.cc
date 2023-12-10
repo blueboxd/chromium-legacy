@@ -174,8 +174,7 @@ std::unique_ptr<WDTypedResult>
 AutofillWebDataBackendImpl::RemoveExpiredAutocompleteEntries(WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
   AutocompleteChangeList changes;
-
-  if (AutofillTable::FromWebDatabase(db)->RemoveExpiredFormElements(&changes)) {
+  if (AutofillTable::FromWebDatabase(db)->RemoveExpiredFormElements(changes)) {
     if (!changes.empty()) {
       // Post the notifications including the list of affected keys.
       // This is sent here so that work resulting from this notification
@@ -267,7 +266,7 @@ AutofillWebDataBackendImpl::GetFormValuesForElementName(
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
   std::vector<AutocompleteEntry> entries;
   AutofillTable::FromWebDatabase(db)->GetFormValuesForElementName(
-      name, prefix, &entries, limit);
+      name, prefix, limit, entries);
   return std::make_unique<WDResult<std::vector<AutocompleteEntry>>>(
       AUTOFILL_VALUE_RESULT, entries);
 }
@@ -278,9 +277,8 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveFormElementsAddedBetween(
     WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
   AutocompleteChangeList changes;
-
   if (AutofillTable::FromWebDatabase(db)->RemoveFormElementsAddedBetween(
-          delete_begin, delete_end, &changes)) {
+          delete_begin, delete_end, changes)) {
     if (!changes.empty()) {
       // Post the notifications including the list of affected keys.
       // This is sent here so that work resulting from this notification
@@ -713,8 +711,8 @@ WebDatabase::State AutofillWebDataBackendImpl::AddServerCvc(
   const ServerCvc server_cvc{instrument_id, cvc,
                              /*last_updated_timestamp=*/AutofillClock::Now()};
   if (AutofillTable::FromWebDatabase(db)->AddServerCvc(server_cvc)) {
-    const ServerCvcChange change{
-        ServerCvcChange::ADD, base::NumberToString(instrument_id), server_cvc};
+    const ServerCvcChange change{ServerCvcChange::ADD, instrument_id,
+                                 server_cvc};
     for (auto& db_observer : db_observer_list_) {
       // TODO(crbug/1477924): Add integration tests for Add, Remove and Update
       // for Wallet Credential data.
@@ -735,8 +733,7 @@ WebDatabase::State AutofillWebDataBackendImpl::UpdateServerCvc(
   const ServerCvc server_cvc{instrument_id, cvc,
                              /*last_updated_timestamp=*/AutofillClock::Now()};
   if (AutofillTable::FromWebDatabase(db)->UpdateServerCvc(server_cvc)) {
-    const ServerCvcChange change{ServerCvcChange::UPDATE,
-                                 base::NumberToString(instrument_id),
+    const ServerCvcChange change{ServerCvcChange::UPDATE, instrument_id,
                                  server_cvc};
     for (auto& db_observer : db_observer_list_) {
       db_observer.ServerCvcChanged(change);
@@ -755,8 +752,7 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveServerCvc(
   if (AutofillTable::FromWebDatabase(db)->RemoveServerCvc(instrument_id)) {
     // Remove doesn't require `ServerCvc` struct data, so an empty data is
     // passed to the ServerCvcChange
-    const ServerCvcChange change{ServerCvcChange::REMOVE,
-                                 base::NumberToString(instrument_id),
+    const ServerCvcChange change{ServerCvcChange::REMOVE, instrument_id,
                                  ServerCvc{}};
     for (auto& db_observer : db_observer_list_) {
       db_observer.ServerCvcChanged(change);
@@ -778,10 +774,9 @@ WebDatabase::State AutofillWebDataBackendImpl::ClearServerCvcs(
          server_cvc_list) {
       // Remove doesn't require `ServerCvc` struct data, so an empty data is
       // passed to the ServerCvcChange
-      const ServerCvcChange change{
-          ServerCvcChange::REMOVE,
-          base::NumberToString(server_cvc_from_list->instrument_id),
-          ServerCvc{}};
+      const ServerCvcChange change{ServerCvcChange::REMOVE,
+                                   server_cvc_from_list->instrument_id,
+                                   ServerCvc{}};
       for (auto& db_observer : db_observer_list_) {
         db_observer.ServerCvcChanged(change);
       }

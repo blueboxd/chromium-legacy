@@ -7,6 +7,7 @@
 #define UI_ACCESSIBILITY_ACCESSIBILITY_FEATURES_H_
 
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "ui/accessibility/ax_base_export.h"
@@ -50,6 +51,11 @@ AX_BASE_EXPORT bool IsAblateSendPendingAccessibilityEventsEnabled();
 // briefly whenever focus changes.
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilityFocusHighlight);
 AX_BASE_EXPORT bool IsAccessibilityFocusHighlightEnabled();
+
+// Enable PDF OCR for Select-to-Speak. It will be disabled by default on
+// platforms other than ChromeOS as STS is available only on ChromeOS.
+AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilityPdfOcrForSelectToSpeak);
+AX_BASE_EXPORT bool IsAccessibilityPdfOcrForSelectToSpeakEnabled();
 
 // Augment existing images labels in addition to unlabeled images.
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAugmentExistingImageLabels);
@@ -168,6 +174,11 @@ IsExperimentalAccessibilityGoogleTtsHighQualityVoicesEnabled();
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(
     kExperimentalAccessibilityGoogleTtsLanguagePacks);
 AX_BASE_EXPORT bool IsExperimentalAccessibilityGoogleTtsLanguagePacksEnabled();
+
+// Whether the extra-large cursor size feature is enabled.
+AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilityExtraLargeCursor);
+AX_BASE_EXPORT bool IsAccessibilityExtraLargeCursorEnabled();
+
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_ANDROID)
@@ -179,6 +190,13 @@ AX_BASE_EXPORT bool IsAccessibilityPerformanceFilteringEnabled();
 // AXTreeSnapshotter's Snapshot method, and track related histograms.
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilitySnapshotStressTests);
 AX_BASE_EXPORT bool IsAccessibilitySnapshotStressTestsEnabled();
+// Controls the maximum amount of nodes in a given snapshot. We set an
+// arbitrarily high value as the default to simulate there being no max nodes
+// limit.
+AX_BASE_EXPORT const base::FeatureParam<int>
+    kAccessibilitySnapshotStressTestsMaxNodes{
+        &kAccessibilitySnapshotStressTests,
+        "AccessibilitySnapshotStressTestsMaxNodes", 100000};
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -216,6 +234,11 @@ AX_BASE_EXPORT bool IsPdfOcrEnabled();
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(kReadAnything);
 AX_BASE_EXPORT bool IsReadAnythingEnabled();
 
+// Make the Read Anything Side Panel local (don't persist when opening a new
+// tab)
+AX_BASE_EXPORT BASE_DECLARE_FEATURE(kReadAnythingLocalSidePanel);
+AX_BASE_EXPORT bool IsReadAnythingLocalSidePanelEnabled();
+
 // Show a reading mode icon in the omnibox.
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(kReadAnythingOmniboxIcon);
 AX_BASE_EXPORT bool IsReadAnythingOmniboxIconEnabled();
@@ -232,6 +255,11 @@ AX_BASE_EXPORT bool IsReadAnythingWebUIToolbarEnabled();
 // using an ML model.
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(kReadAnythingWithScreen2x);
 AX_BASE_EXPORT bool IsReadAnythingWithScreen2xEnabled();
+
+// Enable rules based algorithm for distilling content. Should be enabled by
+// default.
+AX_BASE_EXPORT BASE_DECLARE_FEATURE(kReadAnythingWithAlgorithm);
+AX_BASE_EXPORT bool IsReadAnythingWithAlgorithmEnabled();
 
 // Write some ScreenAI library debug data in /tmp.
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(kScreenAIDebugMode);

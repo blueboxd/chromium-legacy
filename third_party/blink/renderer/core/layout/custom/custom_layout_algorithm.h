@@ -6,27 +6,25 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_CUSTOM_LAYOUT_ALGORITHM_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_layout_algorithm.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/box_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/layout_algorithm.h"
 
 namespace blink {
 
-class NGBlockBreakToken;
+class BlockBreakToken;
 
 class CORE_EXPORT CustomLayoutAlgorithm
-    : public LayoutAlgorithm<NGBlockNode,
-                             NGBoxFragmentBuilder,
-                             NGBlockBreakToken> {
+    : public LayoutAlgorithm<BlockNode, BoxFragmentBuilder, BlockBreakToken> {
  public:
   explicit CustomLayoutAlgorithm(const LayoutAlgorithmParams& params);
 
   MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesFloatInput&) override;
-  const NGLayoutResult* Layout() override;
+  const LayoutResult* Layout() override;
 
  private:
-  void AddAnyOutOfFlowPositionedChildren(NGLayoutInputNode* child);
+  void AddAnyOutOfFlowPositionedChildren(LayoutInputNode* child);
   MinMaxSizesResult FallbackMinMaxSizes(const MinMaxSizesFloatInput&) const;
-  const NGLayoutResult* FallbackLayout();
+  const LayoutResult* FallbackLayout();
 
   const LayoutAlgorithmParams& params_;
 };

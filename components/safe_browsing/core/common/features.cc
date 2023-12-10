@@ -49,9 +49,13 @@ BASE_FEATURE(kClientSideDetectionTypeForceRequest,
              "ClientSideDetectionTypeForceRequest",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kCreateWarningShownClientSafeBrowsingReports,
+             "CreateWarningShownClientSafeBrowsingReports",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kDeepScanningEncryptedArchives,
              "SafeBrowsingDeepScanningEncryptedArchives",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDelayedWarnings,
              "SafeBrowsingDelayedWarnings",
@@ -63,14 +67,6 @@ BASE_FEATURE(kDelayedWarnings,
 const base::FeatureParam<bool> kDelayedWarningsEnableMouseClicks{
     &kDelayedWarnings, "mouse",
     /*default_value=*/false};
-
-BASE_FEATURE(kDownloadBubble,
-             "DownloadBubble",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kDownloadBubbleV2,
-             "DownloadBubbleV2",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDownloadTailoredWarnings,
              "DownloadTailoredWarnings",
@@ -212,7 +208,7 @@ constexpr base::FeatureParam<std::string> kRedWarningSurveyDidProceedFilter{
 
 BASE_FEATURE(kRedInterstitialFacelift,
              "RedInterstitialFacelift",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kReferrerChainParameters,
              "SafeBrowsingReferrerChainParameters",
@@ -229,6 +225,10 @@ BASE_FEATURE(kSafeBrowsingCsbrrNewDownloadTrigger,
              "SafeBrowsingCsbrrNewDownloadTrigger",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kSafeBrowsingAsyncRealTimeCheck,
+             "SafeBrowsingAsyncRealTimeCheck",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kSafeBrowsingLookupMechanismExperiment,
              "SafeBrowsingLookupMechanismExperiment",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -241,6 +241,10 @@ const base::FeatureParam<bool> kUrlLevelValidationForHprtExperimentEnabled{
 #if BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kSafeBrowsingNewGmsApiForBrowseUrlDatabaseCheck,
              "SafeBrowsingNewGmsApiForBrowseUrlDatabaseCheck",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSafeBrowsingNewGmsApiForSubresourceFilterCheck,
+             "SafeBrowsingNewGmsApiForSubresourceFilterCheck",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
@@ -361,9 +365,8 @@ constexpr struct {
     {&kClientSideDetectionKillswitch, true},
     {&kClientSideDetectionModelIsFlatBuffer, true},
     {&kClientSideDetectionTypeForceRequest, true},
+    {&kCreateWarningShownClientSafeBrowsingReports, false},
     {&kDelayedWarnings, true},
-    {&kDownloadBubble, true},
-    {&kDownloadBubbleV2, true},
     {&kDownloadTailoredWarnings, true},
     {&kEvaluateProtectedPasswordLengthMinimum, false},
     {&kExtensionTelemetryDisableOffstoreExtensions, true},
@@ -383,6 +386,7 @@ constexpr struct {
     {&kNestedArchives, true},
     {&kRedInterstitialFacelift, false},
     {&kSafeBrowsingCsbrrNewDownloadTrigger, true},
+    {&kSafeBrowsingAsyncRealTimeCheck, true},
     {&kSafeBrowsingLookupMechanismExperiment, true},
     {&kSafeBrowsingRemoveCookiesInAuthRequests, true},
     {&kSafeBrowsingSkipImageCssFont, true},

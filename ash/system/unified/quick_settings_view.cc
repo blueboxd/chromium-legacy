@@ -55,7 +55,6 @@ class AccessibilityFocusHelperView : public views::View {
   bool HandleAccessibleAction(const ui::AXActionData& action_data) override {
     GetFocusManager()->ClearFocus();
     GetFocusManager()->SetStoredFocusView(nullptr);
-    controller_->FocusOut(false);
     return true;
   }
 
@@ -117,7 +116,7 @@ QuickSettingsView::QuickSettingsView(UnifiedSystemTrayController* controller)
 
   auto* scroll_view = AddChildView(std::make_unique<views::ScrollView>());
   scroll_view->SetAllowKeyboardScrolling(false);
-  scroll_view->SetBackgroundColor(absl::nullopt);
+  scroll_view->SetBackgroundColor(std::nullopt);
   scroll_view->ClipHeightTo(0, INT_MAX);
   scroll_view->SetDrawOverflowIndicator(false);
   scroll_view->SetVerticalScrollBarMode(

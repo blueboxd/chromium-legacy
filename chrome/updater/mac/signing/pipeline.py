@@ -108,11 +108,9 @@ def _package_and_sign_pkg(paths, config):
         '--install-location',
         '/tmp',
         '--scripts',
-        os.path.join(paths.input, config.packaging_dir, 'signing'),
+        os.path.join(paths.input, config.packaging_dir, 'signing', 'pkg'),
         '--sign',
         config.installer_identity,
-        '--keychain',
-        os.environ["INSTALLER_KEYCHAIN"],
         '--timestamp',
         pkg_path,
     ])

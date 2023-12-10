@@ -141,11 +141,8 @@ void TensorDesc::BroadcastTo(base::span<const uint32_t> broadcasted_dims,
   auto original_rank = dimensions_.size(),
        broadcasted_rank = broadcasted_dims.size();
   CHECK_LE(original_rank, broadcasted_rank);
-  auto padding_count = broadcasted_rank - original_rank;
-  if (padding_count > 0) {
-    dimensions_.insert(dimensions_.begin(), padding_count, 1u);
-    strides_.insert(strides_.begin(), padding_count, 0u);
-  }
+
+  EnsureMinimumRank(broadcasted_rank, Alignment::kTrailing);
 
   CHECK_LE(ignorable_tails_count, original_rank);
   for (size_t i = 0; i < broadcasted_rank - ignorable_tails_count; ++i) {
@@ -155,10 +152,53 @@ void TensorDesc::BroadcastTo(base::span<const uint32_t> broadcasted_dims,
       strides_[i] = 0;
     }
   }
+}
 
+void TensorDesc::EnsureMinimumRank(size_t minimum_rank, Alignment alignment) {
+  if (dimensions_.size() >= minimum_rank) {
+    return;
+  }
+
+  size_t insertion_count = minimum_rank - dimensions_.size();
+  switch (alignment) {
+    case Alignment::kLeading: {
+      dimensions_.insert(dimensions_.end(), insertion_count, 1u);
+      strides_.insert(strides_.end(), insertion_count, 0u);
+      break;
+    }
+    case Alignment::kTrailing: {
+      dimensions_.insert(dimensions_.begin(), insertion_count, 1u);
+      strides_.insert(strides_.begin(), insertion_count, 0u);
+      break;
+    }
+  }
+
+  // Note the TotalTensorSizeInBytes is not changed by inserting ones in
+  // dimensions.
   buffer_desc_.DimensionCount = dimensions_.size();
   buffer_desc_.Sizes = dimensions_.data();
   buffer_desc_.Strides = strides_.data();
 }
 
+void TensorDesc::MakeBroadcastCompatible(size_t minimum_rank,
+                                         base::span<const uint32_t> axes) {
+  if (dimensions_.size() >= minimum_rank) {
+    return;
+  }
+
+  CHECK_LE(axes.size(), dimensions_.size());
+  std::vector<uint32_t> new_dimensions(minimum_rank, 1);
+  std::vector<uint32_t> new_strides(minimum_rank, 0);
+  for (size_t i = 0; i < axes.size(); i++) {
+    CHECK_LT(axes[i], minimum_rank);
+    new_dimensions[axes[i]] = dimensions_[i];
+    new_strides[axes[i]] = strides_[i];
+  }
+
+  dimensions_ = std::move(new_dimensions);
+  strides_ = std::move(new_strides);
+  buffer_desc_.DimensionCount = dimensions_.size();
+  buffer_desc_.Sizes = dimensions_.data();
+  buffer_desc_.Strides = strides_.data();
+}
 }  // namespace webnn::dml

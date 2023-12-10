@@ -189,7 +189,7 @@ AvatarToolbarButton::State AvatarToolbarButtonDelegate::GetState() const {
   return AvatarToolbarButton::State::kSyncError;
 }
 
-absl::optional<AvatarSyncErrorType>
+std::optional<AvatarSyncErrorType>
 AvatarToolbarButtonDelegate::GetAvatarSyncErrorType() const {
   return last_avatar_error_;
 }
@@ -219,7 +219,8 @@ bool AvatarToolbarButtonDelegate::IsHighlightAnimationVisible() const {
 
 void AvatarToolbarButtonDelegate::MaybeShowIdentityAnimation(
     const gfx::Image& gaia_account_image) {
-  if (gaia_account_image.IsEmpty()) {
+  if (button_text_state_ != ButtonTextState::kWaitingForImage ||
+      gaia_account_image.IsEmpty()) {
     return;
   }
 
@@ -265,21 +266,6 @@ void AvatarToolbarButtonDelegate::OnBrowserAdded(Browser* browser) {
 void AvatarToolbarButtonDelegate::OnBrowserRemoved(Browser* browser) {
   avatar_toolbar_button_->UpdateIcon();
   avatar_toolbar_button_->UpdateText();
-}
-
-void AvatarToolbarButtonDelegate::OnProfileAdded(
-    const base::FilePath& profile_path) {
-  // Adding any profile changes the profile count, we might go from showing a
-  // generic avatar button to profile pictures here. Update icon accordingly.
-  avatar_toolbar_button_->UpdateIcon();
-}
-
-void AvatarToolbarButtonDelegate::OnProfileWasRemoved(
-    const base::FilePath& profile_path,
-    const std::u16string& profile_name) {
-  // Removing a profile changes the profile count, we might go from showing
-  // per-profile icons back to a generic avatar icon. Update icon accordingly.
-  avatar_toolbar_button_->UpdateIcon();
 }
 
 void AvatarToolbarButtonDelegate::OnProfileAvatarChanged(
@@ -353,7 +339,7 @@ void AvatarToolbarButtonDelegate::OnIdentityManagerShutdown(
 }
 
 void AvatarToolbarButtonDelegate::OnStateChanged(syncer::SyncService*) {
-  const absl::optional<AvatarSyncErrorType> error =
+  const std::optional<AvatarSyncErrorType> error =
       ::GetAvatarSyncErrorType(profile_);
   if (last_avatar_error_ == error)
     return;
@@ -369,6 +355,11 @@ void AvatarToolbarButtonDelegate::OnSyncShutdown(syncer::SyncService*) {
 
 void AvatarToolbarButtonDelegate::OnUserIdentityChanged() {
   signin_ui_util::RecordAnimatedIdentityTriggered(profile_);
+  button_text_state_ = ButtonTextState::kWaitingForImage;
+  // If we already have a gaia image, the pill will be immediately displayed by
+  // `UpdateIcon()`. If not, it can still be displayed later, since the button
+  // text state is now set to `ButtonTextState::kWaitingForImage`. This state
+  // will trigger the animation in `MaybeShowIdentityAnimation(...)`.
   avatar_toolbar_button_->UpdateIcon();
 }
 

@@ -28,6 +28,9 @@
 // Delegate for all the user actions.
 @property(nonatomic, weak) id<SearchEngineChoiceActionDelegate> actionDelegate;
 
+// Whether the user has selected a row.
+@property(nonatomic, assign, readwrite) BOOL didUserSelectARow;
+
 - (instancetype)initWithSearchEngineTableViewController:
     (SearchEngineChoiceTableViewController*)tableViewController
     NS_DESIGNATED_INITIALIZER;
@@ -36,9 +39,9 @@
                          bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 
-// The primary button is disabled by default and is only enabled after the user
-// has made a selection.
-- (void)enablePrimaryButton;
+// Update the primary action button based on whether the user has scrolled to
+// the bottom and whether they have selected a row.
+- (void)updatePrimaryActionButton;
 
 @end
 

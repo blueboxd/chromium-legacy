@@ -27,6 +27,7 @@
 #include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
 #include "chromeos/ash/components/tether/pref_names.h"
+#include "components/drive/drive_pref_names.h"  // nogncheck crbug.com/1125897
 #include "components/metrics/demographics/user_demographics.h"
 #include "components/variations/service/google_groups_updater_service.h"
 #include "ui/events/ash/pref_names.h"
@@ -301,6 +302,8 @@ enum {
   kReadAloudHighlightingEnabled = 100244,
   kHttpsFirstModeIncognito = 100245,
   kAccessibilityReadAnythingOmniboxIconLabelShownCount = 100246,
+  kApplicationLocale = 100247,
+  kListenToThisPageEnabled = 100248,
   // See components/sync_preferences/README.md about adding new entries here.
   // vvvvv IMPORTANT! vvvvv
   // Note to the reviewer: IT IS YOUR RESPONSIBILITY to ensure that new syncable
@@ -349,6 +352,10 @@ const auto& SyncablePreferences() {
         sync_preferences::MergeBehavior::kNone}},
       {prefs::kReadAloudHighlightingEnabled,
        {syncable_prefs_ids::kReadAloudHighlightingEnabled, syncer::PREFERENCES,
+        sync_preferences::PrefSensitivity::kNone,
+        sync_preferences::MergeBehavior::kNone}},
+      {prefs::kListenToThisPageEnabled,
+       {syncable_prefs_ids::kListenToThisPageEnabled, syncer::PREFERENCES,
         sync_preferences::PrefSensitivity::kNone,
         sync_preferences::MergeBehavior::kNone}},
 #else
@@ -1046,15 +1053,16 @@ const auto& SyncablePreferences() {
        {syncable_prefs_ids::kUserImageInfo, syncer::OS_PRIORITY_PREFERENCES,
         sync_preferences::PrefSensitivity::kNone,
         sync_preferences::MergeBehavior::kNone}},
-      // CI complains about /components/drive:drive not being part of deps
-      // even though it is. Putting these as literals.
-      // TODO(crbug.com/1401271): Investigate this failure.
-      {"gdata.disabled",
+      {drive::prefs::kDisableDrive,
        {syncable_prefs_ids::kGdataDisabled, syncer::OS_PREFERENCES,
         sync_preferences::PrefSensitivity::kNone,
         sync_preferences::MergeBehavior::kNone}},
-      {"gdata.cellular.disabled",
+      {drive::prefs::kDisableDriveOverCellular,
        {syncable_prefs_ids::kGdataCellularDisabled, syncer::OS_PREFERENCES,
+        sync_preferences::PrefSensitivity::kNone,
+        sync_preferences::MergeBehavior::kNone}},
+      {language::prefs::kApplicationLocale,
+       {syncable_prefs_ids::kApplicationLocale, syncer::OS_PRIORITY_PREFERENCES,
         sync_preferences::PrefSensitivity::kNone,
         sync_preferences::MergeBehavior::kNone}},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1350,5 +1358,17 @@ ChromeSyncablePrefsDatabase::GetSyncablePrefMetadata(
   }
   // Check in `common_syncable_prefs_database_`.
   return common_syncable_prefs_database_.GetSyncablePrefMetadata(pref_name);
+}
+
+std::map<base::StringPiece, sync_preferences::SyncablePrefMetadata>
+ChromeSyncablePrefsDatabase::GetAllSyncablePrefsForTest() const {
+  std::map<base::StringPiece, sync_preferences::SyncablePrefMetadata>
+      syncable_prefs;
+  base::ranges::copy(SyncablePreferences(),
+                     std::inserter(syncable_prefs, syncable_prefs.end()));
+  base::ranges::move(
+      common_syncable_prefs_database_.GetAllSyncablePrefsForTest(),  // IN-TEST
+      std::inserter(syncable_prefs, syncable_prefs.end()));
+  return syncable_prefs;
 }
 }  // namespace browser_sync

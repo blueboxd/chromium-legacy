@@ -1887,12 +1887,10 @@ chromium-metrics-reviews@google.com.
   <int value="1081" label="DeviceSystemAecEnabled"/>
   <int value="1082" label="HttpAllowlist"/>
   <int value="1083" label="HttpsUpgradesEnabled"/>
-  <int value="1084" label="RealTimeDownloadProtectionRequestAllowed"/>
   <int value="1085" label="MandatoryExtensionsForIncognitoNavigation"/>
   <int value="1086" label="CredentialProviderPromoEnabled"/>
   <int value="1087"
       label="RemoteAccessHostAllowEnterpriseRemoteSupportConnections"/>
-  <int value="1088" label="ClientSidePhishingProtectionAllowed"/>
   <int value="1089" label="UserAvatarCustomizationSelectorsEnabled"/>
   <int value="1090" label="DefaultThirdPartyStoragePartitioningSetting"/>
   <int value="1091" label="ThirdPartyStoragePartitioningBlockedForOrigins"/>
@@ -1989,6 +1987,12 @@ chromium-metrics-reviews@google.com.
   <int value="1181" label="NativeHostsExecutablesLaunchDirectly"/>
   <int value="1182" label="FeedbackSurveysEnabled"/>
   <int value="1183" label="DeskAPIDeskSaveAndShareEnabled"/>
+  <int value="1184" label="OopPrintDriversEnabled"/>
+  <int value="1185" label="DeviceHardwareVideoDecodingEnabled"/>
+  <int value="1186" label="TabOrganizationAllowed"/>
+  <int value="1187" label="ComposeAllowed"/>
+  <int value="1188" label="WallpaperSearchAllowed"/>
+  <int value="1189" label="ListenToThisPageEnabled"/>
 </enum>
 
 <enum name="EnterprisePoliciesSources">

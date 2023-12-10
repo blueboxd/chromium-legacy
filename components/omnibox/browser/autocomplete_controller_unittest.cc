@@ -15,39 +15,15 @@
 #include "base/test/task_environment.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
-#include "components/omnibox/browser/autocomplete_scoring_model_service.h"
+#include "components/omnibox/browser/fake_autocomplete_controller.h"
 #include "components/omnibox/browser/fake_autocomplete_provider_client.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
-#include "components/omnibox/browser/autocomplete_scoring_model_service.h"
-
-class FakeAutocompleteScoringModelService
-    : public AutocompleteScoringModelService {
- public:
-  FakeAutocompleteScoringModelService()
-      : AutocompleteScoringModelService(/*model_provider=*/nullptr) {}
-  // AutocompleteScoringModelService:
-  void ScoreAutocompleteUrlMatch(base::CancelableTaskTracker* tracker,
-                                 const ScoringSignals& scoring_signals,
-                                 const std::string& match_destination_url,
-                                 ResultCallback result_callback) override {
-    // TODO(crbug/1405555): Properly stub this function.
-  }
-
-  void BatchScoreAutocompleteUrlMatches(
-      base::CancelableTaskTracker* tracker,
-      const std::vector<const ScoringSignals*>& batch_scoring_signals,
-      const std::vector<std::string>& stripped_destination_urls,
-      BatchResultCallback batch_result_callback) override {
-    // TODO(crbug/1405555): Properly stub this function.
-  }
-};
-#endif  // BUILDFLAG(BUILD_WITH_TFLITE_LIB)
 
 namespace {
 
@@ -101,15 +77,13 @@ class AutocompleteControllerTest : public testing::Test {
   AutocompleteControllerTest() = default;
 
   void SetUp() override {
-    auto provider_client = std::make_unique<FakeAutocompleteProviderClient>();
+    controller_ = std::make_unique<FakeAutocompleteController>();
 
-#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
-    provider_client->set_scoring_model_service(
-        std::make_unique<FakeAutocompleteScoringModelService>());
-#endif  // BUILDFLAG(BUILD_WITH_TFLITE_LIB)
-
-    controller_ = std::make_unique<AutocompleteController>(
-        std::move(provider_client), 0, false);
+    omnibox::RegisterProfilePrefs(static_cast<PrefRegistrySimple*>(
+        static_cast<FakeAutocompleteProviderClient*>(
+            controller_->autocomplete_provider_client())
+            ->GetPrefs()
+            ->DeprecatedGetPrefRegistry()));
   }
 
   void set_autocomplete_matches(const std::vector<AutocompleteMatch>& matches) {
@@ -162,8 +136,9 @@ class AutocompleteControllerTest : public testing::Test {
     return match;
   }
 
-  AutocompleteProviderClient* provider_client() {
-    return controller_->autocomplete_provider_client();
+  FakeAutocompleteProviderClient* provider_client() {
+    return static_cast<FakeAutocompleteProviderClient*>(
+        controller_->autocomplete_provider_client());
   }
 
   std::vector<std::string> MlRank(std::vector<MlMatchTestData> datas) {
@@ -186,18 +161,13 @@ class AutocompleteControllerTest : public testing::Test {
 
     controller_->internal_result_.Reset();
     controller_->internal_result_.AppendMatches(matches);
-    base::RunLoop ml_rank_loop;
-    controller_->OnUrlScoringModelDone(
-        {}, base::BindLambdaForTesting([&]() {
-          AutocompleteInput input(u"text", 4, metrics::OmniboxEventProto::OTHER,
-                                  TestSchemeClassifier());
-          controller_->internal_result_.SortAndCull(
-              input, nullptr,
-              provider_client()->GetOmniboxTriggeredFeatureService());
-          ml_rank_loop.Quit();
-        }),
-        ml_results);
-    ml_rank_loop.Run();
+    provider_client()->GetAutocompleteScoringModelService()->fake_response_ =
+        ml_results;
+    controller_->RunBatchUrlScoringModel();
+    AutocompleteInput input(u"text", 4, metrics::OmniboxEventProto::OTHER,
+                            TestSchemeClassifier());
+    controller_->internal_result_.SortAndCull(
+        input, nullptr, provider_client()->GetOmniboxTriggeredFeatureService());
 
     std::vector<std::string> names;
     for (const auto& match : controller_->internal_result_)
@@ -534,8 +504,10 @@ TEST_F(AutocompleteControllerTest, FilterMatchesForInstantKeywordWithBareAt) {
       CreateStarterPackMatch(u"@tabs"),
   });
 
+  AutocompleteInput input(u"@", 1u, metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
   controller_->MaybeCleanSuggestionsForKeywordMode(
-      u"@", &controller_->internal_result_);
+      input, &controller_->internal_result_);
 
   EXPECT_EQ(controller_->internal_result_.size(), 4u);
   EXPECT_TRUE(

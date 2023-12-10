@@ -29,8 +29,8 @@
 <translation id="1175697296044146566"><ph name="MANAGER" /> اس <ph name="DEVICE_TYPE" /> کا نظم کرتا ہے۔</translation>
 <translation id="1175951029573070619">اوسط (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">ہٹائیں</translation>
+<translation id="1191518099344003522">‏APN فعال ہے۔</translation>
 <translation id="1195447618553298278">نامعلوم خرابی۔</translation>
-<translation id="1195784767091936222">خودکار تاریک وضع آن کریں</translation>
 <translation id="1196959502276349371">ورژن <ph name="VERSION" /></translation>
 <translation id="1199355487114804640">چلائیں/روکیں</translation>
 <translation id="1201402288615127009">اگلا</translation>
@@ -81,6 +81,7 @@
 <translation id="1515129336378114413">براؤزر ہوم</translation>
 <translation id="1526389707933164996">اسکرین سیور اینیمیشن</translation>
 <translation id="152892567002884378">والیوم بڑھائیں</translation>
+<translation id="1539242642795599947">‏APN کی قسم ڈیفالٹ اور منسلک پر سیٹ ہے۔</translation>
 <translation id="1555130319947370107">نیلا</translation>
 <translation id="155865706765934889">ٹچ پیڈ</translation>
 <translation id="1561927818299383735">بیک لٹ کا رنگ</translation>
@@ -150,7 +151,6 @@
 <translation id="1923388006036088459">ایکسنٹ کے رنگ</translation>
 <translation id="1947737735496445907">پرنٹ ہو گیا</translation>
 <translation id="1951012854035635156">اسسٹنٹ</translation>
-<translation id="1954687945444914660">فوٹوگرافی</translation>
 <translation id="1962550982027027473">‏ایک ڈیفالٹ APN درکار ہے</translation>
 <translation id="1973886230221301399">ChromeVox</translation>
 <translation id="1977994649430373166">‏Google پروفائل کی تصویر</translation>
@@ -259,6 +259,7 @@
 <translation id="2872961005593481000">بند کریں</translation>
 <translation id="2873483161362553159">براؤزر نیویگیشن</translation>
 <translation id="2874939134665556319">پچھلا ٹریک</translation>
+<translation id="2875812231449496375">اس وال پیپر کے ساتھ بہترین نتائج کے لیے اسے آن کریں۔ آپ اس ترتیب کو کسی بھی وقت آف کر سکتے ہیں۔</translation>
 <translation id="2878387241690264070"><ph name="NUM_SECONDS" /> سیکنڈ میں <ph name="RATE" /> ڈسچارج ہوئی۔</translation>
 <translation id="2880569433548999039">کلاؤڈ فلو اسکرین سیور</translation>
 <translation id="2926057806159140518">‏اپنا صارف نام اور پاس ورڈ درج کریں یا اپنا QR کوڈ اسکین کریں</translation>
@@ -279,7 +280,6 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">آلہ منسلک ہے۔</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{صفحہ ہٹائیں؟}=1{{PAGE_NUMBER} صفحہ ہٹائیں؟}other{{PAGE_NUMBER} صفحہ ہٹائیں؟}}</translation>
-<translation id="3136905423678675159">خودکار تاریک وضع آن کریں؟</translation>
 <translation id="3146655726035122603"><ph name="PRODUCT_NAME" /> کیلئے مخصوص</translation>
 <translation id="315116470104423982">موبائل ڈیٹا</translation>
 <translation id="3156846309055100599">صفحہ <ph name="PAGE_NUMBER" /> کو اسکین کیا جا رہا ہے...</translation>
@@ -341,6 +341,7 @@
 <translation id="3577473026931028326">کچھ غلط ہو گیا۔ دوبارہ کوشش کریں۔</translation>
 <translation id="357889014807611375">‏میٹرڈ Wi-Fi</translation>
 <translation id="3583278742022654445">‏کمزور سگنل کی مضبوطی۔ Wi-Fi سگنل ماخذ کے قریب منتقل کرنے کی کوشش کریں۔</translation>
+<translation id="3594280220611906414"><ph name="USER_FRIENDLY_APN_NAME" /> <ph name="APN_NAME" /> کے لیے صارف دوست نام ہے۔</translation>
 <translation id="3595596368722241419">بیٹری پوری چارج ہے</translation>
 <translation id="3600339377155080675">اسکرین مرر</translation>
 <translation id="3602290021589620013">پیش منظر</translation>
@@ -359,7 +360,6 @@
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> جائزے)</translation>
 <translation id="3748026146096797577">منسلک نہیں ہے</translation>
 <translation id="3749289110408117711">فائل کا نام</translation>
-<translation id="3754384069690464321">اس وال پیپر کے ساتھ بہترین نتائج کے لیے، براہ کرم خودکار تاریک وضع کو آن کریں۔ آپ اسے کسی بھی وقت ایپ میں واپس تبدیل کر سکتے ہیں۔</translation>
 <translation id="3771294271822695279">ویڈیو فائلیں</translation>
 <translation id="3784455785234192852">مقفل کریں</translation>
 <translation id="380097101658023925">‏RGB کنٹرولز</translation>
@@ -440,6 +440,7 @@
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> تصاویر</translation>
 <translation id="4333390807948134856"><ph name="KEY_NAME" /> کلید دبائی گئی</translation>
 <translation id="4354430579665871434">کلید</translation>
+<translation id="4361257691546579041">‏APN کی قسم ڈیفالٹ پر سیٹ ہے۔</translation>
 <translation id="437294888293595148">تمام شارٹ کٹس کو ری سیٹ کریں</translation>
 <translation id="4378373042927530923">نہیں چلا</translation>
 <translation id="4378551569595875038">منسلک ہو رہا ہے…</translation>
@@ -551,6 +552,7 @@
 <translation id="5090362543162270857">IPsec (IKEv2)</translation>
 <translation id="5137451382116112100">فُل</translation>
 <translation id="5142961317498132443">تصدیق</translation>
+<translation id="5145081769226915336">تاریک وضع کو خودکار طور پر آن کریں؟</translation>
 <translation id="5154917547274118687">میموری</translation>
 <translation id="5160857336552977725">اپنے <ph name="DEVICE_TYPE" /> میں سائن ان کریں</translation>
 <translation id="5166918508782100047">فوری جوابات کی ترتیبات</translation>
@@ -592,7 +594,6 @@
 <translation id="5389224261615877010">قوس قزح</translation>
 <translation id="5400907029458559844">آلہ منسلک ہو رہا ہے۔</translation>
 <translation id="5401938042319910061">تمام روٹینز چلائیں</translation>
-<translation id="540604120278030498">نیو یارک</translation>
 <translation id="5423849171846380976">فعال</translation>
 <translation id="5430931332414098647">فوری ٹیدرنگ</translation>
 <translation id="5431318178759467895">رنگ</translation>
@@ -630,6 +631,7 @@
 <translation id="574392208103952083">متوسط</translation>
 <translation id="5757187557809630523">اگلا ٹریک</translation>
 <translation id="5760715441271661976">پورٹل صورت حال</translation>
+<translation id="5763838252932650682"><ph name="APP_NAME" /> کو ری اسٹارٹ اور اپ ڈیٹ کیا جا رہا ہے</translation>
 <translation id="576835345334454681">ڈسپلے کی چمک بڑھانے کی کلید</translation>
 <translation id="57838592816432529">آواز بند کریں</translation>
 <translation id="5784136236926853061">‏زیادہ HTTPS تاخیر</translation>
@@ -660,6 +662,7 @@
 <translation id="5946538341867151940">‏آپ ابھی تک منسلک نہیں ہیں۔ اگر آپ کا موبائل کیریئر حسب ضرورت APN تجویز کرتا ہے تو "New APN +" کو منتخب کر کے APN کی معلومات درج کریں۔</translation>
 <translation id="5972388717451707488">انجن اپ ڈیٹ کریں</translation>
 <translation id="5984145644188835034">ڈیفالٹ وال پیپر</translation>
+<translation id="6001235009374883388">‏APN کی قسم منسلک پر سیٹ ہے</translation>
 <translation id="6017514345406065928">سبز</translation>
 <translation id="6019566113895157499">کی بورڈ شارٹ کٹس</translation>
 <translation id="6034694447310538551">خودکار ماہانہ ری سیٹ فعال کریں</translation>
@@ -801,7 +804,6 @@
 <translation id="7046522406494308071">تمام شارٹ کٹس کو ڈیفالٹس پر ری سیٹ کریں؟</translation>
 <translation id="7058278511608979688">ختم کریں اور محفوظ کریں</translation>
 <translation id="7059230779847288458">چارج ہو رہا ہے، مکمل ہونے میں <ph name="TIME_VALUE" /> باقی</translation>
-<translation id="7065364575846974659">پیرس</translation>
 <translation id="7066538517128343186"><ph name="KEY" /> کلید</translation>
 <translation id="7068619307603204412">اپنا آلہ تیار کریں</translation>
 <translation id="708426984172631313">روک دیا گیا</translation>
@@ -827,6 +829,7 @@
 <translation id="7180611975245234373">ریفریش کریں</translation>
 <translation id="7180865173735832675">حسب ضرورت بنائیں</translation>
 <translation id="7184043045742675738">اپنے بٹن کو حسب ضرورت بنانے کے لیے کسی بھی کلید پر کلک کریں۔ ماؤس یا تیر کے نشان والی کلیدوں کے ساتھ کلید کی پوزیشن تبدیل کریں۔</translation>
+<translation id="7212547870105584639">‏نیٹ ورک APN کی ترتیبات کا نظم کریں۔ APNs سیلولر نیٹ ورک اور انٹرنیٹ کے درمیان رابطہ قائم کرتے ہیں۔ <ph name="BEGIN_LINK_LEARN_MORE" />مزید جانیں<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="7212734716605298123">بیرونی آلات کیلئے فرم ویئر اپ ڈیٹس</translation>
 <translation id="7216409898977639127">سیلولر فراہم کنندہ</translation>
 <translation id="725133483556299729">ای میل منتخب کریں</translation>
@@ -837,6 +840,7 @@
 <translation id="7287310195820267359">وال پیپر کے مجموعے</translation>
 <translation id="7297226631177386107">‏فائر وال کے ذریعے HTTP ویب سائٹس سے رابطہ منسلک نہیں کیا جا سکتا</translation>
 <translation id="7297726121602187087">گہرا سبز</translation>
+<translation id="7301262279595293068">براہ کرم یہ ایپلیکیشن اپ ڈیٹ کیے جانے کے دوران انتظار کریں</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">‏Chromebook امدادی فورم میں ماہرین سے پوچھیں</translation>
@@ -941,7 +945,6 @@
 <translation id="8094062939584182041">‏Google کو اس مسئلے کے بارے میں آپ کو ای میل کرنے کی اجازت دیں</translation>
 <translation id="8104083085214006426">آپ ایک اوپن اور غیر محفوظ نیٹ ورک استعمال کر رہے ہیں</translation>
 <translation id="8111706652656628199">‏شارٹ کٹ دستیاب نہیں ہے۔ شفٹ اور 1 مزید موڈیفائر کلید (ctrl، alt، search، یا launcher) کا استعمال کرتے ہوئے ایک نیا شارٹ کٹ دبائیں۔</translation>
-<translation id="8112538018114444149"><ph name="CHIP_STYLE" /> کے طرز میں <ph name="CHIP_CITY" /> میں ایک پارک</translation>
 <translation id="811820734797650957">‏(Android) گیٹ وے کو پنگ کیا جا سکتا ہے</translation>
 <translation id="8129620843620772246">C °<ph name="TEMPERATURE_C" /></translation>
 <translation id="8132480444149501833">ٹریفک کاؤنٹرز کی درخواست کریں</translation>
@@ -1076,7 +1079,6 @@
 <translation id="9058932992221914855">IPv6</translation>
 <translation id="9062831201344759865">‏DNS ریزولیوشن کی تاخیر بہت زیادہ ہے</translation>
 <translation id="9065203028668620118">تبدیل کریں</translation>
-<translation id="9068296451330120661">پانی کا رنگ</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">بلوٹوتھ</translation>
 <translation id="9082718469794970195">یہ ویڈیو استعمال کریں</translation>

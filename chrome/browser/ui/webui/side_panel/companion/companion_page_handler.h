@@ -66,7 +66,7 @@ class CompanionPageHandler
       const std::vector<std::string>& text_directives) override;
   void OnPhFeedback(side_panel::mojom::PhFeedback ph_feedback) override;
   void OnCqJumptagClicked(const std::string& text_directive) override;
-  void OpenUrlInBrowser(const absl::optional<GURL>& url_to_open,
+  void OpenUrlInBrowser(const std::optional<GURL>& url_to_open,
                         bool use_new_tab) override;
   void OnLoadingState(side_panel::mojom::LoadingState loading_state) override;
   void RefreshCompanionPage() override;
@@ -115,6 +115,10 @@ class CompanionPageHandler
   // subsequent navigations on the main frame.
   void NotifyURLChanged(bool is_full_reload);
 
+  // Notifies the companion side panel about the page title of the main frame
+  // using a postmessage() update.
+  void NotifyTitleChanged();
+
   // Registers a WebContentsModalDialogManager for our WebContents in order to
   // display web modal dialogs triggered by it.
   void RegisterModalDialogManager(Browser* browser);
@@ -132,12 +136,12 @@ class CompanionPageHandler
   // This method is used as the callback that handles visual query results.
   // Its role is to perform some checks and do a mojom IPC to side panel.
   void HandleVisualQueryResult(
-      const visual_search::VisualSuggestionsResults results,
+      const visual_query::VisualSuggestionsResults results,
       const VisualSuggestionsMetrics stats);
 
   // Method responsible for binding and sending VQS results to panel.
   void SendVisualQueryResult(
-      const visual_search::VisualSuggestionsResults& results);
+      const visual_query::VisualSuggestionsResults& results);
 
   mojo::Receiver<side_panel::mojom::CompanionPageHandler> receiver_;
   mojo::Remote<side_panel::mojom::CompanionPage> page_;
@@ -149,7 +153,7 @@ class CompanionPageHandler
       consent_helper_;
 
   // Owns the orchestrator for visual query suggestions.
-  std::unique_ptr<visual_search::VisualQueryClassifierHost> visual_query_host_;
+  std::unique_ptr<visual_query::VisualQueryClassifierHost> visual_query_host_;
 
   // Logs metrics for companion page. Reset when there is a new navigation.
   std::unique_ptr<CompanionMetricsLogger> metrics_logger_;
@@ -167,9 +171,12 @@ class CompanionPageHandler
       consent_helper_observation_{this};
   PrefChangeRegistrar pref_change_registrar_;
 
-  absl::optional<base::TimeTicks> full_load_start_time_;
-  absl::optional<base::TimeTicks> reload_start_time_;
-  absl::optional<base::TimeTicks> ui_loading_start_time_;
+  std::optional<base::TimeTicks> full_load_start_time_;
+  std::optional<base::TimeTicks> reload_start_time_;
+  std::optional<base::TimeTicks> ui_loading_start_time_;
+
+  bool page_title_available_;
+  bool companion_ready_for_title_;
 
   base::WeakPtrFactory<CompanionPageHandler> weak_ptr_factory_{this};
 };

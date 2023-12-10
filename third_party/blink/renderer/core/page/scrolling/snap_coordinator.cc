@@ -13,10 +13,11 @@
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/physical_box_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 namespace {
@@ -72,9 +73,12 @@ bool SnapCoordinator::UpdateSnapContainerData(LayoutBox& snap_container) {
     // Clear the old data if needed.
     if (old_snap_container_data) {
       snap_container.SetNeedsPaintPropertyUpdate();
-      scrollable_area->SetSnapContainerData(absl::nullopt);
-      scrollable_area->UpdateSnappedTargetsAndEnqueueSnapChanged();
+      scrollable_area->SetSnapChangingTargetData(absl::nullopt);
       scrollable_area->SetSnappedTargetData(absl::nullopt);
+      if (RuntimeEnabledFeatures::CSSSnapChangedEventEnabled()) {
+        scrollable_area->EnqueueSnapChangedEvent();
+      }
+      scrollable_area->SetSnapContainerData(absl::nullopt);
     }
     return false;
   }

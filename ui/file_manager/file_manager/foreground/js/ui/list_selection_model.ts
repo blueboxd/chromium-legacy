@@ -3,41 +3,27 @@
 // found in the LICENSE file.
 
 import {dispatchPropertyChange} from 'chrome://resources/ash/common/cr_deprecated.js';
-import {NativeEventTarget as EventTarget} from 'chrome://resources/ash/common/event_target.js';
 import {assert} from 'chrome://resources/js/assert.js';
 
-export type SelectionChangeEvent =
-    Event&{changes: Array<{index: number, selected: boolean}>};
+import {CustomEventMap, FilesEventTarget} from '../../../common/js/files_event_target.js';
 
-interface ListSelectionModelEventMap {
+export type SelectionChangeEvent =
+    CustomEvent<{changes: Array<{index: number, selected: boolean}>}>;
+
+interface ListSelectionModelEventMap extends CustomEventMap {
   'change': SelectionChangeEvent;
 }
-
-export interface ListSelectionModel {
-  addEventListener<K extends keyof ListSelectionModelEventMap>(
-      type: K, listener: (e: ListSelectionModelEventMap[K]) => void,
-      options?: boolean|AddEventListenerOptions|undefined): void;
-  addEventListener(
-      type: string, callback: EventListenerOrEventListenerObject|null,
-      options?: AddEventListenerOptions|boolean): void;
-  removeEventListener<K extends keyof ListSelectionModelEventMap>(
-      type: K, listener: (ev: ListSelectionModelEventMap[K]) => any,
-      options?: boolean|EventListenerOptions): void;
-  removeEventListener(
-      type: string, listener: EventListenerOrEventListenerObject|null,
-      options?: boolean|EventListenerOptions): void;
-}
-
 
 /**
  * Creates a new selection model that is to be used with lists.
  *
  */
-export class ListSelectionModel extends EventTarget {
+export class ListSelectionModel extends
+    FilesEventTarget<ListSelectionModelEventMap> {
   private length_: number;
 
   // Using a object/record and rely on the ascending order returned by iterating
-  // over its keys wiht `Object.keys()`.
+  // over its keys with `Object.keys()`.
   private selectedIndexes_: Record<number, number> = {};
 
   // True if any item could be lead or anchor. False if only selected ones.
@@ -285,13 +271,16 @@ export class ListSelectionModel extends EventTarget {
 
       const indexes = Object.keys(this.changedIndexes_!);
       if (indexes.length) {
-        const e = new Event('change') as SelectionChangeEvent;
-        e.changes = indexes.map((index: string) => {
-          return {
-            index: Number(index),
-            selected: this.changedIndexes_![Number(index)]!,
-          };
-        }, this);
+        const e = new CustomEvent('change', {
+          detail: {
+            changes: indexes.map((index: string) => {
+              return {
+                index: Number(index),
+                selected: this.changedIndexes_![Number(index)]!,
+              };
+            }),
+          },
+        });
         this.dispatchEvent(e);
       }
       this.changedIndexes_ = {};

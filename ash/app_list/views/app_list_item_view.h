@@ -6,6 +6,7 @@
 #define ASH_APP_LIST_VIEWS_APP_LIST_ITEM_VIEW_H_
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -16,7 +17,6 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/memory/raw_ptr.h"
 #include "base/timer/timer.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_tree_owner.h"
@@ -172,6 +172,9 @@ class ASH_EXPORT AppListItemView : public views::Button,
   // Sets the icon of this image.
   void SetIcon(const gfx::ImageSkia& icon);
 
+  // Returns the main app icon size for the associated item.
+  gfx::Size GetIconSize() const;
+
   // Whether the icon use on this item is a placeholder icon for a promise app.
   bool HasPromiseIconPlaceholder();
 
@@ -233,7 +236,7 @@ class ASH_EXPORT AppListItemView : public views::Button,
   // Returns the host badge icon bounds using the centerpoint of
   // `main_icon_bounds` and given `host_badge_icon_container_size and the
   // `icon_scale` if the icon was scaled from the original display size.
-  static gfx::Rect GetHostBadgeIconContainerBoundsForTargetViewBounds(
+  static gfx::Rect GetHostBadgeIconBoundsForTargetViewBounds(
       const gfx::Rect& main_icon_bounds,
       const gfx::Size& host_badge_icon_container_size,
       float icon_scale);
@@ -333,7 +336,7 @@ class ASH_EXPORT AppListItemView : public views::Button,
   }
   bool is_icon_extended_for_test() const { return is_icon_extended_; }
   bool is_promise_app() const { return is_promise_app_; }
-  absl::optional<size_t> item_counter_count_for_test() const;
+  std::optional<size_t> item_counter_count_for_test() const;
   ProgressIndicator* GetProgressIndicatorForTest() const;
 
  private:
@@ -476,9 +479,9 @@ class ASH_EXPORT AppListItemView : public views::Button,
   // active.
   void UpdateProgressRingBounds();
 
-  // Returns the icon scale adjusted to fit for the `progress_indicator_` if any
-  // is currently active.
-  float GetAdjustedIconScaleForProgressRing();
+  // Returns the preferred icon size for promise apps depending on the current
+  // app_state.
+  gfx::Size GetPreferredIconSizeForProgressRing() const;
 
   // The app list config used to layout this view. The initial values is set
   // during view construction, but can be changed by calling
@@ -511,14 +514,10 @@ class ASH_EXPORT AppListItemView : public views::Button,
   // NOTE: Only one of `icon_` and `folder_icon_` is used for an item view.
   // The icon view that uses the ImageSkia in AppListItem to draw the icon.
   raw_ptr<views::ImageView, ExperimentalAsh> icon_ = nullptr;
+
   // The folder icon view used for refreshed folders.
   raw_ptr<FolderIconView, ExperimentalAsh> folder_icon_ = nullptr;
 
-  // The main icon container view used for app shortcuts.
-  raw_ptr<views::View, ExperimentalAsh> shortcut_background_container_ =
-      nullptr;
-  // The host badge icon container view used for app shortcuts.
-  raw_ptr<views::View, ExperimentalAsh> host_badge_icon_container_ = nullptr;
   // The host badge icon view used for app shortcuts.
   raw_ptr<views::ImageView, ExperimentalAsh> host_badge_icon_view_ = nullptr;
 
@@ -599,7 +598,7 @@ class ASH_EXPORT AppListItemView : public views::Button,
   const Context context_;
 
   // Helper to trigger icon load.
-  absl::optional<AppIconLoadHelper> icon_load_helper_;
+  std::optional<AppIconLoadHelper> icon_load_helper_;
 
   // Called when the context menu is shown.
   base::RepeatingClosure context_menu_shown_callback_;
@@ -639,7 +638,7 @@ class ASH_EXPORT AppListItemView : public views::Button,
   // If set, the progress indicator will be shown, and indicate the contained
   // progress value. Used when animating the view in from a promise app state to
   // simulate promise icon UI.
-  absl::optional<float> forced_progress_indicator_value_;
+  std::optional<float> forced_progress_indicator_value_;
 
   base::WeakPtrFactory<AppListItemView> weak_ptr_factory_{this};
 };

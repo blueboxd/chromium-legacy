@@ -22,7 +22,7 @@ class AccessibilityDetailedViewPixelTest : public AshTestBase {
   }
 
   // AshTestBase:
-  absl::optional<pixel_test::InitParams> CreatePixelTestInitParams()
+  std::optional<pixel_test::InitParams> CreatePixelTestInitParams()
       const override {
     return pixel_test::InitParams();
   }
@@ -46,7 +46,7 @@ TEST_F(AccessibilityDetailedViewPixelTest, Basics) {
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "check_view",
-      /*revision_number=*/9, detailed_view_container));
+      /*revision_number=*/10, detailed_view_container));
 }
 
 }  // namespace ash

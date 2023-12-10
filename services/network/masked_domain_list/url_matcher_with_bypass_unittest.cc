@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "services/network/masked_domain_list/url_matcher_with_bypass.h"
+#include <vector>
 
 #include "base/strings/strcat.h"
 #include "components/privacy_sandbox/masked_domain_list/masked_domain_list.pb.h"
@@ -35,6 +36,30 @@ TEST_F(UrlMatcherWithBypassTest, PartitionMapKey) {
   EXPECT_EQ(PartitionMapKey("tiny.sub.foo.com"), "foo.com");
   EXPECT_EQ(PartitionMapKey("www.tiny.sub.foo.com"), "foo.com");
   EXPECT_EQ(PartitionMapKey("foo.co.uk"), "co.uk");
+}
+
+TEST_F(UrlMatcherWithBypassTest, AddDomainWithBypass_InvalidDomainString) {
+  UrlMatcherWithBypass matcher;
+  matcher.AddDomainWithBypass("", net::SchemeHostPortMatcher(), true);
+  EXPECT_FALSE(matcher.IsPopulated());
+}
+
+TEST_F(UrlMatcherWithBypassTest, AddDomainWithBypass_SubdomainMatching) {
+  UrlMatcherWithBypass matcher;
+  matcher.AddDomainWithBypass("foo.com", net::SchemeHostPortMatcher(), true);
+  EXPECT_TRUE(matcher
+                  .Matches(GURL("http://bar.foo.com"), net::SchemefulSite(),
+                           /*skip_bypass_check=*/true)
+                  .matches);
+}
+
+TEST_F(UrlMatcherWithBypassTest, AddDomainWithBypass_NoSubdomainMatching) {
+  UrlMatcherWithBypass matcher;
+  matcher.AddDomainWithBypass("foo.com", net::SchemeHostPortMatcher(), false);
+  EXPECT_FALSE(matcher
+                   .Matches(GURL("http://bar.foo.com"), net::SchemefulSite(),
+                            /*skip_bypass_check=*/true)
+                   .matches);
 }
 
 class UrlMatcherWithBypassMatchTest : public testing::TestWithParam<MatchTest> {

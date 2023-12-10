@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/settings/password/passwords_mediator.h"
+#import "ios/chrome/browser/ui/settings/password/passwords_mediator+Testing.h"
 
 #import "base/memory/raw_ptr.h"
 #import "components/feature_engagement/public/event_constants.h"
@@ -23,7 +24,6 @@
 #import "ios/chrome/browser/sync/model/sync_setup_service.h"
 #import "ios/chrome/browser/ui/settings/password/account_storage_utils.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_consumer.h"
-#import "ios/chrome/browser/ui/settings/password/passwords_mediator+private.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
 #import "ios/chrome/browser/ui/settings/password/saved_passwords_presenter_observer.h"
 #import "ios/chrome/browser/ui/settings/utils/password_auto_fill_status_manager.h"
@@ -41,6 +41,14 @@ using password_manager::WarningType;
 @interface PasswordsMediator () <PasswordCheckObserver,
                                  SavedPasswordsPresenterObserver,
                                  SyncObserverModelBridge>
+
+// Whether or not the Feature Engagement Tracker should be notified that the
+// Password Manager widget promo is not displayed anymore. Will be `true` when
+// the Password Manager view controller is dismissed while presenting the
+// promo.
+@property(nonatomic, assign)
+    BOOL shouldNotifyFETToDismissPasswordManagerWidgetPromo;
+
 @end
 
 @implementation PasswordsMediator {
@@ -76,21 +84,16 @@ using password_manager::WarningType;
 
   // Service to know whether passwords are synced.
   raw_ptr<syncer::SyncService> _syncService;
-
-  // The user pref service.
-  raw_ptr<PrefService> _prefService;
 }
 
 - (instancetype)initWithPasswordCheckManager:
                     (scoped_refptr<IOSChromePasswordCheckManager>)
                         passwordCheckManager
                                faviconLoader:(FaviconLoader*)faviconLoader
-                                 syncService:(syncer::SyncService*)syncService
-                                 prefService:(PrefService*)prefService {
+                                 syncService:(syncer::SyncService*)syncService {
   self = [super init];
   if (self) {
     _syncService = syncService;
-    _prefService = prefService;
     _faviconLoader = faviconLoader;
 
     _syncObserver = std::make_unique<SyncObserverBridge>(self, syncService);
@@ -136,7 +139,6 @@ using password_manager::WarningType;
   _passwordCheckManager.reset();
   _savedPasswordsPresenter = nullptr;
   _faviconLoader = nullptr;
-  _prefService = nullptr;
   _syncService = nullptr;
 }
 
@@ -342,8 +344,7 @@ using password_manager::WarningType;
 
 // Compute whether user is capable to run password check in Google Account.
 - (BOOL)canUseAccountPasswordCheckup {
-  return password_manager::sync_util::GetAccountForSaving(_prefService,
-                                                          _syncService) &&
+  return password_manager::sync_util::GetAccountForSaving(_syncService) &&
          !_syncService->GetUserSettings()->IsEncryptEverythingEnabled();
 }
 

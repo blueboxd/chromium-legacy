@@ -1,31 +1,4 @@
 {
-  "chromeos-amd64-generic-siso-rel": {
-    "args_file": "//build/args/chromeos/amd64-generic-vm.gni",
-    "gn_args": {
-      "also_build_lacros_chrome_for_architecture": "amd64",
-      "dcheck_always_on": true,
-      "is_chromeos_device": true,
-      "ozone_platform_headless": true,
-      "use_dummy_lastchange": true,
-      "use_real_dbus_clients": false,
-      "use_remoteexec": true
-    }
-  },
-  "gpu-fyi-try-chromeos-amd64-generic": {
-    "args_file": "//build/args/chromeos/amd64-generic-vm.gni",
-    "gn_args": {
-      "dcheck_always_on": false,
-      "ffmpeg_branding": "Chrome",
-      "is_chromeos_device": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "ozone_platform_headless": true,
-      "proprietary_codecs": true,
-      "symbol_level": 0,
-      "use_dummy_lastchange": true,
-      "use_remoteexec": true
-    }
-  },
   "gpu-fyi-try-chromeos-skylab-volteer": {
     "args_file": "//build/args/chromeos/volteer.gni",
     "gn_args": {
@@ -38,7 +11,6 @@
       "ozone_platform_headless": true,
       "proprietary_codecs": true,
       "symbol_level": 0,
-      "use_dummy_lastchange": true,
       "use_remoteexec": true
     }
   },
@@ -52,7 +24,6 @@
       "is_skylab": true,
       "ozone_platform_headless": true,
       "target_os": "chromeos",
-      "use_dummy_lastchange": true,
       "use_remoteexec": true
     }
   },
@@ -66,39 +37,6 @@
       "is_skylab": true,
       "ozone_platform_headless": true,
       "target_os": "chromeos",
-      "use_remoteexec": true
-    }
-  },
-  "linux-chromeos-annotator-rel": {
-    "gn_args": {
-      "also_build_lacros_chrome": true,
-      "coverage_instrumentation_input_file": "//.code-coverage/files_to_instrument.txt",
-      "dcheck_always_on": true,
-      "enable_backup_ref_ptr_feature_flag": true,
-      "enable_dangling_raw_ptr_checks": true,
-      "enable_dangling_raw_ptr_feature_flag": true,
-      "ffmpeg_branding": "ChromeOS",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "symbol_level": 0,
-      "target_os": "chromeos",
-      "use_clang_coverage": true,
-      "use_cups": true,
-      "use_dummy_lastchange": true,
-      "use_remoteexec": true
-    }
-  },
-  "linux-chromeos-compile-siso-dbg": {
-    "gn_args": {
-      "ffmpeg_branding": "ChromeOS",
-      "is_component_build": true,
-      "is_debug": true,
-      "proprietary_codecs": true,
-      "symbol_level": 0,
-      "target_os": "chromeos",
-      "use_cups": true,
-      "use_dummy_lastchange": true,
       "use_remoteexec": true
     }
   }

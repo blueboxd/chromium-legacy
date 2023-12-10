@@ -12,13 +12,16 @@ public final class DragDropGlobalState {
 
     private static DragDropGlobalState sInstance = new DragDropGlobalState();
 
+    public boolean dragShadowShowing;
     public int dragSourceInstanceId = MultiWindowUtils.INVALID_INSTANCE_ID;
     public Tab tabBeingDragged;
+
     public static DragDropGlobalState getInstance() {
         return sInstance;
     }
 
     public void reset() {
+        dragShadowShowing = false;
         dragSourceInstanceId = MultiWindowUtils.INVALID_INSTANCE_ID;
         tabBeingDragged = null;
     }

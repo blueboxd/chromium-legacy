@@ -328,9 +328,12 @@ bool AutofillWalletSyncBridge::SetWalletCards(
   // Users can set billing address of the server credit card locally, but that
   // information does not propagate to either Chrome Sync or Google Payments
   // server. To preserve user's preferred billing address and most recent use
-  // stats, copy them from disk into |wallet_cards|.
+  // stats, copy them from local storage into `wallet_cards`.
+  // Wallet CVC data is decoupled from the Wallet card data, so if
+  // CVC data is present on the locally saved server card, copy that onto
+  // `wallet_cards` to prevent deletion of CVC data.
   AutofillTable* table = GetAutofillTable();
-  CopyRelevantWalletMetadataFromDisk(*table, &wallet_cards);
+  CopyRelevantWalletMetadataAndCvc(*table, &wallet_cards);
 
   std::vector<std::unique_ptr<CreditCard>> existing_cards;
   if (!table->GetServerCreditCards(existing_cards)) {
@@ -383,7 +386,7 @@ bool AutofillWalletSyncBridge::SetWalletIbans(std::vector<Iban> wallet_ibans,
     return false;
   }
 
-  GetAutofillTable()->SetServerIbans(wallet_ibans);
+  GetAutofillTable()->SetServerIbansData(wallet_ibans);
   bool found_diff = false;
     for (const std::unique_ptr<Iban>& existing_iban : existing_ibans) {
       bool has_orphan_iban = base::ranges::none_of(
@@ -393,8 +396,7 @@ bool AutofillWalletSyncBridge::SetWalletIbans(std::vector<Iban> wallet_ibans,
         found_diff = true;
         if (notify_webdata_backend) {
           web_data_backend_->NotifyOfIbanChanged(
-              IbanChange(IbanChange::REMOVE,
-                         base::NumberToString(existing_iban->instrument_id()),
+              IbanChange(IbanChange::REMOVE, existing_iban->instrument_id(),
                          *existing_iban));
         }
       }
@@ -408,8 +410,7 @@ bool AutofillWalletSyncBridge::SetWalletIbans(std::vector<Iban> wallet_ibans,
         found_diff = true;
         if (notify_webdata_backend) {
           web_data_backend_->NotifyOfIbanChanged(IbanChange(
-              IbanChange::ADD,
-              base::NumberToString(wallet_iban.instrument_id()), wallet_iban));
+              IbanChange::ADD, wallet_iban.instrument_id(), wallet_iban));
         }
       }
     }

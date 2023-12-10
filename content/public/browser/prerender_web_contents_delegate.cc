@@ -41,9 +41,7 @@ void PrerenderWebContentsDelegate::LoadingStateChanged(
 }
 
 void PrerenderWebContentsDelegate::CloseContents(WebContents* source) {
-  // Cancelling prerendering should eventually destroy `this` and `source`.
-  // However, this behavior is not implemented yet.
-  // TODO(https://crbug.com/1499759): Implement this behavior.
+  // Cancelling prerendering will eventually destroy `this` and `source`.
   static_cast<WebContentsImpl*>(source)
       ->GetPrerenderHostRegistry()
       ->CancelAllHosts(PrerenderFinalStatus::kTabClosedWithoutUserGesture);
@@ -75,18 +73,6 @@ void PrerenderWebContentsDelegate::WebContentsCreated(
     const GURL& target_url,
     WebContents* new_contents) {
   // A prerendered page should not create a new WebContents.
-  NOTREACHED_NORETURN();
-}
-
-void PrerenderWebContentsDelegate::PortalWebContentsCreated(
-    WebContents* portal_web_contents) {
-  // Portal is not available on a prerendered page.
-  NOTREACHED_NORETURN();
-}
-
-void PrerenderWebContentsDelegate::WebContentsBecamePortal(
-    WebContents* portal_web_contents) {
-  // Portal is not available on a prerendered page.
   NOTREACHED_NORETURN();
 }
 
@@ -144,14 +130,6 @@ bool PrerenderWebContentsDelegate::ShouldAllowRunningInsecureContent(
 PreloadingEligibility PrerenderWebContentsDelegate::IsPrerender2Supported(
     WebContents& web_contents) {
   // This should be checked in the initiator's WebContents.
-  NOTREACHED_NORETURN();
-}
-
-std::unique_ptr<WebContents>
-PrerenderWebContentsDelegate::ActivatePortalWebContents(
-    WebContents* predecessor_contents,
-    std::unique_ptr<WebContents> portal_contents) {
-  // Portal is not available on a prerendered page.
   NOTREACHED_NORETURN();
 }
 

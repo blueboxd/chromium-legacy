@@ -76,9 +76,9 @@
 #import "ios/chrome/app/variations_app_state_agent.h"
 #import "ios/chrome/browser/first_run/model/first_run.h"
 #import "ios/chrome/browser/memory/model/memory_debugger_manager.h"
-#import "ios/chrome/browser/metrics/constants.h"
-#import "ios/chrome/browser/metrics/ios_chrome_metrics_service_client.h"
-#import "ios/chrome/browser/ntp/set_up_list_prefs.h"
+#import "ios/chrome/browser/metrics/model/constants.h"
+#import "ios/chrome/browser/metrics/model/ios_chrome_metrics_service_client.h"
+#import "ios/chrome/browser/ntp/model/set_up_list_prefs.h"
 #import "ios/chrome/browser/ntp_tiles/model/tab_resumption/tab_resumption_prefs.h"
 #import "ios/chrome/browser/parcel_tracking/parcel_tracking_prefs.h"
 #import "ios/chrome/browser/photos/model/photos_policy.h"
@@ -100,7 +100,7 @@
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_constants.h"
 #import "ios/chrome/browser/voice/model/voice_search_prefs_registration.h"
-#import "ios/chrome/browser/web/font_size/font_size_tab_helper.h"
+#import "ios/chrome/browser/web/model/font_size/font_size_tab_helper.h"
 #import "ios/web/common/features.h"
 #import "ui/base/l10n/l10n_util.h"
 
@@ -177,6 +177,10 @@ inline constexpr char kSyncRequested[] = "sync.requested";
 // accessories when the autofill branding is visible.
 const char kAutofillBrandingKeyboardAccessoriesTapped[] =
     "ios.autofill.branding.keyboard_accessory_tapped";
+
+// Deprecated 12/2023.
+const char kSigninLastAccounts[] = "ios.signin.last_accounts";
+const char kSigninLastAccountsMigrated[] = "ios.signin.last_accounts_migrated";
 
 // Helper function migrating the preference `pref_name` of type "double" from
 // `defaults` to `pref_service`.
@@ -529,8 +533,8 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterInt64Pref(prefs::kNtpShownBookmarksFolder, 3);
 
   // The Following feed sort type comes from
-  // ios/chrome/browser/discover_feed/feed_constants.h Defaults to 2, which is
-  // sort by latest.
+  // ios/chrome/browser/discover_feed/model/feed_constants.h Defaults to 2,
+  // which is sort by latest.
   registry->RegisterIntegerPref(prefs::kNTPFollowingFeedSortType, 2);
 
   // Register pref to determine if the user changed the Following sort type.
@@ -662,6 +666,16 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(kSyncRequested, false);
 
   registry->RegisterBooleanPref(prefs::kDetectUnitsEnabled, true);
+
+  registry->RegisterListPref(kSigninLastAccounts);
+  registry->RegisterBooleanPref(kSigninLastAccountsMigrated, false);
+
+  // Preferences related to Content Notifications.
+  registry->RegisterTimePref(prefs::kNotificationsPromoLastDismissed,
+                             base::Time());
+  registry->RegisterTimePref(prefs::kNotificationsPromoLastShown, base::Time());
+  registry->RegisterIntegerPref(prefs::kNotificationsPromoTimesShown, 0);
+  registry->RegisterIntegerPref(prefs::kNotificationsPromoTimesDismissed, 0);
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -713,7 +727,8 @@ void MigrateObsoleteLocalStatePrefs(PrefService* prefs) {
 }
 
 // This method should be periodically pruned of year+ old migrations.
-void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
+void MigrateObsoleteBrowserStatePrefs(const base::FilePath& state_path,
+                                      PrefService* prefs) {
   // Check MigrateDeprecatedAutofillPrefs() to see if this is safe to remove.
   autofill::prefs::MigrateDeprecatedAutofillPrefs(prefs);
 
@@ -838,7 +853,11 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
 
   // Added 10/2023, but DO NOT REMOVE after the usual year!
   // TODO(crbug.com/1486420): Remove ~one year after full launch.
-  browser_sync::MaybeMigrateSyncingUserToSignedIn(prefs);
+  browser_sync::MaybeMigrateSyncingUserToSignedIn(state_path, prefs);
+
+  // Added 12/2023.
+  prefs->ClearPref(kSigninLastAccounts);
+  prefs->ClearPref(kSigninLastAccountsMigrated);
 }
 
 void MigrateObsoleteUserDefault() {

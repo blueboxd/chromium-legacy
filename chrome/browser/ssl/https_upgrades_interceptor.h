@@ -71,9 +71,7 @@ class HttpsUpgradesInterceptor : public content::URLLoaderRequestInterceptor,
       mojo::ScopedDataPipeConsumerHandle* response_body,
       mojo::PendingRemote<network::mojom::URLLoader>* loader,
       mojo::PendingReceiver<network::mojom::URLLoaderClient>* client_receiver,
-      blink::ThrottlingURLLoader* url_loader,
-      bool* skip_other_interceptors,
-      bool* will_return_unsafe_redirect) override;
+      blink::ThrottlingURLLoader* url_loader) override;
 
   // Continuation of MaybeCreateLoader() after querying the network service for
   // the HSTS status for the hostname in the request.
@@ -149,4 +147,4 @@ class HttpsUpgradesInterceptor : public content::URLLoaderRequestInterceptor,
   base::WeakPtrFactory<HttpsUpgradesInterceptor> weak_factory_{this};
 };
 
-#endif  // CHROME_BROWSER_SSL_HTTPS_ONLY_MODE_UPGRADE_INTERCEPTOR_H_
+#endif  // CHROME_BROWSER_SSL_HTTPS_UPGRADES_INTERCEPTOR_H_

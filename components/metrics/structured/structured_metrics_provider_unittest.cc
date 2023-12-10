@@ -17,8 +17,8 @@
 #include "base/test/task_environment.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "components/metrics/structured/event.h"
+#include "components/metrics/structured/proto/event_storage.pb.h"
 #include "components/metrics/structured/recorder.h"
-#include "components/metrics/structured/storage.pb.h"
 #include "components/metrics/structured/structured_events.h"
 #include "components/metrics/structured/structured_metrics_features.h"
 #include "components/metrics/structured/structured_metrics_recorder.h"
@@ -88,13 +88,15 @@ class StructuredMetricsProviderTest : public testing::Test {
   base::FilePath TempDirPath() { return temp_dir_.GetPath(); }
 
   base::FilePath ProfileKeyFilePath() {
-    return temp_dir_.GetPath().Append("structured_metrics").Append("keys");
+    return temp_dir_.GetPath()
+        .Append(FILE_PATH_LITERAL("structured_metrics"))
+        .Append(FILE_PATH_LITERAL("keys"));
   }
 
   base::FilePath DeviceKeyFilePath() {
     return temp_dir_.GetPath()
-        .Append("structured_metrics")
-        .Append("device_keys");
+        .Append(FILE_PATH_LITERAL("structured_metrics"))
+        .Append(FILE_PATH_LITERAL("device_keys"));
   }
 
   void Wait() { task_environment_.RunUntilIdle(); }
@@ -103,14 +105,10 @@ class StructuredMetricsProviderTest : public testing::Test {
   // about: the metrics service initializing and enabling its providers, and a
   // user logging in.
   void Init() {
-    system_profile_provider_ = std::make_unique<TestSystemProfileProvider>();
     // Create a system profile, normally done by ChromeMetricsServiceClient.
-    structured_metrics_recorder_ = std::unique_ptr<StructuredMetricsRecorder>(
-        new StructuredMetricsRecorder(system_profile_provider_.get()));
-    structured_metrics_recorder_->InitializeKeyDataProvider(
+    structured_metrics_recorder_ = std::make_unique<StructuredMetricsRecorder>(
         std::make_unique<TestKeyDataProvider>(DeviceKeyFilePath(),
-                                              ProfileKeyFilePath()));
-    structured_metrics_recorder_->InitializeEventStorage(
+                                              ProfileKeyFilePath()),
         std::make_unique<TestEventStorage>());
     // Create the provider, normally done by the ChromeMetricsServiceClient.
     provider_ = std::unique_ptr<StructuredMetricsProvider>(

@@ -25,7 +25,7 @@
 namespace {
 
 std::pair<std::unique_ptr<views::View>, HoverListView*> CreatePasskeyList(
-    const absl::optional<std::u16string>& title,
+    const std::optional<std::u16string>& title,
     const std::vector<int>& passkey_indices,
     const base::span<const AuthenticatorRequestDialogModel::Mechanism> mechs) {
   auto container = std::make_unique<views::BoxLayoutView>();
@@ -60,7 +60,7 @@ AuthenticatorMultiSourcePickerView::AuthenticatorMultiSourcePickerView(
   layout->set_between_child_spacing(kPaddingInBetweenPasskeyLists);
   SetLayoutManager(std::move(layout));
 
-  absl::optional<std::u16string> secondary_passkeys_label;
+  std::optional<std::u16string> secondary_passkeys_label;
   if (!model->primary_passkey_indices().empty()) {
     secondary_passkeys_label =
         l10n_util::GetStringUTF16(IDS_WEBAUTHN_OTHER_DEVICES_LABEL);
@@ -72,12 +72,14 @@ AuthenticatorMultiSourcePickerView::AuthenticatorMultiSourcePickerView(
     primary_passkeys_control_ = primary_list.second;
   }
 
-  std::pair<std::unique_ptr<views::View>, HoverListView*> secondary_list =
-      CreatePasskeyList(secondary_passkeys_label,
-                        model->secondary_passkey_indices(),
-                        model->dialog_model()->mechanisms());
-  AddChildView(std::move(secondary_list.first));
-  secondary_passkeys_control_ = secondary_list.second;
+  if (!model->secondary_passkey_indices().empty()) {
+    std::pair<std::unique_ptr<views::View>, HoverListView*> secondary_list =
+        CreatePasskeyList(secondary_passkeys_label,
+                          model->secondary_passkey_indices(),
+                          model->dialog_model()->mechanisms());
+    AddChildView(std::move(secondary_list.first));
+    secondary_passkeys_control_ = secondary_list.second;
+  }
 }
 
 AuthenticatorMultiSourcePickerView::~AuthenticatorMultiSourcePickerView() =
@@ -88,5 +90,7 @@ void AuthenticatorMultiSourcePickerView::RequestFocus() {
     primary_passkeys_control_->RequestFocus();
     return;
   }
-  secondary_passkeys_control_->RequestFocus();
+  if (secondary_passkeys_control_) {
+    secondary_passkeys_control_->RequestFocus();
+  }
 }

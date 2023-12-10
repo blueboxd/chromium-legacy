@@ -57,6 +57,7 @@
 #include "base/win/window_enumerator.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "chrome/updater/activity.h"
 #include "chrome/updater/app/server/win/com_classes.h"
 #include "chrome/updater/app/server/win/updater_idl.h"
 #include "chrome/updater/app/server/win/updater_internal_idl.h"
@@ -400,13 +401,13 @@ void CheckInstallation(UpdaterScope scope,
   const std::optional<base::FilePath> path =
       GetVersionedInstallDirectory(scope, base::Version(kUpdaterVersion));
   ASSERT_TRUE(path);
-  EXPECT_TRUE(WaitFor([&]() { return is_installed == base::PathExists(*path); },
-                      [&]() {
+  EXPECT_TRUE(WaitFor([&] { return is_installed == base::PathExists(*path); },
+                      [&] {
                         VLOG(0) << "Still waiting for " << *path
                                 << " where is_installed=" << is_installed;
                       }))
       << base::JoinString(
-             [&path]() {
+             [&path] {
                std::vector<base::FilePath::StringType> files;
                base::FileEnumerator(*path, true,
                                     base::FileEnumerator::FILES |
@@ -450,7 +451,7 @@ base::Process LaunchOfflineInstallProcess(bool is_legacy_install,
                                           const std::wstring& app_id,
                                           const std::wstring& offline_dir_guid,
                                           bool is_silent_install) {
-  auto launch_legacy_offline_install = [&]() -> base::Process {
+  auto launch_legacy_offline_install = [&] {
     auto build_legacy_switch =
         [](const std::string& switch_name) -> std::wstring {
       return base::ASCIIToWide(base::StrCat({"/", switch_name}));
@@ -484,7 +485,7 @@ base::Process LaunchOfflineInstallProcess(bool is_legacy_install,
     return base::LaunchProcess(base::JoinString(install_cmd_args, L" "), {});
   };
 
-  auto launch_offline_install = [&]() -> base::Process {
+  auto launch_offline_install = [&] {
     base::CommandLine install_cmd(exe_path);
 
     install_cmd.AppendSwitch(kEnableLoggingSwitch);
@@ -703,7 +704,7 @@ void RunOfflineInstallWithManifest(UpdaterScope scope,
 
   const base::Version pv =
       base::MakeRefCounted<PersistedData>(
-          scope, CreateGlobalPrefs(scope)->GetPrefService())
+          scope, CreateGlobalPrefs(scope)->GetPrefService(), nullptr)
           ->GetProductVersion(base::WideToASCII(kTestAppID));
 
   base::win::RegKey key;
@@ -869,11 +870,11 @@ void ExpectClean(UpdaterScope scope) {
   // Check that the caches have been removed.
   const std::optional<base::FilePath> path = GetCacheBaseDirectory(scope);
   ASSERT_TRUE(path);
-  EXPECT_TRUE(WaitFor(
-      [&]() { return !base::PathExists(*path); },
-      [&]() { VLOG(0) << "Still waiting for cache removal: " << *path; }))
+  EXPECT_TRUE(
+      WaitFor([&] { return !base::PathExists(*path); },
+              [&] { VLOG(0) << "Still waiting for cache removal: " << *path; }))
       << base::JoinString(
-             [&path]() {
+             [&path] {
                std::vector<base::FilePath::StringType> files;
                base::FileEnumerator(*path, true,
                                     base::FileEnumerator::FILES |
@@ -1506,7 +1507,7 @@ void ExpectLegacyAppCommandWebSucceeds(UpdaterScope scope,
       variant_params[3], variant_params[4], variant_params[5],
       variant_params[6], variant_params[7], variant_params[8]));
 
-  EXPECT_TRUE(WaitFor([&]() {
+  EXPECT_TRUE(WaitFor([&] {
     UINT status = 0;
     EXPECT_HRESULT_SUCCEEDED(app_command_web->get_status(&status));
     return status == COMMAND_STATUS_COMPLETE;
@@ -1523,7 +1524,7 @@ void ExpectLegacyAppCommandWebSucceeds(UpdaterScope scope,
 
   CallDispatchMethod(command_dispatch, L"execute", variant_params);
 
-  EXPECT_TRUE(WaitFor([&]() {
+  EXPECT_TRUE(WaitFor([&] {
     base::win::ScopedVariant status =
         GetDispatchProperty(command_dispatch, L"status");
     return V_UINT(status.ptr()) == COMMAND_STATUS_COMPLETE;
@@ -1843,7 +1844,7 @@ void CloseInstallCompleteDialog(const std::wstring& child_window_text_to_find) {
                           GetLocalizedString(IDS_FRIENDLY_COMPANY_NAME_BASE));
   bool found = false;
   ASSERT_TRUE(WaitFor(
-      [&]() {
+      [&] {
         if (!found) {
           // Enumerate the top-level dialogs to find the setup dialog.
           base::win::EnumerateChildWindows(
@@ -1879,7 +1880,7 @@ void CloseInstallCompleteDialog(const std::wstring& child_window_text_to_find) {
 void ExpectLegacyUpdaterMigrated(UpdaterScope scope) {
   scoped_refptr<GlobalPrefs> global_prefs = CreateGlobalPrefs(scope);
   auto persisted_data = base::MakeRefCounted<PersistedData>(
-      scope, global_prefs->GetPrefService());
+      scope, global_prefs->GetPrefService(), nullptr);
 
   // Legacy updater itself should not be migrated.
   const std::string kLegacyUpdaterAppId =
@@ -1896,16 +1897,16 @@ void ExpectLegacyUpdaterMigrated(UpdaterScope scope) {
   EXPECT_TRUE(persisted_data->GetAP(kNoPVAppId).empty());
   EXPECT_TRUE(persisted_data->GetBrandCode(kNoPVAppId).empty());
   EXPECT_TRUE(persisted_data->GetFingerprint(kNoPVAppId).empty());
-  EXPECT_FALSE(persisted_data->GetDateLastActive(kNoPVAppId));
-  EXPECT_FALSE(persisted_data->GetDateLastRollcall(kNoPVAppId));
+  EXPECT_EQ(persisted_data->GetDateLastActive(kNoPVAppId), -2);
+  EXPECT_EQ(persisted_data->GetDateLastRollCall(kNoPVAppId), -2);
 
   EXPECT_EQ(persisted_data->GetProductVersion(kChromeAppId),
             base::Version("99.0.0.1"));
   EXPECT_EQ(persisted_data->GetAP(kChromeAppId), "TestAP");
   EXPECT_EQ(persisted_data->GetBrandCode(kChromeAppId), "GGLS");
   EXPECT_TRUE(persisted_data->GetFingerprint(kChromeAppId).empty());
-  EXPECT_EQ(persisted_data->GetDateLastActive(kChromeAppId).value(), -1);
-  EXPECT_EQ(persisted_data->GetDateLastRollcall(kChromeAppId).value(), 5929);
+  EXPECT_EQ(persisted_data->GetDateLastActive(kChromeAppId), -1);
+  EXPECT_EQ(persisted_data->GetDateLastRollCall(kChromeAppId), 5929);
   EXPECT_EQ(persisted_data->GetCohort(kChromeAppId), "TestCohort");
   EXPECT_EQ(persisted_data->GetCohortName(kChromeAppId), "TestCohortName");
   EXPECT_EQ(persisted_data->GetCohortHint(kChromeAppId), "TestCohortHint");
@@ -2054,6 +2055,25 @@ void SetPlatformPolicies(const base::Value::Dict& values) {
       }
     }
   }
+}
+
+void ExpectAppVersion(UpdaterScope scope,
+                      const std::string& app_id,
+                      const base::Version& version) {
+  const base::Version app_version =
+      base::MakeRefCounted<PersistedData>(
+          scope, CreateGlobalPrefs(scope)->GetPrefService(), nullptr)
+          ->GetProductVersion(app_id);
+  EXPECT_TRUE(app_version.IsValid());
+  EXPECT_EQ(version, app_version);
+
+  std::wstring pv;
+  EXPECT_EQ(
+      ERROR_SUCCESS,
+      base::win::RegKey(UpdaterScopeToHKeyRoot(scope),
+                        GetAppClientStateKey(app_id).c_str(), Wow6432(KEY_READ))
+          .ReadValue(kRegValuePV, &pv));
+  EXPECT_EQ(base::SysUTF8ToWide(version.GetString()), pv);
 }
 
 }  // namespace updater::test

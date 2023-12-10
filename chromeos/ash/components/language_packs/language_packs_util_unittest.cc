@@ -4,6 +4,7 @@
 
 #include "chromeos/ash/components/language_packs/language_packs_util.h"
 
+#include <optional>
 #include <string>
 
 #include "ash/constants/ash_pref_names.h"
@@ -18,7 +19,6 @@
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/dlcservice/dbus-constants.h"
 
 namespace ash::language_packs {
@@ -169,6 +169,10 @@ TEST(LanguagePacksUtil, ResolveLocaleTts) {
   EXPECT_EQ(ResolveLocale(kTtsFeatureId, "es-es"), "es-es");
   EXPECT_EQ(ResolveLocale(kTtsFeatureId, "es-US"), "es-us");
   EXPECT_EQ(ResolveLocale(kTtsFeatureId, "es-us"), "es-us");
+  EXPECT_EQ(ResolveLocale(kTtsFeatureId, "pt-BR"), "pt-br");
+  EXPECT_EQ(ResolveLocale(kTtsFeatureId, "pt-br"), "pt-br");
+  EXPECT_EQ(ResolveLocale(kTtsFeatureId, "pt-PT"), "pt-pt");
+  EXPECT_EQ(ResolveLocale(kTtsFeatureId, "pt-pt"), "pt-pt");
 
   // For all other locales we only keep the language.
   EXPECT_EQ(ResolveLocale(kTtsFeatureId, "bn-bd"), "bn");
@@ -178,21 +182,20 @@ TEST(LanguagePacksUtil, ResolveLocaleTts) {
 }
 
 TEST(LanguagePacksUtil, MapThenFilterStringsNoInput) {
-  EXPECT_THAT(
-      MapThenFilterStrings(
-          {}, base::BindRepeating(
-                  [](const std::string&) -> absl::optional<std::string> {
-                    return "ignored";
-                  })),
-      IsEmpty());
+  EXPECT_THAT(MapThenFilterStrings(
+                  {}, base::BindRepeating(
+                          [](const std::string&) -> std::optional<std::string> {
+                            return "ignored";
+                          })),
+              IsEmpty());
 }
 
 TEST(LanguagePacksUtil, MapThenFilterStringsAllToNullopt) {
   EXPECT_THAT(MapThenFilterStrings(
                   {{"en", "de"}},
                   base::BindRepeating(
-                      [](const std::string&) -> absl::optional<std::string> {
-                        return absl::nullopt;
+                      [](const std::string&) -> std::optional<std::string> {
+                        return std::nullopt;
                       })),
               IsEmpty());
 }
@@ -202,7 +205,7 @@ TEST(LanguagePacksUtil, MapThenFilterStringsAllToUniqueStrings) {
       MapThenFilterStrings(
           {{"en", "de"}},
           base::BindRepeating(
-              [](const std::string& input) -> absl::optional<std::string> {
+              [](const std::string& input) -> std::optional<std::string> {
                 return input;
               })),
       UnorderedElementsAre("en", "de"));
@@ -213,7 +216,7 @@ TEST(LanguagePacksUtil, MapThenFilterStringsRepeatedString) {
       MapThenFilterStrings(
           {{"repeat", "unique", "repeat"}},
           base::BindRepeating(
-              [](const std::string& input) -> absl::optional<std::string> {
+              [](const std::string& input) -> std::optional<std::string> {
                 return input;
               })),
       UnorderedElementsAre("repeat", "unique"));
@@ -224,9 +227,9 @@ TEST(LanguagePacksUtil, MapThenFilterStringsSomeNullopt) {
       MapThenFilterStrings(
           {{"pass_1", "fail", "pass_2"}},
           base::BindRepeating(
-              [](const std::string& input) -> absl::optional<std::string> {
-                return (input == "fail") ? absl::nullopt
-                                         : absl::optional<std::string>(input);
+              [](const std::string& input) -> std::optional<std::string> {
+                return (input == "fail") ? std::nullopt
+                                         : std::optional<std::string>(input);
               })),
       UnorderedElementsAre("pass_1", "pass_2"));
 }
@@ -236,7 +239,7 @@ TEST(LanguagePacksUtil, MapThenFilterStringsDeduplicateOutput) {
       MapThenFilterStrings(
           {{"a", "dedup-1", "dedup-2"}},
           base::BindRepeating(
-              [](const std::string& input) -> absl::optional<std::string> {
+              [](const std::string& input) -> std::optional<std::string> {
                 return (input.length() < 2) ? input : "dedup";
               })),
       UnorderedElementsAre("a", "dedup"));
@@ -247,7 +250,7 @@ TEST(LanguagePacksUtil, MapThenFilterStringsDisjointSet) {
       MapThenFilterStrings(
           {{"a", "b", "d"}},
           base::BindRepeating(
-              [](const std::string& input) -> absl::optional<std::string> {
+              [](const std::string& input) -> std::optional<std::string> {
                 return "something else";
               })),
       UnorderedElementsAre("something else"));

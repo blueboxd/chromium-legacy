@@ -368,6 +368,15 @@ BASE_FEATURE(kFedCmAutoSelectedFlag,
              "FedCmAutoSelectedFlag",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables usage of the FedCM ButtonMode feature.
+// Note that actual exposure of the API to web content is controlled by
+// the flag in RuntimeEnabledFeatures on the blink side. See also the use
+// of kSetOnlyIfOverridden in content/child/runtime_features.cc. We enable
+// it here by default to support use in origin trials.
+BASE_FEATURE(kFedCmButtonMode,
+             "FedCmButtonMode",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Enables usage of the FedCM DomainHint feature. ChromeStatus entry:
 // https://chromestatus.com/feature/5202286040580096
 BASE_FEATURE(kFedCmDomainHint,
@@ -382,7 +391,7 @@ BASE_FEATURE(kFedCmError, "FedCmError", base::FEATURE_ENABLED_BY_DEFAULT);
 // the RP site.
 BASE_FEATURE(kFedCmExemptIdpWithThirdPartyCookies,
              "FedCmExemptIdpWithThirdPartyCookies",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables usage of the FedCM IdP Registration API.
 BASE_FEATURE(kFedCmIdPRegistration,
@@ -406,8 +415,10 @@ BASE_FEATURE(kFedCmMultipleIdentityProviders,
              "FedCmMultipleIdentityProviders",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables the revoke method within the FedCM API.
-BASE_FEATURE(kFedCmRevoke, "FedCmRevoke", base::FEATURE_ENABLED_BY_DEFAULT);
+// Enables the disconnect method within the FedCM API.
+BASE_FEATURE(kFedCmDisconnect,
+             "FedCmDisconnect",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables usage of the FedCM API with the Selective Disclosure API at the same
 // time.
@@ -661,6 +672,12 @@ BASE_FEATURE(kPepperCrossOriginRedirectRestriction,
              "PepperCrossOriginRedirectRestriction",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables an in-content element that interacts with the permissions
+// infrastructure.
+BASE_FEATURE(kPermissionElement,
+             "PermissionElement",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables Persistent Origin Trials. It causes tokens for an origin to be stored
 // and persisted for the next navigation. This way, an origin trial can affect
 // things before receiving the response, for instance it can affect the next
@@ -673,7 +690,7 @@ BASE_FEATURE(kPersistentOriginTrials,
 // separates eager and non-eager prefetches, and allows for evictions.
 BASE_FEATURE(kPrefetchNewLimits,
              "PrefetchNewLimits",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables exposure of ads APIs in the renderer: Attribution Reporting,
 // FLEDGE, Topics, along with a number of other features actively in development
@@ -710,15 +727,15 @@ BASE_FEATURE(kPrivateNetworkAccessForWorkersWarningOnly,
              "PrivateNetworkAccessForWorkersWarningOnly",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables Private Network Access checks for iframe navigations.
+// Enables Private Network Access checks for navigations.
 //
 // The exact checks run are the same as for document subresources, and depend on
 // the state of other Private Network Access feature flags:
 //  - `kBlockInsecurePrivateNetworkRequests`
 //  - `kPrivateNetworkAccessSendPreflights`
 //  - `kPrivateNetworkAccessRespectPreflightResults`
-BASE_FEATURE(kPrivateNetworkAccessForIframes,
-             "PrivateNetworkAccessForIframes",
+BASE_FEATURE(kPrivateNetworkAccessForNavigations,
+             "PrivateNetworkAccessForNavigations",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Requires that CORS preflight requests succeed before sending private network
@@ -1241,11 +1258,6 @@ BASE_FEATURE(kAccessibilityPageZoom,
 const base::FeatureParam<bool> kAccessibilityPageZoomOSLevelAdjustment{
     &kAccessibilityPageZoom, "AdjustForOSLevel", true};
 
-// Disables use of performance improvements for experimental testing/dev.
-BASE_FEATURE(kAccessibilityPerformanceTesting,
-             "AccessibilityPerformanceTesting",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Allows the use of "Smart Zoom", an alternative form of page zoom, and
 // enables the associated UI.
 BASE_FEATURE(kSmartZoom, "SmartZoom", base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1254,7 +1266,7 @@ BASE_FEATURE(kSmartZoom, "SmartZoom", base::FEATURE_DISABLED_BY_DEFAULT);
 // technologies are present
 BASE_FEATURE(kAutoDisableAccessibilityV2,
              "AutoDisableAccessibilityV2",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables the mojo based gin java bridge implementation.
 BASE_FEATURE(kGinJavaBridgeMojo,
@@ -1290,15 +1302,16 @@ BASE_FEATURE(kRequestDesktopSiteZoom,
              "RequestDesktopSiteZoom",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Apply text selection menu order correction logic for Android.
+// TODO(https://crbug.com/1506484) This is a kill switch landed in M122.
+// Please remove after M124.
+BASE_FEATURE(kSelectionMenuItemModification,
+             "SelectionMenuItemModification",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Send background signal to GPU stack for synchronous compositor.
 BASE_FEATURE(kSynchronousCompositorBackgroundSignal,
              "SynchronousCompositorBackgroundSignal",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Text autosizing uses heuristics to inflate text sizes on devices with
-// small screens. This feature is for disabling these heuristics.
-BASE_FEATURE(kForceOffTextAutosizing,
-             "ForceOffTextAutosizing",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Screen Capture API support for Android

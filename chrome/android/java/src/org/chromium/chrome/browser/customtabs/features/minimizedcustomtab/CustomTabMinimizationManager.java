@@ -8,8 +8,8 @@ import static org.chromium.chrome.browser.customtabs.features.minimizedcustomtab
 import static org.chromium.chrome.browser.customtabs.features.minimizedcustomtab.MinimizedCardProperties.FAVICON;
 import static org.chromium.chrome.browser.customtabs.features.minimizedcustomtab.MinimizedCardProperties.TITLE;
 import static org.chromium.chrome.browser.customtabs.features.minimizedcustomtab.MinimizedCardProperties.URL;
+import static org.chromium.chrome.browser.tab.TabLoadIfNeededCaller.ON_ACTIVITY_SHOWN_THEN_SHOW;
 import static org.chromium.chrome.browser.tab.TabSelectionType.FROM_USER;
-import static org.chromium.chrome.browser.tab.TabUtils.LoadIfNeededCaller.ON_ACTIVITY_SHOWN_THEN_SHOW;
 
 import android.app.PictureInPictureParams;
 import android.os.Build.VERSION;
@@ -27,6 +27,7 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Lifecycle.State;
 
+import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
@@ -71,7 +72,9 @@ public class CustomTabMinimizationManager
     private final MinimizedCustomTabFeatureEngagementDelegate mFeatureEngagementDelegate;
     private final BrowserServicesIntentDataProvider mIntentData;
     private final Runnable mCloseTabRunnable;
+    private final ObserverList<Observer> mObservers = new ObserverList<>();
     private long mMinimizationSystemTime;
+    private boolean mMinimized;
 
     /**
      * @param activity The {@link AppCompatActivity} to minimize.
@@ -88,7 +91,6 @@ public class CustomTabMinimizationManager
             Runnable closeTabRunnable,
             BrowserServicesIntentDataProvider intentData) {
         mActivity = activity;
-        mActivity.addOnPictureInPictureModeChangedListener(this);
         mTabProvider = tabProvider;
         mFeatureEngagementDelegate = featureEngagementDelegate;
         mCloseTabRunnable = closeTabRunnable;
@@ -108,12 +110,38 @@ public class CustomTabMinimizationManager
         if (VERSION.SDK_INT >= VERSION_CODES.S) {
             builder.setSeamlessResizeEnabled(false);
         }
-        mActivity.enterPictureInPictureMode(builder.build());
+        mMinimized = mActivity.enterPictureInPictureMode(builder.build());
+        if (!mMinimized) return;
+
+        mActivity.addOnPictureInPictureModeChangedListener(this);
+        notifyObservers(true);
         mMinimizationSystemTime = SystemClock.elapsedRealtime();
     }
 
     @Override
+    public void dismiss() {
+        mCloseTabRunnable.run();
+    }
+
+    @Override
+    public boolean isMinimized() {
+        return mMinimized;
+    }
+
+    @Override
+    public void addObserver(Observer observer) {
+        mObservers.addObserver(observer);
+    }
+
+    @Override
+    public void removeObserver(Observer observer) {
+        mObservers.removeObserver(observer);
+    }
+
+    @Override
     public void accept(PictureInPictureModeChangedInfo pictureInPictureModeChangedInfo) {
+        if (!mMinimized) return;
+
         Tab tab = mTabProvider.get();
         assert tab != null;
         if (pictureInPictureModeChangedInfo.isInPictureInPictureMode()) {
@@ -124,6 +152,9 @@ public class CustomTabMinimizationManager
                     MinimizationEvents.MINIMIZE,
                     MinimizationEvents.COUNT);
         } else {
+            mMinimized = false;
+            mActivity.removeOnPictureInPictureModeChangedListener(this);
+            notifyObservers(false);
             // We receive an update here when PiP is dismissed and the Activity is being stopped
             // before destruction. In that case, the state will be CREATED.
             var state = mActivity.getLifecycle().getCurrentState();
@@ -200,5 +231,11 @@ public class CustomTabMinimizationManager
                                 .getSupportFragmentManager()
                                 .findFragmentByTag(MinimizedCardDialogFragment.TAG);
         fragment.dismissNow();
+    }
+
+    private void notifyObservers(boolean minimized) {
+        for (var obs : mObservers) {
+            obs.onMinimizationChanged(minimized);
+        }
     }
 }

@@ -21,6 +21,8 @@ class MODULES_EXPORT MLOperator : public GarbageCollected<MLOperator> {
  public:
   enum class OperatorKind {
     // Keep the order as the same as build methods of MLGraphBuilder.
+    kBatchNormalization,
+    kCast,
     kClamp,
     kConcat,
     kConv2d,
@@ -29,6 +31,12 @@ class MODULES_EXPORT MLOperator : public GarbageCollected<MLOperator> {
     kSub,
     kMul,
     kDiv,
+    kMin,
+    kMax,
+    kPow,
+    kEqual,
+    kGreater,
+    kLesser,
     kAbs,
     kCeil,
     kCos,
@@ -43,18 +51,19 @@ class MODULES_EXPORT MLOperator : public GarbageCollected<MLOperator> {
     kLogicalNot,
     kReciprocal,
     kSqrt,
+    kInstanceNormalization,
+    kLayerNormalization,
     kLeakyRelu,
-    kMax,
-    kMin,
+    kLinear,
     kElu,
     kExpand,
+    kGather,
     kGemm,
     kHardSwish,
     kAveragePool2d,
     kMatmul,
     kMaxPool2d,
     kPad,
-    kPow,
     kPRelu,
     kReduceL1,
     kReduceL2,
@@ -75,7 +84,8 @@ class MODULES_EXPORT MLOperator : public GarbageCollected<MLOperator> {
     kSoftsign,
     kSplit,
     kTanh,
-    kTranspose
+    kTranspose,
+    kWhere
   };
 
   static String OperatorKindToString(MLOperator::OperatorKind kind);

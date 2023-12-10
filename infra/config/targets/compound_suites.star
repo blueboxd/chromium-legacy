@@ -528,6 +528,13 @@ targets.legacy_compound_suite(
     ],
 )
 
+targets.legacy_compound_suite(
+    name = "chromium_win10_gtests_multiscreen_fyi",
+    basic_suites = [
+        "chromium_gtests_for_windows_multiscreen",
+    ],
+)
+
 # TODO(crbug.com/1444855): This set should match chromium_win10_gtests,
 # except that it also runs tests that we can afford to run only once
 # on Windows machines (for now this is just the cr23_win_gtests).
@@ -699,10 +706,11 @@ targets.legacy_compound_suite(
     name = "gpu_angle_mac_telemetry_tests",
     basic_suites = [
         "gpu_info_collection_telemetry_tests",
-        "gpu_webgl2_conformance_gl_passthrough_telemetry_tests",
-        "gpu_webgl2_conformance_metal_passthrough_telemetry_tests",
-        "gpu_webgl_conformance_gl_passthrough_telemetry_tests",
-        "gpu_webgl_conformance_metal_passthrough_telemetry_tests",
+        "gpu_webgl2_conformance_gl_passthrough_ganesh_telemetry_tests",
+        "gpu_webgl2_conformance_metal_passthrough_graphite_telemetry_tests",
+        "gpu_webgl_conformance_gl_passthrough_ganesh_telemetry_tests",
+        "gpu_webgl_conformance_metal_passthrough_ganesh_telemetry_tests",
+        "gpu_webgl_conformance_metal_passthrough_graphite_telemetry_tests",
         "gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests",
     ],
 )
@@ -739,7 +747,7 @@ targets.legacy_compound_suite(
     basic_suites = [
         "gpu_common_and_optional_telemetry_tests",
         "gpu_gl_passthrough_ganesh_telemetry_tests",
-        "gpu_webgl_conformance_gl_passthrough_telemetry_tests",
+        "gpu_webgl_conformance_gl_passthrough_ganesh_telemetry_tests",
     ],
 )
 
@@ -753,11 +761,11 @@ targets.legacy_compound_suite(
 )
 
 targets.legacy_compound_suite(
-    name = "gpu_common_metal_passthrough_ganesh_telemetry_tests",
+    name = "gpu_common_metal_passthrough_graphite_telemetry_tests",
     basic_suites = [
         "gpu_common_and_optional_telemetry_tests",
-        "gpu_metal_passthrough_ganesh_telemetry_tests",
-        "gpu_webgl_conformance_metal_passthrough_telemetry_tests",
+        "gpu_metal_passthrough_graphite_telemetry_tests",
+        "gpu_webgl_conformance_metal_passthrough_graphite_telemetry_tests",
     ],
 )
 
@@ -871,15 +879,6 @@ targets.legacy_compound_suite(
     name = "gpu_dawn_tsan_gtests",
     basic_suites = [
         "gpu_dawn_gtests",
-    ],
-)
-
-targets.legacy_compound_suite(
-    name = "gpu_desktop_mac_gtests",
-    basic_suites = [
-        "gpu_angle_unit_gtests",
-        "gpu_common_gtests_passthrough",
-        "gpu_desktop_specific_gtests",
     ],
 )
 
@@ -1053,9 +1052,9 @@ targets.legacy_compound_suite(
         "gpu_common_and_optional_telemetry_tests",
         "gpu_gl_passthrough_ganesh_telemetry_tests",
         "gpu_mediapipe_passthrough_telemetry_tests",
-        "gpu_webcodecs_telemetry_test",
-        "gpu_webgl2_conformance_gl_passthrough_telemetry_tests",
-        "gpu_webgl_conformance_gl_passthrough_telemetry_tests",
+        "gpu_webcodecs_gl_passthrough_ganesh_telemetry_test",
+        "gpu_webgl2_conformance_gl_passthrough_ganesh_telemetry_tests",
+        "gpu_webgl_conformance_gl_passthrough_ganesh_telemetry_tests",
         "gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests",
     ],
 )
@@ -1065,8 +1064,8 @@ targets.legacy_compound_suite(
     basic_suites = [
         "gpu_common_and_optional_telemetry_tests",
         "gpu_metal_passthrough_graphite_telemetry_tests",
-        "gpu_webgl2_conformance_metal_passthrough_telemetry_tests",
-        "gpu_webgl_conformance_metal_passthrough_telemetry_tests",
+        "gpu_webgl2_conformance_metal_passthrough_graphite_telemetry_tests",
+        "gpu_webgl_conformance_metal_passthrough_graphite_telemetry_tests",
     ],
 )
 
@@ -1087,11 +1086,14 @@ targets.legacy_compound_suite(
     basic_suites = [
         "gpu_gl_passthrough_ganesh_telemetry_tests",
         "gpu_mediapipe_passthrough_telemetry_tests",
-        "gpu_metal_passthrough_graphite_telemetry_tests",
-        "gpu_webcodecs_telemetry_test",
-        "gpu_webgl2_conformance_gl_passthrough_telemetry_tests",
-        "gpu_webgl2_conformance_metal_passthrough_telemetry_tests",
-        "gpu_webgl_conformance_gl_passthrough_telemetry_tests",
+        "gpu_metal_passthrough_ganesh_telemetry_tests",
+        "gpu_webcodecs_gl_passthrough_ganesh_telemetry_test",
+        "gpu_webcodecs_metal_passthrough_ganesh_telemetry_test",
+        "gpu_webcodecs_metal_passthrough_graphite_telemetry_test",
+        "gpu_webgl2_conformance_gl_passthrough_ganesh_telemetry_tests",
+        "gpu_webgl2_conformance_metal_passthrough_graphite_telemetry_tests",
+        "gpu_webgl_conformance_gl_passthrough_ganesh_telemetry_tests",
+        "gpu_webgl_conformance_metal_passthrough_ganesh_telemetry_tests",
         "gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests",
     ],
 )
@@ -1104,11 +1106,14 @@ targets.legacy_compound_suite(
         "gpu_mediapipe_passthrough_telemetry_tests",
         "gpu_metal_passthrough_ganesh_telemetry_tests",
         "gpu_metal_passthrough_graphite_telemetry_tests",
-        "gpu_webcodecs_telemetry_test",
-        "gpu_webgl2_conformance_gl_passthrough_telemetry_tests",
-        "gpu_webgl2_conformance_metal_passthrough_telemetry_tests",
-        "gpu_webgl_conformance_gl_passthrough_telemetry_tests",
-        "gpu_webgl_conformance_metal_passthrough_telemetry_tests",
+        "gpu_webcodecs_gl_passthrough_ganesh_telemetry_test",
+        "gpu_webcodecs_metal_passthrough_ganesh_telemetry_test",
+        "gpu_webcodecs_metal_passthrough_graphite_telemetry_test",
+        "gpu_webgl2_conformance_gl_passthrough_ganesh_telemetry_tests",
+        "gpu_webgl2_conformance_metal_passthrough_graphite_telemetry_tests",
+        "gpu_webgl_conformance_gl_passthrough_ganesh_telemetry_tests",
+        "gpu_webgl_conformance_metal_passthrough_ganesh_telemetry_tests",
+        "gpu_webgl_conformance_metal_passthrough_graphite_telemetry_tests",
         "gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests",
     ],
 )
@@ -1276,6 +1281,14 @@ targets.legacy_compound_suite(
         "linux_chromeos_specific_gtests",
         "linux_flavor_specific_chromium_gtests",
         "non_android_chromium_gtests",
+    ],
+)
+
+targets.legacy_compound_suite(
+    name = "linux_chromeos_isolated_scripts",
+    basic_suites = [
+        "blink_web_tests_ppapi_isolated_scripts",
+        "chrome_sizes",
     ],
 )
 

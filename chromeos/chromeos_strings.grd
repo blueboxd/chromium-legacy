@@ -331,13 +331,13 @@
         Writing help
       </message>
       <message name="IDS_EDITOR_MENU_WRITE_CARD_FREEFORM_PLACEHOLDER" desc="Placeholder text in the freeform textfield of the Editor Menu when shown in write mode." translateable="false">
-        For example, "write a thank you note"
+        Enter custom prompt such as "write a thank you note"
       </message>
       <message name="IDS_EDITOR_MENU_REWRITE_CARD_TITLE" desc="Title text in the Editor Menu when shown in rewrite mode." translateable="false">
         Rewrite
       </message>
       <message name="IDS_EDITOR_MENU_REWRITE_CARD_FREEFORM_PLACEHOLDER" desc="Placeholder text in the freeform textfield of the Editor Menu when shown in rewrite mode." translateable="false">
-        Custom (for example, "sound more confident")
+        Enter custom rewrite prompt such as "sound more confident"
       </message>
       <message name="IDS_EDITOR_MENU_SETTINGS_TOOLTIP" desc="Tooltip text for the settings button in the Editor Menu." translateable="false">
         Settings
@@ -2743,23 +2743,6 @@
           Zone <ph name="ZONE_NUMBER">$1<ex>1</ex></ph>
         </message>
 
-        <!-- Personalization App SeaPen strings -->
-        <message name="IDS_PERSONALIZATION_APP_SEA_PEN_TEMPLATE_PARK" desc="SeaPen sample template Park">
-          A park in <ph name="CHIP_CITY">$1<ex>Paris</ex></ph> in the style of <ph name="CHIP_STYLE">$2<ex>photography</ex></ph>.
-        </message>
-        <message name="IDS_PERSONALIZATION_APP_SEA_PEN_CHIP_CITY_OPTION_PARIS" desc="SeaPen sample chip city option Paris">
-          Paris
-        </message>
-        <message name="IDS_PERSONALIZATION_APP_SEA_PEN_CHIP_CITY_OPTION_NEW_YORK" desc="SeaPen sample chip city option New York">
-          New York
-        </message>
-        <message name="IDS_PERSONALIZATION_APP_SEA_PEN_CHIP_STYLE_OPTION_PHOTOGRAPHY" desc="SeaPen sample chip style option photography">
-          photography
-        </message>
-        <message name="IDS_PERSONALIZATION_APP_SEA_PEN_CHIP_STYLE_OPTION_WATERCOLOR" desc="SeaPen sample chip style option watercolor">
-          watercolor
-        </message>
-
         <!-- Personalization App Time of Day strings -->
         <message name="IDS_PERSONALIZATION_APP_TIME_OF_DAY_VIDEO_CLOUDS_ALBUM_TITLE" desc="Title for the clouds video in the ambient section of the hub.">
           Cloud Flow
@@ -2783,16 +2766,16 @@
           Exclusive
         </message>
         <message name="IDS_PERSONALIZATION_APP_TIME_OF_DAY_WALLPAPER_DIALOG_TITLE" desc="Title for the dialog confirming user's selection of auto dark mode for Time of Day wallpaper.">
-          Turn on auto dark mode?
+          Turn on dark mode automatically?
         </message>
         <message name="IDS_PERSONALIZATION_APP_TIME_OF_DAY_WALLPAPER_DIALOG_CONTENT" desc="Content for the dialog confirming user's selection of auto dark mode for Time of Day wallpaper.">
-          For best results with this wallpaper, please turn on auto-dark mode. You can change it back in the app anytime.
+          Turn this on for best results with this wallpaper. You can turn off this setting at anytime.
         </message>
         <message name="IDS_PERSONALIZATION_APP_TIME_OF_DAY_WALLPAPER_DIALOG_BACK_BUTTON" desc="Label for the button to close the dialog confirming user's selection of auto dark mode for Time of Day wallpaper">
           No thanks
         </message>
         <message name="IDS_PERSONALIZATION_APP_TIME_OF_DAY_WALLPAPER_DIALOG_CONFIRM_BUTTON" desc="Label for the button to accept the dialog confirming user's selection of auto dark mode for Time of Day wallpaper.">
-          Turn on auto dark mode
+          Turn on
         </message>
 
         <!-- Personalization App Search Results -->
@@ -4666,6 +4649,13 @@
         <message name="IDS_INPUT_OVERLAY_EDIT_INSTRUCTIONS_TOUCH_POINT_FOCUS" desc="Text presented via a tooltip so the user knows how to interact when the touch point is focused.">
           Move the blue touch point to an action. Select the associated key to customize.
         </message>
+        <!-- TODO(b/274690042): Make the strings translatable. -->
+        <message name="IDS_INPUT_OVERLAY_BUTTON_PLACEMENT_NUDGE_TITLE" desc="Button placement mode rich nudge title text." translateable="false">
+          Create control
+        </message>
+        <message name="IDS_INPUT_OVERLAY_BUTTON_PLACEMENT_NUDGE_BODY" desc="Button placement mode rich nudge body text." translateable="false">
+          Place control on game action to play with your keyboard
+        </message>
         <!-- End of Arc Input Overlay -->
       </if>
 
@@ -4694,6 +4684,12 @@
         Your administrator doesn't allow closing this app
       </message>
       <!-- End of Strings for WebAppSettings -->
+      <message name="IDS_WEB_APP_RELAUNCH_NOTIFICATION_TITLE" desc="Title of the app relaunch notification.">
+          Restarting and updating <ph name="APP_NAME">$1</ph>
+      </message>
+      <message name="IDS_WEB_APP_RELAUNCH_NOTIFICATION_MESSAGE" desc="Message of the app relaunch notification.">
+          Please wait while this application is being updated
+      </message>
 
     </messages>
   </release>

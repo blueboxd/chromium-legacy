@@ -4,6 +4,7 @@
 
 source_set("ntp") {
   sources = [
+    "discover_feed_manage_delegate.h",
     "discover_feed_preview_delegate.h",
     "feed_control_delegate.h",
     "feed_sign_in_promo_delegate.h",
@@ -38,7 +39,7 @@ source_set("constants") {
     "new_tab_page_header_constants.h",
     "new_tab_page_header_constants.mm",
   ]
-  public_deps = [ "//ios/chrome/browser/discover_feed:constants" ]
+  public_deps = [ "//ios/chrome/browser/discover_feed/model:constants" ]
 }
 
 source_set("component_factory_protocol") {
@@ -56,8 +57,8 @@ source_set("component_factory") {
     "//components/prefs",
     "//ios/chrome/app:tests_hook",
     "//ios/chrome/app/application_delegate:app_state_header",
-    "//ios/chrome/browser/discover_feed",
-    "//ios/chrome/browser/discover_feed:discover_feed_factory",
+    "//ios/chrome/browser/discover_feed/model",
+    "//ios/chrome/browser/discover_feed/model:discover_feed_factory",
     "//ios/chrome/browser/search_engines/model:template_url_service_factory",
     "//ios/chrome/browser/shared/coordinator/scene:scene_state_header",
     "//ios/chrome/browser/shared/model/browser",
@@ -74,7 +75,7 @@ source_set("component_factory") {
 
 source_set("coordinator") {
   sources = [
-    "new_tab_page_coordinator+private.h",
+    "new_tab_page_coordinator+Testing.h",
     "new_tab_page_coordinator.h",
     "new_tab_page_coordinator.mm",
   ]
@@ -98,13 +99,13 @@ source_set("coordinator") {
     "//components/signin/public/identity_manager/objc",
     "//ios/chrome/app/application_delegate:app_state_header",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser/discover_feed",
-    "//ios/chrome/browser/discover_feed:constants",
-    "//ios/chrome/browser/discover_feed:discover_feed_factory",
-    "//ios/chrome/browser/follow:browser_agent",
-    "//ios/chrome/browser/follow:enums",
-    "//ios/chrome/browser/follow:service",
-    "//ios/chrome/browser/ntp",
+    "//ios/chrome/browser/discover_feed/model",
+    "//ios/chrome/browser/discover_feed/model:constants",
+    "//ios/chrome/browser/discover_feed/model:discover_feed_factory",
+    "//ios/chrome/browser/follow/model:browser_agent",
+    "//ios/chrome/browser/follow/model:enums",
+    "//ios/chrome/browser/follow/model:service",
+    "//ios/chrome/browser/ntp/model",
     "//ios/chrome/browser/search_engines/model:template_url_service_factory",
     "//ios/chrome/browser/shared/coordinator/chrome_coordinator",
     "//ios/chrome/browser/shared/coordinator/layout_guide",
@@ -208,12 +209,12 @@ source_set("ntp_internal") {
     "//components/signin/public/identity_manager/objc",
     "//components/strings",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser/discover_feed",
-    "//ios/chrome/browser/discover_feed:constants",
-    "//ios/chrome/browser/discover_feed:discover_feed_factory",
-    "//ios/chrome/browser/metrics:metrics_internal",
-    "//ios/chrome/browser/ntp",
-    "//ios/chrome/browser/ntp:util",
+    "//ios/chrome/browser/discover_feed/model",
+    "//ios/chrome/browser/discover_feed/model:constants",
+    "//ios/chrome/browser/discover_feed/model:discover_feed_factory",
+    "//ios/chrome/browser/metrics/model:metrics_internal",
+    "//ios/chrome/browser/ntp/model",
+    "//ios/chrome/browser/ntp/model:util",
     "//ios/chrome/browser/policy:policy_util",
     "//ios/chrome/browser/search_engines/model",
     "//ios/chrome/browser/shared/model/browser_state",
@@ -322,9 +323,9 @@ source_set("unit_tests") {
     "//components/variations",
     "//components/variations/service",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser/discover_feed:discover_feed_factory",
+    "//ios/chrome/browser/discover_feed/model:discover_feed_factory",
     "//ios/chrome/browser/favicon",
-    "//ios/chrome/browser/ntp",
+    "//ios/chrome/browser/ntp/model",
     "//ios/chrome/browser/search_engines/model:template_url_service_factory",
     "//ios/chrome/browser/shared/coordinator/scene:scene_state_header",
     "//ios/chrome/browser/shared/model/application_context",
@@ -372,7 +373,7 @@ source_set("eg2_tests") {
     "//components/policy/core/common:test_support",
     "//components/strings",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser/metrics:eg_test_support+eg2",
+    "//ios/chrome/browser/metrics/model:eg_test_support+eg2",
     "//ios/chrome/browser/policy:eg_test_support+eg2",
     "//ios/chrome/browser/shared/model/url:constants",
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",

@@ -34,7 +34,6 @@ import org.chromium.chrome.browser.bookmarks.BookmarkUiState.BookmarkUiMode;
 import org.chromium.chrome.browser.bookmarks.ImprovedBookmarkRowProperties.ImageVisibility;
 import org.chromium.chrome.browser.commerce.ShoppingFeatures;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksReader;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.sync.SyncServiceFactory;
@@ -248,32 +247,21 @@ class BookmarkManagerMediator
                     } else if (getCurrentFolderId().getType() == BookmarkType.READING_LIST) {
                         TrackerFactory.getTrackerForProfile(mProfile)
                                 .notifyEvent(EventConstants.READ_LATER_BOOKMARK_FOLDER_OPENED);
-                        if (ChromeFeatureList.isEnabled(ChromeFeatureList.EMPTY_STATES)) {
-                            getSelectableListLayout()
-                                    .setEmptyStateImageRes(
-                                            R.drawable.reading_list_empty_state_illustration);
-                            getSelectableListLayout()
-                                    .setEmptyStateViewText(
-                                            R.string.reading_list_manager_empty_state,
-                                            R.string.reading_list_manager_save_page_to_read_later);
-                        } else {
-                            getSelectableListLayout()
-                                    .setEmptyViewText(R.string.reading_list_empty_list_title);
-                        }
+                        getSelectableListLayout()
+                                .setEmptyStateImageRes(
+                                        R.drawable.reading_list_empty_state_illustration);
+                        getSelectableListLayout()
+                                .setEmptyStateViewText(
+                                        R.string.reading_list_manager_empty_state,
+                                        R.string.reading_list_manager_save_page_to_read_later);
                     } else {
-                        if (ChromeFeatureList.isEnabled(ChromeFeatureList.EMPTY_STATES)) {
-                            getSelectableListLayout()
-                                    .setEmptyStateImageRes(
-                                            R.drawable.bookmark_empty_state_illustration);
-                            getSelectableListLayout()
-                                    .setEmptyStateViewText(
-                                            R.string.bookmark_manager_empty_state,
-                                            R.string
-                                                    .bookmark_manager_back_to_page_by_adding_bookmark);
-                        } else {
-                            getSelectableListLayout()
-                                    .setEmptyViewText(R.string.bookmarks_folder_empty);
-                        }
+                        getSelectableListLayout()
+                                .setEmptyStateImageRes(
+                                        R.drawable.bookmark_empty_state_illustration);
+                        getSelectableListLayout()
+                                .setEmptyStateViewText(
+                                        R.string.bookmark_manager_empty_state,
+                                        R.string.bookmark_manager_back_to_page_by_adding_bookmark);
                     }
                 }
             };
@@ -1407,12 +1395,12 @@ class BookmarkManagerMediator
                     } else if (textId == R.string.reading_list_mark_as_read) {
                         BookmarkItem bookmarkItem = mBookmarkModel.getBookmarkById(bookmarkId);
                         mBookmarkModel.setReadStatusForReadingList(
-                                bookmarkItem.getUrl(), /* read= */ true);
+                                bookmarkItem.getId(), /* read= */ true);
                         RecordUserAction.record("Android.BookmarkPage.ReadingList.MarkAsRead");
                     } else if (textId == R.string.reading_list_mark_as_unread) {
                         BookmarkItem bookmarkItem = mBookmarkModel.getBookmarkById(bookmarkId);
                         mBookmarkModel.setReadStatusForReadingList(
-                                bookmarkItem.getUrl(), /* read= */ false);
+                                bookmarkItem.getId(), /* read= */ false);
                         RecordUserAction.record("Android.BookmarkPage.ReadingList.MarkAsUnread");
                     } else if (textId == R.string.bookmark_item_move) {
                         if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) {
@@ -1642,10 +1630,12 @@ class BookmarkManagerMediator
     private void updateSearchBoxShoppingFilterVisibility(PropertyModel searchBoxPropertyModel) {
         // We purposefully hide the shopping filter in reading list even though search is
         // global to avoid confusing users.
+        // TODO(crbug.com/1501998): Add account reading list folder support here.
         boolean filterVisible =
                 mShoppingFilterAvailable
                         && !Objects.equals(
-                                mBookmarkModel.getReadingListFolder(), getCurrentFolderId());
+                                mBookmarkModel.getLocalOrSyncableReadingListFolder(),
+                                getCurrentFolderId());
         searchBoxPropertyModel.set(
                 BookmarkSearchBoxRowProperties.SHOPPING_CHIP_VISIBILITY, filterVisible);
         Set<PowerBookmarkType> powerFilter = mCurrentPowerFilter;

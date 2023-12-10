@@ -112,13 +112,6 @@ class CreditCardAccessManager
 
   // Logs information about current credit card data.
   void UpdateCreditCardFormEventLogger();
-  // Returns true when deletion is allowed. Only local cards can be deleted.
-  bool DeleteCard(const CreditCard* card);
-  // Returns true if the |card| is deletable. Fills out
-  // |title| and |body| with relevant user-facing text.
-  bool GetDeletionConfirmationText(const CreditCard* card,
-                                   std::u16string* title,
-                                   std::u16string* body);
 
   // Returns false only if some form of authentication is still in progress.
   bool ShouldClearPreviewedForm();
@@ -191,10 +184,6 @@ class CreditCardAccessManager
   bool ShouldOfferFidoOptInDialogForTesting(
       const CreditCardCvcAuthenticator::CvcAuthenticationResponse& response) {
     return ShouldOfferFidoOptInDialog(response);
-  }
-
-  void OnRiskBasedAuthenticationCancelledForTesting() {
-    OnRiskBasedAuthenticationCancelled();
   }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -389,10 +378,6 @@ class CreditCardAccessManager
   // Callback function invoked when the user has cancelled the virtual card
   // unmasking.
   void OnVirtualCardUnmaskCancelled();
-
-  // Callback function invoked when the user has cancelled the risk-based card
-  // authentication.
-  void OnRiskBasedAuthenticationCancelled();
 
   // Reset all the member variables of |this| and restore initial states.
   void Reset();

@@ -179,6 +179,13 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="Recording the microphone and system audio together"/>
 </enum>
 
+<enum name="AuthFactorMigrationResult">
+  <int value="0" label="Skipped"/>
+  <int value="1" label="Success"/>
+  <int value="2" label="Failed"/>
+  <int value="3" label="Not run"/>
+</enum>
+
 <enum name="AuthMethod">
   <int value="0" label="Password"/>
   <int value="1" label="PIN"/>
@@ -364,6 +371,10 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="User pref is not available at campaigns matching"/>
   <int value="4" label="Invalid campaign"/>
   <int value="5" label="Invalid targeting"/>
+  <int value="6" label="Invalid scheduling targeting"/>
+  <int value="7" label="Invalid scheduling"/>
+  <int value="8" label="Demo Mode app version is not available at matching"/>
+  <int value="9" label="Serializing Demo Mode payload failed"/>
 </enum>
 
 <enum name="CaptureModeBarButtonType">
@@ -1243,6 +1254,8 @@ chromium-metrics-reviews@google.com.
   <int value="20" label="Multitask Menu Clamshell"/>
   <int value="21" label="Multitask Menu Tablet"/>
   <int value="22" label="Capture Mode Education Shortcut Nudge"/>
+  <int value="23" label="Capture Mode Education Shortcut Tutorial"/>
+  <int value="24" label="Capture Mode Education Quick Settings Nudge"/>
 </enum>
 
 <enum name="OnDeviceToServerSpeechRecognitionFallbackReason">
@@ -1317,6 +1330,7 @@ chromium-metrics-reviews@google.com.
   <int value="20" label="Exiting overview in tests"/>
   <int value="21" label="DEPRECATED: Showing glanceables"/>
   <int value="22" label="Exiting overview due to window deactivation"/>
+  <int value="23" label="Window restored from previous session"/>
 </enum>
 
 <enum name="OverviewStartAction">

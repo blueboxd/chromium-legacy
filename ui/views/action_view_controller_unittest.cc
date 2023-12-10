@@ -11,6 +11,8 @@
 #include "ui/actions/actions.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
+#include "ui/events/types/event_type.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/test/button_test_api.h"
 #include "ui/views/test/views_test_base.h"
@@ -46,45 +48,13 @@ namespace views {
 
 using ActionViewControllerTest = ViewsTestBase;
 
-// Test changing the action item will trigger the action changed callback on
-// both the derived and base class controller.
-TEST_F(ActionViewControllerTest, TestActionChangedCallbackCalled) {
-  std::unique_ptr<actions::ActionItem> action_item = CreateDisabledActionItem();
-  auto action_view = std::make_unique<MdTextButton>();
-  EXPECT_EQ(action_view->GetText(), u"");
-  EXPECT_TRUE(action_view->GetEnabled());
-  auto action_view_controller =
-      std::make_unique<ActionViewController<MdTextButton>>(
-          action_view.get(), action_item->GetAsWeakPtr());
-  EXPECT_EQ(action_view->GetText(), kActionTextDisabled);
-  EXPECT_FALSE(action_view->GetEnabled());
-  action_item->SetText(kActionTextEnabled);
-  action_item->SetEnabled(true);
-  EXPECT_EQ(action_view->GetText(), kActionTextEnabled);
-  EXPECT_TRUE(action_view->GetEnabled());
-}
-
-// Test reassigning to variable of base class type still has access to action
-// item and action views
-TEST_F(ActionViewControllerTest, TestReasignToBaseClass) {
-  std::unique_ptr<actions::ActionItem> action_item = CreateDisabledActionItem();
-  auto action_view = std::make_unique<MdTextButton>();
-  auto action_view_controller =
-      std::make_unique<ActionViewController<MdTextButton>>(
-          action_view.get(), action_item->GetAsWeakPtr());
-  std::unique_ptr<ActionViewController<View>> base_action_view_controller =
-      std::move(action_view_controller);
-  EXPECT_NE(base_action_view_controller->GetActionView(), nullptr);
-  EXPECT_NE(base_action_view_controller->GetActionItemForTesting(), nullptr);
-}
-
 // Test reassigning action item.
 TEST_F(ActionViewControllerTest, TestReassignActionItem) {
   std::unique_ptr<actions::ActionItem> disabled_action_item =
       CreateDisabledActionItem();
   auto action_view = std::make_unique<MdTextButton>();
   auto action_view_controller =
-      std::make_unique<ActionViewController<MdTextButton>>(
+      std::make_unique<ActionViewControllerTemplate<MdTextButton>>(
           action_view.get(), disabled_action_item->GetAsWeakPtr());
   EXPECT_EQ(action_view->GetText(), kActionTextDisabled);
   EXPECT_FALSE(action_view->GetEnabled());
@@ -100,7 +70,7 @@ TEST_F(ActionViewControllerTest, TestReassignActionView) {
   std::unique_ptr<actions::ActionItem> action_item = CreateDisabledActionItem();
   auto first_action_view = std::make_unique<MdTextButton>();
   auto action_view_controller =
-      std::make_unique<ActionViewController<MdTextButton>>(
+      std::make_unique<ActionViewControllerTemplate<MdTextButton>>(
           first_action_view.get(), action_item->GetAsWeakPtr());
   EXPECT_EQ(first_action_view->GetText(), kActionTextDisabled);
   EXPECT_FALSE(first_action_view->GetEnabled());
@@ -117,7 +87,7 @@ TEST_F(ActionViewControllerTest, TestActionViewDestroyed) {
   std::unique_ptr<actions::ActionItem> action_item = CreateDisabledActionItem();
   auto action_view = std::make_unique<MdTextButton>();
   auto action_view_controller =
-      std::make_unique<ActionViewController<MdTextButton>>(
+      std::make_unique<ActionViewControllerTemplate<MdTextButton>>(
           action_view.get(), action_item->GetAsWeakPtr());
   action_view.reset();
   action_item->SetEnabled(true);
@@ -131,7 +101,7 @@ TEST_F(ActionViewControllerTest, TriggerAction) {
   test_widget->Show();
   std::unique_ptr<actions::ActionItem> action_item = CreateEnabledActionItem();
   auto action_view_controller =
-      std::make_unique<ActionViewController<MdTextButton>>(
+      std::make_unique<ActionViewControllerTemplate<MdTextButton>>(
           action_view, action_item->GetAsWeakPtr());
   action_view_controller->SetActionItem(action_item->GetAsWeakPtr());
   EXPECT_EQ(0, action_item->GetInvokeCount());
@@ -140,6 +110,31 @@ TEST_F(ActionViewControllerTest, TriggerAction) {
   views::test::ButtonTestApi test_api(action_view);
   test_api.NotifyClick(e);
   EXPECT_EQ(1, action_item->GetInvokeCount());
+}
+
+TEST_F(ActionViewControllerTest, TestCreateActionViewRelationship) {
+  auto first_action_view = std::make_unique<MdTextButton>();
+  auto second_action_view = std::make_unique<MdTextButton>();
+  std::unique_ptr<actions::ActionItem> first_action_item =
+      CreateEnabledActionItem();
+  std::unique_ptr<actions::ActionItem> second_action_item =
+      CreateDisabledActionItem();
+  ActionViewController action_view_controller = ActionViewController();
+  action_view_controller.CreateActionViewRelationship(
+      first_action_view.get(), first_action_item->GetAsWeakPtr());
+  action_view_controller.CreateActionViewRelationship(
+      second_action_view.get(), second_action_item->GetAsWeakPtr());
+  EXPECT_TRUE(first_action_view->GetEnabled());
+  EXPECT_FALSE(second_action_view->GetEnabled());
+  // View should respond to its action item changing.
+  first_action_item->SetEnabled(false);
+  EXPECT_FALSE(first_action_view->GetEnabled());
+  // Change the action item, then modify the original action item and make sure
+  // the view does not respond to the original action item being changed.
+  action_view_controller.CreateActionViewRelationship(
+      first_action_view.get(), second_action_item->GetAsWeakPtr());
+  first_action_item->SetEnabled(true);
+  EXPECT_FALSE(first_action_view->GetEnabled());
 }
 
 }  // namespace views

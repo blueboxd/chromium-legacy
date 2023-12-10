@@ -1260,6 +1260,7 @@ bool OmniboxViewViews::SkipDefaultKeyEventProcessing(
 }
 
 void OmniboxViewViews::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  Textfield::GetAccessibleNodeData(node_data);
   node_data->role = ax::mojom::Role::kTextField;
   node_data->SetNameChecked(l10n_util::GetStringUTF8(IDS_ACCNAME_LOCATION));
   node_data->AddStringAttribute(ax::mojom::StringAttribute::kAutoComplete,
@@ -1709,9 +1710,12 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       break;
 
     case ui::VKEY_SPACE: {
-      if (model()->PopupIsOpen()) {
+      if (model()->PopupIsOpen() && !control && !alt && !shift) {
+        if (model()->OnSpacePressed()) {
+          return true;
+        }
         OmniboxPopupSelection selection = model()->GetPopupSelection();
-        if (selection.IsButtonFocused() && !control && !alt && !shift) {
+        if (selection.IsButtonFocused()) {
           model()->OpenSelection(selection, event.time_stamp());
           return true;
         }
@@ -1823,7 +1827,7 @@ views::View::DropCallback OmniboxViewViews::CreateDropCallback(
 void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
   MaybeAddSendTabToSelfItem(menu_contents);
 
-  absl::optional<size_t> paste_position =
+  std::optional<size_t> paste_position =
       menu_contents->GetIndexOfCommandId(Textfield::kPaste);
   DCHECK(paste_position.has_value());
   menu_contents->InsertItemWithStringIdAt(paste_position.value() + 1,

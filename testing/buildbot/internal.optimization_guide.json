@@ -99,6 +99,10 @@
     ]
   },
   "optimization_guide-linux": {
+    "additional_compile_targets": [
+      "ondevice_model_benchmark",
+      "ondevice_model_example"
+    ],
     "gtest_tests": [
       {
         "args": [
@@ -154,6 +158,9 @@
     ],
     "isolated_scripts": [
       {
+        "args": [
+          "--out_dir=."
+        ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
@@ -175,6 +182,7 @@
       },
       {
         "args": [
+          "--out_dir=.",
           "--chromedriver",
           "chromedriver",
           "--binary",
@@ -202,6 +210,10 @@
     ]
   },
   "optimization_guide-mac-arm64": {
+    "additional_compile_targets": [
+      "ondevice_model_benchmark",
+      "ondevice_model_example"
+    ],
     "gtest_tests": [
       {
         "args": [
@@ -260,6 +272,9 @@
     ],
     "isolated_scripts": [
       {
+        "args": [
+          "--out_dir=."
+        ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
@@ -282,6 +297,7 @@
       },
       {
         "args": [
+          "--out_dir=.",
           "--chromedriver",
           "chromedriver",
           "--binary",
@@ -310,6 +326,10 @@
     ]
   },
   "optimization_guide-mac-x64": {
+    "additional_compile_targets": [
+      "ondevice_model_benchmark",
+      "ondevice_model_example"
+    ],
     "gtest_tests": [
       {
         "args": [
@@ -368,6 +388,9 @@
     ],
     "isolated_scripts": [
       {
+        "args": [
+          "--out_dir=."
+        ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
@@ -390,6 +413,7 @@
       },
       {
         "args": [
+          "--out_dir=.",
           "--chromedriver",
           "chromedriver",
           "--binary",
@@ -418,6 +442,10 @@
     ]
   },
   "optimization_guide-win32": {
+    "additional_compile_targets": [
+      "ondevice_model_benchmark",
+      "ondevice_model_example"
+    ],
     "gtest_tests": [
       {
         "args": [
@@ -473,6 +501,10 @@
     ],
     "isolated_scripts": [
       {
+        "args": [
+          "--out_dir=.",
+          "--target-platform=win32"
+        ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
@@ -494,6 +526,7 @@
       },
       {
         "args": [
+          "--out_dir=.",
           "--chromedriver",
           "chromedriver.exe",
           "--binary",
@@ -521,6 +554,10 @@
     ]
   },
   "optimization_guide-win64": {
+    "additional_compile_targets": [
+      "ondevice_model_benchmark",
+      "ondevice_model_example"
+    ],
     "gtest_tests": [
       {
         "args": [
@@ -576,6 +613,9 @@
     ],
     "isolated_scripts": [
       {
+        "args": [
+          "--out_dir=."
+        ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
@@ -597,6 +637,7 @@
       },
       {
         "args": [
+          "--out_dir=.",
           "--chromedriver",
           "chromedriver.exe",
           "--binary",

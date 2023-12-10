@@ -66,7 +66,6 @@
 <translation id="1225748608451425081">Chromebook ของคุณถูกล็อกเนื่องจากปัญหาที่ทราบแล้ว คุณจะลงชื่อเข้าใช้ได้ในอีก <ph name="TIME_LEFT" /></translation>
 <translation id="1226877728704622336">เดสก์ที่ไม่ได้ใช้งาน</translation>
 <translation id="1229194443904279055">หยุดเลือก</translation>
-<translation id="1233979878541157665">ลองค้นหา "พระอาทิตย์ตก" หรือ "ต้นไม้" แทนชื่อไฟล์ คุณปิดการค้นหารูปภาพในแถบค้นหาได้</translation>
 <translation id="1235458158152011030">เครือข่ายที่รู้จัก</translation>
 <translation id="1239161794459865856"><ph name="FEATURE_NAME" /> เชื่อมต่อแล้ว</translation>
 <translation id="1240638468526743569">แอป</translation>
@@ -294,6 +293,7 @@
 <translation id="2224075387478458881">ไม่อนุญาตให้บันทึกหน้าจอเมื่อมีเนื้อหาที่ได้รับการคุ้มครองแสดงอยู่</translation>
 <translation id="2227179592712503583">นำคำแนะนำออก</translation>
 <translation id="2248634276911611268">เปิดลิงก์ในแท็บใหม่และสลับไปที่แท็บใหม่นี้</translation>
+<translation id="2253808149208613283">ติดตั้งแอปเพื่อปรับแต่งอุปกรณ์นี้</translation>
 <translation id="225680501294068881">กำลังสแกนหาอุปกรณ์...</translation>
 <translation id="2257486738914982088">เกิดข้อผิดพลาดขณะดาวน์โหลด <ph name="FILENAME" /></translation>
 <translation id="2258734398699965611">ไฟล์ที่แนะนำ</translation>
@@ -447,6 +447,7 @@
 <translation id="2914580577416829331">การจับภาพหน้าจอ</translation>
 <translation id="2924416280450782352">แสดงรายการไม่ได้ ลองเปิดแผงนี้อีกครั้ง</translation>
 <translation id="2931572158271115754">ไม่มีรายการในสิ่งที่ต้องทำนี้</translation>
+<translation id="2935225303485967257">จัดการโปรไฟล์ต่างๆ</translation>
 <translation id="2941112035454246133">ต่ำ</translation>
 <translation id="2942350706960889382">แว่นขยายหน้าจอบางส่วน</translation>
 <translation id="2942516765047364088">ตำแหน่งของชั้นวาง</translation>
@@ -624,6 +625,7 @@
 <translation id="3593646411856133110">เลื่อนขึ้นค้างไว้เพื่อดูแอปที่เปิดอยู่</translation>
 <translation id="3595596368722241419">แบตเตอรี่เต็ม</translation>
 <translation id="3596012367874587041">การตั้งค่าแอป</translation>
+<translation id="3598452309062311481">ค้นหา+h</translation>
 <translation id="3600061223661453002">ปิด</translation>
 <translation id="3604801046548457007">สร้างเดสก์ <ph name="DESK_TITILE" /> แล้ว</translation>
 <translation id="3606978283550408104">เชื่อมต่ออุปกรณ์แสดงผลอักษรเบรลล์แล้ว</translation>
@@ -646,6 +648,7 @@
 <translation id="3659667652322717492">คุณเปลี่ยนลักษณะการทำงานของไมค์ได้ทุกเมื่อในภายหลัง</translation>
 <translation id="3659814201068740063">เหลืออีกประมาณ <ph name="TIME_LEFT" /> (<ph name="PERCENTAGE" />%)
 เชื่อมต่ออุปกรณ์กับแหล่งจ่ายไฟ</translation>
+<translation id="3660860940251915011">เปิด/ปิดระดับการเข้าถึงสูงของ <ph name="FEATURE_NAME" /></translation>
 <translation id="366222428570480733">ผู้ใช้ที่ได้รับการจัดการ <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="3666266999138159418">ปัดเพื่อซ่อนหน้าต่างแบบลอย</translation>
 <translation id="367531336287639526">เลือกไอคอนแรกทางด้านซ้ายของแถบที่อยู่</translation>
@@ -654,6 +657,7 @@
 <translation id="36813544980941320">จะมีการแชร์เครือข่าย Wi-Fi ระหว่างโทรศัพท์และ <ph name="DEVICE_NAME" /></translation>
 <translation id="3682279812299376603"><ph name="MODIFIER_ONE" /><ph name="MODIFIER_TWO" /><ph name="KEY_ONE" /> แล้วตามด้วย <ph name="KEY_TWO" /></translation>
 <translation id="3694122362646626770">เว็บไซต์</translation>
+<translation id="3697991387880191195">กดทางลัดสำหรับการจับภาพหน้าจอ</translation>
 <translation id="3702809606464356667">กำลังแสดงหน้าต่างจากเดสก์ปัจจุบัน กดปุ่มลูกศรขึ้นเพื่อแสดงหน้าต่างจากเดสก์ทั้งหมด</translation>
 <translation id="3702846122927433391">ประชากรในประเทศไนจีเรีย</translation>
 <translation id="3705722231355495246">-</translation>
@@ -768,6 +772,7 @@
 <translation id="4190780880566297084">ปิดการตั้งค่าการดูรูปภาพ สื่อ และแอปล่าสุดของโทรศัพท์</translation>
 <translation id="4192112279662688596">หรือ</translation>
 <translation id="4193857202545160520">แสดงการคลิกและแป้นพิมพ์</translation>
+<translation id="4193969623755915875">เปิด "ความช่วยเหลือ" ในแอปสำรวจโดยใช้แป้นพิมพ์ลัด "<ph name="NEW_SHORTCUT" />"</translation>
 <translation id="4195579532193195633">เวอร์ชันปัจจุบัน <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="4195814663415092787">ดำเนินการต่อจากที่ค้างอยู่</translation>
 <translation id="4195877955194704651">ปุ่มคลิกอัตโนมัติ</translation>
@@ -828,6 +833,7 @@
 <translation id="4389184120735010762">คุณกดแป้นพิมพ์ลัดสำหรับแว่นขยายหน้าจอบางส่วน จะเปิดแว่นขยายไหม</translation>
 <translation id="439598569299422042">หยุดชั่วคราว <ph name="SIZE_INFO" /></translation>
 <translation id="440113666232554208">บันทึก Screencast ไม่ได้</translation>
+<translation id="4403371424034411727"><ph name="PERIPHERAL_NAME" /> เชื่อมต่อและพร้อมใช้งานแล้ว คุณปรับแต่งเมาส์ได้ในการตั้งค่า</translation>
 <translation id="4405151984121254935">ไม่รองรับอุปกรณ์ต่อพ่วงที่เชื่อมต่ออยู่</translation>
 <translation id="4406883609789734330">คำบรรยายสด</translation>
 <translation id="4412944820643904175"><ph name="FEATURE_NAME" /> ปิดอยู่</translation>
@@ -949,6 +955,7 @@
 <translation id="4889868803215848840">แสดงความคิดเห็น (ไม่บังคับ) เพื่อปรับปรุงคำแนะนำ ดังนี้</translation>
 <translation id="4890187583552566966">ผู้ดูแลระบบปิดใช้ Google Assistant</translation>
 <translation id="4890408602550914571">ตรวจสอบว่าโทรศัพท์อยู่ใกล้ๆ และเปิดบลูทูธไว้</translation>
+<translation id="4892981359753171125">การควบคุมใบหน้า</translation>
 <translation id="4895488851634969361">แบตเตอรี่เต็ม</translation>
 <translation id="490375751687810070">แนวตั้ง</translation>
 <translation id="490788395437447240">แบตเตอรี่ <ph name="BATTERY_PERCENTAGE" />%</translation>
@@ -975,6 +982,7 @@
         <ph name="NOTIFICATION_1" />,
         <ph name="NOTIFICATION_2" />,
         <ph name="NUM_OTHER_NOTIFICATION" /></translation>
+<translation id="4981175556418720939">แก้ไขเมื่อ <ph name="DATE_AND_TIME" /></translation>
 <translation id="4987738733603015246">เดสก์ที่ 16</translation>
 <translation id="4989163558385430922">ดูทั้งหมด</translation>
 <translation id="5003993274120026347">ประโยคถัดไป</translation>
@@ -1136,6 +1144,7 @@
 <translation id="5620979661744857819">การดำเนินการนี้ช่วยให้ <ph name="APP_NAME" /> รวมถึงแอปและเว็บไซต์ทั้งหมดที่มีสิทธิ์สามารถเข้าถึงกล้องและไมโครโฟนได้ คุณอาจต้องรีเฟรชหน้าเว็บหรือรีสตาร์ทแอป</translation>
 <translation id="5625955975703555628">LTE+</translation>
 <translation id="5627392655516693966">ยืนยันรหัสผ่านของคุณไม่ได้ โปรดลองอีกครั้ง</translation>
+<translation id="5632485077360054581">แสดงวิธีการ</translation>
 <translation id="5648021990716966815">ช่องเสียบไมโครโฟน</translation>
 <translation id="5652575806481723716"><ph name="FOCUSED_APP_NAME" /> ส่งคำขอให้คุณดำเนินการ</translation>
 <translation id="5662075790140998213">เดสก์ที่ 10</translation>
@@ -1285,6 +1294,7 @@
 <translation id="6199775032047436064">โหลดหน้าปัจจุบันใหม่</translation>
 <translation id="6200515304866777730">แอปไม่รองรับ</translation>
 <translation id="6210042900243040400">เชื่อมต่อ <ph name="NAME" /> ที่บันทึกไว้ก่อนหน้านี้ใน <ph name="EMAIL" /></translation>
+<translation id="6212097153736801627">ปรับแต่ง <ph name="PERIPHERAL_NAME" /></translation>
 <translation id="6213808132343683860">จับภาพหน้าจอหรือบันทึกหน้าจอแบบบางส่วน</translation>
 <translation id="6220928844947387476">ตอนนี้สามารถบันทึกตัวคุณเองไปพร้อมกับหน้าจอได้แล้ว</translation>
 <translation id="622484624075952240">ลง</translation>
@@ -1329,7 +1339,6 @@
 <translation id="643593192654616063">กำลังใช้พื้นที่เก็บข้อมูล <ph name="STORAGE_IN_USE_SIZE" /> จากทั้งหมด <ph name="STORAGE_TOTAL_SIZE" /></translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> ใน<ph name="RECEIVER_NAME" /></translation>
 <translation id="6445915701151710649">cpu</translation>
-<translation id="6446225358675593408">ค้นหารูปภาพตามเนื้อหา</translation>
 <translation id="6447111710783417522"><ph name="DATE" />, <ph name="NUMBER" /> กิจกรรม</translation>
 <translation id="6449483711453944360">ขณะนี้ยังไม่รองรับแอป Linux และหน้าต่างที่ไม่ระบุตัวตน</translation>
 <translation id="6450245544201845082">แป้นพิมพ์ลัดสำหรับการคลิกขวาปิดอยู่</translation>
@@ -1435,6 +1444,7 @@
 <translation id="6827049576281411231">ปิดแผงกิจกรรม</translation>
 <translation id="6831561626108366035">ไปที่ปุ่ม <ph name="ACTIVE_STATE" /> <ph name="DESK_NAME" /></translation>
 <translation id="6836499262298959512">ไฟล์นี้ไม่ปลอดภัย</translation>
+<translation id="6837621009301897464">หากต้องการถ่ายภาพหน้าจอ ให้กด</translation>
 <translation id="6852052252232534364">คลิกเพื่อเปิดใช้</translation>
 <translation id="6855029042976311970">แก้ไขเมื่อสักครู่</translation>
 <translation id="6856708615407876657">เปิด/ปิดหมวดหมู่ผลการค้นหา</translation>
@@ -1512,6 +1522,7 @@
 <translation id="7167913274352523149"><ph name="HOTSPOT" />,
         <ph name="NETWORK" /></translation>
 <translation id="7168224885072002358">เปลี่ยนกลับไปเป็นความละเอียดเดิมภายใน <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7173114856073700355">เปิดการตั้งค่า</translation>
 <translation id="7180611975245234373">รีเฟรช</translation>
 <translation id="7188494361780961876">เมนูได้ย้ายไปอยู่ที่มุมซ้ายบนของหน้าจอ</translation>
 <translation id="7189412385142492784">ดาวศุกร์อยู่ไกลแค่ไหน</translation>
@@ -1525,13 +1536,13 @@
 <translation id="726276584504105859">ลากมาที่นี่เพื่อใช้การแยกหน้าจอ</translation>
 <translation id="7262906531272962081">สร้างการช่วยเตือน</translation>
 <translation id="7278787617901301220"><ph name="LAUNCHER_KEY_NAME" /> + Backspace</translation>
+<translation id="7285232777292757180">ใช้เครื่องมือจับภาพหน้าจอในการตั้งค่าด่วนเพื่อถ่ายภาพหน้าจอ</translation>
 <translation id="7302889331339392448">คำบรรยายสดปิดอยู่</translation>
 <translation id="7303365578352795231">กำลังรับสายในอุปกรณ์อื่น</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7312210124139670355">ผู้ดูแลระบบกำลังรีเซ็ต eSIM การดำเนินการนี้อาจใช้เวลาสักครู่</translation>
 <translation id="7313193732017069507">ขยายขนาดกล้อง</translation>
 <translation id="7316261577130609484">เพิ่มงานใหม่</translation>
-<translation id="7321889295239318128">กด Shift + Tab เพื่อดูข้อมูลเพิ่มเติม</translation>
 <translation id="7330397557116570022">ไปที่ช่องข้อความเพื่อใช้การพิมพ์ตามคําบอก</translation>
 <translation id="7331646370422660166">Alt + ลูกศรลง</translation>
 <translation id="7340731148882810149">เมนูการคลิกอัตโนมัติ</translation>
@@ -1909,6 +1920,7 @@
 <translation id="888982883502837004">มีการอัปเดตเฟิร์มแวร์พร้อมใช้งานกับอุปกรณ์ คลิกเพื่อตรวจสอบและอัปเดต</translation>
 <translation id="8896630965521842259">ระบบจะลบ <ph name="DESK_TEMPLATE_NAME" /> ออกอย่างถาวร</translation>
 <translation id="889790758758811533">แบตเตอรี่เหลืออยู่ <ph name="PERCENTAGE" />% (ใช้ได้อีกประมาณ <ph name="TIME_LEFT" />) โปรดเชื่อมต่ออุปกรณ์กับแหล่งจ่ายไฟ</translation>
+<translation id="8897940060812808966"><ph name="PERIPHERAL_NAME" /> เชื่อมต่อและพร้อมใช้งานแล้ว คุณปรับแต่งแท็บเล็ตสำหรับวาดรูปได้ในการตั้งค่า</translation>
 <translation id="88986195241502842">เลื่อนหน้าลง</translation>
 <translation id="8905919797434099235">(ไม่มีชื่อ)</translation>
 <translation id="890616557918890486">เปลี่ยนแหล่งที่มา</translation>

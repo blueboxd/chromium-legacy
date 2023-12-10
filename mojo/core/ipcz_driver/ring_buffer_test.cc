@@ -6,15 +6,15 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
-#include <optional>
 #include "base/containers/span.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/ranges/algorithm.h"
-#include "base/strings/string_piece.h"
 #include "mojo/core/ipcz_driver/shared_buffer.h"
 #include "mojo/core/ipcz_driver/shared_buffer_mapping.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,12 +24,12 @@ namespace {
 
 using RingBufferTest = testing::Test;
 
-base::StringPiece AsString(base::span<const uint8_t> bytes) {
-  return base::StringPiece(reinterpret_cast<const char*>(bytes.data()),
-                           bytes.size());
+std::string_view AsString(base::span<const uint8_t> bytes) {
+  return std::string_view(reinterpret_cast<const char*>(bytes.data()),
+                          bytes.size());
 }
 
-base::span<const uint8_t> AsBytes(base::StringPiece s) {
+base::span<const uint8_t> AsBytes(std::string_view s) {
   return base::as_bytes(base::make_span(s)).first(s.length());
 }
 
@@ -42,9 +42,9 @@ class TestRingBuffer {
 
   RingBuffer& buffer() { return buffer_; }
 
-  size_t Write(base::StringPiece s) { return buffer_.Write(AsBytes(s)); }
+  size_t Write(std::string_view s) { return buffer_.Write(AsBytes(s)); }
 
-  bool WriteAll(base::StringPiece s) { return buffer_.WriteAll(AsBytes(s)); }
+  bool WriteAll(std::string_view s) { return buffer_.WriteAll(AsBytes(s)); }
 
   std::string Read(size_t n) {
     std::vector<uint8_t> data(n);

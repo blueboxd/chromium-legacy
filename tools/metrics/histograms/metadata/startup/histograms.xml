@@ -23,7 +23,7 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="Startup.AfterStartupTaskCount" units="units"
-    expires_after="2024-03-14">
+    expires_after="2024-05-19">
   <owner>michaeln@chromium.org</owner>
   <summary>
     The number of after-startup tasks that were queued prior to startup
@@ -32,7 +32,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.AfterStartupTaskDelayedUntilTime" units="ms"
-    expires_after="2024-03-14">
+    expires_after="2024-05-19">
   <owner>michaeln@chromium.org</owner>
   <summary>
     Time from the process creation until deferred after-startup tasks began
@@ -72,7 +72,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Startup.Android.Cold.FirstNavigationCommitOccurredPreForeground"
-    enum="Boolean" expires_after="2024-03-24">
+    enum="Boolean" expires_after="2024-05-26">
   <owner>blundell@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -94,7 +94,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.Android.Cold.FirstSafeBrowsingApiResponseTime.Tabbed"
-    units="ms" expires_after="2024-03-18">
+    units="ms" expires_after="2024-05-19">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -490,12 +490,21 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Startup.Android.PrivacySandbox.DialogNotShownDueToTabLaunchedFromExternalApp"
-    enum="Boolean" expires_after="2024-03-31">
+    enum="Boolean" expires_after="2024-06-02">
   <owner>tommasin@chromium.org</owner>
   <owner>kartoffel-core-eng@google.com</owner>
   <summary>
     Android: PrivacySandbox dialog not shown because Chrome Tab was launched
     from an external app.
+  </summary>
+</histogram>
+
+<histogram name="Startup.Android.PrivacySandbox.ShouldShowAdsNoticeCCT"
+    enum="Boolean" expires_after="2024-09-30">
+  <owner>jacobstanley@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <summary>
+    Whether or not the Privacy Sandbox ads notice is shown on Android CCTs.
   </summary>
 </histogram>
 
@@ -545,7 +554,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.BrowserMainRunnerImplInitializeLongTime" units="ms"
-    expires_after="2024-03-17">
+    expires_after="2024-05-19">
   <owner>robliao@chromium.org</owner>
   <summary>
     The amount of time that elapsed during BrowserMainRunnerImpl::Initialize.
@@ -553,7 +562,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.BrowserMessageLoopFirstIdle" units="ms"
-    expires_after="2024-03-17">
+    expires_after="2024-05-19">
   <owner>gab@chromium.org</owner>
   <owner>etienneb@chromium.org</owner>
   <summary>
@@ -628,17 +637,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Startup.BrowserProcessImpl_PreMainMessageLoopRunTime"
-    units="ms" expires_after="M85">
-  <owner>rkaplow@chromium.org</owner>
-  <summary>
-    The amount of time that elapsed during
-    BrowserProcessImpl::PreMainMessageLoopRun.
-  </summary>
-</histogram>
-
 <histogram name="Startup.BrowserWindow.FirstPaint" units="ms"
-    expires_after="2024-03-17">
+    expires_after="2024-05-19">
   <owner>gab@chromium.org</owner>
   <owner>mblsha@yandex-team.ru</owner>
   <summary>
@@ -932,69 +932,6 @@ chromium-metrics-reviews@google.com.
   <summary>The calling application (if any).</summary>
 </histogram>
 
-<histogram name="Startup.OSX.AwakeFromNib" units="ms"
-    expires_after="2018-08-30">
-  <owner>erikchen@chromium.org</owner>
-  <summary>
-    The amount of time that elapsed between main entry and the invocation of
-    -[AppControllerMac awakeFromNib].
-  </summary>
-</histogram>
-
-<histogram name="Startup.OSX.DockIconWillFinishBouncing" units="ms"
-    expires_after="M77">
-  <owner>erikchen@chromium.org</owner>
-  <summary>
-    The amount of time that elapsed between main entry and the invocation of
-    -[AppControllerMac didFinishLaunching:]. At that point, the dock icon will
-    finish its current animation and stop bouncing.
-  </summary>
-</histogram>
-
-<histogram name="Startup.OSX.PostMainMessageLoopStart" units="ms"
-    expires_after="M85">
-  <owner>erikchen@chromium.org</owner>
-  <summary>
-    The amount of time that elapsed between main entry and the invocation of
-    ChromeBrowserMainPartsMac::PostMainMessageLoopStart.
-  </summary>
-</histogram>
-
-<histogram name="Startup.OSX.PostProfileInit" units="ms" expires_after="M77">
-  <owner>erikchen@chromium.org</owner>
-  <summary>
-    The amount of time that elapsed between main entry and the invocation of
-    ChromeBrowserMainPartsMac::PostProfileInit.
-  </summary>
-</histogram>
-
-<histogram name="Startup.OSX.PreMainMessageLoopStart" units="ms"
-    expires_after="2018-08-30">
-  <owner>erikchen@chromium.org</owner>
-  <summary>
-    The amount of time that elapsed between main entry and the invocation of
-    ChromeBrowserMainPartsMac::PreMainMessageLoopStart.
-  </summary>
-</histogram>
-
-<histogram name="Startup.OSX.PreProfileInit" units="ms"
-    expires_after="2018-08-30">
-  <owner>erikchen@chromium.org</owner>
-  <summary>
-    The amount of time that elapsed between main entry and the invocation of
-    ChromeBrowserMainPartsMac::PreProfileInit.
-  </summary>
-</histogram>
-
-<histogram name="Startup.OSX.WillFinishLaunching" units="ms"
-    expires_after="2018-08-30">
-  <owner>erikchen@chromium.org</owner>
-  <summary>
-    The amount of time that elapsed between main entry and the invocation of
-    -[AppControllerMac willFinishLaunching:].
-  </summary>
-</histogram>
-
 <histogram name="Startup.PreMainMessageLoopRunImplLongTime" units="ms"
     expires_after="2024-04-28">
   <owner>rkaplow@chromium.org</owner>
@@ -1062,16 +999,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Startup.StartupBrowserCreator_Start" units="ms"
-    expires_after="M77">
-  <owner>rkaplow@chromium.org</owner>
+<histogram name="Startup.StartupBrowserCreator.LaunchBrowser" units="ms"
+    expires_after="2024-11-17">
+  <owner>alemate@chromium.org</owner>
+  <owner>xiyuan@chromium.org</owner>
+  <owner>cros-sw-perf+metrics@google.com</owner>
   <summary>
-    The amount of time that elapsed during StartupBrowserCreator::Start().
+    The amount of time that elapsed during
+    StartupBrowserCreator::LaunchBrowser().
   </summary>
 </histogram>
 
 <histogram name="Startup.Temperature" enum="StartupTemperature"
-    expires_after="2024-03-17">
+    expires_after="2024-05-19">
 <!-- expires-after: Diagnosis metric for changes in StartupTemperature suffix.
      Shouldn't truly expire but kColdStartHardFaultCountThreshold should be
      surveyed yearly. -->
@@ -1108,7 +1048,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.TimeFromProcessCreationToMainCall" units="ms"
-    expires_after="2024-04-02">
+    expires_after="2024-06-02">
   <owner>olivierrobin@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>

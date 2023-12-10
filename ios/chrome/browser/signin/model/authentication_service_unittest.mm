@@ -22,6 +22,7 @@
 #import "components/signin/public/identity_manager/identity_test_environment.h"
 #import "components/signin/public/identity_manager/identity_test_utils.h"
 #import "components/signin/public/identity_manager/test_identity_manager_observer.h"
+#import "components/sync/base/features.h"
 #import "components/sync/test/mock_sync_service.h"
 #import "components/sync_preferences/pref_service_mock_factory.h"
 #import "components/sync_preferences/pref_service_syncable.h"
@@ -331,8 +332,13 @@ TEST_F(AuthenticationServiceTest, TestHandleForgottenIdentityPromptSignIn) {
 
 // Tests that reauth prompt is not set if the primary identity is remove from
 // an other app when the user was only signed in (and not syncing).
-TEST_F(AuthenticationServiceTest,
-       TestHandleForgottenIdentityNoPromptSignInAndSync) {
+TEST_F(
+    AuthenticationServiceTest,
+    TestHandleForgottenIdentityNoPromptSignIn_ReplaceSyncPromosWithSignInPromosDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      syncer::kReplaceSyncPromosWithSignInPromos);
+
   // Sign in.
   SetExpectationsForSignIn();
   authentication_service()->SignIn(
@@ -349,6 +355,33 @@ TEST_F(AuthenticationServiceTest,
   EXPECT_FALSE(authentication_service()->HasPrimaryIdentity(
       signin::ConsentLevel::kSignin));
   EXPECT_FALSE(authentication_service()->ShouldReauthPromptForSignInAndSync());
+}
+
+// If ReplaceSyncPromosWithSignInPromos is enabled - the reauth prompt should be
+// shown if the primary identity is remove from an other app when the user was
+// signed in.
+TEST_F(
+    AuthenticationServiceTest,
+    TestHandleForgottenIdentityNoPromptSignIn_ReplaceSyncPromosWithSignInPromosEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      syncer::kReplaceSyncPromosWithSignInPromos);
+
+  // Sign in.
+  SetExpectationsForSignIn();
+  authentication_service()->SignIn(
+      identity(0), signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN);
+
+  // Set the authentication service as "In Background", remove identity and run
+  // the loop.
+  fake_system_identity_manager()->ForgetIdentityFromOtherApplication(
+      identity(0));
+  base::RunLoop().RunUntilIdle();
+
+  // User is signed out (no corresponding identity), and reauth prompt is set.
+  EXPECT_FALSE(authentication_service()->HasPrimaryIdentity(
+      signin::ConsentLevel::kSignin));
+  EXPECT_TRUE(authentication_service()->ShouldReauthPromptForSignInAndSync());
 }
 
 TEST_F(AuthenticationServiceTest,
@@ -384,80 +417,6 @@ TEST_F(AuthenticationServiceTest,
   EXPECT_EQ(CoreAccountId::FromGaiaId("foo2ID"), accounts[0].account_id);
   EXPECT_EQ(CoreAccountId::FromGaiaId("foo3ID"), accounts[1].account_id);
   EXPECT_EQ(CoreAccountId::FromGaiaId("fooID"), accounts[2].account_id);
-}
-
-// Tests the account list is approved after adding an account with in Chrome.
-TEST_F(AuthenticationServiceTest, AccountListApprovedByUser_AddedByUser) {
-  SetExpectationsForSignIn();
-  authentication_service()->SignIn(
-      identity(0), signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN);
-
-  fake_system_identity_manager()->AddIdentities(@[ @"foo3" ]);
-  FireIdentityListChanged(/*notify_user=*/false);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(authentication_service()->IsAccountListApprovedByUser());
-}
-
-// Tests the account list is unapproved after an account is added by an other
-// app (through the keychain).
-TEST_F(AuthenticationServiceTest, AccountListApprovedByUser_ChangedByKeychain) {
-  SetExpectationsForSignIn();
-  authentication_service()->SignIn(
-      identity(0), signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN);
-
-  fake_system_identity_manager()->AddIdentities(@[ @"foo3" ]);
-  FireIdentityListChanged(/*notify_user=*/true);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(authentication_service()->IsAccountListApprovedByUser());
-}
-
-// Tests the account list is unapproved after two accounts are added by an other
-// app (through the keychain).
-TEST_F(AuthenticationServiceTest,
-       AccountListApprovedByUser_ChangedTwiceByKeychain) {
-  SetExpectationsForSignIn();
-  authentication_service()->SignIn(
-      identity(0), signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN);
-
-  fake_system_identity_manager()->AddIdentities(@[ @"foo3" ]);
-  FireIdentityListChanged(/*notify_user=*/true);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(authentication_service()->IsAccountListApprovedByUser());
-
-  // Simulate a switching to background, changing the accounts while in
-  // background.
-  fake_system_identity_manager()->AddIdentities(@[ @"foo4" ]);
-  FireIdentityListChanged(/*notify_user=*/true);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(authentication_service()->IsAccountListApprovedByUser());
-}
-
-// Regression test for http://crbug.com/1006717
-TEST_F(AuthenticationServiceTest,
-       AccountListApprovedByUser_ResetOntwoBackgrounds) {
-  SetExpectationsForSignIn();
-  authentication_service()->SignIn(
-      identity(0), signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN);
-
-  fake_system_identity_manager()->AddIdentities(@[ @"foo3" ]);
-  FireIdentityListChanged(/*notify_user=*/true);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(authentication_service()->IsAccountListApprovedByUser());
-
-  // Clear `kSigninLastAccounts` pref to simulate a case when the list of
-  // accounts in pref `kSigninLastAccounts` are no the same as the ones
-  browser_state_->GetPrefs()->ClearPref(prefs::kSigninLastAccounts);
-
-  // When entering foreground, the have accounts changed state should be
-  // updated.
-  FireApplicationWillEnterForeground();
-  EXPECT_FALSE(authentication_service()->IsAccountListApprovedByUser());
-
-  // Backgrounding and foregrounding the application a second time should update
-  // the list of accounts in `kSigninLastAccounts` and should reset the have
-  // account changed state.
-  FireApplicationWillEnterForeground();
-  EXPECT_FALSE(authentication_service()->IsAccountListApprovedByUser());
 }
 
 TEST_F(AuthenticationServiceTest, HasPrimaryIdentityBackground) {

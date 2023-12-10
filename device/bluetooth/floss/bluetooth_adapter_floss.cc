@@ -545,6 +545,14 @@ void BluetoothAdapterFloss::OnInitializeDeviceProperties(
     observer.DeviceAdded(this, device_ptr);
 }
 
+void BluetoothAdapterFloss::OnDeviceUuidsChanged(
+    BluetoothDeviceFloss* device_ptr) {
+  // SDP done. Calling |SetGattServicesDiscoveryComplete| because it actually
+  // refers to all services including SDP, not just GATT.
+  device_ptr->SetGattServicesDiscoveryComplete(true);
+  NotifyDeviceChanged(device_ptr);
+}
+
 void BluetoothAdapterFloss::OnGetConnectionState(const FlossDeviceId& device_id,
                                                  DBusResult<uint32_t> ret) {
   BluetoothDeviceFloss* device =
@@ -879,7 +887,6 @@ void BluetoothAdapterFloss::AdapterDevicePropertyChanged(
 
   switch (prop_type) {
     case FlossAdapterClient::BtPropertyType::kBdName:
-    case FlossAdapterClient::BtPropertyType::kUuids:
       if (device.name.size() != 0) {
         device_ptr->SetName(device.name);
         device_ptr->InitializeDeviceProperties(
@@ -887,6 +894,31 @@ void BluetoothAdapterFloss::AdapterDevicePropertyChanged(
             base::BindOnce(&BluetoothAdapterFloss::NotifyDeviceChanged,
                            weak_ptr_factory_.GetWeakPtr(), device_ptr));
       }
+      break;
+    case FlossAdapterClient::BtPropertyType::kClassOfDevice:
+      device_ptr->FetchRemoteClass(
+          base::BindOnce(&BluetoothAdapterFloss::NotifyDeviceChanged,
+                         weak_ptr_factory_.GetWeakPtr(), device_ptr));
+      break;
+    case FlossAdapterClient::BtPropertyType::kTypeOfDevice:
+      device_ptr->FetchRemoteType(
+          base::BindOnce(&BluetoothAdapterFloss::NotifyDeviceChanged,
+                         weak_ptr_factory_.GetWeakPtr(), device_ptr));
+      break;
+    case FlossAdapterClient::BtPropertyType::kUuids:
+      device_ptr->FetchRemoteUuids(
+          base::BindOnce(&BluetoothAdapterFloss::OnDeviceUuidsChanged,
+                         weak_ptr_factory_.GetWeakPtr(), device_ptr));
+      break;
+    case FlossAdapterClient::BtPropertyType::kAppearance:
+      device_ptr->FetchRemoteAppearance(
+          base::BindOnce(&BluetoothAdapterFloss::NotifyDeviceChanged,
+                         weak_ptr_factory_.GetWeakPtr(), device_ptr));
+      break;
+    case FlossAdapterClient::BtPropertyType::kVendorProductInfo:
+      device_ptr->FetchRemoteVendorProductInfo(
+          base::BindOnce(&BluetoothAdapterFloss::NotifyDeviceChanged,
+                         weak_ptr_factory_.GetWeakPtr(), device_ptr));
       break;
     default:;  // Do nothing for other property types for now
   }
@@ -1539,14 +1571,17 @@ void BluetoothAdapterFloss::ScanResultReceived(ScanResult scan_result) {
   BluetoothDeviceFloss* device_ptr =
       CreateOrGetDeviceForUpdate(scan_result.address, scan_result.name);
 
+  std::vector<device::BluetoothUUID> service_uuids = scan_result.service_uuids;
   device::BluetoothDevice::ServiceDataMap service_data_map;
-  for (const auto& [uuid, bytes] : scan_result.service_data) {
-    service_data_map[device::BluetoothUUID(uuid)] = bytes;
+  for (const auto& [uuid_str, bytes] : scan_result.service_data) {
+    auto uuid = device::BluetoothUUID(uuid_str);
+    service_uuids.push_back(uuid);
+    service_data_map[uuid] = bytes;
   }
 
   device_ptr->UpdateAdvertisementData(
-      scan_result.rssi, scan_result.flags, scan_result.service_uuids,
-      scan_result.tx_power, service_data_map,
+      scan_result.rssi, scan_result.flags, service_uuids, scan_result.tx_power,
+      service_data_map,
       device::BluetoothDevice::ManufacturerDataMap(
           scan_result.manufacturer_data.begin(),
           scan_result.manufacturer_data.end()));

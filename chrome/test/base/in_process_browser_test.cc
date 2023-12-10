@@ -33,6 +33,7 @@
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/application_lifetime_desktop.h"
@@ -75,9 +76,11 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/captive_portal/core/buildflags.h"
+#include "components/custom_handlers/test_protocol_handler_registry_delegate.h"
 #include "components/embedder_support/switches.h"
 #include "components/feature_engagement/public/feature_list.h"
 #include "components/google/core/common/google_util.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/os_crypt/sync/os_crypt_mocker.h"
 #include "components/search_engines/search_engine_choice_utils.h"
 #include "content/public/browser/browser_main_parts.h"
@@ -426,6 +429,12 @@ void InProcessBrowserTest::Initialize() {
 
   scoped_feature_list_.InitWithFeatures({}, disabled_features);
 
+  create_services_subscription_ =
+      BrowserContextDependencyManager::GetInstance()
+          ->RegisterCreateServicesCallbackForTesting(base::BindRepeating(
+              &InProcessBrowserTest::SetupProtocolHandlerTestFactories,
+              base::Unretained(this)));
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   launch_browser_for_testing_ =
       std::make_unique<ash::full_restore::ScopedLaunchBrowserForTesting>();
@@ -770,7 +779,8 @@ void InProcessBrowserTest::SetScreenInstance() {
 void InProcessBrowserTest::OpenDevToolsWindow(
     content::WebContents* web_contents) {
   ASSERT_FALSE(content::DevToolsAgentHost::HasFor(web_contents));
-  DevToolsWindow::OpenDevToolsWindow(web_contents);
+  DevToolsWindow::OpenDevToolsWindow(web_contents,
+                                     DevToolsOpenedByAction::kUnknown);
   ASSERT_TRUE(content::DevToolsAgentHost::HasFor(web_contents));
 }
 
@@ -997,6 +1007,20 @@ void InProcessBrowserTest::QuitBrowsers() {
   content::RunAllPendingInMessageLoop();
   autorelease_pool_.reset();
 #endif
+}
+
+void InProcessBrowserTest::SetupProtocolHandlerTestFactories(
+    content::BrowserContext* context) {
+  // Use TestProtocolHandlerRegistryDelegate to prevent OS integration during
+  // the protocol registration process.
+  ProtocolHandlerRegistryFactory::GetInstance()->SetTestingFactory(
+      context, base::BindRepeating([](content::BrowserContext* context)
+                                       -> std::unique_ptr<KeyedService> {
+        return custom_handlers::ProtocolHandlerRegistry::Create(
+            Profile::FromBrowserContext(context)->GetPrefs(),
+            std::make_unique<
+                custom_handlers::TestProtocolHandlerRegistryDelegate>());
+      }));
 }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)

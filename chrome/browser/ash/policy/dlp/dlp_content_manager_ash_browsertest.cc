@@ -8,6 +8,7 @@
 
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string>
 
 #include "base/functional/bind.h"
@@ -59,7 +60,6 @@
 #include "content/public/test/browser_test.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-forward.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "ui/aura/window.h"
@@ -118,8 +118,8 @@ content::MediaStreamRequest CreateMediaStreamRequest(
   return content::MediaStreamRequest(
       web_contents->GetPrimaryMainFrame()->GetProcess()->GetID(),
       web_contents->GetPrimaryMainFrame()->GetRoutingID(),
-      /*page_request_id=*/0, GURL(kExampleUrl), /*user_gesture=*/false,
-      blink::MEDIA_GENERATE_STREAM,
+      /*page_request_id=*/0, url::Origin::Create(GURL(kExampleUrl)),
+      /*user_gesture=*/false, blink::MEDIA_GENERATE_STREAM,
       /*requested_audio_device_id=*/std::string(), requested_video_device_id,
       blink::mojom::MediaStreamType::NO_SERVICE, video_type,
       /*disable_local_echo=*/false,

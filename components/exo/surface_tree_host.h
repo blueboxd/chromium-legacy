@@ -100,6 +100,9 @@ class SurfaceTreeHost : public SurfaceDelegate,
 
   uint32_t GenerateNextFrameToken() { return ++next_token_; }
 
+  // Returns the primary SurfaceId.
+  viz::SurfaceId GetSurfaceId() const;
+
   // SurfaceDelegate:
   void OnSurfaceCommit() override;
   bool IsSurfaceSynchronized() const override;
@@ -192,6 +195,10 @@ class SurfaceTreeHost : public SurfaceDelegate,
   // It also updates `root_surface_origin_` accordingly to the origin.
   void UpdateSurfaceLayerSizeAndRootSurfaceOrigin();
 
+  // Updates the host layer's opacity. This has to be called after root
+  // surface's resource is updated.
+  void UpdateHostLayerOpacity();
+
   bool client_submits_surfaces_in_pixel_coordinates() const {
     return client_submits_surfaces_in_pixel_coordinates_;
   }
@@ -224,9 +231,6 @@ class SurfaceTreeHost : public SurfaceDelegate,
   // If local_surface_id is newer than `GetCommitTargetLayer()`, update the
   // surface ranges to produce different SurfaceDrawQuads.
   virtual void MaybeActivateSurface();
-
-  // Returns the primary SurfaceId.
-  viz::SurfaceId GetSurfaceId() const;
 
   // The local_surface_id that the `layer_tree_frame_sink_holder_` is submitting
   // with.
@@ -313,7 +317,8 @@ class SurfaceTreeHost : public SurfaceDelegate,
 
   display::ScopedDisplayObserver display_observer_{this};
 
-  int64_t display_id_ = display::kInvalidDisplayId;
+  // The display id for the output the surface is entered onto.
+  int64_t output_display_id_ = display::kInvalidDisplayId;
 
   bool client_submits_surfaces_in_pixel_coordinates_ = false;
 

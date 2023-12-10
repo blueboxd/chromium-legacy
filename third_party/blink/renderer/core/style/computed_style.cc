@@ -351,7 +351,7 @@ bool ComputedStyle::NeedsReattachLayoutTree(const Element& element,
     return true;
   }
 
-  // We use LayoutNGTextCombine only for vertical writing mode.
+  // We use LayoutTextCombine only for vertical writing mode.
   if (new_style->HasTextCombine() && old_style->IsHorizontalWritingMode() !=
                                          new_style->IsHorizontalWritingMode()) {
     DCHECK_EQ(old_style->HasTextCombine(), new_style->HasTextCombine());
@@ -762,7 +762,8 @@ StyleDifference ComputedStyle::VisualInvalidationDiff(
   }
 
   if (!diff.NeedsFullLayout() && GetPosition() != EPosition::kStatic &&
-      !OffsetEqual(other)) {
+      (!InsetsEqual(other) ||
+       (HasOutOfFlowPosition() && GetInsetArea() != other.GetInsetArea()))) {
     diff.SetNeedsPositionedMovementLayout();
   }
 
@@ -2569,7 +2570,8 @@ bool ComputedStyle::CanMatchSizeContainerQueries(const Element& element) const {
 
 bool ComputedStyle::IsInterleavingRoot(const ComputedStyle* style) {
   const ComputedStyle* unensured = ComputedStyle::NullifyEnsured(style);
-  return unensured && unensured->IsContainerForSizeContainerQueries();
+  return unensured && (unensured->IsContainerForSizeContainerQueries() ||
+                       unensured->PositionFallback());
 }
 
 bool ComputedStyle::CalculateIsStackingContextWithoutContainment() const {
@@ -2861,12 +2863,5 @@ STATIC_ASSERT_ENUM(cc::OverscrollBehavior::Type::kContain,
                    EOverscrollBehavior::kContain);
 STATIC_ASSERT_ENUM(cc::OverscrollBehavior::Type::kNone,
                    EOverscrollBehavior::kNone);
-
-STATIC_ASSERT_ENUM(cc::PaintFlags::DynamicRangeLimit::kStandard,
-                   EDynamicRangeLimit::kStandard);
-STATIC_ASSERT_ENUM(cc::PaintFlags::DynamicRangeLimit::kHigh,
-                   EDynamicRangeLimit::kHigh);
-STATIC_ASSERT_ENUM(cc::PaintFlags::DynamicRangeLimit::kConstrainedHigh,
-                   EDynamicRangeLimit::kConstrainedHigh);
 
 }  // namespace blink

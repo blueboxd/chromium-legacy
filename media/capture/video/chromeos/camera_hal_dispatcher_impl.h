@@ -62,6 +62,10 @@ class CAPTURE_EXPORT CameraClientObserver {
   virtual void OnChannelCreated(
       mojo::PendingRemote<cros::mojom::CameraModule> camera_module) = 0;
 
+  // This is only for vcd unittests to make sure CameraHalDelegate get the
+  // camera module. It should not be invoked in the production code.
+  virtual bool WaitForCameraModuleReadyForTesting();
+
   cros::mojom::CameraClientType GetType() { return type_; }
   const base::UnguessableToken GetAuthToken() { return auth_token_; }
 
@@ -126,12 +130,6 @@ class CAPTURE_EXPORT CameraEffectObserver : public base::CheckedObserver {
 //
 // For general documentation about the CameraHalDispatcher Mojo interface see
 // the comments in mojo/cros_camera_service.mojom.
-//
-// On ChromeOS the video capture service must run in the browser process,
-// because parts of the code depend on global objects that are only available in
-// the Browser process. Therefore, CameraHalDispatcherImpl must run in the
-// browser process as well.
-// See https://crbug.com/891961.
 class CAPTURE_EXPORT CameraHalDispatcherImpl final
     : public cros::mojom::CameraHalDispatcher,
       public cros::mojom::CrosCameraServiceObserver,
@@ -245,6 +243,11 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
   // `CameraEffectsController` instead.
   void SetCameraEffects(cros::mojom::EffectsConfigPtr config);
 
+  // This function is only for VCD Unittests. It will return true immediately
+  // when CameraModule is ready for CameraHalDelegate or return false after 10
+  // seconds. Don't call this function on the main thread.
+  bool WaitForServiceReadyForTesting();
+
  private:
   friend struct base::DefaultSingletonTraits<CameraHalDispatcherImpl>;
   // Allow the test to construct the class directly.
@@ -353,7 +356,6 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
 
   base::Thread proxy_thread_;
   base::Thread blocking_io_thread_;
-  scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> proxy_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> blocking_io_task_runner_;
 

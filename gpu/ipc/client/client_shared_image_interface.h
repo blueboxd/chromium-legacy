@@ -82,6 +82,17 @@ class GPU_EXPORT ClientSharedImageInterface : public SharedImageInterface {
       SkAlphaType alpha_type,
       uint32_t usage,
       base::StringPiece debug_label,
+      gpu::SurfaceHandle surface_handle,
+      gfx::BufferUsage buffer_usage,
+      gfx::GpuMemoryBufferHandle buffer_handle) override;
+  scoped_refptr<ClientSharedImage> CreateSharedImage(
+      viz::SharedImageFormat format,
+      const gfx::Size& size,
+      const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
+      uint32_t usage,
+      base::StringPiece debug_label,
       gfx::GpuMemoryBufferHandle buffer_handle) override;
   // NOTE: The below method is DEPRECATED for `gpu_memory_buffer` only with
   // single planar eg. RGB BufferFormats. Please use the equivalent method above
@@ -114,17 +125,12 @@ class GPU_EXPORT ClientSharedImageInterface : public SharedImageInterface {
       const SyncToken& sync_token,
       scoped_refptr<ClientSharedImage> client_shared_image) override;
   uint32_t UsageForMailbox(const Mailbox& mailbox) override;
-  void NotifyMailboxAdded(const Mailbox& mailbox, uint32_t usage) override;
+  scoped_refptr<ClientSharedImage> NotifyMailboxAdded(const Mailbox& mailbox,
+                                                      uint32_t usage) override;
 
   void AddReferenceToSharedImage(const SyncToken& sync_token,
                                  const Mailbox& mailbox,
                                  uint32_t usage) override;
-
-  std::unique_ptr<SharedImageInterface::ScopedMapping> MapSharedImage(
-      const Mailbox& mailbox) override;
-  std::unique_ptr<gpu::SharedImageInterface::ScopedMapping> MapSharedImage(
-      const scoped_refptr<gpu::ClientSharedImage>& client_shared_image)
-      override;
 
   const SharedImageCapabilities& GetCapabilities() override;
 
@@ -135,8 +141,6 @@ class GPU_EXPORT ClientSharedImageInterface : public SharedImageInterface {
 
   base::Lock lock_;
   std::multiset<Mailbox> mailboxes_ GUARDED_BY(lock_);
-  base::flat_map<gpu::Mailbox, std::unique_ptr<gfx::GpuMemoryBuffer>>
-      mailbox_to_gmb_map_ GUARDED_BY(lock_);
 };
 
 }  // namespace gpu

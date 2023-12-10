@@ -81,8 +81,6 @@
 #include "base/win/default_apps_util.h"
 #endif
 
-using app_management::mojom::OptionalBool;
-
 namespace {
 
 const char* kAppIdsWithHiddenMoreSettings[] = {
@@ -228,7 +226,7 @@ std::vector<std::string> GetSupportedLinksForPWAs(
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS)
 
-absl::optional<std::string> MaybeFormatBytes(absl::optional<uint64_t> bytes) {
+std::optional<std::string> MaybeFormatBytes(std::optional<uint64_t> bytes) {
   if (bytes.has_value()) {
     // ui::FormatBytes requires a non-negative signed integer. In general, we
     // expect that converting from unsigned to signed int here should always
@@ -240,12 +238,12 @@ absl::optional<std::string> MaybeFormatBytes(absl::optional<uint64_t> bytes) {
       // sizes.
       LOG(ERROR) << "Invalid app size: " << signed_bytes;
       base::debug::DumpWithoutCrashing();
-      return absl::nullopt;
+      return std::nullopt;
     }
     return base::UTF16ToUTF8(ui::FormatBytes(signed_bytes));
   }
 
-  return absl::nullopt;
+  return std::nullopt;
 }
 #if !BUILDFLAG(IS_CHROMEOS)
 std::string GetFormattedOrigin(const webapps::AppId& app_id,
@@ -327,7 +325,7 @@ void AppManagementPageHandler::OnPinnedChanged(const std::string& app_id,
     return;
   }
 
-  app->is_pinned = pinned ? OptionalBool::kTrue : OptionalBool::kFalse;
+  app->is_pinned = pinned;
 
   page_->OnAppChanged(std::move(app));
 }
@@ -422,7 +420,7 @@ void AppManagementPageHandler::GetExtensionAppPermissionMessages(
 }
 
 void AppManagementPageHandler::SetPinned(const std::string& app_id,
-                                         OptionalBool pinned) {
+                                         bool pinned) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   shelf_delegate_.SetPinned(app_id, pinned);
 #else
@@ -625,15 +623,11 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
   app->app_size = MaybeFormatBytes(update.AppSizeInBytes());
   app->data_size = MaybeFormatBytes(update.DataSizeInBytes());
 
-  // On other OS's, is_pinned defaults to OptionalBool::kUnknown, which is
-  // used to represent the fact that there is no concept of being pinned.
+  // On other OS's, is_pinned defaults to std::nullopt, which is used to
+  // represent the fact that there is no concept of being pinned.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  app->is_pinned = shelf_delegate_.IsPinned(update.AppId())
-                       ? OptionalBool::kTrue
-                       : OptionalBool::kFalse;
-  app->is_policy_pinned = shelf_delegate_.IsPolicyPinned(update.AppId())
-                              ? OptionalBool::kTrue
-                              : OptionalBool::kFalse;
+  app->is_pinned = shelf_delegate_.IsPinned(update.AppId());
+  app->is_policy_pinned = shelf_delegate_.IsPolicyPinned(update.AppId());
   app->resize_locked = update.ResizeLocked().value_or(false);
   app->hide_resize_locked = !update.ResizeLocked().has_value();
 
@@ -753,7 +747,7 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
                 "LINK", "#"));
       }
 
-      absl::optional<GURL> learn_more_url;
+      std::optional<GURL> learn_more_url;
       if (!CanShowDefaultAppAssociationsUi()) {
         learn_more_url = GURL(kFileHandlingLearnMore);
       }
@@ -804,6 +798,16 @@ void AppManagementPageHandler::OpenStorePage(const std::string& app_id) {
                                   apps::LaunchSource::kFromChromeInternal);
         }
       });
+#endif
+}
+
+void AppManagementPageHandler::SetAppLocale(const std::string& app_id,
+                                            const std::string& locale_tag) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  apps::AppServiceProxyFactory::GetForProfile(profile_)->SetAppLocale(
+      app_id, locale_tag);
+#else
+  NOTREACHED();
 #endif
 }
 

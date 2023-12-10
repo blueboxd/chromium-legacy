@@ -127,12 +127,6 @@ bool ProxyList::Equals(const ProxyList& other) const {
   return proxy_chains_ == other.proxy_chains_;
 }
 
-const ProxyServer& ProxyList::Get() const {
-  CHECK(!proxy_chains_.empty());
-  const auto& proxy_chain = First();
-  return proxy_chain.proxy_server();
-}
-
 const ProxyChain& ProxyList::First() const {
   CHECK(!proxy_chains_.empty());
   return proxy_chains_[0];
@@ -154,7 +148,6 @@ void ProxyList::SetFromPacString(const std::string& pac_string) {
   Clear();
   base::StringTokenizer entry_tok(pac_string, ";");
   while (entry_tok.GetNext()) {
-    // TODO(crbug.com/1491092): Parse multi-proxy chains.
     ProxyServer proxy_server =
         PacResultElementToProxyServer(entry_tok.token_piece());
     if (proxy_server.is_valid()) {
@@ -173,11 +166,22 @@ std::string ProxyList::ToPacString() const {
   std::string proxy_list;
   auto iter = proxy_chains_.begin();
   for (; iter != proxy_chains_.end(); ++iter) {
+    if (!proxy_list.empty()) {
+      proxy_list += ";";
+    }
+    CHECK(!iter->is_multi_proxy());
+    proxy_list += ProxyServerToPacResultElement(iter->proxy_server());
+  }
+  return proxy_list.empty() ? std::string() : proxy_list;
+}
+
+std::string ProxyList::ToDebugString() const {
+  std::string proxy_list;
+  auto iter = proxy_chains_.begin();
+  for (; iter != proxy_chains_.end(); ++iter) {
     if (!proxy_list.empty())
       proxy_list += ";";
     if (iter->is_multi_proxy()) {
-      // TODO(crbug.com/1491092): Figure out how to represent a multi-proxy
-      // chain.
       proxy_list += iter->ToDebugString();
     } else {
       proxy_list += ProxyServerToPacResultElement(iter->proxy_server());

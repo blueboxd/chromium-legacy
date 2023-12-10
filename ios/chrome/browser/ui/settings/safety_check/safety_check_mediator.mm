@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_mediator.h"
+#import "ios/chrome/browser/ui/settings/safety_check/safety_check_mediator+Testing.h"
 
 #import "base/apple/foundation_util.h"
 #import "base/metrics/histogram_functions.h"
@@ -43,7 +44,6 @@
 #import "ios/chrome/browser/ui/settings/cells/settings_check_item.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_constants.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_consumer.h"
-#import "ios/chrome/browser/ui/settings/safety_check/safety_check_mediator+private.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_navigation_commands.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_utils.h"
@@ -177,6 +177,56 @@ void ResetSettingsCheckItem(SettingsCheckItem* item) {
 // When the check was started.
 @property(nonatomic, assign) base::Time checkStartTime;
 
+// SettingsCheckItem used to display the state of the update check.
+@property(nonatomic, strong) SettingsCheckItem* updateCheckItem;
+
+// Current state of the update check.
+@property(nonatomic, assign) UpdateCheckRowStates updateCheckRowState;
+
+// Previous on load or finished check state of the update check.
+@property(nonatomic, assign) UpdateCheckRowStates previousUpdateCheckRowState;
+
+// SettingsCheckItem used to display the state of the password check.
+@property(nonatomic, strong) SettingsCheckItem* passwordCheckItem;
+
+// Current state of the password check.
+@property(nonatomic, assign) PasswordCheckRowStates passwordCheckRowState;
+
+// Previous on load or finished check state of the password check.
+@property(nonatomic, assign)
+    PasswordCheckRowStates previousPasswordCheckRowState;
+
+// SettingsCheckItem used to display the state of the Safe Browsing check.
+@property(nonatomic, strong) SettingsCheckItem* safeBrowsingCheckItem;
+
+// Current state of the Safe Browsing check.
+@property(nonatomic, assign)
+    SafeBrowsingCheckRowStates safeBrowsingCheckRowState;
+
+// Previous on load or finished check state of the Safe Browsing check.
+@property(nonatomic, assign)
+    SafeBrowsingCheckRowStates previousSafeBrowsingCheckRowState;
+
+// Row button to start the safety check.
+@property(nonatomic, strong) TableViewTextItem* checkStartItem;
+
+// Current state of the start safety check row button.
+@property(nonatomic, assign) CheckStartStates checkStartState;
+
+// Whether or not a safety check just ran.
+@property(nonatomic, assign) BOOL checkDidRun;
+
+// Current state of password check.
+@property(nonatomic, assign) PasswordCheckState currentPasswordCheckState;
+
+// Preference value for Safe Browsing.
+@property(nonatomic, strong, readonly)
+    PrefBackedBoolean* safeBrowsingPreference;
+
+// Preference value for Enhanced Safe Browsing.
+@property(nonatomic, strong, readonly)
+    PrefBackedBoolean* enhancedSafeBrowsingPreference;
+
 @end
 
 @implementation SafetyCheckMediator
@@ -291,6 +341,8 @@ void ResetSettingsCheckItem(SettingsCheckItem* item) {
     _checkStartState = CheckStartStateDefault;
     _checkStartItem =
         [[TableViewTextItem alloc] initWithType:CheckStartItemType];
+    _checkStartItem.accessibilityIdentifier =
+        kSafetyCheckCheckNowButtonAccessibilityID;
     _checkStartItem.text = GetNSString(IDS_IOS_CHECK_PASSWORDS_NOW_BUTTON);
     _checkStartItem.textColor = [UIColor colorNamed:kBlueColor];
     _checkStartItem.accessibilityTraits |= UIAccessibilityTraitButton;
@@ -669,8 +721,7 @@ void ResetSettingsCheckItem(SettingsCheckItem* item) {
 
 // Computes whether user is capable to run password check in Google Account.
 - (BOOL)canUseAccountPasswordCheckup {
-  return password_manager::sync_util::GetAccountForSaving(self.userPrefService,
-                                                          self.syncService) &&
+  return password_manager::sync_util::GetAccountForSaving(self.syncService) &&
          !self.syncService->GetUserSettings()->IsEncryptEverythingEnabled();
 }
 
@@ -1091,8 +1142,7 @@ void ResetSettingsCheckItem(SettingsCheckItem* item) {
       }
     }
   }
-
-  [self.consumer reconfigureCellsForItems:@[ self.updateCheckItem ]];
+  [self reconfigureCellForItem:_updateCheckItem];
 }
 
 // Reconfigures the display of the `passwordCheckItem` based on current state of
@@ -1180,7 +1230,7 @@ void ResetSettingsCheckItem(SettingsCheckItem* item) {
     }
   }
 
-  [self.consumer reconfigureCellsForItems:@[ self.passwordCheckItem ]];
+  [self reconfigureCellForItem:_passwordCheckItem];
 }
 
 // Reconfigures the display of the `safeBrowsingCheckItem` based on current
@@ -1229,7 +1279,7 @@ void ResetSettingsCheckItem(SettingsCheckItem* item) {
     }
   }
 
-  [self.consumer reconfigureCellsForItems:@[ self.safeBrowsingCheckItem ]];
+  [self reconfigureCellForItem:_safeBrowsingCheckItem];
 }
 
 // Chooses the Safe Browsing detail text string that should be used based on the
@@ -1258,7 +1308,7 @@ void ResetSettingsCheckItem(SettingsCheckItem* item) {
     self.checkStartItem.text =
         GetNSString(IDS_IOS_CANCEL_PASSWORD_CHECK_BUTTON);
   }
-  [self.consumer reconfigureCellsForItems:@[ self.checkStartItem ]];
+  [self reconfigureCellForItem:_checkStartItem];
 }
 
 // Updates the timestamp of when safety check last found an issue.
@@ -1311,6 +1361,20 @@ void ResetSettingsCheckItem(SettingsCheckItem* item) {
 
   return l10n_util::GetNSStringF(
       IDS_IOS_SETTINGS_SAFETY_CHECK_ISSUES_FOUND_TIME, timestamp);
+}
+
+// Updates the consumer's cell corresponding to `item`.
+- (void)reconfigureCellForItem:(TableViewItem*)item {
+  CHECK(item);
+  // Reconfiguration can change the height the cell needs for displaying its
+  // content. Wrapping it around `performBatchTableViewUpdates` so the cell is
+  // properly resized.
+  __weak __typeof(self) weakSelf = self;
+  [self.consumer
+      performBatchTableViewUpdates:^{
+        [weakSelf.consumer reconfigureCellsForItems:@[ item ]];
+      }
+                        completion:nil];
 }
 
 @end

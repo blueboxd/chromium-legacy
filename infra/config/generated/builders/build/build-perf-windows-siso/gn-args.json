@@ -6,7 +6,6 @@
         "dcheck_always_on": true,
         "enable_dangling_raw_ptr_checks": true,
         "enable_dangling_raw_ptr_feature_flag": true,
-        "enable_precompiled_headers": false,
         "enable_resource_allowlist_generation": false,
         "ffmpeg_branding": "Chrome",
         "is_component_build": false,
@@ -14,9 +13,9 @@
         "proprietary_codecs": true,
         "symbol_level": 0,
         "use_clang_coverage": true,
-        "use_dummy_lastchange": true,
         "use_goma": false,
-        "use_remoteexec": false
+        "use_remoteexec": false,
+        "use_siso": true
       }
     },
     "reproxy": {
@@ -32,7 +31,6 @@
         "proprietary_codecs": true,
         "symbol_level": 0,
         "use_clang_coverage": true,
-        "use_dummy_lastchange": true,
         "use_remoteexec": true
       }
     }

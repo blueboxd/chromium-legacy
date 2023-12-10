@@ -86,11 +86,11 @@ public class AddExceptionPreference extends Preference
         setOnPreferenceClickListener(this);
 
         setKey(key);
-        Resources resources = getContext().getResources();
-        mPrefAccentColor = SemanticColorUtils.getDefaultControlColorActive(getContext());
-        mErrorColor = resources.getColor(R.color.default_red);
+        Resources resources = context.getResources();
+        mPrefAccentColor = SemanticColorUtils.getDefaultControlColorActive(context);
+        mErrorColor = context.getColor(R.color.default_red);
         mDefaultColor =
-                AppCompatResources.getColorStateList(getContext(), R.color.default_text_color_list)
+                AppCompatResources.getColorStateList(context, R.color.default_text_color_list)
                         .getDefaultColor();
 
         Drawable plusIcon = ApiCompatibilityUtils.getDrawable(resources, R.drawable.plus);
@@ -122,13 +122,7 @@ public class AddExceptionPreference extends Preference
         final EditText input = view.findViewById(R.id.site);
         final CheckBoxWithDescription checkBox = view.findViewById(R.id.add_site_dialog_checkbox);
 
-        if (mCategory.getType() == SiteSettingsCategory.Type.COOKIES) {
-            checkBox.setVisibility(View.VISIBLE);
-            checkBox.setPrimaryText(
-                    getContext()
-                            .getString(
-                                    R.string.website_settings_third_party_cookies_exception_label));
-        } else if (mCategory.getType() == SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE) {
+        if (mCategory.getType() == SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE) {
             // Default to domain level setting for Request Desktop Site.
             checkBox.setChecked(true);
             checkBox.setVisibility(View.VISIBLE);
@@ -187,8 +181,7 @@ public class AddExceptionPreference extends Preference
                         // The intent is to capture a url pattern and register it as an exception.
                         // But a pattern can be used to express things that are not supported, such
                         // as domains, schemes and ports. Therefore we need to filter out invalid
-                        // values
-                        // before passing them on to the validity checker for patterns.
+                        // values before passing them on to the validity checker for patterns.
                         String pattern = s.toString().trim();
                         boolean isValid = isPatternValid(pattern, mCategory.getType());
 
@@ -224,10 +217,7 @@ public class AddExceptionPreference extends Preference
 
     @VisibleForTesting
     static String getPrimaryPattern(@NonNull String pattern, int type, boolean isChecked) {
-        if (type == SiteSettingsCategory.Type.COOKIES) {
-            // If a user clicks the third party checkbox, set wildcard as primary.
-            return isChecked ? SITE_WILDCARD : pattern;
-        } else if (type == SiteSettingsCategory.Type.THIRD_PARTY_COOKIES) {
+        if (type == SiteSettingsCategory.Type.THIRD_PARTY_COOKIES) {
             return SITE_WILDCARD;
         }
         return pattern;
@@ -235,10 +225,7 @@ public class AddExceptionPreference extends Preference
 
     @VisibleForTesting
     static String getSecondaryPattern(@NonNull String pattern, int type, boolean isChecked) {
-        if (type == SiteSettingsCategory.Type.COOKIES) {
-            // If a user clicks the third party checkbox, set pattern as secondary.
-            return isChecked ? pattern : SITE_WILDCARD;
-        } else if (type == SiteSettingsCategory.Type.THIRD_PARTY_COOKIES) {
+        if (type == SiteSettingsCategory.Type.THIRD_PARTY_COOKIES) {
             return pattern;
         }
         return SITE_WILDCARD;

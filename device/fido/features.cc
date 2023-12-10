@@ -63,25 +63,10 @@ BASE_FEATURE(kWebAuthnAndroidCredManForHybrid,
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_ANDROID)
 
-// Added in M115. Remove in or after M118.
-BASE_FEATURE(kWebAuthnPinRequiredMeansNotRecognized,
-             "WebAuthenticationPinRequiredMeansNotRecognized",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Added in M115. Remove in or after M118
 BASE_FEATURE(kWebAuthnHybridLinkWithoutNotifications,
              "WebAuthenticationHybridLinkWithoutNotifications",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enabled in M116. Remove in or after M119.
-BASE_FEATURE(kWebAuthnNoNullInJSON,
-             "WebAuthenticationNoNullInJSON",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enabled in M116. Remove in or after M119.
-BASE_FEATURE(kWebAuthnRequireEasyAccessorFieldsInJSON,
-             "WebAuthenticationRequireEasyAccessorFieldsInJSON",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enabled in M118. Remove in or after M121.
 BASE_FEATURE(kWebAuthnRequireUpToDateJSONForRemoteDesktop,
@@ -128,11 +113,6 @@ BASE_FEATURE(kWebAuthnSkipSingleAccountMacOS,
              "WebAuthenticationSkipSingleAccountMacOS",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enabled in M116. Remove in or after M119.
-BASE_FEATURE(kWebAuthnWindowsUIv6,
-             "WebAuthenticationWindowsUIv6",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enabled in M117. Remove in or after M120.
 BASE_FEATURE(kWebAuthConditionalUIExperimentation,
              "WebAuthenticationConditionalUIExperimentation",
@@ -152,11 +132,6 @@ BASE_FEATURE(kWebAuthnLinkingExperimentation,
 BASE_FEATURE(kWebAuthnEnclaveAuthenticator,
              "WebAuthenticationEnclaveAuthenticator",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enabled in M117. Remove in or after M120.
-BASE_FEATURE(kWebAuthnJSONSerializeRequests,
-             "WebAuthenticationJSONSerializeRequests",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enabled in M117. Remove in or after M120.
 BASE_FEATURE(kWebAuthnCachePaaSK,
@@ -211,10 +186,10 @@ BASE_FEATURE(kChromeOsPasskeys,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
-// Not yet enabled by default.
+// Enabled in M121. Remove in or after M124.
 BASE_FEATURE(kWebAuthnScreenReaderMode,
              "WebAuthenticationScreenReaderMode",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enabled in M120. Remove in or after M123.
 BASE_FEATURE(kWebAuthnAccessibleTimeouts,
@@ -225,5 +200,10 @@ BASE_FEATURE(kWebAuthnAccessibleTimeouts,
 BASE_FEATURE(kWebAuthnRelatedOrigin,
              "WebAuthenticationRelatedOrigin",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enabled in M122. Remove in or after M125.
+BASE_FEATURE(kWebAuthnChromeImplementedInvariant,
+             "WebAuthenticationChromeImplementedInvariant",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace device

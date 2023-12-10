@@ -9,9 +9,10 @@
 
 #include <map>
 #include <memory>
+#include <optional>
+#include <string_view>
 #include <utility>
 
-#include <optional>
 #include "base/component_export.h"
 #include "base/containers/span.h"
 #include "base/dcheck_is_on.h"
@@ -21,7 +22,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/thread_annotations.h"
@@ -113,7 +113,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfaceEndpointClient
   // and notifies all interfaces running on this pipe.
   void RaiseError();
 
-  void CloseWithReason(uint32_t custom_reason, base::StringPiece description);
+  void CloseWithReason(uint32_t custom_reason, std::string_view description);
 
   // Used by ControlMessageProxy to send messages through this endpoint.
   void SendControlMessage(Message* message);

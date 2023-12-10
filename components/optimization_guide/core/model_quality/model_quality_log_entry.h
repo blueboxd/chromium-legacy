@@ -24,13 +24,29 @@ class ModelQualityLogEntry {
     return log_ai_data_request_.get()->mutable_logging_metadata();
   }
 
+  int64_t client_id() const {
+    return log_ai_data_request_.get()->mutable_logging_metadata()->client_id();
+  }
+
   template <typename FeatureType>
   FeatureType::Quality* quality_data() {
     return FeatureType::GetLoggingData(*log_ai_data_request_)
         ->mutable_quality_data();
   }
 
+  void set_model_execution_id(const std::string& server_execution_id) {
+    log_ai_data_request_.get()
+        ->mutable_model_execution_info()
+        ->set_server_execution_id(server_execution_id);
+  }
+
+  proto::LogAiDataRequest* log_ai_data_request() {
+    return log_ai_data_request_.get();
+  }
+
  private:
+  friend class ModelQualityLogsUploaderService;
+
   // Holds feature's model execution and quality data.
   std::unique_ptr<proto::LogAiDataRequest> log_ai_data_request_;
 };

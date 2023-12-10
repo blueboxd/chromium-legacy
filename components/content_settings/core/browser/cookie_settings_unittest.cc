@@ -6,6 +6,8 @@
 
 #include <cstddef>
 #include <memory>
+#include <string>
+#include <tuple>
 
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
@@ -46,7 +48,6 @@
 #endif
 
 namespace {
-
 const bool kSupports3pcBlocking = {
 #if BUILDFLAG(IS_IOS)
     false
@@ -60,54 +61,21 @@ constexpr char kAllowedRequestsHistogram[] =
     "API.StorageAccess.AllowedRequests2";
 #endif
 
-struct TestCase {
-  const char* test_name;
-  bool storage_access_grant_eligible;
-  bool top_level_storage_access_grant_eligible;
+// NOTE: Consider modifying services/network/cookie_settings_unittest.cc if
+// applicable.
+enum TestVariables {
+  kTopLevelStorageAccessGrantEligible = 0,
+  kStorageAccessGrantsEligible,
   // Whether `net::features::kTpcdSupportSettings` is enabled.
-  bool eligible_for_3pcd_support;
-  // Whether `net::features::kThirdPartyStoragePartitioning` is enabled.
-  bool tpcd_metadata_grants_eligible;
-};
-
-static constexpr TestCase kTestCases[] = {
-    {"disable_all", false, false, false, false},
-    {"ineligible_SAA_ineligible_TopLevel_disable_3PCD_enable_metadata", false,
-     false, false, true},
-    {"ineligible_SAA_eligible_TopLevel_disable_3PCD_enable_metadata", false,
-     true, false, true},
-    {"ineligible_SAA_eligible_TopLevel_disable_3PCD_disable_metadata", false,
-     true, false, false},
-#if !BUILDFLAG(IS_IOS)
-    {"ineligible_SAA_eligible_TopLevel_enable_3PCD_enable_metadata", false,
-     true, true, true},
-    {"ineligible_SAA_ineligible_TopLevel_enable_3PCD_enable_metadata", false,
-     false, true, true},
-    {"eligible_SAA_ineligible_TopLevel_disable_3PCD_enable_metadata", true,
-     false, false, true},
-    {"eligible_SAA_ineligible_TopLevel_enable_3PCD_enable_metadata", true,
-     false, true, true},
-    {"eligible_SAA_eligible_TopLevel_disable_3PCD_enable_metadata", true, true,
-     false, true},
-    {"ineligible_SAA_eligible_TopLevel_enable_3PCD_disable_metadata", false,
-     true, true, false},
-    {"ineligible_SAA_ineligible_TopLevel_enable_3PCD_disable_metadata", false,
-     false, true, false},
-    {"eligible_SAA_ineligible_TopLevel_disable_3PCD_disable_metadata", true,
-     false, false, false},
-    {"eligible_SAA_ineligible_TopLevel_enable_3PCD_disable_metadata", true,
-     false, true, false},
-    {"eligible_SAA_eligible_TopLevel_disable_3PCD_disable_metadata", true, true,
-     false, false},
-    {"enable_all", true, true, true, true},
-#endif
+  k3pcdSupportEligible,
+  // Whether `net::features::kTpcdMetadataGrants` is enabled.
+  kTpcdMetadataGrantsEligible,
+  // Whether `content_settings_features::kHostIndexedMetadataGrants` is enabled
+  kHostIndexedMetadataGrantsEnabled,
 };
 }  // namespace
 
 namespace content_settings {
-
-namespace {
-
 class CookieSettingsObserver : public CookieSettings::Observer {
  public:
   explicit CookieSettingsObserver(CookieSettings* settings)
@@ -134,7 +102,13 @@ class CookieSettingsObserver : public CookieSettings::Observer {
       scoped_observation_{this};
 };
 
-class CookieSettingsTest : public testing::TestWithParam<TestCase> {
+class CookieSettingsTest
+    : public testing::TestWithParam<
+          std::tuple</*kStorageAccessGrantsEligible*/ bool,
+                     /*kTopLevelStorageAccessGrantEligible*/ bool,
+                     /*k3pcdSupportEligible*/ bool,
+                     /*kTpcdMetadataGrantsEligible*/ bool,
+                     /*kHostIndexedMetadataGrantsEnabled*/ bool>> {
  public:
   CookieSettingsTest()
       : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
@@ -144,6 +118,7 @@ class CookieSettingsTest : public testing::TestWithParam<TestCase> {
         kSameSiteSite("http://other.things.com"),
         kChromeURL("chrome://foo"),
         kExtensionURL("chrome-extension://deadbeef"),
+        kDevToolsURL(GURL("devtools://devtools")),
         kDomain("example.com"),
         kDotDomain(".example.com"),
         kSubDomain("www.example.com"),
@@ -161,34 +136,41 @@ class CookieSettingsTest : public testing::TestWithParam<TestCase> {
         kExtensionSiteForCookies(net::SiteForCookies::FromUrl(kExtensionURL)),
         kHttpSiteForCookies(net::SiteForCookies::FromUrl(kHttpSite)),
         kHttpsSiteForCookies(net::SiteForCookies::FromUrl(kHttpsSite)),
+        kDevToolsSiteForCookies(net::SiteForCookies::FromUrl(kDevToolsURL)),
         kAllHttpsSitesPattern(ContentSettingsPattern::FromString("https://*")) {
     std::vector<base::test::FeatureRefAndParams> enabled_features;
     std::vector<base::test::FeatureRef> disabled_features;
+
     enabled_features.push_back(
         {content_settings::features::kUserBypassUI, {{"expiration", "0d"}}});
 
-    if (Is3pcdMetadataGrantEligible()) {
-      enabled_features.push_back({net::features::kTpcdMetadataGrants, {}});
-    } else {
-      disabled_features.push_back(net::features::kTpcdMetadataGrants);
-    }
-
-    enabled_features.push_back({features::kTpcdHeuristicsGrants,
-                                {{"TpcdReadHeuristicsGrants", "true"}}});
-#if BUILDFLAG(IS_IOS)
-    disabled_features.push_back(net::features::kTpcdSupportSettings);
-#else
     if (Is3pcdSupportEligible()) {
       enabled_features.push_back({net::features::kTpcdSupportSettings, {}});
     } else {
       disabled_features.push_back(net::features::kTpcdSupportSettings);
     }
 
+    if (Is3pcdMetadataGrantEligible()) {
+      if (IsHostIndexedMetadataGrantsEnabled()) {
+        enabled_features.push_back({features::kHostIndexedMetadataGrants, {}});
+      } else {
+        disabled_features.push_back(features::kHostIndexedMetadataGrants);
+      }
+      enabled_features.push_back({net::features::kTpcdMetadataGrants, {}});
+    } else {
+      disabled_features.push_back(net::features::kTpcdMetadataGrants);
+      disabled_features.push_back(features::kHostIndexedMetadataGrants);
+    }
+
+    enabled_features.push_back({features::kTpcdHeuristicsGrants,
+                                {{"TpcdReadHeuristicsGrants", "true"}}});
+#if !BUILDFLAG(IS_IOS)
     if (IsStorageAccessGrantEligible() ||
         IsTopLevelStorageAccessGrantEligible()) {
       enabled_features.push_back({blink::features::kStorageAccessAPI, {}});
     }
 #endif
+
     feature_list_.InitWithFeaturesAndParameters(enabled_features,
                                                 disabled_features);
   }
@@ -201,10 +183,6 @@ class CookieSettingsTest : public testing::TestWithParam<TestCase> {
   }
 
   void SetUp() override {
-#if !BUILDFLAG(IS_IOS)
-    is_privacy_sandbox_v4_enabled_ =
-        base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4);
-#endif
     ContentSettingsRegistry::GetInstance()->ResetForTest();
     CookieSettings::RegisterProfilePrefs(prefs_.registry());
     HostContentSettingsMap::RegisterProfilePrefs(prefs_.registry());
@@ -229,19 +207,25 @@ class CookieSettingsTest : public testing::TestWithParam<TestCase> {
   }
 
   bool IsStorageAccessGrantEligible() const {
-    return GetParam().storage_access_grant_eligible;
+    return std::get<TestVariables::kStorageAccessGrantsEligible>(GetParam());
   }
 
   bool IsTopLevelStorageAccessGrantEligible() const {
-    return GetParam().top_level_storage_access_grant_eligible;
+    return std::get<TestVariables::kTopLevelStorageAccessGrantEligible>(
+        GetParam());
   }
 
   bool Is3pcdSupportEligible() const {
-    return GetParam().eligible_for_3pcd_support;
+    return std::get<TestVariables::k3pcdSupportEligible>(GetParam());
   }
 
   bool Is3pcdMetadataGrantEligible() const {
-    return GetParam().tpcd_metadata_grants_eligible;
+    return std::get<TestVariables::kTpcdMetadataGrantsEligible>(GetParam());
+  }
+
+  bool IsHostIndexedMetadataGrantsEnabled() const {
+    return std::get<TestVariables::kHostIndexedMetadataGrantsEnabled>(
+        GetParam());
   }
 
   net::CookieSettingOverrides GetCookieSettingOverrides() const {
@@ -317,7 +301,7 @@ class CookieSettingsTest : public testing::TestWithParam<TestCase> {
   }
 
   // The storage access result would be blocked if not for a
-  // `net::features::kThirdPartyStoragePartitioning` enablement.
+  // `net::features::kTpcdMetadataGrants` enablement.
   net::cookie_util::StorageAccessResult
   BlockedStorageAccessResultWith3pcdMetadataGrantOverride() const {
     if (Is3pcdMetadataGrantEligible()) {
@@ -349,6 +333,7 @@ class CookieSettingsTest : public testing::TestWithParam<TestCase> {
   const GURL kSameSiteSite;
   const GURL kChromeURL;
   const GURL kExtensionURL;
+  const GURL kDevToolsURL;
   const std::string kDomain;
   const std::string kDotDomain;
   const std::string kSubDomain;
@@ -365,8 +350,8 @@ class CookieSettingsTest : public testing::TestWithParam<TestCase> {
   const net::SiteForCookies kExtensionSiteForCookies;
   const net::SiteForCookies kHttpSiteForCookies;
   const net::SiteForCookies kHttpsSiteForCookies;
+  const net::SiteForCookies kDevToolsSiteForCookies;
   ContentSettingsPattern kAllHttpsSitesPattern;
-  bool is_privacy_sandbox_v4_enabled_ = false;
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -754,6 +739,11 @@ TEST_P(CookieSettingsTest, TestThirdPartyCookiePhaseout) {
   EXPECT_TRUE(cookie_settings->IsFullCookieAccessAllowed(
       kBlockedSite, kFirstPartySiteForCookies,
       /*top_frame_origin=*/absl::nullopt, cookie_setting_overrides));
+
+  // Requests from DevTools panels added by extensions should get cookies.
+  EXPECT_TRUE(cookie_settings_->IsFullCookieAccessAllowed(
+      kHttpsSite, kDevToolsSiteForCookies,
+      /*top_frame_origin=*/absl::nullopt, GetCookieSettingOverrides()));
 }
 
 TEST_P(CookieSettingsTest, CookiesAllowThirdParty) {
@@ -789,37 +779,11 @@ TEST_P(CookieSettingsTest, CookiesExplicitSessionOnly) {
   EXPECT_TRUE(cookie_settings_->IsCookieSessionOnly(kBlockedSite));
 }
 
-#if BUILDFLAG(IS_IOS) && BUILDFLAG(USE_BLINK)
-#define MAYBE_ThirdPartyExceptionSessionOnly \
-  DISABLED_ThirdPartyExceptionSessionOnly
-#else
-#define MAYBE_ThirdPartyExceptionSessionOnly ThirdPartyExceptionSessionOnly
-#endif  // BUILDFLAG(IS_IOS) && BUILDFLAG(USE_BLINK)
-TEST_P(CookieSettingsTest, MAYBE_ThirdPartyExceptionSessionOnly) {
-  cookie_settings_->SetThirdPartyCookieSetting(kBlockedSite,
-                                               CONTENT_SETTING_SESSION_ONLY);
-  EXPECT_EQ(cookie_settings_->IsCookieSessionOnly(kBlockedSite),
-            !is_privacy_sandbox_v4_enabled_);
-}
-
-#if !BUILDFLAG(IS_IOS)
-class CookieSettingsTestSandboxV4Enabled : public CookieSettingsTest {
- public:
-  CookieSettingsTestSandboxV4Enabled() {
-    feature_list_.InitAndEnableFeature(
-        privacy_sandbox::kPrivacySandboxSettings4);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-TEST_P(CookieSettingsTestSandboxV4Enabled, ThirdPartyExceptionSessionOnly) {
+TEST_P(CookieSettingsTest, ThirdPartyExceptionSessionOnly) {
   cookie_settings_->SetThirdPartyCookieSetting(kBlockedSite,
                                                CONTENT_SETTING_SESSION_ONLY);
   EXPECT_FALSE(cookie_settings_->IsCookieSessionOnly(kBlockedSite));
 }
-#endif
 
 class CookieSettingsTestUserBypass : public CookieSettingsTest {
  public:
@@ -1064,17 +1028,6 @@ TEST_P(CookieSettingsTest, DeleteSessionOnlyWithThirdPartyBlocking) {
   EXPECT_TRUE(ShouldDeleteCookieOnExit(kDomain, false));
 }
 
-#if !BUILDFLAG(IS_IOS)
-TEST_P(CookieSettingsTestSandboxV4Enabled,
-       DeleteSessionOnlyWithThirdPartyBlocking) {
-  cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
-  prefs_.SetInteger(prefs::kCookieControlsMode,
-                    static_cast<int>(CookieControlsMode::kBlockThirdParty));
-  EXPECT_TRUE(cookie_settings_->IsCookieSessionOnly(kBlockedSite));
-  EXPECT_TRUE(ShouldDeleteCookieOnExit(kDomain, false));
-}
-#endif
-
 TEST_P(CookieSettingsTest, DeletionWithDifferentPorts) {
   // Keep cookies for site with special port.
   cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
@@ -1130,30 +1083,12 @@ TEST_P(CookieSettingsTest, DeletionWithSubDomains) {
   EXPECT_TRUE(ShouldDeleteCookieOnExit(kSubDomain, true));
 }
 
-#if BUILDFLAG(IS_IOS) && BUILDFLAG(USE_BLINK)
-#define MAYBE_DeleteCookiesWithThirdPartyException \
-  DISABLED_DeleteCookiesWithThirdPartyException
-#else
-#define MAYBE_DeleteCookiesWithThirdPartyException \
-  DeleteCookiesWithThirdPartyException
-#endif  // BUILDFLAG(IS_IOS) && BUILDFLAG(USE_BLINK)
-TEST_P(CookieSettingsTest, MAYBE_DeleteCookiesWithThirdPartyException) {
-  cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_ALLOW);
-  cookie_settings_->SetThirdPartyCookieSetting(kHttpsSite,
-                                               CONTENT_SETTING_SESSION_ONLY);
-  EXPECT_EQ(ShouldDeleteCookieOnExit(kDomain, true),
-            !is_privacy_sandbox_v4_enabled_);
-}
-
-#if !BUILDFLAG(IS_IOS)
-TEST_P(CookieSettingsTestSandboxV4Enabled,
-       DeleteCookiesWithThirdPartyException) {
+TEST_P(CookieSettingsTest, DeleteCookiesWithThirdPartyException) {
   cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_ALLOW);
   cookie_settings_->SetThirdPartyCookieSetting(kHttpsSite,
                                                CONTENT_SETTING_SESSION_ONLY);
   EXPECT_FALSE(ShouldDeleteCookieOnExit(kDomain, true));
 }
-#endif
 
 TEST_P(CookieSettingsTest, CookiesThirdPartyBlockedExplicitAllow) {
   cookie_settings_->SetCookieSetting(kAllowedSite, CONTENT_SETTING_ALLOW);
@@ -1944,31 +1879,63 @@ TEST_P(CookieSettingsTest, LegacyCookieAccessAllowDomainWildcardPattern) {
   }
 }
 
+// NOTE: These tests will fail if their FINAL name is of length greater than 256
+// characters. Thus, try to avoid (unnecessary) generalized parameterization
+// when possible.
+std::string CustomTestName(
+    const testing::TestParamInfo<CookieSettingsTest::ParamType>& info) {
+  std::stringstream custom_test_name;
+  // clang-format off
+  custom_test_name
+      << "TopLevelStorageAccessGrantEligible_"
+      << std::get<TestVariables::kTopLevelStorageAccessGrantEligible>(
+             info.param)
+      << "_StorageAccessGrantsEligible_"
+      << std::get<TestVariables::kStorageAccessGrantsEligible>(info.param)
+      << "_3pcdSupportEligible_"
+      << std::get<TestVariables::k3pcdSupportEligible>(info.param)
+      << "_TpcdMetadataGrantsEligible_"
+      << std::get<TestVariables::kTpcdMetadataGrantsEligible>(info.param)
+      << "_HostIndexedMetadataGrantsEnabled_"
+      << std::get<TestVariables::kHostIndexedMetadataGrantsEnabled>(info.param);
+  // clang-format on
+  return custom_test_name.str();
+}
+
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     CookieSettingsTest,
-    testing::ValuesIn(kTestCases),
-    [](const testing::TestParamInfo<CookieSettingsTest::ParamType>& info) {
-      return info.param.test_name;
-    });
-
-#if !BUILDFLAG(IS_IOS)
-INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
-    CookieSettingsTestSandboxV4Enabled,
-    testing::ValuesIn(kTestCases),
-    [](const testing::TestParamInfo<CookieSettingsTest::ParamType>& info) {
-      return info.param.test_name;
-    });
+    testing::Combine(testing::Bool(),
+#if BUILDFLAG(IS_IOS)
+                     testing::Values(false),
+                     testing::Values(false),
+                     testing::Values(false),
+                     testing::Values(false)
+#else
+                     testing::Bool(),
+                     testing::Bool(),
+                     testing::Bool(),
+                     testing::Bool()
 #endif
+                         ),
+    CustomTestName);
 
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     CookieSettingsTestUserBypass,
-    testing::ValuesIn(kTestCases),
-    [](const testing::TestParamInfo<CookieSettingsTest::ParamType>& info) {
-      return info.param.test_name;
-    });
-}  // namespace
+    testing::Combine(testing::Bool(),
+#if BUILDFLAG(IS_IOS)
+                     testing::Values(false),
+                     testing::Values(false),
+                     testing::Values(false),
+                     testing::Values(false)
+#else
+                     testing::Bool(),
+                     testing::Bool(),
+                     testing::Bool(),
+                     testing::Bool()
+#endif
+                         ),
+    CustomTestName);
 
 }  // namespace content_settings

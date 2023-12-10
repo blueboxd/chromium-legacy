@@ -6,6 +6,8 @@ import("//build/config/chrome_build.gni")
 
 source_set("authentication") {
   sources = [
+    "account_capabilities_latency_tracker.h",
+    "account_capabilities_latency_tracker.mm",
     "authentication_flow.h",
     "authentication_flow.mm",
     "authentication_flow_performer.h",
@@ -21,6 +23,7 @@ source_set("authentication") {
     "signin_promo_view_mediator.mm",
   ]
   deps = [
+    ":account_settings_presenter",
     ":authentication_constants",
     ":signin_presenter",
     "resources:signin_confirmation_more",
@@ -41,7 +44,7 @@ source_set("authentication") {
     "//google_apis",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/flags",
-    "//ios/chrome/browser/infobars",
+    "//ios/chrome/browser/infobars/model",
     "//ios/chrome/browser/policy",
     "//ios/chrome/browser/shared/coordinator/alert",
     "//ios/chrome/browser/shared/coordinator/scene:scene_state_header",
@@ -104,6 +107,10 @@ source_set("signin_presenter") {
   sources = [ "signin_presenter.h" ]
 }
 
+source_set("account_settings_presenter") {
+  sources = [ "account_settings_presenter.h" ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -114,6 +121,7 @@ source_set("unit_tests") {
     "signin_promo_view_mediator_unittest.mm",
   ]
   deps = [
+    ":account_settings_presenter",
     ":authentication",
     ":signin_presenter",
     "//base",
@@ -136,7 +144,7 @@ source_set("unit_tests") {
     "//components/variations:test_support",
     "//components/version_info",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser/infobars",
+    "//ios/chrome/browser/infobars/model",
     "//ios/chrome/browser/policy",
     "//ios/chrome/browser/policy:constants",
     "//ios/chrome/browser/policy:policy_util",
@@ -180,6 +188,7 @@ source_set("eg_app_support+eg2") {
     "//ios/chrome/test/earl_grey:hooks",
   ]
   deps = [
+    ":account_settings_presenter",
     ":authentication",
     ":signin_presenter",
     "unified_consent",
@@ -223,6 +232,7 @@ source_set("eg_test_support+eg2") {
     "signin_matchers.mm",
   ]
   deps = [
+    ":account_settings_presenter",
     ":signin_presenter",
     "//base",
     "//base/test:test_support",

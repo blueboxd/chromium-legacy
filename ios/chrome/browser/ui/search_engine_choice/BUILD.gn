@@ -9,10 +9,13 @@ source_set("search_engine_choice") {
     "search_engine_choice_coordinator.mm",
     "search_engine_choice_mediator.h",
     "search_engine_choice_mediator.mm",
+    "search_engine_choice_ui_util.h",
+    "search_engine_choice_ui_util.mm",
     "search_engine_choice_view_controller.h",
     "search_engine_choice_view_controller.mm",
   ]
   deps = [
+    ":constants",
     "//base",
     "//components/search_engines",
     "//components/strings",
@@ -24,19 +27,27 @@ source_set("search_engine_choice") {
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/shared/public/commands",
     "//ios/chrome/browser/shared/ui/symbols",
+    "//ios/chrome/browser/shared/ui/table_view:utils",
     "//ios/chrome/browser/shared/ui/table_view/cells",
     "//ios/chrome/browser/shared/ui/util",
     "//ios/chrome/browser/ui/first_run:screen_delegate",
     "//ios/chrome/browser/ui/search_engine_choice/search_engine_choice_table",
+    "//ios/chrome/browser/ui/search_engine_choice/search_engine_choice_table/cells",
     "//ios/chrome/browser/ui/search_engine_choice/why_am_i_seeing_this",
-    "//ios/chrome/browser/ui/settings",
-    "//ios/chrome/browser/ui/settings/cells",
     "//ios/chrome/common/ui/colors:colors",
     "//ios/chrome/common/ui/favicon",
     "//ios/chrome/common/ui/favicon:favicon_constants",
     "//ios/chrome/common/ui/util",
   ]
   frameworks = [ "UIKit.framework" ]
+}
+
+source_set("constants") {
+  sources = [
+    "search_engine_choice_constants.h",
+    "search_engine_choice_constants.mm",
+  ]
+  deps = [ "//base" ]
 }
 
 source_set("unit_tests") {
@@ -51,7 +62,8 @@ source_set("unit_tests") {
     "//components/strings",
     "//components/sync_preferences:test_support",
     "//ios/chrome/browser/favicon",
-    "//ios/chrome/browser/history",
+    "//ios/chrome/browser/history/model",
+    "//ios/chrome/browser/promos_manager:test_support",
     "//ios/chrome/browser/search_engines/model:template_url_service_factory",
     "//ios/chrome/browser/shared/model/browser/test:test_support",
     "//ios/chrome/browser/shared/model/browser_state:test_support",

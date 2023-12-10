@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_ASH_ARC_INPUT_OVERLAY_UI_ACTION_EDIT_VIEW_H_
 #define CHROME_BROWSER_ASH_ARC_INPUT_OVERLAY_UI_ACTION_EDIT_VIEW_H_
 
-#include "base/memory/raw_ptr.h"
+#include <string>
 
+#include "base/memory/raw_ptr.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/button/button.h"
 
@@ -37,6 +38,9 @@ class ActionEditView : public views::Button {
   virtual void OnActionNameUpdated();
   virtual void OnActionInputBindingUpdated();
 
+  // Returns Action name, such as "Joystick WASD".
+  std::u16string GetActionName();
+
   Action* action() const { return action_; }
 
  protected:
@@ -53,6 +57,9 @@ class ActionEditView : public views::Button {
   friend class EditLabelTest;
 
   void OnClicked();
+
+  // views::View:
+  void OnThemeChanged() override;
 };
 
 }  // namespace arc::input_overlay

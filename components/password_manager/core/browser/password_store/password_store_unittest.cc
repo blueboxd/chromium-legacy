@@ -25,21 +25,18 @@
 #include "components/os_crypt/sync/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/affiliation/fake_affiliation_service.h"
 #include "components/password_manager/core/browser/affiliation/mock_affiliated_match_helper.h"
-#include "components/password_manager/core/browser/fake_password_store_backend.h"
 #include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/form_parsing/form_data_parser.h"
-#include "components/password_manager/core/browser/mock_password_store_consumer.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
-#include "components/password_manager/core/browser/password_reuse_detector.h"
-#include "components/password_manager/core/browser/password_reuse_manager.h"
+#include "components/password_manager/core/browser/password_store/fake_password_store_backend.h"
 #include "components/password_manager/core/browser/password_store/login_database.h"
 #include "components/password_manager/core/browser/password_store/mock_password_store_backend.h"
+#include "components/password_manager/core/browser/password_store/mock_password_store_consumer.h"
 #include "components/password_manager/core/browser/password_store/password_store.h"
 #include "components/password_manager/core/browser/password_store/password_store_backend.h"
 #include "components/password_manager/core/browser/password_store/password_store_built_in_backend.h"
 #include "components/password_manager/core/browser/password_store/password_store_consumer.h"
-#include "components/password_manager/core/browser/password_store_signin_notifier.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -224,10 +221,9 @@ class PasswordStoreTest : public testing::Test {
   TestingPrefServiceSimple pref_service_;
 };
 
-absl::optional<PasswordHashData> GetPasswordFromPref(
-    const std::string& username,
-    bool is_gaia_password,
-    PrefService* prefs) {
+std::optional<PasswordHashData> GetPasswordFromPref(const std::string& username,
+                                                    bool is_gaia_password,
+                                                    PrefService* prefs) {
   HashPasswordManager hash_password_manager;
   hash_password_manager.set_prefs(prefs);
 
@@ -1385,7 +1381,7 @@ TEST_F(PasswordStoreTest, CallOnLoginsRetainedIfUpdateProvidesNoChanges) {
   EXPECT_CALL(*mock_backend, UpdateLoginAsync(Eq(kTestForm), _))
       .WillOnce(
           WithArg<1>(Invoke([](PasswordChangesOrErrorReply reply) -> void {
-            std::move(reply).Run(absl::nullopt);
+            std::move(reply).Run(std::nullopt);
           })));
   EXPECT_CALL(*mock_backend, GetAllLoginsAsync(_))
       .WillOnce(WithArg<0>(

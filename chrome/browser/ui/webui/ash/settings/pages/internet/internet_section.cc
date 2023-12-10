@@ -700,14 +700,14 @@ bool AllowAddESim(const network_config::mojom::GlobalPolicyPtr& global_policy) {
   return !global_policy->allow_only_policy_cellular_networks;
 }
 
-absl::optional<std::string> GetCellularActiveSimIccid(
+std::optional<std::string> GetCellularActiveSimIccid(
     const network_config::mojom::DeviceStatePropertiesPtr& device) {
   for (const auto& sim_info : *device->sim_infos) {
     if (sim_info->is_primary) {
       return sim_info->iccid;
     }
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 bool IsPolicySource(network_config::mojom::OncSource onc_source) {
@@ -788,13 +788,11 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"internetAddWiFi", IDS_SETTINGS_INTERNET_ADD_WIFI},
       {"internetConfigName", IDS_SETTINGS_INTERNET_CONFIG_NAME},
       {"internetDetailPageTitle", IDS_SETTINGS_INTERNET_DETAIL},
-      {"internetDeviceEnabling", IDS_SETTINGS_INTERNET_DEVICE_ENABLING},
       {"internetDeviceBusy", IDS_SETTINGS_INTERNET_DEVICE_BUSY},
       {"internetJoinType", IDS_SETTINGS_INTERNET_JOIN_TYPE},
       {"internetKnownNetworksPageTitle", IDS_SETTINGS_INTERNET_KNOWN_NETWORKS},
       {"internetNoNetworks", IDS_SETTINGS_INTERNET_NO_NETWORKS},
-      {"internetPageTitle", isRevampEnabled ? IDS_OS_SETTINGS_REVAMP_INTERNET
-                                            : IDS_SETTINGS_INTERNET},
+      {"internetPageTitle", IDS_SETTINGS_INTERNET},
       {"internetSummaryButtonA11yLabel",
        IDS_SETTINGS_INTERNET_SUMMARY_BUTTON_ACCESSIBILITY_LABEL},
       {"internetToggleMobileA11yLabel",
@@ -831,6 +829,7 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_SETTINGS_NETWORK_ALLOW_DATA_ROAMING_ENABLED_ROAMING},
       {"networkAllowDataRoamingDisabled",
        IDS_SETTINGS_SETTINGS_NETWORK_ALLOW_DATA_ROAMING_DISABLED},
+      {"networkDeviceTurningOn", IDS_SETTINGS_NETWORK_DEVICE_TURNING_ON},
       {"networkVpnPreferences", IDS_SETTINGS_INTERNET_NETWORK_VPN_PREFERENCES},
       {"networkAlwaysOnVpn", IDS_SETTINGS_INTERNET_NETWORK_ALWAYS_ON_VPN},
       {"networkAlwaysOnVpnEnableSublabel",
@@ -905,6 +904,8 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"networkSharedNotOwner", IDS_SETTINGS_INTERNET_NETWORK_SHARED_NOT_OWNER},
       {"networkVpnBuiltin", IDS_NETWORK_TYPE_VPN_BUILTIN},
       {"networkOutOfRange", IDS_SETTINGS_INTERNET_WIFI_NETWORK_OUT_OF_RANGE},
+      {"networkMobileProviderLocked",
+       IDS_SETTINGS_INTERNET_MOBILE_PROVIDER_LOCKED},
       {"cellularSetupDialogTitle",
        IDS_SETTINGS_INTERNET_CELLULAR_SETUP_DIALOG_TITLE},
       {"tetherPhoneOutOfRange",
@@ -1204,6 +1205,19 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
           IDS_SETTINGS_INTERNET_HOTSPOT_SETTINGS_SUBTITLE_WITH_LEARN_MORE_LINK,
           ui::GetChromeOSDeviceName(),
           GetHelpUrlWithBoard(chrome::kChromebookHotspotLearnMoreURL)));
+
+  html_source->AddString(
+      "cellularSubpageSubtitle",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_INTERNET_CELLULAR_SUBTITLE_WITH_LEARN_MORE_LINK,
+          GetHelpUrlWithBoard(chrome::kCellularCarrierLockLearnMoreURL)));
+
+  html_source->AddString(
+      "networkCarrierLocked",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_INTERNET_NETWORK_CARRIER_LOCKED_WITH_LEARN_MORE_LINK,
+          GetHelpUrlWithBoard(chrome::kCellularCarrierLockLearnMoreURL)));
+
   html_source->AddBoolean("isUserLoggedIn", IsUserLoggedIn());
 }
 
@@ -1213,9 +1227,7 @@ void InternetSection::AddHandlers(content::WebUI* web_ui) {
 }
 
 int InternetSection::GetSectionNameMessageId() const {
-  return ash::features::IsOsSettingsRevampWayfindingEnabled()
-             ? IDS_OS_SETTINGS_REVAMP_INTERNET
-             : IDS_SETTINGS_INTERNET;
+  return IDS_SETTINGS_INTERNET;
 }
 
 mojom::Section InternetSection::GetSection() const {

@@ -703,7 +703,7 @@ bool HTMLMediaElement::SupportsFocus(UpdateBehavior update_behavior) const {
 }
 
 bool HTMLMediaElement::IsFocusable(UpdateBehavior update_behavior) const {
-  if (!SupportsFocus()) {
+  if (!SupportsFocus(update_behavior)) {
     return false;
   }
   return !IsFullscreen() || HTMLElement::IsFocusable(update_behavior);
@@ -1455,10 +1455,14 @@ bool HTMLMediaElement::HandleInvokeInternal(HTMLElement& invoker,
     return true;
   }
 
+  if (!RuntimeEnabledFeatures::HTMLInvokeActionsV2Enabled()) {
+    return false;
+  }
+
   if (!(EqualIgnoringASCIICase(action, keywords::kPlaypause) ||
         EqualIgnoringASCIICase(action, keywords::kPause) ||
         EqualIgnoringASCIICase(action, keywords::kPlay) ||
-        EqualIgnoringASCIICase(action, keywords::kMute))) {
+        EqualIgnoringASCIICase(action, keywords::kToggleMuted))) {
     return false;
   }
   Document& document = GetDocument();
@@ -1499,7 +1503,7 @@ bool HTMLMediaElement::HandleInvokeInternal(HTMLElement& invoker,
     }
     return true;
   } else {
-    CHECK(EqualIgnoringASCIICase(action, keywords::kMute));
+    CHECK(EqualIgnoringASCIICase(action, keywords::kToggleMuted));
     // No user activation check as `setMuted` already handles the autoplay
     // policy check.
     setMuted(!muted_);
@@ -1509,6 +1513,29 @@ bool HTMLMediaElement::HandleInvokeInternal(HTMLElement& invoker,
 
 void HTMLMediaElement::StartPlayerLoad() {
   DCHECK(!web_media_player_);
+
+  // OOM interventions may destroy the JavaScript context while still allowing
+  // the page to operate without JavaScript. The media element is too
+  // complicated to continue running in this state, so fail.
+  // See https://crbug.com/1345473 for more information.
+  if (!GetExecutionContext() ||
+      GetDocument().domWindow()->IsContextDestroyed()) {
+    MediaLoadingFailed(
+        WebMediaPlayer::kNetworkStateFormatError,
+        BuildElementErrorMessage(
+            "Player load failure: JavaScript context destroyed"));
+    return;
+  }
+
+  // Due to Document PiP we may have a different execution context than our
+  // opener, so we also must check that the LocalFrame of the opener is valid.
+  LocalFrame* frame = LocalFrameForPlayer();
+  if (!frame) {
+    MediaLoadingFailed(
+        WebMediaPlayer::kNetworkStateFormatError,
+        BuildElementErrorMessage("Player load failure: document has no frame"));
+    return;
+  }
 
   WebMediaPlayerSource source;
   if (src_object_stream_descriptor_) {
@@ -1542,14 +1569,6 @@ void HTMLMediaElement::StartPlayerLoad() {
 
     KURL kurl(request_url);
     source = WebMediaPlayerSource(WebURL(kurl));
-  }
-
-  LocalFrame* frame = LocalFrameForPlayer();
-  if (!frame || !GetExecutionContext()) {
-    MediaLoadingFailed(
-        WebMediaPlayer::kNetworkStateFormatError,
-        BuildElementErrorMessage("Player load failure: document has no frame"));
-    return;
   }
 
   web_media_player_ =

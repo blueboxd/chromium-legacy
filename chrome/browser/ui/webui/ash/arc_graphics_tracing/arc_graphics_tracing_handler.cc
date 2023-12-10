@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/ash/arc_graphics_tracing/arc_graphics_tracing_handler.h"
 
 #include <map>
+#include <optional>
 #include <vector>
 
 #include "ash/components/arc/arc_features.h"
@@ -41,7 +42,6 @@
 #include "content/public/browser/tracing_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -68,8 +68,8 @@ struct ArcGraphicsTracingHandler::ActiveTrace {
   base::Time timestamp;
 
   // This must be destructed on the UI thread, so make it manually-destructable
-  // with absl::optional.
-  absl::optional<base::OneShotTimer> stop_timer;
+  // with std::optional.
+  std::optional<base::OneShotTimer> stop_timer;
 
   arc::PresentFramesTracer present_frames;
 };
@@ -234,7 +234,8 @@ base::trace_event::TraceConfig GetTracingConfig() {
 }  // namespace
 
 base::FilePath ArcGraphicsTracingHandler::GetModelPathFromTitle(
-    std::string_view title) {
+    std::string_view title,
+    base::Time timestamp) {
   constexpr size_t kMaxNameSize = 32;
   char normalized_name[kMaxNameSize];
   size_t index = 0;
@@ -252,7 +253,7 @@ base::FilePath ArcGraphicsTracingHandler::GetModelPathFromTitle(
   normalized_name[index] = 0;
 
   const std::string time =
-      base::UnlocalizedTimeFormatWithPattern(Now(), "yyyy-MM-dd_HH-mm-ss");
+      base::UnlocalizedTimeFormatWithPattern(timestamp, "yyyy-MM-dd_HH-mm-ss");
   return GetDownloadsFolder().AppendASCII(base::StringPrintf(
       "overview_tracing_%s_%s.json", normalized_name, time.c_str()));
 }
@@ -472,7 +473,12 @@ void ArcGraphicsTracingHandler::StartTracing() {
 void ArcGraphicsTracingHandler::StopTracing() {
   SetStatus("Building model...");
 
-  active_trace_->stop_timer->Stop();
+  // |stop_timer| will already be nullopt in the case that the window was or
+  // deactivated before OnTracingStarted was invoked.
+  if (!active_trace_->stop_timer) {
+    active_trace_.reset();
+    return;
+  }
   active_trace_->stop_timer.reset();
 
   active_trace_->time_max = SystemTicksNow();
@@ -524,7 +530,8 @@ void ArcGraphicsTracingHandler::OnTracingStopped(
   std::string string_data;
   string_data.swap(*trace_data);
 
-  const base::FilePath model_path = GetModelPathFromTitle(trace->task_title);
+  const base::FilePath model_path =
+      GetModelPathFromTitle(trace->task_title, trace->timestamp);
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},

@@ -121,6 +121,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/arc/session/arc_service_launcher.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/net/delay_network_call.h"
 #include "chrome/browser/ash/policy/core/user_cloud_policy_manager_ash.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
@@ -195,6 +196,13 @@ TestingProfile::TestingProfile(const base::FilePath& path)
 
 TestingProfile::TestingProfile(const base::FilePath& path, Delegate* delegate)
     : profile_path_(path), delegate_(delegate) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (!user_manager::UserManager::IsInitialized()) {
+    scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::make_unique<ash::FakeChromeUserManager>());
+  }
+#endif
+
   if (profile_path_.empty()) {
     profile_path_ = base::CreateUniqueTempDirectoryScopedToTest();
   }
@@ -254,6 +262,13 @@ TestingProfile::TestingProfile(
       otr_profile_id_(otr_profile_id),
       policy_service_(std::move(policy_service)),
       url_loader_factory_(url_loader_factory) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (!user_manager::UserManager::IsInitialized()) {
+    scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::make_unique<ash::FakeChromeUserManager>());
+  }
+#endif
+
   if (parent)
     parent->SetOffTheRecordProfile(std::unique_ptr<Profile>(this));
 
@@ -326,7 +341,7 @@ void TestingProfile::Init(bool is_supervised_profile) {
   if (!IsOffTheRecord()) {
     supervised_user::SupervisedUserSettingsService* settings_service =
         SupervisedUserSettingsServiceFactory::GetForKey(key_.get());
-    supervised_user_pref_store_ = new TestingPrefStore();
+    supervised_user_pref_store_ = base::MakeRefCounted<TestingPrefStore>();
     settings_service->Init(supervised_user_pref_store_.get());
     settings_service->MergeDataAndStartSyncing(
         syncer::SUPERVISED_USER_SETTINGS, syncer::SyncDataList(),
@@ -347,6 +362,8 @@ void TestingProfile::Init(bool is_supervised_profile) {
 #endif
   else
     CreateTestingPrefService();
+
+  MigrateObsoleteProfilePrefs(prefs_.get(), GetPath());
 
   if (is_supervised_profile)
     SetIsSupervisedProfile();
@@ -531,12 +548,12 @@ TestingProfile::~TestingProfile() {
 
   // Make sure SharedProtoDatabase doesn't post delayed tasks anymore.
   ForEachLoadedStoragePartition(
-      base::BindRepeating([](content::StoragePartition* storage_partition) {
+      [](content::StoragePartition* storage_partition) {
         if (auto* provider =
                 storage_partition->GetProtoDatabaseProviderForTesting()) {
           provider->SetSharedDBDeleteObsoleteDelayForTesting(base::TimeDelta());
         }
-      }));
+      });
 
   // Shutdown storage partitions before we post a task to delete
   // the resource context.
@@ -745,12 +762,14 @@ void TestingProfile::CreatePrefServiceForSupervisedUser() {
 
   // Construct testing_prefs_ by hand to add the supervised user pref store.
   testing_prefs_ = new sync_preferences::TestingPrefServiceSyncable(
-      /*managed_prefs=*/new TestingPrefStore, supervised_user_pref_store_,
-      /*extension_prefs=*/new TestingPrefStore,
-      /*standalone_browser_prefs=*/new TestingPrefStore,
-      /*user_prefs=*/new TestingPrefStore,
-      /*recommended_prefs=*/new TestingPrefStore,
-      new user_prefs::PrefRegistrySyncable, new PrefNotifierImpl);
+      /*managed_prefs=*/base::MakeRefCounted<TestingPrefStore>(),
+      supervised_user_pref_store_,
+      /*extension_prefs=*/base::MakeRefCounted<TestingPrefStore>(),
+      /*standalone_browser_prefs=*/base::MakeRefCounted<TestingPrefStore>(),
+      /*user_prefs=*/base::MakeRefCounted<TestingPrefStore>(),
+      /*recommended_prefs=*/base::MakeRefCounted<TestingPrefStore>(),
+      base::MakeRefCounted<user_prefs::PrefRegistrySyncable>(),
+      std::make_unique<PrefNotifierImpl>());
   prefs_.reset(testing_prefs_);
   user_prefs::UserPrefs::Set(this, prefs_.get());
   RegisterUserProfilePrefs(testing_prefs_->registry());

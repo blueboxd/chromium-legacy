@@ -26,14 +26,14 @@
 #import "components/supervised_user/core/common/buildflags.h"
 #import "components/translate/ios/browser/translate_java_script_feature.h"
 #import "components/version_info/version_info.h"
-#import "ios/chrome/browser/autofill/bottom_sheet/autofill_bottom_sheet_java_script_feature.h"
+#import "ios/chrome/browser/autofill/model/bottom_sheet/autofill_bottom_sheet_java_script_feature.h"
 #import "ios/chrome/browser/content_settings/model/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/flags/chrome_switches.h"
-#import "ios/chrome/browser/follow/follow_java_script_feature.h"
+#import "ios/chrome/browser/follow/model/follow_java_script_feature.h"
 #import "ios/chrome/browser/https_upgrades/model/https_upgrade_service_factory.h"
 #import "ios/chrome/browser/link_to_text/model/link_to_text_java_script_feature.h"
-#import "ios/chrome/browser/ntp/browser_policy_new_tab_page_rewriter.h"
-#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
+#import "ios/chrome/browser/ntp/model/browser_policy_new_tab_page_rewriter.h"
+#import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/prerender/model/prerender_service.h"
 #import "ios/chrome/browser/prerender/model/prerender_service_factory.h"
 #import "ios/chrome/browser/reading_list/model/offline_page_tab_helper.h"
@@ -494,12 +494,9 @@ void ChromeWebClient::LogDefaultUserAgent(web::WebState* web_state,
 }
 
 NSData* ChromeWebClient::FetchSessionFromCache(web::WebState* web_state) const {
-  if (!web::UseNativeSessionRestorationCache()) {
-    return nil;
-  }
-
-  return WebSessionStateTabHelper::FromWebState(web_state)
-      ->FetchSessionFromCache();
+  WebSessionStateTabHelper* tab_helper =
+      WebSessionStateTabHelper::FromWebState(web_state);
+  return tab_helper ? tab_helper->FetchSessionFromCache() : nil;
 }
 
 void ChromeWebClient::CleanupNativeRestoreURLs(web::WebState* web_state) const {

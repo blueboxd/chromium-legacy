@@ -441,6 +441,11 @@ struct StructTraits<autofill::mojom::FormFieldDataPredictionsDataView,
     return r.server_type;
   }
 
+  static const std::string& html_type(
+      const autofill::FormFieldDataPredictions& r) {
+    return r.html_type;
+  }
+
   static const std::string& overall_type(
       const autofill::FormFieldDataPredictions& r) {
     return r.overall_type;
@@ -627,6 +632,11 @@ struct StructTraits<autofill::mojom::PasswordGenerationUIDataDataView,
   static const autofill::FormData& form_data(
       const autofill::password_generation::PasswordGenerationUIData& r) {
     return r.form_data;
+  }
+
+  static bool input_field_empty(
+      const autofill::password_generation::PasswordGenerationUIData& r) {
+    return r.input_field_empty;
   }
 
   static bool Read(

@@ -379,7 +379,7 @@ ArcSessionManager::ExpansionResult ReadSaltInternal() {
   DCHECK(arc::IsArcVmEnabled());
 
   // For ARCVM, read |kArcSaltPath| if that exists.
-  absl::optional<std::string> salt =
+  std::optional<std::string> salt =
       ReadSaltOnDisk(base::FilePath(kArcSaltPath));
   if (!salt) {
     return ArcSessionManager::ExpansionResult{{}, false};
@@ -715,7 +715,7 @@ void ArcSessionManager::OnProvisioningFinished(
     RequestArcDataRemoval();
   }
 
-  absl::optional<int> error_code;
+  std::optional<int> error_code;
   ArcSupportHost::Error support_error = GetSupportHostError(result);
   if (support_error == ArcSupportHost::Error::SIGN_IN_UNKNOWN_ERROR) {
     error_code = static_cast<std::underlying_type_t<ProvisioningStatus>>(
@@ -906,7 +906,6 @@ void ArcSessionManager::ShutdownSession() {
 void ArcSessionManager::ResetArcState() {
   pre_start_time_ = base::TimeTicks();
   start_time_ = base::TimeTicks();
-  activation_delay_elapsed_timer_.reset();
   arc_sign_in_timer_.Stop();
   playstore_launcher_.reset();
   requirement_checker_.reset();
@@ -1017,7 +1016,7 @@ void ArcSessionManager::OnVmStarted(
           ->Unregister(*arcvm_mount_provider_id_);
     }
     arcvm_mount_provider_id_ =
-        absl::optional<guest_os::GuestOsMountProviderRegistry::Id>(
+        std::optional<guest_os::GuestOsMountProviderRegistry::Id>(
             guest_os::GuestOsService::GetForProfile(profile())
                 ->MountProviderRegistry()
                 ->Register(std::make_unique<ArcMountProvider>(
@@ -1160,14 +1159,11 @@ void ArcSessionManager::OnActivationNecessityChecked(bool result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(activation_necessity_checker_);
 
-  base::UmaHistogramBoolean("Arc.DelayedActivation.ActivationIsDelayed",
-                            !result);
-
   activation_necessity_checker_.reset();
   if (result) {
     AllowActivation();
   } else {
-    activation_delay_elapsed_timer_ = std::make_unique<base::ElapsedTimer>();
+    activation_is_delayed = true;
     VLOG(1) << "Activation is not allowed yet. Not starting ARC for now.";
     for (auto& observer : observer_list_) {
       observer.OnArcStartDelayed();
@@ -1482,11 +1478,6 @@ void ArcSessionManager::StartArcForRegularBoot() {
   DCHECK_EQ(state_, State::READY);
   DCHECK(activation_is_allowed_);
 
-  if (activation_delay_elapsed_timer_) {
-    base::UmaHistogramLongTimes("Arc.DelayedActivation.Delay",
-                                activation_delay_elapsed_timer_->Elapsed());
-  }
-
   VLOG(1) << "Starting ARC for a regular boot.";
   StartArc();
   // Check Android management in parallel.
@@ -1537,7 +1528,7 @@ void ArcSessionManager::MaybeStartArcDataRemoval() {
                                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ArcSessionManager::OnArcDataRemoved(absl::optional<bool> result) {
+void ArcSessionManager::OnArcDataRemoved(std::optional<bool> result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::REMOVING_DATA_DIR);
   DCHECK(profile_);
@@ -1584,7 +1575,7 @@ void ArcSessionManager::CheckArcVmDataMigrationNecessity(
 
 void ArcSessionManager::OnArcVmDataMigrationNecessityChecked(
     base::OnceClosure callback,
-    absl::optional<bool> result) {
+    std::optional<bool> result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   DCHECK_EQ(state_, State::CHECKING_DATA_MIGRATION_NECESSITY);

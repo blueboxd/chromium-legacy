@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_TEST_FAKE_WEB_APP_UI_MANAGER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_TEST_FAKE_WEB_APP_UI_MANAGER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/containers/flat_map.h"
@@ -13,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
+#include "components/webapps/common/web_app_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
@@ -84,7 +86,7 @@ class FakeWebAppUiManager : public WebAppUiManager {
                     LaunchWebAppWindowSetting launch_setting,
                     Profile& profile,
                     LaunchWebAppDebugValueCallback callback,
-                    AppLock& lock) override;
+                    WithAppResources& lock) override;
   void WaitForFirstRunService(
       Profile& profile,
       FirstRunServiceCompletedCallback callback) override;
@@ -97,6 +99,11 @@ class FakeWebAppUiManager : public WebAppUiManager {
       const std::vector<std::string>& app_names,
       base::WeakPtr<Profile> profile) override;
 #endif
+  void NotifyAppRelaunchState(const webapps::AppId& placeholder_app_id,
+                              const webapps::AppId& final_app_id,
+                              const std::u16string& final_app_name,
+                              base::WeakPtr<Profile> profile,
+                              AppRelaunchState relaunch_state) override;
   content::WebContents* CreateNewTab() override;
   bool IsWebContentsActiveTabInBrowser(
       content::WebContents* web_contents) override;
@@ -127,6 +134,11 @@ class FakeWebAppUiManager : public WebAppUiManager {
   void MaybeCreateEnableSupportedLinksInfobar(
       content::WebContents* web_contents,
       const std::string& launch_name) override;
+
+  void MaybeShowIPHPromoForAppsLaunchedViaLinkCapturing(
+      content::WebContents* web_contents,
+      Profile* profile,
+      const std::string& app_id) override;
 
  private:
   base::flat_map<webapps::AppId, size_t> app_id_to_num_windows_map_;

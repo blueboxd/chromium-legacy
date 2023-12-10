@@ -51,6 +51,7 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "components/guest_view/browser/guest_view_base.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/mojom/view_type.mojom.h"
 #endif
@@ -221,7 +222,7 @@ void LoginHandler::CancelAuth() {
 
   NotifyAuthCancelled();
   CloseContents();
-  std::move(callback).Run(absl::nullopt);
+  std::move(callback).Run(std::nullopt);
 }
 
 LoginHandler::LoginHandler(const net::AuthChallengeInfo& auth_info,
@@ -253,9 +254,11 @@ void LoginHandler::StartInternal(
   auto continuation = base::BindOnce(
       &LoginHandler::MaybeSetUpLoginPromptBeforeCommit,
       weak_factory_.GetWeakPtr(), request_url, request_id, is_main_frame);
-  if (api->MaybeProxyAuthRequest(web_contents_->GetBrowserContext(), auth_info_,
-                                 std::move(response_headers), request_id,
-                                 is_main_frame, std::move(continuation))) {
+  if (api->MaybeProxyAuthRequest(
+          web_contents_->GetBrowserContext(), auth_info_,
+          std::move(response_headers), request_id, is_main_frame,
+          std::move(continuation),
+          extensions::WebViewGuest::FromWebContents(web_contents_.get()))) {
     return;
   }
 #endif
@@ -267,7 +270,7 @@ void LoginHandler::StartInternal(
       FROM_HERE,
       base::BindOnce(&LoginHandler::MaybeSetUpLoginPromptBeforeCommit,
                      weak_factory_.GetWeakPtr(), request_url, request_id,
-                     is_main_frame, absl::nullopt, false /* should_cancel */));
+                     is_main_frame, std::nullopt, false /* should_cancel */));
 }
 
 void LoginHandler::NotifyAuthNeeded() {
@@ -495,7 +498,7 @@ void LoginHandler::MaybeSetUpLoginPromptBeforeCommit(
     const GURL& request_url,
     const content::GlobalRequestID& request_id,
     bool is_request_for_main_frame,
-    const absl::optional<net::AuthCredentials>& credentials,
+    const std::optional<net::AuthCredentials>& credentials,
     bool cancelled_by_extension) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 

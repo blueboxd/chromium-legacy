@@ -14,14 +14,15 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
+#include "base/functional/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
-#include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/country_type.h"
+#include "components/autofill/core/browser/crowdsourcing/autofill_crowdsourcing_manager.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/logging/log_router.h"
 #include "components/autofill/core/browser/logging/text_log_receiver.h"
@@ -38,8 +39,10 @@
 #include "components/autofill/core/browser/payments/credit_card_risk_based_authenticator.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
+#include "components/autofill/core/browser/payments/mandatory_reauth_manager.h"
 #include "components/autofill/core/browser/payments/test/mock_mandatory_reauth_manager.h"
 #include "components/autofill/core/browser/payments/test/test_credit_card_risk_based_authenticator.h"
+#include "components/autofill/core/browser/payments/test_payments_autofill_client.h"
 #include "components/autofill/core/browser/payments/test_payments_network_interface.h"
 #include "components/autofill/core/browser/strike_databases/payments/test_strike_database.h"
 #include "components/autofill/core/browser/test_address_normalizer.h"
@@ -105,8 +108,8 @@ class TestAutofillClientTemplate : public T {
 
   bool IsOffTheRecord() override { return is_off_the_record_; }
 
-  AutofillDownloadManager* GetDownloadManager() override {
-    return download_manager_.get();
+  AutofillCrowdsourcingManager* GetCrowdsourcingManager() override {
+    return crowdsourcing_manager_.get();
   }
 
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
@@ -190,6 +193,15 @@ class TestAutofillClientTemplate : public T {
     }
 
     return form_data_importer_.get();
+  }
+
+  payments::PaymentsAutofillClient* GetPaymentsAutofillClient() override {
+    if (!payments_autofill_client_) {
+      payments_autofill_client_ =
+          std::make_unique<payments::TestPaymentsAutofillClient>();
+    }
+
+    return payments_autofill_client_.get();
   }
 
   payments::PaymentsNetworkInterface* GetPaymentsNetworkInterface() override {
@@ -276,14 +288,33 @@ class TestAutofillClientTemplate : public T {
       base::OnceClosure accept_virtual_card_callback,
       base::OnceClosure decline_virtual_card_callback) override {}
 
-  payments::MandatoryReauthManager* GetOrCreatePaymentsMandatoryReauthManager()
-      override {
+  payments::MockMandatoryReauthManager*
+  GetOrCreatePaymentsMandatoryReauthManager() override {
     if (!mock_payments_mandatory_reauth_manager_) {
       mock_payments_mandatory_reauth_manager_ = std::make_unique<
           testing::NiceMock<payments::MockMandatoryReauthManager>>();
     }
     return mock_payments_mandatory_reauth_manager_.get();
   }
+
+#if BUILDFLAG(IS_ANDROID)
+  // Set up a mock to simulate successful mandatory reauth when autofilling
+  // payment methods.
+  void SetUpDeviceBiometricAuthenticatorSuccessResponseMock() {
+    payments::MockMandatoryReauthManager& mandatory_reauth_manager =
+        *GetOrCreatePaymentsMandatoryReauthManager();
+
+    ON_CALL(mandatory_reauth_manager, GetAuthenticationMethod)
+        .WillByDefault(testing::Return(
+            payments::MandatoryReauthAuthenticationMethod::kBiometric));
+
+    ON_CALL(mandatory_reauth_manager, Authenticate)
+        .WillByDefault(testing::WithArg<0>(
+            testing::Invoke([](base::OnceCallback<void(bool)> callback) {
+              std::move(callback).Run(true);
+            })));
+  }
+#endif
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   void ShowLocalCardMigrationDialog(
@@ -324,10 +355,11 @@ class TestAutofillClientTemplate : public T {
 
   void ConfirmUploadIbanToCloud(
       const Iban& iban,
-      const LegalMessageLines& legal_message_lines,
+      LegalMessageLines legal_message_lines,
       bool should_show_prompt,
       AutofillClient::SaveIbanPromptCallback callback) override {
     confirm_upload_iban_to_cloud_called_ = true;
+    legal_message_lines_ = std::move(legal_message_lines);
     offer_to_save_iban_bubble_was_shown_ = should_show_prompt;
   }
 
@@ -608,16 +640,21 @@ class TestAutofillClientTemplate : public T {
     should_save_autofill_profiles_ = value;
   }
 
-  bool ConfirmSaveCardLocallyWasCalled() {
+  bool ConfirmSaveCardLocallyWasCalled() const {
     return confirm_save_credit_card_locally_called_;
   }
 
-  bool ConfirmSaveCardToCloudWasCalled() {
+  bool ConfirmSaveCardToCloudWasCalled() const {
     return confirm_save_credit_card_to_cloud_called_;
   }
 
-  bool ConfirmSaveIbanLocallyWasCalled() {
+  bool ConfirmSaveIbanLocallyWasCalled() const {
     return confirm_save_iban_locally_called_;
+  }
+
+  bool ConfirmUploadIbanToCloudWasCalled() const {
+    return confirm_upload_iban_to_cloud_called_ &&
+           !legal_message_lines_.empty();
   }
 
   bool offer_to_save_iban_bubble_was_shown() {
@@ -697,9 +734,9 @@ class TestAutofillClientTemplate : public T {
     is_off_the_record_ = is_off_the_record;
   }
 
-  void set_download_manager(
-      std::unique_ptr<AutofillDownloadManager> download_manager) {
-    download_manager_ = std::move(download_manager);
+  void set_crowdsourcing_manager(
+      std::unique_ptr<AutofillCrowdsourcingManager> crowdsourcing_manager) {
+    crowdsourcing_manager_ = std::move(crowdsourcing_manager);
   }
 
   void set_shared_url_loader_factory(
@@ -749,6 +786,8 @@ class TestAutofillClientTemplate : public T {
   // The below objects must be destroyed before `TestPersonalDataManager`
   // because they keep a reference to it.
   std::unique_ptr<AutofillOfferManager> autofill_offer_manager_;
+  std::unique_ptr<payments::TestPaymentsAutofillClient>
+      payments_autofill_client_;
   std::unique_ptr<payments::PaymentsNetworkInterface>
       payments_network_interface_;
   std::unique_ptr<testing::NiceMock<MockIbanManager>> mock_iban_manager_;
@@ -776,6 +815,7 @@ class TestAutofillClientTemplate : public T {
 
   bool confirm_save_iban_locally_called_ = false;
   bool confirm_upload_iban_to_cloud_called_ = false;
+  LegalMessageLines legal_message_lines_;
 
   bool autofill_error_dialog_shown_ = false;
 
@@ -810,7 +850,7 @@ class TestAutofillClientTemplate : public T {
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &test_url_loader_factory_);
 
-  std::unique_ptr<AutofillDownloadManager> download_manager_;
+  std::unique_ptr<AutofillCrowdsourcingManager> crowdsourcing_manager_;
 
   // Populated if credit card local save or upload was offered.
   absl::optional<AutofillClient::SaveCreditCardOptions>

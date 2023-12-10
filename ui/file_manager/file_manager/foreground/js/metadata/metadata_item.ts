@@ -216,6 +216,27 @@ export class MetadataItem {
   syncCompletedTime?: number;
 }
 
+export interface Id3v2Frame {
+  // Three to four character identifier for the type of frame.
+  name: string;
+  headerSize: number;
+  // Size excludes the header.
+  size: number;
+  // Only set for v2.3 and v2.4.
+  flags?: number;
+
+  // Various optional fields set depending on the type of frame.
+  encoding?: number;
+  value?: string;
+
+  description?: string;
+
+  format?: string;
+  mime?: string;
+  pictureType?: number;
+  imageUrl?: string;
+}
+
 export class ParserMetadata {
   imageTransform?: ImageTransformation;
   thumbnailTransform?: ImageTransformation;
@@ -229,5 +250,21 @@ export class ParserMetadata {
   };
   height?: number;
   width?: number;
+  duration?: number;
   mimeType?: string;
+
+  title?: string;
+  artist?: string;
+  album?: string;
+  description?: Array<{key: string, value: string}>;
+
+  mpegBrand?: string;
+
+  id3v2?: {
+    majorVersion: number,
+    minorVersion: number,
+    flags: number,
+    size: number,
+    frames: {[frameName: string]: Id3v2Frame},
+  };
 }

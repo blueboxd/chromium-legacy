@@ -4,6 +4,7 @@
 
 #include "chromeos/ash/components/language_packs/language_pack_manager.h"
 
+#include <optional>
 #include <string_view>
 
 #include "ash/constants/ash_pref_names.h"
@@ -22,13 +23,14 @@
 #include "chromeos/ash/components/language_packs/handwriting.h"
 #include "chromeos/ash/components/language_packs/language_packs_util.h"
 #include "components/prefs/pref_service.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/dlcservice/dbus-constants.h"
 
 using ::ash::input_method::InputMethodManager;
 
 namespace ash::language_packs {
 namespace {
+
+LanguagePackManager* g_instance = nullptr;
 
 const base::flat_map<std::string, std::string>& GetAllBasePackDlcIds() {
   // Map of all features and corresponding Base Pack DLC IDs.
@@ -41,14 +43,14 @@ const base::flat_map<std::string, std::string>& GetAllBasePackDlcIds() {
 }
 
 // Finds the ID of the DLC corresponding to the Base Pack for a feature.
-// Returns the DLC ID if the feature has a Base Pack or absl::nullopt
+// Returns the DLC ID if the feature has a Base Pack or std::nullopt
 // otherwise.
-absl::optional<std::string> GetDlcIdForBasePack(const std::string& feature_id) {
+std::optional<std::string> GetDlcIdForBasePack(const std::string& feature_id) {
   // We search in the static list for the given |feature_id|.
   const auto it = GetAllBasePackDlcIds().find(feature_id);
 
   if (it == GetAllBasePackDlcIds().end()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   return it->second;
@@ -288,7 +290,8 @@ const base::flat_map<PackSpecPair, std::string>& GetAllLanguagePackDlcIds() {
           {{kTtsFeatureId, "ne"}, "tts-ne-np-b"},
           {{kTtsFeatureId, "nl"}, "tts-nl-nl-b"},
           {{kTtsFeatureId, "pl"}, "tts-pl-pl-b"},
-          {{kTtsFeatureId, "pt"}, "tts-pt-br-b"},
+          {{kTtsFeatureId, "pt-br"}, "tts-pt-br-b"},
+          {{kTtsFeatureId, "pt-pt"}, "tts-pt-pt-b"},
           {{kTtsFeatureId, "si"}, "tts-si-lk-b"},
           {{kTtsFeatureId, "sk"}, "tts-sk-sk-b"},
           {{kTtsFeatureId, "sv"}, "tts-sv-se-b"},
@@ -309,7 +312,7 @@ const base::flat_map<PackSpecPair, std::string>& GetAllLanguagePackDlcIds() {
 // down to one string copy per argument, use heterogeneous lookup
 // (https://abseil.io/tips/144) to reduce it down to zero string copies, or
 // rewrite this function completely.
-absl::optional<std::string> GetDlcIdForLanguagePack(
+std::optional<std::string> GetDlcIdForLanguagePack(
     const std::string& feature_id,
     const std::string& locale) {
   // We search in the static list for the given Pack spec.
@@ -317,7 +320,7 @@ absl::optional<std::string> GetDlcIdForLanguagePack(
   const auto it = GetAllLanguagePackDlcIds().find(spec);
 
   if (it == GetAllLanguagePackDlcIds().end()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   return it->second;
@@ -347,7 +350,7 @@ void LanguagePackManager::InstallPack(const std::string& feature_id,
                                       const std::string& input_locale,
                                       OnInstallCompleteCallback callback) {
   const std::string locale = ResolveLocale(feature_id, input_locale);
-  const absl::optional<std::string> dlc_id =
+  const std::optional<std::string> dlc_id =
       GetDlcIdForLanguagePack(feature_id, locale);
 
   // If the given Language Pack doesn't exist, run callback and don't reach the
@@ -365,7 +368,7 @@ void LanguagePackManager::GetPackState(const std::string& feature_id,
                                        const std::string& input_locale,
                                        GetPackStateCallback callback) {
   const std::string locale = ResolveLocale(feature_id, input_locale);
-  const absl::optional<std::string> dlc_id =
+  const std::optional<std::string> dlc_id =
       GetDlcIdForLanguagePack(feature_id, locale);
 
   // If the given Language Pack doesn't exist, run callback and don't reach the
@@ -389,7 +392,7 @@ void LanguagePackManager::RemovePack(const std::string& feature_id,
                                      const std::string& input_locale,
                                      OnUninstallCompleteCallback callback) {
   const std::string locale = ResolveLocale(feature_id, input_locale);
-  const absl::optional<std::string> dlc_id =
+  const std::optional<std::string> dlc_id =
       GetDlcIdForLanguagePack(feature_id, locale);
 
   // If the given Language Pack doesn't exist, run callback and don't reach the
@@ -407,7 +410,7 @@ void LanguagePackManager::RemovePack(const std::string& feature_id,
 void LanguagePackManager::InstallBasePack(
     const std::string& feature_id,
     OnInstallBasePackCompleteCallback callback) {
-  const absl::optional<std::string> dlc_id = GetDlcIdForBasePack(feature_id);
+  const std::optional<std::string> dlc_id = GetDlcIdForBasePack(feature_id);
 
   // If the given |feature_id| doesn't have a Base Pack, run callback and
   // don't reach the DLC Service.
@@ -436,7 +439,7 @@ void LanguagePackManager::UpdatePacksForOobe(
   // In the future we'll have a function that returns the list of features to
   // install.
   const std::string locale = ResolveLocale(kTtsFeatureId, input_locale);
-  const absl::optional<std::string> dlc_id =
+  const std::optional<std::string> dlc_id =
       GetDlcIdForLanguagePack(kTtsFeatureId, locale);
 
   if (dlc_id) {
@@ -483,7 +486,7 @@ void LanguagePackManager::OnDlcStateChanged(
     const dlcservice::DlcState& dlc_state) {
   // As of now, we only have Handwriting as a client.
   // We will check the full list once we have more than one DLC.
-  const absl::optional<std::string> handwriting_locale =
+  const std::optional<std::string> handwriting_locale =
       DlcToHandwritingLocale(dlc_state.id());
   if (!handwriting_locale.has_value()) {
     return;
@@ -493,19 +496,33 @@ void LanguagePackManager::OnDlcStateChanged(
 }
 
 LanguagePackManager::LanguagePackManager() {
+  CHECK(!g_instance);
+  g_instance = this;
   obs_.Observe(DlcserviceClient::Get());
 }
 
-LanguagePackManager::~LanguagePackManager() {}
+LanguagePackManager::~LanguagePackManager() {
+  CHECK_EQ(g_instance, this);
+  g_instance = nullptr;
+}
 
-void LanguagePackManager::ResetForTesting() {
-  observers_.Clear();
+void LanguagePackManager::Initialise() {
+  // Heap-allocates an instance, which is then set in `g_instance` in the
+  // constructor.
+  // This instance will be cleaned up in `Shutdown()`.
+  // Calling this while `g_instance` is set will result in a `CHECK` failure
+  // instead of a memory leak.
+  new LanguagePackManager();
+}
+
+void LanguagePackManager::Shutdown() {
+  CHECK(g_instance);
+  delete g_instance;
 }
 
 // static
 LanguagePackManager* LanguagePackManager::GetInstance() {
-  static base::NoDestructor<LanguagePackManager> instance;
-  return instance.get();
+  return g_instance;
 }
 
 }  // namespace ash::language_packs

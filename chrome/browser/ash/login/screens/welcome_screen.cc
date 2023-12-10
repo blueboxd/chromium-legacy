@@ -176,15 +176,15 @@ std::string GetApplicationLocale() {
 // static
 std::string WelcomeScreen::GetResultString(Result result) {
   switch (result) {
-    case Result::NEXT:
+    case Result::kNext:
       return "Next";
-    case Result::NEXT_OS_INSTALL:
+    case Result::kNextOSInstall:
       return "StartOsInstall";
-    case Result::SETUP_DEMO:
+    case Result::kSetupDemo:
       return "SetupDemo";
-    case Result::ENABLE_DEBUGGING:
+    case Result::kEnableDebugging:
       return "EnableDebugging";
-    case Result::QUICK_START:
+    case Result::kQuickStart:
       return "QuickStart";
   }
 }
@@ -603,17 +603,17 @@ void WelcomeScreen::SetQuickStartButtonVisibility(bool visible) {
 
 void WelcomeScreen::OnContinueButtonPressed() {
   if (switches::IsOsInstallAllowed())
-    Exit(Result::NEXT_OS_INSTALL);
+    Exit(Result::kNextOSInstall);
   else
-    Exit(Result::NEXT);
+    Exit(Result::kNext);
 }
 
 void WelcomeScreen::OnSetupDemoMode() {
-  Exit(Result::SETUP_DEMO);
+  Exit(Result::kSetupDemo);
 }
 
 void WelcomeScreen::OnEnableDebugging() {
-  Exit(Result::ENABLE_DEBUGGING);
+  Exit(Result::kEnableDebugging);
 }
 
 void WelcomeScreen::OnLanguageChangedCallback(
@@ -736,13 +736,16 @@ void WelcomeScreen::OnQuickStartClicked() {
     // Show bluetooth dialog
     view_->ShowQuickStartBluetoothDialog();
   } else {
-    Exit(Result::QUICK_START);
+    Exit(Result::kQuickStart);
   }
 }
 
 void WelcomeScreen::OnTurnOnBluetoothForQuickStart() {
   CHECK(context()->quick_start_enabled);
-  Exit(Result::QUICK_START);
+  WizardController::default_controller()
+      ->quick_start_controller()
+      ->TurnOnBluetooth();
+  Exit(Result::kQuickStart);
 }
 
 void WelcomeScreen::Exit(Result result) const {

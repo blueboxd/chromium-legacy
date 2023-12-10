@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/autofill/autofill_app_interface.h"
 
+#import "base/apple/foundation_util.h"
 #import "base/check.h"
 #import "base/memory/singleton.h"
 #import "base/strings/sys_string_conversions.h"
@@ -22,11 +23,13 @@
 #import "components/keyed_service/core/service_access_type.h"
 #import "components/password_manager/core/browser/password_store/password_store_consumer.h"
 #import "components/password_manager/core/browser/password_store/password_store_interface.h"
-#import "ios/chrome/browser/autofill/personal_data_manager_factory.h"
+#import "ios/chrome/browser/autofill/model/personal_data_manager_factory.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/ui/autofill/scoped_autofill_payment_reauth_module_override.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/app/mock_reauthentication_module.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/public/provider/chrome/browser/risk_data/risk_data_api.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
@@ -202,7 +205,7 @@ class SaveCardInfobarEGTestHelper
         ->GetAutofillManager()
         .client()
         .GetFormDataImporter()
-        ->credit_card_save_manager_.get();
+        ->GetCreditCardSaveManager();
   }
 
   // Access the PaymentsNetworkInterface.
@@ -343,6 +346,9 @@ class SaveCardInfobarEGTestHelper
 
 @implementation AutofillAppInterface
 
+static std::unique_ptr<ScopedAutofillPaymentReauthModuleOverride>
+    _scopedReauthModuleOverride;
+
 + (void)clearPasswordStore {
   ClearPasswordStore();
 }
@@ -399,6 +405,7 @@ class SaveCardInfobarEGTestHelper
   autofill::PersonalDataManager* personalDataManager =
       [self personalDataManager];
   for (const auto* creditCard : personalDataManager->GetCreditCards()) {
+    // This will not remove server cards, as they have no guid.
     personalDataManager->RemoveByGUID(creditCard->guid());
   }
 
@@ -406,6 +413,11 @@ class SaveCardInfobarEGTestHelper
       chrome_test_util::GetOriginalBrowserState();
   autofill::prefs::SetAutofillPaymentMethodsEnabled(browserState->GetPrefs(),
                                                     YES);
+}
+
+// Clears all server data including server cards.
++ (void)clearAllServerDataForTesting {
+  [self personalDataManager]->ClearAllServerDataForTesting();
 }
 
 + (NSString*)saveLocalCreditCard {
@@ -433,7 +445,6 @@ class SaveCardInfobarEGTestHelper
   autofill::CreditCard card =
       autofill::test::WithCvc(autofill::test::GetMaskedServerCard());
   DCHECK(card.record_type() != autofill::CreditCard::RecordType::kLocalCard);
-
   personalDataManager->AddServerCreditCardForTest(
       std::make_unique<autofill::CreditCard>(card));
   personalDataManager->NotifyPersonalDataObserver();
@@ -490,6 +501,41 @@ class SaveCardInfobarEGTestHelper
 
 + (NSString*)paymentsRiskData {
   return ios::provider::GetRiskData();
+}
+
++ (void)setUpMockReauthenticationModule {
+  MockReauthenticationModule* mock_reauthentication_module =
+      [[MockReauthenticationModule alloc] init];
+  _scopedReauthModuleOverride =
+      ScopedAutofillPaymentReauthModuleOverride::MakeAndArmForTesting(
+          mock_reauthentication_module);
+}
+
++ (void)clearMockReauthenticationModule {
+  _scopedReauthModuleOverride = nullptr;
+}
+
++ (void)mockReauthenticationModuleCanAttempt:(BOOL)canAttempt {
+  CHECK(_scopedReauthModuleOverride);
+  MockReauthenticationModule* mockModule =
+      base::apple::ObjCCastStrict<MockReauthenticationModule>(
+          _scopedReauthModuleOverride->module);
+  mockModule.canAttempt = canAttempt;
+}
+
++ (void)mockReauthenticationModuleExpectedResult:
+    (ReauthenticationResult)expectedResult {
+  CHECK(_scopedReauthModuleOverride);
+  MockReauthenticationModule* mockModule =
+      base::apple::ObjCCastStrict<MockReauthenticationModule>(
+          _scopedReauthModuleOverride->module);
+  mockModule.expectedResult = expectedResult;
+}
+
++ (void)setMandatoryReauthEnabled:(BOOL)enabled {
+  autofill::PersonalDataManager* personalDataManager =
+      [self personalDataManager];
+  personalDataManager->SetPaymentMethodsMandatoryReauthEnabled(enabled);
 }
 
 #pragma mark - Private

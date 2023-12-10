@@ -18,7 +18,6 @@
 #include "base/version.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
-#include "components/embedder_support/features.h"
 #include "components/embedder_support/pref_names.h"
 #include "components/embedder_support/switches.h"
 #include "components/policy/core/common/policy_pref_names.h"
@@ -244,7 +243,7 @@ std::vector<std::string> GetFormFactorClientHints(
   std::vector<std::string> form_factor = {
       is_mobile ? blink::kMobileFormFactor : blink::kDesktopFormFactor};
 
-  if (base::FeatureList::IsEnabled(kClientHintsXRFormFactor)) {
+  if (base::FeatureList::IsEnabled(blink::features::kClientHintsXRFormFactor)) {
     form_factor.push_back(blink::kXRFormFactor);
   }
   return form_factor;

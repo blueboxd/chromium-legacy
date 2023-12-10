@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/containers/cxx20_erase.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -106,7 +105,7 @@ void ReadInstallCommandFromManifest(
     return;
   }
 
-  const base::FilePath offline_dir = [&offline_dir_guid]() {
+  const base::FilePath offline_dir = [&offline_dir_guid] {
     base::FilePath offline_dir;
     return base::PathService::Get(base::DIR_EXE, &offline_dir)
                ? offline_dir.Append(L"Offline").Append(offline_dir_guid)
@@ -136,7 +135,7 @@ void ReadInstallCommandFromManifest(
   }
 
   installer_version = it->manifest.version;
-  installer_path = [&offline_dir, &app_id, &it]() {
+  installer_path = [&offline_dir, &app_id, &it] {
     const base::FilePath app_dir(offline_dir.AppendASCII(app_id));
     const base::FilePath path(app_dir.AppendASCII(it->manifest.run));
     return base::PathExists(path)
@@ -233,7 +232,7 @@ bool IsArchitectureCompatible(const std::string& arch_list,
           }) != architectures.end()) {
     return false;
   }
-  base::EraseIf(architectures,
+  std::erase_if(architectures,
                 [](const std::string& arch) { return arch[0] == '-'; });
   return architectures.empty() ||
          base::ranges::find_if(

@@ -45,8 +45,7 @@ struct Suggestion {
     Text& operator=(const Text& other);
     Text& operator=(Text&& other);
     ~Text();
-    bool operator==(const Suggestion::Text& text) const;
-    bool operator!=(const Suggestion::Text& text) const;
+    bool operator==(const Suggestion::Text& text) const = default;
 
     // The text value to be shown.
     std::u16string value;
@@ -107,6 +106,10 @@ struct Suggestion {
   // UTF-16.
   Suggestion(base::StringPiece main_text,
              base::StringPiece label,
+             Icon icon,
+             PopupItemId popup_item_id);
+  Suggestion(base::StringPiece main_text,
+             std::vector<std::vector<Text>> labels,
              Icon icon,
              PopupItemId popup_item_id);
   Suggestion(base::StringPiece main_text,
@@ -220,9 +223,15 @@ struct Suggestion {
   // suggestion.
   std::optional<std::u16string> acceptance_a11y_announcement;
 
-  // When `popup_item_id` is `PopupItemId::kFieldByFieldFilling`, specifies the
+  // When `popup_item_id` is
+  // `PopupItemId::k(Address|CreditCard)FieldByFieldFilling`, specifies the
   // `ServerFieldType` used to build the suggestion's `main_text`.
   std::optional<ServerFieldType> field_by_field_filling_type_used;
+
+  // Denotes whether this suggestion was hidden prior to the effects caused by
+  // kAutofillUseAddressRewriterInProfileSubsetComparison.
+  // TODO(crbug.com/1439742): Remove when the feature launches.
+  bool hidden_prior_to_address_rewriter_usage = false;
 };
 
 std::string_view ConvertIconToPrintableString(Suggestion::Icon icon);

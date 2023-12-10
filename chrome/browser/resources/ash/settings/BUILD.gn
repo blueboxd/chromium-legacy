@@ -60,6 +60,8 @@ build_webui("build") {
   ]
 
   web_component_files = [
+    "common/app_language_selection_dialog/app_language_selection_dialog.ts",
+    "common/app_language_selection_dialog/app_language_selection_item.ts",
     "common/lacros_extension_controlled_indicator.ts",
     "crostini_page/bruschetta_subpage.ts",
     "crostini_page/crostini_arc_adb.ts",
@@ -78,7 +80,6 @@ build_webui("build") {
     "crostini_page/crostini_subpage.ts",
     "date_time_page/date_time_settings_card.ts",
     "date_time_page/date_time_page.ts",
-    "date_time_page/system_geolocation_dialog.ts",
     "date_time_page/timezone_selector.ts",
     "date_time_page/timezone_subpage.ts",
     "device_page/audio.ts",
@@ -300,6 +301,8 @@ build_webui("build") {
     "os_privacy_page/privacy_hub_app_permission_row.ts",
     "os_privacy_page/privacy_hub_camera_subpage.ts",
     "os_privacy_page/privacy_hub_geolocation_subpage.ts",
+    "os_privacy_page/privacy_hub_geolocation_dialog.ts",
+    "os_privacy_page/privacy_hub_geolocation_warning_text.ts",
     "os_privacy_page/privacy_hub_microphone_subpage.ts",
     "os_privacy_page/privacy_hub_subpage.ts",
     "os_privacy_page/smart_privacy_subpage.ts",
@@ -429,6 +432,7 @@ build_webui("build") {
     "os_privacy_page/mojo_interface_provider.ts",
     "os_privacy_page/peripheral_data_access_browser_proxy.ts",
     "os_privacy_page/privacy_hub_browser_proxy.ts",
+    "os_privacy_page/privacy_hub_metrics_util.ts",
     "os_reset_page/os_reset_browser_proxy.ts",
     "os_search_page/google_assistant_browser_proxy.ts",
     "os_search_page/search_engines_browser_proxy.ts",

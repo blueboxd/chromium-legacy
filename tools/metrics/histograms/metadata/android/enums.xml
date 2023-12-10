@@ -298,6 +298,12 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="RemoteException"/>
 </enum>
 
+<enum name="AndroidWebViewMediaIntegrityApiStatus">
+  <int value="0" label="DISABLED"/>
+  <int value="1" label="ENABLED_WITHOUT_APP_IDENTITY"/>
+  <int value="2" label="ENABLED"/>
+</enum>
+
 <enum name="AndroidWebViewMediaIntegrityInvalidInteraction">
   <int value="0" label="INVALID_PROVIDER_REQUEST"/>
   <int value="1" label="INVALID_TOKEN_REQUEST"/>
@@ -379,6 +385,11 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="DISALLOWED_SITE_DETECTED"/>
   <int value="4" label="TIMEOUT"/>
   <int value="5" label="UNKNOWN_ERROR"/>
+</enum>
+
+<enum name="AndroidWebViewTextSelectionMenuOrdering">
+  <int value="0" label="Default"/>
+  <int value="1" label="Samsung"/>
 </enum>
 
 <enum name="AndroidXWebkitApiCall">
@@ -1483,7 +1494,7 @@ chromium-metrics-reviews@google.com.
   <int value="13" label="Unknown reason for failure"/>
 </enum>
 
-<enum name="TabSelectionEditorShareActionState">
+<enum name="TabListEditorShareActionState">
   <int value="0" label="UNKNOWN_SHARE_STATE"/>
   <int value="1" label="SUCCESSFULLY_SHARED_TABS"/>
   <int value="2" label="FAILED_SHARE_ALL_TABS_FILTERED"/>
@@ -1523,6 +1534,7 @@ chromium-metrics-reviews@google.com.
   <int value="16" label="BACK_BUTTON"/>
   <int value="17" label="FORWARD_BUTTON"/>
   <int value="18" label="RELOAD_BUTTON"/>
+  <int value="19" label="MINIMIZE_BUTTON"/>
 </enum>
 
 <enum name="TopToolbarAllowCaptureReason">

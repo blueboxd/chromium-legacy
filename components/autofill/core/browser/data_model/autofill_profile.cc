@@ -221,6 +221,39 @@ void GetFieldsForDistinguishingProfiles(
   }
 }
 
+#if BUILDFLAG(IS_ANDROID)
+// Constructs an AutofillProfile using the provided `existing_profile` as a
+// foundation. In case that the `existing_profile` is invalid, an empty profile
+// with a unique identifier (GUID) corresponding to the Java profile
+// (`jprofile`) is initialized.
+AutofillProfile CreateStarterProfile(
+    const base::android::JavaParamRef<jobject>& jprofile,
+    JNIEnv* env,
+    const AutofillProfile* existing_profile) {
+  std::string guid = base::android::ConvertJavaStringToUTF8(
+      Java_AutofillProfile_getGUID(env, jprofile));
+  if (!existing_profile) {
+    AutofillProfile::Source source = static_cast<AutofillProfile::Source>(
+        Java_AutofillProfile_getSource(env, jprofile));
+    AddressCountryCode country_code =
+        AddressCountryCode(base::android::ConvertJavaStringToUTF8(
+            Java_AutofillProfile_getCountryCode(env, jprofile)));
+    AutofillProfile profile = AutofillProfile(source, country_code);
+    // Only set the guid if CreateStartProfile is called on an existing profile
+    // (java guid not empty). Otherwise, keep the generated one.
+    // TODO(crbug.com/1484006): `guid` should be always empty when existing
+    // profile is not set. CHECK should be added when this condition holds.
+    if (!guid.empty()) {
+      profile.set_guid(guid);
+    }
+    return profile;
+  }
+
+  CHECK_EQ(existing_profile->guid(), guid);
+  return *existing_profile;
+}
+#endif  // BUILDFLAG(IS_ANDROID)
+
 }  // namespace
 
 AutofillProfile::AutofillProfile(AddressCountryCode country_code)
@@ -318,25 +351,8 @@ AutofillProfile AutofillProfile::CreateFromJavaObject(
     const AutofillProfile* existing_profile,
     const std::string& app_locale) {
   JNIEnv* env = base::android::AttachCurrentThread();
-
-  AutofillProfile profile;
-  if (!existing_profile) {
-    profile = AutofillProfile(static_cast<AutofillProfile::Source>(
-        Java_AutofillProfile_getSource(env, jprofile)));
-    // Only set the guid if it is an existing profile (java guid not empty).
-    // Otherwise, keep the generated one.
-    std::string guid =
-        ConvertJavaStringToUTF8(Java_AutofillProfile_getGUID(env, jprofile));
-    // TODO(crbug.com/1484006): `guid` should be always empty when existing
-    // profile is not set. CHECK should be added when this condition holds.
-    if (!guid.empty()) {
-      profile.set_guid(guid);
-    }
-  } else {
-    profile = *existing_profile;
-    CHECK_EQ(profile.guid(), ConvertJavaStringToUTF8(
-                                 Java_AutofillProfile_getGUID(env, jprofile)));
-  }
+  AutofillProfile profile =
+      CreateStarterProfile(jprofile, env, existing_profile);
 
   std::vector<int> field_types;
   base::android::JavaIntArrayToIntVector(
@@ -356,14 +372,15 @@ AutofillProfile AutofillProfile::CreateFromJavaObject(
     // TODO(crbug.com/1471502): Reconcile usage of GetInfo and GetRawInfo below.
     if (field_type == NAME_FULL || field_type == ADDRESS_HOME_COUNTRY) {
       profile.SetInfoWithVerificationStatus(
-          field_type, ConvertJavaStringToUTF16(value), app_locale, status);
+          field_type, base::android::ConvertJavaStringToUTF16(value),
+          app_locale, status);
     } else {
       profile.SetRawInfoWithVerificationStatus(
-          field_type, ConvertJavaStringToUTF16(value), status);
+          field_type, base::android::ConvertJavaStringToUTF16(value), status);
     }
   }
 
-  profile.set_language_code(ConvertJavaStringToUTF8(
+  profile.set_language_code(base::android::ConvertJavaStringToUTF8(
       Java_AutofillProfile_getLanguageCode(env, jprofile)));
   profile.FinalizeAfterImport();
 
@@ -509,17 +526,30 @@ int AutofillProfile::Compare(const AutofillProfile& profile) const {
       ADDRESS_HOME_SORTING_CODE,
       ADDRESS_HOME_COUNTRY,
       ADDRESS_HOME_LANDMARK,
+      ADDRESS_HOME_OVERFLOW,
+      ADDRESS_HOME_BETWEEN_STREETS_OR_LANDMARK,
+      ADDRESS_HOME_OVERFLOW_AND_LANDMARK,
       ADDRESS_HOME_BETWEEN_STREETS,
+      ADDRESS_HOME_BETWEEN_STREETS_1,
+      ADDRESS_HOME_BETWEEN_STREETS_2,
       ADDRESS_HOME_ADMIN_LEVEL2,
       ADDRESS_HOME_HOUSE_NUMBER,
       ADDRESS_HOME_STREET_NAME,
       ADDRESS_HOME_SUBPREMISE,
+      ADDRESS_HOME_STREET_LOCATION,
       ADDRESS_HOME_APT,
       ADDRESS_HOME_APT_NUM,
       ADDRESS_HOME_APT_TYPE,
+      ADDRESS_HOME_FLOOR,
       EMAIL_ADDRESS,
       PHONE_HOME_WHOLE_NUMBER,
   };
+
+  // When adding field types, ensure that they don't need to be added here and
+  // update the last checked value.
+  static_assert(ServerFieldType::MAX_VALID_FIELD_TYPE == 161,
+                "New field type needs to be reviewed for inclusion in the "
+                "profile comparison logic.");
 
   for (ServerFieldType type : types) {
     int comparison = GetRawInfo(type).compare(profile.GetRawInfo(type));
@@ -591,7 +621,6 @@ bool AutofillProfile::IsSubsetOfForFieldSet(
   // TODO(crbug.com/1417975): Remove when
   // `kAutofillUseAddressRewriterInProfileSubsetComparison` launches.
   bool has_different_address = false;
-  bool has_street_address_type = false;
   const AddressComponent& address = GetAddress().GetStructuredAddress();
   const AddressComponent& other_address =
       profile.GetAddress().GetStructuredAddress();
@@ -611,7 +640,6 @@ bool AutofillProfile::IsSubsetOfForFieldSet(
     if (type == ADDRESS_HOME_ADDRESS || type == ADDRESS_HOME_STREET_ADDRESS ||
         type == ADDRESS_HOME_LINE1 || type == ADDRESS_HOME_LINE2 ||
         type == ADDRESS_HOME_LINE3) {
-      has_street_address_type = true;
       // This will compare street addresses after applying appropriate address
       // rewriter rules to both values, so that for example US streets like
       // `Main Street` and `main st` evaluate to equal.
@@ -647,9 +675,6 @@ bool AutofillProfile::IsSubsetOfForFieldSet(
     } else if (!comparator.Compare(value, profile.GetInfo(type, app_locale))) {
       return false;
     }
-  }
-  if (has_street_address_type) {
-    autofill_metrics::LogProfilesDifferOnAddressLineOnly(has_different_address);
   }
   // When `kAutofillUseAddressRewriterInProfileSubsetComparison` is disabled,
   // Ignore street addresses because comparing addresses such as 200 Elm St and

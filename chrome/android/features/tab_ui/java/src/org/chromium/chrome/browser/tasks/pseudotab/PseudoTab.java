@@ -39,9 +39,7 @@ import java.util.Set;
 
 import javax.annotation.concurrent.GuardedBy;
 
-/**
- * Representation of a Tab-like card in the Grid Tab Switcher.
- */
+/** Representation of a Tab-like card in the Grid Tab Switcher. */
 public class PseudoTab {
     private static final String TAG = "PseudoTab";
 
@@ -50,21 +48,18 @@ public class PseudoTab {
 
     @GuardedBy("sLock")
     private static final Map<Integer, PseudoTab> sAllTabs = new LinkedHashMap<>();
+
     private static final Object sLock = new Object();
     private static boolean sReadStateFile;
     private static List<PseudoTab> sAllTabsFromStateFile;
     private static PseudoTab sActiveTabFromStateFile;
 
-    /**
-     * An interface to get the title to be used for a tab.
-     */
+    /** An interface to get the title to be used for a tab. */
     public interface TitleProvider {
         String getTitle(Context context, PseudoTab tab);
     }
 
-    /**
-     * Construct from a tab ID. An earlier instance with the same ID can be returned.
-     */
+    /** Construct from a tab ID. An earlier instance with the same ID can be returned. */
     public static PseudoTab fromTabId(int tabId) {
         synchronized (sLock) {
             PseudoTab cached = sAllTabs.get(tabId);
@@ -89,7 +84,8 @@ public class PseudoTab {
                 if (cached.getTab() == tab) {
                     return cached;
                 } else {
-                    assert tab.getWebContents() == null || cached.getTab().getWebContents() == null
+                    assert tab.getWebContents() == null
+                            || cached.getTab().getWebContents() == null
                             || cached.getTab().getWebContents().getTopLevelNativeWindow() == null;
                     return new PseudoTab(tab);
                 }
@@ -289,6 +285,24 @@ public class PseudoTab {
         }
     }
 
+    /**
+     * Get related tabs of a certain {@link PseudoTab}, through {@link TabModelFilter}s if
+     * available.
+     *
+     * @param context The activity context.
+     * @param member The {@link PseudoTab} related to
+     * @param tabModelFilter The {@link TabModelFilter} to query the tab relation
+     * @return Related {@link PseudoTab}s
+     */
+    public static @NonNull List<PseudoTab> getRelatedTabs(
+            Context context, PseudoTab member, @NonNull TabModelFilter filter) {
+        assert filter.isTabModelRestored() : "Trying to get related tabs for uninitialized filter.";
+        synchronized (sLock) {
+            List<Tab> relatedTabs = filter.getRelatedTabList(member.getId());
+            return getListOfPseudoTab(relatedTabs);
+        }
+    }
+
     private static @Nullable List<Tab> getRelatedTabList(
             @NonNull TabModelSelector tabModelSelector, int tabId) {
         if (!tabModelSelector.isTabStateInitialized()) {
@@ -365,7 +379,7 @@ public class PseudoTab {
                             isStandardActiveIndex,
                             isIncognitoActiveIndex) -> {
                         // Skip restoring of non-selected NTP to match the real restoration logic.
-                        if (UrlUtilities.isCanonicalizedNTPUrl(url) && !isStandardActiveIndex) {
+                        if (UrlUtilities.isCanonicalizedNtpUrl(url) && !isStandardActiveIndex) {
                             return;
                         }
                         PseudoTab tab = PseudoTab.fromTabId(id);
@@ -387,7 +401,9 @@ public class PseudoTab {
         }
 
         Log.d(TAG, "All pre-native tabs: " + sAllTabsFromStateFile);
-        Log.i(TAG, "readAllPseudoTabsFromStateFile() took %dms",
+        Log.i(
+                TAG,
+                "readAllPseudoTabsFromStateFile() took %dms",
                 SystemClock.elapsedRealtime() - startMs);
     }
 }

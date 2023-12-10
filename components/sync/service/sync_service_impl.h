@@ -157,6 +157,7 @@ class SyncServiceImpl : public SyncService,
       ModelType type,
       const std::string& histogram_name) const override;
   void GetTypesWithUnsyncedData(
+      ModelTypeSet requested_types,
       base::OnceCallback<void(ModelTypeSet)> callback) const override;
   void GetLocalDataDescriptions(
       ModelTypeSet types,
@@ -195,13 +196,14 @@ class SyncServiceImpl : public SyncService,
   CoreAccountInfo GetSyncAccountInfoForPrefs() const override;
 
   // IdentityManager::Observer implementation.
+  void OnAccountsCookieDeletedByUserAction() override;
   void OnAccountsInCookieUpdated(
       const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
 
   // Similar to above but with a callback that will be invoked on completion.
   void OnAccountsInCookieUpdatedWithCallback(
-      const std::vector<gaia::ListedAccount>& signed_in_accounts,
+      const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       base::OnceClosure callback);
 
   // Returns true if currently signed in account is not present in the list of
@@ -255,9 +257,6 @@ class SyncServiceImpl : public SyncService,
   SyncEncryptionHandler::Observer* GetEncryptionObserverForTest();
 
   SyncClient* GetSyncClientForTest();
-
- protected:
-  bool IsSyncFeatureConsideredRequested() const override;
 
  private:
   enum UnrecoverableErrorReason {
@@ -390,11 +389,6 @@ class SyncServiceImpl : public SyncService,
   // Records (or may record) histograms related to trusted vault passphrase
   // type.
   void MaybeRecordTrustedVaultHistograms();
-
-  // Whether sync-the-feature should be enabled without further action (e.g.
-  // ChromeOS Ash). In practice it means SyncRequested and FirstSetupComplete
-  // are set automatically.
-  bool ShouldAutoStartSyncFeature() const;
 
   // Clean up download status recorder.
   void OnDownloadStatusRecorderFinished();

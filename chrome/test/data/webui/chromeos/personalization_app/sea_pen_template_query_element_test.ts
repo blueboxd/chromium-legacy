@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 import 'chrome://personalization/strings.m.js';
-import 'chrome://webui-test/mojo_webui_test_support.js';
+import 'chrome://webui-test/chromeos/mojo_webui_test_support.js';
 
-import {SeaPenTemplateQueryElement} from 'chrome://personalization/js/personalization_app.js';
+import {Paths, SeaPenTemplateId, SeaPenTemplateQueryElement} from 'chrome://personalization/js/personalization_app.js';
 import {assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
@@ -20,9 +20,10 @@ suite('SeaPenTemplateQueryElementTest', function() {
   });
 
   test('displays sea pen template', async () => {
-    seaPenTemplateQueryElement = initElement(
-        SeaPenTemplateQueryElement,
-        {'templateId': 'ChromeOSWallpaperTemplateSamplePark'});
+    seaPenTemplateQueryElement = initElement(SeaPenTemplateQueryElement, {
+      'templateId': SeaPenTemplateId.kFlower.toString(),
+      'path': Paths.SEA_PEN_COLLECTION,
+    });
     await waitAfterNextRender(seaPenTemplateQueryElement);
 
     const chips =
@@ -35,6 +36,8 @@ suite('SeaPenTemplateQueryElementTest', function() {
     const unselectedTemplate =
         seaPenTemplateQueryElement.shadowRoot!.querySelectorAll(
             '#template .unselected');
+    const searchButton = seaPenTemplateQueryElement.shadowRoot!.querySelector(
+                             '#searchButton') as HTMLElement;
 
     assertTrue(chips.length > 0, 'there should be chips to select');
     assertEquals(
@@ -43,12 +46,26 @@ suite('SeaPenTemplateQueryElementTest', function() {
     assertEquals(
         0, unselectedTemplate.length,
         'there should be no unselected templates');
+    assertEquals('Search', searchButton!.innerText);
+  });
+
+  test('displays search again button on results page', async () => {
+    seaPenTemplateQueryElement = initElement(SeaPenTemplateQueryElement, {
+      'templateId': SeaPenTemplateId.kFlower.toString(),
+      'path': Paths.SEA_PEN_RESULTS,
+    });
+    await waitAfterNextRender(seaPenTemplateQueryElement);
+
+    const searchButton = seaPenTemplateQueryElement.shadowRoot!.querySelector(
+                             '#searchButton') as HTMLElement;
+
+    assertEquals('Search again', searchButton!.innerText);
   });
 
   test('selects chip', async () => {
     seaPenTemplateQueryElement = initElement(
         SeaPenTemplateQueryElement,
-        {'templateId': 'ChromeOSWallpaperTemplateSamplePark'});
+        {'templateId': SeaPenTemplateId.kFlower.toString()});
     await waitAfterNextRender(seaPenTemplateQueryElement);
 
     const chips =
@@ -80,7 +97,7 @@ suite('SeaPenTemplateQueryElementTest', function() {
   test('selecting option updates chip', async () => {
     seaPenTemplateQueryElement = initElement(
         SeaPenTemplateQueryElement,
-        {'templateId': 'ChromeOSWallpaperTemplateSamplePark'});
+        {'templateId': SeaPenTemplateId.kFlower.toString()});
     await waitAfterNextRender(seaPenTemplateQueryElement);
     const chips =
         seaPenTemplateQueryElement.shadowRoot!.querySelectorAll('.clickable');
@@ -110,5 +127,41 @@ suite('SeaPenTemplateQueryElementTest', function() {
     assertEquals(
         selectedOption!.innerText, optionText,
         'the option should now be selected');
+  });
+
+  test('inspires me', async () => {
+    seaPenTemplateQueryElement = initElement(
+        SeaPenTemplateQueryElement,
+        {'templateId': SeaPenTemplateId.kFlower.toString()});
+    await waitAfterNextRender(seaPenTemplateQueryElement);
+    const inspireButton =
+        seaPenTemplateQueryElement.shadowRoot!.getElementById('inspire');
+    assertTrue(!!inspireButton);
+    inspireButton!.click();
+    await waitAfterNextRender(seaPenTemplateQueryElement);
+
+    const chips =
+        seaPenTemplateQueryElement.shadowRoot!.querySelectorAll<HTMLElement>(
+            '.clickable');
+    assertTrue(chips.length >= 2, 'there should be chips to select');
+    chips[0]!.click();
+    await waitAfterNextRender(seaPenTemplateQueryElement);
+
+    let selectedOption = seaPenTemplateQueryElement.shadowRoot!.querySelector(
+                             '#options cr-button.action-button') as HTMLElement;
+    let optionText = selectedOption!.innerText;
+    assertTrue(
+        optionText === chips[0]!.innerText,
+        'selected option should match text');
+
+    chips[1]!.click();
+    await waitAfterNextRender(seaPenTemplateQueryElement);
+
+    selectedOption = seaPenTemplateQueryElement.shadowRoot!.querySelector(
+                         '#options cr-button.action-button') as HTMLElement;
+    optionText = selectedOption!.innerText;
+    assertTrue(
+        optionText === chips[1]!.innerText,
+        'selected option should match text');
   });
 });

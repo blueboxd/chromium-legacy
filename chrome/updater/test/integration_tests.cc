@@ -62,6 +62,10 @@
 #include "chrome/updater/util/posix_util.h"
 #endif
 
+#if BUILDFLAG(IS_MAC)
+#include "chrome/updater/util/mac_util.h"
+#endif
+
 #if BUILDFLAG(IS_WIN)
 #include <shlobj.h>
 
@@ -344,7 +348,7 @@ class IntegrationTest : public ::testing::Test {
   void InstallApp(
       const std::string& app_id,
       const base::Version& version = base::Version("0.1"),
-      base::FunctionRef<void()> post_install_action = []() {}) {
+      base::FunctionRef<void()> post_install_action = [] {}) {
     test_commands_->InstallApp(app_id, version);
     post_install_action();
   }
@@ -480,7 +484,8 @@ class IntegrationTest : public ::testing::Test {
 
 #if BUILDFLAG(IS_MAC)
   void PrivilegedHelperInstall() { test_commands_->PrivilegedHelperInstall(); }
-#endif  // BUILDFLAG(IS_WIN)
+  void DeleteLegacyUpdater() { test_commands_->DeleteLegacyUpdater(); }
+#endif  // BUILDFLAG(IS_MAC)
 
   void ExpectAppInstalled(const std::string& appid,
                           const base::Version& expected_version) {
@@ -841,7 +846,8 @@ TEST_F(IntegrationTest, ReportsActive) {
   test_server.ExpectOnce(
       {request::GetUpdaterUserAgentMatcher(),
        request::GetContentMatcher(
-           {R"(.*"appid":"test1","enabled":true,"ping":{"a":-2,.*)"})},
+           {R"(.*"appid":"test1","enabled":true,"installdate":-1,)",
+            R"("ping":{"a":-2,.*)"})},
       R"()]}')"
       "\n"
       R"({"response":{"protocol":"3.1","daystart":{"elapsed_)"
@@ -1367,6 +1373,21 @@ TEST_F(IntegrationTest, UnregisterUnownedApp) {
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
+// The updater shims are only repaired by the server on macOS.
+TEST_F(IntegrationTest, RepairUpdater) {
+  ASSERT_NO_FATAL_FAILURE(Install());
+  ASSERT_TRUE(WaitForUpdaterExit());
+  ASSERT_NO_FATAL_FAILURE(DeleteLegacyUpdater());
+  std::optional<base::FilePath> ksadmin_path = GetKSAdminPath(GetTestScope());
+  ASSERT_TRUE(ksadmin_path.has_value());
+  ASSERT_FALSE(base::PathExists(*ksadmin_path));
+  ASSERT_NO_FATAL_FAILURE(RunWake(0));
+  ASSERT_TRUE(WaitForUpdaterExit());
+  ASSERT_TRUE(base::PathExists(*ksadmin_path));
+  ASSERT_NO_FATAL_FAILURE(ExpectInstalled());
+  ASSERT_NO_FATAL_FAILURE(Uninstall());
+}
+
 // The privileged helper only exists on macOS. This does not test installation
 // of the helper itself, but is meant to cover its core functionality.
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -1835,7 +1856,7 @@ class IntegrationTestDeviceManagement : public IntegrationTest {
     const base::Version version = install_v1 ? app.v1 : app.v2;
     const base::FilePath& installer_path =
         GetInstallerPath(install_v1 ? app.v1_crx : app.v2_crx);
-    InstallApp(app.appid, version, [&]() {
+    InstallApp(app.appid, version, [&] {
       base::FilePath exe_path;
       ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &exe_path));
 #if BUILDFLAG(IS_WIN)
@@ -2268,7 +2289,7 @@ class IntegrationTestMsi : public IntegrationTest {
   }
 
   void InstallMsiWithVersion(const base::Version& version) {
-    InstallApp(kMsiAppId, version, [&]() {
+    InstallApp(kMsiAppId, version, [&] {
       base::FilePath msi_path;
       ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &msi_path));
       msi_path = msi_path.Append(

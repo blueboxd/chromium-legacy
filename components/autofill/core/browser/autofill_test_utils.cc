@@ -56,8 +56,9 @@ bool operator==(const FormFieldDataPredictions& a,
                 const FormFieldDataPredictions& b) {
   auto members = [](const FormFieldDataPredictions& p) {
     return std::tie(p.host_form_signature, p.signature, p.heuristic_type,
-                    p.server_type, p.overall_type, p.parseable_name, p.section,
-                    p.rank, p.rank_in_signature_group, p.rank_in_host_form,
+                    p.server_type, p.html_type, p.overall_type,
+                    p.parseable_name, p.section, p.rank,
+                    p.rank_in_signature_group, p.rank_in_host_form,
                     p.rank_in_host_form_signature_group);
   };
   return members(a) == members(b);
@@ -135,65 +136,42 @@ std::unique_ptr<PrefService> PrefServiceForTesting(
 
 [[nodiscard]] FormData CreateTestAddressFormData(const char* unique_id) {
   FormData form;
-  CreateTestAddressFormData(&form, unique_id);
-  return form;
-}
-
-void CreateTestAddressFormData(FormData* form, const char* unique_id) {
-  std::vector<ServerFieldTypeSet> types;
-  CreateTestAddressFormData(form, &types, unique_id);
-}
-
-void CreateTestAddressFormData(FormData* form,
-                               std::vector<ServerFieldTypeSet>* types,
-                               const char* unique_id) {
-  form->host_frame = MakeLocalFrameToken();
-  form->unique_renderer_id = MakeFormRendererId();
-  form->name = u"MyForm" + ASCIIToUTF16(unique_id ? unique_id : "");
-  form->button_titles = {std::make_pair(
+  form.host_frame = MakeLocalFrameToken();
+  form.unique_renderer_id = MakeFormRendererId();
+  form.name = u"MyForm" + ASCIIToUTF16(unique_id ? unique_id : "");
+  form.button_titles = {std::make_pair(
       u"Submit", mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
-  form->url = GURL("https://myform.com/form.html");
-  form->action = GURL("https://myform.com/submit.html");
-  form->is_action_empty = true;
-  form->main_frame_origin =
+  form.url = GURL("https://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+  form.is_action_empty = true;
+  form.main_frame_origin =
       url::Origin::Create(GURL("https://myform_root.com/form.html"));
-  types->clear();
-  form->submission_event =
+  form.submission_event =
       mojom::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
 
-  form->fields.push_back(CreateTestFormField("First Name", "firstname", "",
-                                             FormControlType::kInputText));
-  types->push_back({NAME_FIRST});
-  form->fields.push_back(CreateTestFormField("Middle Name", "middlename", "",
-                                             FormControlType::kInputText));
-  types->push_back({NAME_MIDDLE});
-  form->fields.push_back(CreateTestFormField("Last Name", "lastname", "",
-                                             FormControlType::kInputText));
-  types->push_back({NAME_LAST, NAME_LAST_SECOND});
-  form->fields.push_back(CreateTestFormField("Address Line 1", "addr1", "",
-                                             FormControlType::kInputText));
-  types->push_back({ADDRESS_HOME_LINE1});
-  form->fields.push_back(CreateTestFormField("Address Line 2", "addr2", "",
-                                             FormControlType::kInputText));
-  types->push_back({ADDRESS_HOME_SUBPREMISE, ADDRESS_HOME_LINE2});
-  form->fields.push_back(
+  form.fields.push_back(CreateTestFormField("First Name", "firstname", "",
+                                            FormControlType::kInputText));
+  form.fields.push_back(CreateTestFormField("Middle Name", "middlename", "",
+                                            FormControlType::kInputText));
+  form.fields.push_back(CreateTestFormField("Last Name", "lastname", "",
+                                            FormControlType::kInputText));
+  form.fields.push_back(CreateTestFormField("Address Line 1", "addr1", "",
+                                            FormControlType::kInputText));
+  form.fields.push_back(CreateTestFormField("Address Line 2", "addr2", "",
+                                            FormControlType::kInputText));
+  form.fields.push_back(
       CreateTestFormField("City", "city", "", FormControlType::kInputText));
-  types->push_back({ADDRESS_HOME_CITY});
-  form->fields.push_back(
+  form.fields.push_back(
       CreateTestFormField("State", "state", "", FormControlType::kInputText));
-  types->push_back({ADDRESS_HOME_STATE});
-  form->fields.push_back(CreateTestFormField("Postal Code", "zipcode", "",
-                                             FormControlType::kInputText));
-  types->push_back({ADDRESS_HOME_ZIP});
-  form->fields.push_back(CreateTestFormField("Country", "country", "",
-                                             FormControlType::kInputText));
-  types->push_back({ADDRESS_HOME_COUNTRY});
-  form->fields.push_back(CreateTestFormField("Phone Number", "phonenumber", "",
-                                             FormControlType::kInputTelephone));
-  types->push_back({PHONE_HOME_WHOLE_NUMBER});
-  form->fields.push_back(
+  form.fields.push_back(CreateTestFormField("Postal Code", "zipcode", "",
+                                            FormControlType::kInputText));
+  form.fields.push_back(CreateTestFormField("Country", "country", "",
+                                            FormControlType::kInputText));
+  form.fields.push_back(CreateTestFormField("Phone Number", "phonenumber", "",
+                                            FormControlType::kInputTelephone));
+  form.fields.push_back(
       CreateTestFormField("Email", "email", "", FormControlType::kInputEmail));
-  types->push_back({EMAIL_ADDRESS});
+  return form;
 }
 
 inline void check_and_set(
@@ -208,7 +186,7 @@ inline void check_and_set(
 }
 
 AutofillProfile GetFullValidProfileForCanada() {
-  AutofillProfile profile;
+  AutofillProfile profile(AddressCountryCode("CA"));
   SetProfileInfo(&profile, "Alice", "", "Wonderland", "alice@wonderland.ca",
                  "Fiction", "666 Notre-Dame Ouest", "Apt 8", "Montreal", "QC",
                  "H3B 2T9", "CA", "15141112233");
@@ -216,7 +194,7 @@ AutofillProfile GetFullValidProfileForCanada() {
 }
 
 AutofillProfile GetFullProfile() {
-  AutofillProfile profile;
+  AutofillProfile profile(AddressCountryCode("US"));
   SetProfileInfo(&profile, "John", "H.", "Doe", "johndoe@hades.com",
                  "Underworld", "666 Erebus St.", "Apt 8", "Elysium", "CA",
                  "91111", "US", "16502111111");
@@ -224,7 +202,7 @@ AutofillProfile GetFullProfile() {
 }
 
 AutofillProfile GetFullProfile2() {
-  AutofillProfile profile;
+  AutofillProfile profile(AddressCountryCode("US"));
   SetProfileInfo(&profile, "Jane", "A.", "Smith", "jsmith@example.com", "ACME",
                  "123 Main Street", "Unit 1", "Greensdale", "MI", "48838", "US",
                  "13105557889");
@@ -232,7 +210,7 @@ AutofillProfile GetFullProfile2() {
 }
 
 AutofillProfile GetFullCanadianProfile() {
-  AutofillProfile profile;
+  AutofillProfile profile(AddressCountryCode("CA"));
   SetProfileInfo(&profile, "Wayne", "", "Gretzky", "wayne@hockey.com", "NHL",
                  "123 Hockey rd.", "Apt 8", "Moncton", "New Brunswick",
                  "E1A 0A6", "CA", "15068531212");
@@ -240,7 +218,7 @@ AutofillProfile GetFullCanadianProfile() {
 }
 
 AutofillProfile GetIncompleteProfile1() {
-  AutofillProfile profile;
+  AutofillProfile profile(AddressCountryCode("US"));
   SetProfileInfo(&profile, "John", "H.", "Doe", "jsmith@example.com", "ACME",
                  "123 Main Street", "Unit 1", "Greensdale", "MI", "48838", "US",
                  "");
@@ -248,7 +226,7 @@ AutofillProfile GetIncompleteProfile1() {
 }
 
 AutofillProfile GetIncompleteProfile2() {
-  AutofillProfile profile;
+  AutofillProfile profile(i18n_model_definition::kLegacyHierarchyCountryCode);
   SetProfileInfo(&profile, "", "", "", "jsmith@example.com", "", "", "", "", "",
                  "", "", "");
   return profile;
@@ -677,6 +655,9 @@ void SetProfileInfo(AutofillProfile* profile,
                     const char* phone,
                     bool finalize,
                     VerificationStatus status) {
+  // Set the country first to ensure that the proper address model is used.
+  check_and_set(profile, ADDRESS_HOME_COUNTRY, country, status);
+
   check_and_set(profile, NAME_FIRST, first_name, status);
   check_and_set(profile, NAME_MIDDLE, middle_name, status);
   check_and_set(profile, NAME_LAST, last_name, status);
@@ -687,7 +668,6 @@ void SetProfileInfo(AutofillProfile* profile,
   check_and_set(profile, ADDRESS_HOME_CITY, city, status);
   check_and_set(profile, ADDRESS_HOME_STATE, state, status);
   check_and_set(profile, ADDRESS_HOME_ZIP, zipcode, status);
-  check_and_set(profile, ADDRESS_HOME_COUNTRY, country, status);
   check_and_set(profile, PHONE_HOME_WHOLE_NUMBER, phone, status);
   if (finalize)
     profile->FinalizeAfterImport();
@@ -860,14 +840,14 @@ void GenerateTestAutofillPopup(
   field.unique_renderer_id = MakeFieldRendererId();
   field.is_focusable = true;
   field.should_autocomplete = true;
-  gfx::RectF bounds(100.f, 100.f);
-  autofill_external_delegate->OnQuery(form, field, bounds);
+  autofill_external_delegate->OnQuery(
+      form, field, gfx::RectF(100.f, 100.f),
+      AutofillSuggestionTriggerSource::kFormControlElementClicked);
 
   std::vector<Suggestion> suggestions;
   suggestions.push_back(Suggestion(u"Test suggestion"));
-  autofill_external_delegate->OnSuggestionsReturned(
-      field.global_id(), suggestions,
-      AutofillSuggestionTriggerSource::kFormControlElementClicked);
+  autofill_external_delegate->OnSuggestionsReturned(field.global_id(),
+                                                    suggestions);
 }
 
 std::string ObfuscatedCardDigitsAsUTF8(const std::string& str,

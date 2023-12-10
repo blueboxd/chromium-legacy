@@ -8,10 +8,11 @@
 // The functions in this file are alphabetized. Please insert new functions in
 // alphabetical order.
 
+#include <optional>
+
 #include "build/chromeos_buildflags.h"
 #include "chrome/common/extensions/api/accessibility_private.h"
 #include "extensions/browser/extension_function.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 // API function that is called when the Select-to-Speak wants to perform a
 // clipboard copy in a Lacros Google Doc.
@@ -51,6 +52,14 @@ class AccessibilityPrivateSetCursorPositionFunction : public ExtensionFunction {
                              ACCESSIBILITY_PRIVATE_SETCURSORPOSITION)
 };
 
+// API function that gets the bounds of the displays in absolute coordinates.
+class AccessibilityPrivateGetDisplayBoundsFunction : public ExtensionFunction {
+  ~AccessibilityPrivateGetDisplayBoundsFunction() override {}
+  ResponseAction Run() override;
+  DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.getDisplayBounds",
+                             ACCESSIBILITY_PRIVATE_GETDISPLAYBOUNDS)
+};
+
 // API function that requests that key events be forwarded to the Switch
 // Access extension.
 class AccessibilityPrivateForwardKeyEventsToSwitchAccessFunction
@@ -83,7 +92,7 @@ class AccessibilityPrivateGetDlcContentsFunction : public ExtensionFunction {
                              ACCESSIBILITY_PRIVATE_GETDLCCONTENTS)
  private:
   void OnDlcContentsRetrieved(const std::vector<uint8_t>& contents,
-                              absl::optional<std::string> error);
+                              std::optional<std::string> error);
 };
 
 // API function that retrieves TTS DLC file contents.
@@ -94,7 +103,7 @@ class AccessibilityPrivateGetTtsDlcContentsFunction : public ExtensionFunction {
                              ACCESSIBILITY_PRIVATE_GETTTSDLCCONTENTS)
  private:
   void OnTtsDlcContentsRetrieved(const std::vector<uint8_t>& contents,
-                                 absl::optional<std::string> error);
+                                 std::optional<std::string> error);
 };
 
 // API function that gets the localized DOM key string for a given key code.
@@ -129,7 +138,7 @@ class AccessibilityPrivateInstallPumpkinForDictationFunction
                              ACCESSIBILITY_PRIVATE_INSTALLPUMPKINFORDICTATION)
  private:
   void OnPumpkinInstallFinished(
-      absl::optional<::extensions::api::accessibility_private::PumpkinData>
+      std::optional<::extensions::api::accessibility_private::PumpkinData>
           data);
 };
 

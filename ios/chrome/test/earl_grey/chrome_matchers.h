@@ -278,6 +278,13 @@ id<GREYMatcher> PrimarySignInButton();
 // "Not johndoe@example.com" button.
 id<GREYMatcher> SecondarySignInButton();
 
+// Returns matcher for the identity chooser scrim that is shown behind the
+// identity chooser dialog. Tapping on the scrim dismisses the dialog.
+id<GREYMatcher> IdentityChooserScrim();
+
+// Returns matcher for the cancel button in the fake add account flow.
+id<GREYMatcher> FakeAddAccountScreenCancelButton();
+
 // Returns a matcher for the button for the currently signed in account in the
 // settings menu.
 id<GREYMatcher> SettingsAccountButton();
@@ -343,6 +350,10 @@ id<GREYMatcher> TabsSettingsButton();
 // Returns a matcher for the Google Services Settings view.
 id<GREYMatcher> GoogleServicesSettingsView();
 
+// Returns matcher for the Navigation Bar embedded in the Settings Navigation
+// Controller.
+id<GREYMatcher> SettingsNavigationBar();
+
 // Returns a matcher for the back button on a settings menu.
 id<GREYMatcher> SettingsMenuBackButton();
 
@@ -355,6 +366,9 @@ id<GREYMatcher> SettingsMenuPrivacyButton();
 
 // Returns a matcher for the Save passwords cell on the main Settings screen.
 id<GREYMatcher> SettingsMenuPasswordsButton();
+
+// Returns matcher for the Safety Check cell on the main Settings screen.
+id<GREYMatcher> SettingsMenuSafetyCheckButton();
 
 // Returns a matcher for the Notifications cell on the main Settings
 // screen.

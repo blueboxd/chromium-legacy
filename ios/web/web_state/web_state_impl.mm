@@ -28,10 +28,6 @@
 #import "net/base/mac/url_conversions.h"
 #import "url/gurl.h"
 
-// To get access to UseSessionSerializationOptimizations().
-// TODO(crbug.com/1383087): remove once the feature is fully launched.
-#import "ios/web/common/features.h"
-
 namespace web {
 namespace {
 
@@ -109,7 +105,6 @@ WebStateImpl::WebStateImpl(const CreateParams& params) {
 
 WebStateImpl::WebStateImpl(const CreateParams& params,
                            CRWSessionStorage* session_storage) {
-  DCHECK(!features::UseSessionSerializationOptimizations());
   AddWebStateImplMarker();
 
   // Restore the serializable user data as user code may depend on accessing
@@ -141,7 +136,6 @@ WebStateImpl::WebStateImpl(BrowserState* browser_state,
                            proto::WebStateMetadataStorage metadata,
                            WebStateStorageLoader storage_loader,
                            NativeSessionFetcher session_fetcher) {
-  DCHECK(features::UseSessionSerializationOptimizations());
   AddWebStateImplMarker();
 
   saved_ = std::make_unique<SerializedData>(
@@ -351,8 +345,10 @@ void WebStateImpl::SendChangeLoadProgress(double progress) {
 }
 
 void WebStateImpl::ShowRepostFormWarningDialog(
+    FormWarningType warning_type,
     base::OnceCallback<void(bool)> callback) {
-  RealizedState()->ShowRepostFormWarningDialog(std::move(callback));
+  RealizedState()->ShowRepostFormWarningDialog(warning_type,
+                                               std::move(callback));
 }
 
 void WebStateImpl::RunJavaScriptAlertDialog(const GURL& origin_url,
@@ -427,7 +423,6 @@ void WebStateImpl::RequestPermissionsWithDecisionHandler(
 #pragma mark - WebState implementation
 
 void WebStateImpl::SerializeToProto(proto::WebStateStorage& storage) const {
-  DCHECK(features::UseSessionSerializationOptimizations());
   DCHECK(IsRealized());
   pimpl_->SerializeToProto(storage);
 }
@@ -600,7 +595,6 @@ WebStateImpl::GetSessionCertificatePolicyCache() {
 }
 
 CRWSessionStorage* WebStateImpl::BuildSessionStorage() const {
-  DCHECK(!features::UseSessionSerializationOptimizations());
   CRWSessionStorage* session_storage = nil;
   if (LIKELY(pimpl_)) {
     proto::WebStateStorage storage;
@@ -808,10 +802,10 @@ void WebStateImpl::RemovePolicyDecider(WebStatePolicyDecider* decider) {
   policy_deciders_.RemoveObserver(decider);
 }
 
-void WebStateImpl::DownloadCurrentPage(NSString* destination_file,
-                                       id<CRWWebViewDownloadDelegate> delegate,
-                                       void (^handler)(id<CRWWebViewDownload>))
-    API_AVAILABLE(ios(14.5)) {
+void WebStateImpl::DownloadCurrentPage(
+    NSString* destination_file,
+    id<CRWWebViewDownloadDelegate> delegate,
+    void (^handler)(id<CRWWebViewDownload>)) {
   CRWWebController* web_controller = GetWebController();
   NSURLRequest* request =
       [NSURLRequest requestWithURL:net::NSURLWithGURL(GetLastCommittedURL())];

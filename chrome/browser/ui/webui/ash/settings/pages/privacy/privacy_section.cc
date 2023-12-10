@@ -272,34 +272,53 @@ const std::vector<SearchConcept>& GetPrivacyControlsSearchConcepts() {
     if (ash::features::IsCrosPrivacyHubV0Enabled()) {
       init_tags.push_back({IDS_OS_SETTINGS_TAG_PRIVACY_CONTROLS,
                            mojom::kPrivacyHubSubpagePath,
-                           mojom::SearchResultIcon::kShield,
+                           ash::features::IsOsSettingsRevampWayfindingEnabled()
+                               ? mojom::SearchResultIcon::kPrivacyControls
+                               : mojom::SearchResultIcon::kShield,
                            mojom::SearchResultDefaultRank::kMedium,
                            mojom::SearchResultType::kSubpage,
                            {.subpage = mojom::Subpage::kPrivacyHub}});
-      init_tags.push_back({IDS_OS_SETTINGS_TAG_CAMERA,
-                           mojom::kPrivacyHubSubpagePath,
-                           mojom::SearchResultIcon::kCamera,
-                           mojom::SearchResultDefaultRank::kMedium,
-                           mojom::SearchResultType::kSetting,
-                           {.setting = mojom::Setting::kCameraOnOff}});
+      if (ash::features::IsCrosPrivacyHubAppPermissionsEnabled()) {
+        init_tags.push_back({IDS_OS_SETTINGS_TAG_CAMERA,
+                             mojom::kPrivacyHubCameraSubpagePath,
+                             mojom::SearchResultIcon::kCamera,
+                             mojom::SearchResultDefaultRank::kMedium,
+                             mojom::SearchResultType::kSubpage,
+                             {.subpage = mojom::Subpage::kPrivacyHubCamera}});
 
-      init_tags.push_back({IDS_OS_SETTINGS_TAG_MICROPHONE,
-                           mojom::kPrivacyHubSubpagePath,
-                           mojom::SearchResultIcon::kMicrophone,
-                           mojom::SearchResultDefaultRank::kMedium,
-                           mojom::SearchResultType::kSetting,
-                           {.setting = mojom::Setting::kMicrophoneOnOff}});
+        init_tags.push_back(
+            {IDS_OS_SETTINGS_TAG_MICROPHONE,
+             mojom::kPrivacyHubMicrophoneSubpagePath,
+             mojom::SearchResultIcon::kMicrophone,
+             mojom::SearchResultDefaultRank::kMedium,
+             mojom::SearchResultType::kSubpage,
+             {.subpage = mojom::Subpage::kPrivacyHubMicrophone}});
+      } else {
+        init_tags.push_back({IDS_OS_SETTINGS_TAG_CAMERA,
+                             mojom::kPrivacyHubSubpagePath,
+                             mojom::SearchResultIcon::kCamera,
+                             mojom::SearchResultDefaultRank::kMedium,
+                             mojom::SearchResultType::kSetting,
+                             {.setting = mojom::Setting::kCameraOnOff}});
+
+        init_tags.push_back({IDS_OS_SETTINGS_TAG_MICROPHONE,
+                             mojom::kPrivacyHubSubpagePath,
+                             mojom::SearchResultIcon::kMicrophone,
+                             mojom::SearchResultDefaultRank::kMedium,
+                             mojom::SearchResultType::kSetting,
+                             {.setting = mojom::Setting::kMicrophoneOnOff}});
+      }
     }
 
     if (ash::features::IsCrosPrivacyHubLocationEnabled()) {
-      init_tags.push_back({IDS_OS_SETTINGS_TAG_GEOLOCATION,
-                           mojom::kPrivacyHubSubpagePath,
-                           mojom::SearchResultIcon::kGeolocation,
-                           mojom::SearchResultDefaultRank::kMedium,
-                           mojom::SearchResultType::kSetting,
-                           {.setting = mojom::Setting::kGeolocationOnOff}});
+      init_tags.push_back(
+          {IDS_OS_SETTINGS_TAG_GEOLOCATION,
+           mojom::kPrivacyHubGeolocationSubpagePath,
+           mojom::SearchResultIcon::kGeolocation,
+           mojom::SearchResultDefaultRank::kMedium,
+           mojom::SearchResultType::kSubpage,
+           {.subpage = mojom::Subpage::kPrivacyHubGeolocation}});
     }
-
     return init_tags;
   }());
 
@@ -318,8 +337,8 @@ PrivacySection::PrivacySection(Profile* profile,
     : OsSettingsSection(profile, search_tag_registry),
       sync_subsection_(
           ash::features::IsOsSettingsRevampWayfindingEnabled()
-              ? absl::make_optional<SyncSection>(profile, search_tag_registry)
-              : absl::nullopt),
+              ? std::make_optional<SyncSection>(profile, search_tag_registry)
+              : std::nullopt),
       pref_service_(pref_service),
       auth_performer_(UserDataAuthClient::Get()),
       fp_engine_(&auth_performer_) {
@@ -476,6 +495,14 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_OS_SETTINGS_PRIVACY_HUB_GEOLOCATION_ACCESS_LEVEL_ONLY_ALLOWED_FOR_SYSTEM},
       {"geolocationAccessLevelDisallowed",
        IDS_OS_SETTINGS_PRIVACY_HUB_GEOLOCATION_ACCESS_LEVEL_DISALLOWED},
+      {"systemGeolocationDialogTitle",
+       IDS_SETTINGS_PRIVACY_HUB_GEOLOCATION_DIALOG_TITLE},
+      {"systemGeolocationDialogBody",
+       IDS_SETTINGS_PRIVACY_HUB_GEOLOCATION_DIALOG_BODY},
+      {"systemGeolocationDialogConfirmButton",
+       IDS_SETTINGS_PRIVACY_HUB_GEOLOCATION_DIALOG_CONFIRM_BUTTON},
+      {"systemGeolocationDialogCancelButton",
+       IDS_SETTINGS_PRIVACY_HUB_GEOLOCATION_DIALOG_CANCEL_BUTTON},
       {"microphoneHwToggleTooltip",
        IDS_OS_SETTINGS_PRIVACY_HUB_HW_MICROPHONE_TOGGLE_TOOLTIP},
       {"websitesSectionTitle",
@@ -686,26 +713,26 @@ void PrivacySection::RegisterHierarchy(HierarchyGenerator* generator) const {
       generator);
 
   // Privacy hub microphone.
-  generator->RegisterTopLevelSubpage(
+  generator->RegisterNestedSubpage(
       IDS_OS_SETTINGS_PRIVACY_HUB_MICROPHONE_TOGGLE_TITLE,
-      mojom::Subpage::kPrivacyHubMicrophone,
+      mojom::Subpage::kPrivacyHubMicrophone, mojom::Subpage::kPrivacyHub,
       mojom::SearchResultIcon::kMicrophone,
       mojom::SearchResultDefaultRank::kMedium,
       mojom::kPrivacyHubMicrophoneSubpagePath);
 
   // Privacy hub geolocation.
-  generator->RegisterTopLevelSubpage(
+  generator->RegisterNestedSubpage(
       IDS_OS_SETTINGS_PRIVACY_HUB_GEOLOCATION_AREA_TITLE,
-      mojom::Subpage::kPrivacyHubGeolocation,
+      mojom::Subpage::kPrivacyHubGeolocation, mojom::Subpage::kPrivacyHub,
       mojom::SearchResultIcon::kGeolocation,
       mojom::SearchResultDefaultRank::kMedium,
       mojom::kPrivacyHubGeolocationSubpagePath);
 
   // Privacy hub camera.
-  generator->RegisterTopLevelSubpage(
+  generator->RegisterNestedSubpage(
       IDS_OS_SETTINGS_PRIVACY_HUB_CAMERA_TOGGLE_TITLE,
-      mojom::Subpage::kPrivacyHubCamera, mojom::SearchResultIcon::kCamera,
-      mojom::SearchResultDefaultRank::kMedium,
+      mojom::Subpage::kPrivacyHubCamera, mojom::Subpage::kPrivacyHub,
+      mojom::SearchResultIcon::kCamera, mojom::SearchResultDefaultRank::kMedium,
       mojom::kPrivacyHubCameraSubpagePath);
 
   // `sync_subsection_` is initialized only if the feature revamp wayfinding is

@@ -59,10 +59,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #endif  // BUILDFLAG(IS_WIN)
 
-#if BUILDFLAG(IS_MAC)
-#include "components/os_crypt/sync/os_crypt.h"
-#endif
-
 using autofill::ACCOUNT_CREATION_PASSWORD;
 using autofill::CalculateFormSignature;
 using autofill::FieldDataManager;
@@ -314,8 +310,9 @@ void PasswordManager::RegisterProfilePrefs(
   registry->RegisterIntegerPref(
       prefs::kCurrentMigrationVersionToGoogleMobileServices, 0);
   registry->RegisterDoublePref(prefs::kTimeOfLastMigrationAttempt, 0.0);
-  registry->RegisterBooleanPref(prefs::kPasswordsUseUPMLocalAndSeparateStores,
-                                false);
+  registry->RegisterIntegerPref(
+      prefs::kPasswordsUseUPMLocalAndSeparateStores,
+      static_cast<int>(prefs::UseUpmLocalAndSeparateStoresState::kOff));
   registry->RegisterBooleanPref(prefs::kRequiresMigrationAfterSyncStatusChange,
                                 false);
   registry->RegisterBooleanPref(
@@ -339,6 +336,12 @@ void PasswordManager::RegisterProfilePrefs(
       prefs::kLocalPasswordMigrationWarningPrefsVersion, 0);
   registry->RegisterIntegerPref(
       prefs::kPasswordGenerationBottomSheetDismissCount, 0);
+  // This pref is used to decide whether the PasswordStore can be connected to
+  // the new Android backend without migrating existing entries in the
+  // LoginDatabase. In doubt, it's best to assume that's not the case, otherwise
+  // passwords might be left behind. In practice, the default value should make
+  // little difference, the pref is always written on startup.
+  registry->RegisterBooleanPref(prefs::kEmptyProfileStoreLoginDatabase, false);
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
@@ -355,10 +358,12 @@ void PasswordManager::RegisterProfilePrefs(
                                 0);
 #endif  // BUILDFLAG(IS_IOS)
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
+  registry->RegisterIntegerPref(
+      prefs::kPasswordGenerationNudgePasswordDismissCount, 0);
   registry->RegisterListPref(prefs::kPasswordManagerPromoCardsList);
 #endif  // BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   registry->RegisterBooleanPref(prefs::kPasswordSharingEnabled, true);
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
   registry->RegisterIntegerPref(prefs::kRelaunchChromeBubbleDismissedCounter,
                                 0);
 #endif
@@ -487,6 +492,8 @@ void PasswordManager::DidNavigateMainFrame(bool form_may_be_submitted) {
   }
   form_managers_.clear();
 
+  // TODO(crbug/1470586): Decide on whether to keep or clean-up calls of
+  // `TryToFindPredictionsToPossibleUsernames`.
   TryToFindPredictionsToPossibleUsernames();
   predictions_.clear();
   store_password_called_ = false;
@@ -527,6 +534,8 @@ void PasswordManager::DropFormManagers() {
   form_managers_.clear();
   owned_submitted_form_manager_.reset();
   visible_forms_data_.clear();
+  // TODO(crbug/1470586): Decide on whether to keep or clean-up calls of
+  // `TryToFindPredictionsToPossibleUsernames`.
   TryToFindPredictionsToPossibleUsernames();
   predictions_.clear();
 }
@@ -649,11 +658,21 @@ void PasswordManager::OnUserModifiedNonPasswordField(
     bool is_likely_otp) {
   // |driver| might be empty on iOS or in tests.
   int driver_id = driver ? driver->GetId() : 0;
-  possible_usernames_.Put(
-      PossibleUsernameFieldIdentifier(driver_id, renderer_id),
-      PossibleUsernameData(GetSignonRealm(driver->GetLastCommittedURL()),
-                           renderer_id, value, base::Time::Now(), driver_id,
-                           autocomplete_attribute_has_username, is_likely_otp));
+
+  // Add user modified text field as a username candidate outside of the
+  // password form.
+  auto it = possible_usernames_.Get({driver_id, renderer_id});
+  if (it != possible_usernames_.end()) {
+    it->second.value = value;
+    it->second.last_change = base::Time::Now();
+  } else {
+    possible_usernames_.Put(
+        PossibleUsernameFieldIdentifier(driver_id, renderer_id),
+        PossibleUsernameData(GetSignonRealm(driver->GetLastCommittedURL()),
+                             renderer_id, value, base::Time::Now(), driver_id,
+                             autocomplete_attribute_has_username,
+                             is_likely_otp));
+  }
 
   if (base::FeatureList::IsEnabled(
           password_manager::features::kForgotPasswordFormSupport)) {
@@ -826,6 +845,8 @@ PasswordFormManager* PasswordManager::ProvisionallySaveForm(
     return nullptr;
   }
 
+  // TODO(crbug/1470586): Decide on whether to keep or clean-up calls of
+  // `TryToFindPredictionsToPossibleUsernames`.
   TryToFindPredictionsToPossibleUsernames();
   if (!matched_manager->ProvisionallySave(submitted_form, driver,
                                           &possible_usernames_)) {
@@ -1293,6 +1314,7 @@ void PasswordManager::ProcessAutofillPredictions(
   if (FieldInfoManager* field_info_manager = client_->GetFieldInfoManager()) {
     field_info_manager->ProcessServerPredictions(predictions_);
   }
+  TryToFindPredictionsToPossibleUsernames();
 
   // Create or update the `PasswordFormManager` corresponding to `form`.
   PasswordFormManager* manager =
@@ -1336,11 +1358,11 @@ PasswordFormManager* PasswordManager::GetSubmittedManager() const {
   return nullptr;
 }
 
-absl::optional<PasswordForm> PasswordManager::GetSubmittedCredentials() {
+std::optional<PasswordForm> PasswordManager::GetSubmittedCredentials() {
   PasswordFormManager* submitted_manager = GetSubmittedManager();
   if (submitted_manager)
     return submitted_manager->GetPendingCredentials();
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 void PasswordManager::ResetSubmittedManager() {
@@ -1401,7 +1423,7 @@ PasswordFormManager* PasswordManager::GetMatchedManager(
   return nullptr;
 }
 
-absl::optional<FormPredictions> PasswordManager::FindPredictionsForField(
+std::optional<FormPredictions> PasswordManager::FindPredictionsForField(
     FieldRendererId field_id,
     int driver_id) {
   for (const auto& form : predictions_) {
@@ -1414,7 +1436,7 @@ absl::optional<FormPredictions> PasswordManager::FindPredictionsForField(
       }
     }
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 void PasswordManager::TryToFindPredictionsToPossibleUsernames() {

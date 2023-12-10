@@ -53,6 +53,7 @@
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/isolation_info.h"
 #include "net/dns/public/resolve_error_info.h"
+#include "net/http/http_connection_info.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/content_security_policy/csp_context.h"
 #include "services/network/public/mojom/blocked_by_response_reason.mojom-shared.h"
@@ -377,7 +378,7 @@ class CONTENT_EXPORT NavigationRequest
   const blink::mojom::LCPCriticalPathPredictorNavigationTimeHintPtr&
   GetLCPPNavigationHint() override;
   const net::HttpResponseHeaders* GetResponseHeaders() override;
-  net::HttpResponseInfo::ConnectionInfo GetConnectionInfo() override;
+  net::HttpConnectionInfo GetConnectionInfo() override;
   const absl::optional<net::SSLInfo>& GetSSLInfo() override;
   const absl::optional<net::AuthChallengeInfo>& GetAuthChallengeInfo() override;
   net::ResolveErrorInfo GetResolveErrorInfo() override;
@@ -1099,6 +1100,11 @@ class CONTENT_EXPORT NavigationRequest
           bind_context) {
     DCHECK(!subresource_proxying_url_loader_service_bind_context_);
     subresource_proxying_url_loader_service_bind_context_ = bind_context;
+  }
+
+  base::WeakPtr<KeepAliveURLLoaderService::FactoryContext>
+  keep_alive_url_loader_factory_context() {
+    return keep_alive_url_loader_factory_context_;
   }
 
   void set_keep_alive_url_loader_factory_context(
@@ -1996,6 +2002,18 @@ class CONTENT_EXPORT NavigationRequest
   // `subframe_history_navigation_throttles_` will only be populated if this
   // IsInMainFrame().
   void UnblockPendingSubframeNavigationRequestsIfNeeded();
+
+  // If this request is a same-origin cross-document traversal (i.e., session
+  // history navigation), this will send a message to the renderer to have it
+  // fire the navigate event. Normally, the renderer fires the navigate event at
+  // navigation start for cross-document navigations, before sending the
+  // BeginNavigation to the browser. That doesn't work for traversals, because
+  // the renderer don't know which frame(s) will navigate. This is called after
+  // beforeunload events fire and after any navigation start throttles have
+  // resumed, so we know the navigation is proceeding. The navigate event can't
+  // cancel a cross-document traversal, so it can be sent in parallel, instead
+  // of blocking and waiting for the result.
+  void MaybeDispatchNavigateEventForCrossDocumentTraversal();
 
   // Returns if we should add/reset the `CookieChangeListener` for the current
   // navigation.

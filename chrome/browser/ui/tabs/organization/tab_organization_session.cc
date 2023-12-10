@@ -34,6 +34,10 @@ TabOrganizationSession::~TabOrganizationSession() {
   for (auto& observer : observers_) {
     observer.OnTabOrganizationSessionDestroyed(session_id());
   }
+
+  if (request_) {
+    request_->LogResults(this);
+  }
 }
 
 // static
@@ -126,7 +130,7 @@ void TabOrganizationSession::NotifyObserversOfUpdate() {
 }
 
 void TabOrganizationSession::OnRequestResponse(
-    const TabOrganizationResponse* response) {
+    TabOrganizationResponse* response) {
   if (response) {
     PopulateOrganizations(response);
   }
@@ -134,7 +138,7 @@ void TabOrganizationSession::OnRequestResponse(
 }
 
 void TabOrganizationSession::PopulateAndCreate(
-    const TabOrganizationResponse* response) {
+    TabOrganizationResponse* response) {
   PopulateOrganizations(response);
   TabOrganization* organization = GetNextTabOrganization();
   if (organization->IsValidForOrganizing()) {
@@ -143,10 +147,11 @@ void TabOrganizationSession::PopulateAndCreate(
 }
 
 void TabOrganizationSession::PopulateOrganizations(
-    const TabOrganizationResponse* response) {
+    TabOrganizationResponse* response) {
+  feedback_id_ = response->feedback_id;
   // for each of the organizations, make sure that the TabData is valid for
   // grouping.
-  for (const TabOrganizationResponse::Organization& response_organization :
+  for (TabOrganizationResponse::Organization& response_organization :
        response->organizations) {
     std::vector<std::unique_ptr<TabData>> tab_datas_for_org;
 
@@ -182,11 +187,9 @@ void TabOrganizationSession::PopulateOrganizations(
 
     std::unique_ptr<TabOrganization> organization =
         std::make_unique<TabOrganization>(std::move(tab_datas_for_org),
-                                          std::move(names), 0u, absl::nullopt);
+                                          std::move(names), 0u, std::nullopt);
 
-    if (!organization->IsValidForOrganizing()) {
-      continue;
-    }
+    response_organization.organization_id = organization->organization_id();
 
     organization->AddObserver(this);
     tab_organizations_.emplace_back(std::move(organization));

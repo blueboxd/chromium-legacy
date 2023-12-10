@@ -22,18 +22,23 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
+import androidx.core.content.ContextCompat;
 
 import org.chromium.base.Log;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.content.R;
 import org.chromium.content_public.browser.AdditionalSelectionMenuItemProvider;
+import org.chromium.content_public.browser.ContentFeatureMap;
 import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.SelectionMenuGroup;
 import org.chromium.content_public.browser.SelectionMenuItem;
+import org.chromium.content_public.browser.selection.SelectionActionMenuDelegate;
+import org.chromium.content_public.common.ContentFeatures;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -47,8 +52,12 @@ public class SelectActionMenuHelper {
     private static final String TAG = "SelectActionMenu"; // 20 char limit.
 
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({GroupItemOrder.ASSIST_ITEMS, GroupItemOrder.DEFAULT_ITEMS,
-            GroupItemOrder.SECONDARY_ASSIST_ITEMS, GroupItemOrder.TEXT_PROCESSING_ITEMS})
+    @IntDef({
+        GroupItemOrder.ASSIST_ITEMS,
+        GroupItemOrder.DEFAULT_ITEMS,
+        GroupItemOrder.SECONDARY_ASSIST_ITEMS,
+        GroupItemOrder.TEXT_PROCESSING_ITEMS
+    })
     public @interface GroupItemOrder {
         int ASSIST_ITEMS = 1;
         int DEFAULT_ITEMS = 2;
@@ -77,8 +86,12 @@ public class SelectActionMenuHelper {
     }
 
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({ItemKeyShortcuts.CUT, ItemKeyShortcuts.COPY, ItemKeyShortcuts.PASTE,
-            ItemKeyShortcuts.SELECT_ALL})
+    @IntDef({
+        ItemKeyShortcuts.CUT,
+        ItemKeyShortcuts.COPY,
+        ItemKeyShortcuts.PASTE,
+        ItemKeyShortcuts.SELECT_ALL
+    })
     public @interface ItemKeyShortcuts {
         char CUT = 'x';
         char COPY = 'c';
@@ -86,22 +99,24 @@ public class SelectActionMenuHelper {
         char SELECT_ALL = 'a';
     }
 
-    /**
-     * Delegate for the select action menu.
-     */
+    /** Delegate for the select action menu. */
     public interface SelectActionMenuDelegate {
         boolean canCut();
+
         boolean canCopy();
+
         boolean canPaste();
+
         boolean canShare();
+
         boolean canSelectAll();
+
         boolean canWebSearch();
+
         boolean canPasteAsPlainText();
     }
 
-    /**
-     * For the text processing menu items.
-     */
+    /** For the text processing menu items. */
     public interface TextProcessingIntentHandler {
         void handleIntent(Intent textProcessingIntent);
     }
@@ -126,10 +141,12 @@ public class SelectActionMenuHelper {
      * editable input field).
      */
     public static SortedSet<SelectionMenuGroup> getNonSelectionMenuItems(
+            @Nullable Context context,
             SelectActionMenuDelegate delegate,
-            @Nullable AdditionalSelectionMenuItemProvider nonSelectionAdditionalItemProvider) {
+            @Nullable AdditionalSelectionMenuItemProvider nonSelectionAdditionalItemProvider,
+            @Nullable SelectionActionMenuDelegate selectionActionMenuDelegate) {
         SortedSet<SelectionMenuGroup> pasteMenuItems = new TreeSet<>();
-        pasteMenuItems.add(getDefaultItems(delegate));
+        pasteMenuItems.add(getDefaultItems(context, delegate, selectionActionMenuDelegate));
 
         if (nonSelectionAdditionalItemProvider != null
                 && !nonSelectionAdditionalItemProvider.getItems().isEmpty()) {
@@ -155,9 +172,10 @@ public class SelectActionMenuHelper {
             @Nullable SelectionClient.Result classificationResult,
             boolean isSelectionPassword,
             boolean isSelectionReadOnly,
-            @Nullable TextProcessingIntentHandler textProcessingIntentHandler) {
+            @Nullable TextProcessingIntentHandler textProcessingIntentHandler,
+            @Nullable SelectionActionMenuDelegate selectionActionMenuDelegate) {
         SortedSet<SelectionMenuGroup> itemGroups = new TreeSet<>();
-        itemGroups.add(getDefaultItems(delegate));
+        itemGroups.add(getDefaultItems(context, delegate, selectionActionMenuDelegate));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             SelectionMenuGroup primaryAssistItem =
                     getPrimaryAssistItems(context, classificationResult);
@@ -171,8 +189,12 @@ public class SelectActionMenuHelper {
                 itemGroups.add(secondaryAssistItems);
             }
         }
-        SelectionMenuGroup textProcessingItems = getTextProcessingItems(
-                context, isSelectionPassword, isSelectionReadOnly, textProcessingIntentHandler);
+        SelectionMenuGroup textProcessingItems =
+                getTextProcessingItems(
+                        context,
+                        isSelectionPassword,
+                        isSelectionReadOnly,
+                        textProcessingIntentHandler);
         if (textProcessingItems != null) {
             itemGroups.add(textProcessingItems);
         }
@@ -186,8 +208,9 @@ public class SelectActionMenuHelper {
         if (classificationResult == null || !classificationResult.hasNamedAction()) {
             return null;
         }
-        SelectionMenuGroup primaryAssistGroup = new SelectionMenuGroup(
-                R.id.select_action_menu_assist_items, GroupItemOrder.ASSIST_ITEMS);
+        SelectionMenuGroup primaryAssistGroup =
+                new SelectionMenuGroup(
+                        R.id.select_action_menu_assist_items, GroupItemOrder.ASSIST_ITEMS);
         View.OnClickListener clickListener = null;
         if (classificationResult.onClickListener != null) {
             clickListener = classificationResult.onClickListener;
@@ -204,17 +227,29 @@ public class SelectActionMenuHelper {
         return primaryAssistGroup;
     }
 
-    private static SelectionMenuGroup getDefaultItems(SelectActionMenuDelegate delegate) {
-        SelectionMenuGroup defaultGroup = new SelectionMenuGroup(
-                R.id.select_action_menu_default_items, GroupItemOrder.DEFAULT_ITEMS);
-        defaultGroup.addItem(cut(delegate.canCut()));
-        defaultGroup.addItem(copy(delegate.canCopy()));
-        defaultGroup.addItem(paste(delegate.canPaste()));
-        defaultGroup.addItem(share(delegate.canShare()));
-        defaultGroup.addItem(selectAll(delegate.canSelectAll()));
-        defaultGroup.addItem(webSearch(delegate.canWebSearch()));
+    @VisibleForTesting
+    static SelectionMenuGroup getDefaultItems(
+            @Nullable Context context, SelectActionMenuDelegate delegate,
+            @Nullable SelectionActionMenuDelegate selectionActionMenuDelegate) {
+        SelectionMenuGroup defaultGroup =
+                new SelectionMenuGroup(
+                        R.id.select_action_menu_default_items, GroupItemOrder.DEFAULT_ITEMS);
+        List<SelectionMenuItem.Builder> menuItemBuilders = new ArrayList<>();
+        menuItemBuilders.add(cut(delegate.canCut()));
+        menuItemBuilders.add(copy(delegate.canCopy()));
+        menuItemBuilders.add(paste(delegate.canPaste()));
+        menuItemBuilders.add(share(delegate.canShare()));
+        menuItemBuilders.add(selectAll(delegate.canSelectAll()));
+        menuItemBuilders.add(webSearch(delegate.canWebSearch()));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            defaultGroup.addItem(pasteAsPlainText(delegate.canPasteAsPlainText()));
+            menuItemBuilders.add(pasteAsPlainText(context, delegate.canPasteAsPlainText()));
+        }
+        if (ContentFeatureMap.isEnabled(ContentFeatures.SELECTION_MENU_ITEM_MODIFICATION)
+                && selectionActionMenuDelegate != null) {
+            selectionActionMenuDelegate.getModifiedMenuItems(menuItemBuilders);
+        }
+        for (SelectionMenuItem.Builder builder : menuItemBuilders) {
+            defaultGroup.addItem(builder.build());
         }
         return defaultGroup;
     }
@@ -241,15 +276,14 @@ public class SelectActionMenuHelper {
             return null;
         }
         List<Drawable> icons = classificationResult.additionalIcons;
-        assert icons == null
-                || icons.size()
-                        == count
-            : "icons list should be either null or have the same length with actions.";
+        assert icons == null || icons.size() == count
+                : "icons list should be either null or have the same length with actions.";
 
         // We have to use android.R.id.textAssist as group id to make framework show icons for
         // these menu items.
-        SelectionMenuGroup secondaryAssistItems = new SelectionMenuGroup(
-                android.R.id.textAssist, GroupItemOrder.SECONDARY_ASSIST_ITEMS);
+        SelectionMenuGroup secondaryAssistItems =
+                new SelectionMenuGroup(
+                        android.R.id.textAssist, GroupItemOrder.SECONDARY_ASSIST_ITEMS);
 
         // First action is reserved for primary action so start at index 1.
         final int startIndex = 1;
@@ -258,14 +292,15 @@ public class SelectActionMenuHelper {
             final View.OnClickListener listener = getActionClickListener(action);
             if (listener == null) continue;
 
-            SelectionMenuItem item = new SelectionMenuItem.Builder(action.getTitle())
-                                             .setId(Menu.NONE)
-                                             .setIcon(icons == null ? null : icons.get(i))
-                                             .setOrderInCategory(i - startIndex)
-                                             .setContentDescription(action.getContentDescription())
-                                             .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM)
-                                             .setClickListener(listener)
-                                             .build();
+            SelectionMenuItem item =
+                    new SelectionMenuItem.Builder(action.getTitle())
+                            .setId(Menu.NONE)
+                            .setIcon(icons == null ? null : icons.get(i))
+                            .setOrderInCategory(i - startIndex)
+                            .setContentDescription(action.getContentDescription())
+                            .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM)
+                            .setClickListener(listener)
+                            .build();
             secondaryAssistItems.addItem(item);
         }
         return secondaryAssistItems;
@@ -273,8 +308,10 @@ public class SelectActionMenuHelper {
 
     @Nullable
     @VisibleForTesting
-    /* package */ static SelectionMenuGroup getTextProcessingItems(Context context,
-            boolean isSelectionPassword, boolean isSelectionReadOnly,
+    /* package */ static SelectionMenuGroup getTextProcessingItems(
+            Context context,
+            boolean isSelectionPassword,
+            boolean isSelectionReadOnly,
             @Nullable TextProcessingIntentHandler intentHandler) {
         if (isSelectionPassword || intentHandler == null) {
             return null;
@@ -285,7 +322,8 @@ public class SelectActionMenuHelper {
             return null;
         }
         SelectionMenuGroup textProcessingItems =
-                new SelectionMenuGroup(R.id.select_action_menu_text_processing_items,
+                new SelectionMenuGroup(
+                        R.id.select_action_menu_text_processing_items,
                         GroupItemOrder.TEXT_PROCESSING_ITEMS);
         final PackageManager packageManager = context.getPackageManager();
         for (int i = 0; i < supportedActivities.size(); i++) {
@@ -351,7 +389,7 @@ public class SelectActionMenuHelper {
         };
     }
 
-    private static SelectionMenuItem cut(boolean isEnabled) {
+    private static SelectionMenuItem.Builder cut(boolean isEnabled) {
         return new SelectionMenuItem.Builder(android.R.string.cut)
                 .setId(R.id.select_action_menu_cut)
                 .setIconAttr(android.R.attr.actionModeCutDrawable)
@@ -360,11 +398,10 @@ public class SelectActionMenuHelper {
                 .setShowAsActionFlags(
                         MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT)
                 .setIsEnabled(isEnabled)
-                .setIsIconTintable(true)
-                .build();
+                .setIsIconTintable(true);
     }
 
-    private static SelectionMenuItem copy(boolean isEnabled) {
+    private static SelectionMenuItem.Builder copy(boolean isEnabled) {
         return new SelectionMenuItem.Builder(android.R.string.copy)
                 .setId(R.id.select_action_menu_copy)
                 .setIconAttr(android.R.attr.actionModeCopyDrawable)
@@ -373,11 +410,10 @@ public class SelectActionMenuHelper {
                 .setShowAsActionFlags(
                         MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT)
                 .setIsEnabled(isEnabled)
-                .setIsIconTintable(true)
-                .build();
+                .setIsIconTintable(true);
     }
 
-    private static SelectionMenuItem paste(boolean isEnabled) {
+    private static SelectionMenuItem.Builder paste(boolean isEnabled) {
         return new SelectionMenuItem.Builder(android.R.string.paste)
                 .setId(R.id.select_action_menu_paste)
                 .setIconAttr(android.R.attr.actionModePasteDrawable)
@@ -386,11 +422,10 @@ public class SelectActionMenuHelper {
                 .setShowAsActionFlags(
                         MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT)
                 .setIsEnabled(isEnabled)
-                .setIsIconTintable(true)
-                .build();
+                .setIsIconTintable(true);
     }
 
-    private static SelectionMenuItem share(boolean isEnabled) {
+    private static SelectionMenuItem.Builder share(boolean isEnabled) {
         return new SelectionMenuItem.Builder(R.string.actionbar_share)
                 .setId(R.id.select_action_menu_share)
                 .setIconAttr(android.R.attr.actionModeShareDrawable)
@@ -398,11 +433,10 @@ public class SelectActionMenuHelper {
                 .setShowAsActionFlags(
                         MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT)
                 .setIsEnabled(isEnabled)
-                .setIsIconTintable(true)
-                .build();
+                .setIsIconTintable(true);
     }
 
-    private static SelectionMenuItem selectAll(boolean isEnabled) {
+    private static SelectionMenuItem.Builder selectAll(boolean isEnabled) {
         return new SelectionMenuItem.Builder(android.R.string.selectAll)
                 .setId(R.id.select_action_menu_select_all)
                 .setIconAttr(android.R.attr.actionModeSelectAllDrawable)
@@ -411,22 +445,28 @@ public class SelectActionMenuHelper {
                 .setShowAsActionFlags(
                         MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT)
                 .setIsEnabled(isEnabled)
-                .setIsIconTintable(true)
-                .build();
+                .setIsIconTintable(true);
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private static SelectionMenuItem pasteAsPlainText(boolean isEnabled) {
-        return new SelectionMenuItem.Builder(android.R.string.paste_as_plain_text)
-                .setId(R.id.select_action_menu_paste_as_plain_text)
-                .setOrderInCategory(DefaultItemOrder.PASTE_AS_PLAIN_TEXT)
-                .setShowAsActionFlags(
-                        MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT)
-                .setIsEnabled(isEnabled)
-                .build();
+    private static SelectionMenuItem.Builder pasteAsPlainText(
+            @Nullable Context context, boolean isEnabled) {
+        SelectionMenuItem.Builder builder =
+                new SelectionMenuItem.Builder(android.R.string.paste_as_plain_text)
+                        .setId(R.id.select_action_menu_paste_as_plain_text)
+                        .setOrderInCategory(DefaultItemOrder.PASTE_AS_PLAIN_TEXT)
+                        .setShowAsActionFlags(
+                                MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT)
+                        .setIsEnabled(isEnabled);
+
+        if (context != null) {
+            builder.setIcon(ContextCompat.getDrawable(context, R.drawable.ic_paste_as_plain_text))
+                    .setIsIconTintable(true);
+        }
+        return builder;
     }
 
-    private static SelectionMenuItem webSearch(boolean isEnabled) {
+    private static SelectionMenuItem.Builder webSearch(boolean isEnabled) {
         return new SelectionMenuItem.Builder(R.string.actionbar_web_search)
                 .setId(R.id.select_action_menu_web_search)
                 .setIconAttr(android.R.attr.actionModeWebSearchDrawable)
@@ -434,7 +474,6 @@ public class SelectActionMenuHelper {
                 .setShowAsActionFlags(
                         MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT)
                 .setIsEnabled(isEnabled)
-                .setIsIconTintable(true)
-                .build();
+                .setIsIconTintable(true);
     }
 }

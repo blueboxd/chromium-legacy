@@ -27,10 +27,9 @@ IbanManager::IbanManager(PersonalDataManager* personal_data_manager)
 IbanManager::~IbanManager() = default;
 
 bool IbanManager::OnGetSingleFieldSuggestions(
-    AutofillSuggestionTriggerSource trigger_source,
     const FormFieldData& field,
     const AutofillClient& client,
-    base::WeakPtr<SuggestionsHandler> handler,
+    OnSuggestionsReturnedCallback on_suggestions_returned,
     const SuggestionsContext& context) {
   // The field is eligible only if it's focused on an IBAN field.
   AutofillField* focused_field = context.focused_field;
@@ -73,9 +72,8 @@ bool IbanManager::OnGetSingleFieldSuggestions(
                                 const Iban* iban0, const Iban* iban1) {
     return iban0->HasGreaterRankingThan(iban1, comparison_time);
   });
-  SendIbanSuggestions(
-      QueryHandler(field.global_id(), trigger_source, field.value, handler),
-      ibans);
+  SendIbanSuggestions(std::move(ibans), field,
+                      std::move(on_suggestions_returned));
 
   return true;
 }
@@ -116,34 +114,28 @@ void IbanManager::UmaRecorder::OnIbanSuggestionSelected() {
       most_recent_suggestions_shown_field_global_id_;
 }
 
-void IbanManager::SendIbanSuggestions(const QueryHandler& query_handler,
-                                      std::vector<const Iban*>& ibans) {
-  if (!query_handler.handler_) {
-    // Either the handler has been destroyed, or it is invalid.
-    return;
-  }
-
-  const std::u16string& field_value = query_handler.prefix_;
-
+void IbanManager::SendIbanSuggestions(
+    std::vector<const Iban*> ibans,
+    const FormFieldData& field,
+    OnSuggestionsReturnedCallback on_suggestions_returned) {
   // If the input box content equals any of the available IBANs, then
   // assume the IBAN has been filled, and don't show any suggestions.
-  if (!field_value.empty() &&
-      base::Contains(ibans, query_handler.prefix_, &Iban::value)) {
+  if (!field.value.empty() &&
+      base::Contains(ibans, field.value, &Iban::value)) {
     return;
   }
 
-  FilterIbansToSuggest(field_value, ibans);
+  FilterIbansToSuggest(field.value, ibans);
 
   if (ibans.empty()) {
     return;
   }
 
-  // Return suggestions to query handler.
-  query_handler.handler_->OnSuggestionsReturned(
-      query_handler.field_id_, query_handler.trigger_source_,
-      AutofillSuggestionGenerator::GetSuggestionsForIbans(ibans));
+  std::move(on_suggestions_returned)
+      .Run(field.global_id(),
+           AutofillSuggestionGenerator::GetSuggestionsForIbans(ibans));
 
-  uma_recorder_.OnIbanSuggestionsShown(query_handler.field_id_);
+  uma_recorder_.OnIbanSuggestionsShown(field.global_id());
 }
 
 void IbanManager::FilterIbansToSuggest(const std::u16string& field_value,

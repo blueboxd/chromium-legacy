@@ -54,7 +54,9 @@
 namespace web_app {
 namespace {
 
+using ::testing::_;
 using ::testing::AllOf;
+using ::testing::AnyNumber;
 using ::testing::Exactly;
 using ::testing::ExplainMatchResult;
 using ::testing::Field;
@@ -136,15 +138,9 @@ std::unique_ptr<KeyedService> NullServiceFactory(content::BrowserContext*) {
 
 class MockView : public IsolatedWebAppInstallerView {
  public:
-  explicit MockView(IsolatedWebAppInstallerView::Delegate* delegate)
-      : IsolatedWebAppInstallerView(delegate) {}
-
   MOCK_METHOD(void, ShowDisabledScreen, (), (override));
   MOCK_METHOD(void, ShowGetMetadataScreen, (), (override));
-  MOCK_METHOD(void,
-              UpdateGetMetadataProgress,
-              (double percent, int minutes_remaining),
-              (override));
+  MOCK_METHOD(void, UpdateGetMetadataProgress, (double progress), (override));
   MOCK_METHOD(void,
               ShowMetadataScreen,
               (const SignedWebBundleMetadata& bundle_metadata),
@@ -153,10 +149,7 @@ class MockView : public IsolatedWebAppInstallerView {
               ShowInstallScreen,
               (const SignedWebBundleMetadata& bundle_metadata),
               (override));
-  MOCK_METHOD(void,
-              UpdateInstallProgress,
-              (double percent, int minutes_remaining),
-              (override));
+  MOCK_METHOD(void, UpdateInstallProgress, (double progress), (override));
   MOCK_METHOD(void,
               ShowInstallSuccessScreen,
               (const SignedWebBundleMetadata& bundle_metadata),
@@ -234,7 +227,8 @@ class IsolatedWebAppInstallerViewControllerTest : public ::testing::Test {
   }
 
  private:
-  content::BrowserTaskEnvironment task_environment_;
+  content::BrowserTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   base::test::ScopedFeatureList scoped_feature_list_;
   base::ScopedTempDir scoped_temp_dir_;
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
@@ -254,10 +248,11 @@ TEST_F(IsolatedWebAppInstallerViewControllerTest,
   IsolatedWebAppInstallerModel model(bundle_path);
   IsolatedWebAppInstallerViewController controller(profile(), fake_provider(),
                                                    &model);
-  testing::StrictMock<MockView> view(&controller);
+  testing::StrictMock<MockView> view;
   controller.SetViewForTesting(&view);
 
   base::test::TestFuture<void> callback;
+  EXPECT_CALL(view, UpdateGetMetadataProgress(_)).Times(AnyNumber());
   EXPECT_CALL(view, ShowGetMetadataScreen());
   EXPECT_CALL(
       view, ShowMetadataScreen(WithMetadata("hoealecpbefphiclhampllbdbdpfmfpi",
@@ -284,10 +279,11 @@ TEST_F(IsolatedWebAppInstallerViewControllerTest,
   IsolatedWebAppInstallerModel model(bundle_path);
   IsolatedWebAppInstallerViewController controller(profile(), fake_provider(),
                                                    &model);
-  testing::StrictMock<MockView> view(&controller);
+  testing::StrictMock<MockView> view;
   controller.SetViewForTesting(&view);
 
   base::test::TestFuture<void> callback;
+  EXPECT_CALL(view, UpdateGetMetadataProgress(_)).Times(AnyNumber());
   EXPECT_CALL(view, ShowGetMetadataScreen()).Times(Exactly(2));
   EXPECT_CALL(view,
               ShowDialog(WithContents(
@@ -306,7 +302,7 @@ TEST_F(IsolatedWebAppInstallerViewControllerTest,
   IsolatedWebAppInstallerModel model(CreateBundlePath("test_bundle.swbn"));
   IsolatedWebAppInstallerViewController controller(profile(), fake_provider(),
                                                    &model);
-  testing::StrictMock<MockView> view(&controller);
+  testing::StrictMock<MockView> view;
   controller.SetViewForTesting(&view);
 
   SignedWebBundleMetadata metadata = CreateMetadata(u"Test App", "0.0.1");
@@ -330,7 +326,7 @@ TEST_F(IsolatedWebAppInstallerViewControllerTest,
   IsolatedWebAppInstallerModel model(CreateBundlePath("test_bundle.swbn"));
   IsolatedWebAppInstallerViewController controller(profile(), fake_provider(),
                                                    &model);
-  testing::StrictMock<MockView> view(&controller);
+  testing::StrictMock<MockView> view;
   controller.SetViewForTesting(&view);
 
   SignedWebBundleMetadata metadata = CreateMetadata(u"Test App", "0.0.1");
@@ -356,7 +352,7 @@ TEST_F(IsolatedWebAppInstallerViewControllerTest,
   IsolatedWebAppInstallerModel model(bundle_path);
   IsolatedWebAppInstallerViewController controller(profile(), fake_provider(),
                                                    &model);
-  testing::StrictMock<MockView> view(&controller);
+  testing::StrictMock<MockView> view;
   controller.SetViewForTesting(&view);
 
   auto metadata = SignedWebBundleMetadata::CreateForTesting(
@@ -367,6 +363,7 @@ TEST_F(IsolatedWebAppInstallerViewControllerTest,
   model.SetDialogContent(CreateDummyDialog());
 
   base::test::TestFuture<void> callback;
+  EXPECT_CALL(view, UpdateInstallProgress(_)).Times(AnyNumber());
   EXPECT_CALL(view, ShowInstallScreen(metadata));
   EXPECT_CALL(view, ShowInstallSuccessScreen(metadata))
       .WillOnce(Invoke(&callback, &base::test::TestFuture<void>::SetValue));
@@ -386,7 +383,7 @@ TEST_F(IsolatedWebAppInstallerViewControllerTest, CanLaunchAppAfterInstall) {
   IsolatedWebAppInstallerModel model(bundle_path);
   IsolatedWebAppInstallerViewController controller(profile(), fake_provider(),
                                                    &model);
-  testing::StrictMock<MockView> view(&controller);
+  testing::StrictMock<MockView> view;
   controller.SetViewForTesting(&view);
 
   auto metadata = SignedWebBundleMetadata::CreateForTesting(
@@ -396,6 +393,7 @@ TEST_F(IsolatedWebAppInstallerViewControllerTest, CanLaunchAppAfterInstall) {
   model.SetStep(IsolatedWebAppInstallerModel::Step::kShowMetadata);
   model.SetDialogContent(CreateDummyDialog());
 
+  EXPECT_CALL(view, UpdateInstallProgress(_)).Times(AnyNumber());
   EXPECT_CALL(view, ShowInstallScreen(metadata));
   EXPECT_CALL(view, ShowInstallSuccessScreen(metadata))
       .WillOnce(IgnoreResult(Invoke(
@@ -420,7 +418,7 @@ TEST_F(IsolatedWebAppInstallerViewControllerTest,
   IsolatedWebAppInstallerModel model(bundle_path);
   IsolatedWebAppInstallerViewController controller(profile(), fake_provider(),
                                                    &model);
-  testing::StrictMock<MockView> view(&controller);
+  testing::StrictMock<MockView> view;
   controller.SetViewForTesting(&view);
 
   auto metadata = SignedWebBundleMetadata::CreateForTesting(
@@ -431,6 +429,7 @@ TEST_F(IsolatedWebAppInstallerViewControllerTest,
   model.SetDialogContent(CreateDummyDialog());
 
   base::test::TestFuture<void> callback;
+  EXPECT_CALL(view, UpdateInstallProgress(_)).Times(AnyNumber());
   EXPECT_CALL(view, ShowInstallScreen(metadata)).Times(Exactly(2));
   EXPECT_CALL(view,
               ShowDialog(WithContents(
@@ -450,7 +449,7 @@ TEST_F(IsolatedWebAppInstallerViewControllerTest,
   IsolatedWebAppInstallerModel model(CreateBundlePath("test_bundle.swbn"));
   IsolatedWebAppInstallerViewController controller(profile(), fake_provider(),
                                                    &model);
-  testing::StrictMock<MockView> view(&controller);
+  testing::StrictMock<MockView> view;
   controller.SetViewForTesting(&view);
 
   SignedWebBundleMetadata metadata = CreateMetadata(u"Test App", "0.0.1");

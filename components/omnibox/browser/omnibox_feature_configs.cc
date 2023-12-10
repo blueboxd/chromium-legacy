@@ -35,6 +35,14 @@ DocumentProvider::DocumentProvider() {
       base::FeatureParam<int>(&omnibox::kDocumentProvider,
                               "DocumentProviderMinQueryLength", 4)
           .Get();
+  ignore_when_debouncing =
+      base::FeatureParam<bool>(&omnibox::kDocumentProvider,
+                               "DocumentProviderIgnoreWhenDebouncing", false)
+          .Get();
+  backoff_on_401 =
+      base::FeatureParam<bool>(&omnibox::kDocumentProvider,
+                               "DocumentProviderBackoffOn401", false)
+          .Get();
 }
 
 // static

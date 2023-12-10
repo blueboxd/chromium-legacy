@@ -117,6 +117,18 @@ BASE_FEATURE(kQuickOfficeForceFileDownload,
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
+#if BUILDFLAG(IS_ANDROID)
+// Enable boarding pass detector on Chrome Android.
+BASE_FEATURE(kBoardingPassDetector,
+             "BoardingPassDetector",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+const char kBoardingPassDetectorUrlParamName[] = "boarding_pass_detector_urls";
+const base::FeatureParam<std::string> kBoardingPassDetectorUrlParam(
+    &kBoardingPassDetector,
+    kBoardingPassDetectorUrlParamName,
+    "");
+#endif  // BUILDFLAG(IS_ANDROID)
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enable Borealis on Chrome OS.
 BASE_FEATURE(kBorealis, "Borealis", base::FEATURE_DISABLED_BY_DEFAULT);
@@ -315,11 +327,17 @@ BASE_FEATURE(kDesktopPWAsIconHealthChecks,
              "DesktopPWAsIconHealthChecks",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+#if !BUILDFLAG(IS_CHROMEOS) || !BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kDesktopPWAsLinkCapturing,
              "DesktopPWAsLinkCapturing",
              base::FEATURE_DISABLED_BY_DEFAULT);
 const base::FeatureParam<bool> kLinksCapturedByDefault{
     &kDesktopPWAsLinkCapturing, "on_by_default", true};
+
+const base::FeatureParam<int> kLinkCapturingIPHGuardrailStorageDuration{
+    &kDesktopPWAsLinkCapturing, "link_capturing_guardrail_storage_duration",
+    kTotalDaysToStoreLinkCapturingIPHGuardrails};
+#endif  // !BUILDFLAG(IS_CHROMEOS) || !BUILDFLAG(IS_ANDROID)
 
 // Adds a user settings that allows PWAs to be opened with a tab strip.
 BASE_FEATURE(kDesktopPWAsTabStripSettings,
@@ -449,7 +467,7 @@ BASE_FEATURE(kFileTransferEnterpriseConnector,
 
 BASE_FEATURE(kFileTransferEnterpriseConnectorUI,
              "FileTransferEnterpriseConnectorUI",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -459,6 +477,12 @@ BASE_FEATURE(kFlashDeprecationWarning,
              "FlashDeprecationWarning",
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
+
+#if BUILDFLAG(IS_CHROMEOS)
+BASE_FEATURE(kForcedAppRelaunchOnPlaceholderUpdate,
+             "ForcedAppRelaunchOnPlaceholderUpdate",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 // Controls whether the GeoLanguage system is enabled. GeoLanguage uses IP-based
 // coarse geolocation to provide an estimate (for use by other Chrome features
@@ -535,6 +559,15 @@ BASE_FEATURE(kHaTSDesktopDevToolsIssuesHeavyAd,
 BASE_FEATURE(kHaTSDesktopDevToolsIssuesCSP,
              "HaTSDesktopDevToolsIssuesCSP",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables or disables the Happiness Tracking System for Chrome extensions page.
+BASE_FEATURE(kHappinessTrackingSurveysExtensionsSafetyHub,
+             "HappinessTrackingSurveysExtensionsSafetyHub",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<base::TimeDelta>
+    kHappinessTrackingSurveysExtensionsSafetyHubTime{
+        &kHappinessTrackingSurveysExtensionsSafetyHub, "settings-time",
+        base::Seconds(10)};
 
 // Enables or disables the Happiness Tracking System for Desktop Privacy Guide.
 BASE_FEATURE(kHappinessTrackingSurveysForDesktopPrivacyGuide,
@@ -949,13 +982,6 @@ BASE_FEATURE(kShowHiddenNetworkToggle,
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
-#if BUILDFLAG(IS_ANDROID)
-// Enables the new design of metrics settings.
-BASE_FEATURE(kMetricsSettingsAndroid,
-             "MetricsSettingsAndroid",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
-
 BASE_FEATURE(kMoveWebApp,
              "MoveWebApp",
              base::FeatureState::FEATURE_DISABLED_BY_DEFAULT);
@@ -1349,30 +1375,6 @@ const base::FeatureParam<double>
     kTrustSafetySentimentSurveyTransactionsProbability{
         &kTrustSafetySentimentSurvey, "transactions-probability", 0.05};
 const base::FeatureParam<double>
-    kTrustSafetySentimentSurveyPrivacySandbox3ConsentAcceptProbability{
-        &kTrustSafetySentimentSurvey,
-        "privacy-sandbox-3-consent-accept-probability", 0.1};
-const base::FeatureParam<double>
-    kTrustSafetySentimentSurveyPrivacySandbox3ConsentDeclineProbability{
-        &kTrustSafetySentimentSurvey,
-        "privacy-sandbox-3-consent-decline-probability", 0.5};
-const base::FeatureParam<double>
-    kTrustSafetySentimentSurveyPrivacySandbox3NoticeDismissProbability{
-        &kTrustSafetySentimentSurvey,
-        "privacy-sandbox-3-notice-dismiss-probability", 0.5};
-const base::FeatureParam<double>
-    kTrustSafetySentimentSurveyPrivacySandbox3NoticeOkProbability{
-        &kTrustSafetySentimentSurvey, "privacy-sandbox-3-notice-ok-probability",
-        0.05};
-const base::FeatureParam<double>
-    kTrustSafetySentimentSurveyPrivacySandbox3NoticeSettingsProbability{
-        &kTrustSafetySentimentSurvey,
-        "privacy-sandbox-3-notice-settings-probability", 0.8};
-const base::FeatureParam<double>
-    kTrustSafetySentimentSurveyPrivacySandbox3NoticeLearnMoreProbability{
-        &kTrustSafetySentimentSurvey,
-        "privacy-sandbox-3-notice-learn-more-probability", 0.2};
-const base::FeatureParam<double>
     kTrustSafetySentimentSurveyPrivacySandbox4ConsentAcceptProbability{
         &kTrustSafetySentimentSurvey,
         "privacy-sandbox-4-consent-accept-probability", 0.0};
@@ -1399,30 +1401,6 @@ const base::FeatureParam<std::string>
 extern const base::FeatureParam<std::string>
     kTrustSafetySentimentSurveyTransactionsTriggerId{
         &kTrustSafetySentimentSurvey, "transactions-trigger-id", ""};
-extern const base::FeatureParam<std::string>
-    kTrustSafetySentimentSurveyPrivacySandbox3ConsentAcceptTriggerId{
-        &kTrustSafetySentimentSurvey,
-        "privacy-sandbox-3-consent-accept-trigger-id", ""};
-extern const base::FeatureParam<std::string>
-    kTrustSafetySentimentSurveyPrivacySandbox3ConsentDeclineTriggerId{
-        &kTrustSafetySentimentSurvey,
-        "privacy-sandbox-3-consent-decline-trigger-id", ""};
-extern const base::FeatureParam<std::string>
-    kTrustSafetySentimentSurveyPrivacySandbox3NoticeDismissTriggerId{
-        &kTrustSafetySentimentSurvey,
-        "privacy-sandbox-3-notice-dismiss-trigger-id", ""};
-extern const base::FeatureParam<std::string>
-    kTrustSafetySentimentSurveyPrivacySandbox3NoticeOkTriggerId{
-        &kTrustSafetySentimentSurvey, "privacy-sandbox-3-notice-ok-trigger-id",
-        ""};
-extern const base::FeatureParam<std::string>
-    kTrustSafetySentimentSurveyPrivacySandbox3NoticeSettingsTriggerId{
-        &kTrustSafetySentimentSurvey,
-        "privacy-sandbox-3-notice-settings-trigger-id", ""};
-extern const base::FeatureParam<std::string>
-    kTrustSafetySentimentSurveyPrivacySandbox3NoticeLearnMoreTriggerId{
-        &kTrustSafetySentimentSurvey,
-        "privacy-sandbox-3-notice-learn-more-trigger-id", ""};
 extern const base::FeatureParam<std::string>
     kTrustSafetySentimentSurveyPrivacySandbox4ConsentAcceptTriggerId{
         &kTrustSafetySentimentSurvey,

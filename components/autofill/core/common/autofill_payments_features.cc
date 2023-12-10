@@ -211,6 +211,12 @@ BASE_FEATURE(kAutofillEnableVcnEnrollLoadingAndConfirmation,
              "AutofillEnableVcnEnrollLoadingAndConfirmation",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// When enabled, uses the refactored VirtualCardEnrollMetricsLogger in
+// VirtualCardEnrollBubbleController on all platforms.
+BASE_FEATURE(kAutofillEnableVirtualCardEnrollMetricsLogger,
+             "AutofillEnableVirtualCardEnrollMetricsLogger",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // When enabled, Chrome will show metadata along with other card information
 // when the virtual card is presented to users.
 BASE_FEATURE(kAutofillEnableVirtualCardMetadata,
@@ -267,6 +273,11 @@ BASE_FEATURE(kAutofillEnableVirtualCards,
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
+// When enabled, Chrome will detect PIX codes on allow-listed merchant websites.
+BASE_FEATURE(kEnablePixDetection,
+             "EnablePixDetection",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // When enabled, Chrome will offer to pay with accounts supporting Pix.
 BASE_FEATURE(kEnablePixPayments,
              "EnablePixPayments",

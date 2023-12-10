@@ -4,6 +4,8 @@
 
 #include "ash/system/input_device_settings/input_device_notifier.h"
 
+#include <functional>
+
 #include "ash/bluetooth_devices_observer.h"
 #include "ash/public/cpp/input_device_settings_controller.h"
 #include "ash/public/mojom/input_device_settings.mojom-forward.h"
@@ -138,7 +140,7 @@ bool IsDeviceASuspectedImposter<mojom::KeyboardPtr>(
     return true;
   }
 
-  return device.suspected_imposter;
+  return device.suspected_keyboard_imposter;
 }
 
 template <>
@@ -233,7 +235,7 @@ void GetAddedAndRemovedDevices(
   base::ranges::set_difference(connected_devices_ids, updated_device_list,
                                std::back_inserter(*devices_to_remove),
                                /*Comp=*/base::ranges::less(),
-                               /*Proj1=*/base::identity(),
+                               /*Proj1=*/std::identity(),
                                /*Proj2=*/ExtractDeviceIdFromInputDevice);
 }
 
@@ -291,7 +293,7 @@ void InputDeviceNotifier<mojom::KeyboardPtr, ui::KeyboardDevice>::
   // get removed upon device disconnect.
   base::flat_set<DeviceId> updated_imposter_devices;
   for (const ui::KeyboardDevice& device : updated_device_list) {
-    if (device.suspected_imposter) {
+    if (device.suspected_keyboard_imposter) {
       updated_imposter_devices.insert(device.id);
       continue;
     }

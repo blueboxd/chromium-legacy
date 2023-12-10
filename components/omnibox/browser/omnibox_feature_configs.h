@@ -59,7 +59,7 @@ regressions. 3 steps:
 */
 
 // A substitute for `BASE_DECLARE_FEATURE` for nesting in structs.
-#define DECLARE_FEATURE(feature) static CONSTINIT const base::Feature feature
+#define DECLARE_FEATURE(feature) static constinit const base::Feature feature
 
 // Base class other configs should inherit from.
 template <class T>
@@ -101,12 +101,18 @@ struct CalcProvider : Config<CalcProvider> {
   size_t num_non_calc_inputs;
 };
 
-// If enabled, set the minimum input length before requesting document
-// suggestions.
+// If enabled, allow document provider requests when all other conditions are
+// met.
 struct DocumentProvider : Config<DocumentProvider> {
   DocumentProvider();
   bool enabled;
+  // The minimum input length required before requesting document suggestions.
   size_t min_query_length;
+  // Whether to ignore the state of the document provider when deciding to
+  // finish debouncing.
+  bool ignore_when_debouncing;
+  // Whether to treat an HTTP 401 response code as a backoff signal.
+  bool backoff_on_401;
 };
 
 // If enabled, pretends all matches are allowed to be default. This is very

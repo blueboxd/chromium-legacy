@@ -13,6 +13,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/i18n/rtl.h"
+#include "components/autofill/content/renderer/form_tracker.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/dense_set.h"
 #include "components/autofill/core/common/form_data.h"
@@ -145,6 +146,9 @@ bool IsMonthInput(const blink::WebInputElement& element);
 
 // Returns true if |element| is a text input element.
 bool IsTextInput(const blink::WebInputElement& element);
+
+// Returns true if |element| is a text input element.
+bool IsTextInput(const blink::WebFormControlElement& element);
 
 // Returns true if `element` is either a select or a selectlist element.
 bool IsSelectOrSelectListElement(const blink::WebFormControlElement& element);
@@ -351,12 +355,13 @@ std::optional<FormData> FindFormForContentEditable(
 
 // Fills or previews the fields represented by `fields`.
 // `initiating_element` is the element that initiated the autofill process.
-// Returns the filled blink elements.
-std::vector<blink::WebFormControlElement> ApplyFormAction(
+// Returns the filled elements.
+std::vector<FieldRef> ApplyFormAction(
     base::span<const FormFieldData> fields,
     const blink::WebFormControlElement& initiating_element,
     mojom::ActionType action_type,
-    mojom::ActionPersistence action_persistence);
+    mojom::ActionPersistence action_persistence,
+    FieldDataManager& field_data_manager);
 
 // Clears the suggested values in `previewed_elements`.
 // `initiating_element` is the element that initiated the preview operation.

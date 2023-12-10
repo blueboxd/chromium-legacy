@@ -203,6 +203,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/context_menu_data/context_menu_data.h"
 #include "third_party/blink/public/common/context_menu_data/edit_flags.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/network_utils.h"
 #include "third_party/blink/public/mojom/context_menu/context_menu.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
@@ -274,6 +275,7 @@
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "components/supervised_user/core/browser/supervised_user_preferences.h"
 #include "components/supervised_user/core/browser/supervised_user_service.h"
 #include "components/supervised_user/core/browser/supervised_user_url_filter.h"
 #endif
@@ -514,13 +516,14 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_CONTEXT_SAVEVIDEOFRAMEAS, 141},
        {IDC_CONTENT_CONTEXT_SEARCHLENSFORVIDEOFRAME, 142},
        {IDC_CONTENT_CONTEXT_SEARCHWEBFORVIDEOFRAME, 143},
+       {IDC_CONTENT_CONTEXT_OPENLINKPREVIEW, 144},
        // To add new items:
        //   - Add one more line above this comment block, using the UMA value
        //     from the line below this comment block.
        //   - Increment the UMA value in that latter line.
        //   - Add the new item to the RenderViewContextMenuItem enum in
        //     tools/metrics/histograms/enums.xml.
-       {0, 144}});
+       {0, 145}});
 
   // These UMA values are for the the ContextMenuOptionDesktop enum, used for
   // the ContextMenu.SelectedOptionDesktop histograms.
@@ -555,13 +558,14 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHWEB, 27},
        {IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHLENS, 28},
        {IDC_CONTENT_CONTEXT_SEARCHWEBFORNEWTAB, 29},
+       {IDC_CONTENT_CONTEXT_OPENLINKPREVIEW, 30},
        // To add new items:
        //   - Add one more line above this comment block, using the UMA value
        //     from the line below this comment block.
        //   - Increment the UMA value in that latter line.
        //   - Add the new item to the ContextMenuOptionDesktop enum in
        //     tools/metrics/histograms/enums.xml.
-       {0, 30}});
+       {0, 31}});
 
   return *(type == UmaEnumIdLookupType::GeneralEnumId ? kGeneralMap
                                                       : kSpecificMap);
@@ -975,6 +979,7 @@ void RenderViewContextMenu::AppendCurrentExtensionItems() {
                       : web_view_guest->owner_web_contents()->GetTitle();
     key = MenuItem::ExtensionKey(
         extension_id, web_view_guest->owner_rfh()->GetProcess()->GetID(),
+        web_view_guest->owner_rfh()->GetRoutingID(),
         web_view_guest->view_instance_id());
   } else {
     key = MenuItem::ExtensionKey(extension->id());
@@ -1710,6 +1715,15 @@ void RenderViewContextMenu::AppendLinkItems() {
                  : IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
     }
 
+#if !BUILDFLAG(IS_ANDROID)
+    // TODO(b:315076421): Remove "New" badge for preview.
+    if (base::FeatureList::IsEnabled(blink::features::kLinkPreview)) {
+      menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKPREVIEW,
+                                      IDS_CONTENT_CONTEXT_OPENLINKPREVIEW);
+      menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
+    }
+#endif  // !BUILDFLAG(IS_ANDROID)
+
     AppendOpenInWebAppLinkItems();
     AppendOpenWithLinkItems();
 
@@ -2005,6 +2019,12 @@ void RenderViewContextMenu::AppendVideoItems() {
                                     IDS_CONTENT_CONTEXT_COPYVIDEOFRAME);
   }
 
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYAVLOCATION,
+                                  IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION);
+  menu_model_.AddCheckItemWithStringId(IDC_CONTENT_CONTEXT_PICTUREINPICTURE,
+                                       IDS_CONTENT_CONTEXT_PICTUREINPICTURE);
+  AppendMediaRouterItem();
+
   if (base::FeatureList::IsEnabled(media::kContextMenuSearchForVideoFrame)) {
     const auto* provider = GetImageSearchProvider();
     if (!provider) {
@@ -2015,17 +2035,9 @@ void RenderViewContextMenu::AppendVideoItems() {
         GetSearchForVideoFrameIdc(),
         l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHFORVIDEOFRAME,
                                    GetImageSearchProviderName(provider)));
-    if (companion::IsNewBadgeEnabledForSearchMenuItem(GetBrowser())) {
-      menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
-    }
+    menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
     MaybePrepareForLensQuery();
   }
-
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYAVLOCATION,
-                                  IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION);
-  menu_model_.AddCheckItemWithStringId(IDC_CONTENT_CONTEXT_PICTUREINPICTURE,
-                                       IDS_CONTENT_CONTEXT_PICTUREINPICTURE);
-  AppendMediaRouterItem();
 }
 
 void RenderViewContextMenu::AppendMediaItems() {
@@ -2683,6 +2695,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW:
     case IDC_CONTENT_CONTEXT_OPENLINKINPROFILE:
     case IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP:
+    case IDC_CONTENT_CONTEXT_OPENLINKPREVIEW:
       return params_.link_url.is_valid() &&
              IsOpenLinkAllowedByDlp(params_.link_url);
 
@@ -3036,6 +3049,10 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       ExecOpenWebApp();
       break;
 
+    case IDC_CONTENT_CONTEXT_OPENLINKPREVIEW:
+      ExecOpenLinkPreview();
+      break;
+
     case IDC_CONTENT_CONTEXT_SAVELINKAS:
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
       CheckSupervisedUserURLFilterAndSaveLinkAs();
@@ -3076,7 +3093,15 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_SEARCHLENSFORVIDEOFRAME:
+      RecordAmbientSearchQuery(
+          lens::AmbientSearchEntryPoint::
+              CONTEXT_MENU_SEARCH_VIDEO_FRAME_WITH_GOOGLE_LENS);
+      ExecSearchForVideoFrame();
+      break;
+
     case IDC_CONTENT_CONTEXT_SEARCHWEBFORVIDEOFRAME:
+      RecordAmbientSearchQuery(lens::AmbientSearchEntryPoint::
+                                   CONTEXT_MENU_SEARCH_VIDEO_FRAME_WITH_WEB);
       ExecSearchForVideoFrame();
       break;
 
@@ -3207,6 +3232,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_EXIT_FULLSCREEN:
+      base::RecordAction(base::UserMetricsAction("ExitFullscreen_ContextMenu"));
       ExecExitFullscreen();
       break;
 
@@ -3564,10 +3590,10 @@ bool RenderViewContextMenu::IsSaveLinkAsEnabled() const {
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   Profile* const profile = Profile::FromBrowserContext(browser_context_);
-  supervised_user::SupervisedUserService* supervised_user_service =
-      SupervisedUserServiceFactory::GetForProfile(profile);
-  if (supervised_user_service &&
-      supervised_user_service->IsURLFilteringEnabled()) {
+  CHECK(profile);
+  if (supervised_user::IsUrlFilteringEnabled(*profile->GetPrefs())) {
+    supervised_user::SupervisedUserService* supervised_user_service =
+        SupervisedUserServiceFactory::GetForProfile(profile);
     supervised_user::SupervisedUserURLFilter* url_filter =
         supervised_user_service->GetURLFilter();
     // Use the URL filter's synchronous call to check if a site has been
@@ -3861,6 +3887,14 @@ void RenderViewContextMenu::ExecOpenWebApp() {
       ->LaunchAppWithParams(std::move(launch_params));
 }
 
+void RenderViewContextMenu::ExecOpenLinkPreview() {
+  CHECK(embedder_web_contents_);
+  CHECK(embedder_web_contents_->GetDelegate());
+
+  embedder_web_contents_->GetDelegate()->InitiatePreview(
+      *embedder_web_contents_, params_.link_url);
+}
+
 void RenderViewContextMenu::ExecProtocolHandler(int event_flags,
                                                 int handler_index) {
   if (!is_protocol_submenu_valid_) {
@@ -3916,17 +3950,17 @@ void RenderViewContextMenu::ExecInspectBackgroundPage() {
   DCHECK(platform_app);
   DCHECK(platform_app->is_platform_app());
 
-  extensions::devtools_util::InspectBackgroundPage(platform_app, GetProfile());
+  extensions::devtools_util::InspectBackgroundPage(
+      platform_app, GetProfile(), DevToolsOpenedByAction::kContextMenuInspect);
 }
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 void RenderViewContextMenu::CheckSupervisedUserURLFilterAndSaveLinkAs() {
   Profile* const profile = Profile::FromBrowserContext(browser_context_);
-  supervised_user::SupervisedUserService* supervised_user_service =
-      SupervisedUserServiceFactory::GetForProfile(profile);
-
-  if (supervised_user_service &&
-      supervised_user_service->IsURLFilteringEnabled()) {
+  CHECK(profile);
+  if (supervised_user::IsUrlFilteringEnabled(*profile->GetPrefs())) {
+    supervised_user::SupervisedUserService* supervised_user_service =
+        SupervisedUserServiceFactory::GetForProfile(profile);
     supervised_user::SupervisedUserURLFilter* url_filter =
         supervised_user_service->GetURLFilter();
     url_filter->GetFilteringBehaviorForURLWithAsyncChecks(
@@ -4204,6 +4238,9 @@ void RenderViewContextMenu::ExecSearchForVideoFrame() {
 
   frame_host->RequestVideoFrameAt(
       gfx::Point(params_.x, params_.y),
+      gfx::Size(lens::features::GetMaxPixelsForImageSearch(),
+                lens::features::GetMaxPixelsForImageSearch()),
+      lens::features::GetMaxAreaForImageSearch(),
       base::BindOnce(&RenderViewContextMenu::SearchForVideoFrame,
                      weak_pointer_factory_.GetWeakPtr()));
 }
@@ -4369,9 +4406,9 @@ void RenderViewContextMenu::SearchForVideoFrame(const gfx::ImageSkia& image) {
   }
 
   if (search::DefaultSearchProviderIsGoogle(GetProfile())) {
-    // TODO(crbug.com/1453681): Add an entry point for VideoFrame search.
-    core_tab_helper->SearchWithLens(gfx::Image(image),
-                                    lens::EntryPoint::UNKNOWN);
+    core_tab_helper->SearchWithLens(
+        gfx::Image(image),
+        lens::EntryPoint::CHROME_VIDEO_FRAME_SEARCH_CONTEXT_MENU_ITEM);
   } else {
     core_tab_helper->SearchByImage(gfx::Image(image));
   }

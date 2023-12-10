@@ -32,9 +32,15 @@
 
   #options {
     display: flex;
-    gap: 8px;
     height: 30%;
     justify-content: center;
+  }
+
+  /* This makes the options scrollable. */
+  #optionSubcontainer {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
   }
 
   #searchButtons {
@@ -68,41 +74,47 @@
 </style>
 <div class="main">
   <div id="template">
-    <template is="dom-repeat" items="[[templateText_]]" as="word">
+    <template is="dom-repeat" items="[[templateTokens_]]" as="token">
       <div>
-        <template is="dom-if" if="[[isChip_(word)]]">
-          <div class$="[[computeChipClassName_(word, selectedChipText_)]]" on-click="onClickChip_">
-            [[getChipDefaultValue_(word)]]
+        <template is="dom-if" if="[[isChip_(token)]]">
+          <div class$="[[getChipClassName_(token, selectedChip_)]]"
+              on-click="onClickChip_">
+            [[token.translation]]
           </div>
         </template>
-        <template is="dom-if" if="[[!isChip_(word)]]">
-          <div class$="[[computeTextClassName_(selectedChipText_)]]">[[word]]</div>
+        <template is="dom-if" if="[[!isChip_(token)]]">
+          <div class$="[[getTextClassName_(selectedChip_)]]">
+            [[token]]
+          </div>
         </template>
       </div>
     </template>
   </div>
   <div id="options">
-    <template is="dom-repeat" items="[[options_]]" as="option">
-      <cr-button
-          class$="[[getOptionClass_(option, selectedChipText_)]]"
-          on-click="onClickOption_"
-          value$="[[option.value]]"
-          aria-pressed$="[[isOptionSelected_(option, selectedChipText_)]]">
-        <iron-icon icon="personalization:circle_checkmark" slot="prefix-icon"></iron-icon>
-        [[option.translation]]
-      </cr-button>
-    </template>
+    <div id="optionSubcontainer">
+      <template is="dom-repeat" items="[[options_]]" as="option">
+        <cr-button
+            class$="[[getOptionClass_(option, selectedChip_.translation)]]"
+            on-click="onClickOption_"
+            aria-pressed$="[[isOptionSelected_(option, selectedChip_.translation)]]">
+          <iron-icon icon="personalization:circle_checkmark" slot="prefix-icon"></iron-icon>
+          [[option.translation]]
+        </cr-button>
+      </template>
+    </div>
   </div>
   <div id="searchButtons">
-    <cr-button class="inspire" value$="[[option.value]]">
-      <iron-icon icon="personalization:circle_checkmark" slot="prefix-icon"></iron-icon>
+    <cr-button id="inspire" on-click="onClickInspire_">
+      <iron-icon icon="sea-pen:inspire" slot="prefix-icon"></iron-icon>
       <!-- TODO(b/308200616) Add finalized text. -->
       Inspire me
     </cr-button>
-    <cr-button class="action-button" value$="[[option.value]]">
-      <iron-icon icon="personalization:circle_checkmark" slot="prefix-icon"></iron-icon>
-      <!-- TODO(b/308200616) Add finalized text. -->
-      Create
+    <cr-button
+        id="searchButton"
+        class="action-button"
+        on-click="onClickSearchButton_">
+      <iron-icon icon$="[[getSearchButtonIcon_(path)]]" slot="prefix-icon"></iron-icon>
+      [[getSearchButtonText_(path)]]
     </cr-button>
   </div>
 </div>

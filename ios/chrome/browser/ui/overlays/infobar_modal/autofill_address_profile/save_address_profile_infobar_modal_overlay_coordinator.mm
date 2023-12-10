@@ -8,7 +8,7 @@
 #import "base/feature_list.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/autofill/core/common/autofill_features.h"
-#import "ios/chrome/browser/autofill/personal_data_manager_factory.h"
+#import "ios/chrome/browser/autofill/model/personal_data_manager_factory.h"
 #import "ios/chrome/browser/overlays/model/public/infobar_modal/save_address_profile_infobar_modal_overlay_request_config.h"
 #import "ios/chrome/browser/overlays/model/public/overlay_callback_manager.h"
 #import "ios/chrome/browser/overlays/model/public/overlay_response.h"
@@ -21,7 +21,6 @@
 #import "ios/chrome/browser/ui/autofill/cells/country_item.h"
 #import "ios/chrome/browser/ui/infobars/modals/autofill_address_profile/infobar_edit_address_profile_table_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/modals/autofill_address_profile/infobar_save_address_profile_table_view_controller.h"
-#import "ios/chrome/browser/ui/infobars/modals/autofill_address_profile/legacy_infobar_edit_address_profile_table_view_controller.h"
 #import "ios/chrome/browser/ui/overlays/infobar_modal/autofill_address_profile/save_address_profile_infobar_modal_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/infobar_modal/autofill_address_profile/save_address_profile_infobar_modal_overlay_mediator_delegate.h"
 #import "ios/chrome/browser/ui/overlays/infobar_modal/infobar_modal_overlay_coordinator+modal_configuration.h"
@@ -35,7 +34,7 @@ using autofill_address_profile_infobar_overlays::
     AutofillCountrySelectionTableViewControllerDelegate,
     AutofillProfileEditMediatorDelegate,
     SaveAddressProfileInfobarModalOverlayMediatorDelegate> {
-  autofill::AutofillProfile _autofillProfile;
+  std::unique_ptr<autofill::AutofillProfile> _autofillProfile;
 }
 
 // Redefine ModalConfiguration properties as readwrite.
@@ -92,14 +91,15 @@ using autofill_address_profile_infobar_overlays::
   if (!self.config) {
     return;
   }
-  _autofillProfile = *(self.config->GetProfile());
+  _autofillProfile =
+      std::make_unique<autofill::AutofillProfile>(*(self.config->GetProfile()));
   autofill::PersonalDataManager* personalDataManager =
       autofill::PersonalDataManagerFactory::GetForBrowserState(
           self.browser->GetBrowserState()->GetOriginalChromeBrowserState());
   self.sharedEditViewMediator = [[AutofillProfileEditMediator alloc]
-          initWithDelegate:self
+         initWithDelegate:self
       personalDataManager:personalDataManager
-          autofillProfile:&_autofillProfile
+          autofillProfile:_autofillProfile.get()
               countryCode:nil
         isMigrationPrompt:self.config->is_migration_to_account()];
 
@@ -150,7 +150,7 @@ using autofill_address_profile_infobar_overlays::
 }
 
 - (void)didSaveProfile {
-  [self.modalMediator saveEditedProfileWithProfileData:&_autofillProfile];
+  [self.modalMediator saveEditedProfileWithProfileData:_autofillProfile.get()];
 }
 
 #pragma mark - AutofillCountrySelectionTableViewControllerDelegate

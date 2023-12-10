@@ -101,7 +101,7 @@ class FakeDlpController : public DataTransferDlpController,
 
   void WarnOnPaste(base::optional_ref<const ui::DataTransferEndpoint> data_src,
                    base::optional_ref<const ui::DataTransferEndpoint> data_dst,
-                   base::RepeatingCallback<void()> reporting_cb) override {
+                   base::OnceClosure reporting_cb) override {
     helper_->WarnOnPaste(data_src, data_dst, std::move(reporting_cb));
   }
 
@@ -139,7 +139,7 @@ class FakeDlpController : public DataTransferDlpController,
 
   raw_ptr<views::Widget, ExperimentalAsh> widget_ = nullptr;
   raw_ptr<FakeClipboardNotifier, ExperimentalAsh> helper_ = nullptr;
-  absl::optional<ui::DataTransferEndpoint> blink_data_dst_;
+  std::optional<ui::DataTransferEndpoint> blink_data_dst_;
   base::RepeatingClosure blink_quit_cb_ = base::DoNothing();
   bool force_paste_on_warn_ = false;
 

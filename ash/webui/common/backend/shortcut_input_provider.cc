@@ -10,6 +10,7 @@
 #include "ash/public/mojom/input_device_settings.mojom.h"
 #include "ash/shell.h"
 #include "ash/webui/common/mojom/shortcut_input_provider.mojom.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -42,7 +43,8 @@ ShortcutInputProvider::~ShortcutInputProvider() {
 
 void ShortcutInputProvider::BindInterface(
     mojo::PendingReceiver<common::mojom::ShortcutInputProvider> receiver) {
-  CHECK(features::IsPeripheralCustomizationEnabled());
+  CHECK(features::IsPeripheralCustomizationEnabled() ||
+        ::features::IsShortcutCustomizationEnabled());
   if (shortcut_input_receiver_.is_bound()) {
     shortcut_input_receiver_.reset();
   }
@@ -51,24 +53,38 @@ void ShortcutInputProvider::BindInterface(
 
 void ShortcutInputProvider::OnShortcutInputEventPressed(
     const mojom::KeyEvent& key_event) {
-  if (observing_paused_) {
+  if (observing_paused_ || prerewritten_event_.is_null()) {
     return;
   }
 
   for (auto& observer : shortcut_input_observers_) {
-    observer->OnShortcutInputEventPressed(key_event.Clone());
+    observer->OnShortcutInputEventPressed(prerewritten_event_.Clone(),
+                                          key_event.Clone());
   }
+  prerewritten_event_.reset();
 }
 
 void ShortcutInputProvider::OnShortcutInputEventReleased(
     const mojom::KeyEvent& key_event) {
-  if (observing_paused_) {
+  if (observing_paused_ || prerewritten_event_.is_null()) {
     return;
   }
 
   for (auto& observer : shortcut_input_observers_) {
-    observer->OnShortcutInputEventReleased(key_event.Clone());
+    observer->OnShortcutInputEventReleased(prerewritten_event_.Clone(),
+                                           key_event.Clone());
   }
+  prerewritten_event_.reset();
+}
+
+void ShortcutInputProvider::OnPrerewrittenShortcutInputEventPressed(
+    const mojom::KeyEvent& key_event) {
+  prerewritten_event_ = key_event.Clone();
+}
+
+void ShortcutInputProvider::OnPrerewrittenShortcutInputEventReleased(
+    const mojom::KeyEvent& key_event) {
+  prerewritten_event_ = key_event.Clone();
 }
 
 void ShortcutInputProvider::StartObservingShortcutInput(

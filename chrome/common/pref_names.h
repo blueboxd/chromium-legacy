@@ -12,6 +12,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/pref_font_webkit_names.h"
+#include "components/compose/buildflags.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "extensions/buildflags/buildflags.h"
@@ -461,6 +462,11 @@ inline constexpr char kDeskAPIThirdPartyAllowlist[] =
 // name and the string value.
 inline constexpr char kPrintingAPIExtensionsAllowlist[] =
     "printing.printing_api_extensions_whitelist";
+
+// The list of extensions allowed to skip discovery and scan confirmation
+// dialogs when using the chrome.documentScan API.
+inline constexpr char kDocumentScanAPITrustedExtensions[] =
+    "document_scan.document_scan_api_trusted_extensions";
 
 // A boolean specifying whether the insights extension is enabled. If set to
 // true, the CCaaS Chrome component extension will be installed.
@@ -1522,9 +1528,11 @@ inline constexpr char kImportDialogSavedPasswords[] =
 inline constexpr char kImportDialogSearchEngine[] =
     "import_dialog_search_engine";
 
+#if BUILDFLAG(IS_CHROMEOS)
 // Boolean controlling whether native client is force allowed by policy.
 inline constexpr char kNativeClientForceAllowed[] =
     "native_client_force_allowed";
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 // Profile avatar and name
 inline constexpr char kProfileAvatarIndex[] = "profile.avatar_index";
@@ -1567,6 +1575,14 @@ inline constexpr char kPrintingPaperSizeDefault[] =
 // Boolean controlling whether printing is enabled.
 inline constexpr char kPrintingEnabled[] = "printing.enabled";
 #endif  // BUILDFLAG(ENABLE_PRINTING)
+
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
+// Boolean controlling whether making platform printing calls from a
+// PrintBackend service instead of from the browser process is allowed by
+// policy.
+inline constexpr char kOopPrintDriversAllowedByPolicy[] =
+    "printing.oop_print_drivers_allowed_by_policy";
+#endif
 
 // Boolean controlling whether print preview is disabled.
 inline constexpr char kPrintPreviewDisabled[] =
@@ -1865,7 +1881,7 @@ inline constexpr char kGoogleSearchSidePanelEnabled[] =
 inline constexpr char kManagedPrivateNetworkAccessRestrictionsEnabled[] =
     "managed_private_network_access_restrictions_enabled";
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(ENABLE_COMPOSE)
 // Boolean indicating whether or not Compose consent has been given or
 // acknowledged.
 inline constexpr char kPrefHasAcceptedComposeConsent[] =
@@ -2368,6 +2384,11 @@ inline constexpr char kWebAppsAppAgnosticIphState[] =
 inline constexpr char kWebAppsAppAgnosticMlState[] =
     "web_apps.app_agnostic_ml_state";
 
+// Dictionary that stores IPH state for link capturing not scoped to a
+// particular app
+inline constexpr char kWebAppsAppAgnosticIPHLinkCapturingState[] =
+    "web_apps.app_agnostic_iph_link_capturing_state";
+
 // A boolean value that stores information about whether error loaded policy
 // apps have been migrated for this profile.
 inline constexpr char kErrorLoadedPolicyAppMigrationCompleted[] =
@@ -2390,10 +2411,6 @@ inline constexpr char kWebAppsUninstalledDefaultChromeApps[] =
 // Used only in the new web applications system to store app preferences which
 // outlive the app installation and uninstallation.
 inline constexpr char kWebAppsPreferences[] = "web_apps.web_app_ids";
-
-// Dictionary that maps the origin of a web app to other preferences related to
-// its isolation requirements.
-inline constexpr char kWebAppsIsolationState[] = "web_apps.isolation_state";
 
 // The default audio capture device used by the Media content setting.
 // TODO(crbug.com/311205211): Remove this once users have been migrated to
@@ -3590,13 +3607,6 @@ inline constexpr char kCACertificateManagementAllowed[] =
     "ca_certificate_management_allowed";
 #endif
 
-#if BUILDFLAG(CHROME_ROOT_STORE_POLICY_SUPPORTED)
-// Boolean that specifies whether the Chrome Root Store and built-in
-// certificate verifier should be used. If false, Chrome will not use the
-// Chrome Root Store.
-// If not set, Chrome will choose the root store based on experiments.
-inline constexpr char kChromeRootStoreEnabled[] = "chrome_root_store_enabled";
-#endif
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
 inline constexpr char kEnforceLocalAnchorConstraintsEnabled[] =
@@ -3607,10 +3617,8 @@ inline constexpr char kSharingVapidKey[] = "sharing.vapid_key";
 inline constexpr char kSharingFCMRegistration[] = "sharing.fcm_registration";
 inline constexpr char kSharingLocalSharingInfo[] = "sharing.local_sharing_info";
 
-#if !BUILDFLAG(IS_ANDROID)
-// Dictionary that contains all of the Hats Survey Metadata.
+// Dictionary that contains all of the Hats Survey Metadata for desktop surveys.
 inline constexpr char kHatsSurveyMetadata[] = "hats.survey_metadata";
-#endif  // !BUILDFLAG(IS_ANDROID)
 
 inline constexpr char kExternalProtocolDialogShowAlwaysOpenCheckbox[] =
     "external_protocol_dialog.show_always_open_checkbox";
@@ -3970,6 +3978,11 @@ inline constexpr char kReadAloudSpeed[] = "readaloud.speed";
 // playback and scrolls the page to match the playback position.
 inline constexpr char kReadAloudHighlightingEnabled[] =
     "readaloud.highlighting_enabled";
+
+// Boolean that specifies whether the ListenToThisPageEnabled policy is true or
+// not.
+inline constexpr char kListenToThisPageEnabled[] =
+    "readaloud.listen_to_this_page_enabled";
 #endif  // BUILDFLAG(IS_ANDROID)
 }  // namespace prefs
 

@@ -19,6 +19,7 @@
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/location.h"
+#include "base/notreached.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -28,7 +29,6 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "chromeos/ash/components/mojo_service_manager/connection.h"
-#include "chromeos/components/sensors/sensor_util.h"
 #include "components/device_event_log/device_event_log.h"
 #include "media/capture/video/chromeos/mojom/camera_common.mojom.h"
 #include "media/capture/video/chromeos/mojom/cros_camera_client.mojom.h"
@@ -238,7 +238,6 @@ void CameraHalDispatcherImpl::BindCameraServiceOnProxyThread(
 }
 
 void CameraHalDispatcherImpl::TryConnectToCameraService() {
-  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   CHECK(ash::mojo_service_manager::IsServiceManagerBound());
 
   mojo::PendingRemote<cros::mojom::CrosCameraService> camera_service;
@@ -289,14 +288,7 @@ bool CameraHalDispatcherImpl::Start() {
     LOG(ERROR) << "Failed to generate token for test client";
     return false;
   }
-  if (!token_manager_.GenerateServerSensorClientToken()) {
-    LOG(ERROR) << "Failed to generate authentication token for server as a "
-                  "sensor client";
-  }
 
-  // TODO(b/228238413): In VCD unittests, the endpoint of mojo service
-  // manager is not bound. Bind it and request the CrosCameraService service
-  // from it to enable real cameras.
   mojo_service_manager_observer_ = MojoServiceManagerObserver::Create(
       chromeos::mojo_services::kCrosCameraService,
       base::BindRepeating(&CameraHalDispatcherImpl::TryConnectToCameraService,
@@ -443,7 +435,6 @@ CameraHalDispatcherImpl::CameraHalDispatcherImpl()
     : is_service_loop_running_(false),
       proxy_thread_("CameraProxyThread"),
       blocking_io_thread_("CameraBlockingIOThread"),
-      main_task_runner_(base::SequencedTaskRunner::GetCurrentDefault()),
       camera_service_observer_receiver_(this),
       active_client_observers_(
           new base::ObserverListThreadSafe<CameraActiveClientObserver>()),
@@ -1091,6 +1082,22 @@ void CameraHalDispatcherImpl::Request(
       FROM_HERE, base::BindOnce(&CameraHalDispatcherImpl::OnPeerConnected,
                                 base::Unretained(this), std::move(receiver)));
   VLOG(1) << "New CameraHalDispatcher binding added from Mojo Service Manager.";
+}
+
+bool CameraClientObserver::WaitForCameraModuleReadyForTesting() {
+  NOTREACHED() << "This fuction is only for CameraHalDelegate to wait for "
+                  "camera module to be ready in VCD unittests.";
+  return false;
+}
+
+bool CameraHalDispatcherImpl::WaitForServiceReadyForTesting() {
+  for (CameraClientObserver* client_observer : client_observers_) {
+    if (client_observer->GetType() == cros::mojom::CameraClientType::CHROME) {
+      return client_observer->WaitForCameraModuleReadyForTesting();  // IN-TEST
+    }
+  }
+  LOG(ERROR) << "CameraHalDelegate hasn't registered yet.";
+  return false;
 }
 
 }  // namespace media

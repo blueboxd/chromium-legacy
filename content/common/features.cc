@@ -97,10 +97,6 @@ BASE_FEATURE(kCanvas2DImageChromium,
 #endif
 );
 
-BASE_FEATURE(kCompositeClipPathAnimation,
-             "CompositeClipPathAnimation",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // When enabled, code cache does not use a browsing_data filter for deletions.
 BASE_FEATURE(kCodeCacheDeletionWithoutFilter,
              "CodeCacheDeletionWithoutFilter",
@@ -111,7 +107,11 @@ BASE_FEATURE(kCodeCacheDeletionWithoutFilter,
 // proxy.
 BASE_FEATURE(kConsolidatedIPCForProxyCreation,
              "ConsolidatedIPCForProxyCreation",
+#if BUILDFLAG(IS_ANDROID)
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#else
              base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 // When enabled, event.movement is calculated in blink instead of in browser.
 BASE_FEATURE(kConsolidatedMovementXY,
@@ -126,10 +126,22 @@ BASE_FEATURE(kCriticalClientHint,
 
 // Enables setting the nonce of the data: opaque origin early in the navigation
 // so the nonce remains stable throughout a navigation.
+// Note: kDataUrlsHaveOriginAsUrl is dependent on this feature. If this feature
+// is being disabled, the other needs to be disabled as well.
 // TODO(crbug.com/1447896, yangsharon): Remove this once we're confident that
 // this change isn't causing issues in the wild.
 BASE_FEATURE(kDataUrlsHaveStableNonce,
              "DataUrlsHaveStableNonce",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// When enabled, main frame data: URLs use the serialized nonce from the origin
+// as the site URL. Otherwise, use the entire data: URL as the site URL.
+// Note: This feature is dependent on kDataUrlsHaveStableNonce. If that flag
+// needs to be disabled, this will have to be disabled as well.
+// TODO(crbug.com/1447896, yangsharon): Remove this once we're confident that
+// this change isn't causing issues in the wild.
+BASE_FEATURE(kDataUrlsHaveOriginAsUrl,
+             "DataUrlsHaveOriginAsUrl",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable changing source dynamically for desktop capture.
@@ -207,7 +219,7 @@ const base::FeatureParam<int> kFledgeLimitNumAuctionsParam{
 // Enables caching when loading interest groups for a bidder in an auction.
 BASE_FEATURE(kFledgeUseInterestGroupCache,
              "FledgeUseInterestGroupCache",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables fixes for matching src: local() for web fonts correctly against full
 // font name or postscript name. Rolling out behind a flag, as enabling this
@@ -347,15 +359,15 @@ BASE_FEATURE(kPrivacySandboxAdsAPIsM1Override,
              "PrivacySandboxAdsAPIsM1Override",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables Private Network Access checks in warning mode for iframe navigations.
+// Enables Private Network Access checks in warning mode for navigations.
 //
-// Does nothing if `kPrivateNetworkAccessForIframes` is disabled.
+// Does nothing if `kPrivateNetworkAccessForNavigations` is disabled.
 //
-// If both this and `kPrivateNetworkAccessForIframes` are enabled, then PNA
-// preflight requests for iframe navigations are not required to succeed. If
+// If both this and `kPrivateNetworkAccessForNavigations` are enabled, then PNA
+// preflight requests for navigations are not required to succeed. If
 // one fails, a warning is simply displayed in DevTools.
-BASE_FEATURE(kPrivateNetworkAccessForIframesWarningOnly,
-             "PrivateNetworkAccessForIframesWarningOnly",
+BASE_FEATURE(kPrivateNetworkAccessForNavigationsWarningOnly,
+             "PrivateNetworkAccessForNavigationsWarningOnly",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables reporting ResourceTiming entries for document, who initiated a

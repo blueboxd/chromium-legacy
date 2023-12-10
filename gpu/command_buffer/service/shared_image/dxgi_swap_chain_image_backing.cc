@@ -340,9 +340,11 @@ DXGISwapChainImageBacking::ProduceSkiaGanesh(
       return nullptr;
     }
 
+    auto gl_format_desc = context_state->GetGLFormatCaps().ToGLFormatDesc(
+        format(), /*plane_index=*/0);
     gl_texture_holder_ = D3DImageBacking::CreateGLTexture(
-        format(), size(), color_space(), backbuffer_texture, GL_TEXTURE_2D, 0,
-        0, dxgi_swap_chain_);
+        gl_format_desc, size(), color_space(), backbuffer_texture,
+        GL_TEXTURE_2D, /*array_slice=*/0, /*plane_index=*/0, dxgi_swap_chain_);
     if (!gl_texture_holder_) {
       LOG(ERROR) << "Failed to create GL texture.";
       return nullptr;
@@ -390,8 +392,7 @@ DXGISwapChainImageBacking::ProduceSkiaGraphite(
 
   return SkiaGraphiteDawnImageRepresentation::Create(
       std::move(dawn_representation), context_state,
-      context_state->gpu_main_graphite_recorder(), manager, this, tracker,
-      /*is_yuv_plane=*/false);
+      context_state->gpu_main_graphite_recorder(), manager, this, tracker);
 #else
   NOTREACHED_NORETURN();
 #endif  // BUILDFLAG(SKIA_USE_DAWN)

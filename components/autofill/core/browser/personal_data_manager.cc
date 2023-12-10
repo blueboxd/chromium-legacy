@@ -31,9 +31,9 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
-#include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_field.h"
+#include "components/autofill/core/browser/crowdsourcing/autofill_crowdsourcing_manager.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/data_model/credit_card_art_image.h"
@@ -482,7 +482,7 @@ void PersonalDataManager::OnURLsDeleted(
   }
 
   if (!deletion_info.is_from_expiration() && deletion_info.IsAllHistory()) {
-    AutofillDownloadManager::ClearUploadHistory(pref_service_);
+    AutofillCrowdsourcingManager::ClearUploadHistory(pref_service_);
   }
 
   if (profile_save_strike_database_) {
@@ -1270,9 +1270,9 @@ void PersonalDataManager::RemoveByGUID(const std::string& guid) {
   }
 }
 
-Iban* PersonalDataManager::GetIbanByGUID(const std::string& guid) {
-  const std::vector<Iban*>& ibans = GetLocalIbans();
-  auto iter = FindElementByGUID(ibans, guid);
+const Iban* PersonalDataManager::GetIbanByGUID(const std::string& guid) {
+  const std::vector<const Iban*>& ibans = GetLocalIbans();
+  const auto iter = FindElementByGUID(ibans, guid);
   return iter != ibans.end() ? *iter : nullptr;
 }
 
@@ -1395,8 +1395,8 @@ std::vector<CreditCard*> PersonalDataManager::GetCreditCards() const {
   return result;
 }
 
-std::vector<Iban*> PersonalDataManager::GetLocalIbans() const {
-  std::vector<Iban*> result;
+std::vector<const Iban*> PersonalDataManager::GetLocalIbans() const {
+  std::vector<const Iban*> result;
   result.reserve(local_ibans_.size());
   for (const auto& iban : local_ibans_) {
     result.push_back(iban.get());
@@ -2452,6 +2452,11 @@ void PersonalDataManager::OnCardArtImagesFetched(
 
 void PersonalDataManager::LogServerCardLinkClicked() const {
   AutofillMetrics::LogServerCardLinkClicked(GetPaymentsSigninStateForMetrics());
+}
+
+void PersonalDataManager::LogServerIbanLinkClicked() const {
+  autofill_metrics::LogServerIbanLinkClicked(
+      GetPaymentsSigninStateForMetrics());
 }
 
 void PersonalDataManager::OnUserAcceptedUpstreamOffer() {

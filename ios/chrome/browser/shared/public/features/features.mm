@@ -82,10 +82,6 @@ BASE_FEATURE(kNonModalDefaultBrowserPromoCooldownRefactor,
              "NonModalDefaultBrowserPromoCooldownRefactor",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kSetUpListContentNotification,
-             "SetUpListContentNotification",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 constexpr base::FeatureParam<int>
     kNonModalDefaultBrowserPromoCooldownRefactorParam{
         &kNonModalDefaultBrowserPromoCooldownRefactor,
@@ -225,7 +221,7 @@ BASE_FEATURE(kSpotlightDonateNewIntents,
 
 BASE_FEATURE(kConsistencyNewAccountInterface,
              "ConsistencyNewAccountInterface",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsConsistencyNewAccountInterfaceEnabled() {
   return base::FeatureList::IsEnabled(kConsistencyNewAccountInterface);
@@ -266,6 +262,43 @@ bool IsBottomOmniboxDeviceSwitcherResultsEnabled() {
          base::FeatureList::IsEnabled(kBottomOmniboxDeviceSwitcherResults);
 }
 
+BASE_FEATURE(kBottomOmniboxPromoFRE,
+             "BottomOmniboxPromoFRE",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kBottomOmniboxPromoAppLaunch,
+             "BottomOmniboxPromoAppLaunch",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const char kBottomOmniboxPromoParam[] = "BottomOmniboxPromoParam";
+const char kBottomOmniboxPromoParamForced[] = "Forced";
+
+bool IsBottomOmniboxPromoFlagEnabled(BottomOmniboxPromoType type) {
+  if (!IsBottomOmniboxSteadyStateEnabled()) {
+    return false;
+  }
+  if ((type == BottomOmniboxPromoType::kFRE ||
+       type == BottomOmniboxPromoType::kAny) &&
+      base::FeatureList::IsEnabled(kBottomOmniboxPromoFRE)) {
+    return true;
+  }
+  if ((type == BottomOmniboxPromoType::kAppLaunch ||
+       type == BottomOmniboxPromoType::kAny) &&
+      base::FeatureList::IsEnabled(kBottomOmniboxPromoAppLaunch)) {
+    return true;
+  }
+  return false;
+}
+
+BASE_FEATURE(kBottomOmniboxPromoDefaultPosition,
+             "BottomOmniboxPromoDefaultPosition",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const char kBottomOmniboxPromoDefaultPositionParam[] =
+    "BottomOmniboxPromoDefaultPositionParam";
+const char kBottomOmniboxPromoDefaultPositionParamTop[] = "Top";
+const char kBottomOmniboxPromoDefaultPositionParamBottom[] = "Bottom";
+
 BASE_FEATURE(kOnlyAccessClipboardAsync,
              "OnlyAccessClipboardAsync",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -289,6 +322,14 @@ BASE_FEATURE(kDynamicThemeColor,
 BASE_FEATURE(kDynamicBackgroundColor,
              "DynamicBackgroundColor",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kTabGridCompositionalLayout,
+             "TabGridCompositionalLayout",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsTabGridCompositionalLayoutEnabled() {
+  return base::FeatureList::IsEnabled(kTabGridCompositionalLayout);
+}
 
 BASE_FEATURE(kTabGridRefactoring,
              "TabGridRefactoring",
@@ -358,6 +399,9 @@ BASE_FEATURE(kDiscoverFeedSportCard,
              "DiscoverFeedSportCard",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+const char kContentPushNotificationsExperimentType[] =
+    "ContentPushNotificationsExperimentType";
+
 BASE_FEATURE(kContentPushNotifications,
              "ContentPushNotifications",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -376,6 +420,10 @@ BASE_FEATURE(kFullscreenImprovement,
 
 BASE_FEATURE(kTabGroupsInGrid,
              "TabGroupsInGrid",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kIOSExternalActionURLs,
+             "IOSExternalActionURLs",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Key for NSUserDefaults containing a bool indicating whether the next run
@@ -657,12 +705,36 @@ bool IsContentPushNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kContentPushNotifications);
 }
 
+NotificationsExperimentType ContentNotificationsExperimentTypeEnabled() {
+  // This translates to the `NotificationsExperimentType` enum.
+  // Value 0 corresponds to `Enabled` on the feature flag. Only activates the
+  // Settings tab for content notifications.
+  return static_cast<NotificationsExperimentType>(
+      base::GetFieldTrialParamByFeatureAsInt(
+          kContentPushNotifications, kContentPushNotificationsExperimentType,
+          0));
+}
+
+bool IsContentPushNotificationsPromoEnabled() {
+  return (ContentNotificationsExperimentTypeEnabled() ==
+          NotificationsExperimentTypePromoEnabled);
+}
+
+bool IsContentPushNotificationsSetUpListEnabled() {
+  return (ContentNotificationsExperimentTypeEnabled() ==
+          NotificationsExperimentTypeSetUpListsEnabled);
+}
+
 bool IsIOSLargeFakeboxEnabled() {
   return base::FeatureList::IsEnabled(kIOSLargeFakebox);
 }
 
 bool IsIOSHideFeedWithSearchChoiceEnabled() {
   return base::FeatureList::IsEnabled(kIOSHideFeedWithSearchChoice);
+}
+
+bool IsKeyboardAccessoryUpgradeEnabled() {
+  return base::FeatureList::IsEnabled(kIOSKeyboardAccessoryUpgrade);
 }
 
 // Feature disabled by default.
@@ -753,6 +825,6 @@ int TimeUntilShowingCompactedSetUpList() {
       kMagicStack, kSetUpListCompactedTimeThresholdDays, 3);
 }
 
-bool IsSetUpListContentNotificationEnabled() {
-  return base::FeatureList::IsEnabled(kSetUpListContentNotification);
+bool IsExternalActionSchemeHandlingEnabled() {
+  return base::FeatureList::IsEnabled(kIOSExternalActionURLs);
 }

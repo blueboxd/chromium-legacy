@@ -25,7 +25,7 @@ namespace {
 // return an empty std string.
 std::string ConvertJavaStringToUTF8Wrapper(
     const base::android::JavaRef<jstring>& str) {
-  return str.obj() ? ConvertJavaStringToUTF8(str) : "";
+  return str.obj() ? base::android::ConvertJavaStringToUTF8(str) : "";
 }
 
 }  // namespace
@@ -91,7 +91,7 @@ blink::UserAgentMetadata FromJavaAwUserAgentMetadata(
 
   ua_metadata.wow64 = Java_AwUserAgentMetadata_isWow64(env, java_ua_metadata);
 
-  AppendJavaStringArrayToStringVector(
+  base::android::AppendJavaStringArrayToStringVector(
       env, Java_AwUserAgentMetadata_getFormFactor(env, java_ua_metadata),
       &ua_metadata.form_factor);
 

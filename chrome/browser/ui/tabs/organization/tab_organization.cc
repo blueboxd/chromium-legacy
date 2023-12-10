@@ -4,13 +4,13 @@
 
 #include "chrome/browser/ui/tabs/organization/tab_organization.h"
 
+#include <optional>
 #include <string>
 
 #include "chrome/browser/ui/tabs/organization/tab_data.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace {
@@ -22,7 +22,7 @@ TabOrganization::TabOrganization(
     TabDatas tab_datas,
     std::vector<std::u16string> names,
     absl::variant<size_t, std::u16string> current_name,
-    absl::optional<UserChoice> choice)
+    std::optional<UserChoice> choice)
     : names_(names),
       current_name_(current_name),
       choice_(choice),
@@ -113,15 +113,20 @@ void TabOrganization::RemoveTabData(TabData::TabID tab_id) {
                    });
   CHECK(position != tab_datas_.end());
 
-  // The TabData object will notify observers it is being destroyed which will
-  // notify the TabOrganization observers.
+  user_removed_tab_ids_.push_back(tab_id);
   tab_datas_.erase(position);
+  NotifyObserversOfUpdate();
 }
 
 void TabOrganization::SetCurrentName(
     absl::variant<size_t, std::u16string> new_current_name) {
   current_name_ = new_current_name;
   NotifyObserversOfUpdate();
+}
+
+void TabOrganization::SetFeedback(
+    optimization_guide::proto::UserFeedback feedback) {
+  feedback_ = feedback;
 }
 
 // TODO(1469128) Add UKM/UMA Logging on user accept.
@@ -156,6 +161,24 @@ void TabOrganization::Accept() {
       GetDisplayName(), tab_group->visual_data()->color());
   tab_group->SetVisualData(std::move(new_visual_data),
                            tab_group->IsCustomized());
+
+  // Move the entire group to the start left of the tabstrip.
+  // Iterate through the tabstrip model looking for the first non pinned, non
+  // grouped tab. If this group is already in the leftmost position then leave
+  // it there. Else move the group at the index of that tab.
+  int move_index = tab_strip_model->IndexOfFirstNonPinnedTab();
+  while (move_index < tab_strip_model->GetTabCount() &&
+         (tab_strip_model->GetTabGroupForTab(move_index).has_value() &&
+          tab_strip_model->GetTabGroupForTab(move_index).value() !=
+              tab_group->id())) {
+    move_index++;
+  }
+  CHECK(move_index < tab_strip_model->GetTabCount());
+
+  if (tab_strip_model->GetTabGroupForTab(move_index) != tab_group->id()) {
+    tab_strip_model->MoveGroupTo(tab_group->id(), move_index);
+  }
+
   NotifyObserversOfUpdate();
 }
 
@@ -175,8 +198,14 @@ void TabOrganization::OnTabDataUpdated(const TabData* tab_data) {
 }
 
 void TabOrganization::OnTabDataDestroyed(TabData::TabID tab_id) {
-  invalidated_by_tab_change_ = true;
-  NotifyObserversOfUpdate();
+  // Only invalidate if RemoveTabData was not previously called on this tab id.
+  // Closure of a tab that is a part of an organization should invalidate it,
+  // but removal of the tab from the organization should not.
+  if (std::find(user_removed_tab_ids_.begin(), user_removed_tab_ids_.end(),
+                tab_id) == user_removed_tab_ids_.end()) {
+    invalidated_by_tab_change_ = true;
+    NotifyObserversOfUpdate();
+  }
 }
 
 void TabOrganization::NotifyObserversOfUpdate() {

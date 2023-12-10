@@ -28,11 +28,6 @@
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
-#include "components/supervised_user/core/browser/supervised_user_service.h"
-#endif
-
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
 #include "components/permissions/permissions_client.h"
 #endif
 
@@ -95,7 +90,7 @@ ChromeBrowsingDataModelDelegate::CreateForStoragePartition(
 // static
 void ChromeBrowsingDataModelDelegate::BrowsingDataAccessed(
     content::RenderFrameHost* rfh,
-    BrowsingDataModel::DataKey data_key,
+    const BrowsingDataModel::DataKey& data_key,
     StorageType storage_type,
     bool blocked) {
   content_settings::PageSpecificContentSettings::BrowsingDataAccessed(
@@ -130,7 +125,7 @@ void ChromeBrowsingDataModelDelegate::GetAllDataKeys(
 }
 
 void ChromeBrowsingDataModelDelegate::RemoveDataKey(
-    BrowsingDataModel::DataKey data_key,
+    const BrowsingDataModel::DataKey& data_key,
     BrowsingDataModel::StorageTypeSet storage_types,
     base::OnceClosure callback) {
   auto dynamic_barrier_closure =
@@ -169,7 +164,7 @@ void ChromeBrowsingDataModelDelegate::RemoveDataKey(
 
 absl::optional<BrowsingDataModel::DataOwner>
 ChromeBrowsingDataModelDelegate::GetDataOwner(
-    BrowsingDataModel::DataKey data_key,
+    const BrowsingDataModel::DataKey& data_key,
     BrowsingDataModel::StorageType storage_type) const {
   switch (static_cast<StorageType>(storage_type)) {
     case StorageType::kIsolatedWebApp:
@@ -194,6 +189,7 @@ ChromeBrowsingDataModelDelegate::GetDataOwner(
 
 absl::optional<bool>
 ChromeBrowsingDataModelDelegate::IsBlockedByThirdPartyCookieBlocking(
+    const BrowsingDataModel::DataKey& data_key,
     BrowsingDataModel::StorageType storage_type) const {
   // Values below the first delegate type are handled in the model itself.
   if (static_cast<int>(storage_type) <
@@ -214,22 +210,13 @@ ChromeBrowsingDataModelDelegate::IsBlockedByThirdPartyCookieBlocking(
 bool ChromeBrowsingDataModelDelegate::IsCookieDeletionDisabled(
     const GURL& url) {
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  supervised_user::SupervisedUserService* supervised_user_service =
-      SupervisedUserServiceFactory::GetForBrowserContext(profile_);
-  if (!supervised_user_service) {
-    // For some Profiles (e.g. Incognito), SupervisedUserService is not
-    // created.
-    return false;
-  }
-  return supervised_user_service->IsCookieDeletionDisabled(url);
-#elif BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
+  CHECK(profile_);
   if (profile_->IsChild()) {
     auto* client = permissions::PermissionsClient::Get();
     return client->IsCookieDeletionDisabled(profile_, url);
   }
-#else
-  return false;
 #endif
+  return false;
 }
 
 void ChromeBrowsingDataModelDelegate::GetAllMediaDeviceSaltDataKeys(

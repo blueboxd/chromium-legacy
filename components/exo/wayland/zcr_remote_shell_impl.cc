@@ -557,11 +557,9 @@ void WaylandRemoteShell::OnDisplayTabletStateChanged(
     event_mapping_.send_layout_mode(remote_shell_resource_, layout_mode_);
   }
 
-  const bool layout_change_started =
-      state == display::TabletState::kEnteringTabletMode ||
-      state == display::TabletState::kExitingTabletMode;
-  if (layout_change_started)
+  if (display::IsTabletStateChanging(state)) {
     ScheduleSendDisplayMetrics(kConfigureDelayAfterLayoutSwitchMs);
+  }
 }
 
 void WaylandRemoteShell::OnDisplayMetricsChanged(
@@ -1488,10 +1486,22 @@ void remote_surface_set_window_corner_radii(wl_client* client,
                                             uint32_t upper_right_radius,
                                             uint32_t lower_right_radius,
                                             uint32_t lower_left_radius) {
-  GetUserDataAs<ClientControlledShellSurface>(resource)->SetWindowCornerRadii(
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetWindowCornersRadii(
       gfx::RoundedCornersF(upper_left_radius, upper_right_radius,
                            lower_right_radius, lower_left_radius));
 }
+
+void remote_surface_set_shadow_corner_radii(wl_client* client,
+                                            wl_resource* resource,
+                                            uint32_t upper_left_radius,
+                                            uint32_t upper_right_radius,
+                                            uint32_t lower_right_radius,
+                                            uint32_t lower_left_radius) {
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetShadowCornersRadii(
+      gfx::RoundedCornersF(upper_left_radius, upper_right_radius,
+                           lower_right_radius, lower_left_radius));
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // notification_surface_interface:

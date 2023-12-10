@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://webui-test/mojo_webui_test_support.js';
+import 'chrome://webui-test/chromeos/mojo_webui_test_support.js';
 
 import {fakeEmptySearchResponse, fakeFeedbackContext, fakeInternalUserFeedbackContext, fakeLoginFlowFeedbackContext, fakeSearchResponse} from 'chrome://os-feedback/fake_data.js';
 import {FakeHelpContentProvider} from 'chrome://os-feedback/fake_help_content_provider.js';
@@ -50,7 +50,7 @@ suite('searchPageTestSuite', () => {
     document.body.appendChild(page);
 
     // Fire search immediately for input change.
-    page.searchTimoutInMs_ = 0;
+    page.searchTimoutInMs = 0;
 
     return flushTasks();
   }
@@ -132,7 +132,7 @@ suite('searchPageTestSuite', () => {
         'Share your feedback or describe your issue. ' +
             'If possible, include steps to reproduce your issue.',
         textAreaElement.placeholder);
-    assertTrue(page.getIsPopularContentForTesting_());
+    assertTrue(page.getIsPopularContentForTesting());
 
     // Enter three chars.
     textAreaElement.value = 'abc';
@@ -143,7 +143,7 @@ suite('searchPageTestSuite', () => {
     await flushTasks();
     // Verify that getHelpContent() has been called with query 'abc'.
     assertEquals('abc', provider.lastQuery);
-    assertFalse(page.getIsPopularContentForTesting_());
+    assertFalse(page.getIsPopularContentForTesting());
 
     // Enter 2 more characters. This should trigger another search.
     textAreaElement.value = 'abc12';
@@ -155,7 +155,7 @@ suite('searchPageTestSuite', () => {
     assertEquals('abc12', provider.lastQuery);
 
     // Fire search after pausing typing for 10 seconds.
-    page.searchTimoutInMs_ = 10000;
+    page.searchTimoutInMs = 10000;
     // Remove some chars. This should NOT trigger another search.
     textAreaElement.value = 'a';
     textAreaElement.dispatchEvent(new Event('input'));
@@ -166,7 +166,7 @@ suite('searchPageTestSuite', () => {
     assertNotEquals('a', provider.lastQuery);
 
     // Fire search immediately for input change.
-    page.searchTimoutInMs_ = 0;
+    page.searchTimoutInMs = 0;
 
     // Enter one more characters. This should trigger another search.
     textAreaElement.value = 'abc123';
@@ -175,7 +175,7 @@ suite('searchPageTestSuite', () => {
     await flushTasks();
     // Verify that getHelpContent() has been called with query 'abc123'.
     assertEquals('abc123', provider.lastQuery);
-    assertFalse(page.getIsPopularContentForTesting_());
+    assertFalse(page.getIsPopularContentForTesting());
 
     // Remove all the text area characters. This should NOT trigger
     // getHelpContent().
@@ -186,7 +186,7 @@ suite('searchPageTestSuite', () => {
     // Verify that getHelpContent() is not called, and the help content
     // is the default popular content.
     assertNotEquals('', provider.lastQuery);
-    assertTrue(page.getIsPopularContentForTesting_());
+    assertTrue(page.getIsPopularContentForTesting());
   });
 
   test('searchNotFired_on_oobeOrLogin', async () => {
@@ -255,7 +255,7 @@ suite('searchPageTestSuite', () => {
     // Search result count should be 0.
     assertEquals(0, page.getSearchResultCountForTesting());
     // Popular content should be displayed (i.e. isPopularContent = true).
-    assertTrue(page.getIsPopularContentForTesting_());
+    assertTrue(page.getIsPopularContentForTesting());
   });
 
   /**
@@ -286,7 +286,7 @@ suite('searchPageTestSuite', () => {
     // Search result count should be 0.
     assertEquals(0, page.getSearchResultCountForTesting());
     // Popular content should be displayed (i.e. isPopularContent = true).
-    assertTrue(page.getIsPopularContentForTesting_());
+    assertTrue(page.getIsPopularContentForTesting());
   });
 
   /**
@@ -782,48 +782,6 @@ suite('searchPageTestSuite', () => {
       if (domainQuestions['thunderbolt'].indexOf(question) < 0) {
         assertTrue(textAreaElement.value.indexOf(question) < 0);
       }
-    });
-  });
-
-  test('typingAudioWithInternalAccountShowsQuestionnaire', async () => {
-    let textAreaElement = null;
-    await initializePage();
-    // The questionnaire will be only shown if the account belongs to an
-    // internal user.
-    page.feedbackContext = fakeInternalUserFeedbackContext;
-
-    textAreaElement = getElement('#descriptionText');
-    textAreaElement.value = 'there were audio defects (popping and distortion)';
-    // Setting the value of the textarea in code does not trigger the
-    // input event. So we trigger it here.
-    textAreaElement.dispatchEvent(new Event('input'));
-    await flushTasks();
-
-    // Check that the questionnaire with Audio questions is shown.
-    assertTrue(textAreaElement.value.indexOf(questionnaireBegin) >= 0);
-    domainQuestions['audio'].forEach((question) => {
-      assertTrue(textAreaElement.value.indexOf(question) >= 0);
-    });
-  });
-
-  test('typingAudioWithExternalAccountWillNotShowsQuestionnaire', async () => {
-    let textAreaElement = null;
-    await initializePage();
-    // The questionnaire will be only shown if the account belongs to an
-    // internal user.
-    page.feedbackContext = fakeFeedbackContext;
-
-    textAreaElement = getElement('#descriptionText');
-    textAreaElement.value = 'there were audio defects (popping and distortion)';
-    // Setting the value of the textarea in code does not trigger the
-    // input event. So we trigger it here.
-    textAreaElement.dispatchEvent(new Event('input'));
-    await flushTasks();
-
-    // Check that the questionnaire with Audio questions is not shown.
-    assertFalse(textAreaElement.value.indexOf(questionnaireBegin) >= 0);
-    domainQuestions['audio'].forEach((question) => {
-      assertFalse(textAreaElement.value.indexOf(question) >= 0);
     });
   });
 });

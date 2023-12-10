@@ -20,7 +20,6 @@
 #include "base/version.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
-#include "components/embedder_support/features.h"
 #include "components/embedder_support/pref_names.h"
 #include "components/embedder_support/switches.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -785,7 +784,8 @@ TEST_F(UserAgentUtilsTest, UserAgentMetadata) {
 
 TEST_F(UserAgentUtilsTest, UserAgentMetadataXR) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kClientHintsXRFormFactor);
+  scoped_feature_list.InitAndEnableFeature(
+      blink::features::kClientHintsXRFormFactor);
   auto metadata = GetUserAgentMetadata();
   std::vector<std::string> expected_form_factor = {
       (metadata.mobile ? "Mobile" : "Desktop"), "XR"};

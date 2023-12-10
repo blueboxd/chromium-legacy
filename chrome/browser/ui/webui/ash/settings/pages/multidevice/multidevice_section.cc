@@ -401,6 +401,16 @@ void MultiDeviceSection::AddLoadTimeData(
       {"multideviceSubpageTitle", IDS_OS_SETTINGS_MULTIDEVICE_SUBPAGE_TITLE},
       {"multideviceEnabled", IDS_SETTINGS_MULTIDEVICE_ENABLED},
       {"multideviceDisabled", IDS_SETTINGS_MULTIDEVICE_DISABLED},
+      {"nearbyShareDescriptionVisibleToAllContacts",
+       IDS_OS_SETTINGS_MULTIDEVICE_NEARBY_SHARE_DESCRIPTION_VISIBLE_TO_ALL_CONTACTS},
+      {"nearbyShareDescriptionVisibleToSelectedContacts",
+       IDS_OS_SETTINGS_MULTIDEVICE_NEARBY_SHARE_DESCRIPTION_VISIBLE_TO_SELECTED_CONTACTS},
+      {"nearbyShareDescriptionVisibleToYourDevices",
+       IDS_OS_SETTINGS_MULTIDEVICE_NEARBY_SHARE_DESCRIPTION_VISIBLE_TO_YOUR_DEVICES},
+      {"nearbyShareDescriptionHidden",
+       IDS_OS_SETTINGS_MULTIDEVICE_NEARBY_SHARE_DESCRIPTION_HIDDEN},
+      {"nearbyShareDescriptionOff",
+       IDS_OS_SETTINGS_MULTIDEVICE_NEARBY_SHARE_DESCRIPTION_OFF},
       {"multideviceSuiteToggleLabel",
        IDS_OS_SETTINGS_REVAMP_MULTIDEVICE_TOGGLE_LABEL},
       {"multideviceSuiteToggleA11yLabel",
@@ -758,10 +768,18 @@ void MultiDeviceSection::RegisterHierarchy(
                                       mojom::Subpage::kMultiDeviceFeatures);
 
   // Nearby Share, registered regardless of the flag.
+  int nearby_share_subpage_name = IDS_SETTINGS_NEARBY_SHARE_TITLE;
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  if (::features::IsNameEnabled()) {
+    nearby_share_subpage_name =
+        IDS_NEARBY_SHARE_SETTINGS_TAG_MULTIDEVICE_NEARBY_SHARE;
+  }
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
   generator->RegisterTopLevelSubpage(
-      ::features::IsNameEnabled() ? IDS_SETTINGS_NEARBY_SHARE_TITLE_PH
-                                  : IDS_SETTINGS_NEARBY_SHARE_TITLE,
-      mojom::Subpage::kNearbyShare, mojom::SearchResultIcon::kNearbyShare,
+      nearby_share_subpage_name, mojom::Subpage::kNearbyShare,
+      mojom::SearchResultIcon::kNearbyShare,
       mojom::SearchResultDefaultRank::kMedium, mojom::kNearbyShareSubpagePath);
   static constexpr mojom::Setting kNearbyShareSettings[] = {
       mojom::Setting::kNearbyShareOnOff,

@@ -27,7 +27,7 @@
 #import "ios/chrome/browser/ui/account_picker/account_picker_configuration.h"
 #import "ios/chrome/browser/ui/save_to_photos/save_to_photos_mediator.h"
 #import "ios/chrome/browser/ui/save_to_photos/save_to_photos_mediator_delegate.h"
-#import "ios/chrome/browser/web/image_fetch/image_fetch_tab_helper.h"
+#import "ios/chrome/browser/web/model/image_fetch/image_fetch_tab_helper.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/providers/photos/test_photos_service.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
@@ -598,6 +598,7 @@ TEST_F(SaveToPhotosMediatorTest,
   // identifier.
   OCMExpect([mock_save_to_photos_mediator_delegate
       showStoreKitWithProductIdentifier:kGooglePhotosAppProductIdentifier
+                          providerToken:kGooglePhotosStoreKitProviderToken
                           campaignToken:kGooglePhotosStoreKitCampaignToken]);
 
   // Simulate the user tapped the "Open" button.

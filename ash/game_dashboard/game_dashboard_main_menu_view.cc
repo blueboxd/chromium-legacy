@@ -9,13 +9,17 @@
 #include "ash/bubble/bubble_utils.h"
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/constants/ash_features.h"
+#include "ash/constants/notifier_catalogs.h"
 #include "ash/game_dashboard/game_dashboard_context.h"
 #include "ash/game_dashboard/game_dashboard_controller.h"
 #include "ash/game_dashboard/game_dashboard_utils.h"
 #include "ash/game_dashboard/game_dashboard_widget.h"
 #include "ash/public/cpp/app_types_util.h"
 #include "ash/public/cpp/arc_compat_mode_util.h"
+#include "ash/public/cpp/arc_resize_lock_type.h"
 #include "ash/public/cpp/ash_view_ids.h"
+#include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
+#include "ash/public/cpp/system/anchored_nudge_data.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -27,12 +31,15 @@
 #include "ash/style/style_util.h"
 #include "ash/style/switch.h"
 #include "ash/style/typography.h"
+#include "ash/system/toast/anchored_nudge_manager_impl.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/feature_tile.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_type.h"
@@ -71,6 +78,8 @@ constexpr int kSetupPulseExtraHalfSize = 32;
 constexpr int kSetupPulseTimes = 3;
 constexpr base::TimeDelta kSetupPulseDuration = base::Seconds(2);
 
+constexpr char kSetupNudgeId[] = "SetupNudgeId";
+
 // Creates an individual Game Dashboard Tile.
 std::unique_ptr<FeatureTile> CreateFeatureTile(
     base::RepeatingClosure callback,
@@ -79,7 +88,7 @@ std::unique_ptr<FeatureTile> CreateFeatureTile(
     int id,
     const gfx::VectorIcon& icon,
     const std::u16string& text,
-    const absl::optional<std::u16string>& sub_label) {
+    const std::optional<std::u16string>& sub_label) {
   auto tile =
       std::make_unique<FeatureTile>(std::move(callback), is_togglable, type);
   tile->SetID(id);
@@ -414,7 +423,8 @@ void GameDashboardMainMenuView::CacheAppName() {
 }
 
 void GameDashboardMainMenuView::OnScreenSizeSettingsButtonPressed() {
-  // TODO(b/283988495): Add support when screen size setting is pressed.
+  context_->CloseMainMenu();
+  GameDashboardController::Get()->ShowResizeToggleMenu(context_->game_window());
 }
 
 void GameDashboardMainMenuView::OnFeedbackButtonPressed() {
@@ -461,7 +471,7 @@ void GameDashboardMainMenuView::AddShortcutTilesRow() {
         VIEW_ID_GD_RECORD_GAME_TILE, kGdRecordGameIcon,
         l10n_util::GetStringUTF16(
             IDS_ASH_GAME_DASHBOARD_RECORD_GAME_TILE_BUTTON_TITLE),
-        /*sub_label=*/absl::nullopt));
+        /*sub_label=*/std::nullopt));
     record_game_tile_->SetBackgroundColorId(
         cros_tokens::kCrosSysSystemOnBaseOpaque);
     record_game_tile_->SetForegroundColorId(cros_tokens::kCrosSysOnSurface);
@@ -480,7 +490,7 @@ void GameDashboardMainMenuView::AddShortcutTilesRow() {
       VIEW_ID_GD_SCREENSHOT_TILE, kGdScreenshotIcon,
       l10n_util::GetStringUTF16(
           IDS_ASH_GAME_DASHBOARD_SCREENSHOT_TILE_BUTTON_TITLE),
-      /*sub_label=*/absl::nullopt));
+      /*sub_label=*/std::nullopt));
 }
 
 void GameDashboardMainMenuView::AddFeatureDetailsRows() {
@@ -520,7 +530,7 @@ void GameDashboardMainMenuView::MaybeAddGameControlsTile(
       VIEW_ID_GD_CONTROLS_TILE, kGdGameControlsIcon,
       l10n_util::GetStringUTF16(
           IDS_ASH_GAME_DASHBOARD_CONTROLS_TILE_BUTTON_TITLE),
-      /*sub_label=*/absl::nullopt));
+      /*sub_label=*/std::nullopt));
 
   UpdateGameControlsTile();
 }
@@ -618,9 +628,26 @@ void GameDashboardMainMenuView::MaybeAddScreenSizeSettingsRow(
       l10n_util::GetStringUTF16(
           IDS_ASH_GAME_DASHBOARD_SCREEN_SIZE_SETTINGS_TITLE),
       /*sub_label=*/compat_mode_util::GetText(resize_mode)));
-  // TODO(b/303351905): Investigate why drill in arrow isn't placed in correct
-  // location.
-  screen_size_row->CreateDecorativeDrillInArrow();
+
+  const ArcResizeLockType resize_lock_type =
+      game_window->GetProperty(ash::kArcResizeLockTypeKey);
+  switch (resize_lock_type) {
+    case ash::ArcResizeLockType::RESIZE_DISABLED_TOGGLABLE:
+    case ash::ArcResizeLockType::RESIZE_ENABLED_TOGGLABLE:
+      screen_size_row->SetEnabled(true);
+      // TODO(b/303351905): Investigate why drill in arrow isn't placed in
+      // correct location.
+      screen_size_row->CreateDecorativeDrillInArrow();
+      break;
+    case ash::ArcResizeLockType::RESIZE_DISABLED_NONTOGGLABLE:
+      screen_size_row->SetEnabled(false);
+      screen_size_row->SetTooltipText(l10n_util::GetStringUTF16(
+          IDS_ASH_ARC_APP_COMPAT_DISABLED_COMPAT_MODE_BUTTON_TOOLTIP_PHONE));
+      break;
+    case ash::ArcResizeLockType::NONE:
+      screen_size_row->SetEnabled(false);
+      break;
+  }
 }
 
 void GameDashboardMainMenuView::AddUtilityClusterRow() {
@@ -678,7 +705,7 @@ void GameDashboardMainMenuView::VisibilityChanged(views::View* starting_from,
                                        /*enable_flag=*/is_visible));
 
   if (is_visible) {
-    MaybePerformPulseAnimation(/*pulse_count=*/0);
+    MaybeDecorateSetupButton();
   }
 }
 
@@ -706,10 +733,17 @@ void GameDashboardMainMenuView::UpdateRecordGameTile(
   record_game_tile_->SetToggled(is_recording_game_window);
 }
 
-void GameDashboardMainMenuView::MaybePerformPulseAnimation(int pulse_count) {
+void GameDashboardMainMenuView::MaybeDecorateSetupButton() {
   if (!game_controls_setup_button_) {
     return;
   }
+  PerformPulseAnimationForSetupButton(/*pulse_count=*/0);
+  ShowNudgeForSetupButton();
+}
+
+void GameDashboardMainMenuView::PerformPulseAnimationForSetupButton(
+    int pulse_count) {
+  DCHECK(game_controls_setup_button_);
 
   // Destroy the pulse layer if it pulses after `kSetupPulseTimes` times.
   if (pulse_count >= kSetupPulseTimes) {
@@ -748,9 +782,9 @@ void GameDashboardMainMenuView::MaybePerformPulseAnimation(int pulse_count) {
   views::AnimationBuilder()
       .SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
-      .OnEnded(
-          base::BindOnce(&GameDashboardMainMenuView::MaybePerformPulseAnimation,
-                         base::Unretained(this), pulse_count + 1))
+      .OnEnded(base::BindOnce(
+          &GameDashboardMainMenuView::PerformPulseAnimationForSetupButton,
+          base::Unretained(this), pulse_count + 1))
       .Once()
       .SetDuration(kSetupPulseDuration)
       .SetBounds(gc_setup_button_pulse_layer_.get(), target_bounds,
@@ -761,6 +795,23 @@ void GameDashboardMainMenuView::MaybePerformPulseAnimation(int pulse_count) {
                          gfx::RoundedCornersF(initial_corner_radius +
                                               kSetupPulseExtraHalfSize),
                          gfx::Tween::ACCEL_0_40_DECEL_100);
+}
+
+void GameDashboardMainMenuView::ShowNudgeForSetupButton() {
+  DCHECK(game_controls_setup_button_);
+
+  // TODO(b/274690042): Replace it with localized strings.
+  auto nudge_data = AnchoredNudgeData(
+      kSetupNudgeId, ash::NudgeCatalogName::kGameDashboardControlsNudge,
+      u"Set up to play with your keyboard", game_controls_details_);
+  nudge_data.image_model =
+      ui::ResourceBundle::GetSharedInstance().GetThemedLottieImageNamed(
+          IDR_GAME_DASHBOARD_CONTROLS_SETUP_NUDGE);
+  // TODO(b/274690042): Replace it with localized strings.
+  nudge_data.title_text = u"This game uses your touchscreen";
+  nudge_data.arrow = views::BubbleBorder::LEFT_CENTER;
+
+  Shell::Get()->anchored_nudge_manager()->Show(nudge_data);
 }
 
 BEGIN_METADATA(GameDashboardMainMenuView, views::BubbleDialogDelegateView)

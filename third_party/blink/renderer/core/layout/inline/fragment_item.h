@@ -11,11 +11,11 @@
 #include "base/notreached.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_offset.h"
+#include "third_party/blink/renderer/core/layout/ink_overflow.h"
 #include "third_party/blink/renderer/core/layout/inline/line_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/inline/text_item_type.h"
 #include "third_party/blink/renderer/core/layout/inline/text_offset_range.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_ink_overflow.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
@@ -25,9 +25,9 @@ namespace blink {
 
 class FragmentItems;
 class InlineBreakToken;
-class NGInlinePaintContext;
+class InlinePaintContext;
 struct LogicalLineItem;
-struct NGTextFragmentPaintInfo;
+struct TextFragmentPaintInfo;
 
 // Data for SVG text in addition to FragmentItem.
 struct SvgFragmentData {
@@ -83,18 +83,18 @@ class CORE_EXPORT FragmentItem final {
   // (e.g., <span>text</span>) and atomic inlines.
   struct BoxItem {
     DISALLOW_NEW();
-    BoxItem(const NGPhysicalBoxFragment*, wtf_size_t descendants_count);
+    BoxItem(const PhysicalBoxFragment*, wtf_size_t descendants_count);
 
     // If this item is an inline box, its children are stored as following
     // items. |descendants_count_| has the number of such items.
     //
     // If this item is a root of another IFC/BFC, children are stored normally,
     // as children of |box_fragment|.
-    const NGPhysicalBoxFragment* PostLayout() const;
+    const PhysicalBoxFragment* PostLayout() const;
 
     void Trace(Visitor*) const;
 
-    Member<const NGPhysicalBoxFragment> box_fragment;
+    Member<const PhysicalBoxFragment> box_fragment;
     wtf_size_t descendants_count;
   };
 
@@ -106,7 +106,7 @@ class CORE_EXPORT FragmentItem final {
   // Create appropriate type for |line_item|.
   FragmentItem(LogicalLineItem&& line_item, WritingMode writing_mode);
   // Create a box item.
-  FragmentItem(const NGPhysicalBoxFragment& box,
+  FragmentItem(const PhysicalBoxFragment& box,
                TextDirection resolved_direction);
   // Create a line item.
   explicit FragmentItem(const PhysicalLineBoxFragment& line);
@@ -232,8 +232,8 @@ class CORE_EXPORT FragmentItem final {
   PhysicalRect LocalRect() const { return {PhysicalOffset(), Size()}; }
   void SetOffset(const PhysicalOffset& offset) { rect_.offset = offset; }
 
-  PhysicalRect InkOverflow() const;
-  PhysicalRect SelfInkOverflow() const;
+  PhysicalRect InkOverflowRect() const;
+  PhysicalRect SelfInkOverflowRect() const;
 
   // Count of following items that are descendants of this item in the box tree,
   // including this item. 1 means this is a box (box or line box) without
@@ -259,13 +259,13 @@ class CORE_EXPORT FragmentItem final {
     NOTREACHED();
   }
 
-  // Returns |NGPhysicalBoxFragment| if one is associated with this item.
-  const NGPhysicalBoxFragment* BoxFragment() const {
+  // Returns |PhysicalBoxFragment| if one is associated with this item.
+  const PhysicalBoxFragment* BoxFragment() const {
     if (Type() == kBox)
       return box_.box_fragment.Get();
     return nullptr;
   }
-  const NGPhysicalBoxFragment* PostLayoutBoxFragment() const {
+  const PhysicalBoxFragment* PostLayoutBoxFragment() const {
     if (Type() == kBox)
       return box_.PostLayout();
     return nullptr;
@@ -293,7 +293,7 @@ class CORE_EXPORT FragmentItem final {
   // Calling this function for other types is not valid.
   const InlineBreakToken* GetInlineBreakToken() const {
     if (const PhysicalLineBoxFragment* line_box = LineBoxFragment()) {
-      return To<InlineBreakToken>(line_box->BreakToken());
+      return To<InlineBreakToken>(line_box->GetBreakToken());
     }
     NOTREACHED();
     return nullptr;
@@ -312,7 +312,7 @@ class CORE_EXPORT FragmentItem final {
   // Re-compute the ink overflow for the |cursor| until its end.
   static PhysicalRect RecalcInkOverflowForCursor(
       InlineCursor* cursor,
-      NGInlinePaintContext* inline_context);
+      InlinePaintContext* inline_context);
 
   // Painters can use const methods only, except for these explicitly declared
   // methods.
@@ -322,7 +322,7 @@ class CORE_EXPORT FragmentItem final {
    public:
     void InvalidateInkOverflow() { return item_.InvalidateInkOverflow(); }
     void RecalcInkOverflow(const InlineCursor& cursor,
-                           NGInlinePaintContext* inline_context,
+                           InlinePaintContext* inline_context,
                            PhysicalRect* self_and_contents_rect_out) {
       return item_.RecalcInkOverflow(cursor, inline_context,
                                      self_and_contents_rect_out);
@@ -344,7 +344,7 @@ class CORE_EXPORT FragmentItem final {
     STACK_ALLOCATED();
 
    public:
-    void ReplaceBoxFragment(const NGPhysicalBoxFragment& new_fragment) {
+    void ReplaceBoxFragment(const PhysicalBoxFragment& new_fragment) {
       DCHECK(item_.BoxFragment());
       item_.box_.box_fragment = &new_fragment;
     }
@@ -428,7 +428,7 @@ class CORE_EXPORT FragmentItem final {
     DCHECK_EQ(Type(), kGeneratedText);
     return generated_text_.text;
   }
-  NGTextFragmentPaintInfo TextPaintInfo(const FragmentItems& items) const;
+  TextFragmentPaintInfo TextPaintInfo(const FragmentItems& items) const;
 
   // Compute the inline position from text offset, in logical coordinate
   // relative to this fragment suitable for |LocalCaretRect|.
@@ -462,7 +462,7 @@ class CORE_EXPORT FragmentItem final {
   TextDirection ResolvedDirection() const;
 
   // Returns |PhysicalRect| to intersect with hit test location for |this|
-  // text item. See |NGBoxFragmentPainter::HitTestTextItem()|.
+  // text item. See |BoxFragmentPainter::HitTestTextItem()|.
   PhysicalRect ComputeTextBoundsRectForHitTest(
       const PhysicalOffset& inline_root_offset,
       bool is_occlusion_test) const;
@@ -547,15 +547,15 @@ class CORE_EXPORT FragmentItem final {
                const PhysicalSize& size,
                bool is_hidden_for_paint);
 
-  NGInkOverflow::Type InkOverflowType() const {
-    return static_cast<NGInkOverflow::Type>(ink_overflow_type_);
+  InkOverflow::Type InkOverflowType() const {
+    return static_cast<InkOverflow::Type>(ink_overflow_type_);
   }
   bool IsInkOverflowComputed() const {
-    return InkOverflowType() != NGInkOverflow::Type::kNotSet &&
-           InkOverflowType() != NGInkOverflow::Type::kInvalidated;
+    return InkOverflowType() != InkOverflow::Type::kNotSet &&
+           InkOverflowType() != InkOverflow::Type::kInvalidated;
   }
   bool HasInkOverflow() const {
-    return InkOverflowType() != NGInkOverflow::Type::kNone;
+    return InkOverflowType() != InkOverflow::Type::kNone;
   }
   const LayoutBox* InkOverflowOwnerBox() const;
   LayoutBox* MutableInkOverflowOwnerBox();
@@ -564,11 +564,11 @@ class CORE_EXPORT FragmentItem final {
 
   // Re-compute the ink overflow for this item. |cursor| should be at |this|.
   void RecalcInkOverflow(const InlineCursor& cursor,
-                         NGInlinePaintContext* inline_context,
+                         InlinePaintContext* inline_context,
                          PhysicalRect* self_and_contents_rect_out);
   PhysicalRect RecalcInkOverflowForDescendantsOf(
       const InlineCursor& cursor,
-      NGInlinePaintContext* inline_context) const;
+      InlinePaintContext* inline_context) const;
 
   // Compute the inline position from text offset, in logical coordinate
   // relative to this fragment.
@@ -595,7 +595,7 @@ class CORE_EXPORT FragmentItem final {
 
   PhysicalRect rect_;
 
-  NGInkOverflow ink_overflow_;
+  InkOverflow ink_overflow_;
 
   Member<const LayoutObject> layout_object_;
 
@@ -614,7 +614,7 @@ class CORE_EXPORT FragmentItem final {
   // |ShapeResult::Direction()|.
   unsigned text_direction_ : 1;  // TextDirection.
 
-  unsigned ink_overflow_type_ : NGInkOverflow::kTypeBits;
+  unsigned ink_overflow_type_ : InkOverflow::kTypeBits;
 
   mutable unsigned is_dirty_ : 1;
 

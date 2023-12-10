@@ -176,7 +176,7 @@ void SetDevBootFlag(ash::FakeInstallAttributesClient* client,
   ::user_data_auth::SetFirmwareManagementParametersRequest request;
   request.mutable_fwmp()->set_flags(fwmp_flags);
   base::test::TestFuture<
-      absl::optional<::user_data_auth::SetFirmwareManagementParametersReply>>
+      std::optional<::user_data_auth::SetFirmwareManagementParametersReply>>
       future_fwmp;
   client->SetFirmwareManagementParameters(request, future_fwmp.GetCallback());
   ASSERT_TRUE(future_fwmp.Get());
@@ -184,7 +184,7 @@ void SetDevBootFlag(ash::FakeInstallAttributesClient* client,
 
 void ClearDevBootFlag(ash::FakeInstallAttributesClient* client) {
   base::test::TestFuture<
-      absl::optional<::user_data_auth::RemoveFirmwareManagementParametersReply>>
+      std::optional<::user_data_auth::RemoveFirmwareManagementParametersReply>>
       future_removed_fwmp;
   client->RemoveFirmwareManagementParameters(
       ::user_data_auth::RemoveFirmwareManagementParametersRequest(),
@@ -411,7 +411,7 @@ class AutoEnrollmentControllerSafeguardTimeoutTest
 // Tests that the controller times out with connection error when it performs
 // forced re-enrollment check.
 TEST_F(AutoEnrollmentControllerSafeguardTimeoutTest,
-       ReportsConnectionErrorForForcedReenrollment) {
+       ReportsErrorForForcedReenrollment) {
   SetupForcedReenrollmentCheckType();
   // Simulate long running request for state keys by doing nothing. We need to
   // preserve the callback as it holds weak pointer to controller which makes
@@ -442,7 +442,8 @@ TEST_F(AutoEnrollmentControllerSafeguardTimeoutTest,
             AutoEnrollmentTypeChecker::CheckType::
                 kForcedReEnrollmentExplicitlyRequired);
   EXPECT_FALSE(controller.SafeguardTimerForTesting().IsRunning());
-  EXPECT_EQ(controller.state(), AutoEnrollmentState::kConnectionError);
+  EXPECT_EQ(controller.state(), base::unexpected(AutoEnrollmentError(
+                                    AutoEnrollmentSafeguardTimeoutError{})));
 }
 
 // Tests that the controller times out with no enrollment state when it performs
@@ -479,13 +480,13 @@ TEST_F(AutoEnrollmentControllerSafeguardTimeoutTest,
             AutoEnrollmentTypeChecker::CheckType::
                 kForcedReEnrollmentImplicitlyRequired);
   EXPECT_FALSE(controller.SafeguardTimerForTesting().IsRunning());
-  EXPECT_EQ(controller.state(), AutoEnrollmentState::kNoEnrollment);
+  EXPECT_EQ(controller.state(), AutoEnrollmentResult::kNoEnrollment);
 }
 
 // Tests that the controller times out with connection error when runs out of
 // attempts to retry state keys retrieval.
 TEST_F(AutoEnrollmentControllerSafeguardTimeoutTest,
-       TimesOutWithConnectionErrorWhenCannotObtainStateKeys) {
+       TimesOutWithErrorWhenCannotObtainStateKeys) {
   SetupForcedReenrollmentCheckType();
   ServerBackedStateKeysBroker::StateKeysCallback last_state_keys_callback;
 
@@ -522,7 +523,8 @@ TEST_F(AutoEnrollmentControllerSafeguardTimeoutTest,
   std::move(last_state_keys_callback).Run({});
 
   EXPECT_FALSE(controller.SafeguardTimerForTesting().IsRunning());
-  EXPECT_EQ(controller.state(), AutoEnrollmentState::kConnectionError);
+  EXPECT_EQ(controller.state(), base::unexpected(AutoEnrollmentError(
+                                    AutoEnrollmentSafeguardTimeoutError{})));
 }
 
 class AutoEnrollmentControllerNetworkTest
@@ -591,9 +593,9 @@ TEST_F(AutoEnrollmentControllerNetworkTest, RetriesWhenGoesOnline) {
   // Stop the client with connection error so the controller can retry.
   {
     mock_auto_enrollment_client_.ReportAutoEnrollmentState(
-        AutoEnrollmentState::kConnectionError);
+        kAutoEnrollmentLegacyConnectionError);
 
-    EXPECT_EQ(controller.state(), AutoEnrollmentState::kConnectionError);
+    EXPECT_EQ(controller.state(), kAutoEnrollmentLegacyConnectionError);
   }
 
   // Flip-flop the network state and check that retry is triggered.
@@ -607,11 +609,11 @@ TEST_F(AutoEnrollmentControllerNetworkTest, RetriesWhenGoesOnline) {
           testing_network_.GoOnline();
 
           mock_auto_enrollment_client_.ReportAutoEnrollmentState(
-              AutoEnrollmentState::kNoEnrollment);
+              AutoEnrollmentResult::kNoEnrollment);
         }));
 
     testing::Mock::VerifyAndClearExpectations(&mock_auto_enrollment_client_);
-    EXPECT_EQ(controller.state(), AutoEnrollmentState::kNoEnrollment);
+    EXPECT_EQ(controller.state(), AutoEnrollmentResult::kNoEnrollment);
   }
 }
 

@@ -40,31 +40,19 @@ class AutofillPopupDelegate {
 
   // Called when the autofill `suggestion` has been temporarily selected (e.g.,
   // hovered).
-  virtual void DidSelectSuggestion(
-      const Suggestion& suggestion,
-      AutofillSuggestionTriggerSource trigger_source) = 0;
+  virtual void DidSelectSuggestion(const Suggestion& suggestion) = 0;
 
   // Informs the delegate that a row in the popup has been chosen. `suggestion`
   // is the suggestion that was chosen in the popup. `position` refers to the
   // row and level of the suggestion in the suggestions layout.
-  virtual void DidAcceptSuggestion(
-      const Suggestion& suggestion,
-      const SuggestionPosition& position,
-      AutofillSuggestionTriggerSource trigger_source) = 0;
+  virtual void DidAcceptSuggestion(const Suggestion& suggestion,
+                                   const SuggestionPosition& position) = 0;
 
   // Informs the delegate that the user chose to perform the button action
   // associated with `suggestion`. Actions are currently implemented only on
   // Desktop.
   virtual void DidPerformButtonActionForSuggestion(
       const Suggestion& suggestion) = 0;
-
-  // Returns whether the given value can be deleted, and if true,
-  // fills out |title| and |body|.
-  virtual bool GetDeletionConfirmationText(const std::u16string& value,
-                                           PopupItemId popup_item_id,
-                                           Suggestion::BackendId backend_id,
-                                           std::u16string* title,
-                                           std::u16string* body) = 0;
 
   // Delete the described suggestion. Returns true if something was deleted,
   // or false if deletion is not allowed.

@@ -2,29 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {DialogType} from '../../common/js/dialog_type.js';
 import {isOneDriveId} from '../../common/js/entry_utils.js';
 import {EntryList, VolumeEntry} from '../../common/js/files_app_entry_types.js';
-import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {VolumeType} from '../../common/js/volume_manager_types.js';
 import {FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
-import {AndroidApp, NavigationKey, NavigationRoot, NavigationSection, NavigationType, State, Volume} from '../../externs/ts/state.js';
+import {AndroidApp, DialogType, NavigationKey, NavigationRoot, NavigationSection, NavigationType, State, Volume} from '../../externs/ts/state.js';
 import {Slice} from '../../lib/base_store.js';
 import {getMyFiles} from '../ducks/all_entries.js';
 import {driveRootEntryListKey, recentRootKey, trashRootKey} from '../ducks/volumes.js';
-import type {FileKey} from '../file_key.js';
-import {getEntry, getFileData} from '../store.js';
+import {getEntry} from '../store.js';
 
 /**
  * @fileoverview Navigation slice of the store.
- * @suppress {checkTypes}
  */
 
 const slice = new Slice<State, State['navigation']>('navigation');
 export {slice as navigationSlice};
 
-const VolumeType = VolumeManagerCommon.VolumeType;
-
-const sections = new Map<VolumeManagerCommon.VolumeType, NavigationSection>();
+const sections = new Map<VolumeType, NavigationSection>();
 // My Files.
 sections.set(VolumeType.DOWNLOADS, NavigationSection.MY_FILES);
 // Cloud.
@@ -153,9 +148,9 @@ function refreshNavigationRootsReducer(currentState: State): State {
 
 
   // 5/6/7/8 Other volumes.
-  const volumesOrder = {
-    // ODFS is a PROVIDED volume type but is a special case to be directly below
-    // Drive.
+  const volumesOrder: Partial<Record<VolumeType, number>> = {
+    // ODFS is a PROVIDED volume type but is a special case to be directly
+    // below Drive.
     // ODFS : 0
     [VolumeType.SMB]: 1,
     [VolumeType.PROVIDED]: 2,  // FSP.
@@ -267,25 +262,4 @@ function refreshNavigationRootsReducer(currentState: State): State {
       roots,
     },
   };
-}
-
-/** Create action to update navigation data in FileData for a given entry. */
-export const updateNavigationEntry =
-    slice.addReducer('update-entry', updateNavigationEntryReducer);
-
-function updateNavigationEntryReducer(currentState: State, payload: {
-  key: FileKey,
-  expanded: boolean,
-}): State {
-  const {key, expanded} = payload;
-  const fileData = getFileData(currentState, key);
-  if (!fileData) {
-    return currentState;
-  }
-
-  currentState.allEntries[key] = {
-    ...fileData,
-    expanded,
-  };
-  return {...currentState};
 }

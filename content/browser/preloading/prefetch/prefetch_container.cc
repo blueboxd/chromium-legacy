@@ -64,35 +64,6 @@ void RecordCookieCopyTimes(
       base::Seconds(5), 50);
 }
 
-// Most of (not all though) eligibility-related `PrefetchStatus` are
-// mapped to `PreloadingEligibility` by adding
-// `PreloadingEligibility::kPreloadingEligibilityCommonEnd`.
-static_assert(
-    static_cast<int>(PrefetchStatus::kMaxValue) +
-        static_cast<int>(
-            PreloadingEligibility::kPreloadingEligibilityCommonEnd) <=
-    static_cast<int>(PreloadingEligibility::kPreloadingEligibilityContentEnd));
-
-#define CHECK_PRELOADING_ELIGIBILITY_VALUE(NAME)                         \
-  static_assert(                                                         \
-      static_cast<int>(PrefetchStatus::kPrefetchIneligible##NAME) +      \
-          static_cast<int>(                                              \
-              PreloadingEligibility::kPreloadingEligibilityCommonEnd) == \
-      static_cast<int>(PreloadingEligibility::k##NAME))
-
-CHECK_PRELOADING_ELIGIBILITY_VALUE(BrowserContextOffTheRecord);
-CHECK_PRELOADING_ELIGIBILITY_VALUE(ExistingProxy);
-CHECK_PRELOADING_ELIGIBILITY_VALUE(HostIsNonUnique);
-CHECK_PRELOADING_ELIGIBILITY_VALUE(NonDefaultStoragePartition);
-CHECK_PRELOADING_ELIGIBILITY_VALUE(PrefetchProxyNotAvailable);
-CHECK_PRELOADING_ELIGIBILITY_VALUE(RetryAfter);
-CHECK_PRELOADING_ELIGIBILITY_VALUE(SameSiteCrossOriginPrefetchRequiredProxy);
-CHECK_PRELOADING_ELIGIBILITY_VALUE(SchemeIsNotHttps);
-CHECK_PRELOADING_ELIGIBILITY_VALUE(UserHasCookies);
-CHECK_PRELOADING_ELIGIBILITY_VALUE(UserHasServiceWorker);
-
-#undef CHECK_PRELOADING_ELIGIBILITY_VALUE
-
 PrefetchStatus PrefetchStatusFromIneligibleReason(
     PreloadingEligibility eligibility) {
   switch (eligibility) {
@@ -148,7 +119,8 @@ absl::optional<PreloadingTriggeringOutcome> TriggeringOutcomeFromStatus(
     case PrefetchStatus::kPrefetchFailedInvalidRedirect:
     case PrefetchStatus::kPrefetchFailedIneligibleRedirect:
     case PrefetchStatus::kPrefetchFailedPerPageLimitExceeded:
-    case PrefetchStatus::kPrefetchEvicted:
+    case PrefetchStatus::kPrefetchEvictedAfterCandidateRemoved:
+    case PrefetchStatus::kPrefetchEvictedForNewerPrefetch:
     case PrefetchStatus::kPrefetchIneligibleUserHasServiceWorker:
     case PrefetchStatus::kPrefetchIneligibleSchemeIsNotHttps:
     case PrefetchStatus::kPrefetchIneligibleNonDefaultStoragePartition:
@@ -189,7 +161,10 @@ void SetTriggeringOutcomeAndFailureReasonFromStatus(
   }
 
   if (old_prefetch_status &&
-      new_prefetch_status == PrefetchStatus::kPrefetchEvicted) {
+      (new_prefetch_status ==
+           PrefetchStatus::kPrefetchEvictedAfterCandidateRemoved ||
+       new_prefetch_status ==
+           PrefetchStatus::kPrefetchEvictedForNewerPrefetch)) {
     // Skip this update if the triggering outcome has already been updated to
     // kFailure.
     if (TriggeringOutcomeFromStatus(old_prefetch_status.value()) ==
@@ -236,7 +211,8 @@ void SetTriggeringOutcomeAndFailureReasonFromStatus(
       // TODO(adithyas): This would report 'eviction' as a failure even though
       // the initial prefetch succeeded, consider introducing a different
       // PreloadingTriggerOutcome for eviction.
-      case PrefetchStatus::kPrefetchEvicted:
+      case PrefetchStatus::kPrefetchEvictedAfterCandidateRemoved:
+      case PrefetchStatus::kPrefetchEvictedForNewerPrefetch:
         attempt->SetFailureReason(
             ToPreloadingFailureReason(new_prefetch_status));
         break;
@@ -303,6 +279,16 @@ ukm::SourceId GetUkmSourceId(
   CHECK(!prefetch_document_manager->render_frame_host().IsInLifecycleState(
       RenderFrameHost::LifecycleState::kPrerendering));
   return prefetch_document_manager->render_frame_host().GetPageUkmSourceId();
+}
+
+void RecordPrefetchProxyPrefetchMainframeNetError(int net_error) {
+  base::UmaHistogramSparse("PrefetchProxy.Prefetch.Mainframe.NetError",
+                           std::abs(net_error));
+}
+
+void RecordPrefetchProxyPrefetchMainframeBodyLength(int64_t body_length) {
+  UMA_HISTOGRAM_COUNTS_10M("PrefetchProxy.Prefetch.Mainframe.BodyLength",
+                           body_length);
 }
 
 }  // namespace
@@ -374,8 +360,7 @@ PrefetchContainer::PrefetchContainer(
     base::WeakPtr<PrefetchDocumentManager> prefetch_document_manager,
     PreloadingURLMatchCallback matcher)
     : referring_render_frame_host_id_(referring_render_frame_host_id),
-      referring_document_token_(referring_document_token),
-      prefetch_url_(url),
+      key_(referring_document_token, url),
       prefetch_type_(prefetch_type),
       referrer_(referrer),
       referring_origin_(url::Origin::Create(referrer_.url)),
@@ -391,7 +376,7 @@ PrefetchContainer::PrefetchContainer(
     auto* preloading_data =
         PreloadingData::GetOrCreateForWebContents(web_contents);
     if (!matcher) {
-      matcher = PreloadingData::GetSameURLMatcher(prefetch_url_);
+      matcher = PreloadingData::GetSameURLMatcher(GetURL());
     }
     auto* attempt = static_cast<PreloadingAttemptImpl*>(
         preloading_data->AddPreloadingAttempt(
@@ -406,7 +391,7 @@ PrefetchContainer::PrefetchContainer(
   // `PreloadingPrediction` is added in `PreloadingDecider`.
 
   redirect_chain_.push_back(
-      std::make_unique<SinglePrefetch>(prefetch_url_, referring_site_));
+      std::make_unique<SinglePrefetch>(GetURL(), referring_site_));
 }
 
 PrefetchContainer::~PrefetchContainer() {
@@ -507,14 +492,14 @@ void PrefetchContainer::SetPrefetchStatusWithoutUpdatingTriggeringOutcome(
   if (initiator_devtools_navigation_token_.has_value() &&
       preloading_trigger_outcome.has_value()) {
     devtools_instrumentation::DidUpdatePrefetchStatus(
-        ftn, initiator_devtools_navigation_token_.value(), prefetch_url_,
+        ftn, initiator_devtools_navigation_token_.value(), GetURL(),
         preloading_trigger_outcome.value(), prefetch_status, RequestId());
   }
 }
 
 void PrefetchContainer::SetPrefetchStatus(PrefetchStatus prefetch_status) {
   SetTriggeringOutcomeAndFailureReasonFromStatus(
-      attempt_.get(), prefetch_url_,
+      attempt_.get(), GetURL(),
       /*old_prefetch_status=*/prefetch_status_,
       /*new_prefetch_status=*/prefetch_status);
   SetPrefetchStatusWithoutUpdatingTriggeringOutcome(prefetch_status);
@@ -882,8 +867,7 @@ void PrefetchContainer::SetNoVarySearchData(RenderFrameHost* rfh) {
   if (!GetHead()) {
     return;
   }
-  no_vary_search_data_ =
-      no_vary_search::ProcessHead(*GetHead(), prefetch_url_, rfh);
+  no_vary_search_data_ = no_vary_search::ProcessHead(*GetHead(), GetURL(), rfh);
 }
 
 void PrefetchContainer::OnReceivedHead() {
@@ -914,20 +898,62 @@ void PrefetchContainer::StartTimeoutTimer(
   timeout_timer_->Start(FROM_HERE, timeout, std::move(on_timeout_callback));
 }
 
-void PrefetchContainer::OnPrefetchComplete() {
+void PrefetchContainer::OnPrefetchComplete(
+    const network::URLLoaderCompletionStatus& completion_status) {
+  DVLOG(1) << *this << "::OnPrefetchComplete";
+
   UMA_HISTOGRAM_COUNTS_100("PrefetchProxy.Prefetch.RedirectChainSize",
                            redirect_chain_.size());
-  DVLOG(1) << *this << "::OnPrefetchComplete";
-  if (!GetNonRedirectResponseReader()) {
+
+  if (GetNonRedirectResponseReader()) {
+    UpdatePrefetchRequestMetrics(
+        GetNonRedirectResponseReader()->GetCompletionStatus(),
+        GetNonRedirectResponseReader()->GetHead());
+    UpdateServingPageMetrics();
+  } else {
     DVLOG(1) << *this << "::OnPrefetchComplete:"
              << "no non redirect response reader";
+  }
+
+  if (IsDecoy()) {
+    SetPrefetchStatus(PrefetchStatus::kPrefetchIsPrivacyDecoy);
     return;
   }
 
-  UpdatePrefetchRequestMetrics(
-      GetNonRedirectResponseReader()->GetCompletionStatus(),
-      GetNonRedirectResponseReader()->GetHead());
-  UpdateServingPageMetrics();
+  // TODO(https://crbug.com/1399956): Call
+  // SpeculationHostDevToolsObserver::OnPrefetchBodyDataReceived with body of
+  // the response.
+  const auto& devtools_observer = GetDevToolsObserver();
+  if (devtools_observer) {
+    devtools_observer->OnPrefetchRequestComplete(RequestId(),
+                                                 completion_status);
+  }
+
+  int net_error = completion_status.error_code;
+  int64_t body_length = completion_status.decoded_body_length;
+
+  RecordPrefetchProxyPrefetchMainframeNetError(net_error);
+
+  // Updates the prefetch's status if it hasn't been updated since the request
+  // first started. For the prefetch to reach the network stack, it must have
+  // `PrefetchStatus::kPrefetchAllowed` or beyond.
+  DCHECK(HasPrefetchStatus());
+  if (GetPrefetchStatus() == PrefetchStatus::kPrefetchNotFinishedInTime) {
+    SetPrefetchStatus(net_error == net::OK
+                          ? PrefetchStatus::kPrefetchSuccessful
+                          : PrefetchStatus::kPrefetchFailedNetError);
+    UpdateServingPageMetrics();
+  }
+
+  if (net_error == net::OK) {
+    RecordPrefetchProxyPrefetchMainframeBodyLength(body_length);
+  }
+
+  if (GetPrefetchStatus() == PrefetchStatus::kPrefetchSuccessful) {
+    if (prefetch_document_manager_) {
+      prefetch_document_manager_->OnPrefetchSuccessful(this);
+    }
+  }
 }
 
 void PrefetchContainer::UpdatePrefetchRequestMetrics(

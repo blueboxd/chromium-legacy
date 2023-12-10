@@ -130,10 +130,19 @@ suite('TabOrganizationPageTest', () => {
   });
 
   test('Tab close removes from tab list', async () => {
-    await tabOrganizationResultsSetup();
+    await tabOrganizationPageSetup();
 
-    const tabRows =
-        tabOrganizationResults.shadowRoot!.querySelectorAll('tab-search-item');
+    testApiProxy.getCallbackRouterRemote().tabOrganizationSessionUpdated(
+        createSession({state: TabOrganizationState.kSuccess}));
+    await flushTasks();
+
+    const results = tabOrganizationPage.shadowRoot!.querySelector(
+        'tab-organization-results');
+    assertTrue(!!results);
+
+    assertEquals(0, testApiProxy.getCallCount('removeTabFromOrganization'));
+
+    const tabRows = results.shadowRoot!.querySelectorAll('tab-search-item');
     assertTrue(!!tabRows);
     assertEquals(3, tabRows.length);
 
@@ -141,12 +150,47 @@ suite('TabOrganizationPageTest', () => {
         tabRows[0]!.shadowRoot!.querySelector('cr-icon-button');
     assertTrue(!!cancelButton);
     cancelButton.click();
-    await flushTasks();
 
-    const tabRowsAfterCancel =
+    assertEquals(1, testApiProxy.getCallCount('removeTabFromOrganization'));
+  });
+
+  test('Arrow keys traverse focus', async () => {
+    await tabOrganizationResultsSetup();
+
+    const tabRows =
         tabOrganizationResults.shadowRoot!.querySelectorAll('tab-search-item');
-    assertTrue(!!tabRowsAfterCancel);
-    assertEquals(2, tabRowsAfterCancel.length);
+    assertTrue(!!tabRows);
+    assertEquals(3, tabRows.length);
+
+    const closeButton0 =
+        tabRows[0]!.shadowRoot!.querySelector(`cr-icon-button`);
+    assertTrue(!!closeButton0);
+    const closeButton1 =
+        tabRows[1]!.shadowRoot!.querySelector(`cr-icon-button`);
+    assertTrue(!!closeButton1);
+    const closeButton2 =
+        tabRows[2]!.shadowRoot!.querySelector(`cr-icon-button`);
+    assertTrue(!!closeButton2);
+
+    closeButton0.focus();
+
+    assertTrue(closeButton0.matches(':focus'));
+    assertFalse(closeButton1.matches(':focus'));
+    assertFalse(closeButton2.matches(':focus'));
+
+    tabOrganizationResults.$.selector.dispatchEvent(
+        new KeyboardEvent('keydown', {key: 'ArrowUp'}));
+
+    assertFalse(closeButton0.matches(':focus'));
+    assertFalse(closeButton1.matches(':focus'));
+    assertTrue(closeButton2.matches(':focus'));
+
+    tabOrganizationResults.$.selector.dispatchEvent(
+        new KeyboardEvent('keydown', {key: 'ArrowDown'}));
+
+    assertTrue(closeButton0.matches(':focus'));
+    assertFalse(closeButton1.matches(':focus'));
+    assertFalse(closeButton2.matches(':focus'));
   });
 
   test('Create group accepts organization', async () => {
@@ -301,9 +345,10 @@ suite('TabOrganizationPageTest', () => {
     const failure = tabOrganizationPage.shadowRoot!.querySelector(
         'tab-organization-failure');
     assertTrue(!!failure);
-    const tipAction = failure.shadowRoot!.querySelector<HTMLElement>(
+    const links = failure.shadowRoot!.querySelectorAll<HTMLElement>(
         '.tab-organization-link');
-    assertTrue(!!tipAction);
+    assertEquals(2, links.length);
+    const tipAction = links[1]!;
     tipAction.click();
     await flushTasks();
 

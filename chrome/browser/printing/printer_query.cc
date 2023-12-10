@@ -33,8 +33,8 @@
 #endif
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
+#include "chrome/browser/printing/prefs_util.h"
 #include "chrome/browser/printing/printer_query_oop.h"
-#include "printing/printing_features.h"
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -47,7 +47,7 @@ namespace {
 
 PrintingContext::ProcessBehavior GetPrintingContextProcessBehavior() {
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
-  if (features::ShouldPrintJobOop()) {
+  if (ShouldPrintJobOop()) {
     return PrintingContext::ProcessBehavior::kOopEnabledSkipSystemCalls;
   }
 #endif
@@ -108,7 +108,7 @@ std::unique_ptr<PrinterQuery> PrinterQuery::Create(
   }
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
-  if (features::ShouldPrintJobOop()) {
+  if (ShouldPrintJobOop()) {
     return base::WrapUnique(new PrinterQueryOop(rfh_id));
   }
 #endif
@@ -269,7 +269,7 @@ void PrinterQuery::UpdatePrintableArea(
   base::ScopedAllowBlocking allow_blocking;
   std::string printer_name = base::UTF16ToUTF8(print_settings->device_name());
   crash_keys::ScopedPrinterInfo crash_key(
-      print_backend->GetPrinterDriverInfo(printer_name));
+      printer_name, print_backend->GetPrinterDriverInfo(printer_name));
 
   PRINTER_LOG(EVENT) << "Updating paper printable area in-process for "
                      << printer_name;
@@ -339,7 +339,7 @@ void PrinterQuery::UpdatePrintSettings(base::Value::Dict new_settings,
         PrintBackend::CreateInstance(g_browser_process->GetApplicationLocale());
     std::string printer_name = *new_settings.FindString(kSettingDeviceName);
     crash_key = std::make_unique<crash_keys::ScopedPrinterInfo>(
-        print_backend->GetPrinterDriverInfo(printer_name));
+        printer_name, print_backend->GetPrinterDriverInfo(printer_name));
 
 #if BUILDFLAG(IS_LINUX) && BUILDFLAG(USE_CUPS)
     PrinterBasicInfo basic_info;
@@ -422,7 +422,7 @@ void PrinterQuery::GetSettingsWithUI(uint32_t document_page_count,
   // Running a dialog causes an exit to webpage-initiated fullscreen.
   // http://crbug.com/728276
   if (web_contents && web_contents->IsFullscreen()) {
-    web_contents->ExitFullscreen();
+    web_contents->ExitFullscreen(true);
   }
 
   PRINTER_LOG(EVENT) << "Getting printer settings from user in-process";

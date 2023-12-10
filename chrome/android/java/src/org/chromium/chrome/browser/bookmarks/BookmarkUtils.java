@@ -282,7 +282,7 @@ public class BookmarkUtils {
             Context context,
             @NonNull Profile profile) {
         assert bookmarkBridge.isBookmarkModelLoaded();
-        BookmarkId bookmarkId = bookmarkBridge.addToReadingList(title, url);
+        BookmarkId bookmarkId = bookmarkBridge.addToDefaultReadingList(title, url);
 
         if (bookmarkId != null) {
             Snackbar snackbar =
@@ -300,13 +300,13 @@ public class BookmarkUtils {
     }
 
     /**
-     * Add all selected tabs from TabSelectionEditor as bookmarks. This logic depends on the
-     * snackbar workflow above. Currently there is no support for adding the selected tabs or newly
-     * created folder directly to the reading list.
+     * Add all selected tabs from TabListEditor as bookmarks. This logic depends on the snackbar
+     * workflow above. Currently there is no support for adding the selected tabs or newly created
+     * folder directly to the reading list.
      *
      * @param activity The current activity.
      * @param bookmarkModel The bookmark model.
-     * @param tabList The list of all currently selected tabs from the TabSelectionEditor menu.
+     * @param tabList The list of all currently selected tabs from the TabListEditor menu.
      * @param snackbarManager The SnackbarManager used to show the snackbar.
      */
     public static void addBookmarksOnMultiSelect(
@@ -404,7 +404,7 @@ public class BookmarkUtils {
         // 2. The last used parent implicitly specifies READING_LIST.
         if (bookmarkType == BookmarkType.READING_LIST
                 || parent.getType() == BookmarkType.READING_LIST) {
-            return bookmarkModel.addToReadingList(title, url);
+            return bookmarkModel.addToReadingList(parent, title, url);
         }
 
         BookmarkId bookmarkId = null;
@@ -728,7 +728,7 @@ public class BookmarkUtils {
     /** Returns whether this bookmark can be moved */
     public static boolean isMovable(BookmarkModel bookmarkModel, BookmarkItem item) {
         if (Objects.equals(item.getParentId(), bookmarkModel.getPartnerFolderId())) return false;
-        return ReadingListUtils.isSwappableReadingListItem(item.getId()) || item.isEditable();
+        return item.isEditable();
     }
 
     /**
@@ -739,7 +739,7 @@ public class BookmarkUtils {
      */
     public static int getChildCountForDisplay(BookmarkId id, BookmarkModel bookmarkModel) {
         if (id.getType() == BookmarkType.READING_LIST) {
-            return bookmarkModel.getUnreadCount();
+            return bookmarkModel.getUnreadCount(id);
         } else {
             return bookmarkModel.getTotalBookmarkCount(id);
         }
@@ -778,7 +778,7 @@ public class BookmarkUtils {
                         iconSize,
                         iconSize,
                         iconSize / 2,
-                        res.getColor(R.color.default_favicon_background_color),
+                        context.getColor(R.color.default_favicon_background_color),
                         getDisplayTextSize(res))
                 : FaviconUtils.createCircularIconGenerator(context);
     }
@@ -822,7 +822,10 @@ public class BookmarkUtils {
      */
     public static boolean canAddFolderToParent(BookmarkModel bookmarkModel, BookmarkId parentId) {
         if (!canAddBookmarkToParent(bookmarkModel, parentId)) return false;
-        if (Objects.equals(parentId, bookmarkModel.getReadingListFolder())) return false;
+        // TODO(crbug.com/1501998): Add account reading list folder support here.
+        if (Objects.equals(parentId, bookmarkModel.getLocalOrSyncableReadingListFolder())) {
+            return false;
+        }
 
         return true;
     }

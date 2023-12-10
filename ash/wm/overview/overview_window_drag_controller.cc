@@ -8,9 +8,10 @@
 
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "ash/wm/desks/cros_next_desk_icon_button.h"
+#include "ash/wm/desks/desk_icon_button.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/legacy_desk_bar_view.h"
 #include "ash/wm/float/float_controller.h"
@@ -25,8 +26,8 @@
 #include "ash/wm/overview/scoped_float_container_stacker.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
+#include "ash/wm/splitview/split_view_types.h"
 #include "ash/wm/splitview/split_view_utils.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_util.h"
 #include "base/debug/crash_logging.h"
@@ -34,12 +35,12 @@
 #include "base/functional/callback_helpers.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/presentation_time_recorder.h"
 #include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -128,25 +129,23 @@ gfx::SizeF GetItemSizeWhenOnDesksBar(OverviewGrid* overview_grid,
                              overview_grid->root_window()->bounds().height();
   gfx::SizeF scaled_size = gfx::ScaleSize(window_original_size, scale_factor);
 
-  if (chromeos::features::IsJellyrollEnabled()) {
-    // Adjust the scaled size to ensure that its smaller side length is equal or
-    // larger than the `minimum_size_length`, and then adjust the larger size
-    // length to preserve the ratio of the original size.
-    const float minimum_size_length =
-        expanded_desks_bar_height * kScaleFactorForMinimumSideLength;
-    const float scaled_size_height = scaled_size.height();
-    const float scaled_size_width = scaled_size.width();
-    if (scaled_size_height < minimum_size_length ||
-        scaled_size_width < minimum_size_length) {
-      if (scaled_size_height < scaled_size_width) {
-        scaled_size.set_height(minimum_size_length);
-        scaled_size.set_width(scaled_size_width / scaled_size_height *
-                              minimum_size_length);
-      } else {
-        scaled_size.set_width(minimum_size_length);
-        scaled_size.set_height(scaled_size_height / scaled_size_width *
-                               minimum_size_length);
-      }
+  // Adjust the scaled size to ensure that its smaller side length is equal or
+  // larger than the `minimum_size_length`, and then adjust the larger size
+  // length to preserve the ratio of the original size.
+  const float minimum_size_length =
+      expanded_desks_bar_height * kScaleFactorForMinimumSideLength;
+  const float scaled_size_height = scaled_size.height();
+  const float scaled_size_width = scaled_size.width();
+  if (scaled_size_height < minimum_size_length ||
+      scaled_size_width < minimum_size_length) {
+    if (scaled_size_height < scaled_size_width) {
+      scaled_size.set_height(minimum_size_length);
+      scaled_size.set_width(scaled_size_width / scaled_size_height *
+                            minimum_size_length);
+    } else {
+      scaled_size.set_width(minimum_size_length);
+      scaled_size.set_height(scaled_size_height / scaled_size_width *
+                             minimum_size_length);
     }
   }
 
@@ -282,9 +281,9 @@ void OverviewWindowDragController::Drag(const gfx::PointF& location_in_screen) {
       return;
     }
 
-    if (is_touch_dragging_ && std::abs(distance.x()) < std::abs(distance.y()))
+    if (is_touch_dragging_ && std::abs(distance.x()) < std::abs(distance.y())) {
       StartDragToCloseMode();
-    else if (is_eligible_for_drag_to_snap_ || virtual_desks_bar_enabled_) {
+    } else if (is_eligible_for_drag_to_snap_ || virtual_desks_bar_enabled_) {
       StartNormalDragMode(location_in_screen);
     } else {
       return;
@@ -360,13 +359,16 @@ void OverviewWindowDragController::StartNormalDragMode(
   auto* overview_grid = item_->overview_grid();
   overview_grid->AddDropTargetForDraggingFromThisGrid(item_);
 
-  // Expand desks bar when normal drag starts and desks bar is in zero state for
-  // feature Jellyroll.
-  if (auto* desks_bar_view = overview_grid->desks_bar_view();
-      desks_bar_view && desks_bar_view->IsZeroState() &&
-      chromeos::features::IsJellyrollEnabled()) {
-    desks_bar_view->UpdateNewMiniViews(/*initializing_bar_view=*/false,
-                                       /*expanding_bar_view=*/true);
+  // Expand all desks bars on all displays when normal drag starts if it is in
+  // zero state.
+  for (const std::unique_ptr<OverviewGrid>& grid :
+       overview_session_->grid_list()) {
+    // The bar may be null if we have no desks in tablet mode.
+    if (auto* desks_bar_view = grid->desks_bar_view();
+        desks_bar_view && desks_bar_view->IsZeroState()) {
+      desks_bar_view->UpdateNewMiniViews(/*initializing_bar_view=*/false,
+                                         /*expanding_bar_view=*/true);
+    }
   }
 
   item_->UpdateShadowTypeForDrag(/*is_dragging=*/true);
@@ -379,7 +381,7 @@ void OverviewWindowDragController::StartNormalDragMode(
         SplitViewDragIndicators::ComputeWindowDraggingState(
             /*is_dragging=*/true,
             SplitViewDragIndicators::WindowDraggingState::kFromOverview,
-            SplitViewController::SnapPosition::kNone));
+            SnapPosition::kNone));
     item_->HideCannotSnapWarning(/*animate=*/true);
 
     // Update the split view divider bar status if necessary. If splitview is
@@ -473,11 +475,20 @@ void OverviewWindowDragController::ActivateDraggedWindow() {
     // b/301368132.
     item_ = nullptr;
     event_source_item_ = nullptr;
+  } else if (auto* split_view_overview_session =
+                 RootWindowController::ForWindow(item_->GetWindow())
+                     ->split_view_overview_session();
+             split_view_overview_session &&
+             split_view_overview_session->auto_snap_controller()) {
+    // If `SplitViewOverviewSession` is active, let it handle the autosnap.
+    overview_session_->SelectWindow(event_source_item_);
+    item_ = nullptr;
+    event_source_item_ = nullptr;
   } else if (split_view_controller->CanSnapWindow(item_->GetWindow())) {
     SnapWindow(split_view_controller,
                split_state == SplitViewController::State::kPrimarySnapped
-                   ? SplitViewController::SnapPosition::kSecondary
-                   : SplitViewController::SnapPosition::kPrimary);
+                   ? SnapPosition::kSecondary
+                   : SnapPosition::kPrimary);
   } else {
     split_view_controller->EndSplitView();
     overview_session_->SelectWindow(event_source_item_);
@@ -624,19 +635,6 @@ void OverviewWindowDragController::ContinueNormalDrag(
     // can satisfy all cases.
     centerpoint = location_in_screen;
 
-    const bool is_jellyroll_enabled = chromeos::features::IsJellyrollEnabled();
-
-    // When `Jellyroll` is enabled, the header is shown for the item being
-    // dragged, thus no need to adjust the centerpoint in this case.
-    if (!is_jellyroll_enabled) {
-      // To make the dragged window contents appear centered around the drag
-      // location, we need to take into account the margins applied on the
-      // target bounds, and offset up the centerpoint by half that amount, so
-      // that the transformed bounds of the window contents move up to be
-      // centered around the cursor.
-      centerpoint.Offset(0, -kHeaderHeightDp / 2);
-    }
-
     const auto iter = per_grid_desks_bar_data_.find(overview_grid);
     DCHECK(iter != per_grid_desks_bar_data_.end());
     const GridDesksBarData& desks_bar_data = iter->second;
@@ -690,8 +688,7 @@ void OverviewWindowDragController::ContinueNormalDrag(
       (!is_eligible_for_drag_to_snap_ ||
        SplitViewDragIndicators::GetSnapPosition(
            overview_grid->split_view_drag_indicators()
-               ->current_window_dragging_state()) ==
-           SplitViewController::SnapPosition::kNone)) {
+               ->current_window_dragging_state()) == SnapPosition::kNone)) {
     overview_grid->AddDropTargetNotForDraggingFromThisGrid(item_->GetWindow(),
                                                            /*animate=*/true);
   }
@@ -702,12 +699,12 @@ void OverviewWindowDragController::ContinueNormalDrag(
   bounds.set_y(centerpoint.y() - bounds.height() / 2.f);
   item_->SetBounds(bounds, OVERVIEW_ANIMATION_NONE);
 
-  auto* desks_bar_view = overview_grid->desks_bar_view();
-  if (desks_bar_view) {
+  // The bar may be null if we have no desks in tablet mode.
+  if (auto* desks_bar_view = overview_grid->desks_bar_view()) {
     auto* new_desk_button = desks_bar_view->new_desk_button();
 
-    // When `Jellyroll` is enabled, the header of window is shown during
-    // dragging. Overview item should be hovered on the new desk button with
+    // The header of window is shown during dragging. Overview item should be
+    // hovered on the new desk button with
     // `kVerticalOverlappedLengthToActivateNewDeskButton` overlapped vertical
     // area in order to activate the new desk button. There could be a lot of
     // mistriggers with header shown if the new desk button is activated when
@@ -722,8 +719,7 @@ void OverviewWindowDragController::ContinueNormalDrag(
     if (!is_hovered_on_new_desk_button) {
       new_desk_button_scale_up_timer_.Stop();
     } else if (!new_desk_button_scale_up_timer_.IsRunning() &&
-               new_desk_button->state() ==
-                   CrOSNextDeskIconButton::State::kExpanded) {
+               new_desk_button->state() == DeskIconButton::State::kExpanded) {
       new_desk_button_scale_up_timer_.Start(
           FROM_HERE, kScaleUpNewDeskButtonGracePeriod, this,
           &OverviewWindowDragController::MaybeScaleUpNewDeskButton);
@@ -801,8 +797,7 @@ OverviewWindowDragController::CompleteNormalDrag(
 
   auto* desks_bar_view = current_grid->desks_bar_view();
   // Snap a window if appropriate.
-  if (is_eligible_for_drag_to_snap_ &&
-      snap_position_ != SplitViewController::SnapPosition::kNone) {
+  if (is_eligible_for_drag_to_snap_ && snap_position_ != SnapPosition::kNone) {
     // Overview grid will be updated after window is snapped in splitview.
     SnapWindow(SplitViewController::Get(target_root), snap_position_);
     RecordNormalDrag(kToSnap, is_dragged_to_other_display);
@@ -813,7 +808,7 @@ OverviewWindowDragController::CompleteNormalDrag(
       if (desks_bar_view) {
         desks_bar_view->UpdateDeskIconButtonState(
             desks_bar_view->new_desk_button(),
-            CrOSNextDeskIconButton::State::kExpanded);
+            DeskIconButton::State::kExpanded);
       }
     }
     return DragResult::kSnap;
@@ -857,8 +852,7 @@ OverviewWindowDragController::CompleteNormalDrag(
     overview_session_->PositionWindows(/*animate=*/true);
     if (desks_bar_view) {
       desks_bar_view->UpdateDeskIconButtonState(
-          desks_bar_view->new_desk_button(),
-          CrOSNextDeskIconButton::State::kExpanded);
+          desks_bar_view->new_desk_button(), DeskIconButton::State::kExpanded);
     }
   }
   RecordNormalDrag(kToGrid, is_dragged_to_other_display);
@@ -945,7 +939,7 @@ aura::Window* OverviewWindowDragController::GetRootWindowBeingDraggedIn()
                    Shell::Get()->cursor_manager()->GetDisplay().id());
 }
 
-SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
+SnapPosition OverviewWindowDragController::GetSnapPosition(
     const gfx::PointF& location_in_screen) const {
   CHECK(item_);
   CHECK(is_eligible_for_drag_to_snap_);
@@ -961,22 +955,16 @@ SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
   SplitViewController* split_view_controller =
       SplitViewController::Get(root_window);
   if (!split_view_controller->CanSnapWindow(item_->GetWindow()))
-    return SplitViewController::SnapPosition::kNone;
+    return SnapPosition::kNone;
   if (split_view_controller->InSplitViewMode()) {
-    const int position =
-        base::ClampRound(SplitViewController::IsLayoutHorizontal(root_window)
-                             ? location_in_screen.x() - area.x()
-                             : location_in_screen.y() - area.y());
-    SplitViewController::SnapPosition default_snap_position =
-        split_view_controller->default_snap_position();
     // If we're trying to snap to a position that already has a snapped window:
-    const bool is_default_snap_position_left_or_top =
-        SplitViewController::IsPhysicalLeftOrTop(default_snap_position,
-                                                 root_window);
-    const bool is_drag_position_left_or_top =
-        position < split_view_controller->divider_position();
-    if (is_default_snap_position_left_or_top == is_drag_position_left_or_top)
-      return default_snap_position;
+    aura::Window* default_snapped_window =
+        split_view_controller->GetDefaultSnappedWindow();
+    if (gfx::RectF(default_snapped_window->GetBoundsInScreen())
+            .Contains(location_in_screen)) {
+      return split_view_controller->GetPositionOfSnappedWindow(
+          default_snapped_window);
+    }
   }
 
   return ::ash::GetSnapPosition(
@@ -993,8 +981,8 @@ SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
 
 void OverviewWindowDragController::SnapWindow(
     SplitViewController* split_view_controller,
-    SplitViewController::SnapPosition snap_position) {
-  DCHECK_NE(snap_position, SplitViewController::SnapPosition::kNone);
+    SnapPosition snap_position) {
+  DCHECK_NE(snap_position, SnapPosition::kNone);
 
   CHECK(!SplitViewController::Get(item_->root_window())->IsDividerAnimating());
   aura::Window* window = item_->GetWindow();
@@ -1021,7 +1009,7 @@ OverviewGrid* OverviewWindowDragController::GetCurrentGrid() const {
 void OverviewWindowDragController::RecordNormalDrag(
     NormalDragAction action,
     bool is_dragged_to_other_display) const {
-  const bool is_tablet = Shell::Get()->tablet_mode_controller()->InTabletMode();
+  const bool is_tablet = display::Screen::GetScreen()->InTabletMode();
   if (is_dragged_to_other_display) {
     DCHECK(!is_touch_dragging_);
     if (!is_tablet) {
@@ -1063,7 +1051,7 @@ void OverviewWindowDragController::RecordDragToClose(
       OverviewDragAction::kSwipeToCloseSuccessfulTabletTouch,
       OverviewDragAction::kSwipeToCloseCanceledTabletTouch,
       OverviewDragAction::kFlingToCloseTabletTouch};
-  RecordDrag(Shell::Get()->tablet_mode_controller()->InTabletMode()
+  RecordDrag(display::Screen::GetScreen()->InTabletMode()
                  ? kTabletDrag[action]
                  : kClamshellDrag[action]);
 }
@@ -1081,7 +1069,7 @@ void OverviewWindowDragController::MaybeScaleUpNewDeskButton() {
   }
 
   desks_bar_view->UpdateDeskIconButtonState(
-      new_desk_button, /*target_state=*/CrOSNextDeskIconButton::State::kActive);
+      new_desk_button, /*target_state=*/DeskIconButton::State::kActive);
 }
 
 }  // namespace ash

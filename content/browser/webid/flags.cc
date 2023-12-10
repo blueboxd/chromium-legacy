@@ -64,8 +64,8 @@ bool IsFedCmErrorEnabled() {
   return base::FeatureList::IsEnabled(features::kFedCmError);
 }
 
-bool IsFedCmRevokeEnabled() {
-  return base::FeatureList::IsEnabled(features::kFedCmRevoke);
+bool IsFedCmDisconnectEnabled() {
+  return base::FeatureList::IsEnabled(features::kFedCmDisconnect);
 }
 
 bool IsFedCmAddAccountEnabled() {
@@ -77,4 +77,7 @@ bool IsFedCmExemptIdpWithThirdPartyCookiesEnabled() {
       features::kFedCmExemptIdpWithThirdPartyCookies);
 }
 
+bool IsFedCmButtonModeEnabled() {
+  return base::FeatureList::IsEnabled(features::kFedCmButtonMode);
+}
 }  // namespace content

@@ -851,7 +851,14 @@ TEST_F(ShortcutsProviderTest, DoAutocompleteAggregateShortcuts) {
   }
 }
 
-TEST_F(ShortcutsProviderTest, DoAutocompleteWithScoringSignals) {
+// TODO(crbug.com/1509874): test is failing on iPhone device.
+#if TARGET_OS_IOS && !TARGET_IPHONE_SIMULATOR
+#define MAYBE_DoAutocompleteWithScoringSignals \
+  DISABLED_DoAutocompleteWithScoringSignals
+#else
+#define MAYBE_DoAutocompleteWithScoringSignals DoAutocompleteWithScoringSignals
+#endif
+TEST_F(ShortcutsProviderTest, MAYBE_DoAutocompleteWithScoringSignals) {
   TestShortcutData shortcut_data[] = {
       MakeShortcutData("wikipedia", "https://wikipedia.org/wilson7", 1, 1),
       MakeShortcutData("wilson7", "https://wikipedia.org/wilson7", 2, 2),
@@ -880,12 +887,18 @@ TEST_F(ShortcutsProviderTest, DoAutocompleteWithScoringSignals) {
   // There are 2 shortcuts with the wilson7 url which have the same aggregate
   // text length, visit count, and last visit as the 1 winston shortcut.
   EXPECT_EQ(matches[0].scoring_signals->shortcut_visit_count(), 3);
+  EXPECT_EQ(matches[0].scoring_signals->typed_count(), 3);
+  EXPECT_EQ(matches[0].scoring_signals->visit_count(), 3);
   EXPECT_EQ(matches[0].scoring_signals->shortest_shortcut_len(), 7);
 
   EXPECT_EQ(matches[1].scoring_signals->shortcut_visit_count(), 3);
+  EXPECT_EQ(matches[1].scoring_signals->typed_count(), 3);
+  EXPECT_EQ(matches[1].scoring_signals->visit_count(), 3);
   EXPECT_EQ(matches[1].scoring_signals->shortest_shortcut_len(), 7);
 
   EXPECT_EQ(matches[2].scoring_signals->shortcut_visit_count(), 2);
+  EXPECT_EQ(matches[2].scoring_signals->typed_count(), 2);
+  EXPECT_EQ(matches[2].scoring_signals->visit_count(), 2);
   EXPECT_EQ(matches[2].scoring_signals->shortest_shortcut_len(), 7);
 
   // Check again with an ineligible (SEARCH_HISTORY) type match and confirm

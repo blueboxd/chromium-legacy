@@ -37,12 +37,10 @@ namespace {
 constexpr int kMaxHeightForRowList = 450;
 
 bool IsOtrInfoRowEnabled(Browser* browser) {
-  if (!browser) {
+  if (!browser || !browser->profile()) {
     return false;
   }
-  Profile* profile = browser->profile();
-  return download::IsDownloadBubbleV2Enabled(profile) &&
-         profile->IsOffTheRecord();
+  return browser->profile()->IsOffTheRecord();
 }
 
 }  // namespace
@@ -136,6 +134,14 @@ int DownloadBubblePrimaryView::DefaultPreferredWidth() const {
 DownloadBubbleRowView* DownloadBubblePrimaryView::GetRow(
     const offline_items_collection::ContentId& id) {
   return row_list_view_->GetRow(id);
+}
+
+views::View* DownloadBubblePrimaryView::GetInitiallyFocusedView() {
+  if (row_list_view_->children().empty()) {
+    return nullptr;
+  }
+  return static_cast<DownloadBubbleRowView*>(row_list_view_->children().front())
+      ->transparent_button();
 }
 
 DownloadBubbleRowView* DownloadBubblePrimaryView::GetRowForTesting(

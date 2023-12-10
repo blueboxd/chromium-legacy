@@ -229,20 +229,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram_suffixes name="AndroidFeatureModuleName" separator=".">
   <suffix name="ar" label="Augmented Reality Module"/>
-  <suffix name="autofill_assistant" label="Assistant-in-Chrome Module">
-    <obsolete>
-      Deprecated in M110 since we removed the autofill_assistant component.
-    </obsolete>
-  </suffix>
   <suffix name="cablev2_authenticator" label="caBLEv2 Authenticator Module"/>
   <suffix name="chime" label="Chime Notification Module"/>
   <suffix name="chrome" label="Chrome Module"/>
   <suffix name="dev_ui" label="Developer UI Module"/>
-  <suffix name="extra_icu" label="Extra ICU Module">
-    <obsolete>
-      Deprecated in M98 since we removed the extra_icu module.
-    </obsolete>
-  </suffix>
   <suffix name="feedv2" label="Feed V2 Module"/>
   <suffix name="image_editor" label="Image Editor Module"/>
   <suffix name="read_aloud_playback" label="Read Aloud Playback Module"/>
@@ -922,25 +912,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="SessionOnly" label="Session only"/>
   <suffix name="TemporaryAllowThirdParty"
       label="Third-party cookies temporarily allowed on a domain"/>
-  <affected-histogram name="ContentSettings.Exceptions.cookies">
-    <obsolete>
-      Removed in M109. See ContentSettings.RegularProfile.Exceptions.cookies
-      instead, which includes data only from regular profiles.
-    </obsolete>
-  </affected-histogram>
-  <affected-histogram name="ContentSettings.Exceptions.popups">
-    <obsolete>
-      Removed in M109. See ContentSettings.RegularProfile.Exceptions.popups
-      instead, which includes data only from regular profiles.
-    </obsolete>
-  </affected-histogram>
-  <affected-histogram name="ContentSettings.Exceptions.subresource-filter">
-    <obsolete>
-      Removed in M109. See
-      ContentSettings.RegularProfile.Exceptions.subresource-filter instead,
-      which includes data only from regular profiles.
-    </obsolete>
-  </affected-histogram>
   <affected-histogram name="ContentSettings.RegularProfile.Exceptions.cookies"/>
   <affected-histogram name="ContentSettings.RegularProfile.Exceptions.popups"/>
   <affected-histogram
@@ -1063,6 +1034,8 @@ chromium-metrics-reviews@google.com.
   <suffix name="AlsaLoopback" label="ALSA loopback Device."/>
   <suffix name="Bluetooth" label="Bluetooth device."/>
   <suffix name="BluetoothNarrowBandMic" label="Bluetooth with NarrowBand Mic."/>
+  <suffix name="BluetoothSuperWideBandMic"
+      label="Bluetooth with SuperWideBand Mic."/>
   <suffix name="BluetoothWideBandMic" label="Bluetooth with WideBand Mic."/>
   <suffix name="FrontMic" label="Front mic."/>
   <suffix name="Haptic" label="Haptic device."/>
@@ -1619,15 +1592,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="FirstUserAction.BackgroundTimeNewTask"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="FromGWS" separator="_">
-  <suffix name="FromGWS"
-      label="Only page loads that are a result of a navigation from a web
-             search are considered."/>
-  <affected-histogram name="PLT.PT_RequestToStart"/>
-  <affected-histogram name="PLT.PT_StartToCommit"/>
-  <affected-histogram name="PLT.PT_StartToFinish"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="GetAuthTokenType" separator=".">
   <suffix name="RemoteConsentApproved"
       label="The remote consent has been approved for the getAuthToken()
@@ -1668,92 +1632,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Android.GridTabSwitcher.Animation.TotalDuration"/>
   <affected-histogram name="GridTabSwitcher.FramePerSecond"/>
   <affected-histogram name="GridTabSwitcher.MaxFrameInterval"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="GWSChromeJointExperiment" separator="_">
-  <suffix name="Experiment1"
-      label="Only page loads that are a result of a navigation from a web
-             search under a specific web search/Chrome joint experiment.
-             Unused at this moment."/>
-  <suffix name="Experiment2"
-      label="Only page loads that are a result of a navigation from a web
-             search under a specific web search/Chrome joint experiment.
-             Unused at this moment."/>
-  <suffix name="Experiment3"
-      label="Only page loads that are a result of a navigation from a web
-             search under a specific web search/Chrome joint experiment.
-             Unused at this moment."/>
-  <suffix name="Experiment4"
-      label="Only page loads that are a result of a navigation from a web
-             search under a specific web search/Chrome joint experiment.
-             Unused at this moment."/>
-  <suffix name="Experiment5"
-      label="Only page loads that are a result of a navigation from a web
-             search under a specific web search/Chrome joint experiment.
-             Unused at this moment."/>
-  <suffix name="Experiment6"
-      label="Only page loads that are a result of a navigation from a web
-             search under a specific web search/Chrome joint experiment.
-             Unused at this moment."/>
-  <suffix name="Experiment7"
-      label="Only page loads that are a result of a navigation from a web
-             search under a specific web search/Chrome joint experiment.
-             Unused at this moment."/>
-  <suffix name="Experiment8"
-      label="Only page loads that are a result of a navigation from a web
-             search under a specific web search/Chrome joint experiment.
-             Unused at this moment."/>
-  <suffix name="Experiment9"
-      label="Only page loads that are a result of a navigation from a web
-             search under a specific web search/Chrome joint experiment.
-             Unused at this moment."/>
-  <suffix name="Experiment10"
-      label="Only page loads that are a result of a navigation from a web
-             search under a specific web search/Chrome joint experiment.
-             Unused at this moment."/>
-  <suffix name="Experiment11"
-      label="Only page loads that are a result of a navigation from a web
-             search under a specific web search/Chrome joint experiment.
-             Unused at this moment."/>
-  <suffix name="Experiment12"
-      label="Only page loads that are a result of a navigation from a web
-             search under a specific web search/Chrome joint experiment.
-             Unused at this moment."/>
-  <suffix name="Experiment13"
-      label="Only page loads that are a result of a navigation from a web
-             search under a specific web search/Chrome joint experiment.
-             Unused at this moment."/>
-  <suffix name="Experiment14"
-      label="Only page loads that are a result of a navigation from a web
-             search under a specific web search/Chrome joint experiment.
-             Unused at this moment."/>
-  <suffix name="Experiment15"
-      label="Only page loads that are a result of a navigation from a web
-             search under a specific web search/Chrome joint experiment.
-             Unused at this moment."/>
-  <suffix name="Experiment16"
-      label="Only page loads that are a result of a navigation from a web
-             search under a specific web search/Chrome joint experiment.
-             Unused at this moment."/>
-  <suffix name="Experiment17"
-      label="Only page loads that are a result of a navigation from a web
-             search under a specific web search/Chrome joint experiment.
-             Unused at this moment."/>
-  <suffix name="Experiment18"
-      label="Only page loads that are a result of a navigation from a web
-             search under a specific web search/Chrome joint experiment.
-             Unused at this moment."/>
-  <suffix name="Experiment19"
-      label="Only page loads that are a result of a navigation from a web
-             search under a specific web search/Chrome joint experiment.
-             Unused at this moment."/>
-  <suffix name="Experiment20"
-      label="Only page loads that are a result of a navigation from a web
-             search under a specific web search/Chrome joint experiment.
-             Unused at this moment."/>
-  <affected-histogram name="PLT.PT_RequestToStart_FromGWS"/>
-  <affected-histogram name="PLT.PT_StartToCommit_FromGWS"/>
-  <affected-histogram name="PLT.PT_StartToFinish_FromGWS"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="HardwareVerifierSupportCategory" separator=".">
@@ -2248,34 +2126,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Navigation.TimeToReadyToCommit2"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="NavigationItemSerializedSize" separator=".">
-  <suffix name="SerializedDisplayStateSize"
-      label="Estimated size of DisplayState in serialized session item used
-             to persist single NavigationItem DisplayState in session
-             history."/>
-  <suffix name="SerializedReferrerURLSize"
-      label="Estimated size of referrer's URL in serialized session item used
-             to persist single NavigationItem referrer's URL in session
-             history."/>
-  <suffix name="SerializedRequestHeadersSize"
-      label="Estimated size of HTTP request headers in serialized session
-             item used to persist single NavigationItem headers in session
-             history."/>
-  <suffix name="SerializedSize"
-      label="Estimated size of serialized session item used to persist single
-             NavigationItem in session history."/>
-  <suffix name="SerializedTitleSize"
-      label="Estimated size of title in serialized session item used to
-             persist single NavigationItem title in session history."/>
-  <suffix name="SerializedURLSize"
-      label="Estimated size of URL in serialized session item used to persist
-             single NavigationItem URL in session history."/>
-  <suffix name="SerializedVirtualURLSize"
-      label="Estimated size of virtual URL in serialized session item used to
-             persist single NavigationItem virtual URL in session history."/>
-  <affected-histogram name="Session.WebStates.NavigationItem"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="NavigationProcessType" separator=".">
   <suffix name="CrossProcess" label="Cross process navigation."/>
   <suffix name="SameProcess" label="Same process navigation."/>
@@ -2539,42 +2389,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram
       name="Notifications.Scheduler.NotificationLifeCycleEvent"/>
   <affected-histogram name="Notifications.Scheduler.UserAction"/>
-</histogram_suffixes>
-
-<histogram_suffixes
-    name="NQE_Accuracy_Metric_EffectiveConnectionType_ObservedIntervals"
-    separator=".">
-  <suffix name="2G" label="Observed effective connection type was 2G"/>
-  <suffix name="3G" label="Observed effective connection type was 3G"/>
-  <suffix name="4G" label="Observed effective connection type was 4G"/>
-  <suffix name="Broadband"
-      label="Observed effective connection type was Broadband"/>
-  <suffix name="Offline"
-      label="Observed effective connection type was Offline"/>
-  <suffix name="Slow2G" label="Observed effective connection type was Slow2G"/>
-  <suffix name="Unknown"
-      label="Observed effective connection type was Unknown"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="NQE_Accuracy_RTT_ObservedIntervals" separator=".">
-  <suffix name="0_20"
-      label="Observed metric was between 0 and 20 (inclusive) units"/>
-  <suffix name="20_60"
-      label="Observed metric was between 20 and 60 (inclusive) units"/>
-  <suffix name="60_140"
-      label="Observed metric was between 60 and 140 (inclusive) units"/>
-  <suffix name="140_300"
-      label="Observed metric was between 140 and 300 (inclusive) units"/>
-  <suffix name="300_620"
-      label="Observed metric was between 300 and 620 (inclusive) units"/>
-  <suffix name="620_1260"
-      label="Observed metric was between 620 and 1260 (inclusive) units"/>
-  <suffix name="1260_2540"
-      label="Observed metric was between 1260 and 2540 (inclusive) units"/>
-  <suffix name="2540_5100"
-      label="Observed metric was between 2540 and 51000 (inclusive) units"/>
-  <suffix name="5100_Infinity"
-      label="Observed metric was greater than 5100 (inclusive) units"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="OfflinePagesNamespace" separator=".">
@@ -3382,10 +3196,6 @@ chromium-metrics-reviews@google.com.
       label="Link triggered prerender, rel=prerender, same domain."/>
   <affected-histogram name="Prerender.FinalStatus"/>
   <affected-histogram name="Prerender.NetworkBytesWasted"/>
-  <affected-histogram name="Prerender.NoStatePrefetchMainResourceRedirects"/>
-  <affected-histogram name="Prerender.NoStatePrefetchResponseTypes"/>
-  <affected-histogram name="Prerender.NoStatePrefetchSubResourceRedirects"/>
-  <affected-histogram name="Prerender.PrerendersPerSessionCount"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ProcessMemoryAllocator2" separator=".">
@@ -4256,11 +4066,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="ChromeExtMalware" label=""/>
   <suffix name="ChromeUrlClientIncident" label=""/>
   <suffix name="IpMalware" label=""/>
-  <suffix name="UrlAccuracyTips" label="">
-    <obsolete>
-      Deprecated as of 12/2022.
-    </obsolete>
-  </suffix>
   <suffix name="UrlBilling" label=""/>
   <suffix name="UrlCsdAllowlist" label=""/>
   <suffix name="UrlCsdDownloadAllowlist" label=""/>
@@ -4685,14 +4490,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Network.Shill.WiFi.RememberedUserNetworkCount"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="Signin_Actions" separator=".">
-  <suffix name="AllAccessPointActions" label=""/>
-  <suffix name="AndroidAccountConsistencyFirstRunActions"
-      label="Signin Flow shown on android after Account Consistency flag was
-             enabled."/>
-  <affected-histogram name="Signin"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="Signin_Reconciler_Duration_UpTo3mins" separator=".">
   <suffix name="Failure" label="Failed execution of reconciler"/>
   <suffix name="Success" label="Successful execution of reconciler"/>
@@ -4988,8 +4785,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="ToManageInSettings"
       label="The reauth happened to manage account-stored passwords in
              settings."/>
-  <suffix name="ToMovePassword"
-      label="The reauth happened to move a password to the account store."/>
   <suffix name="ToSaveOrUpdatePassword"
       label="The reauth happened to save a password to the account store."/>
   <suffix name="ToSavePasswordLocallyThenMove"
@@ -5128,6 +4923,7 @@ chromium-metrics-reviews@google.com.
   <suffix name="ShimlessRMA" label="Shimless RMA"/>
   <suffix name="ShortcutCustomization" label="ShortcutCustomization"/>
   <suffix name="Terminal" label="Terminal"/>
+  <suffix name="VcBackground" label="VC Background"/>
   <affected-histogram name="Webapp.InstallResult.System.Apps"/>
 </histogram_suffixes>
 

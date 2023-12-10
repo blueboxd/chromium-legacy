@@ -17,7 +17,7 @@
 #import "components/signin/public/base/signin_metrics.h"
 #import "components/sync/base/features.h"
 #import "components/sync/service/sync_user_settings.h"
-#import "ios/chrome/browser/discover_feed/feed_constants.h"
+#import "ios/chrome/browser/discover_feed/model/feed_constants.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/show_signin_command.h"
@@ -28,6 +28,7 @@
 #import "ios/chrome/browser/signin/model/chrome_account_manager_service_observer_bridge.h"
 #import "ios/chrome/browser/signin/model/system_identity.h"
 #import "ios/chrome/browser/sync/model/sync_observer_bridge.h"
+#import "ios/chrome/browser/ui/authentication/account_settings_presenter.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
@@ -539,7 +540,11 @@ id<SystemIdentity> GetDisplayedIdentity(
 @property(nonatomic, assign, readwrite) BOOL initialSyncInProgress;
 
 // Presenter which can show signin UI.
-@property(nonatomic, weak, readonly) id<SigninPresenter> presenter;
+@property(nonatomic, weak, readonly) id<SigninPresenter> signinPresenter;
+
+// Presenter which can show the signed-in account settings UI.
+@property(nonatomic, weak, readonly) id<AccountSettingsPresenter>
+    accountSettingsPresenter;
 
 // User's preferences service.
 @property(nonatomic, assign) PrefService* prefService;
@@ -659,7 +664,9 @@ id<SystemIdentity> GetDisplayedIdentity(
                       prefService:(PrefService*)prefService
                       syncService:(syncer::SyncService*)syncService
                       accessPoint:(signin_metrics::AccessPoint)accessPoint
-                        presenter:(id<SigninPresenter>)presenter {
+                  signinPresenter:(id<SigninPresenter>)signinPresenter
+         accountSettingsPresenter:
+             (id<AccountSettingsPresenter>)accountSettingsPresenter {
   self = [super init];
   if (self) {
     DCHECK(accountManagerService);
@@ -670,7 +677,8 @@ id<SystemIdentity> GetDisplayedIdentity(
     _syncService = syncService;
     _accessPoint = accessPoint;
     _dataTypeToWaitForInitialSync = syncer::ModelType::UNSPECIFIED;
-    _presenter = presenter;
+    _signinPresenter = signinPresenter;
+    _accountSettingsPresenter = accountSettingsPresenter;
     _accountManagerServiceObserver =
         std::make_unique<ChromeAccountManagerServiceObserverBridge>(
             self, _accountManagerService);
@@ -708,14 +716,27 @@ id<SystemIdentity> GetDisplayedIdentity(
     }
     DCHECK(self.displayedIdentity)
         << base::SysNSStringToUTF8([self description]);
-    return [[SigninPromoViewConfigurator alloc]
-        initWithSigninPromoViewMode:
-            SigninPromoViewModeSignedInWithPrimaryAccount
-                          userEmail:self.displayedIdentity.userEmail
-                      userGivenName:self.displayedIdentity.userGivenName
-                          userImage:self.displayedIdentityAvatar
-                     hasCloseButton:hasCloseButton
-                   hasSignInSpinner:self.showSpinner];
+    SigninPromoViewConfigurator* configurator =
+        [[SigninPromoViewConfigurator alloc]
+            initWithSigninPromoViewMode:
+                SigninPromoViewModeSignedInWithPrimaryAccount
+                              userEmail:self.displayedIdentity.userEmail
+                          userGivenName:self.displayedIdentity.userGivenName
+                              userImage:self.displayedIdentityAvatar
+                         hasCloseButton:hasCloseButton
+                       hasSignInSpinner:self.showSpinner];
+    switch (self.signinPromoAction) {
+      case SigninPromoAction::kSync:
+      case SigninPromoAction::kSigninSheet:
+      case SigninPromoAction::kInstantSignin:
+      case SigninPromoAction::kSigninWithNoDefaultIdentity:
+        break;
+      case SigninPromoAction::kReviewAccountSettings:
+        configurator.primaryButtonTitleOverride =
+            l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_REVIEW_SETTINGS_BUTTON);
+        break;
+    }
+    return configurator;
   }
   if (self.displayedIdentity) {
     return [[SigninPromoViewConfigurator alloc]
@@ -736,9 +757,11 @@ id<SystemIdentity> GetDisplayedIdentity(
                      hasSignInSpinner:self.showSpinner];
   switch (self.signinPromoAction) {
     case SigninPromoAction::kSync:
+    case SigninPromoAction::kReviewAccountSettings:
       break;
     case SigninPromoAction::kSigninSheet:
     case SigninPromoAction::kInstantSignin:
+    case SigninPromoAction::kSigninWithNoDefaultIdentity:
       configurator.primaryButtonTitleOverride =
           l10n_util::GetNSString(IDS_IOS_CONSISTENCY_PROMO_SIGN_IN);
       break;
@@ -947,7 +970,14 @@ id<SystemIdentity> GetDisplayedIdentity(
                                        accessPoint:self.accessPoint
                                        promoAction:promoAction
                                           callback:completion];
-  [self.presenter showSignin:command];
+  [self.signinPresenter showSignin:command];
+}
+
+// Shows account settings.
+- (void)showAccountSettings {
+  DCHECK(self.accountSettingsPresenter);
+  self.signinPromoViewState = SigninPromoViewState::kUsedAtLeastOnce;
+  [self.accountSettingsPresenter showAccountSettings];
 }
 
 // Changes the promo view state, and records the metrics.
@@ -986,23 +1016,6 @@ id<SystemIdentity> GetDisplayedIdentity(
 // complete.
 - (BOOL)shouldWaitForInitialSync {
   return self.dataTypeToWaitForInitialSync != syncer::ModelType::UNSPECIFIED;
-}
-
-- (void)optInBookmarkReadingListAccountStorage {
-  bool bookmarksAccountStorageEnabled =
-      base::FeatureList::IsEnabled(syncer::kEnableBookmarksAccountStorage);
-  bool dualReadingListModelEnabled = base::FeatureList::IsEnabled(
-      syncer::kReadingListEnableDualReadingListModel);
-  bool readingListTransportUponSignInEnabled = base::FeatureList::IsEnabled(
-      syncer::kReadingListEnableSyncTransportModeUponSignIn);
-  CHECK(bookmarksAccountStorageEnabled ||
-        (dualReadingListModelEnabled && readingListTransportUponSignInEnabled))
-      << "bookmarksAccountStorageEnabled: " << bookmarksAccountStorageEnabled
-      << ", dualReadingListModelEnabled: " << dualReadingListModelEnabled
-      << ", readingListTransportUponSignInEnabled: "
-      << readingListTransportUponSignInEnabled;
-  _syncService->GetUserSettings()
-      ->SetBookmarksAndReadingListAccountStorageOptIn(true);
 }
 
 #pragma mark - ChromeAccountManagerServiceObserver
@@ -1051,6 +1064,7 @@ id<SystemIdentity> GetDisplayedIdentity(
       signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT_NO_EXISTING_ACCOUNT;
   signin_metrics::RecordSigninUserActionForAccessPoint(self.accessPoint);
   switch (self.signinPromoAction) {
+    case SigninPromoAction::kSigninWithNoDefaultIdentity:
     case SigninPromoAction::kInstantSignin:
       [self showSigninWithIdentity:nil
                          operation:AuthenticationOperation::kInstantSignin
@@ -1066,35 +1080,45 @@ id<SystemIdentity> GetDisplayedIdentity(
                          operation:AuthenticationOperation::kSigninOnly
                        promoAction:promoAction];
       return;
+    case SigninPromoAction::kReviewAccountSettings:
+      NOTREACHED() << "This action is only valid for a signed in account.";
+      return;
   }
 }
 
-- (void)signinPromoViewDidTapSigninWithDefaultAccount:
+- (void)signinPromoViewDidTapPrimaryButtonWithDefaultAccount:
     (SigninPromoView*)signinPromoView {
   DCHECK(self.displayedIdentity) << base::SysNSStringToUTF8([self description]);
   DCHECK(self.signinPromoViewVisible)
       << base::SysNSStringToUTF8([self description]);
   DCHECK(!self.invalidClosedOrNeverVisible)
       << base::SysNSStringToUTF8([self description]);
-  [self sendImpressionsTillSigninButtonsHistogram];
   switch (self.signinPromoAction) {
     case SigninPromoAction::kInstantSignin:
+      [self sendImpressionsTillSigninButtonsHistogram];
       [self showSigninWithIdentity:self.displayedIdentity
                          operation:AuthenticationOperation::kInstantSignin
                        promoAction:signin_metrics::PromoAction::
                                        PROMO_ACTION_WITH_DEFAULT];
       return;
     case SigninPromoAction::kSync:
+      [self sendImpressionsTillSigninButtonsHistogram];
       [self showSigninWithIdentity:self.displayedIdentity
                          operation:AuthenticationOperation::kSigninAndSync
                        promoAction:signin_metrics::PromoAction::
                                        PROMO_ACTION_WITH_DEFAULT];
       return;
+    case SigninPromoAction::kSigninWithNoDefaultIdentity:
     case SigninPromoAction::kSigninSheet:
+      [self sendImpressionsTillSigninButtonsHistogram];
       [self showSigninWithIdentity:nil
                          operation:AuthenticationOperation::kSigninOnly
                        promoAction:signin_metrics::PromoAction::
                                        PROMO_ACTION_WITH_DEFAULT];
+      return;
+    case SigninPromoAction::kReviewAccountSettings:
+      // TODO(crbug.com/1459255): Record metrics for this promo action.
+      [self showAccountSettings];
       return;
   }
 }
@@ -1127,6 +1151,13 @@ id<SystemIdentity> GetDisplayedIdentity(
                          operation:AuthenticationOperation::kSigninOnly
                        promoAction:signin_metrics::PromoAction::
                                        PROMO_ACTION_NOT_DEFAULT];
+      return;
+    case SigninPromoAction::kReviewAccountSettings:
+      NOTREACHED() << "This action is only valid for a signed in account.";
+      return;
+    case SigninPromoAction::kSigninWithNoDefaultIdentity:
+      NOTREACHED() << "The user should not be able to explicitly select "
+                      "\"other account\".";
       return;
   }
 }

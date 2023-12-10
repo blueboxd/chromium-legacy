@@ -25,6 +25,7 @@
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/unified/unified_system_tray.h"
+#include "ash/wm/bounds_tracker/window_bounds_tracker.h"
 #include "ash/wm/window_util.h"
 #include "base/check.h"
 #include "base/containers/contains.h"
@@ -117,7 +118,7 @@ void SetDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
 
   const display::ManagedDisplayInfo& display_info =
       GetDisplayManager()->GetDisplayInfo(display.id());
-  absl::optional<base::TimeDelta> max_vrr_interval = absl::nullopt;
+  std::optional<base::TimeDelta> max_vrr_interval = std::nullopt;
   if (display_info.variable_refresh_rate_state() == display::kVrrEnabled &&
       display_info.vsync_rate_min().has_value() &&
       display_info.vsync_rate_min() > 0) {
@@ -154,12 +155,12 @@ int GetEffectiveResolutionUMAIndex(const display::Display& display) {
 
 // Returns active effective dpi for a given active display. Returns 0 if the
 // dpi is not available.
-absl::optional<float> GetEffectiveDPI(const display::Display& display) {
+std::optional<float> GetEffectiveDPI(const display::Display& display) {
   const display::ManagedDisplayInfo& display_info =
       GetDisplayManager()->GetDisplayInfo(display.id());
   float dpi = display_info.device_dpi();
   if (!dpi) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   // Apply device effective scale factor.
@@ -188,7 +189,7 @@ void RepeatingEffectiveResolutionUMA(base::RepeatingTimer* timer,
       session_controller->GetSessionState() ==
           session_manager::SessionState::ACTIVE) {
     for (const auto& display : GetDisplayManager()->active_display_list()) {
-      absl::optional<float> effective_dpi = GetEffectiveDPI(display);
+      std::optional<float> effective_dpi = GetEffectiveDPI(display);
 
       // Only emit event when the dpi is valid.
       if (effective_dpi.has_value()) {
@@ -657,6 +658,10 @@ void WindowTreeHostManager::OnDisplayAdded(const display::Display& display) {
   if (display::features::IsRoundedDisplayEnabled()) {
     EnableRoundedCorners(display);
   }
+
+  if (Shell::Get()->window_bounds_tracker()) {
+    should_restore_windows_on_display_added_ = true;
+  }
 }
 
 void WindowTreeHostManager::DeleteHost(AshWindowTreeHost* host_to_delete) {
@@ -669,10 +674,9 @@ void WindowTreeHostManager::DeleteHost(AshWindowTreeHost* host_to_delete) {
   Shell::Get()->OnRootWindowWillShutdown(root_being_deleted);
   aura::Window* primary_root_after_host_deletion =
       GetRootWindowForDisplayId(GetPrimaryDisplayId());
-  controller->MoveWindowsTo(primary_root_after_host_deletion);
   // Delete most of root window related objects, but don't delete
   // root window itself yet because the stack may be using it.
-  controller->Shutdown();
+  controller->Shutdown(primary_root_after_host_deletion);
   if (primary_tree_host_for_replace_ == host_to_delete)
     primary_tree_host_for_replace_ = nullptr;
   DCHECK_EQ(primary_root_after_host_deletion, Shell::GetPrimaryRootWindow());
@@ -992,6 +996,11 @@ void WindowTreeHostManager::PostDisplayConfigurationChange() {
   // Enable cursor compositing, so that cursor could be mirrored to
   // destination displays along with other display content.
   Shell::Get()->UpdateCursorCompositingEnabled();
+
+  if (should_restore_windows_on_display_added_) {
+    Shell::Get()->window_bounds_tracker()->MaybeRestoreWindowsOnDisplayAdded();
+    should_restore_windows_on_display_added_ = false;
+  }
 }
 
 ui::EventDispatchDetails WindowTreeHostManager::DispatchKeyEventPostIME(

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/signin/ash/inline_login_handler_impl.h"
 
 #include <memory>
+#include <optional>
 #include <string>
 
 #include "ash/constants/ash_pref_names.h"
@@ -47,7 +48,6 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -85,25 +85,27 @@ std::string GetAccountDeviceId(const std::string& signin_scoped_device_id,
   return account_device_id;
 }
 
-std::string GetInlineLoginFlowName(Profile* profile,
-                                   const absl::optional<std::string>& email) {
-  DCHECK(profile);
-  if (!profile->IsChild()) {
-    return kCrosAddAccountFlow;
-  }
-
+bool IsPrimaryAccountBeingReauthenticated(
+    Profile* profile,
+    const std::optional<std::string>& email) {
   std::string primary_account_email =
       IdentityManagerFactory::GetForProfile(profile)
           ->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin)
           .email;
-  // If provided email is for primary account - it's a reauthentication, use
-  // normal add account flow.
-  if (email && gaia::AreEmailsSame(primary_account_email, *email)) {
-    return kCrosAddAccountFlow;
+
+  return email && gaia::AreEmailsSame(primary_account_email, *email);
+}
+
+std::string GetInlineLoginFlowName(Profile* profile,
+                                   const std::optional<std::string>& email) {
+  DCHECK(profile);
+  if (profile->IsChild() &&
+      !IsPrimaryAccountBeingReauthenticated(profile, email)) {
+    // Child user is adding / reauthenticating a secondary account.
+    return kCrosAddAccountEduFlow;
   }
 
-  // Child user is adding/reauthenticating a secondary account.
-  return kCrosAddAccountEduFlow;
+  return kCrosAddAccountFlow;
 }
 
 const SkBitmap& GetDefaultAccountIcon() {
@@ -142,7 +144,7 @@ base::Value::Dict GaiaAccountToValue(const ::account_manager::Account& account,
 
 std::string GetDeviceId(user_manager::KnownUser& known_user,
                         const AccountId& device_account_id,
-                        const absl::optional<std::string>& initial_email) {
+                        const std::optional<std::string>& initial_email) {
   if (!initial_email ||
       !gaia::AreEmailsSame(*initial_email, device_account_id.GetUserEmail())) {
     // Return a random GUID for account additions (`!initial_email`) and
@@ -303,7 +305,7 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::Value::Dict& params) {
   const GURL& url = gaia_urls->embedded_setup_chromeos_url();
   params.Set("gaiaPath", url.path().substr(1));
 
-  absl::optional<std::string> version = chromeos::version_loader::GetVersion(
+  std::optional<std::string> version = chromeos::version_loader::GetVersion(
       chromeos::version_loader::VERSION_SHORT);
   params.Set("platformVersion", version.value_or("0.0.0.0"));
   params.Set("constrained", "1");

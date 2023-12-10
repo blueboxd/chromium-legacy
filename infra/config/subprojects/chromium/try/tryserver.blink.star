@@ -70,10 +70,11 @@ try_.builder(
 Runs <a href="https://web-platform-tests.org">web platform tests</a> against
 Chrome.\
 """,
-    mirrors = ["ci/linux-wpt-fyi-rel"],
+    mirrors = ["ci/linux-wpt-chromium-rel"],
     try_settings = builder_config.try_settings(
-        retry_failed_shards = False,
+        retry_failed_shards = True,
     ),
+    gn_args = "ci/linux-wpt-chromium-rel",
     os = os.LINUX_DEFAULT,
     contact_team_email = "chrome-blink-engprod@google.com",
     main_list_view = "try",

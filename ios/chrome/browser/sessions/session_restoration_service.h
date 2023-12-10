@@ -23,12 +23,6 @@ class WebState;
 }  // namespace web
 
 // Service responsible for session saving and restoration.
-//
-// This service is only used when the optimized session restoration
-// feature (web::features::kEnableSessionSerializationOptimizations)
-// is enabled.
-//
-// TODO(crbug.com/1383087): Update this comment once launched.
 class SessionRestorationService : public KeyedService {
  public:
   SessionRestorationService() = default;
@@ -93,6 +87,10 @@ class SessionRestorationService : public KeyedService {
   // specific sequence.
   virtual void InvokeClosureWhenBackgroundProcessingDone(
       base::OnceClosure closure) = 0;
+
+  // Removes any persisted data that is no longer needed and invokes
+  // `closure` on the calling sequence when done.
+  virtual void PurgeUnassociatedData(base::OnceClosure closure) = 0;
 };
 
 #endif  // IOS_CHROME_BROWSER_SESSIONS_SESSION_RESTORATION_SERVICE_H_

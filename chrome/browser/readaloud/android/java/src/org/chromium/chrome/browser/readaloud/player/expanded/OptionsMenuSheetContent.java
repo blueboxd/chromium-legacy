@@ -11,7 +11,6 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.Log;
 import org.chromium.chrome.browser.readaloud.player.InteractionHandler;
 import org.chromium.chrome.browser.readaloud.player.R;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
@@ -66,16 +65,10 @@ class OptionsMenuSheetContent extends MenuSheetContent {
 
         mMenu.addItem(
                 Item.VOICE,
-                R.drawable.graphic_eq_24,
+                R.drawable.voice_selection_24,
                 res.getString(R.string.readaloud_voice_menu_title),
                 MenuItem.Action.EXPAND,
                 res.getString(R.string.readaloud_voice_menu_title));
-        mMenu.addItem(
-                Item.TRANSLATE,
-                R.drawable.translate_24,
-                res.getString(R.string.readaloud_translate_menu_title),
-                MenuItem.Action.EXPAND,
-                res.getString(R.string.readaloud_translate_menu_title));
         mMenu.addItem(
                 Item.HIGHLIGHT,
                 R.drawable.format_ink_highlighter_24,
@@ -104,8 +97,14 @@ class OptionsMenuSheetContent extends MenuSheetContent {
     }
 
     @Override
-    public void notifySheetClosed() {
-        super.notifySheetClosed();
+    public void notifySheetClosed(BottomSheetContent closingContent) {
+        super.notifySheetClosed(closingContent);
+        if (closingContent == mVoiceSheet && mHandler != null) {
+            mHandler.onVoiceMenuClosed();
+        }
+        if (mVoiceSheet != null) {
+            mVoiceSheet.notifySheetClosed(closingContent);
+        }
     }
 
     @Nullable
@@ -125,11 +124,6 @@ class OptionsMenuSheetContent extends MenuSheetContent {
                                     mModel);
                 }
                 openSheet(mVoiceSheet);
-                break;
-
-            case Item.TRANSLATE:
-                Log.i(TAG, "Translate menu item not implemented.");
-                // TODO: open translate sheet
                 break;
 
             case Item.HIGHLIGHT:

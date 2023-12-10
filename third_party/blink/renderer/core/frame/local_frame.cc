@@ -573,7 +573,7 @@ bool LocalFrame::NavigationShouldReplaceCurrentHistoryEntry(
 
   if (ShouldMaintainTrivialSessionHistory()) {
     // TODO(http://crbug.com/1197384): We may want to assert that
-    // WebFrameLoadType is never kStandard in prerendered pages/portals before
+    // WebFrameLoadType is never kStandard in prerendered pages before
     // commit. DCHECK can be in FrameLoader::CommitNavigation or somewhere
     // similar.
     return true;
@@ -608,10 +608,7 @@ bool LocalFrame::NavigationShouldReplaceCurrentHistoryEntry(
 bool LocalFrame::ShouldMaintainTrivialSessionHistory() const {
   // This should be kept in sync with
   // NavigationControllerImpl::ShouldMaintainTrivialSessionHistory.
-  //
-  // TODO(mcnee): Similarly, we need to restrict orphaned contexts.
-  return GetPage()->InsidePortal() || GetDocument()->IsPrerendering() ||
-         IsInFencedFrameTree();
+  return GetDocument()->IsPrerendering() || IsInFencedFrameTree();
 }
 
 bool LocalFrame::DetachImpl(FrameDetachType type) {
@@ -1590,6 +1587,15 @@ void LocalFrame::UpdateViewportSegmentCSSEnvironmentVariables(
   }
 }
 
+void LocalFrame::OverrideDevicePostureForEmulation(
+    device::mojom::blink::DevicePostureType device_posture_param) {
+  mojo_handler_->OverrideDevicePostureForEmulation(device_posture_param);
+}
+
+void LocalFrame::DisableDevicePostureOverrideForEmulation() {
+  mojo_handler_->DisableDevicePostureOverrideForEmulation();
+}
+
 device::mojom::blink::DevicePostureType LocalFrame::GetDevicePosture() {
   return mojo_handler_->GetDevicePosture();
 }
@@ -1723,8 +1729,8 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
                               ? interface_registry
                               : InterfaceRegistry::GetEmptyInterfaceRegistry()),
       v8_local_compile_hints_producer_(
-          MakeGarbageCollected<
-              v8_compile_hints::V8LocalCompileHintsProducer>()) {
+          MakeGarbageCollected<v8_compile_hints::V8LocalCompileHintsProducer>(
+              this)) {
   auto frame_tracking_result =
       GetLocalFramesMap().insert(FrameToken::Hasher()(GetFrameToken()), this);
   CHECK(frame_tracking_result.stored_value) << "Inserting a duplicate item.";
@@ -2568,11 +2574,9 @@ const base::UnguessableToken& LocalFrame::GetAgentClusterId() const {
 }
 
 void LocalFrame::OnTaskCompleted(base::TimeTicks start_time,
-                                 base::TimeTicks end_time,
-                                 base::TimeTicks desired_execution_time) {
+                                 base::TimeTicks end_time) {
   if (FrameWidget* widget = GetWidgetForLocalRoot()) {
-    widget->OnTaskCompletedForFrame(start_time, end_time,
-                                    desired_execution_time, this);
+    widget->OnTaskCompletedForFrame(start_time, end_time, this);
   }
 }
 
@@ -2580,11 +2584,16 @@ void LocalFrame::MainFrameInteractive() {
   if (Page* page = GetPage()) {
     page->GetV8CrowdsourcedCompileHintsProducer().GenerateData();
   }
-  v8_local_compile_hints_producer_->GenerateData(this);
+  v8_local_compile_hints_producer_->GenerateData();
 }
 
 mojom::blink::ReportingServiceProxy* LocalFrame::GetReportingService() {
   return mojo_handler_->ReportingService();
+}
+
+device::mojom::blink::DevicePostureProvider*
+LocalFrame::GetDevicePostureProvider() {
+  return mojo_handler_->DevicePostureProvider();
 }
 
 // static
@@ -2889,9 +2898,10 @@ void LocalFrame::LoadJavaScriptURL(const KURL& url) {
   // into the omnibox.  See https://crbug.com/1082900
   NotifyUserActivation(
       mojom::blink::UserActivationNotificationType::kInteraction, false);
-  DomWindow()->GetScriptController().ExecuteJavaScriptURL(
+  auto* window = DomWindow();
+  window->GetScriptController().ExecuteJavaScriptURL(
       url, network::mojom::CSPDisposition::DO_NOT_CHECK,
-      &DOMWrapperWorld::MainWorld());
+      &DOMWrapperWorld::MainWorld(window->GetIsolate()));
 }
 
 void LocalFrame::RequestExecuteScript(
@@ -2908,7 +2918,7 @@ void LocalFrame::RequestExecuteScript(
   ExecuteScriptPolicy execute_script_policy;
   CHECK(!IsProvisional());
   if (world_id == DOMWrapperWorld::kMainWorldId) {
-    world = &DOMWrapperWorld::MainWorld();
+    world = &DOMWrapperWorld::MainWorld(ToIsolate(this));
     execute_script_policy =
         ExecuteScriptPolicy::kDoNotExecuteScriptWhenScriptsDisabled;
   } else {
@@ -3403,6 +3413,8 @@ void LocalFrame::MediaPlayerActionAtViewportPoint(
 
 void LocalFrame::RequestVideoFrameAt(
     const gfx::Point& viewport_position,
+    const gfx::Size& max_size,
+    int max_area,
     base::OnceCallback<void(const gfx::ImageSkia&)> callback) {
   HitTestResult result = HitTestResultForVisualViewportPos(viewport_position);
   Node* node = result.InnerNode();
@@ -3413,7 +3425,23 @@ void LocalFrame::RequestVideoFrameAt(
     return;
   }
 
-  auto image = video->CreateStaticBitmapImage();
+  // Scale to match the max dimensions if needed, to reduce data sent over IPC.
+  // This is to match the algorithm in gfx::ResizedImageForMaxDimensions().
+  // TODO(crbug.com/1508722): Revisit to see whether we need both `max_size` and
+  // `max_area`, which seems redundant.
+  auto size = video->BitmapSourceSize();
+  if ((size.width() > max_size.width() || size.height() > max_size.height()) &&
+      size.GetArea() > max_area) {
+    double scale =
+        std::min(static_cast<double>(max_size.width()) / size.width(),
+                 static_cast<double>(max_size.height()) / size.height());
+    int width = std::clamp<int>(scale * size.width(), 1, max_size.width());
+    int height = std::clamp<int>(scale * size.height(), 1, max_size.height());
+    size = gfx::Size(width, height);
+  }
+
+  auto image =
+      video->CreateStaticBitmapImage(/*allow_accelerated_images=*/true, size);
   if (!image) {
     std::move(callback).Run(gfx::ImageSkia());
     return;

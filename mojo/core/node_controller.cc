@@ -5,9 +5,7 @@
 #include "mojo/core/node_controller.h"
 
 #include <limits>
-#include <vector>
 
-#include <optional>
 #include "base/containers/contains.h"
 #include "base/containers/queue.h"
 #include "base/functional/bind.h"
@@ -16,7 +14,6 @@
 #include "base/process/process_handle.h"
 #include "base/rand_util.h"
 #include "base/ranges/algorithm.h"
-#include "base/strings/string_piece.h"
 #include "base/task/current_thread.h"
 #include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
@@ -275,7 +272,7 @@ void NodeController::AcceptBrokerClientInvitation(
 
 void NodeController::ConnectIsolated(ConnectionParams connection_params,
                                      const ports::PortRef& port,
-                                     base::StringPiece connection_name) {
+                                     std::string_view connection_name) {
   io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&NodeController::ConnectIsolatedOnIOThread,
@@ -1494,7 +1491,7 @@ NodeController::IsolatedConnection::IsolatedConnection(
 NodeController::IsolatedConnection::IsolatedConnection(
     scoped_refptr<NodeChannel> channel,
     const ports::PortRef& local_port,
-    base::StringPiece name)
+    std::string_view name)
     : channel(std::move(channel)), local_port(local_port), name(name) {}
 
 NodeController::IsolatedConnection::~IsolatedConnection() = default;

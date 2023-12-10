@@ -278,7 +278,8 @@ base::expected<Operand, std::string> ValidateConv2dBiasAndCreateOutputOperand(
           "The bias shape should be [%u].", output_info.channels));
     }
     if (attributes.bias_operand->data_type != input.data_type) {
-      return base::unexpected("The bias type doesn't match input type.");
+      return base::unexpected(
+          "The bias data type doesn't match input data type.");
     }
   }
 
@@ -298,6 +299,33 @@ base::expected<Operand, std::string> ValidateConv2dBiasAndCreateOutputOperand(
   }
 
   return Operand(input.data_type, std::move(output_shape));
+}
+
+// Validate the axes and infer output for reduce operations.
+base::expected<std::vector<uint32_t>, std::string>
+ValidateReduceAxesAndInferOutput(base::span<const uint32_t> input_dimensions,
+                                 base::span<const uint32_t> axes,
+                                 bool keep_dimensions) {
+  auto input_rank = input_dimensions.size();
+  auto validation_result = ValidateAxes(axes, input_rank);
+  if (!validation_result.has_value()) {
+    return base::unexpected(validation_result.error());
+  }
+
+  std::vector<uint32_t> output_shape;
+  if (keep_dimensions) {
+    output_shape.assign(input_dimensions.begin(), input_dimensions.end());
+    for (auto axis : axes) {
+      output_shape[axis] = 1;
+    }
+  } else {
+    for (size_t i = 0; i < input_rank; i++) {
+      if (!base::Contains(axes, i)) {
+        output_shape.push_back(input_dimensions[i]);
+      }
+    }
+  }
+  return output_shape;
 }
 
 }  // namespace
@@ -335,6 +363,10 @@ std::string DataTypeToString(Operand::DataType data_type) {
       return "int32";
     case Operand::DataType::kUint32:
       return "uint32";
+    case Operand::DataType::kInt64:
+      return "int64";
+    case Operand::DataType::kUint64:
+      return "uint64";
     case Operand::DataType::kInt8:
       return "int8";
     case Operand::DataType::kUint8:
@@ -361,13 +393,27 @@ base::expected<Operand, std::string> ValidateSoftmaxAndInferOutput(
   if (input.dimensions.size() != 2) {
     return base::unexpected("The input must be a 2-D tensor.");
   }
-  // The input type must be one of the floating point types.
+  // The input data type must be one of the floating point types.
   if (!IsFloatingPointType(input.data_type)) {
     return base::unexpected(
-        "The input type must be one of the floating point types.");
+        "The input data type must be one of the floating point types.");
   }
   // The output tensor of softmax is the same shape as the input tensor.
   return Operand(input.data_type, std::move(input.dimensions));
+}
+
+base::expected<Operand, std::string> ValidateArgMinMaxAndInferOutput(
+    const Operand& input,
+    base::span<const uint32_t> axes,
+    bool keep_dimensions) {
+  auto validated_output_shape =
+      ValidateReduceAxesAndInferOutput(input.dimensions, axes, keep_dimensions);
+  if (!validated_output_shape.has_value()) {
+    return base::unexpected(validated_output_shape.error());
+  }
+
+  return Operand(Operand::DataType::kInt64,
+                 std::move(validated_output_shape.value()));
 }
 
 base::expected<std::vector<Operand>, std::string> ValidateSplitAndInferOutput(
@@ -434,6 +480,98 @@ base::expected<std::vector<Operand>, std::string> ValidateSplitAndInferOutput(
   return outputs;
 }
 
+// This helper method is intended to validate mean, variance, scale and bias
+// operands of batchNormalization and instanceNormalization against the input
+// operand. These operands share the same constraint.
+base::expected<void, std::string>
+ValidateNormalizationOperandIsCompatibleWithInput(
+    const Operand& operand,
+    const Operand::DataType input_data_type,
+    size_t input_size_on_axis) {
+  if (operand.data_type != input_data_type) {
+    return base::unexpected("the data type doesn't match the input data type.");
+  }
+  if (operand.dimensions.size() != 1) {
+    return base::unexpected("the operand should be a 1-D tensor.");
+  }
+
+  if (operand.dimensions[0] != input_size_on_axis) {
+    return base::unexpected(
+        "the size of operand must be equal to the size of the feature "
+        "dimension of the input.");
+  }
+
+  return base::ok();
+}
+
+BatchNormalizationAttributes::BatchNormalizationAttributes() = default;
+BatchNormalizationAttributes::~BatchNormalizationAttributes() = default;
+
+BatchNormalizationAttributes::BatchNormalizationAttributes(
+    BatchNormalizationAttributes&& other) = default;
+BatchNormalizationAttributes& BatchNormalizationAttributes::operator=(
+    BatchNormalizationAttributes&& other) = default;
+
+base::expected<Operand, std::string> ValidateBatchNormalizationAndInferOutput(
+    const Operand& input,
+    const Operand& mean,
+    const Operand& variance,
+    const BatchNormalizationAttributes& attributes) {
+  // Validate input type.
+  if (!IsFloatingPointType(input.data_type)) {
+    return base::unexpected(
+        "The input type must be one of the floating point types.");
+  }
+  if (base::MakeStrictNum(attributes.axis) >= input.dimensions.size()) {
+    return base::unexpected(
+        "The value of axis must be in the range [0, N-1] where N is the rank "
+        "of the input tensor.");
+  }
+
+  auto input_size_on_axis = input.dimensions[attributes.axis];
+  auto input_data_type = input.data_type;
+  // Validate mean operand.
+  const auto validation_mean =
+      ValidateNormalizationOperandIsCompatibleWithInput(mean, input_data_type,
+                                                        input_size_on_axis);
+  if (!validation_mean.has_value()) {
+    return base::unexpected("For mean operand: " + validation_mean.error());
+  }
+
+  // Validate variance operand.
+  const auto validation_variance =
+      ValidateNormalizationOperandIsCompatibleWithInput(
+          variance, input_data_type, input_size_on_axis);
+  if (!validation_variance.has_value()) {
+    return base::unexpected("For variance operand: " +
+                            validation_variance.error());
+  }
+
+  // Validate scale operand.
+  if (attributes.scale) {
+    const auto validation_scale =
+        ValidateNormalizationOperandIsCompatibleWithInput(
+            attributes.scale.value(), input_data_type, input_size_on_axis);
+    if (!validation_scale.has_value()) {
+      return base::unexpected("For scale operand: " + validation_scale.error());
+    }
+  }
+
+  // Validate bias operand.
+  if (attributes.bias) {
+    const auto validation_bias =
+        ValidateNormalizationOperandIsCompatibleWithInput(
+            attributes.bias.value(), input_data_type, input_size_on_axis);
+    if (!validation_bias.has_value()) {
+      return base::unexpected("For bias operand: " + validation_bias.error());
+    }
+  }
+
+  // The output tensor of batchNormalization is the same shape as the input
+  // tensor.
+  return Operand(input_data_type, std::move(input.dimensions));
+}
+
 Conv2dAttributesBase::Conv2dAttributesBase() = default;
 Conv2dAttributesBase::~Conv2dAttributesBase() = default;
 
@@ -460,7 +598,8 @@ base::expected<Operand, std::string> ValidateConv2dAndInferOutput(
   }
   // Validate filter operand.
   if (filter.data_type != input.data_type) {
-    return base::unexpected("The filter type doesn't match the input type.");
+    return base::unexpected(
+        "The filter data type doesn't match the input data type.");
   }
   const auto filter_shape = filter.dimensions;
   if (filter_shape.size() != 4) {
@@ -549,7 +688,8 @@ base::expected<Operand, std::string> ValidateConvTranspose2dAndInferOutput(
   }
   // Validate filter operand.
   if (filter.data_type != input.data_type) {
-    return base::unexpected("The filter type doesn't match the input type.");
+    return base::unexpected(
+        "The filter data type doesn't match the input data type.");
   }
   const auto filter_shape = filter.dimensions;
   if (filter_shape.size() != 4) {
@@ -702,7 +842,7 @@ base::expected<Operand, std::string> ValidateMatmulAndInferOutput(
     const Operand& a,
     const Operand& b) {
   if (a.data_type != b.data_type) {
-    return base::unexpected("The types of first two inputs don't match.");
+    return base::unexpected("The data types of first two inputs don't match.");
   }
 
   std::vector<uint32_t> a_dimensions = a.dimensions;
@@ -968,6 +1108,51 @@ base::expected<Operand, std::string> ValidateResample2dAndInferOutput(
   return Operand(input.data_type, std::move(output_shape));
 }
 
+base::expected<Operand, std::string> ValidateGatherAndInferOutput(
+    const Operand& input,
+    const Operand& indices,
+    const uint32_t axis) {
+  const auto& input_dimensions = input.dimensions;
+  const auto input_rank = input_dimensions.size();
+  if (input_rank == 0) {
+    return base::unexpected("The input should not be a scalar.");
+  }
+
+  if (base::MakeStrictNum(input_rank) <= axis) {
+    return base::unexpected(
+        "The axis must be in the range [0, N-1] where N is the rank of input "
+        "tensor.");
+  }
+
+  if (!DataTypeConstraint::kGatherOperatorIndexDataTypes.Has(
+          indices.data_type)) {
+    return base::unexpected(base::StringPrintf(
+        "The indices type must be one of the %s types.",
+        DataTypeConstraintToString(
+            DataTypeConstraint::kGatherOperatorIndexDataTypes)
+            .c_str()));
+  }
+
+  const auto& indices_dimensions = indices.dimensions;
+  auto checked_output_rank =
+      base::MakeCheckedNum<size_t>(input_rank) - 1 + indices_dimensions.size();
+  if (!checked_output_rank.IsValid()) {
+    return base::unexpected("The output rank is too large.");
+  }
+
+  std::vector<uint32_t> output_shape;
+  output_shape.reserve(checked_output_rank.ValueOrDie());
+  for (size_t i = 0; i < input_rank; ++i) {
+    if (i == axis) {
+      base::ranges::copy(indices_dimensions, std::back_inserter(output_shape));
+    } else {
+      output_shape.push_back(input_dimensions[i]);
+    }
+  }
+
+  return Operand(input.data_type, std::move(output_shape));
+}
+
 GemmAttributes::GemmAttributes() = default;
 GemmAttributes::~GemmAttributes() = default;
 
@@ -979,7 +1164,7 @@ base::expected<Operand, std::string> ValidateGemmAndInferOutput(
     const Operand& b,
     const GemmAttributes& attributes) {
   if (a.data_type != b.data_type) {
-    return base::unexpected("The types of first two inputs don't match.");
+    return base::unexpected("The data types of first two inputs don't match.");
   }
   // According to WebNN spec:
   // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-gemm, the first input 2-D
@@ -1017,7 +1202,7 @@ base::expected<Operand, std::string> ValidateGemmAndInferOutput(
   if (attributes.c_operand) {
     if (attributes.c_operand->data_type != a.data_type) {
       return base::unexpected(
-          "The third input type doesn't match other inputs' type.");
+          "The third input data type doesn't match other inputs' data type.");
     }
     const auto shape_c = attributes.c_operand->dimensions;
     if (shape_c.size() > 2) {
@@ -1031,6 +1216,130 @@ base::expected<Operand, std::string> ValidateGemmAndInferOutput(
     }
   }
   return Operand(a.data_type, std::move(output_shape));
+}
+
+InstanceNormalizationAttributes::InstanceNormalizationAttributes() = default;
+InstanceNormalizationAttributes::~InstanceNormalizationAttributes() = default;
+
+InstanceNormalizationAttributes::InstanceNormalizationAttributes(
+    InstanceNormalizationAttributes&& other) = default;
+InstanceNormalizationAttributes& InstanceNormalizationAttributes::operator=(
+    InstanceNormalizationAttributes&& other) = default;
+
+base::expected<Operand, std::string>
+ValidateInstanceNormalizationAndInferOutput(
+    const Operand& input,
+    const InstanceNormalizationAttributes& attributes) {
+  auto input_data_type = input.data_type;
+  // Validate the input operand.
+  if (!IsFloatingPointType(input_data_type)) {
+    return base::unexpected(
+        "The input type must be one of the floating point types.");
+  }
+
+  const auto& input_dimensions = input.dimensions;
+  if (input_dimensions.size() != 4) {
+    return base::unexpected("The input should be a 4-D tensor.");
+  }
+
+  uint32_t axis;
+  switch (attributes.layout) {
+    case InputOperandLayout::kNchw:
+      axis = 1;
+      break;
+    case InputOperandLayout::kNhwc:
+      axis = 3;
+      break;
+  }
+
+  // Validate scale operand.
+  if (attributes.scale.has_value()) {
+    const auto validation_scale =
+        ValidateNormalizationOperandIsCompatibleWithInput(
+            attributes.scale.value(), input_data_type, input_dimensions[axis]);
+    if (!validation_scale.has_value()) {
+      return base::unexpected("For scale operand: " + validation_scale.error());
+    }
+  }
+
+  // Validate the bias operand.
+  if (attributes.bias.has_value()) {
+    const auto validation_bias =
+        ValidateNormalizationOperandIsCompatibleWithInput(
+            attributes.bias.value(), input_data_type, input_dimensions[axis]);
+    if (!validation_bias.has_value()) {
+      return base::unexpected("For bias operand: " + validation_bias.error());
+    }
+  }
+
+  return Operand(input_data_type, std::move(input_dimensions));
+}
+
+LayerNormalizationAttributes::LayerNormalizationAttributes() = default;
+LayerNormalizationAttributes::~LayerNormalizationAttributes() = default;
+
+LayerNormalizationAttributes::LayerNormalizationAttributes(
+    LayerNormalizationAttributes&& other) = default;
+LayerNormalizationAttributes& LayerNormalizationAttributes::operator=(
+    LayerNormalizationAttributes&& other) = default;
+
+base::expected<Operand, std::string> ValidateLayerNormalizationAndInferOutput(
+    const Operand& input,
+    base::span<const uint32_t> axes,
+    const LayerNormalizationAttributes& attributes) {
+  // Validate the input operand.
+  if (!IsFloatingPointType(input.data_type)) {
+    return base::unexpected(
+        "The input type must be one of the floating point types.");
+  }
+
+  const auto& input_dimensions = input.dimensions;
+  const size_t input_rank = input_dimensions.size();
+
+  // Ensure that the axes are all less than the input rank and have no
+  // duplication.
+  const auto axes_validation_result = ValidateAxes(axes, input_rank);
+  if (!axes_validation_result.has_value()) {
+    return base::unexpected(axes_validation_result.error());
+  }
+
+  // The dimensions for layerNormalization to reduce along.
+  std::vector<uint32_t> reduction_dimensions;
+  reduction_dimensions.reserve(axes.size());
+  base::ranges::transform(
+      axes, std::back_inserter(reduction_dimensions),
+      [input_dimensions](uint32_t axis) { return input_dimensions[axis]; });
+
+  // Validate the scale operand.
+  if (attributes.scale.has_value()) {
+    const auto& scale = attributes.scale.value();
+    if (scale.data_type != input.data_type) {
+      return base::unexpected(
+          "For scale operand: the data type doesn't match the input data "
+          "type.");
+    }
+    if (scale.dimensions != reduction_dimensions) {
+      return base::unexpected(
+          "For scale operand: the shape doesn't match the axis dimensions of "
+          "the input.");
+    }
+  }
+
+  // Validate the bias operand.
+  if (attributes.bias.has_value()) {
+    const auto& bias = attributes.bias.value();
+    if (bias.data_type != input.data_type) {
+      return base::unexpected(
+          "For bias operand: the data type doesn't match the input data type.");
+    }
+    if (bias.dimensions != reduction_dimensions) {
+      return base::unexpected(
+          "For bias operand: the shape doesn't match the axis dimensions of "
+          "the input.");
+    }
+  }
+
+  return Operand(input.data_type, std::move(input.dimensions));
 }
 
 base::expected<Operand, std::string> ValidateConcatAndInferOutput(
@@ -1056,7 +1365,7 @@ base::expected<Operand, std::string> ValidateConcatAndInferOutput(
   // The loop skips the first input to avoid repeated checks.
   for (size_t i = 1; i < inputs.size(); ++i) {
     if (inputs[i].data_type != output_type) {
-      return base::unexpected("The input types don't match.");
+      return base::unexpected("The input data types don't match.");
     }
     // According to WebNN spec:
     // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-concat, all input tensors
@@ -1100,11 +1409,12 @@ base::expected<Operand, std::string> ValidatePreluAndInferOutput(
     const Operand& slope) {
   if (input.data_type != slope.data_type) {
     return base::unexpected(
-        "The type of slope doesn't match the type of input.");
+        "The data type of slope doesn't match the data type of input.");
   }
   if (!IsFloatingPointType(input.data_type)) {
     return base::unexpected(
-        "The type of input and slope must be one of the floating point types.");
+        "The data type of input and slope must be one of the floating point "
+        "types.");
   }
   // BroadcastShape unidirectionally broadcasts slope.dimensions to
   // input.dimensions.
@@ -1206,35 +1516,51 @@ base::expected<Operand, std::string> ValidateReduceAndInferOutput(
     const Operand& input,
     base::span<const uint32_t> axes,
     bool keep_dimensions) {
-  auto input_dimensions = input.dimensions;
-  auto input_rank = input_dimensions.size();
-  auto validation_result = ValidateAxes(axes, input_rank);
-  if (!validation_result.has_value()) {
-    return base::unexpected(validation_result.error());
-  }
-
   if (kind == ReduceKind::kL2 || kind == ReduceKind::kMean ||
       kind == ReduceKind::kLogSum || kind == ReduceKind::kLogSumExp) {
     if (!IsFloatingPointType(input.data_type)) {
       return base::unexpected(
-          "The input type must be one of the floating point types.");
+          "The input data type must be one of the floating point types.");
     }
   }
 
-  std::vector<uint32_t> output_shape;
-  if (keep_dimensions) {
-    output_shape = input_dimensions;
-    for (auto axis : axes) {
-      output_shape[axis] = 1;
-    }
-  } else {
-    for (size_t i = 0; i < input_rank; i++) {
-      if (!base::Contains(axes, i)) {
-        output_shape.push_back(input_dimensions[i]);
-      }
-    }
+  auto validated_output_shape =
+      ValidateReduceAxesAndInferOutput(input.dimensions, axes, keep_dimensions);
+  if (!validated_output_shape.has_value()) {
+    return base::unexpected(validated_output_shape.error());
   }
-  return Operand(input.data_type, std::move(output_shape));
+
+  return Operand(input.data_type, std::move(validated_output_shape.value()));
+}
+
+base::expected<Operand, std::string> ValidateWhereAndInferOutput(
+    const Operand& condition,
+    const Operand& true_value,
+    const Operand& false_value) {
+  if (condition.data_type != Operand::DataType::kUint8) {
+    return base::unexpected("The condition data type must be uint8.");
+  }
+
+  if (true_value.data_type != false_value.data_type) {
+    return base::unexpected(
+        "The data types of true_value and false_value don't match.");
+  }
+
+  const auto value_shape =
+      BroadcastShapes(true_value.dimensions, false_value.dimensions, true);
+  if (!value_shape) {
+    return base::unexpected(
+        "The shapes of true_value and false_value are not broadcastable.");
+  }
+
+  const auto output_shape =
+      BroadcastShapes(condition.dimensions, value_shape.value(), true);
+  if (!output_shape) {
+    return base::unexpected(
+        "The condition shape is not broadcastable to the shape broadcasted "
+        "from true_value and false_value.");
+  }
+  return Operand(true_value.data_type, std::move(output_shape.value()));
 }
 
 base::expected<size_t, std::string> ValidateAndCalculateElementsNumber(
@@ -1269,13 +1595,12 @@ base::expected<size_t, std::string> ValidateAndCalculateByteLength(
 }
 
 base::expected<void, std::string> ValidateAxes(base::span<const uint32_t> axes,
-                                               uint32_t rank) {
+                                               const size_t rank) {
   if (base::ranges::any_of(axes, [rank](uint32_t axis) {
         return base::MakeStrictNum(axis) >= rank;
       })) {
     return base::unexpected(base::StringPrintf(
-        "The values in axes must be within the range from 0 to (%u).",
-        rank - 1));
+        "The values in axes must be in the range [0, %zu).", rank));
   }
 
   if (axes.size() != std::set<uint32_t>(axes.begin(), axes.end()).size()) {

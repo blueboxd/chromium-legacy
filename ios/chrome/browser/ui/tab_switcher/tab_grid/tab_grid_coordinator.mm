@@ -22,7 +22,7 @@
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/find_in_page/model/find_tab_helper.h"
 #import "ios/chrome/browser/find_in_page/model/util.h"
-#import "ios/chrome/browser/main/browser_util.h"
+#import "ios/chrome/browser/main/model/browser_util.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/reading_list/model/reading_list_browser_agent.h"
 #import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
@@ -93,7 +93,6 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_tabs_mediator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_context_menu_helper.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_item.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_coordinator+private.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_mediator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_paging.h"
@@ -336,6 +335,9 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
   // A modal may be presented on top of the Recent Tabs or tab grid.
   [self.baseViewController dismissModals];
   self.baseViewController.tabGridMode = TabGridModeNormal;
+
+  [_incognitoGridCoordinator stopChildCoordinators];
+  [_regularGridCoordinator stopChildCoordinators];
 
   [self dismissPopovers];
 
@@ -1022,6 +1024,13 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
                              title:nil
                            message:nil
                      barButtonItem:buttonAnchor];
+
+    // IOS 17 Bug: The alert arrow direction presentation is broken.
+    // Workaround: Specifically set the popover arrow direction. (crbug/1490535)
+    if (@available(iOS 17, *)) {
+      self.actionSheetCoordinator.popoverArrowDirection =
+          UIPopoverArrowDirectionDown | UIPopoverArrowDirectionUp;
+    }
   } else {
     base::RecordAction(base::UserMetricsAction(
         "MobileTabGridSelectionCloseIncognitoTabsConfirmationPresented"));

@@ -81,11 +81,6 @@ class NET_EXPORT_PRIVATE ProxyList {
   // Returns true if |*this| lists the same proxies as |other|.
   bool Equals(const ProxyList& other) const;
 
-  // Returns the single server of the first proxy chain in the list. It is only
-  // valid to call this if !IsEmpty() and no chains in the list are multi-proxy.
-  // TODO(crbug.com/1491092): Remove this method.
-  const ProxyServer& Get() const;
-
   // Returns the first proxy chain in the list.
   const ProxyChain& First() const;
 
@@ -106,8 +101,15 @@ class NET_EXPORT_PRIVATE ProxyList {
   void SetFromPacString(const std::string& pac_string);
 
   // Returns a PAC-style semicolon-separated list of valid proxy servers.
-  // For example: "PROXY xxx.xxx.xxx.xxx:xx; SOCKS yyy.yyy.yyy:yy".
+  // For example: "PROXY xxx.xxx.xxx.xxx:xx; SOCKS yyy.yyy.yyy:yy". This is
+  // only valid if the list contains no multi-proxy chains, as those cannot
+  // be represented in PAC syntax.
   std::string ToPacString() const;
+
+  // Returns a semicolon-separated list of proxy chain debug representations.
+  // For single-proxy chains, this is just the PAC representation of the proxy;
+  // otherwise the chain is displayed in `[..]`.
+  std::string ToDebugString() const;
 
   // Returns a serialized value for the list.
   base::Value ToValue() const;

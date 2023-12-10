@@ -412,6 +412,14 @@ NET_EXPORT extern const base::FeatureParam<base::TimeDelta>
 NET_EXPORT extern const base::FeatureParam<base::TimeDelta>
     kIpPrivacyProxyListMinFetchInterval;
 
+// Overrides the ProxyA hostname normally set by the proxylist fetch.
+NET_EXPORT extern const base::FeatureParam<std::string>
+    kIpPrivacyProxyAHostnameOverride;
+
+// Overrides the ProxyB hostname normally set by the proxylist fetch.
+NET_EXPORT extern const base::FeatureParam<std::string>
+    kIpPrivacyProxyBHostnameOverride;
+
 // Controls whether IP Protection _proxying_ is bypassed by not including any
 // of the proxies in the proxy list. This supports experimental comparison of
 // connections that _would_ have been proxied, but were not.
@@ -478,8 +486,19 @@ NET_EXPORT BASE_DECLARE_FEATURE(kReceiveEcn);
 
 NET_EXPORT BASE_DECLARE_FEATURE(kNewCertPathBuilderIterationLimit);
 
-// Enables using the new ALPS codepoint to negotiate application settings.
-NET_EXPORT BASE_DECLARE_FEATURE(kUseAlpsNewCodepoint);
+// Enables using the new ALPS codepoint to negotiate application settings for
+// HTTP2.
+NET_EXPORT BASE_DECLARE_FEATURE(kUseNewAlpsCodepointHttp2);
+
+// Enables using the new ALPS codepoint to negotiate application settings for
+// QUIC.
+NET_EXPORT BASE_DECLARE_FEATURE(kUseNewAlpsCodepointQUIC);
+
+// Treat HTTP header `Expires: "0"` as expired value according section 5.3 on
+// RFC 9111.
+// TODO(https://crbug.com/853508): Remove after the bug fix will go well for a
+// while on stable channels.
+NET_EXPORT BASE_DECLARE_FEATURE(kTreatHTTPExpiresHeaderValueZeroAsExpired);
 
 }  // namespace net::features
 

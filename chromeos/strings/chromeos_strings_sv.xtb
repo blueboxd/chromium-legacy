@@ -23,14 +23,14 @@
 <translation id="1145018782460575098">Fönstret Uppdatera firmware för externa enheter är öppet. <ph name="NUM_UPDATES" /> uppdateringar är tillgängliga.</translation>
 <translation id="1145516343487477149">Hitta hjälpartiklar och svar på vanliga frågor om Chromebook</translation>
 <translation id="1154390310959620237">Du kan bara anpassa fem kortkommandon. Du måste radera ett kortkommando innan du kan lägga till ett nytt.</translation>
-<translation id="1164939766849482256">Skärmsläckare med gryning till skymning</translation>
+<translation id="1164939766849482256">Morgon till kväll-skärmsläckare</translation>
 <translation id="1167755866710282443">Öppna menyn för att anpassa tangenter. Flytta menyn genom att trycka och dra.</translation>
 <translation id="1174073918202301297">Genvägen har lagts till</translation>
 <translation id="1175697296044146566">Denna <ph name="DEVICE_TYPE" /> hanteras av <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Genomsnittlig (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Ta bort</translation>
+<translation id="1191518099344003522">APN är aktiverat.</translation>
 <translation id="1195447618553298278">Okänt fel.</translation>
-<translation id="1195784767091936222">Aktivera automatiskt mörkt läge</translation>
 <translation id="1196959502276349371">Version <ph name="VERSION" /></translation>
 <translation id="1199355487114804640">Uppspelnings-/paustangenten</translation>
 <translation id="1201402288615127009">Nästa</translation>
@@ -81,6 +81,7 @@
 <translation id="1515129336378114413">webbläsarens startsida</translation>
 <translation id="1526389707933164996">Animation för skärmsläckaren</translation>
 <translation id="152892567002884378">Höj volymen</translation>
+<translation id="1539242642795599947">APN är av typen standard och anknytning.</translation>
 <translation id="1555130319947370107">Blå</translation>
 <translation id="155865706765934889">Styrplatta</translation>
 <translation id="1561927818299383735">bakgrundsbelysningsfärg</translation>
@@ -150,7 +151,6 @@
 <translation id="1923388006036088459">Accentfärger</translation>
 <translation id="1947737735496445907">Utskrivet</translation>
 <translation id="1951012854035635156">Assistent</translation>
-<translation id="1954687945444914660">fotografi</translation>
 <translation id="1962550982027027473">Ett standard-APN krävs</translation>
 <translation id="1973886230221301399">ChromeVox</translation>
 <translation id="1977994649430373166">Profilbild på Google</translation>
@@ -259,6 +259,7 @@
 <translation id="2872961005593481000">Stäng av</translation>
 <translation id="2873483161362553159">Webbläsarnavigering</translation>
 <translation id="2874939134665556319">Föregående spår</translation>
+<translation id="2875812231449496375">Aktivera detta för bästa resultat med den här bakgrunden. Du kan inaktivera den här inställningen när som helst.</translation>
 <translation id="2878387241690264070"><ph name="RATE" /> urladdat på <ph name="NUM_SECONDS" /> sekunder.</translation>
 <translation id="2880569433548999039">Skärmsläckare med moln</translation>
 <translation id="2926057806159140518">Ange användarnamn och lösenord eller läs av QR-koden</translation>
@@ -279,14 +280,13 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">Enheten är ansluten.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Vill du ta bort sidan?}=1{Vill du ta bort sidan {PAGE_NUMBER}?}other{Vill du ta bort sidan {PAGE_NUMBER}?}}</translation>
-<translation id="3136905423678675159">Vill du aktivera automatiskt mörkt läge?</translation>
 <translation id="3146655726035122603">Exklusivt för <ph name="PRODUCT_NAME" /></translation>
 <translation id="315116470104423982">Mobildata</translation>
 <translation id="3156846309055100599">Skannar sidan <ph name="PAGE_NUMBER" /> …</translation>
 <translation id="315738237743207937">Infångstportal har upptäckts</translation>
 <translation id="3160172848211257835">Skicka <ph name="BEGIN_LINK1" />system- och appinformation<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />statistik<ph name="END_LINK2" /></translation>
 <translation id="3170673040743561620">Sätt dokumentet i skannern</translation>
-<translation id="3174321110679064523">Bakgrund med gryning till skymning</translation>
+<translation id="3174321110679064523">Morgon till kväll-bakgrund</translation>
 <translation id="3188257591659621405">Mina filer</translation>
 <translation id="319101249942218879">Avatarbild har ändrats</translation>
 <translation id="3192947282887913208">Ljudfiler</translation>
@@ -341,6 +341,7 @@
 <translation id="3577473026931028326">Något gick fel. Försök igen.</translation>
 <translation id="357889014807611375">wifi med datapriser</translation>
 <translation id="3583278742022654445">Svag signalstyrka. Testa att gå närmare källan till wifi-signalen.</translation>
+<translation id="3594280220611906414"><ph name="USER_FRIENDLY_APN_NAME" /> är det användarvänliga namnet på <ph name="APN_NAME" />.</translation>
 <translation id="3595596368722241419">Batteriet är fulladdat</translation>
 <translation id="3600339377155080675">Tangenten för att spegla skärmen</translation>
 <translation id="3602290021589620013">Förhandsgranskning</translation>
@@ -359,7 +360,6 @@
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> recensioner)</translation>
 <translation id="3748026146096797577">Ej ansluten</translation>
 <translation id="3749289110408117711">Filnamn</translation>
-<translation id="3754384069690464321">Du får bäst resultat med den här bakgrunden om du aktiverar automatiskt mörkt läge. Du kan ändra tillbaka detta i appen när du vill.</translation>
 <translation id="3771294271822695279">Videofiler</translation>
 <translation id="3784455785234192852">Lås</translation>
 <translation id="380097101658023925">RGB-kontroller</translation>
@@ -440,6 +440,7 @@
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> bilder</translation>
 <translation id="4333390807948134856"><ph name="KEY_NAME" /> har tryckts ned</translation>
 <translation id="4354430579665871434">tangent</translation>
+<translation id="4361257691546579041">APN är av typen standard.</translation>
 <translation id="437294888293595148">Återställ alla genvägar</translation>
 <translation id="4378373042927530923">Har inte körts</translation>
 <translation id="4378551569595875038">Ansluter ...</translation>
@@ -551,6 +552,7 @@
 <translation id="5090362543162270857">IPsec (IKEv2)</translation>
 <translation id="5137451382116112100">Helskärm</translation>
 <translation id="5142961317498132443">Autentisering</translation>
+<translation id="5145081769226915336">Vill du aktivera mörkt läge automatiskt?</translation>
 <translation id="5154917547274118687">Minne</translation>
 <translation id="5160857336552977725">Logga in på din <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166918508782100047">Inställningar för snabbinfo</translation>
@@ -592,7 +594,6 @@
 <translation id="5389224261615877010">Regnbåge</translation>
 <translation id="5400907029458559844">Enheter ansluter.</translation>
 <translation id="5401938042319910061">Kör alla rutiner</translation>
-<translation id="540604120278030498">New York</translation>
 <translation id="5423849171846380976">Aktiverat</translation>
 <translation id="5430931332414098647">Direktinternetdelning</translation>
 <translation id="5431318178759467895">Färg</translation>
@@ -630,6 +631,7 @@
 <translation id="574392208103952083">Medelstark</translation>
 <translation id="5757187557809630523">nästa spår</translation>
 <translation id="5760715441271661976">Portalläge</translation>
+<translation id="5763838252932650682">Startar om och uppdaterar <ph name="APP_NAME" /></translation>
 <translation id="576835345334454681">Tangenten som ökar skärmens ljusstyrka</translation>
 <translation id="57838592816432529">Stäng av ljudet</translation>
 <translation id="5784136236926853061">Hög HTTP-latens</translation>
@@ -660,6 +662,7 @@
 <translation id="5946538341867151940">Du är inte ansluten än. Om din mobiloperatör rekommenderar en anpassad APN anger du APN-uppgifterna genom att välja + Ny APN</translation>
 <translation id="5972388717451707488">Update Engine</translation>
 <translation id="5984145644188835034">Standardbakgrund</translation>
+<translation id="6001235009374883388">APN är av typen anknytning.</translation>
 <translation id="6017514345406065928">Grön</translation>
 <translation id="6019566113895157499">Kortkommandon</translation>
 <translation id="6034694447310538551">Aktivera automatisk månadsåterställning</translation>
@@ -738,7 +741,7 @@
 <translation id="6494974875566443634">Anpassning</translation>
 <translation id="6500818810472529210">Visa resultat på Google Sök</translation>
 <translation id="650266656685499220">Besök Google Foto om du vill skapa album</translation>
-<translation id="6505750420152840539">Dawn to dark</translation>
+<translation id="6505750420152840539">Morgon till kväll</translation>
 <translation id="6516990319416533844">Om du vill testa batteriets laddningshastighet låter du det laddas ur under en kortare period</translation>
 <translation id="6517239166834772319">Utforska</translation>
 <translation id="6526200165918397681">Matcha bakgrund</translation>
@@ -801,7 +804,6 @@
 <translation id="7046522406494308071">Vill du återställa alla kortkommandon till standardinställningarna?</translation>
 <translation id="7058278511608979688">Avsluta och spara</translation>
 <translation id="7059230779847288458">Laddas – fulladdat om <ph name="TIME_VALUE" /></translation>
-<translation id="7065364575846974659">Paris</translation>
 <translation id="7066538517128343186">nyckeln <ph name="KEY" /></translation>
 <translation id="7068619307603204412">Förbered enheten</translation>
 <translation id="708426984172631313">HAR STOPPATS</translation>
@@ -827,6 +829,7 @@
 <translation id="7180611975245234373">Uppdatera</translation>
 <translation id="7180865173735832675">Anpassa</translation>
 <translation id="7184043045742675738">Klicka på valfri tangent för att anpassa knappen. Flytta tangenten med musen eller piltangenterna.</translation>
+<translation id="7212547870105584639">Hantera APN-inställningar för nätverket. APN upprättar en anslutning mellan ett mobilnätverk och internet. <ph name="BEGIN_LINK_LEARN_MORE" />Läs mer<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="7212734716605298123">Firmware-uppdateringar för externa enheter</translation>
 <translation id="7216409898977639127">Mobiloperatör</translation>
 <translation id="725133483556299729">Välj e-postadress</translation>
@@ -837,6 +840,7 @@
 <translation id="7287310195820267359">Samlingar med bakgrunder</translation>
 <translation id="7297226631177386107">Det gick inte att ansluta till HTTPS-webbplatser genom brandvägg</translation>
 <translation id="7297726121602187087">Mörkgrön</translation>
+<translation id="7301262279595293068">Vänta medan appen uppdateras</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Fråga experterna på hjälpforumet för Chromebook</translation>
@@ -892,7 +896,7 @@
 <translation id="7730077286107534951">Vissa konto- och systemuppgifter kan skickas till Google. Vi använder uppgifterna till att åtgärda tekniska problem och förbättra våra tjänster i enlighet med vår <ph name="BEGIN_LINK2" />integritetspolicy<ph name="END_LINK2" /> och våra <ph name="BEGIN_LINK3" />användarvillkor<ph name="END_LINK3" />. Besök sidan för <ph name="BEGIN_LINK1" />juridisk hjälp<ph name="END_LINK1" /> om du vill begära innehållsändringar.</translation>
 <translation id="773153675489693198">Antal cykler</translation>
 <translation id="7747039790905080783">I förväg delad nyckel</translation>
-<translation id="7752963721013053477">Från gryning till mörker – exklusivt</translation>
+<translation id="7752963721013053477">Morgon till kväll – exklusivt</translation>
 <translation id="7762130827864645708">Lösenordet har bytts. Använd det nya lösenordet i fortsättningen.</translation>
 <translation id="7763470514545477072">Matchning av domänsuffix</translation>
 <translation id="7769672763586021400">Modell-id</translation>
@@ -941,7 +945,6 @@
 <translation id="8094062939584182041">Tillåt att Google skickar e-post till dig om det här problemet</translation>
 <translation id="8104083085214006426">Du använder ett öppet och osäkert nätverk</translation>
 <translation id="8111706652656628199">Kortkommandot är inte tillgängligt. Tryck på ett nytt kortkommando med Skift och en till specialtangent (Ctrl, Alt, Skift, Sök eller Appstartaren).</translation>
-<translation id="8112538018114444149">En park i <ph name="CHIP_CITY" /> i stil med <ph name="CHIP_STYLE" />.</translation>
 <translation id="811820734797650957">(Android) Gateway går att pinga</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" /> °C</translation>
 <translation id="8132480444149501833">Begär trafikräknare</translation>
@@ -1076,7 +1079,6 @@
 <translation id="9058932992221914855">IPv6</translation>
 <translation id="9062831201344759865">DNS-upplösningen har hög fördröjning</translation>
 <translation id="9065203028668620118">Redigera</translation>
-<translation id="9068296451330120661">akvarell</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9082718469794970195">Använd den här videon</translation>

@@ -25,6 +25,7 @@
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/lock_screen_utils.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
+#include "chrome/browser/ash/login/oobe_cros_events_metrics.h"
 #include "chrome/browser/ash/login/oobe_metrics_helper.h"
 #include "chrome/browser/ash/login/oobe_quick_start/second_device_auth_broker.h"
 #include "chrome/browser/ash/login/oobe_quick_start/target_device_bootstrap_controller.h"
@@ -227,6 +228,10 @@ LoginDisplayHostCommon::LoginDisplayHostCommon()
       login_ui_pref_controller_(std::make_unique<LoginUIPrefController>()),
       wizard_context_(std::make_unique<WizardContext>()),
       oobe_metrics_helper_(std::make_unique<OobeMetricsHelper>()) {
+  if (features::IsOobeCrosEventsEnabled()) {
+    oobe_cros_events_metrics_ =
+        std::make_unique<OobeCrosEventsMetrics>(oobe_metrics_helper_.get());
+  }
   // Close the login screen on app termination (for the case where shutdown
   // occurs before login completes).
   app_terminating_subscription_ =
@@ -435,7 +440,7 @@ void LoginDisplayHostCommon::UpdateWallpaper(
 
 bool LoginDisplayHostCommon::IsUserAllowlisted(
     const AccountId& account_id,
-    const absl::optional<user_manager::UserType>& user_type) {
+    const std::optional<user_manager::UserType>& user_type) {
   if (!GetExistingUserController()) {
     return true;
   }
@@ -526,7 +531,7 @@ void LoginDisplayHostCommon::SetScreenAfterManagedTos(OobeScreenId screen_id) {
 
 void LoginDisplayHostCommon::OnPowerwashAllowedCallback(
     bool is_reset_allowed,
-    absl::optional<tpm_firmware_update::Mode> tpm_firmware_update_mode) {
+    std::optional<tpm_firmware_update::Mode> tpm_firmware_update_mode) {
   if (!is_reset_allowed) {
     return;
   }
@@ -547,10 +552,12 @@ void LoginDisplayHostCommon::StartUserOnboarding() {
 
 void LoginDisplayHostCommon::ResumeUserOnboarding(const PrefService& prefs,
                                                   OobeScreenId screen_id) {
+  oobe_metrics_helper_->RecordOnboardingResume(screen_id);
   SetScreenAfterManagedTos(screen_id);
 
   if (features::IsOobeChoobeEnabled()) {
     if (ChoobeFlowController::ShouldResumeChoobe(prefs)) {
+      oobe_metrics_helper_->RecordChoobeResume();
       GetWizardController()->CreateChoobeFlowController();
       GetWizardController()->choobe_flow_controller()->ResumeChoobe(prefs);
     }
@@ -578,14 +585,6 @@ void LoginDisplayHostCommon::ShowNewTermsForFlexUsers() {
 
 void LoginDisplayHostCommon::SetAuthSessionForOnboarding(
     const UserContext& user_context) {
-  AuthPerformer auth_performer(UserDataAuthClient::Get());
-  legacy::CryptohomePinEngine cryptohome_pin_engine(&auth_performer);
-  if (cryptohome_pin_engine.ShouldSkipSetupBecauseOfPolicy(
-          user_context.GetAccountId()) &&
-      !features::IsCryptohomeRecoveryEnabled() &&
-      RecoveryEligibilityScreen::ShouldSkipRecoverySetupBecauseOfPolicy()) {
-    return;
-  }
   wizard_context_->extra_factors_token = AuthSessionStorage::Get()->Store(
       std::make_unique<UserContext>(user_context));
 }
@@ -594,7 +593,7 @@ void LoginDisplayHostCommon::ClearOnboardingAuthSession() {
   if (wizard_context_->extra_factors_token.has_value()) {
     AuthSessionStorage::Get()->Invalidate(
         wizard_context_->extra_factors_token.value(), base::DoNothing());
-    wizard_context_->extra_factors_token = absl::nullopt;
+    wizard_context_->extra_factors_token = std::nullopt;
   }
 }
 

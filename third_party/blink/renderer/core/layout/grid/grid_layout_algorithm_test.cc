@@ -5,9 +5,9 @@
 #include "third_party/blink/renderer/core/layout/grid/grid_layout_algorithm.h"
 
 #include "build/build_config.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_base_layout_algorithm_test.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/base_layout_algorithm_test.h"
+#include "third_party/blink/renderer/core/layout/length_utils.h"
+#include "third_party/blink/renderer/core/layout/physical_box_fragment.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
@@ -124,9 +124,9 @@ class GridLayoutAlgorithmTest : public BaseLayoutAlgorithmTest {
     return growth_limits;
   }
 
-  const NGPhysicalBoxFragment* RunBlockLayoutAlgorithm(Element* element) {
-    NGBlockNode container(element->GetLayoutBox());
-    NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
+  const PhysicalBoxFragment* RunBlockLayoutAlgorithm(Element* element) {
+    BlockNode container(element->GetLayoutBox());
+    ConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
         {WritingMode::kHorizontalTb, TextDirection::kLtr},
         LogicalSize(LayoutUnit(1000), kIndefiniteSize));
     return BaseLayoutAlgorithmTest::RunBlockLayoutAlgorithm(container, space);
@@ -137,11 +137,11 @@ class GridLayoutAlgorithmTest : public BaseLayoutAlgorithmTest {
     return DumpFragmentTree(fragment);
   }
 
-  String DumpFragmentTree(const blink::NGPhysicalBoxFragment* fragment) {
-    NGPhysicalFragment::DumpFlags flags =
-        NGPhysicalFragment::DumpHeaderText | NGPhysicalFragment::DumpSubtree |
-        NGPhysicalFragment::DumpIndentation | NGPhysicalFragment::DumpOffset |
-        NGPhysicalFragment::DumpSize;
+  String DumpFragmentTree(const blink::PhysicalBoxFragment* fragment) {
+    PhysicalFragment::DumpFlags flags =
+        PhysicalFragment::DumpHeaderText | PhysicalFragment::DumpSubtree |
+        PhysicalFragment::DumpIndentation | PhysicalFragment::DumpOffset |
+        PhysicalFragment::DumpSize;
 
     return fragment->DumpFragmentTree(flags);
   }
@@ -169,9 +169,9 @@ TEST_F(GridLayoutAlgorithmTest, GridLayoutAlgorithmBaseSetSizes) {
     </div>
   )HTML");
 
-  NGBlockNode node(GetLayoutBoxByElementId("grid1"));
+  BlockNode node(GetLayoutBoxByElementId("grid1"));
 
-  NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
+  ConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       {WritingMode::kHorizontalTb, TextDirection::kLtr},
       LogicalSize(LayoutUnit(100), LayoutUnit(100)),
       /* stretch_inline_size_if_auto */ true,
@@ -206,9 +206,9 @@ TEST_F(GridLayoutAlgorithmTest, GridLayoutAlgorithmRanges) {
     </div>
   )HTML");
 
-  NGBlockNode node(GetLayoutBoxByElementId("grid1"));
+  BlockNode node(GetLayoutBoxByElementId("grid1"));
 
-  NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
+  ConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       {WritingMode::kHorizontalTb, TextDirection::kLtr},
       LogicalSize(LayoutUnit(100), LayoutUnit(100)),
       /* stretch_inline_size_if_auto */ true,
@@ -253,9 +253,9 @@ TEST_F(GridLayoutAlgorithmTest, GridLayoutAlgorithmRangesWithAutoRepeater) {
     </div>
   )HTML");
 
-  NGBlockNode node(GetLayoutBoxByElementId("grid1"));
+  BlockNode node(GetLayoutBoxByElementId("grid1"));
 
-  NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
+  ConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       {WritingMode::kHorizontalTb, TextDirection::kLtr},
       LogicalSize(LayoutUnit(100), LayoutUnit(100)),
       /* stretch_inline_size_if_auto */ true,
@@ -322,9 +322,9 @@ TEST_F(GridLayoutAlgorithmTest, GridLayoutAlgorithmRangesImplicit) {
     </div>
   )HTML");
 
-  NGBlockNode node(GetLayoutBoxByElementId("grid1"));
+  BlockNode node(GetLayoutBoxByElementId("grid1"));
 
-  NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
+  ConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       {WritingMode::kHorizontalTb, TextDirection::kLtr},
       LogicalSize(LayoutUnit(100), LayoutUnit(100)),
       /* stretch_inline_size_if_auto */ true,
@@ -381,9 +381,9 @@ TEST_F(GridLayoutAlgorithmTest, GridLayoutAlgorithmRangesImplicitAutoColumns) {
     </div>
   )HTML");
 
-  NGBlockNode node(GetLayoutBoxByElementId("grid1"));
+  BlockNode node(GetLayoutBoxByElementId("grid1"));
 
-  NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
+  ConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       {WritingMode::kHorizontalTb, TextDirection::kLtr},
       LogicalSize(LayoutUnit(100), LayoutUnit(100)),
       /* stretch_inline_size_if_auto */ true,
@@ -439,9 +439,9 @@ TEST_F(GridLayoutAlgorithmTest, GridLayoutAlgorithmRangesImplicitAutoRows) {
     </div>
   )HTML");
 
-  NGBlockNode node(GetLayoutBoxByElementId("grid1"));
+  BlockNode node(GetLayoutBoxByElementId("grid1"));
 
-  NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
+  ConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       {WritingMode::kHorizontalTb, TextDirection::kLtr},
       LogicalSize(LayoutUnit(100), LayoutUnit(100)),
       /* stretch_inline_size_if_auto */ true,
@@ -487,9 +487,9 @@ TEST_F(GridLayoutAlgorithmTest, GridLayoutAlgorithmRangesImplicitMixed) {
     </div>
   )HTML");
 
-  NGBlockNode node(GetLayoutBoxByElementId("grid1"));
+  BlockNode node(GetLayoutBoxByElementId("grid1"));
 
-  NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
+  ConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       {WritingMode::kHorizontalTb, TextDirection::kLtr},
       LogicalSize(LayoutUnit(100), LayoutUnit(100)),
       /* stretch_inline_size_if_auto */ true,
@@ -564,9 +564,9 @@ TEST_F(GridLayoutAlgorithmTest, GridLayoutAlgorithmAutoGridPositions) {
 
   )HTML");
 
-  NGBlockNode node(GetLayoutBoxByElementId("grid"));
+  BlockNode node(GetLayoutBoxByElementId("grid"));
 
-  NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
+  ConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       {WritingMode::kHorizontalTb, TextDirection::kLtr},
       LogicalSize(LayoutUnit(500), LayoutUnit(500)),
       /* stretch_inline_size_if_auto */ true,
@@ -690,9 +690,9 @@ TEST_F(GridLayoutAlgorithmTest, GridLayoutAlgorithmAutoDense) {
 
   )HTML");
 
-  NGBlockNode node(GetLayoutBoxByElementId("grid"));
+  BlockNode node(GetLayoutBoxByElementId("grid"));
 
-  NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
+  ConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       {WritingMode::kHorizontalTb, TextDirection::kLtr},
       LogicalSize(LayoutUnit(500), LayoutUnit(500)),
       /* stretch_inline_size_if_auto */ true,
@@ -772,9 +772,9 @@ TEST_F(GridLayoutAlgorithmTest, GridLayoutAlgorithmGridPositions) {
     </div>
   )HTML");
 
-  NGBlockNode node(GetLayoutBoxByElementId("grid"));
+  BlockNode node(GetLayoutBoxByElementId("grid"));
 
-  NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
+  ConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       {WritingMode::kHorizontalTb, TextDirection::kLtr},
       LogicalSize(LayoutUnit(500), LayoutUnit(500)),
       /* stretch_inline_size_if_auto */ true,
@@ -816,8 +816,8 @@ TEST_F(GridLayoutAlgorithmTest, GridLayoutAlgorithmResolveFixedTrackSizes) {
     <div id="grid"></div>
   )HTML");
 
-  NGBlockNode node(GetLayoutBoxByElementId("grid"));
-  NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
+  BlockNode node(GetLayoutBoxByElementId("grid"));
+  ConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       {WritingMode::kHorizontalTb, TextDirection::kLtr},
       LogicalSize(LayoutUnit(100), kIndefiniteSize),
       /* stretch_inline_size_if_auto */ true,
@@ -893,8 +893,8 @@ TEST_F(GridLayoutAlgorithmTest,
     </div>
   )HTML");
 
-  NGBlockNode node(GetLayoutBoxByElementId("grid"));
-  NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
+  BlockNode node(GetLayoutBoxByElementId("grid"));
+  ConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
       {WritingMode::kHorizontalTb, TextDirection::kLtr},
       LogicalSize(LayoutUnit(100), kIndefiniteSize),
       /* stretch_inline_size_if_auto */ true,
@@ -1544,8 +1544,8 @@ TEST_F(GridLayoutAlgorithmTest, NGGridAxisType) {
     </div>
   )HTML");
 
-  NGBlockNode grid_node(GetLayoutBoxByElementId("grid"));
-  NGBlockNode subgrid_node(GetLayoutBoxByElementId("subgrid"));
+  BlockNode grid_node(GetLayoutBoxByElementId("grid"));
+  BlockNode subgrid_node(GetLayoutBoxByElementId("subgrid"));
   const ComputedStyle& grid_style = grid_node.Style();
   const ComputedStyle& subgrid_style = subgrid_node.Style();
 
@@ -1577,7 +1577,7 @@ TEST_F(GridLayoutAlgorithmTest, SubgridLineNameList) {
     </div>
   )HTML");
 
-  NGBlockNode subgrid_node(GetLayoutBoxByElementId("subgrid"));
+  BlockNode subgrid_node(GetLayoutBoxByElementId("subgrid"));
   const ComputedStyle& subgrid_style = subgrid_node.Style();
   const ComputedGridTrackList& computed_grid_column_track_list =
       subgrid_style.GridTemplateColumns();
@@ -1622,7 +1622,7 @@ TEST_F(GridLayoutAlgorithmTest, SubgridLineNameListWithRepeaters) {
     </div>
   )HTML");
 
-  NGBlockNode subgrid_node(GetLayoutBoxByElementId("subgrid"));
+  BlockNode subgrid_node(GetLayoutBoxByElementId("subgrid"));
   const ComputedStyle& subgrid_style = subgrid_node.Style();
   const ComputedGridTrackList& computed_grid_column_track_list =
       subgrid_style.GridTemplateColumns();

@@ -9,7 +9,7 @@
 #import "base/strings/string_number_conversions.h"
 #import "base/task/thread_pool.h"
 #import "ios/chrome/browser/crash_report/model/crash_reporter_url_observer.h"
-#import "ios/chrome/browser/ntp/new_tab_page_util.h"
+#import "ios/chrome/browser/ntp/model/new_tab_page_util.h"
 #import "ios/chrome/browser/prerender/model/prerender_service.h"
 #import "ios/chrome/browser/prerender/model/prerender_service_factory.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
@@ -24,7 +24,7 @@
 #import "ios/chrome/browser/url_loading/model/url_loading_notifier_browser_agent.h"
 #import "ios/chrome/browser/url_loading/model/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/model/url_loading_util.h"
-#import "ios/chrome/browser/web/load_timing_tab_helper.h"
+#import "ios/chrome/browser/web/model/load_timing_tab_helper.h"
 #import "net/base/url_util.h"
 
 BROWSER_USER_DATA_KEY_IMPL(UrlLoadingBrowserAgent)

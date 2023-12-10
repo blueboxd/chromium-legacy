@@ -7,6 +7,7 @@
 #include <iterator>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string_view>
 #include <tuple>
@@ -224,6 +225,7 @@
 #include "components/embedder_support/origin_trials/origin_trials_settings_storage.h"
 #include "components/embedder_support/switches.h"
 #include "components/embedder_support/user_agent_utils.h"
+#include "components/enterprise/buildflags/buildflags.h"
 #include "components/enterprise/common/proto/connectors.pb.h"
 #include "components/enterprise/content/clipboard_restriction_service.h"
 #include "components/enterprise/content/pref_names.h"
@@ -247,7 +249,7 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/no_state_prefetch/common/no_state_prefetch_final_status.h"
-#include "components/no_state_prefetch/common/prerender_url_loader_throttle.h"
+#include "components/no_state_prefetch/common/no_state_prefetch_url_loader_throttle.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/page_load_metrics/browser/metrics_navigation_throttle.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
@@ -269,6 +271,7 @@
 #include "components/privacy_sandbox/privacy_sandbox_prefs.h"
 #include "components/privacy_sandbox/privacy_sandbox_settings.h"
 #include "components/privacy_sandbox/tracking_protection_settings.h"
+#include "components/safe_browsing/content/browser/async_check_tracker.h"
 #include "components/safe_browsing/content/browser/browser_url_loader_throttle.h"
 #include "components/safe_browsing/content/browser/password_protection/password_protection_commit_deferring_condition.h"
 #include "components/safe_browsing/content/browser/safe_browsing_navigation_throttle.h"
@@ -313,6 +316,7 @@
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/file_url_loader.h"
 #include "content/public/browser/isolated_web_apps_policy.h"
+#include "content/public/browser/legacy_tech_cookie_issue_details.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/overlay_window.h"
@@ -336,6 +340,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/window_container_type.mojom-shared.h"
 #include "device/vr/buildflags/buildflags.h"
+#include "extensions/browser/browser_frame_context_data.h"
 #include "extensions/buildflags/buildflags.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/google_api_keys.h"
@@ -743,6 +748,10 @@
 #include "chromeos/components/kiosk/kiosk_utils.h"
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
+#if BUILDFLAG(ENTERPRISE_DATA_CONTROLS)
+#include "chrome/browser/enterprise/data_protection/data_protection_clipboard_utils.h"
+#endif  // BUILDFLAG(ENTERPRISE_DATA_CONTROLS)
+
 using blink::mojom::EffectiveConnectionType;
 using blink::web_pref::WebPreferences;
 using content::BrowserThread;
@@ -846,23 +855,6 @@ void HandleSSLErrorWrapper(
       std::make_unique<ChromeSecurityBlockingPageFactory>(),
       is_ssl_error_override_allowed_for_origin);
 }
-
-enum AppLoadedInTabSource {
-  // A platform app page tried to load one of its own URLs in a tab.
-  APP_LOADED_IN_TAB_SOURCE_APP = 0,
-
-  // A platform app background page tried to load one of its own URLs in a tab.
-  APP_LOADED_IN_TAB_SOURCE_BACKGROUND_PAGE,
-
-  // An extension or app tried to load a resource of a different platform app in
-  // a tab.
-  APP_LOADED_IN_TAB_SOURCE_OTHER_EXTENSION,
-
-  // A non-app and non-extension page tried to load a platform app in a tab.
-  APP_LOADED_IN_TAB_SOURCE_OTHER,
-
-  APP_LOADED_IN_TAB_SOURCE_MAX
-};
 
 // Cached version of the locale so we can return the locale on the I/O
 // thread.
@@ -1102,31 +1094,6 @@ class CertificateReportingServiceCertReporter : public SSLCertReporter {
 };
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-
-AppLoadedInTabSource ClassifyAppLoadedInTabSource(
-    const GURL& opener_url,
-    const extensions::Extension* target_platform_app) {
-  if (!opener_url.SchemeIs(extensions::kExtensionScheme)) {
-    // The forbidden app URL was being opened by a non-extension page (e.g.
-    // http).
-    return APP_LOADED_IN_TAB_SOURCE_OTHER;
-  }
-
-  if (opener_url.host_piece() != target_platform_app->id()) {
-    // The forbidden app URL was being opened by a different app or extension.
-    return APP_LOADED_IN_TAB_SOURCE_OTHER_EXTENSION;
-  }
-
-  // This platform app was trying to window.open() one of its own URLs.
-  if (opener_url ==
-      extensions::BackgroundInfo::GetBackgroundURL(target_platform_app)) {
-    // Source was the background page.
-    return APP_LOADED_IN_TAB_SOURCE_BACKGROUND_PAGE;
-  }
-
-  // Source was a different page inside the app.
-  return APP_LOADED_IN_TAB_SOURCE_APP;
-}
 
 // Returns true if there is is an extension matching `url` in
 // `render_process_id` with `permission`.
@@ -1458,82 +1425,6 @@ bool ShouldUseSpareRenderProcessHostForTopChromePage(Profile* profile) {
          !IsTopChromeRendererPresent(profile);
 }
 
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-
-void HandleExpandedPaths(
-    std::unique_ptr<enterprise_connectors::FilesScanData> fsd,
-    base::WeakPtr<content::WebContents> web_contents,
-    enterprise_connectors::ContentAnalysisDelegate::Data dialog_data,
-    enterprise_connectors::AnalysisConnector connector,
-    std::vector<base::FilePath> paths,
-    ChromeContentBrowserClient::IsClipboardPasteContentAllowedCallback
-        callback) {
-  if (!web_contents)
-    return;
-
-  dialog_data.paths = fsd->expanded_paths();
-  enterprise_connectors::ContentAnalysisDelegate::CreateForWebContents(
-      web_contents.get(), std::move(dialog_data),
-      base::BindOnce(
-          [](std::unique_ptr<enterprise_connectors::FilesScanData> fsd,
-             std::vector<base::FilePath> paths,
-             ChromeContentBrowserClient::IsClipboardPasteContentAllowedCallback
-                 callback,
-             const enterprise_connectors::ContentAnalysisDelegate::Data& data,
-             enterprise_connectors::ContentAnalysisDelegate::Result& result) {
-            absl::optional<ChromeContentBrowserClient::ClipboardPasteData>
-                clipboard_paste_data;
-            auto blocked = fsd->IndexesToBlock(result.paths_results);
-            if (blocked.size() != paths.size()) {
-              // Build the data string of the allowed paths.
-              std::vector<std::string> string_paths;
-              string_paths.reserve(paths.size());
-              for (size_t i = 0; i < paths.size(); ++i) {
-                if (base::Contains(blocked, i)) {
-                  result.paths_results[i] = false;
-                } else {
-                  string_paths.push_back(paths[i].AsUTF8Unsafe());
-                  DCHECK(result.paths_results[i]);
-                }
-              }
-              clipboard_paste_data =
-                  ChromeContentBrowserClient::ClipboardPasteData(
-                      std::string(), std::string(), std::move(string_paths));
-            }
-            std::move(callback).Run(std::move(clipboard_paste_data));
-          },
-          std::move(fsd), std::move(paths), std::move(callback)),
-      safe_browsing::DeepScanAccessPoint::PASTE);
-}
-
-void HandleStringData(
-    content::WebContents* web_contents,
-    enterprise_connectors::ContentAnalysisDelegate::Data dialog_data,
-    enterprise_connectors::AnalysisConnector connector,
-    ChromeContentBrowserClient::IsClipboardPasteContentAllowedCallback
-        callback) {
-  enterprise_connectors::ContentAnalysisDelegate::CreateForWebContents(
-      web_contents, std::move(dialog_data),
-      base::BindOnce(
-          [](ChromeContentBrowserClient::IsClipboardPasteContentAllowedCallback
-                 callback,
-             const enterprise_connectors::ContentAnalysisDelegate::Data& data,
-             enterprise_connectors::ContentAnalysisDelegate::Result& result) {
-            absl::optional<ChromeContentBrowserClient::ClipboardPasteData>
-                clipboard_paste_data;
-            clipboard_paste_data =
-                ChromeContentBrowserClient::ClipboardPasteData(
-                    data.text[0], std::string(), {});
-            std::move(callback).Run(result.text_results[0]
-                                        ? std::move(clipboard_paste_data)
-                                        : absl::nullopt);
-          },
-          std::move(callback)),
-      safe_browsing::DeepScanAccessPoint::PASTE);
-}
-
-#endif
-
 std::unique_ptr<blocked_content::PopupNavigationDelegate>
 CreatePopupNavigationDelegate(NavigateParams params) {
   return std::make_unique<ChromePopupNavigationDelegate>(std::move(params));
@@ -1596,7 +1487,9 @@ void ChromeContentBrowserClient::RegisterLocalStatePrefs(
       prefs::kThrottleNonVisibleCrossOriginIframesAllowed, true);
   registry->RegisterBooleanPref(prefs::kNewBaseUrlInheritanceBehaviorAllowed,
                                 true);
+#if BUILDFLAG(IS_CHROMEOS)
   registry->RegisterBooleanPref(prefs::kNativeClientForceAllowed, false);
+#endif  // BUILDFLAG(IS_CHROMEOS)
   registry->RegisterBooleanPref(
       policy::policy_prefs::kPPAPISharedImagesForVideoDecoderAllowed, true);
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_ANDROID)
@@ -1664,11 +1557,6 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
                                 true);
   registry->RegisterBooleanPref(
       prefs::kAccessControlAllowMethodsInCORSPreflightSpecConformant, true);
-
-  registry->RegisterBooleanPref(
-      policy::policy_prefs::kOffsetParentNewSpecBehaviorEnabled, true);
-  registry->RegisterBooleanPref(
-      policy::policy_prefs::kSendMouseEventsDisabledFormControlsEnabled, true);
   registry->RegisterBooleanPref(prefs::kDataUrlInSvgUseEnabled, false);
 
   registry->RegisterBooleanPref(
@@ -2078,6 +1966,21 @@ bool ChromeContentBrowserClient::DoesSiteRequireDedicatedProcess(
   }
 #endif
   return false;
+}
+
+bool ChromeContentBrowserClient::
+    ShouldAllowCrossProcessSandboxedFrameForPrecursor(
+        content::BrowserContext* browser_context,
+        const GURL& precursor) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  if (!ChromeContentBrowserClientExtensionsPart::
+          ShouldAllowCrossProcessSandboxedFrameForPrecursor(browser_context,
+                                                            precursor)) {
+    return false;
+  }
+#endif
+  return true;
 }
 
 bool ChromeContentBrowserClient::DoesWebUIUrlRequireProcessLock(
@@ -3355,7 +3258,7 @@ bool ChromeContentBrowserClient::IsPrivacySandboxReportingDestinationAttested(
 
   if (invoking_api == content::PrivacySandboxInvokingAPI::kProtectedAudience) {
     if (base::FeatureList::IsEnabled(
-            blink::features::kFencedFramesM120FeaturesPart2) &&
+            blink::features::kFencedFramesReportingAttestationsChanges) &&
         post_impression_reporting) {
       // M120 and afterwards: For beacons sent by `reportEvent()` and automatic
       // beacons, the destination is required to be attested for either
@@ -3561,6 +3464,22 @@ bool ChromeContentBrowserClient::IsCookieDeprecationLabelAllowedForContext(
   DCHECK(privacy_sandbox_settings);
   return privacy_sandbox_settings->IsCookieDeprecationLabelAllowedForContext(
       top_frame_origin, context_origin);
+}
+
+bool ChromeContentBrowserClient::IsFullCookieAccessAllowed(
+    content::BrowserContext* browser_context,
+    const GURL& url,
+    const blink::StorageKey& storage_key) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  scoped_refptr<content_settings::CookieSettings> cookie_settings =
+      CookieSettingsFactory::GetForProfile(profile);
+  if (!cookie_settings) {
+    return true;
+  }
+  return cookie_settings->IsFullCookieAccessAllowed(
+      url, storage_key.ToNetSiteForCookies(),
+      url::Origin::Create(storage_key.top_level_site().GetURL()),
+      cookie_settings->SettingOverridesForStorage());
 }
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -3998,11 +3917,6 @@ bool ChromeContentBrowserClient::CanCreateWindow(
     const Extension* extension =
         registry->enabled_extensions().GetExtensionOrAppByURL(target_url);
     if (extension && extension->is_platform_app()) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "Extensions.AppLoadedInTab",
-          ClassifyAppLoadedInTabSource(opener_url, extension),
-          APP_LOADED_IN_TAB_SOURCE_MAX);
-
       // window.open() may not be used to load v2 apps in a regular tab.
       return false;
     }
@@ -5639,9 +5553,13 @@ ChromeContentBrowserClient::MaybeCreateSafeBrowsingURLLoaderThrottle(
                 safe_browsing::hash_realtime_utils::GetCountryCode(
                     g_browser_process->variations_service()),
                 /*log_usage_histograms=*/true);
+    safe_browsing::AsyncCheckTracker* async_check_tracker =
+        GetAsyncCheckTracker(wc_getter, is_enterprise_lookup_enabled,
+                             is_consumer_lookup_enabled,
+                             hash_realtime_selection);
 
     return safe_browsing::BrowserURLLoaderThrottle::Create(
-        base::BindOnce(
+        base::BindRepeating(
             &ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate,
             base::Unretained(this),
             safe_browsing::IsSafeBrowsingEnabled(*profile->GetPrefs()),
@@ -5652,7 +5570,8 @@ ChromeContentBrowserClient::MaybeCreateSafeBrowsingURLLoaderThrottle(
         url_lookup_service ? url_lookup_service->GetWeakPtr() : nullptr,
         hash_realtime_service ? hash_realtime_service->GetWeakPtr() : nullptr,
         ping_manager ? ping_manager->GetWeakPtr() : nullptr,
-        hash_realtime_selection);
+        hash_realtime_selection,
+        async_check_tracker ? async_check_tracker->GetWeakPtr() : nullptr);
   }
   return nullptr;
 }
@@ -5763,9 +5682,9 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
 
   if (chrome_navigation_ui_data &&
       chrome_navigation_ui_data->is_no_state_prefetching()) {
-    result.push_back(std::make_unique<prerender::PrerenderURLLoaderThrottle>(
-        chrome_navigation_ui_data->prerender_histogram_prefix(),
-        GetPrerenderCanceler(wc_getter)));
+    result.push_back(
+        std::make_unique<prerender::NoStatePrefetchURLLoaderThrottle>(
+            GetPrerenderCanceler(wc_getter)));
   }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -6368,8 +6287,10 @@ bool ChromeContentBrowserClient::WillInterceptWebSocket(
   // BrowserContextKeyedAPI factories for e.g. WebRequest.
   if (!web_request_api)
     return false;
+
   return (web_request_api->MayHaveProxies() ||
-          web_request_api->MayHaveWebsocketProxiesForExtensionTelemetry());
+          web_request_api->MayHaveWebsocketProxiesForExtensionTelemetry() ||
+          web_request_api->IsAvailableToWebViewEmbedderFrame(frame));
 #else
   return false;
 #endif
@@ -6903,37 +6824,16 @@ bool ChromeContentBrowserClient::HandleWebUI(
   }
 
 #if !BUILDFLAG(IS_ANDROID)
-  if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)) {
-    // Redirect to the new version of privacy sandbox settings.
-    if (url->SchemeIs(content::kChromeUIScheme) &&
-        url->host() == chrome::kChromeUISettingsHost) {
-      if (url->path() == chrome::kPrivacySandboxSubPagePath) {
-        GURL::Replacements replacements;
-        replacements.SetPathStr(chrome::kAdPrivacySubPagePath);
-        *url = url->ReplaceComponents(replacements);
-        UMA_HISTOGRAM_BOOLEAN("Settings.PrivacySandbox.DeprecatedRedirect",
-                              true);
-      } else if (url->path() == chrome::kAdPrivacySubPagePath) {
-        // Log un-redirected navigations to the page as well to provide context
-        // for the raw number of redirects.
-        UMA_HISTOGRAM_BOOLEAN("Settings.PrivacySandbox.DeprecatedRedirect",
-                              false);
-      }
-    }
-  }
-  if (base::FeatureList::IsEnabled(
-          features::kPerformanceSettingsPreloadingSubpage)) {
-    // Redirect from the preloading sub-page to the performance page.
-    if (url->SchemeIs(content::kChromeUIScheme) &&
-        url->host() == chrome::kChromeUISettingsHost &&
-        url->path() == chrome::kPreloadingSubPagePath) {
-      GURL::Replacements replacements;
-      replacements.SetPathStr(chrome::kPerformanceSubPagePath);
-      *url = url->ReplaceComponents(replacements);
-      UMA_HISTOGRAM_BOOLEAN("Settings.Preloading.DeprecatedRedirect", true);
-    } else if (url->path() == chrome::kPerformanceSubPagePath) {
-      UMA_HISTOGRAM_BOOLEAN("Settings.Preloading.DeprecatedRedirect", false);
-    }
+  // Redirect from the preloading sub-page to the performance page.
+  if (url->SchemeIs(content::kChromeUIScheme) &&
+      url->host() == chrome::kChromeUISettingsHost &&
+      url->path() == chrome::kPreloadingSubPagePath) {
+    GURL::Replacements replacements;
+    replacements.SetPathStr(chrome::kPerformanceSubPagePath);
+    *url = url->ReplaceComponents(replacements);
+    UMA_HISTOGRAM_BOOLEAN("Settings.Preloading.DeprecatedRedirect", true);
+  } else if (url->path() == chrome::kPerformanceSubPagePath) {
+    UMA_HISTOGRAM_BOOLEAN("Settings.Preloading.DeprecatedRedirect", false);
   }
   Profile* profile = Profile::FromBrowserContext(browser_context);
   auto* tracking_protection_settings =
@@ -7126,13 +7026,40 @@ ChromeContentBrowserClient::GetUrlLookupService(
   return nullptr;
 }
 
+safe_browsing::AsyncCheckTracker*
+ChromeContentBrowserClient::GetAsyncCheckTracker(
+    const base::RepeatingCallback<content::WebContents*()>& wc_getter,
+    bool is_enterprise_lookup_enabled,
+    bool is_consumer_lookup_enabled,
+    safe_browsing::hash_realtime_utils::HashRealTimeSelection
+        hash_realtime_selection) {
+  content::WebContents* contents = wc_getter.Run();
+  if (!contents || !safe_browsing_service_ ||
+      !safe_browsing_service_->ui_manager()) {
+    return nullptr;
+  }
+  if (!is_enterprise_lookup_enabled && !is_consumer_lookup_enabled &&
+      hash_realtime_selection ==
+          safe_browsing::hash_realtime_utils::HashRealTimeSelection::kNone) {
+    return nullptr;
+  }
+  if (!base::FeatureList::IsEnabled(
+          safe_browsing::kSafeBrowsingAsyncRealTimeCheck)) {
+    return nullptr;
+  }
+  return safe_browsing::AsyncCheckTracker::GetOrCreateForWebContents(
+      contents, safe_browsing_service_->ui_manager().get());
+}
+
 void ChromeContentBrowserClient::ReportLegacyTechEvent(
     content::RenderFrameHost* render_frame_host,
     const std::string type,
     const GURL& url,
+    const GURL& frame_url,
     const std::string& filename,
     uint64_t line,
-    uint64_t column) {
+    uint64_t column,
+    std::optional<content::LegacyTechCookieIssueDetails> cookie_issue_details) {
   WebContents* web_contents =
       WebContents::FromRenderFrameHost(render_frame_host);
   DCHECK(web_contents);
@@ -7142,7 +7069,8 @@ void ChromeContentBrowserClient::ReportLegacyTechEvent(
     return;
   }
   enterprise_reporting::LegacyTechServiceFactory::GetForProfile(profile)
-      ->ReportEvent(type, url, filename, line, column);
+      ->ReportEvent(type, url, frame_url, filename, line, column,
+                    cookie_issue_details);
 }
 
 bool ChromeContentBrowserClient::CanAcceptUntrustedExchangesIfNeeded() {
@@ -7292,7 +7220,9 @@ ui::AXMode ChromeContentBrowserClient::GetAXModeForBrowserContext(
   }
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   if (features::IsPdfOcrEnabled() &&
-      accessibility_state_utils::IsScreenReaderEnabled()) {
+      (accessibility_state_utils::IsScreenReaderEnabled() ||
+       (features::IsAccessibilityPdfOcrForSelectToSpeakEnabled() &&
+        accessibility_state_utils::IsSelectToSpeakEnabled()))) {
     // PdfOcrController will be created when the user turns on a screen reader
     // before or even after starting the browser.
     auto* pdf_ocr_controller =
@@ -7544,7 +7474,7 @@ void ChromeContentBrowserClient::IsClipboardPasteContentAllowed(
     const ui::ClipboardFormatType& data_type,
     ClipboardPasteData clipboard_paste_data,
     IsClipboardPasteContentAllowedCallback callback) {
-#if BUILDFLAG(FULL_SAFE_BROWSING)
+#if BUILDFLAG(ENTERPRISE_DATA_CONTROLS)
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   bool is_files = data_type == ui::ClipboardFormatType::FilenamesType();
@@ -7564,29 +7494,25 @@ void ChromeContentBrowserClient::IsClipboardPasteContentAllowed(
       enterprise_connectors::ContentAnalysisRequest::CLIPBOARD_PASTE;
 
   if (is_files) {
-    auto string_paths = std::move(clipboard_paste_data.file_paths);
-    std::vector<base::FilePath> paths;
-    paths.reserve(string_paths.size());
-    base::ranges::transform(string_paths, std::back_inserter(paths),
-                            base::FilePath::FromASCII);
+    auto paths = std::move(clipboard_paste_data.file_paths);
     auto fsd = std::make_unique<enterprise_connectors::FilesScanData>(paths);
     auto* fsd_ptr = fsd.get();
-    fsd_ptr->ExpandPaths(base::BindOnce(&HandleExpandedPaths, std::move(fsd),
-                                        web_contents->GetWeakPtr(),
-                                        std::move(dialog_data), connector,
-                                        std::move(paths), std::move(callback)));
+    fsd_ptr->ExpandPaths(base::BindOnce(
+        &enterprise_data_protection::HandleExpandedPaths, std::move(fsd),
+        web_contents->GetWeakPtr(), std::move(dialog_data), connector,
+        std::move(paths), std::move(callback)));
   } else {
     dialog_data.text.push_back(clipboard_paste_data.text);
     // Send image only to local agent for analysis.
     if (dialog_data.settings.cloud_or_local_settings.is_local_analysis()) {
       dialog_data.image = std::move(clipboard_paste_data.image);
     }
-    HandleStringData(web_contents, std::move(dialog_data), connector,
-                     std::move(callback));
+    enterprise_data_protection::HandleStringData(
+        web_contents, std::move(dialog_data), connector, std::move(callback));
   }
 #else
   std::move(callback).Run(std::move(clipboard_paste_data));
-#endif  // BUILDFLAG(FULL_SAFE_BROWSING)
+#endif  // BUILDFLAG(ENTERPRISE_DATA_CONTROLS)
 }
 
 bool ChromeContentBrowserClient::IsClipboardCopyAllowed(
@@ -7895,15 +7821,19 @@ void ChromeContentBrowserClient::OnKeepaliveTimerFired(
 #endif
 
 bool ChromeContentBrowserClient::ShouldPreconnectNavigation(
-    content::BrowserContext* browser_context) {
+    content::RenderFrameHost* render_frame_host) {
+  content::BrowserContext* browser_context =
+      render_frame_host->GetBrowserContext();
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // An extension could be blocking connections for privacy reasons, so skip
   // optimization if there are any extensions with WebRequest permissions.
   const auto* web_request_api =
       extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
           browser_context);
-  if (!web_request_api || web_request_api->MayHaveProxies())
+  if (!web_request_api || web_request_api->MayHaveProxies() ||
+      web_request_api->IsAvailableToWebViewEmbedderFrame(render_frame_host)) {
     return false;
+  }
 #endif
   return prefetch::IsSomePreloadingEnabled(
              *Profile::FromBrowserContext(browser_context)->GetPrefs()) ==

@@ -62,7 +62,7 @@ void AppServicePromiseAppIconLoader::FetchImage(const std::string& id) {
     return;
   }
   CallLoadIcon(apps::PackageId::FromString(id).value(),
-               apps::IconEffects::kCrOsStandardIcon);
+               apps::IconEffects::kNone);
 }
 
 void AppServicePromiseAppIconLoader::ClearImage(const std::string& id) {
@@ -84,7 +84,7 @@ void AppServicePromiseAppIconLoader::OnPromiseAppUpdate(
   if (IsPromiseAppCompleted(update.Status())) {
     return;
   }
-  CallLoadIcon(update.PackageId(), apps::IconEffects::kCrOsStandardMask);
+  CallLoadIcon(update.PackageId(), apps::IconEffects::kNone);
 }
 
 void AppServicePromiseAppIconLoader::OnPromiseAppRegistryCacheWillBeDestroyed(
@@ -107,5 +107,5 @@ void AppServicePromiseAppIconLoader::OnLoadIcon(
   gfx::ImageSkia image = icon_value->uncompressed;
   delegate()->OnAppImageUpdated(package_id.ToString(), image,
                                 icon_value->is_placeholder_icon,
-                                /*badge_image=*/absl::nullopt);
+                                /*badge_image=*/std::nullopt);
 }

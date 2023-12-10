@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ASH_CROSAPI_BROWSER_MANAGER_H_
 
 #include <memory>
+#include <optional>
 #include <set>
 #include <utility>
 #include <vector>
@@ -19,10 +20,10 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/process/process.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/crosapi/browser_action.h"
+#include "chrome/browser/ash/crosapi/browser_launcher.h"
 #include "chrome/browser/ash/crosapi/browser_manager_observer.h"
 #include "chrome/browser/ash/crosapi/browser_service_host_observer.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
@@ -47,7 +48,6 @@
 #include "components/tab_groups/tab_group_info.h"
 #include "components/user_manager/user_manager.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ui_base_types.h"
 
 namespace component_updater {
@@ -286,7 +286,7 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   bool GetActiveTabUrlSupported() const;
 
   using GetActiveTabUrlCallback =
-      base::OnceCallback<void(const absl::optional<GURL>&)>;
+      base::OnceCallback<void(const std::optional<GURL>&)>;
   // Gets Url of the active tab from lacros if there is any.
   void GetActiveTabUrl(GetActiveTabUrlCallback callback);
 
@@ -421,9 +421,12 @@ class BrowserManager : public session_manager::SessionManagerObserver,
     // Lacros-chrome is loaded and ready for launching.
     STOPPED,
 
-    // Params for the lacros-chrome are parepared on a background thread, and
-    // the device owner set up is being waited.
+    // Params for lacros-chrome are parepared on a background thread.
     PREPARING_FOR_LAUNCH,
+
+    // Lacros-chrome is waiting for device owner to be fetched after receiving
+    // params. For prelaunching, it also waits for profile to be added.
+    WAITING_OWNER_FETCH,
 
     // Lacros-chrome has been pre-launched at login screen, and it's waiting to
     // be unblocked post-login.
@@ -463,7 +466,7 @@ class BrowserManager : public session_manager::SessionManagerObserver,
 
   // ID for the current Crosapi connection.
   // Available only when lacros-chrome is running.
-  absl::optional<CrosapiId> crosapi_id_;
+  std::optional<CrosapiId> crosapi_id_;
 
   // Proxy to BrowserService mojo service in lacros-chrome.
   // Available only when lacros-chrome is running.
@@ -484,7 +487,7 @@ class BrowserManager : public session_manager::SessionManagerObserver,
     // Supported interface version of the BrowserService in Lacros-chrome.
     uint32_t interface_version;
   };
-  absl::optional<BrowserServiceInfo> browser_service_;
+  std::optional<BrowserServiceInfo> browser_service_;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserManagerTest, LacrosKeepAlive);
@@ -712,6 +715,8 @@ class BrowserManager : public session_manager::SessionManagerObserver,
 
   void PerformAction(std::unique_ptr<BrowserAction> action);
 
+  crosapi::BrowserLauncher browser_launcher_;
+
   // NOTE: The state is exposed to tests via autotest_private.
   State state_ = State::NOT_INITIALIZED;
 
@@ -727,7 +732,7 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   base::ScopedFD postlogin_pipe_fd_;
 
   // Whether we are starting "rootfs" or "stateful" lacros.
-  absl::optional<LacrosSelection> lacros_selection_;
+  std::optional<LacrosSelection> lacros_selection_;
 
   // Version of the browser (e.g. lacros-chrome) displayed to user in feedback
   // report, etc. It includes both browser version and channel in the format of:
@@ -741,9 +746,6 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // Time when the lacros process was resumed (when pre-launching at login
   // screen).
   base::TimeTicks lacros_resume_time_;
-
-  // Process handle for the lacros-chrome process.
-  base::Process lacros_process_;
 
   // Remembers the request from Lacros-chrome whether it needs to be
   // relaunched. Reset on new process start in any cases.
@@ -818,8 +820,8 @@ class BrowserManager : public session_manager::SessionManagerObserver,
 
   // The launch mode and the launch mode with source which were used after
   // deciding if Lacros should be used or not.
-  absl::optional<LacrosLaunchMode> lacros_mode_;
-  absl::optional<LacrosLaunchModeAndSource> lacros_mode_and_source_;
+  std::optional<LacrosLaunchMode> lacros_mode_;
+  std::optional<LacrosLaunchModeAndSource> lacros_mode_and_source_;
 
   base::ScopedObservation<user_manager::UserManager,
                           user_manager::UserManager::Observer>

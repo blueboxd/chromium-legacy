@@ -181,6 +181,16 @@ void LauncherSearchIphView::VisibilityChanged(views::View* starting_from,
                                               bool is_visible) {
   if (is_visible) {
     ShuffleChipsQuery();
+
+    // Label size should be changed. The `PreferredSizeChanged()` in label is
+    // not bubbled up to this view, so we need to explicitly call it here.
+    PreferredSizeChanged();
+  }
+}
+
+void LauncherSearchIphView::NotifyAssistantButtonPressedEvent() {
+  if (scoped_iph_session_) {
+    scoped_iph_session_->NotifyEvent(kIphEventNameAssistantClick);
   }
 }
 
@@ -197,9 +207,7 @@ void LauncherSearchIphView::RunLauncherSearchQuery(
 }
 
 void LauncherSearchIphView::OpenAssistantPage() {
-  if (scoped_iph_session_) {
-    scoped_iph_session_->NotifyEvent(kIphEventNameAssistantClick);
-  }
+  NotifyAssistantButtonPressedEvent();
   delegate_->OpenAssistantPage();
 }
 

@@ -6,9 +6,10 @@
 
 #include <stdint.h>
 
+#include <optional>
+#include <string_view>
 #include <tuple>
 
-#include <optional>
 #include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
@@ -538,7 +539,7 @@ void InterfaceEndpointClient::RaiseError() {
 }
 
 void InterfaceEndpointClient::CloseWithReason(uint32_t custom_reason,
-                                              base::StringPiece description) {
+                                              std::string_view description) {
   CHECK(sequence_checker_.CalledOnValidSequence());
 
   auto handle = PassHandle();

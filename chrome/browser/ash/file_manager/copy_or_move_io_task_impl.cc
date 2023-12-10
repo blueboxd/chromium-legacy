@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -47,7 +48,6 @@
 #include "storage/browser/file_system/file_system_operation.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
 #include "storage/browser/file_system/file_system_url.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/constants/cryptohome.h"
 
 namespace file_manager::io_task {
@@ -283,10 +283,10 @@ void CopyOrMoveIOTaskImpl::GetFileSize(size_t idx) {
   const base::FilePath& source = progress_->sources[idx].url.path();
   const base::FilePath& destination = progress_->GetDestinationFolder().path();
 
-  constexpr auto metadata_fields =
-      storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
-      storage::FileSystemOperation::GET_METADATA_FIELD_SIZE |
-      storage::FileSystemOperation::GET_METADATA_FIELD_TOTAL_SIZE;
+  constexpr storage::FileSystemOperation::GetMetadataFieldSet metadata_fields =
+      {storage::FileSystemOperation::GetMetadataField::kIsDirectory,
+       storage::FileSystemOperation::GetMetadataField::kSize,
+       storage::FileSystemOperation::GetMetadataField::kRecursiveSize};
 
   auto get_metadata_callback =
       base::BindOnce(&GetFileMetadataOnIOThread, file_system_context_,
@@ -518,12 +518,12 @@ void CopyOrMoveIOTaskImpl::CopyOrMoveFile(
 
   if (!destination_result.has_value()) {
     progress_->outputs.emplace_back(progress_->GetDestinationFolder(),
-                                    absl::nullopt);
+                                    std::nullopt);
     OnCopyOrMoveComplete(idx, destination_result.error());
     return;
   }
 
-  progress_->outputs.emplace_back(destination_result.value(), absl::nullopt);
+  progress_->outputs.emplace_back(destination_result.value(), std::nullopt);
   DCHECK_EQ(idx + 1, progress_->outputs.size());
 
   const storage::FileSystemURL& source_url = progress_->sources[idx].url;
@@ -826,6 +826,7 @@ void CopyOrMoveIOTaskImpl::OnCopyOrMoveProgress(
 void CopyOrMoveIOTaskImpl::OnEncryptedFileSkipped(size_t idx,
                                                   storage::FileSystemURL url) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  progress_->skipped_encrypted_files.emplace_back(std::move(url));
   progress_->sources[idx].error = base::File::FILE_ERROR_FAILED;
   progress_->outputs[idx].error = base::File::FILE_ERROR_FAILED;
 }

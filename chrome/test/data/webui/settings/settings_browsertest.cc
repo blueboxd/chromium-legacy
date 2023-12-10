@@ -271,10 +271,6 @@ IN_PROC_BROWSER_TEST_F(SettingsTest, PreloadingPage) {
   RunTest("settings/preloading_page_test.js", "mocha.run()");
 }
 
-IN_PROC_BROWSER_TEST_F(SettingsTest, PrivacySandbox) {
-  RunTest("settings/privacy_sandbox_test.js", "mocha.run()");
-}
-
 IN_PROC_BROWSER_TEST_F(SettingsTest, ProtocolHandlers) {
   RunTest("settings/protocol_handlers_test.js", "mocha.run()");
 }
@@ -439,8 +435,7 @@ IN_PROC_BROWSER_TEST_F(SettingsTest, SystemPage) {
 }
 #endif
 
-// Flaky on all OSes. TODO(charlesmeng): Enable the test.
-IN_PROC_BROWSER_TEST_F(SettingsTest, DISABLED_TabDiscardExceptionDialog) {
+IN_PROC_BROWSER_TEST_F(SettingsTest, TabDiscardExceptionDialog) {
   RunTest("settings/tab_discard_exception_dialog_test.js", "mocha.run()");
 }
 
@@ -551,11 +546,8 @@ IN_PROC_BROWSER_TEST_F(SettingsClearBrowsingDataTest,
 class SettingsCookiesPageTest : public SettingsBrowserTest {
  protected:
   SettingsCookiesPageTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {
-            privacy_sandbox::kPrivacySandboxFirstPartySetsUI,
-        },
-        {features::kPerformanceSettingsPreloadingSubpage});
+    scoped_feature_list_.InitAndEnableFeature(
+        privacy_sandbox::kPrivacySandboxFirstPartySetsUI);
   }
 
  private:
@@ -581,12 +573,6 @@ IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest, ExceptionsList) {
 IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest, FirstPartySetsUIDisabled) {
   RunTest("settings/cookies_page_test.js",
           "runMochaSuite('FirstPartySetsUIDisabled')");
-}
-
-IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest,
-                       PreloadingSubpageMovedToPerformanceSettings) {
-  RunTest("settings/cookies_page_test.js",
-          "runMochaSuite('PreloadingSubpageMovedToPerformanceSettings')");
 }
 
 IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest, TrackingProtectionSettings) {

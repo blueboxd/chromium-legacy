@@ -39,7 +39,7 @@ constexpr char kUserActionEnterIdentifier[] = "identifierEntered";
 constexpr char kUserActionQuickStartButtonClicked[] = "activateQuickStart";
 
 bool ShouldPrepareForRecovery(const AccountId& account_id) {
-  if (!features::IsCryptohomeRecoveryEnabled() || !account_id.is_valid()) {
+  if (!account_id.is_valid()) {
     return false;
   }
 
@@ -57,7 +57,7 @@ bool ShouldPrepareForRecovery(const AccountId& account_id) {
       static_cast<int>(ReauthReason::kOther),
   };
   user_manager::KnownUser known_user(g_browser_process->local_state());
-  absl::optional<int> reauth_reason = known_user.FindReauthReason(account_id);
+  std::optional<int> reauth_reason = known_user.FindReauthReason(account_id);
   return reauth_reason.has_value() &&
          base::Contains(kPossibleReasons, reauth_reason.value());
 }
@@ -122,10 +122,8 @@ void GaiaScreen::LoadOnlineGaia() {
   switch (context->gaia_config.gaia_path) {
     case WizardContext::GaiaPath::kDefault:
     case WizardContext::GaiaPath::kSamlRedirect:
-      LoadDefaultOnlineGaia(context->gaia_config.prefilled_account);
-      break;
     case WizardContext::GaiaPath::kReauth:
-      LoadDefaultOnlineGaia(EmptyAccountId());
+      LoadDefaultOnlineGaia(context->gaia_config.prefilled_account);
       break;
     case WizardContext::GaiaPath::kChildSignin:
     case WizardContext::GaiaPath::kChildSignup:
@@ -145,7 +143,6 @@ void GaiaScreen::LoadDefaultOnlineGaia(const AccountId& account) {
   // conditions which may be difficult as of now.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForceCryptohomeRecoveryForTesting)) {
-    DCHECK(features::IsCryptohomeRecoveryEnabled());
     LoginDisplayHost::default_host()
         ->GetWizardContext()
         ->gaia_config.gaia_path = WizardContext::GaiaPath::kReauth;
@@ -310,7 +307,7 @@ void GaiaScreen::HandleIdentifierEntered(const std::string& user_email) {
 
 void GaiaScreen::OnGetAuthFactorsConfiguration(
     std::unique_ptr<UserContext> user_context,
-    absl::optional<AuthenticationError> error) {
+    std::optional<AuthenticationError> error) {
   bool is_recovery_configured = false;
   bool is_gaia_password_configured = true;
   if (error.has_value()) {

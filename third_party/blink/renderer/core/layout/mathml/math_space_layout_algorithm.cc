@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/core/layout/mathml/math_space_layout_algorithm.h"
 
-#include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
+#include "third_party/blink/renderer/core/layout/block_break_token.h"
+#include "third_party/blink/renderer/core/layout/length_utils.h"
 
 namespace blink {
 
@@ -15,12 +15,12 @@ MathSpaceLayoutAlgorithm::MathSpaceLayoutAlgorithm(
   DCHECK(params.space.IsNewFormattingContext());
 }
 
-const NGLayoutResult* MathSpaceLayoutAlgorithm::Layout() {
-  DCHECK(!BreakToken());
+const LayoutResult* MathSpaceLayoutAlgorithm::Layout() {
+  DCHECK(!GetBreakToken());
 
   LayoutUnit intrinsic_block_size = BorderScrollbarPadding().BlockSum();
   LayoutUnit block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), BorderPadding(), intrinsic_block_size,
+      GetConstraintSpace(), Style(), BorderPadding(), intrinsic_block_size,
       container_builder_.InitialBorderBoxSize().inline_size);
 
   container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);

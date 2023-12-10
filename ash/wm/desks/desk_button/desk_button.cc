@@ -5,6 +5,7 @@
 #include "ash/wm/desks/desk_button/desk_button.h"
 
 #include <string>
+#include <utility>
 
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/screen_util.h"
@@ -44,7 +45,7 @@ namespace ash {
 ////////////////////////////////////////////////////////////////////////////////
 // DeskSwitchButton:
 DeskSwitchButton::DeskSwitchButton(PressedCallback callback)
-    : ImageButton(callback) {
+    : ImageButton(std::move(callback)) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   SetSize(
@@ -541,7 +542,7 @@ void DeskButton::MaybeShowContextMenuForEvent(ui::LocatedEvent* event) {
 }
 
 void DeskButton::UpdateShelfAutoHideDisabler(
-    absl::optional<Shelf::ScopedDisableAutoHide>& disabler,
+    std::optional<Shelf::ScopedDisableAutoHide>& disabler,
     bool should_enable_shelf_auto_hide) {
   if (should_enable_shelf_auto_hide) {
     disabler.reset();

@@ -48,6 +48,10 @@
         {
           "builder": "dawn-try-mac-arm64-rel",
           "group": "tryserver.chromium.dawn"
+        },
+        {
+          "builder": "mac-arm64-dawn-rel",
+          "group": "tryserver.chromium.dawn"
         }
       ]
     }

@@ -44,23 +44,24 @@ class IncognitoTabModelImpl implements IncognitoTabModel {
             new ObserverList<>();
     private final Callback<Tab> mDelegateModelCurrentTabSupplierObserver;
     private final ObservableSupplierImpl<Tab> mCurrentTabSupplier = new ObservableSupplierImpl<>();
+    private final Callback<Integer> mDelegateModelTabCountSupplierObserver;
+    private final ObservableSupplierImpl<Integer> mTabCountSupplier =
+            new ObservableSupplierImpl<>();
 
     private TabModel mDelegateModel;
     private int mCountOfAddingOrClosingTabs;
     private boolean mActive;
 
-    /**
-     * Constructor for IncognitoTabModel.
-     */
+    /** Constructor for IncognitoTabModel. */
     IncognitoTabModelImpl(IncognitoTabModelDelegate tabModelCreator) {
         mDelegate = tabModelCreator;
-        mDelegateModel = EmptyTabModel.getInstance();
+        mDelegateModel = EmptyTabModel.getInstance(true);
         mDelegateModelCurrentTabSupplierObserver = mCurrentTabSupplier::set;
+        mDelegateModelTabCountSupplierObserver = mTabCountSupplier::set;
+        mTabCountSupplier.set(0);
     }
 
-    /**
-     * Ensures that the real TabModel has been created.
-     */
+    /** Ensures that the real TabModel has been created. */
     protected void ensureTabModelImpl() {
         ThreadUtils.assertOnUiThread();
         if (!(mDelegateModel instanceof EmptyTabModel)) return;
@@ -69,6 +70,7 @@ class IncognitoTabModelImpl implements IncognitoTabModel {
         mDelegateModel
                 .getCurrentTabSupplier()
                 .addObserver(mDelegateModelCurrentTabSupplierObserver);
+        mDelegateModel.getTabCountSupplier().addObserver(mDelegateModelTabCountSupplierObserver);
         for (TabModelObserver observer : mObservers) {
             mDelegateModel.addObserver(observer);
         }
@@ -80,7 +82,8 @@ class IncognitoTabModelImpl implements IncognitoTabModel {
      */
     protected void destroyIncognitoIfNecessary() {
         ThreadUtils.assertOnUiThread();
-        if (!isEmpty() || mDelegateModel instanceof EmptyTabModel
+        if (!isEmpty()
+                || mDelegateModel instanceof EmptyTabModel
                 || mCountOfAddingOrClosingTabs != 0) {
             return;
         }
@@ -89,10 +92,15 @@ class IncognitoTabModelImpl implements IncognitoTabModel {
             observer.didBecomeEmpty();
         }
 
+        mDelegateModel
+                .getCurrentTabSupplier()
+                .removeObserver(mDelegateModelCurrentTabSupplierObserver);
+        mDelegateModel.getTabCountSupplier().removeObserver(mDelegateModelTabCountSupplierObserver);
         mDelegateModel.destroy();
         mCurrentTabSupplier.set(null);
+        mTabCountSupplier.set(0);
 
-        mDelegateModel = EmptyTabModel.getInstance();
+        mDelegateModel = EmptyTabModel.getInstance(true);
     }
 
     private boolean isEmpty() {
@@ -261,6 +269,11 @@ class IncognitoTabModelImpl implements IncognitoTabModel {
     @Override
     public void notifyAllTabsClosureUndone() {
         mDelegateModel.notifyAllTabsClosureUndone();
+    }
+
+    @Override
+    public @NonNull ObservableSupplier<Integer> getTabCountSupplier() {
+        return mTabCountSupplier;
     }
 
     @Override

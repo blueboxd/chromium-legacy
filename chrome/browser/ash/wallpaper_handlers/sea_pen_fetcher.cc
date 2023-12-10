@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/wallpaper_handlers/sea_pen_fetcher.h"
+#include "chrome/browser/ash/wallpaper_handlers/sea_pen_utils.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -13,8 +15,11 @@
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/wallpaper/sea_pen_image.h"
 #include "ash/webui/personalization_app/mojom/sea_pen.mojom-forward.h"
+#include "ash/webui/personalization_app/mojom/sea_pen.mojom-shared.h"
+#include "ash/webui/personalization_app/mojom/sea_pen.mojom.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/notreached.h"
 #include "chrome/browser/manta/manta_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/manta/features.h"
@@ -22,6 +27,7 @@
 #include "components/manta/manta_status.h"
 #include "components/manta/proto/manta.pb.h"
 #include "components/manta/snapper_provider.h"
+#include "mojo/public/cpp/bindings/clone_traits.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 // Uncomment below to enable a fake API for local debugging purposes.
@@ -103,40 +109,6 @@ class FakeSeaPenFetcher : public SeaPenFetcher {
 
 #else  // defined(FAKE_SEA_PEN_FETCHER_FOR_DEBUG)
 
-// Helper function to validate the Manta API output data.
-bool IsValidOutput(manta::proto::OutputData output,
-                   const std::string_view source) {
-  if (!output.has_generation_seed()) {
-    LOG(WARNING) << "Manta output data missing id for " << source;
-    return false;
-  }
-  if (!output.has_image() || !output.image().has_serialized_bytes()) {
-    LOG(WARNING) << "Manta output data missing image for" << source;
-    return false;
-  }
-  return true;
-}
-
-// Common helper function between `FetchThumbnails` and `FetchWallpaper`.
-manta::proto::Request CreateMantaRequest(
-    const std::string& query,
-    absl::optional<uint32_t> generation_seed,
-    int num_output,
-    manta::proto::ImageResolution target_resolution) {
-  manta::proto::Request request;
-  request.set_feature_name(manta::proto::FeatureName::CHROMEOS_WALLPAPER);
-  manta::proto::RequestConfig& request_config =
-      *request.mutable_request_config();
-  if (generation_seed) {
-    request_config.set_generation_seed(*generation_seed);
-  }
-  request_config.set_num_outputs(num_output);
-  request_config.set_image_resolution(target_resolution);
-  manta::proto::InputData& input_data = *request.add_input_data();
-  input_data.set_text(query);
-  return request;
-}
-
 class SeaPenFetcherImpl : public SeaPenFetcher {
  public:
   explicit SeaPenFetcherImpl(Profile* profile) {
@@ -153,16 +125,19 @@ class SeaPenFetcherImpl : public SeaPenFetcher {
 
   ~SeaPenFetcherImpl() override = default;
 
-  void FetchThumbnails(const std::string& query,
-                       OnFetchThumbnailsComplete callback) override {
+  void FetchThumbnails(
+      const ash::personalization_app::mojom::SeaPenQueryPtr& query,
+      OnFetchThumbnailsComplete callback) override {
     if (!snapper_provider_) {
       LOG(WARNING) << "SnapperProvider not available";
       std::move(callback).Run(absl::nullopt);
       return;
     }
-    if (query.size() >
-        ash::personalization_app::mojom::kMaximumSearchWallpaperTextBytes) {
-      LOG(WARNING) << "Query too long. Size received: " << query.size();
+    if (query->is_text_query() &&
+        query->get_text_query().size() >
+            ash::personalization_app::mojom::kMaximumSearchWallpaperTextBytes) {
+      LOG(WARNING) << "Query too long. Size received: "
+                   << query->get_text_query().size();
       std::move(callback).Run(absl::nullopt);
       return;
     }
@@ -172,24 +147,26 @@ class SeaPenFetcherImpl : public SeaPenFetcher {
     }
     pending_fetch_thumbnails_callback_ = std::move(callback);
     auto target_resolution = manta::proto::ImageResolution::RESOLUTION_1024;
+    auto request = CreateMantaRequest(query, absl::nullopt,
+                                      /*num_output=*/6, target_resolution);
     snapper_provider_->Call(
-        CreateMantaRequest(query, absl::nullopt, /*num_output=*/6,
-                           target_resolution),
-        base::BindOnce(&SeaPenFetcherImpl::OnFetchThumbnailsDone,
-                       weak_ptr_factory_.GetWeakPtr(), query,
-                       target_resolution));
+        request, base::BindOnce(&SeaPenFetcherImpl::OnFetchThumbnailsDone,
+                                weak_ptr_factory_.GetWeakPtr(), query.Clone(),
+                                target_resolution));
   }
 
-  void OnFetchThumbnailsDone(const std::string& query,
-                             manta::proto::ImageResolution resolution,
-                             std::unique_ptr<manta::proto::Response> response,
-                             manta::MantaStatus status) {
+  void OnFetchThumbnailsDone(
+      const ash::personalization_app::mojom::SeaPenQueryPtr& query,
+      manta::proto::ImageResolution resolution,
+      std::unique_ptr<manta::proto::Response> response,
+      manta::MantaStatus status) {
     DCHECK(pending_fetch_thumbnails_callback_);
     if (status.status_code != manta::MantaStatusCode::kOk || !response) {
       LOG(WARNING) << "Failed to fetch manta response: " << status.message;
       std::move(pending_fetch_thumbnails_callback_).Run(absl::nullopt);
       return;
     }
+
     std::vector<ash::SeaPenImage> images;
     for (auto& data : *response->mutable_output_data()) {
       if (!IsValidOutput(data, __func__)) {
@@ -197,20 +174,25 @@ class SeaPenFetcherImpl : public SeaPenFetcher {
       }
       images.emplace_back(
           std::move(*data.mutable_image()->mutable_serialized_bytes()),
-          data.generation_seed(), query, resolution);
+          data.generation_seed(), resolution);
     }
     std::move(pending_fetch_thumbnails_callback_).Run(std::move(images));
   }
 
-  void FetchWallpaper(const ash::SeaPenImage& thumbnail,
-                      OnFetchWallpaperComplete callback) override {
+  void FetchWallpaper(
+      const ash::SeaPenImage& thumbnail,
+      const ash::personalization_app::mojom::SeaPenQueryPtr& query,
+      OnFetchWallpaperComplete callback) override {
     if (!snapper_provider_) {
       LOG(WARNING) << "SnapperProvider not available";
       std::move(callback).Run(absl::nullopt);
       return;
     }
-    CHECK_LE(thumbnail.query.size(),
-             ash::personalization_app::mojom::kMaximumSearchWallpaperTextBytes);
+    if (query->is_text_query()) {
+      CHECK_LE(
+          query->get_text_query().size(),
+          ash::personalization_app::mojom::kMaximumSearchWallpaperTextBytes);
+    }
     weak_ptr_factory_.InvalidateWeakPtrs();
     if (pending_fetch_wallpaper_callback_) {
       std::move(pending_fetch_wallpaper_callback_).Run(absl::nullopt);
@@ -218,16 +200,15 @@ class SeaPenFetcherImpl : public SeaPenFetcher {
     pending_fetch_wallpaper_callback_ = std::move(callback);
     // TODO(b/300129219): Add higher resolution when supported
     auto target_resolution = manta::proto::ImageResolution::RESOLUTION_1024;
+
     snapper_provider_->Call(
-        CreateMantaRequest(thumbnail.query, thumbnail.id, /*num_output=*/1,
+        CreateMantaRequest(query, thumbnail.id, /*num_output=*/1,
                            target_resolution),
         base::BindOnce(&SeaPenFetcherImpl::OnFetchWallpaperDone,
-                       weak_ptr_factory_.GetWeakPtr(), thumbnail.query,
-                       target_resolution));
+                       weak_ptr_factory_.GetWeakPtr(), target_resolution));
   }
 
-  void OnFetchWallpaperDone(const std::string& query,
-                            manta::proto::ImageResolution resolution,
+  void OnFetchWallpaperDone(manta::proto::ImageResolution resolution,
                             std::unique_ptr<manta::proto::Response> response,
                             manta::MantaStatus status) {
     DCHECK(pending_fetch_wallpaper_callback_);
@@ -243,7 +224,7 @@ class SeaPenFetcherImpl : public SeaPenFetcher {
       }
       images.emplace_back(
           std::move(*data.mutable_image()->mutable_serialized_bytes()),
-          data.generation_seed(), query, resolution);
+          data.generation_seed(), resolution);
     }
     if (images.empty()) {
       LOG(WARNING) << "Got empty images";

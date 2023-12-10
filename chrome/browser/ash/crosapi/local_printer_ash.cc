@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/crosapi/local_printer_ash.h"
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -59,7 +60,6 @@
 #include "printing/print_settings.h"
 #include "printing/printing_features.h"
 #include "printing/printing_utils.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace crosapi {
@@ -83,7 +83,7 @@ GURL GenerateEulaUrl(scoped_refptr<chromeos::PpdProvider>,
 
 mojom::CapabilitiesResponsePtr OnSetUpPrinter(
     const chromeos::Printer& printer,
-    const absl::optional<printing::PrinterSemanticCapsAndDefaults>& caps) {
+    const std::optional<printing::PrinterSemanticCapsAndDefaults>& caps) {
   return printing::PrinterWithCapabilitiesToMojom(printer, caps);
 }
 
@@ -346,14 +346,24 @@ void LocalPrinterAsh::NotifyPrintJobUpdate(base::WeakPtr<ash::CupsPrintJob> job,
     LOG(WARNING) << "Ignoring invalid print job";
     return;
   }
+  const auto& printer_id = job->printer().id();
+  const auto& job_id = job->job_id();
   for (auto& remote : print_job_remotes_) {
-    remote->OnPrintJobUpdate(job->printer().id(), job->job_id(), status);
+    remote->OnPrintJobUpdate(printer_id, job_id, status);
   }
-  if (job->source() != mojom::PrintJob::Source::kExtension) {
-    return;
-  }
-  for (auto& remote : extension_print_job_remotes_) {
-    remote->OnPrintJobUpdate(job->printer().id(), job->job_id(), status);
+  switch (job->source()) {
+    case mojom::PrintJob::Source::kExtension:
+      for (auto& remote : extension_print_job_remotes_) {
+        remote->OnPrintJobUpdate(printer_id, job_id, status);
+      }
+      break;
+    case mojom::PrintJob::Source::kIsolatedWebApp:
+      for (auto& remote : iwa_print_job_remotes_) {
+        remote->OnPrintJobUpdate(printer_id, job_id, status);
+      }
+      break;
+    default:
+      break;
   }
 }
 
@@ -395,7 +405,7 @@ void LocalPrinterAsh::GetCapability(const std::string& printer_id,
   ash::CupsPrintersManager* printers_manager =
       ash::CupsPrintersManagerFactory::GetForBrowserContext(profile);
   DCHECK(printers_manager);
-  absl::optional<chromeos::Printer> printer =
+  std::optional<chromeos::Printer> printer =
       printers_manager->GetPrinter(printer_id);
   if (!printer) {
     // If the printer was removed, the lookup will fail.
@@ -428,7 +438,7 @@ void LocalPrinterAsh::GetEulaUrl(const std::string& printer_id,
   DCHECK(profile);
   ash::CupsPrintersManager* printers_manager =
       ash::CupsPrintersManagerFactory::GetForBrowserContext(profile);
-  absl::optional<chromeos::Printer> printer =
+  std::optional<chromeos::Printer> printer =
       printers_manager->GetPrinter(printer_id);
   if (!printer) {
     // If the printer does not exist, fetching for the license will fail.
@@ -609,8 +619,8 @@ void LocalPrinterAsh::GetUsernamePerPolicy(
       ash::ProfileHelper::Get()->GetUserByProfile(profile)->display_email();
   std::move(callback).Run(profile->GetPrefs()->GetBoolean(
                               prefs::kPrintingSendUsernameAndFilenameEnabled)
-                              ? absl::make_optional(username)
-                              : absl::nullopt);
+                              ? std::make_optional(username)
+                              : std::nullopt);
 }
 
 void LocalPrinterAsh::GetPrinterTypeDenyList(
@@ -662,6 +672,9 @@ void LocalPrinterAsh::AddPrintJobObserver(
     case mojom::PrintJobSource::kExtension:
       extension_print_job_remotes_.Add(std::move(remote));
       break;
+    case mojom::PrintJobSource::kIsolatedWebApp:
+      iwa_print_job_remotes_.Add(std::move(remote));
+      break;
     case mojom::PrintJobSource::kAny:
       print_job_remotes_.Add(std::move(remote));
       break;
@@ -697,7 +710,7 @@ void LocalPrinterAsh::GetOAuthAccessToken(
   ash::CupsPrintersManager* printers_manager =
       ash::CupsPrintersManagerFactory::GetForBrowserContext(profile);
   DCHECK(printers_manager);
-  absl::optional<chromeos::Printer> printer =
+  std::optional<chromeos::Printer> printer =
       printers_manager->GetPrinter(printer_id);
   if (!printer) {
     // If the printer was removed, the lookup will fail.
@@ -728,7 +741,7 @@ void LocalPrinterAsh::GetIppClientInfo(const std::string& printer_id,
   ash::CupsPrintersManager* printers_manager =
       ash::CupsPrintersManagerFactory::GetForBrowserContext(profile);
   DCHECK(printers_manager);
-  absl::optional<chromeos::Printer> printer =
+  std::optional<chromeos::Printer> printer =
       printers_manager->GetPrinter(printer_id);
   if (!printer) {
     std::move(callback).Run({});

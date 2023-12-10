@@ -154,14 +154,19 @@ component("x") {
   output_name = "gfx_x11"
 
   sources = [
+    "atom_cache.cc",
+    "atom_cache.h",
     "connection.cc",
     "connection.h",
     "error.cc",
     "error.h",
     "event.cc",
     "event.h",
+    "event_observer.h",
     "future.cc",
     "future.h",
+    "geometry_cache.cc",
+    "geometry_cache.h",
     "keyboard_state.cc",
     "keyboard_state.h",
     "property_cache.cc",
@@ -174,12 +179,12 @@ component("x") {
     "visual_picker_glx.h",
     "window_cache.cc",
     "window_cache.h",
-    "x11_atom_cache.cc",
-    "x11_atom_cache.h",
+    "window_event_manager.cc",
+    "window_event_manager.h",
+    "wm_sync.cc",
+    "wm_sync.h",
     "x11_path.cc",
     "x11_path.h",
-    "x11_window_event_manager.cc",
-    "x11_window_event_manager.h",
     "xlib_support.cc",
     "xlib_support.h",
     "xproto_internal.cc",
@@ -210,8 +215,10 @@ source_set("unit_test") {
   testonly = true
   sources = [
     "connection_unittest.cc",
+    "geometry_cache_unittest.cc",
     "property_cache_unittest.cc",
     "window_cache_unittest.cc",
+    "wm_sync_unittest.cc",
   ]
   deps = [
     "//base",

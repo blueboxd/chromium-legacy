@@ -44,6 +44,7 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_basic_stream.h"
 #include "net/http/http_chunked_decoder.h"
+#include "net/http/http_connection_info.h"
 #include "net/http/http_log_util.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
@@ -99,18 +100,16 @@ const size_t kMaxRetryAttempts = 2;
 const size_t kMaxRestarts = 32;
 
 // Returns true when Early Hints are allowed on the given protocol.
-bool EarlyHintsAreAllowedOn(HttpResponseInfo::ConnectionInfo connection_info) {
+bool EarlyHintsAreAllowedOn(HttpConnectionInfo connection_info) {
   switch (connection_info) {
-    case HttpResponseInfo::ConnectionInfo::CONNECTION_INFO_HTTP0_9:
-    case HttpResponseInfo::ConnectionInfo::CONNECTION_INFO_HTTP1_0:
+    case HttpConnectionInfo::kHTTP0_9:
+    case HttpConnectionInfo::kHTTP1_0:
       return false;
-    case HttpResponseInfo::ConnectionInfo::CONNECTION_INFO_HTTP1_1:
+    case HttpConnectionInfo::kHTTP1_1:
       return base::FeatureList::IsEnabled(features::kEnableEarlyHintsOnHttp11);
     default:
-      CHECK_NE(connection_info,
-               HttpResponseInfo::ConnectionInfo::NUM_OF_CONNECTION_INFOS);
-      // Implicitly allow CONNECTION_INFO_UNKNOWN because this is the default
-      // value and ConnectionInfo isn't always set.
+      // Implicitly allow HttpConnectionInfo::kUNKNOWN because this is the
+      // default value and ConnectionInfo isn't always set.
       return true;
   }
 }
@@ -129,10 +128,9 @@ enum class WebSocketFallbackResult {
 WebSocketFallbackResult CalculateWebSocketFallbackResult(
     int result,
     bool http_1_1_was_required,
-    HttpResponseInfo::ConnectionInfoCoarse connection_info) {
+    HttpConnectionInfoCoarse connection_info) {
   if (result == OK) {
-    if (connection_info ==
-        HttpResponseInfo::ConnectionInfoCoarse::CONNECTION_INFO_COARSE_HTTP2) {
+    if (connection_info == HttpConnectionInfoCoarse::kHTTP2) {
       return WebSocketFallbackResult::kSuccessHttp2;
     }
     return http_1_1_was_required
@@ -144,16 +142,13 @@ WebSocketFallbackResult CalculateWebSocketFallbackResult(
                                : WebSocketFallbackResult::kFailure;
 }
 
-void RecordWebSocketFallbackResult(
-    int result,
-    bool http_1_1_was_required,
-    HttpResponseInfo::ConnectionInfoCoarse connection_info) {
-  CHECK_NE(connection_info,
-           HttpResponseInfo::ConnectionInfoCoarse::CONNECTION_INFO_COARSE_QUIC);
+void RecordWebSocketFallbackResult(int result,
+                                   bool http_1_1_was_required,
+                                   HttpConnectionInfoCoarse connection_info) {
+  CHECK_NE(connection_info, HttpConnectionInfoCoarse::kQUIC);
 
-  // `connection_info` could be CONNECTION_INFO_COARSE_OTHER in tests.
-  if (connection_info ==
-      HttpResponseInfo::ConnectionInfoCoarse::CONNECTION_INFO_COARSE_OTHER) {
+  // `connection_info` could be kOTHER in tests.
+  if (connection_info == HttpConnectionInfoCoarse::kOTHER) {
     return;
   }
 
@@ -622,12 +617,17 @@ void HttpNetworkTransaction::OnStreamReady(const SSLConfig& used_ssl_config,
   stream_->SetRequestHeadersCallback(request_headers_callback_);
   server_ssl_config_ = used_ssl_config;
   proxy_info_ = used_proxy_info;
-  response_.was_alpn_negotiated = stream_request_->was_alpn_negotiated();
+  // TODO(crbug.com/621512): Remove `was_alpn_negotiated` when we remove
+  // chrome.loadTimes API.
+  response_.was_alpn_negotiated =
+      stream_request_->negotiated_protocol() != kProtoUnknown;
   response_.alpn_negotiated_protocol =
       NextProtoToString(stream_request_->negotiated_protocol());
   response_.alternate_protocol_usage =
       stream_request_->alternate_protocol_usage();
-  response_.was_fetched_via_spdy = stream_request_->using_spdy();
+  // TODO(crbug.com/1286835): Stop using `was_fetched_via_spdy`.
+  response_.was_fetched_via_spdy =
+      stream_request_->negotiated_protocol() == kProtoHTTP2;
   response_.dns_aliases = stream_->GetDnsAliases();
   SetProxyInfoInResponse(used_proxy_info, &response_);
   OnIOComplete(OK);
@@ -916,11 +916,11 @@ int HttpNetworkTransaction::DoCreateStreamComplete(int result) {
   } else if (result == ERR_HTTP_1_1_REQUIRED ||
              result == ERR_PROXY_HTTP_1_1_REQUIRED) {
     return HandleHttp11Required(result);
+  } else {
+    // Handle possible client certificate errors that may have occurred if the
+    // stream used SSL for one or more of the layers.
+    result = HandleSSLClientAuthError(result);
   }
-
-  // Handle possible client certificate errors that may have occurred if the
-  // stream used SSL for one or more of the layers.
-  result = HandleSSLClientAuthError(result);
 
   // At this point we are done with the stream_request_.
   stream_request_.reset();
@@ -981,9 +981,20 @@ int HttpNetworkTransaction::DoConnectedCallback() {
   if (!proxy_info_.is_direct()) {
     type = TransportType::kProxied;
   }
+
+  bool is_issued_by_known_root = false;
+  if (IsSecureRequest()) {
+    SSLInfo ssl_info;
+    CHECK(stream_);
+    stream_->GetSSLInfo(&ssl_info);
+    is_issued_by_known_root = ssl_info.is_issued_by_known_root;
+  }
+
   return connected_callback_.Run(
       TransportInfo(type, remote_endpoint_,
-                    std::string{stream_->GetAcceptChViaAlps()}),
+                    std::string{stream_->GetAcceptChViaAlps()},
+                    is_issued_by_known_root,
+                    NextProtoFromString(response_.alpn_negotiated_protocol)),
       base::BindOnce(&HttpNetworkTransaction::ResumeAfterConnected,
                      base::Unretained(this)));
 }
@@ -1207,7 +1218,7 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
   if (ForWebSocketHandshake()) {
     RecordWebSocketFallbackResult(
         result, http_1_1_was_required_,
-        HttpResponseInfo::ConnectionInfoToCoarse(response_.connection_info));
+        HttpConnectionInfoToCoarse(response_.connection_info));
   }
 
   if (result < 0)
@@ -1250,8 +1261,8 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
   // retry the request for HTTP/1.1 but not HTTP/2 or QUIC because those
   // multiplex requests and have no need for 408.
   if (response_.headers->response_code() == HTTP_REQUEST_TIMEOUT &&
-      HttpResponseInfo::ConnectionInfoToCoarse(response_.connection_info) ==
-          HttpResponseInfo::CONNECTION_INFO_COARSE_HTTP1 &&
+      HttpConnectionInfoToCoarse(response_.connection_info) ==
+          HttpConnectionInfoCoarse::kHTTP1 &&
       stream_->IsConnectionReused()) {
 #if BUILDFLAG(ENABLE_REPORTING)
     GenerateNetworkErrorLoggingReport(OK);
@@ -1639,6 +1650,10 @@ int HttpNetworkTransaction::HandleSSLClientAuthError(int error) {
   // origin and proxy errors.
   //
   // See https://crbug.com/828965.
+  if (error != ERR_SSL_PROTOCOL_ERROR && !IsClientCertificateError(error)) {
+    return error;
+  }
+
   bool is_server = !UsingHttpProxyWithoutTunnel();
   HostPortPair host_port_pair;
   // TODO(https://crbug.com/1491092): Remove check and return error when
@@ -1652,30 +1667,26 @@ int HttpNetworkTransaction::HandleSSLClientAuthError(int error) {
                          .host_port_pair();
   }
 
-  if (error == ERR_SSL_PROTOCOL_ERROR || IsClientCertificateError(error)) {
-    DCHECK((is_server && IsSecureRequest()) ||
-           proxy_info_.is_secure_http_like());
-    if (session_->ssl_client_context()->ClearClientCertificate(
-            host_port_pair)) {
-      // The private key handle may have gone stale due to, e.g., the user
-      // unplugging their smartcard. Operating systems do not provide reliable
-      // notifications for this, so if the signature failed and the user was
-      // not already prompted for certificate on this request, retry to ask
-      // the user for a new one.
-      //
-      // TODO(davidben): There is no corresponding feature for proxy client
-      // certificates. Ideally this would live at a lower level, common to both,
-      // but |configured_client_cert_for_server_| is not accessible below the
-      // socket pools.
-      if (is_server && error == ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED &&
-          !configured_client_cert_for_server_ && !HasExceededMaxRetries()) {
-        retry_attempts_++;
-        net_log_.AddEventWithNetErrorCode(
-            NetLogEventType::HTTP_TRANSACTION_RESTART_AFTER_ERROR, error);
-        ResetConnectionAndRequestForResend(
-            RetryReason::kSslClientAuthSignatureFailed);
-        return OK;
-      }
+  DCHECK((is_server && IsSecureRequest()) || proxy_info_.is_secure_http_like());
+  if (session_->ssl_client_context()->ClearClientCertificate(host_port_pair)) {
+    // The private key handle may have gone stale due to, e.g., the user
+    // unplugging their smartcard. Operating systems do not provide reliable
+    // notifications for this, so if the signature failed and the user was
+    // not already prompted for certificate on this request, retry to ask
+    // the user for a new one.
+    //
+    // TODO(davidben): There is no corresponding feature for proxy client
+    // certificates. Ideally this would live at a lower level, common to both,
+    // but |configured_client_cert_for_server_| is not accessible below the
+    // socket pools.
+    if (is_server && error == ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED &&
+        !configured_client_cert_for_server_ && !HasExceededMaxRetries()) {
+      retry_attempts_++;
+      net_log_.AddEventWithNetErrorCode(
+          NetLogEventType::HTTP_TRANSACTION_RESTART_AFTER_ERROR, error);
+      ResetConnectionAndRequestForResend(
+          RetryReason::kSslClientAuthSignatureFailed);
+      return OK;
     }
   }
   return error;
@@ -1936,6 +1947,10 @@ void HttpNetworkTransaction::ResetConnectionAndRequestForResend(
 }
 
 bool HttpNetworkTransaction::ShouldApplyProxyAuth() const {
+  // TODO(https://crbug.com/1491092): Update to handle multi-proxy chains.
+  if (proxy_info_.proxy_chain().is_multi_proxy()) {
+    return false;
+  }
   return UsingHttpProxyWithoutTunnel();
 }
 
@@ -2058,8 +2073,6 @@ bool HttpNetworkTransaction::ContentEncodingsValid() const {
 
   // Temporary workaround for http://crbug.com/714514
   if (headers->IsRedirect(nullptr)) {
-    UMA_HISTOGRAM_BOOLEAN("Net.RedirectWithUnadvertisedContentEncoding",
-                          !result);
     return true;
   }
 
@@ -2111,6 +2124,7 @@ void HttpNetworkTransaction::SetProxyInfoInResponse(
     HttpResponseInfo* response_info) {
   response_info->was_fetched_via_proxy = !proxy_info.is_direct();
   response_info->was_ip_protected = proxy_info.is_for_ip_protection();
+  response_info->was_mdl_match = proxy_info.is_mdl_match();
   if (response_info->was_fetched_via_proxy && !proxy_info.is_empty()) {
     response_info->proxy_chain = proxy_info.proxy_chain();
   } else if (!response_info->was_fetched_via_proxy && proxy_info.is_direct()) {

@@ -18,6 +18,7 @@
 #include "third_party/blink/public/web/web_form_element.h"
 #include "third_party/blink/public/web/web_input_element.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "ui/base/page_transition_types.h"
 
 using blink::WebDocumentLoader;
@@ -60,6 +61,7 @@ FormRendererId FormRef::GetId() const {
 
 FieldRef::FieldRef(blink::WebFormControlElement form_control)
     : field_renderer_id_(form_util::GetFieldRendererId(form_control)) {
+  CHECK(!form_control.IsNull());
   if (!ShouldReplaceElementsByRendererIds()) {
     field_ = form_control;
   }
@@ -67,6 +69,7 @@ FieldRef::FieldRef(blink::WebFormControlElement form_control)
 
 FieldRef::FieldRef(blink::WebElement content_editable)
     : field_renderer_id_(content_editable.GetDomNodeId()) {
+  CHECK(!content_editable.IsNull());
   CHECK(content_editable.IsContentEditable());
   CHECK(base::FeatureList::IsEnabled(
       blink::features::kAutofillUseDomNodeIdForRendererId));
@@ -198,6 +201,10 @@ void FormTracker::SelectControlDidChange(const WebFormControlElement& element) {
                                 Observer::ElementChangeSource::SELECT_CHANGED));
 }
 
+void FormTracker::ElementDisappeared(const blink::WebElement& element) {
+  // TODO(crbug.com/1483242): Implement.
+}
+
 void FormTracker::TrackAutofilledElement(const WebFormControlElement& element) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(form_tracker_sequence_checker_);
   DCHECK(element.IsAutofilled());
@@ -272,9 +279,15 @@ void FormTracker::DidStartNavigation(
   }
 }
 
-void FormTracker::WillDetach() {
+void FormTracker::WillDetach(blink::DetachReason detach_reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(form_tracker_sequence_checker_);
-  FireInferredFormSubmission(SubmissionSource::FRAME_DETACHED);
+  if (detach_reason == blink::DetachReason::kFrameDeletion) {
+    // Exclude cases where the previous RenderFrame gets deleted only to be
+    // replaced by a new RenderFrame, which happens on navigations. This is so
+    // that we only trigger inferred form submission if the actual frame
+    // (<iframe> element etc) gets detached.
+    FireInferredFormSubmission(SubmissionSource::FRAME_DETACHED);
+  }
 }
 
 void FormTracker::WillSendSubmitEvent(const WebFormElement& form) {

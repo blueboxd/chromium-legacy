@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ash/login/screens/osauth/recovery_eligibility_screen.h"
 
+#include <optional>
+
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "base/functional/callback.h"
@@ -17,7 +19,6 @@
 #include "chromeos/ash/components/login/auth/recovery/recovery_utils.h"
 #include "chromeos/ash/components/osauth/public/auth_session_storage.h"
 #include "components/prefs/pref_service.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 
@@ -59,10 +60,6 @@ RecoveryEligibilityScreen::RecoveryEligibilityScreen(
 RecoveryEligibilityScreen::~RecoveryEligibilityScreen() = default;
 
 bool RecoveryEligibilityScreen::MaybeSkip(WizardContext& wizard_context) {
-  if (!features::IsCryptohomeRecoveryEnabled()) {
-    exit_callback_.Run(Result::NOT_APPLICABLE);
-    return true;
-  }
   if (wizard_context.skip_post_login_screens_for_tests) {
     exit_callback_.Run(Result::NOT_APPLICABLE);
     return true;
@@ -94,7 +91,7 @@ void RecoveryEligibilityScreen::ProcessOptions() {
     // Don't ask about recovery consent for managed users - use the policy value
     // instead.
     context()->recovery_setup.ask_about_recovery_consent =
-        IsRecoveryOptInAvailable(IsUserEnterpriseManaged());
+        !IsUserEnterpriseManaged();
     context()->recovery_setup.recovery_factor_opted_in =
         GetRecoveryDefaultState(
             IsUserEnterpriseManaged(),

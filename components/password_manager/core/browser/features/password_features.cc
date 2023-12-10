@@ -8,14 +8,6 @@
 
 namespace password_manager::features {
 
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-// Enables attaching password manager and autofill internals logs to an Autofill
-// Rater Extension Report.
-BASE_FEATURE(kAttachLogsToAutofillRaterExtensionReport,
-             "AttachLogsToAutofillRaterExtensionReport",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
-
 // When enabled, updates to shared existing passwords from the same sender are
 // auto-approved.
 BASE_FEATURE(kAutoApproveSharedPasswordUpdatesFromSameSender,
@@ -26,6 +18,12 @@ BASE_FEATURE(kAutoApproveSharedPasswordUpdatesFromSameSender,
 BASE_FEATURE(kBiometricTouchToFill,
              "BiometricTouchToFill",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
+BASE_FEATURE(kButterOnDesktopFollowup,
+             "ButterOnDesktopFollowup",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 // Delete undecryptable passwords from the store when Sync is active.
 BASE_FEATURE(kClearUndecryptablePasswordsOnSync,
@@ -43,6 +41,14 @@ BASE_FEATURE(kDisablePasswordsDropdownForCvcFields,
              "DisablePasswordsDropdownForCvcFields",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Disables eviction from UPM when error occurs and instead disables password
+// manager until the error is gone.
+#if BUILDFLAG(IS_ANDROID)
+BASE_FEATURE(kRemoveUPMUnenrollment,
+             "RemoveUPMUnenrollment",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_ANDROID)
+
 // Enables a second, Gaia-account-scoped password store for users who are signed
 // in but not syncing.
 BASE_FEATURE(kEnablePasswordsAccountStorage,
@@ -59,6 +65,10 @@ BASE_FEATURE(kEnablePasswordsAccountStorage,
 // affiliated website.
 BASE_FEATURE(kFillingAcrossAffiliatedWebsitesAndroid,
              "FillingAcrossAffiliatedWebsitesAndroid",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+// Enables reading credentials from SharedPreferences.
+BASE_FEATURE(kFetchGaiaHashOnSignIn,
+             "FetchGaiaHashOnSignIn",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
@@ -123,7 +133,7 @@ BASE_FEATURE(kPasswordManagerLogToTerminal,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables "Needs access to keychain, restart chrome" bubble and banner.
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 BASE_FEATURE(kRestartToGainAccessToKeychain,
              "RestartToGainAccessToKeychain",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -210,6 +220,9 @@ extern const base::FeatureParam<int> kMaxSingleUsernameFieldsToStore{
 BASE_FEATURE(kUsernameFirstFlowWithIntermediateValues,
              "UsernameFirstFlowWithIntermediateValues",
              base::FEATURE_DISABLED_BY_DEFAULT);
+extern const base::FeatureParam<int> kSingleUsernameTimeToLive{
+    &kUsernameFirstFlowWithIntermediateValues, /*name=*/"ttl",
+    /*default_value=*/5};
 
 // Enables new prediction that is based on votes from Username First Flow with
 // Intermediate Values.

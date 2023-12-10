@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/notreached.h"
+#include "components/google/core/common/google_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/supervised_user/core/browser/proto/kidschromemanagement_messages.pb.h"
 #include "components/supervised_user/core/common/features.h"
@@ -182,6 +183,16 @@ bool IsSafeSitesEnabled(const PrefService& pref_service) {
 
 bool IsSubjectToParentalControls(const PrefService& pref_service) {
   return IsChildAccount(pref_service) && IsChildAccountSupervisionEnabled();
+}
+
+bool IsUrlFilteringEnabled(const PrefService& pref_service) {
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
+  return IsChildAccount(pref_service);
+#else
+  return IsChildAccount(pref_service) &&
+         base::FeatureList::IsEnabled(
+             kFilterWebsitesForSupervisedUsersOnDesktopAndIOS);
+#endif
 }
 
 bool AreExtensionsPermissionsEnabled(const PrefService& pref_service) {

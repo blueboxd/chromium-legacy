@@ -2900,13 +2900,13 @@ void RenderProcessHostImpl::RemoveRoute(int32_t routing_id) {
   Cleanup();
 }
 
-bool RenderProcessHostImpl::TakeFrameTokensForFrameRoutingID(
-    int32_t new_routing_id,
-    blink::LocalFrameToken& frame_token,
+bool RenderProcessHostImpl::TakeStoredDataForFrameToken(
+    const blink::LocalFrameToken& frame_token,
+    int32_t& new_routing_id,
     base::UnguessableToken& devtools_frame_token,
     blink::DocumentToken& document_token) {
-  return widget_helper_->TakeFrameTokensForFrameRoutingID(
-      new_routing_id, frame_token, devtools_frame_token, document_token);
+  return widget_helper_->TakeStoredDataForFrameToken(
+      frame_token, new_routing_id, devtools_frame_token, document_token);
 }
 
 void RenderProcessHostImpl::AddObserver(RenderProcessHostObserver* observer) {
@@ -3268,12 +3268,6 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
   GetContentClient()->browser()->AppendExtraCommandLineSwitches(command_line,
                                                                 GetID());
 
-  static bool first_renderer_process = true;
-  if (first_renderer_process) {
-    command_line->AppendSwitch(kFirstRendererProcess);
-    first_renderer_process = false;
-  }
-
   if (IsPdf())
     command_line->AppendSwitch(switches::kPdfRenderer);
 
@@ -3533,7 +3527,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #endif
 #if BUILDFLAG(IS_WIN)
     switches::kDisableHighResTimer,
-    switches::kTrySupportedChannelLayouts,
     switches::kRaiseTimerFrequency,
 #endif
 #if BUILDFLAG(IS_OZONE)

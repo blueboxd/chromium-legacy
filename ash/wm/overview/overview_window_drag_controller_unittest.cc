@@ -14,7 +14,6 @@
 #include "ash/wm/desks/desks_histogram_enums.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/legacy_desk_bar_view.h"
-#include "ash/wm/desks/zero_state_button.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_drop_target.h"
 #include "ash/wm/overview/overview_grid.h"
@@ -28,7 +27,6 @@
 #include "base/containers/contains.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
@@ -66,41 +64,6 @@ gfx::Point GetScreenInPixelsPoint(int x, int y) {
   Shell::GetPrimaryRootWindow()->GetHost()->ConvertDIPToScreenInPixels(&point);
   return point;
 }
-
-// Waits for a window to be destroyed.
-class WindowCloseWaiter : public aura::WindowObserver {
- public:
-  explicit WindowCloseWaiter(aura::Window* window) : window_(window) {
-    DCHECK(window_);
-    window_->AddObserver(this);
-  }
-
-  WindowCloseWaiter(const WindowCloseWaiter&) = delete;
-  WindowCloseWaiter& operator=(const WindowCloseWaiter&) = delete;
-
-  ~WindowCloseWaiter() override {
-    if (window_)
-      window_->RemoveObserver(this);
-  }
-
-  void Wait() {
-    // Did window close already?
-    if (!window_)
-      return;
-
-    run_loop_.Run();
-  }
-
-  // aura::WindowObserver:
-  void OnWindowDestroyed(aura::Window* window) override {
-    window_ = nullptr;
-    run_loop_.Quit();
-  }
-
- private:
-  raw_ptr<aura::Window, ExperimentalAsh> window_;
-  base::RunLoop run_loop_;
-};
 
 }  // namespace
 
@@ -358,14 +321,9 @@ TEST_F(OverviewWindowDragControllerTest,
   const auto* desks_bar_view = overview_grid()->desks_bar_view();
   ASSERT_TRUE(desks_bar_view);
 
-  const bool is_jellyroll_enabled = chromeos::features::IsJellyrollEnabled();
-
-  // Check the height of the desks bar view.
-  // When Jellyroll is enabled, desks bar is transformed to expanded state
-  // immediately at the beginning of the drag.
-  EXPECT_EQ(is_jellyroll_enabled
-                ? GetDesksBarViewExpandedStateHeight(desks_bar_view)
-                : kDeskBarZeroStateHeight,
+  // Check the height of the desks bar view. Desks bar is transformed to
+  // expanded state immediately at the beginning of the drag.
+  EXPECT_EQ(GetDesksBarViewExpandedStateHeight(desks_bar_view),
             desks_bar_view->bounds().height());
 
   // Now drop `window`. Check the height of the desks bar view. It should still
@@ -373,39 +331,27 @@ TEST_F(OverviewWindowDragControllerTest,
   auto* event_generator = GetEventGenerator();
   event_generator->ReleaseLeftButton();
 
-  // When Jellyroll is enabled, desks bar never goes back to zero state after
-  // it's initialized.
-  EXPECT_EQ(is_jellyroll_enabled
-                ? GetDesksBarViewExpandedStateHeight(desks_bar_view)
-                : kDeskBarZeroStateHeight,
+  // Desks bar never goes back to zero state after it is initialized.
+  EXPECT_EQ(GetDesksBarViewExpandedStateHeight(desks_bar_view),
             desks_bar_view->bounds().height());
 
   // Click on the zero state new desk button to create a new desk. This
   // shouldn't end overview mode. The desks bar view should be transformed to
   // the expanded state.
-  auto* new_desk_button = desks_bar_view->new_desk_button();
-
-  const gfx::Point new_desk_button_center =
-      new_desk_button->GetBoundsInScreen().CenterPoint();
   EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
-  event_generator->MoveMouseTo(new_desk_button_center);
-  event_generator->ClickLeftButton();
+  LeftClickOn(desks_bar_view->new_desk_button());
   EXPECT_EQ(GetDesksBarViewExpandedStateHeight(desks_bar_view),
             desks_bar_view->bounds().height());
 
   // Now remove the newly created desk. This shouldn't end overview mode. The
-  // desks bar view should be transformed to the zero state.
+  // desks bar view should stay in expanded state.
   auto* controller = Shell::Get()->desks_controller();
   controller->RemoveDesk(controller->desks().back().get(),
                          DesksCreationRemovalSource::kButton,
                          DeskCloseType::kCombineDesks);
   EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
-  EXPECT_EQ(is_jellyroll_enabled ? DeskBarViewBase::State::kExpanded
-                                 : DeskBarViewBase::State::kZero,
-            desks_bar_view->state());
-  EXPECT_EQ(is_jellyroll_enabled
-                ? GetDesksBarViewExpandedStateHeight(desks_bar_view)
-                : kDeskBarZeroStateHeight,
+  EXPECT_EQ(DeskBarViewBase::State::kExpanded, desks_bar_view->state());
+  EXPECT_EQ(GetDesksBarViewExpandedStateHeight(desks_bar_view),
             desks_bar_view->bounds().height());
 }
 
@@ -430,6 +376,40 @@ TEST_F(OverviewWindowDragControllerTest, DragWindowInPortraitMode) {
   EXPECT_FALSE(
       desks_bar_view->GetBoundsInScreen().Intersects(gfx::ToEnclosedRect(
           overview_grid()->window_list()[1].get()->target_bounds())));
+}
+
+// Tests that if a user starts dragging an overview item and the desks bar(s)
+// are in zero state, they will become expanded state.
+TEST_F(OverviewWindowDragControllerTest, DesksBarState) {
+  UpdateDisplay("800x600, 800x600");
+
+  std::unique_ptr<aura::Window> window = CreateAppWindow();
+
+  EnterOverview();
+  ASSERT_TRUE(OverviewController::Get()->InOverviewSession());
+
+  // Since we only have one desk, the desk bars should be zero state currently.
+  aura::Window::Windows roots = Shell::GetAllRootWindows();
+  ASSERT_EQ(2u, roots.size());
+
+  for (aura::Window* root : roots) {
+    const auto* desks_bar_view = GetOverviewGridForRoot(root)->desks_bar_view();
+    ASSERT_TRUE(desks_bar_view);
+    ASSERT_EQ(DeskBarViewBase::State::kZero, desks_bar_view->state());
+  }
+
+  // Start dragging the item, but not enough to snap or move to another desk.
+  auto* overview_item = GetOverviewItemForWindow(window.get());
+  ASSERT_TRUE(overview_item);
+  StartDraggingItemBy(overview_item, /*x=*/5, /*y=*/5,
+                      /*by_touch_gestures=*/false, GetEventGenerator());
+
+  // All the desks bar should be expanded.
+  for (aura::Window* root : roots) {
+    const auto* desks_bar_view = GetOverviewGridForRoot(root)->desks_bar_view();
+    ASSERT_TRUE(desks_bar_view);
+    EXPECT_EQ(DeskBarViewBase::State::kExpanded, desks_bar_view->state());
+  }
 }
 
 // Tests the behavior of dragging a window in portrait tablet mode with virtual

@@ -130,8 +130,7 @@ CredentialProviderService::CredentialProviderService(
     syncer::SyncService* sync_service,
     password_manager::AffiliationService* affiliation_service,
     FaviconLoader* favicon_loader)
-    : prefs_(prefs),
-      profile_password_store_(profile_password_store),
+    : profile_password_store_(profile_password_store),
       account_password_store_(account_password_store),
       identity_manager_(identity_manager),
       sync_service_(sync_service),
@@ -155,19 +154,6 @@ CredentialProviderService::CredentialProviderService(
 
   identity_manager_->AddObserver(this);
   sync_service_->AddObserver(this);
-
-  // This class should usually handle incremental PasswordStore updates in
-  // OnLoginsChanged(), but there could be bugs. E.g. maybe an update is fired
-  // before the observer is added. So re-write the data on startup as a
-  // safeguard. Post a task for performance.
-  // Note: in reality this re-write does the same IO work as saving a new
-  // password. The implementations of MutableCredentialStore write *every*
-  // password to disk, even in OnLoginsChanged().
-  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&CredentialProviderService::RequestSyncAllCredentials,
-                     weak_ptr_factory_.GetWeakPtr()),
-      base::Seconds(5));
 
   saving_passwords_enabled_.Init(
       password_manager::prefs::kCredentialsEnableService, prefs,
@@ -295,7 +281,7 @@ void CredentialProviderService::UpdateAccountId() {
 
 void CredentialProviderService::UpdateUserEmail() {
   std::optional accountForSaving =
-      password_manager::sync_util::GetAccountForSaving(prefs_, sync_service_);
+      password_manager::sync_util::GetAccountForSaving(sync_service_);
   [app_group::GetGroupUserDefaults()
       setObject:accountForSaving ? base::SysUTF8ToNSString(*accountForSaving)
                                  : nil

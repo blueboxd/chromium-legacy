@@ -6,6 +6,7 @@
 #define CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH_LOGIN_PERFORMER_H_
 
 #include <memory>
+#include <optional>
 #include <string>
 
 #include "base/component_export.h"
@@ -21,7 +22,6 @@
 #include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "components/user_manager/user_type.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class AccountId;
 
@@ -56,6 +56,8 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH) LoginPerformer
     ~Delegate() override {}
     virtual void AllowlistCheckFailed(const std::string& email) = 0;
     virtual void PolicyLoadFailed() = 0;
+    // Sends AuthSuccess metrics to LoginUnlockThroughputRecorder if needed.
+    virtual void ReportOnAuthSuccessMetrics() {}
   };
 
   explicit LoginPerformer(Delegate* delegate,
@@ -95,8 +97,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH) LoginPerformer
   void OnAuthFailure(const AuthFailure& error) override;
   void OnAuthSuccess(const UserContext& user_context) override;
   void OnOffTheRecordAuthSuccess() override;
-  void OnPasswordChangeDetectedLegacy(const UserContext& user_context) override;
-  void OnPasswordChangeDetected(std::unique_ptr<UserContext>) override;
+  void OnOnlinePasswordUnusable(std::unique_ptr<UserContext>, bool) override;
   void OnOldEncryptionDetected(std::unique_ptr<UserContext>,
                                bool has_incomplete_migration) override;
   void OnLocalAuthenticationRequired(
@@ -116,15 +117,6 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH) LoginPerformer
   // True if password change has been detected.
   bool password_changed() { return password_changed_; }
 
-  // Number of times we've been called with OnPasswordChangeDetected().
-  // If user enters incorrect old password, same LoginPerformer instance will
-  // be called so callback count makes it possible to distinguish initial
-  // "password changed detected" event from further attempts to enter old
-  // password for cryptohome migration (when > 1).
-  int password_changed_callback_count() {
-    return password_changed_callback_count_;
-  }
-
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
   AuthorizationMode auth_mode() const { return auth_mode_; }
@@ -133,11 +125,11 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH) LoginPerformer
   // contain additional information whether this user is explicitly listed or
   // not (may be relevant for external-based sign-in). |user_type| will be used
   // to check if the user is allowed because of the user type, pass
-  // absl::nullopt if user type is not known.
+  // std::nullopt if user type is not known.
   virtual bool IsUserAllowlisted(
       const AccountId& account_id,
       bool* wildcard_match,
-      const absl::optional<user_manager::UserType>& user_type) = 0;
+      const std::optional<user_manager::UserType>& user_type) = 0;
 
   virtual void LoadAndApplyEarlyPrefs(std::unique_ptr<UserContext> context,
                                       AuthOperationCallback callback) = 0;
@@ -194,8 +186,8 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH) LoginPerformer
   void NotifyAuthFailure(const AuthFailure& error);
   void NotifyAuthSuccess(const UserContext& user_context);
   void NotifyOffTheRecordAuthSuccess();
-  void NotifyPasswordChangeDetectedLegacy(const UserContext& user_context);
-  void NotifyPasswordChangeDetected(std::unique_ptr<UserContext> user_context);
+  void NotifyOnlinePasswordUnusable(std::unique_ptr<UserContext> user_context,
+                                    bool online_password_mismatch);
   void NotifyOldEncryptionDetected(std::unique_ptr<UserContext> user_context,
                                    bool has_incomplete_migration);
   void NotifyLocalAuthenticationRequired(
@@ -204,7 +196,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH) LoginPerformer
 
   // Callback passed to `LoadAndApplyEarlyPrefs`.
   void OnEarlyPrefsApplied(std::unique_ptr<UserContext> context,
-                           absl::optional<AuthenticationError> error);
+                           std::optional<AuthenticationError> error);
 
   // Used for logging in.
   scoped_refptr<Authenticator> authenticator_;
@@ -222,7 +214,6 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH) LoginPerformer
   // True if password change has been detected.
   // Once correct password is entered homedir migration is executed.
   bool password_changed_ = false;
-  int password_changed_callback_count_ = 0;
 
   // Authorization mode type.
   AuthorizationMode auth_mode_ = AuthorizationMode::kInternal;

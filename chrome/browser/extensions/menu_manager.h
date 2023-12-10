@@ -53,20 +53,25 @@ class MenuItem {
 
   // Key used to identify which extension a menu item belongs to.  A menu item
   // can also belong to a <webview>, in which case |webview_embedder_process_id|
-  // and |webview_instance_id| will be non-zero. When two ExtensionKeys are
-  // compared, an empty |extension_id| will match any other extension ID. This
-  // allows menu items belonging to webviews to be found with only the two
-  // webview IDs when the extension ID is not known. This is currently done from
-  // ChromeExtensionsBrowserClient::CleanUpWebView().
+  // |webview_embedder_frame_id|, and |webview_instance_id| will be non-zero.
+  // When two ExtensionKeys are compared, an empty |extension_id| will match any
+  // other extension ID. This allows menu items belonging to webviews to be
+  // found with only the |webview_embedder_process_id| and |webview_instance_id|
+  // when the extension ID is not known. This is currently done from
+  // ChromeExtensionsBrowserClient::CleanUpWebView(). The
+  // |webview_embedder_frame_id| is only used to get the <webview>'s embedder
+  // RenderFrameHost.
   struct ExtensionKey {
     std::string extension_id;
     int webview_embedder_process_id;
+    int webview_embedder_frame_id;
     int webview_instance_id;
 
     ExtensionKey();
     explicit ExtensionKey(const std::string& extension_id);
     ExtensionKey(const std::string& extension_id,
                  int webview_embedder_process_id,
+                 int webview_embedder_frame_id,
                  int webview_instance_id);
 
     bool operator==(const ExtensionKey& other) const;
@@ -294,6 +299,7 @@ class MenuManager : public ProfileObserver,
  public:
   static const char kOnContextMenus[];
   static const char kOnWebviewContextMenus[];
+  static constexpr MenuItem::OwnedList::size_type kMaxItemsPerExtension = 1000;
 
   class TestObserver : public base::CheckedObserver {
    public:
@@ -321,7 +327,15 @@ class MenuManager : public ProfileObserver,
   // top-level items' children. A view can then decide how to display these,
   // including whether to put them into a submenu if there are more than 1.
   const MenuItem::OwnedList* MenuItems(
-      const MenuItem::ExtensionKey& extension_key);
+      const MenuItem::ExtensionKey& extension_key) const;
+
+  // Returns the number of menu items for extension specified by
+  // `extension_key`.
+  MenuItem::OwnedList::size_type MenuItemsSize(
+      const MenuItem::ExtensionKey& extension_key) const {
+    const MenuItem::OwnedList* list = MenuItems(extension_key);
+    return list ? list->size() : 0;
+  }
 
   // Adds a top-level menu item for an extension, requiring the |extension|
   // pointer so it can load the icon for the extension. Returns a boolean

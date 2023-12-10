@@ -7,12 +7,13 @@
 
 #include <memory>
 
+#include "base/functional/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/sequence_checker.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/types/pass_key.h"
-#include "base/types/variant_util.h"
 #include "components/performance_manager/public/resource_attribution/query_results.h"
 #include "components/performance_manager/public/resource_attribution/resource_contexts.h"
 #include "components/performance_manager/public/resource_attribution/resource_types.h"
@@ -37,7 +38,8 @@ class QueryResultObserver {
 // Repeatedly makes resource attribution queries on a schedule as long as it's
 // in scope.
 // TODO(crbug.com/1471683): Unfinished. This registers on create and delete,
-// which may have important side effects, but doesn't make any queries yet.
+// which may have important side effects, but doesn't make scheduled queries
+// yet. Use QueryOnce for now.
 class ScopedResourceUsageQuery {
  public:
   ~ScopedResourceUsageQuery();
@@ -56,6 +58,17 @@ class ScopedResourceUsageQuery {
   // AddObserver().
   void RemoveObserver(QueryResultObserver* observer);
 
+  // Starts sending scheduled queries. They will repeat as long as the
+  // ScopedResourceUsageQuery object exists. This must be called on the sequence
+  // the object was created on.
+  // TODO(crbug.com/1471683): Implement this.
+  void Start();
+
+  // Sends an immediate query, in addition to the schedule of repeated queries
+  // triggered by Start(). This must be called on the sequence the
+  // ScopedResourceUsageQuery object was created on.
+  void QueryOnce();
+
   // Restricted implementation methods:
 
   // Gives tests access to validate the implementation.
@@ -71,8 +84,11 @@ class ScopedResourceUsageQuery {
       QueryResultObserver,
       base::RemoveObserverPolicy::kAddingSequenceOnly>;
 
-  FRIEND_TEST_ALL_PREFIXES(ResourceAttrScopedQueryTest, Movable);
-  FRIEND_TEST_ALL_PREFIXES(ResourceAttrScopedQueryTest, Observers);
+  FRIEND_TEST_ALL_PREFIXES(ResourceAttrQueriesPMTest, ScopedQueryIsMovable);
+
+  // Notifies `observer_list` that `results` were received.
+  static void NotifyObservers(scoped_refptr<ObserverList> observer_list,
+                              const QueryResultMap& results);
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -87,7 +103,12 @@ class ScopedResourceUsageQuery {
 // Creates a query to request resource usage measurements on a schedule.
 //
 // Use CreateScopedQuery() to return an object that makes repeated measurements
-// as long as it's in scope, or QueryOnce() to take a single measurement.
+// as long as it's in scope, or QueryOnce() to take a single measurement. Before
+// calling either of these, the query must specify:
+//
+//  * At least one resource type to measure, with AddResourceType().
+//  * At least one resource context to attribute the measurements to, with
+//    AddResourceContext() or AddAllContextsOfType().
 //
 // Example usage:
 //
@@ -99,9 +120,6 @@ class ScopedResourceUsageQuery {
 //
 // QueryBuilder is move-only to prevent accidentally copying large state. Use
 // Clone() to make an explicit copy.
-//
-// TODO(crbug.com/1471683): Unfinished. This collects parameters but doesn't
-// make any queries yet.
 class QueryBuilder {
  public:
   QueryBuilder();
@@ -124,8 +142,8 @@ class QueryBuilder {
             internal::EnableIfIsVariantAlternative<ContextType,
                                                    ResourceContext> = true>
   QueryBuilder& AddAllContextsOfType() {
-    return AddAllContextsWithTypeIndex(
-        base::VariantIndexOfType<ResourceContext, ContextType>());
+    return AddAllContextsWithTypeId(
+        internal::ResourceContextTypeId::ForType<ContextType>());
   }
 
   // Add `type` to the lists of resources to query.
@@ -135,6 +153,15 @@ class QueryBuilder {
   // observers with the results. Once this is called the QueryBuilder becomes
   // invalid.
   ScopedResourceUsageQuery CreateScopedQuery();
+
+  // Runs the query and calls `callback` with the result. `callback` will be
+  // invoked on `task_runner`. Once this is called the QueryBuilder becomes
+  // invalid.
+  // TODO(crbug.com/1471683): This takes an immediate measurement. Implement
+  // more notification schedules.
+  void QueryOnce(base::OnceCallback<void(const QueryResultMap&)> callback,
+                 scoped_refptr<base::TaskRunner> task_runner =
+                     base::SequencedTaskRunner::GetCurrentDefault());
 
   // Makes a copy of the QueryBuilder to use as a base for similar queries.
   QueryBuilder Clone() const;
@@ -149,7 +176,11 @@ class QueryBuilder {
   explicit QueryBuilder(std::unique_ptr<internal::QueryParams> params);
 
   // Implementation of AddAllContextsOfType().
-  QueryBuilder& AddAllContextsWithTypeIndex(size_t index);
+  QueryBuilder& AddAllContextsWithTypeId(
+      internal::ResourceContextTypeId type_id);
+
+  // Asserts all members needed for QueryOnce() or CreateScopedQuery() are set.
+  void ValidateQuery() const;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

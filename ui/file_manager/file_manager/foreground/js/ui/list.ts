@@ -6,11 +6,13 @@ import {dispatchSimpleEvent} from 'chrome://resources/ash/common/cr_deprecated.j
 import {assert} from 'chrome://resources/js/assert.js';
 
 import {ArrayDataModel} from '../../../common/js/array_data_model.js';
+import type {ChangeEvent, PermutationEvent} from '../../../common/js/array_data_model.js';
 import {boolAttrSetter, decorate, PropertyChangeEvent} from '../../../common/js/cr_ui.js';
+import {isNullOrUndefined} from '../../../common/js/util.js';
 
 import {createListItem, ListItem} from './list_item.js';
 import {ListSelectionController} from './list_selection_controller.js';
-import {ListSelectionModel} from './list_selection_model.js';
+import {ListSelectionModel, SelectionChangeEvent} from './list_selection_model.js';
 import {ListSingleSelectionModel} from './list_single_selection_model.js';
 
 /**
@@ -27,25 +29,6 @@ interface Size {
 }
 
 type EventHandler = (event: Event) => void;
-
-// TODO: Move the event when list_selection_model is converted to TS.
-type SelectionModelChangeEvent = Event&{
-  changes: Array<{
-    index: number,
-    selected: boolean,
-  }>,
-};
-
-// TODO: Move ArrayDataModel event types when array_data_model is converted to
-// TS.
-type ArrayDataModelPermutationEvent = Event&{
-  permutation: number[],
-  newLength: number,
-};
-
-type ArrayDataModelChangeEvent = Event&{
-  index: number,
-};
 
 /**
  * Whether a mouse event is inside the element viewport. This will return
@@ -133,7 +116,7 @@ export class List extends HTMLUListElement {
 
   private boundHandleDataModelPermuted_: EventHandler|null = null;
   private boundHandleDataModelChange_: EventHandler|null = null;
-  private boundHandleOnChange_: EventHandler|null = null;
+  private boundHandleOnChange_: EventListenerOrEventListenerObject|null = null;
   private boundHandleLeadChange_: EventHandler|null = null;
   protected beforeFiller_: HTMLElement|null = null;
   protected afterFiller_: HTMLElement|null = null;
@@ -165,8 +148,9 @@ export class List extends HTMLUListElement {
 
     if (!this.boundHandleDataModelPermuted_) {
       this.boundHandleDataModelPermuted_ =
-          this.handleDataModelPermuted_.bind(this);
-      this.boundHandleDataModelChange_ = this.handleDataModelChange_.bind(this);
+          this.handleDataModelPermuted_.bind(this) as EventListener;
+      this.boundHandleDataModelChange_ =
+          this.handleDataModelChange_.bind(this) as EventListener;
     }
 
     if (this.dataModel_) {
@@ -212,7 +196,8 @@ export class List extends HTMLUListElement {
     }
 
     if (!this.boundHandleOnChange_) {
-      this.boundHandleOnChange_ = this.handleOnChange_.bind(this);
+      this.boundHandleOnChange_ =
+          this.handleOnChange_.bind(this) as EventListenerOrEventListenerObject;
       this.boundHandleLeadChange_ = this.handleLeadChange.bind(this);
     }
 
@@ -356,7 +341,11 @@ export class List extends HTMLUListElement {
     this.fixedHeight_ = true;
     this.remainingSpace_ = true;
     this.batchCount_ = 0;
-    this.itemConstructor_ = createListItem;
+    this.itemConstructor_ = (label: string) => {
+      const item = createListItem();
+      item.label = label;
+      return item;
+    };
 
     const length = this.dataModel ? this.dataModel.length : 0;
     this.selectionModel = new ListSelectionModel(length);
@@ -644,9 +633,8 @@ export class List extends HTMLUListElement {
    * @param event Event with change info.
    * @private
    */
-  private handleOnChange_(event: Event) {
-    const ce = event as SelectionModelChangeEvent;
-    const changes = ce.changes || [];
+  private handleOnChange_(event: SelectionChangeEvent) {
+    const changes = event.detail.changes || [];
     for (const change of changes) {
       const listItem = this.getListItemByIndex(change.index);
       if (listItem) {
@@ -717,12 +705,11 @@ export class List extends HTMLUListElement {
    * model adjustments.
    * @param event The 'permuted' event.
    */
-  private handleDataModelPermuted_(event: Event) {
-    const e = event as ArrayDataModelPermutationEvent;
+  private handleDataModelPermuted_(event: PermutationEvent) {
     const newCachedItems: Record<number, ListItem> = {};
     for (const index in this.cachedItems_) {
-      if (e.permutation[index] !== -1) {
-        const newIndex = e.permutation[index]!;
+      if (event.detail.permutation[index] !== -1) {
+        const newIndex = event.detail.permutation[index]!;
         newCachedItems[newIndex] = this.cachedItems_[index]!;
         newCachedItems[newIndex]!.listIndex = newIndex;
       }
@@ -732,8 +719,8 @@ export class List extends HTMLUListElement {
 
     const newCachedItemHeights: Record<number, number> = {};
     for (const index in this.cachedItemHeights_) {
-      if (e.permutation[index] !== -1) {
-        newCachedItemHeights[e.permutation[index]!] =
+      if (event.detail.permutation[index] !== -1) {
+        newCachedItemHeights[event.detail.permutation[index]!] =
             this.cachedItemHeights_[index]!;
       }
     }
@@ -743,20 +730,23 @@ export class List extends HTMLUListElement {
 
     assert(this.selectionModel);
     const sm = this.selectionModel;
-    sm.adjustLength(e.newLength);
-    sm.adjustToReordering(e.permutation);
+    sm.adjustLength(event.detail.newLength);
+    sm.adjustToReordering(event.detail.permutation);
 
     this.endBatchUpdates();
   }
 
-  private handleDataModelChange_(event: Event) {
-    const e = event as ArrayDataModelChangeEvent;
-    delete this.cachedItems_[e.index];
-    delete this.cachedItemHeights_[e.index];
+  private handleDataModelChange_(event: ChangeEvent) {
+    if (isNullOrUndefined(event.detail.index)) {
+      return;
+    }
+    const eventIndex = event.detail.index;
+    delete this.cachedItems_[eventIndex];
+    delete this.cachedItemHeights_[eventIndex];
     this.cachedMeasuredItem_ = null;
 
-    if (e.index >= this.firstIndex_ &&
-        (e.index < this.lastIndex_ || this.remainingSpace_)) {
+    if (eventIndex >= this.firstIndex_ &&
+        (eventIndex < this.lastIndex_ || this.remainingSpace_)) {
       this.redraw();
     }
   }
@@ -898,10 +888,6 @@ export class List extends HTMLUListElement {
    */
   createItem(label: string): ListItem {
     const item = this.itemConstructor_(label);
-    item.label = label;
-    if (typeof item.decorate === 'function') {
-      item.decorate();
-    }
     return item;
   }
 

@@ -18,7 +18,6 @@
 #if BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
 extern NSString* const kGoogleIconSymbol;
 extern NSString* const kGoogleShieldSymbol;
-extern NSString* const kChromeSymbol;
 extern NSString* const kMulticolorChromeballSymbol;
 extern NSString* const kGoogleMapsSymbol;
 extern NSString* const kGooglePhotosSymbol;
@@ -43,7 +42,6 @@ extern NSString* const kReadingListSymbol;
 extern NSString* const kRecentTabsSymbol;
 extern NSString* const kLanguageSymbol;
 extern NSString* const kLocationSymbol;
-extern NSString* const kLocationFillSymbol;
 extern NSString* const kPasswordSymbol;
 #if !BUILDFLAG(IS_IOS_MACCATALYST)
 extern NSString* const kMulticolorPasswordSymbol;
@@ -86,6 +84,7 @@ extern NSString* const kDefaultBrowserSymbol;
 extern NSString* const kDefaultBrowseriOS14Symbol;
 extern NSString* const kDiscoverSymbol;
 extern NSString* const kBellSymbol;
+extern NSString* const kBellBadgeSymbol;
 extern NSString* const kCachedDataSymbol;
 extern NSString* const kAutofillDataSymbol;
 extern NSString* const kSecureLocationBarSymbol;

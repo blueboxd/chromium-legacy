@@ -50,6 +50,13 @@ interface WallpaperSearchHandlerFactory {
                 pending_receiver<WallpaperSearchHandler> handler);
 };
 
+// TODO(b/311697865): Replace with a common UserFeedback enum.
+enum UserFeedback {
+  kUnspecified,
+  kThumbsUp,
+  kThumbsDown,
+};
+
 // Browser-side handler for requests from WebUI page.
 interface WallpaperSearchHandler {
   // Retrieves NTP descriptors.
@@ -66,6 +73,10 @@ interface WallpaperSearchHandler {
   // in the side panel at Unix epoch time stamp `time`.
   SetResultRenderTime(array<mojo_base.mojom.Token> result_ids, double time);
 
+  // Sets the history image identified by `result_id` as the current background
+  // image.
+  SetBackgroundToHistoryImage(mojo_base.mojom.Token result_id);
+
   // Sets wallpaper search result identified by `result_id` to background image.
   // `time` is Unix epoch time stamp of when the user selected the respective
   // preview.
@@ -74,6 +85,13 @@ interface WallpaperSearchHandler {
 
   // Triggers a call to |WallpaperSearchClient.SetHistory|.
   UpdateHistory();
+
+  // Tells the handler to set a UserFeedback option on the latest result.
+  SetUserFeedback(UserFeedback selected_option);
+
+  // Opens help article about the feature in a new tab when use clicks
+  // "Learn more".
+  OpenHelpArticle();
 };
 
 // WebUI-side handler for requests from the browser.

@@ -25,7 +25,6 @@
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/containers/cxx20_erase.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/debug/alias.h"
@@ -460,7 +459,7 @@ std::string GetUACState() {
 
 std::wstring GetServiceName(bool is_internal_service) {
   std::wstring service_name = GetServiceDisplayName(is_internal_service);
-  base::EraseIf(service_name, base::IsAsciiWhitespace<wchar_t>);
+  std::erase_if(service_name, base::IsAsciiWhitespace<wchar_t>);
   return service_name;
 }
 
@@ -521,8 +520,8 @@ HResultOr<DWORD> ShellExecuteAndWait(const base::FilePath& file_path,
 
   // Allow the spawned process to show windows in the foreground.
   if (!::AllowSetForegroundWindow(pid)) {
-    LOG(WARNING) << __func__
-                 << ": ::AllowSetForegroundWindow failed: " << ::GetLastError();
+    VLOG(1) << __func__
+            << ": ::AllowSetForegroundWindow failed: " << ::GetLastError();
   }
 
   int ret_val = 0;
@@ -655,7 +654,7 @@ std::wstring BuildExeCommandLine(
 
   return base::StrCat(
       {base::CommandLine::QuoteForCommandLineToArgvW(exe_installer.value()),
-       L" ", arguments, [&installer_data_file]() {
+       L" ", arguments, [&installer_data_file] {
          if (!installer_data_file)
            return std::wstring();
 

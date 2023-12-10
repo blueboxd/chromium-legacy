@@ -185,11 +185,6 @@ FormDataImporter::~FormDataImporter() {
     personal_data_manager_->RemoveObserver(this);
 }
 
-void FormDataImporter::set_credit_card_save_manager_for_testing(
-    std::unique_ptr<CreditCardSaveManager> credit_card_save_manager) {
-  credit_card_save_manager_ = std::move(credit_card_save_manager);
-}
-
 FormDataImporter::AddressProfileImportCandidate::
     AddressProfileImportCandidate() = default;
 FormDataImporter::AddressProfileImportCandidate::AddressProfileImportCandidate(
@@ -224,10 +219,10 @@ void FormDataImporter::ImportAndProcessFormData(
   fetched_card_instrument_id_.reset();
 
   bool iban_prompt_potentially_shown = false;
-  if (extracted_data.iban_import_candidate.has_value() &&
+  if (extracted_data.extracted_iban.has_value() &&
       payment_methods_autofill_enabled) {
     iban_prompt_potentially_shown =
-        ProcessIbanImportCandidate(*extracted_data.iban_import_candidate);
+        ProcessIbanImportCandidate(*extracted_data.extracted_iban);
   }
 
   // If a prompt for credit cards or IBANs is potentially shown, do not allow
@@ -310,7 +305,7 @@ FormDataImporter::ExtractedFormData FormDataImporter::ExtractFormData(
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   if (payment_methods_autofill_enabled) {
-    extracted_form_data.iban_import_candidate = ExtractIban(submitted_form);
+    extracted_form_data.extracted_iban = ExtractIban(submitted_form);
   }
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
@@ -339,7 +334,7 @@ FormDataImporter::ExtractedFormData FormDataImporter::ExtractFormData(
 
   if (!extracted_form_data.extracted_credit_card &&
       num_complete_address_profiles == 0 &&
-      !extracted_form_data.iban_import_candidate) {
+      !extracted_form_data.extracted_iban) {
     personal_data_manager_->MarkObserversInsufficientFormDataForImport();
   }
   return extracted_form_data;
@@ -369,7 +364,7 @@ size_t FormDataImporter::ExtractAddressProfiles(
     // Relevant sections for address fields.
     std::map<Section, std::vector<const AutofillField*>> section_fields;
     for (const auto& field : form) {
-      if (IsAddressType(field->Type())) {
+      if (IsAddressType(field->Type().GetStorableType())) {
         section_fields[field->section].push_back(field.get());
       }
     }
@@ -409,39 +404,10 @@ size_t FormDataImporter::ExtractAddressProfiles(
   return num_complete_profiles;
 }
 
-bool FormDataImporter::LogAddressFormImportRequirementMetric(
-    const AutofillProfile& profile,
-    LogBuffer* import_log_buffer) {
-  base::flat_set<autofill_metrics::AddressProfileImportRequirementMetric>
-      autofill_profile_requirement_results =
-          GetAutofillProfileRequirementResult(profile, import_log_buffer);
-
-  for (const auto& requirement_result : autofill_profile_requirement_results) {
-    autofill_metrics::LogAddressFormImportRequirementMetric(requirement_result);
-  }
-
-  autofill_metrics::LogAddressFormImportCountrySpecificFieldRequirementsMetric(
-      autofill_profile_requirement_results.contains(
-          AddressImportRequirement::kZipRequirementViolated),
-      autofill_profile_requirement_results.contains(
-          AddressImportRequirement::kStateRequirementViolated),
-      autofill_profile_requirement_results.contains(
-          AddressImportRequirement::kCityRequirementViolated),
-      autofill_profile_requirement_results.contains(
-          AddressImportRequirement::kLine1RequirementViolated));
-
-  return !base::ranges::any_of(
-      kMinimumAddressRequirementViolations,
-      [&](AddressImportRequirement address_requirement_violation) {
-        return autofill_profile_requirement_results.contains(
-            address_requirement_violation);
-      });
-}
-
 AutofillProfile FormDataImporter::ConstructProfileFromObservedValues(
     const base::flat_map<ServerFieldType, std::u16string>& observed_values,
     LogBuffer* import_log_buffer,
-    autofill::ProfileImportMetadata& import_metadata) {
+    ProfileImportMetadata& import_metadata) {
   AutofillProfile candidate_profile(
       i18n_model_definition::kLegacyHierarchyCountryCode);
 
@@ -628,9 +594,9 @@ bool FormDataImporter::ExtractAddressProfileFromSection(
   bool finalized_import = candidate_profile.FinalizeAfterImport();
 
   // Reject the profile if the validation requirements are not met.
-  // `IsValidLearnableProfile()` goes first to collect metrics.
+  // `ValidateNonEmptyValues()` goes first to collect metrics.
   bool has_invalid_information =
-      !IsValidLearnableProfile(candidate_profile, import_log_buffer) ||
+      !ValidateNonEmptyValues(candidate_profile, import_log_buffer) ||
       has_multiple_distinct_email_addresses || has_invalid_field_types;
 
   // Profiles with valid information qualify for multi-step imports.
@@ -646,26 +612,24 @@ bool FormDataImporter::ExtractAddressProfileFromSection(
   RemoveInaccessibleProfileValues(candidate_profile);
 
   // Do not import a profile if any of the requirements is violated.
-  bool all_fulfilled = LogAddressFormImportRequirementMetric(
-                           candidate_profile, import_log_buffer) &&
+  // `IsMinimumAddress()` goes first, since it logs to autofill-internals.
+  bool all_fulfilled = IsMinimumAddress(candidate_profile, import_log_buffer) &&
                        !has_invalid_information;
 
   // Collect metrics regarding the requirements for an address profile import.
+  autofill_metrics::LogAddressFormImportRequirementMetric(candidate_profile);
   autofill_metrics::LogAddressFormImportRequirementMetric(
       has_multiple_distinct_email_addresses
           ? AddressImportRequirement::kEmailAddressUniqueRequirementViolated
           : AddressImportRequirement::kEmailAddressUniqueRequirementFulfilled);
-
   autofill_metrics::LogAddressFormImportRequirementMetric(
       has_invalid_field_types
           ? AddressImportRequirement::kNoInvalidFieldTypesRequirementViolated
           : AddressImportRequirement::kNoInvalidFieldTypesRequirementFulfilled);
-
   autofill_metrics::LogAddressFormImportRequirementMetric(
       import_metadata.observed_invalid_country
           ? AddressImportRequirement::kCountryValidRequirementViolated
           : AddressImportRequirement::kCountryValidRequirementFulfilled);
-
   autofill_metrics::LogAddressFormImportRequirementMetric(
       all_fulfilled ? AddressImportRequirement::kOverallRequirementFulfilled
                     : AddressImportRequirement::kOverallRequirementViolated);
@@ -796,8 +760,8 @@ bool FormDataImporter::ProcessExtractedCreditCard(
 }
 
 bool FormDataImporter::ProcessIbanImportCandidate(
-    const Iban& iban_import_candidate) {
-  return iban_save_manager_->AttemptToOfferSave(iban_import_candidate);
+    const Iban& extracted_iban) {
+  return iban_save_manager_->AttemptToOfferSave(extracted_iban);
 }
 
 absl::optional<CreditCard> FormDataImporter::ExtractCreditCard(
@@ -972,13 +936,10 @@ FormDataImporter::ExtractCreditCardFromForm(const FormStructure& form) {
 
   ServerFieldTypeSet types_seen;
   for (const auto& field : form) {
-    std::u16string value;
-    base::TrimWhitespace(field->value, base::TRIM_ALL, &value);
-
-    // If we don't know the type of the field, or the user hasn't entered any
-    // information into the field, then skip it.
-    if (!field->IsFieldFillable() || value.empty())
+    // If we don't know the type of the field, then skip it.
+    if (!field->IsFieldFillable()) {
       continue;
+    }
 
     AutofillType field_type = field->Type();
     // Field was not identified as a credit card field.
@@ -986,6 +947,25 @@ FormDataImporter::ExtractCreditCardFromForm(const FormStructure& form) {
       continue;
 
     ServerFieldType server_field_type = field_type.GetStorableType();
+
+    std::u16string value_view = field->value;
+    std::u16string_view user_input_view =
+        base::TrimWhitespace(field->user_input, base::TRIM_ALL);
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillUseTypedCreditCardNumber) &&
+        server_field_type == ServerFieldType::CREDIT_CARD_NUMBER &&
+        !user_input_view.empty()) {
+      value_view = user_input_view;
+    }
+    value_view = base::TrimWhitespace(value_view, base::TRIM_ALL);
+
+    // If the user hasn't entered any information into the field, then skip it.
+    if (value_view.empty()) {
+      continue;
+    }
+
+    std::u16string value = value_view;
+
     result.has_duplicate_credit_card_field_type |=
         types_seen.contains(server_field_type);
     types_seen.insert(server_field_type);

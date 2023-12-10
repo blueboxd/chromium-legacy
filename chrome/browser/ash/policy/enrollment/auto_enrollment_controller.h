@@ -23,7 +23,6 @@
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chromeos/ash/components/dbus/cryptohome/UserDataAuth.pb.h"
 #include "chromeos/ash/components/network/network_state_handler_observer.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 class InstallAttributesClient;
@@ -62,7 +61,7 @@ class EnrollmentFwmpHelper {
 
   void OnGetFirmwareManagementParametersReceived(
       ResultCallback result_callback,
-      absl::optional<user_data_auth::GetFirmwareManagementParametersReply>
+      std::optional<user_data_auth::GetFirmwareManagementParametersReply>
           reply);
 
   raw_ptr<ash::InstallAttributesClient> install_attributes_client_;
@@ -119,7 +118,7 @@ class AutoEnrollmentController : public ash::NetworkStateHandlerObserver {
       const ash::NetworkState::PortalState portal_state) override;
   void OnShuttingDown() override;
 
-  std::optional<AutoEnrollmentState> state() const { return state_; }
+  const std::optional<AutoEnrollmentState>& state() const { return state_; }
 
   // Returns the auto-enrollment check type performed by this client.
   // The returned value will be `CheckType::kNone` before calling `Start()`.
@@ -211,7 +210,7 @@ class AutoEnrollmentController : public ash::NetworkStateHandlerObserver {
   // the FWMP is used only for newer devices.
   // This also starts the VPD clearing process.
   void OnFirmwareManagementParametersRemoved(
-      absl::optional<user_data_auth::RemoveFirmwareManagementParametersReply>
+      std::optional<user_data_auth::RemoveFirmwareManagementParametersReply>
           reply);
 
   // Makes a D-Bus call to session_manager to set block_devmode=0 and

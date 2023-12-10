@@ -98,9 +98,9 @@ using AccessibilityStatusCallback =
     AccessibilityStatusCallbackList::CallbackType;
 using GetTtsDlcContentsCallback =
     base::OnceCallback<void(const std::vector<uint8_t>&,
-                            absl::optional<std::string>)>;
+                            std::optional<std::string>)>;
 using InstallPumpkinCallback = base::OnceCallback<void(
-    absl::optional<::extensions::api::accessibility_private::PumpkinData>)>;
+    std::optional<::extensions::api::accessibility_private::PumpkinData>)>;
 
 class AccessibilityPanelWidgetObserver;
 
@@ -185,6 +185,9 @@ class AccessibilityManager
 
   // Returns true if autoclick is enabled.
   bool IsAutoclickEnabled() const;
+
+  // Enables or disables FaceGaze.
+  void EnableFaceGaze(bool enabled);
 
   // Requests the Autoclick extension find the bounds of the nearest scrollable
   // ancestor to the point in the screen, as given in screen coordinates.
@@ -575,7 +578,7 @@ class AccessibilityManager
   void OnPumpkinInstalled(bool success);
   void OnPumpkinError(const std::string& error);
   void OnPumpkinDataCreated(
-      absl::optional<::extensions::api::accessibility_private::PumpkinData>
+      std::optional<::extensions::api::accessibility_private::PumpkinData>
           data);
 
   void OnAppTerminating();

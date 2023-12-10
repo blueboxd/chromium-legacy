@@ -32,14 +32,22 @@ class DefaultDelegateImpl : public ArcIdleManager::Delegate {
   ~DefaultDelegateImpl() override = default;
 
   // ArcIdleManager::Delegate:
-  void SetInteractiveMode(ArcPowerBridge* arc_power_bridge,
-                          ArcBridgeService* bridge,
-                          bool enable) override {
+  void SetIdleState(ArcPowerBridge* arc_power_bridge,
+                    ArcBridgeService* bridge,
+                    bool enable) override {
     if (!arc_power_bridge) {
       return;
     }
-    arc_power_bridge->NotifyAndroidInteractiveState(bridge, enable);
+    arc_power_bridge->NotifyAndroidIdleState(
+        bridge, enable ? arc::mojom::IdleState::ACTIVE : kDozeState);
   }
+
+ private:
+  // Use force inactive state if ignore battery status enabled.
+  const arc::mojom::IdleState kDozeState =
+      kEnableArcIdleManagerIgnoreBatteryForPLT.Get()
+          ? arc::mojom::IdleState::FORCE_INACTIVE
+          : arc::mojom::IdleState::INACTIVE;
 };
 
 // Singleton factory for ArcIdleManager.
@@ -130,7 +138,7 @@ void ArcIdleManager::OnConnectionReady() {
   if (is_connected_)
     return;
   StartObservers();
-  delegate_->SetInteractiveMode(arc_power_bridge_, bridge_, !should_throttle());
+  delegate_->SetIdleState(arc_power_bridge_, bridge_, !should_throttle());
   is_connected_ = true;
 
   // Always reset the timer on connect.
@@ -218,7 +226,7 @@ void ArcIdleManager::LogScreenOffTimer(bool toggle_timer) {
 }
 
 void ArcIdleManager::RequestDoze(bool enabled) {
-  delegate_->SetInteractiveMode(arc_power_bridge_, bridge_, !enabled);
+  delegate_->SetIdleState(arc_power_bridge_, bridge_, !enabled);
 }
 
 }  // namespace arc

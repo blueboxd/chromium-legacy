@@ -376,6 +376,7 @@ chrome.accessibilityPrivate.DlcType = {
   TTS_NL_NL: 'ttsNlNl',
   TTS_PL_PL: 'ttsPlPl',
   TTS_PT_BR: 'ttsPtBr',
+  TTS_PT_PT: 'ttsPtPt',
   TTS_SI_LK: 'ttsSiLk',
   TTS_SK_SK: 'ttsSkSk',
   TTS_SV_SE: 'ttsSvSe',
@@ -689,6 +690,14 @@ chrome.accessibilityPrivate.getDlcContents = function(dlc, callback) {};
  *     contents are returned.
  */
 chrome.accessibilityPrivate.getTtsDlcContents = function(dlc, variant, callback) {};
+
+/**
+ * Returns the bounds of the displays in density-independent pixels in screen
+ * coordinates.
+ * @param {function(!Array<!chrome.accessibilityPrivate.ScreenRect>): void}
+ *     callback A callback that is run when the result is returned.
+ */
+chrome.accessibilityPrivate.getDisplayBounds = function(callback) {};
 
 /**
  * Gets whether new browser windows and tabs should be in Lacros browser.

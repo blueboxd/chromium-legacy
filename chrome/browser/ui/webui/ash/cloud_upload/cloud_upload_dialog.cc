@@ -132,7 +132,7 @@ OfficeDriveOpenErrors OpenDriveUrl(const GURL& url) {
 }
 
 // Handle system error notification "Sign in" click.
-void HandleSignInClick(Profile* profile, absl::optional<int> button_index) {
+void HandleSignInClick(Profile* profile, std::optional<int> button_index) {
   // If the "Sign in" button was pressed, rather than a click to somewhere
   // else in the notification.
   if (button_index) {
@@ -296,7 +296,7 @@ void OpenAndroidOneDriveUrls(
     const std::vector<storage::FileSystemURL>& android_onedrive_urls,
     base::OnceCallback<void(OfficeOneDriveOpenErrors)> callback) {
   for (const auto& android_onedrive_url : android_onedrive_urls) {
-    absl::optional<ODFSFileSystemAndPath> fs_and_path =
+    std::optional<ODFSFileSystemAndPath> fs_and_path =
         AndroidOneDriveUrlToODFS(profile, android_onedrive_url);
     if (!fs_and_path.has_value()) {
       // TODO(b/269364287): Handle when Android OneDrive file can't be opened.
@@ -617,21 +617,6 @@ bool ShouldFixUpOffice(Profile* profile, const CloudProvider cloud_provider) {
          !(IsODFSMounted(profile) && IsOfficeWebAppInstalled(profile));
 }
 
-bool UrlIsOnODFS(Profile* profile, const FileSystemURL& url) {
-  ash::file_system_provider::util::FileSystemURLParser parser(url);
-  if (!parser.Parse()) {
-    return false;
-  }
-
-  file_system_provider::ProviderId provider_id =
-      file_system_provider::ProviderId::CreateFromExtensionId(
-          extension_misc::kODFSExtensionId);
-  if (parser.file_system()->GetFileSystemInfo().provider_id() != provider_id) {
-    return false;
-  }
-  return true;
-}
-
 bool UrlIsOnAndroidOneDrive(Profile* profile, const FileSystemURL& url) {
   std::string authority;
   std::string root_document_id;
@@ -641,7 +626,7 @@ bool UrlIsOnAndroidOneDrive(Profile* profile, const FileSystemURL& url) {
          authority == kAndroidOneDriveAuthority;
 }
 
-absl::optional<std::string> GetEmailFromAndroidOneDriveRootDoc(
+std::optional<std::string> GetEmailFromAndroidOneDriveRootDoc(
     const std::string& root_document_id) {
   // After escaping the '/', the Root Document Id is:
   // pivots%2F<user-microsoft-account-email>.
@@ -654,12 +639,12 @@ absl::optional<std::string> GetEmailFromAndroidOneDriveRootDoc(
   if (components.size() != 2) {
     LOG(ERROR) << "Android OneDrive documents provider root document id is not "
                   "as expected.";
-    return absl::nullopt;
+    return std::nullopt;
   }
   if (components[0] != "pivots") {
     LOG(ERROR) << "Android OneDrive documents provider root document id is not "
                   "as expected.";
-    return absl::nullopt;
+    return std::nullopt;
   }
   return components[1];
 }
@@ -676,7 +661,7 @@ void CloudOpenTask::OpenAndroidOneDriveUrlsIfAccountMatchedODFS(
     return;
   }
 
-  absl::optional<std::string> android_onedrive_email =
+  std::optional<std::string> android_onedrive_email =
       GetEmailFromAndroidOneDriveRootDoc(root_document_id);
   if (!android_onedrive_email.has_value()) {
     std::move(callback).Run(
@@ -685,7 +670,7 @@ void CloudOpenTask::OpenAndroidOneDriveUrlsIfAccountMatchedODFS(
   }
 
   // Get email account associated with ODFS.
-  absl::optional<ODFSFileSystemAndPath> fs_and_path =
+  std::optional<ODFSFileSystemAndPath> fs_and_path =
       AndroidOneDriveUrlToODFS(profile_, file_urls_.front());
   if (!fs_and_path.has_value()) {
     // TODO(b/269364287): Handle when Android OneDrive file can't be opened.
@@ -700,19 +685,19 @@ void CloudOpenTask::OpenAndroidOneDriveUrlsIfAccountMatchedODFS(
                      android_onedrive_email.value(), std::move(callback)));
 }
 
-absl::optional<ODFSFileSystemAndPath> AndroidOneDriveUrlToODFS(
+std::optional<ODFSFileSystemAndPath> AndroidOneDriveUrlToODFS(
     Profile* profile,
     const FileSystemURL& android_onedrive_file_url) {
   if (!UrlIsOnAndroidOneDrive(profile, android_onedrive_file_url)) {
     LOG(ERROR) << "File not on Android OneDrive";
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   // Get the ODFS mount path.
-  absl::optional<ProvidedFileSystemInfo> odfs_file_system_info =
+  std::optional<ProvidedFileSystemInfo> odfs_file_system_info =
       GetODFSInfo(profile);
   if (!odfs_file_system_info.has_value()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   base::FilePath odfs_path = odfs_file_system_info->mount_path();
 
@@ -722,7 +707,7 @@ absl::optional<ODFSFileSystemAndPath> AndroidOneDriveUrlToODFS(
   base::FilePath path;
   if (!arc::ParseDocumentsProviderUrl(android_onedrive_file_url, &authority,
                                       &root_document_id, &path)) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   // Format for Android OneDrive documents provider `path` is:
   // Files/<rel_path>
@@ -731,12 +716,12 @@ absl::optional<ODFSFileSystemAndPath> AndroidOneDriveUrlToODFS(
   if (components.size() < 2) {
     LOG(ERROR)
         << "Android OneDrive documents provider path is not as expected.";
-    return absl::nullopt;
+    return std::nullopt;
   }
   if (components[0] != "Files") {
     LOG(ERROR)
         << "Android OneDrive documents provider path is not as expected.";
-    return absl::nullopt;
+    return std::nullopt;
   }
   // Append relative path from Android OneDrive Url.
   for (size_t i = 1; i < components.size(); i++) {
@@ -746,7 +731,7 @@ absl::optional<ODFSFileSystemAndPath> AndroidOneDriveUrlToODFS(
   ash::file_system_provider::util::LocalPathParser parser(profile, odfs_path);
   if (!parser.Parse()) {
     LOG(ERROR) << "Path not in FSP";
-    return absl::nullopt;
+    return std::nullopt;
   }
   return ODFSFileSystemAndPath{parser.file_system(), parser.file_path()};
 }
@@ -804,21 +789,18 @@ void CloudOpenTask::StartUpload() {
   }
 }
 
-void CloudOpenTask::FinishedDriveUpload(absl::optional<GURL> url,
+void CloudOpenTask::FinishedDriveUpload(OfficeTaskResult task_result,
+                                        std::optional<GURL> url,
                                         int64_t size) {
   DCHECK_GT(pending_uploads_, 0UL);
   if (url.has_value()) {
     upload_total_size_ += size;
     fm_tasks::SetOfficeFileMovedToGoogleDrive(profile_, base::Time::Now());
-    // Open the URL.
-    const OfficeTaskResult task_result_uma =
-        transfer_required_ == OfficeFilesTransferRequired::kCopy
-            ? OfficeTaskResult::kCopied
-            : OfficeTaskResult::kMoved;
-    OpenUploadedDriveUrl(url.value(), task_result_uma);
+    // Log TaskResult after open is tried.
+    OpenUploadedDriveUrl(url.value(), task_result);
   } else {
-    has_upload_errors_ = true;
-    cloud_open_metrics_->LogTaskResult(OfficeTaskResult::kFailedToUpload);
+    cloud_open_metrics_->LogTaskResult(task_result);
+    has_upload_errors_ = task_result == OfficeTaskResult::kFailedToUpload;
   }
   if (--pending_uploads_) {
     return;
@@ -830,7 +812,8 @@ void CloudOpenTask::FinishedDriveUpload(absl::optional<GURL> url,
 
 void CloudOpenTask::FinishedOneDriveUpload(
     base::WeakPtr<Profile> profile_weak_ptr,
-    absl::optional<storage::FileSystemURL> url,
+    OfficeTaskResult task_result,
+    std::optional<storage::FileSystemURL> url,
     int64_t size) {
   DCHECK_GT(pending_uploads_, 0UL);
   if (url.has_value()) {
@@ -841,16 +824,13 @@ void CloudOpenTask::FinishedOneDriveUpload(
       return;
     }
     fm_tasks::SetOfficeFileMovedToOneDrive(profile, base::Time::Now());
-    const OfficeTaskResult task_result_uma =
-        transfer_required_ == OfficeFilesTransferRequired::kCopy
-            ? OfficeTaskResult::kCopied
-            : OfficeTaskResult::kMoved;
+    // Log TaskResult after open is tried.
     OpenODFSUrl(profile, url.value(),
                 base::BindOnce(&CloudOpenTask::LogOneDriveOpenResultUMA, this,
-                               task_result_uma));
+                               task_result));
   } else {
-    has_upload_errors_ = true;
-    cloud_open_metrics_->LogTaskResult(OfficeTaskResult::kFailedToUpload);
+    cloud_open_metrics_->LogTaskResult(task_result);
+    has_upload_errors_ = task_result == OfficeTaskResult::kFailedToUpload;
   }
   if (--pending_uploads_) {
     return;

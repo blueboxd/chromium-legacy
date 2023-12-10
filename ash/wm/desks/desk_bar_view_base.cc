@@ -47,6 +47,7 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/display/screen.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/haptic_touchpad_effects.h"
 #include "ui/events/event_observer.h"
@@ -214,16 +215,16 @@ class DeskBarScrollViewLayout : public views::LayoutManager {
     const bool zero_state = bar_view_->IsZeroState();
     default_desk_button->SetVisible(zero_state);
     new_desk_button->SetVisible(true);
-    new_desk_button_label->SetVisible(
-        !zero_state &&
-        new_desk_button->state() == CrOSNextDeskIconButton::State::kActive);
+    new_desk_button_label->SetVisible(!zero_state &&
+                                      new_desk_button->state() ==
+                                          DeskIconButton::State::kActive);
     if (library_button) {
       library_button->SetVisible(bar_view_->ShouldShowLibraryUi());
     }
     if (library_button_label) {
-      library_button_label->SetVisible(
-          !zero_state &&
-          library_button->state() == CrOSNextDeskIconButton::State::kActive);
+      library_button_label->SetVisible(!zero_state &&
+                                       library_button->state() ==
+                                           DeskIconButton::State::kActive);
     }
   }
 
@@ -482,7 +483,7 @@ DeskBarViewBase::DeskBarViewBase(aura::Window* root, Type type)
       views::ScrollView::ScrollWithLayers::kEnabled));
   scroll_view_->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
   scroll_view_->layer()->SetMasksToBounds(true);
-  scroll_view_->SetBackgroundColor(absl::nullopt);
+  scroll_view_->SetBackgroundColor(std::nullopt);
   scroll_view_->SetDrawOverflowIndicator(false);
   scroll_view_->SetHorizontalScrollBarMode(
       views::ScrollView::ScrollBarMode::kHiddenButEnabled);
@@ -514,9 +515,9 @@ DeskBarViewBase::DeskBarViewBase(aura::Window* root, Type type)
   CHECK(scroll_view_contents_->layer());
 
   default_desk_button_ = scroll_view_contents_->AddChildView(
-      std::make_unique<CrOSNextDefaultDeskButton>(this));
-  new_desk_button_ = scroll_view_contents_->AddChildView(
-      std::make_unique<CrOSNextDeskIconButton>(
+      std::make_unique<DefaultDeskButton>(this));
+  new_desk_button_ =
+      scroll_view_contents_->AddChildView(std::make_unique<DeskIconButton>(
           this, &kDesksNewDeskButtonIcon,
           l10n_util::GetStringUTF16(IDS_ASH_DESKS_NEW_DESK_BUTTON),
           cros_tokens::kCrosSysOnPrimary, cros_tokens::kCrosSysPrimary,
@@ -537,8 +538,8 @@ DeskBarViewBase::DeskBarViewBase(aura::Window* root, Type type)
       button_text_id = IDS_ASH_DESKS_TEMPLATES_DESKS_BAR_BUTTON_SAVED_FOR_LATER;
     }
 
-    library_button_ = scroll_view_contents_->AddChildView(
-        std::make_unique<CrOSNextDeskIconButton>(
+    library_button_ =
+        scroll_view_contents_->AddChildView(std::make_unique<DeskIconButton>(
             this, &kDesksTemplatesIcon,
             l10n_util::GetStringUTF16(button_text_id),
             cros_tokens::kCrosSysOnSecondaryContainer,
@@ -860,7 +861,7 @@ void DeskBarViewBase::NudgeDeskName(int desk_index) {
 
     // If we're in tablet mode and there are no external keyboards, open up the
     // virtual keyboard.
-    if (Shell::Get()->tablet_mode_controller()->InTabletMode() &&
+    if (display::Screen::GetScreen()->InTabletMode() &&
         !HasExternalKeyboard()) {
       keyboard::KeyboardUIController::Get()->ShowKeyboard(/*lock=*/false);
     }
@@ -886,7 +887,7 @@ void DeskBarViewBase::UpdateDeskButtonsVisibility() {
   const bool is_zero_state = IsZeroState();
   default_desk_button_->SetVisible(is_zero_state);
   new_desk_button_label_->SetVisible(new_desk_button_->state() ==
-                                     CrOSNextDeskIconButton::State::kActive);
+                                     DeskIconButton::State::kActive);
 
   UpdateLibraryButtonVisibility();
 }
@@ -898,7 +899,7 @@ void DeskBarViewBase::UpdateLibraryButtonVisibility() {
 
   library_button_label_->SetVisible(
       ShouldShowLibraryUi() &&
-      (library_button_->state() == CrOSNextDeskIconButton::State::kActive));
+      (library_button_->state() == DeskIconButton::State::kActive));
 
   // If the visibility of the library button doesn't change, return early.
   if (library_button_->GetVisible() == ShouldShowLibraryUi()) {
@@ -909,9 +910,9 @@ void DeskBarViewBase::UpdateLibraryButtonVisibility() {
   if (ShouldShowLibraryUi()) {
     if (type_ == Type::kOverview &&
         overview_grid_->IsShowingSavedDeskLibrary()) {
-      library_button_->UpdateState(CrOSNextDeskIconButton::State::kActive);
+      library_button_->UpdateState(DeskIconButton::State::kActive);
     } else {
-      library_button_->UpdateState(CrOSNextDeskIconButton::State::kExpanded);
+      library_button_->UpdateState(DeskIconButton::State::kExpanded);
     }
   }
 
@@ -930,9 +931,9 @@ void DeskBarViewBase::UpdateLibraryButtonVisibility() {
 }
 
 void DeskBarViewBase::UpdateDeskIconButtonState(
-    CrOSNextDeskIconButton* button,
-    CrOSNextDeskIconButton::State target_state) {
-  CHECK_NE(target_state, CrOSNextDeskIconButton::State::kZero);
+    DeskIconButton* button,
+    DeskIconButton::State target_state) {
+  CHECK_NE(target_state, DeskIconButton::State::kZero);
 
   if (button->state() == target_state) {
     return;
@@ -974,7 +975,7 @@ bool DeskBarViewBase::ShouldShowLibraryUi() {
   // Only update visibility when needed. This will save a lot of repeated work.
   if (library_ui_visibility_ == LibraryUiVisibility::kToBeChecked) {
     if (!saved_desk_util::IsSavedDesksEnabled() ||
-        Shell::Get()->tablet_mode_controller()->InTabletMode()) {
+        display::Screen::GetScreen()->InTabletMode()) {
       library_ui_visibility_ = LibraryUiVisibility::kHidden;
     } else {
       auto* desk_model = Shell::Get()->saved_desk_delegate()->GetDeskModel();
@@ -1241,7 +1242,7 @@ void DeskBarViewBase::OnDeskAdded(const Desk* desk, bool from_undo) {
   DeskNameView::CommitChanges(GetWidget());
 
   const bool is_expanding_bar_view =
-      new_desk_button_->state() == CrOSNextDeskIconButton::State::kZero;
+      new_desk_button_->state() == DeskIconButton::State::kZero;
   UpdateNewMiniViews(/*initializing_bar_view=*/false, is_expanding_bar_view);
   MaybeUpdateCombineDesksTooltips();
   if (!DesksController::Get()->CanCreateDesks()) {
@@ -1393,11 +1394,11 @@ void DeskBarViewBase::UpdateNewMiniViews(bool initializing_bar_view,
     return;
   }
 
-  if (new_desk_button_->state() == CrOSNextDeskIconButton::State::kActive) {
+  if (new_desk_button_->state() == DeskIconButton::State::kActive) {
     // Make sure the new desk button is updated to expanded state from the
     // active state. This can happen when dropping the window on the new desk
     // button.
-    new_desk_button_->UpdateState(CrOSNextDeskIconButton::State::kExpanded);
+    new_desk_button_->UpdateState(DeskIconButton::State::kExpanded);
   }
 
   const gfx::Rect old_bar_bounds = this->GetBoundsInScreen();

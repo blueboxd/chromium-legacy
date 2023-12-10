@@ -129,9 +129,9 @@ ClientSession::~ClientSession() {
 void ClientSession::NotifyClientResolution(
     const protocol::ClientResolution& resolution) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(resolution.dips_width() >= 0 && resolution.dips_height() >= 0);
-  VLOG(1) << "Received ClientResolution (dips_width=" << resolution.dips_width()
-          << ", dips_height=" << resolution.dips_height()
+  DCHECK(resolution.width_pixels() >= 0 && resolution.height_pixels() >= 0);
+  VLOG(1) << "Received ClientResolution (width=" << resolution.width_pixels()
+          << ", height=" << resolution.height_pixels()
           << ", x_dpi=" << resolution.x_dpi()
           << ", y_dpi=" << resolution.y_dpi() << ")";
 
@@ -139,8 +139,8 @@ void ClientSession::NotifyClientResolution(
     return;
   }
 
-  webrtc::DesktopSize client_size(resolution.dips_width(),
-                                  resolution.dips_height());
+  webrtc::DesktopSize client_size(resolution.width_pixels(),
+                                  resolution.height_pixels());
   if (connection_->session()->config().protocol() ==
       protocol::SessionConfig::Protocol::WEBRTC) {
     // When using WebRTC round down the dimensions to multiple of 2. Otherwise
@@ -1364,7 +1364,20 @@ void ClientSession::UpdateFractionalFilterFallback() {
   } else {
     const DisplayGeometry* geo =
         desktop_display_info_.GetDisplayInfo(selected_display_index_);
+
+#if BUILDFLAG(IS_CHROMEOS)
+    // The input-injector on ChromeOS currently uses DIPs, but the video-layout
+    // sizes are reported in pixels on this platform. Although the offset
+    // calculation below gives correct results, the fallback geometry needs to
+    // account for the DIPs/pixels scaling - see crbug.com/1507189 and also the
+    // ChromeOS-specific behavior in SetMouseClampingFilter().
+    DisplaySize size_converter =
+        DisplaySize::FromPixels(geo->width, geo->height, geo->dpi);
+    new_size = webrtc::DesktopSize(size_converter.WidthAsDips(),
+                                   size_converter.HeightAsDips());
+#else
     new_size = webrtc::DesktopSize(geo->width, geo->height);
+#endif  // BUILDFLAG(IS_CHROMEOS)
   }
 
   // The logic for input-injection offsets is dependent on the OS, and is

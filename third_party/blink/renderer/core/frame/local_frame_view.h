@@ -88,6 +88,7 @@ class HTMLVideoElement;
 class JSONObject;
 class KURL;
 class LayoutBox;
+class LayoutBoxModelObject;
 class LayoutEmbeddedObject;
 class LayoutObject;
 class LayoutShiftTracker;
@@ -186,7 +187,7 @@ class CORE_EXPORT LocalFrameView final
 
   unsigned LayoutCountForTesting() const { return layout_count_for_testing_; }
   // Returns the number of block layout calls.
-  //  * It's incremented when NGBlockNode::Layout() is called with NeedsLayout()
+  //  * It's incremented when BlockNode::Layout() is called with NeedsLayout()
   //  * It can overflow. Do not use it in production.
   uint32_t BlockLayoutCountForTesting() const {
     return block_layout_count_for_testing_;
@@ -215,16 +216,11 @@ class CORE_EXPORT LocalFrameView final
   enum IntersectionObservationState {
     // The next painting frame does not need an intersection observation.
     kNotNeeded = 0,
-    // The next painting frame only needs to update frame viewport intersection,
-    // not intersection observations. Note that intersection observations in
-    // child remote frames happen during the parent frame's viewport
-    // intersection update, with kDesired or kRequired set on the child frames.
-    kFrameViewportIntersectionOnly = 1,
     // The next painting frame needs an intersection observation.
-    kDesired = 2,
+    kDesired = 1,
     // The next painting frame must be generated up to intersection observation
     // (even if frame is throttled).
-    kRequired = 3
+    kRequired = 2
   };
 
   // Sets the internal IntersectionObservationState to the max of the
@@ -242,10 +238,6 @@ class CORE_EXPORT LocalFrameView final
   unsigned GetIntersectionObservationFlags(unsigned parent_flags) const;
 
   void ForceUpdateViewportIntersections();
-
-  gfx::Vector2dF MinScrollDeltaToUpdateIntersectionForTesting() const {
-    return min_scroll_delta_to_update_intersection_;
-  }
 
   void SetPaintArtifactCompositorNeedsUpdate();
 
@@ -305,11 +297,11 @@ class CORE_EXPORT LocalFrameView final
   void AdjustMediaTypeForPrinting(bool printing);
 
   // Objects with background-attachment:fixed.
-  typedef HeapHashSet<Member<LayoutObject>> ObjectSet;
-  void AddBackgroundAttachmentFixedObject(LayoutObject*);
-  void RemoveBackgroundAttachmentFixedObject(LayoutObject*);
+  typedef HeapHashSet<Member<LayoutBoxModelObject>> BoxModelObjectSet;
+  void AddBackgroundAttachmentFixedObject(LayoutBoxModelObject&);
+  void RemoveBackgroundAttachmentFixedObject(LayoutBoxModelObject&);
   bool RequiresMainThreadScrollingForBackgroundAttachmentFixed() const;
-  const ObjectSet& BackgroundAttachmentFixedObjects() const {
+  const BoxModelObjectSet& BackgroundAttachmentFixedObjects() const {
     return background_attachment_fixed_objects_;
   }
   void InvalidateBackgroundAttachmentFixedDescendantsOnScroll(
@@ -956,7 +948,7 @@ class CORE_EXPORT LocalFrameView final
 
   void ForAllRemoteFrameViews(base::FunctionRef<void(RemoteFrameView&)>);
 
-  IntersectionUpdateResult UpdateViewportIntersectionsForSubtree(
+  bool UpdateViewportIntersectionsForSubtree(
       unsigned parent_flags,
       absl::optional<base::TimeTicks>& monotonic_time) override;
   void DeliverSynchronousIntersectionObservations();
@@ -1014,6 +1006,10 @@ class CORE_EXPORT LocalFrameView final
 
   bool HasViewTransitionThrottlingRendering() const;
 
+  void UpdateCanCompositeBackgroundAttachmentFixed();
+
+  void EnqueueSnapChangingFromImplIfNecessary();
+
   typedef HeapHashSet<Member<LayoutEmbeddedObject>> EmbeddedObjectSet;
   EmbeddedObjectSet part_update_set_;
 
@@ -1057,7 +1053,7 @@ class CORE_EXPORT LocalFrameView final
   Member<ScrollableAreaSet> animating_scrollable_areas_;
   // Scrollable areas which are user-scrollable, whether they overflow or not.
   Member<ScrollableAreaSet> user_scrollable_areas_;
-  ObjectSet background_attachment_fixed_objects_;
+  BoxModelObjectSet background_attachment_fixed_objects_;
   Member<FrameViewAutoSizeInfo> auto_size_info_;
 
   gfx::Size layout_size_;
@@ -1112,7 +1108,6 @@ class CORE_EXPORT LocalFrameView final
 #endif
 
   IntersectionObservationState intersection_observation_state_;
-  gfx::Vector2dF min_scroll_delta_to_update_intersection_;
   gfx::Vector2dF accumulated_scroll_delta_since_last_intersection_update_;
 
   mojom::blink::ViewportIntersectionState last_intersection_state_;

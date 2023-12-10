@@ -92,6 +92,15 @@ MakeGraphiteRecorderWithImageProvider(skgpu::graphite::Context* context) {
   return context->makeRecorder(options);
 }
 
+#if BUILDFLAG(SKIA_USE_DAWN)
+int32_t GetDawnMaxTextureSize(gpu::DawnContextProvider* context_provider) {
+  wgpu::SupportedLimits limits = {};
+  auto succeded = context_provider->GetDevice().GetLimits(&limits);
+  CHECK(succeded);
+  return limits.limits.maxTextureDimension2D;
+}
+#endif  // BUILDFLAG(SKIA_USE_DAWN)
+
 }  // anonymous namespace
 
 namespace gpu {
@@ -339,9 +348,8 @@ bool SharedContextState::InitializeGanesh(
 
   if (gr_context_type_ == GrContextType::kGL) {
     DCHECK(context_->IsCurrent(nullptr));
-    constexpr bool use_version_es2 = false;
     sk_sp<GrGLInterface> gr_gl_interface(gl::init::CreateGrGLInterface(
-        *context_->GetVersionInfo(), use_version_es2, progress_reporter));
+        *context_->GetVersionInfo(), progress_reporter));
     if (!gr_gl_interface) {
       LOG(ERROR) << "OOP raster support disabled: GrGLInterface creation "
                     "failed.";
@@ -406,7 +414,10 @@ bool SharedContextState::InitializeGanesh(
   }
 
   gr_context_->setResourceCacheLimit(max_resource_cache_bytes);
-  transfer_cache_ = std::make_unique<ServiceTransferCache>(gpu_preferences);
+  transfer_cache_ = std::make_unique<ServiceTransferCache>(
+      gpu_preferences,
+      base::BindRepeating(&SharedContextState::ScheduleSkiaCleanup,
+                          base::Unretained(this)));
   gr_cache_controller_ = std::make_unique<raster::GrCacheController>(this);
   return true;
 }
@@ -456,7 +467,10 @@ bool SharedContextState::InitializeGraphite(
   viz_compositor_graphite_recorder_ =
       MakeGraphiteRecorderWithImageProvider(graphite_context_);
 
-  transfer_cache_ = std::make_unique<ServiceTransferCache>(gpu_preferences);
+  transfer_cache_ = std::make_unique<ServiceTransferCache>(
+      gpu_preferences,
+      base::BindRepeating(&SharedContextState::ScheduleSkiaCleanup,
+                          base::Unretained(this)));
   return true;
 }
 
@@ -988,6 +1002,9 @@ bool SharedContextState::CheckResetStatus(bool need_gl) {
 }
 
 void SharedContextState::ScheduleSkiaCleanup() {
+  if (!MakeCurrent(nullptr)) {
+    return;
+  }
   if (gr_cache_controller_) {
     gr_cache_controller_->ScheduleGrContextCleanup();
   }
@@ -1011,9 +1028,19 @@ int32_t SharedContextState::GetMaxTextureSize() const {
     NOTREACHED_NORETURN();
 #endif
   } else {
-    // TODO(crbug.com/1090476): Query Dawn for this value once an API exists for
-    // capabilities.
     max_texture_size = 8192;
+#if BUILDFLAG(SKIA_USE_DAWN)
+#if BUILDFLAG(IS_IOS)
+    // Note: We currently run tests against the Graphite-Metal backend on iOS;
+    // in these contexts the Dawn context provider is not created.
+    if (dawn_context_provider()) {
+      max_texture_size = GetDawnMaxTextureSize(dawn_context_provider());
+    }
+#else
+    CHECK(dawn_context_provider());
+    max_texture_size = GetDawnMaxTextureSize(dawn_context_provider());
+#endif  // BUILDFLAG(IS_IOS)
+#endif  // BUILDFLAG(SKIA_USE_DAWN)
   }
   // Ensure max_texture_size_ is less than INT_MAX so that gfx::Rect and friends
   // can be used to accurately represent all valid sub-rects, with overflow

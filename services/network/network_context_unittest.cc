@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -413,7 +414,7 @@ class HostResolverFactory final : public net::HostResolver::Factory {
 
   std::unique_ptr<net::HostResolver> CreateResolver(
       net::HostResolverManager* manager,
-      base::StringPiece host_mapping_rules,
+      std::string_view host_mapping_rules,
       bool enable_caching) override {
     DCHECK(resolver_);
     return std::move(resolver_);
@@ -423,7 +424,7 @@ class HostResolverFactory final : public net::HostResolver::Factory {
   std::unique_ptr<net::HostResolver> CreateStandaloneResolver(
       net::NetLog* net_log,
       const net::HostResolver::ManagerOptions& options,
-      base::StringPiece host_mapping_rules,
+      std::string_view host_mapping_rules,
       bool enable_caching) override {
     NOTREACHED();
     return nullptr;
@@ -496,7 +497,7 @@ class NetworkContextTest : public testing::Test {
 
   // Looks up a value with the given name from the NetworkContext's
   // TransportSocketPool info dictionary.
-  int GetSocketPoolInfo(NetworkContext* context, base::StringPiece name) {
+  int GetSocketPoolInfo(NetworkContext* context, std::string_view name) {
     return context->url_request_context()
         ->http_transaction_factory()
         ->GetSession()
@@ -2968,8 +2969,8 @@ TEST_F(NetworkContextTest, ProxyConfig) {
         network_context.get());
     http_proxy_lookup_client.WaitForResult();
     ASSERT_TRUE(http_proxy_lookup_client.proxy_info());
-    EXPECT_EQ(initial_proxy_config_set.http_proxy_info.ToPacString(),
-              http_proxy_lookup_client.proxy_info()->ToPacString());
+    EXPECT_EQ(initial_proxy_config_set.http_proxy_info.ToDebugString(),
+              http_proxy_lookup_client.proxy_info()->ToDebugString());
 
     TestProxyLookupClient ftp_proxy_lookup_client;
     ftp_proxy_lookup_client.StartLookUpProxyForURL(
@@ -2977,8 +2978,8 @@ TEST_F(NetworkContextTest, ProxyConfig) {
         network_context.get());
     ftp_proxy_lookup_client.WaitForResult();
     ASSERT_TRUE(ftp_proxy_lookup_client.proxy_info());
-    EXPECT_EQ(initial_proxy_config_set.ftp_proxy_info.ToPacString(),
-              ftp_proxy_lookup_client.proxy_info()->ToPacString());
+    EXPECT_EQ(initial_proxy_config_set.ftp_proxy_info.ToDebugString(),
+              ftp_proxy_lookup_client.proxy_info()->ToDebugString());
 
     EXPECT_TRUE(proxy_resolution_service->config());
     EXPECT_TRUE(proxy_resolution_service->config()->value().Equals(
@@ -2998,8 +2999,8 @@ TEST_F(NetworkContextTest, ProxyConfig) {
           network_context.get());
       http_proxy_lookup_client2.WaitForResult();
       ASSERT_TRUE(http_proxy_lookup_client2.proxy_info());
-      EXPECT_EQ(proxy_config_set.http_proxy_info.ToPacString(),
-                http_proxy_lookup_client2.proxy_info()->ToPacString());
+      EXPECT_EQ(proxy_config_set.http_proxy_info.ToDebugString(),
+                http_proxy_lookup_client2.proxy_info()->ToDebugString());
 
       TestProxyLookupClient ftp_proxy_lookup_client2;
       ftp_proxy_lookup_client2.StartLookUpProxyForURL(
@@ -3007,8 +3008,8 @@ TEST_F(NetworkContextTest, ProxyConfig) {
           network_context.get());
       ftp_proxy_lookup_client2.WaitForResult();
       ASSERT_TRUE(ftp_proxy_lookup_client2.proxy_info());
-      EXPECT_EQ(proxy_config_set.ftp_proxy_info.ToPacString(),
-                ftp_proxy_lookup_client2.proxy_info()->ToPacString());
+      EXPECT_EQ(proxy_config_set.ftp_proxy_info.ToDebugString(),
+                ftp_proxy_lookup_client2.proxy_info()->ToDebugString());
 
       EXPECT_TRUE(proxy_resolution_service->config());
       EXPECT_TRUE(proxy_resolution_service->config()->value().Equals(
@@ -3085,11 +3086,11 @@ TEST_F(NetworkContextTest, NoInitialProxyConfig) {
   http_proxy_lookup_client.WaitForResult();
   ASSERT_TRUE(http_proxy_lookup_client.proxy_info());
   EXPECT_EQ("PROXY foopy:80",
-            http_proxy_lookup_client.proxy_info()->ToPacString());
+            http_proxy_lookup_client.proxy_info()->ToDebugString());
 
   ftp_proxy_lookup_client.WaitForResult();
   ASSERT_TRUE(ftp_proxy_lookup_client.proxy_info());
-  EXPECT_EQ("DIRECT", ftp_proxy_lookup_client.proxy_info()->ToPacString());
+  EXPECT_EQ("DIRECT", ftp_proxy_lookup_client.proxy_info()->ToDebugString());
 
   EXPECT_EQ(0u, network_context->pending_proxy_lookup_requests_for_testing());
 }
@@ -4118,7 +4119,7 @@ class TestResolverFactory : public net::HostResolver::Factory {
 
   std::unique_ptr<net::HostResolver> CreateResolver(
       net::HostResolverManager* manager,
-      base::StringPiece host_mapping_rules,
+      std::string_view host_mapping_rules,
       bool enable_caching) override {
     DCHECK(host_mapping_rules.empty());
     auto resolve_context = std::make_unique<net::ResolveContext>(
@@ -4132,7 +4133,7 @@ class TestResolverFactory : public net::HostResolver::Factory {
   std::unique_ptr<net::HostResolver> CreateStandaloneResolver(
       net::NetLog* net_log,
       const net::HostResolver::ManagerOptions& options,
-      base::StringPiece host_mapping_rules,
+      std::string_view host_mapping_rules,
       bool enable_caching) override {
     DCHECK(host_mapping_rules.empty());
     std::unique_ptr<net::ContextHostResolver> resolver =

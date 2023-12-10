@@ -203,14 +203,12 @@ class WCOCallbackLogger
   // End SharedWorkerService.Observer overrides.
 
   // Start DedicatedWorkerService.Observer overrides:
-  void OnWorkerCreated(
-      const blink::DedicatedWorkerToken& worker_token,
-      int worker_process_id,
-      content::GlobalRenderFrameHostId ancestor_render_frame_host_id) override;
+  void OnWorkerCreated(const blink::DedicatedWorkerToken& worker_token,
+                       int worker_process_id,
+                       content::DedicatedWorkerCreator creator) override;
   void OnBeforeWorkerDestroyed(
       const blink::DedicatedWorkerToken& worker_token,
-      content::GlobalRenderFrameHostId ancestor_render_frame_host_id) override {
-  }
+      content::DedicatedWorkerCreator creator) override {}
   void OnFinalResponseURLDetermined(
       const blink::DedicatedWorkerToken& worker_token,
       const GURL& url) override {}
@@ -290,9 +288,11 @@ void WCOCallbackLogger::OnClientAdded(
 void WCOCallbackLogger::OnWorkerCreated(
     const blink::DedicatedWorkerToken& worker_token,
     int worker_process_id,
-    content::GlobalRenderFrameHostId ancestor_render_frame_host_id) {
+    content::DedicatedWorkerCreator creator) {
+  const content::GlobalRenderFrameHostId& render_frame_host_id =
+      absl::get<content::GlobalRenderFrameHostId>(creator);
   content::RenderFrameHost* render_frame_host =
-      content::RenderFrameHost::FromID(ancestor_render_frame_host_id);
+      content::RenderFrameHost::FromID(render_frame_host_id);
   GURL scope = GetFirstPartyURL(render_frame_host).value_or(GURL());
 
   log_.push_back(base::StringPrintf("OnDedicatedWorkerCreated(%s)",
@@ -556,6 +556,10 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
 
   const GURL primary_main_frame_url =
       embedded_test_server()->GetURL("a.test", "/iframe_blank.html");
+  CookieSettingsFactory::GetForProfile(
+      Profile::FromBrowserContext(GetActiveWebContents()->GetBrowserContext()))
+      ->SetThirdPartyCookieSetting(
+          embedded_test_server()->GetURL("a.test", "/"), CONTENT_SETTING_ALLOW);
   ASSERT_TRUE(
       content::NavigateToURL(GetActiveWebContents(), primary_main_frame_url));
 
@@ -1665,16 +1669,9 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
 
 // Tests setting different metrics for the RedirectHeuristic_CookieAccess UKM
 // event.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
-// TODO(https://crbug.com/1489241): Flaky on Mac.
-#define MAYBE_RedirectHeuristicCookieAccessEvent_AllMetrics \
-  DISABLED_RedirectHeuristicCookieAccessEvent_AllMetrics
-#else
-#define MAYBE_RedirectHeuristicCookieAccessEvent_AllMetrics \
-  RedirectHeuristicCookieAccessEvent_AllMetrics
-#endif
+// TODO(https://crbug.com/1489241): Flaky on multiple platforms.
 IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
-                       MAYBE_RedirectHeuristicCookieAccessEvent_AllMetrics) {
+                       DISABLED_RedirectHeuristicCookieAccessEvent_AllMetrics) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   WebContents* web_contents = GetActiveWebContents();
 

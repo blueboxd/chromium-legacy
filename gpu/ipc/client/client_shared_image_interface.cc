@@ -142,18 +142,32 @@ scoped_refptr<ClientSharedImage> ClientSharedImageInterface::CreateSharedImage(
   }
 
   CHECK(!buffer_handle.is_null());
+  return base::MakeRefCounted<ClientSharedImage>(
+      AddMailbox(mailbox),
+      GpuMemoryBufferHandleInfo(std::move(buffer_handle), format, size,
+                                buffer_usage));
+}
 
-  // Create and cache a GpuMemoryBuffer for this SharedImage.
-  auto gpu_memory_buffer =
-      SharedImageInterface::CreateGpuMemoryBufferForUseByScopedMapping(
-          GpuMemoryBufferHandleInfo(std::move(buffer_handle), format, size,
-                                    buffer_usage));
-  {
-    base::AutoLock lock(lock_);
-    mailbox_to_gmb_map_[mailbox] = std::move(gpu_memory_buffer);
-  }
+scoped_refptr<ClientSharedImage> ClientSharedImageInterface::CreateSharedImage(
+    viz::SharedImageFormat format,
+    const gfx::Size& size,
+    const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
+    uint32_t usage,
+    base::StringPiece debug_label,
+    gpu::SurfaceHandle surface_handle,
+    gfx::BufferUsage buffer_usage,
+    gfx::GpuMemoryBufferHandle buffer_handle) {
+  auto client_buffer_handle = buffer_handle.Clone();
+  auto mailbox =
+      CreateSharedImage(format, size, color_space, surface_origin, alpha_type,
+                        usage, debug_label, std::move(buffer_handle))
+          ->mailbox();
 
-  return base::MakeRefCounted<ClientSharedImage>(AddMailbox(mailbox));
+  return base::MakeRefCounted<ClientSharedImage>(
+      mailbox, GpuMemoryBufferHandleInfo(std::move(client_buffer_handle),
+                                         format, size, buffer_usage));
 }
 
 scoped_refptr<ClientSharedImage> ClientSharedImageInterface::CreateSharedImage(
@@ -237,11 +251,6 @@ void ClientSharedImageInterface::DestroySharedImage(const SyncToken& sync_token,
     mailboxes_.erase(it);
   }
   proxy_->DestroySharedImage(sync_token, mailbox);
-
-  {
-    base::AutoLock lock(lock_);
-    mailbox_to_gmb_map_.erase(mailbox);
-  }
 }
 
 void ClientSharedImageInterface::DestroySharedImage(
@@ -260,45 +269,16 @@ void ClientSharedImageInterface::AddReferenceToSharedImage(
   proxy_->AddReferenceToSharedImage(sync_token, mailbox, usage);
 }
 
-std::unique_ptr<SharedImageInterface::ScopedMapping>
-ClientSharedImageInterface::MapSharedImage(const Mailbox& mailbox) {
-  gfx::GpuMemoryBuffer* gpu_memory_buffer = nullptr;
-  {
-    base::AutoLock lock(lock_);
-    auto it = mailbox_to_gmb_map_.find(mailbox);
-
-    // The mailbox for which the query is made must be present.
-    CHECK(it != mailbox_to_gmb_map_.end());
-    gpu_memory_buffer = it->second.get();
-  }
-
-  // The GMB must be present as it should have been populated while creating the
-  // mailbox.
-  CHECK(gpu_memory_buffer);
-
-  auto scoped_mapping =
-      SharedImageInterface::ScopedMapping::Create(gpu_memory_buffer);
-  if (!scoped_mapping) {
-    LOG(ERROR) << "Unable to create ScopedMapping.";
-    return nullptr;
-  }
-  return scoped_mapping;
-}
-
-std::unique_ptr<gpu::SharedImageInterface::ScopedMapping>
-ClientSharedImageInterface::MapSharedImage(
-    const scoped_refptr<gpu::ClientSharedImage>& client_shared_image) {
-  return MapSharedImage(client_shared_image->mailbox());
-}
-
 uint32_t ClientSharedImageInterface::UsageForMailbox(const Mailbox& mailbox) {
   return proxy_->UsageForMailbox(mailbox);
 }
 
-void ClientSharedImageInterface::NotifyMailboxAdded(const Mailbox& mailbox,
-                                                    uint32_t usage) {
+scoped_refptr<ClientSharedImage> ClientSharedImageInterface::NotifyMailboxAdded(
+    const Mailbox& mailbox,
+    uint32_t usage) {
   AddMailbox(mailbox);
   proxy_->NotifyMailboxAdded(mailbox, usage);
+  return base::MakeRefCounted<ClientSharedImage>(mailbox);
 }
 
 Mailbox ClientSharedImageInterface::AddMailbox(const gpu::Mailbox& mailbox) {

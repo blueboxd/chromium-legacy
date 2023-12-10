@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/css/invalidation/invalidation_set.h"
 #include "third_party/blink/renderer/core/css/media_feature_overrides.h"
 #include "third_party/blink/renderer/core/css/media_values.h"
+#include "third_party/blink/renderer/core/css/position_fallback_data.h"
 #include "third_party/blink/renderer/core/css/property_registration.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
@@ -3276,7 +3277,7 @@ void StyleEngine::UpdateStyleForNonEligibleContainer(Element& container) {
   DCHECK(InRebuildLayoutTree());
   // This method is called from AttachLayoutTree() when we skipped style recalc
   // for descendants of a size query container but figured that the LayoutObject
-  // we created is not going to be reached for layout in ng_block_node.cc where
+  // we created is not going to be reached for layout in block_node.cc where
   // we would otherwise resume style recalc.
   //
   // This may be due to legacy layout fallback, inline box, table box, etc.
@@ -3434,16 +3435,33 @@ void StyleEngine::UpdateStyleAndLayoutTreeForContainer(
 
 void StyleEngine::UpdateStyleForPositionFallback(
     Element& element,
-    const ScopedCSSName* position_fallback,
-    unsigned position_fallback_index) {
+    const CSSPropertyValueSet* try_set) {
+  // Note that we enter this function for any OOF element, not just those that
+  // use position-fallback. Therefore, it's important to return immediately
+  // without doing any work when `try_set` and `existing_try_set` both are
+  // nullptr.
+
+  PositionFallbackData* position_fallback_data =
+      element.GetPositionFallbackData();
+  const CSSPropertyValueSet* existing_try_set =
+      position_fallback_data ? position_fallback_data->GetTryPropertyValueSet()
+                             : nullptr;
+  if (existing_try_set == try_set) {
+    // No need to update style, the try set is the one we already used.
+    return;
+  }
+
+  // The last seen `try_set` is persisted on Element, such that subsequent
+  // regular style recalcs can continue to include this set.
+  element.EnsurePositionFallbackData().SetTryPropertyValueSet(try_set);
+
   base::AutoReset<bool> pf_recalc(&in_position_fallback_style_recalc_, true);
 
   UpdateViewportSize();
 
   StyleRecalcContext style_recalc_context =
       StyleRecalcContext::FromAncestors(element);
-  style_recalc_context.position_fallback = position_fallback;
-  style_recalc_context.position_fallback_index = position_fallback_index;
+  style_recalc_context.is_position_fallback = true;
 
   StyleRecalcChange change = StyleRecalcChange().ForceRecalcChildren();
 
@@ -3457,16 +3475,14 @@ void StyleEngine::UpdateStyleForPositionFallback(
   }
 }
 
-bool StyleEngine::HasTryRule(Element& element,
-                             const ScopedCSSName* position_fallback,
-                             unsigned position_fallback_index) {
-  DCHECK(position_fallback);
-  StyleRulePositionFallback* position_fallback_rule =
-      GetStyleResolver().ResolvePositionFallbackRule(
-          position_fallback->GetTreeScope(), position_fallback->GetName());
-  return position_fallback_rule &&
-         (position_fallback_index <
-          position_fallback_rule->ChildRules().size());
+StyleRulePositionFallback* StyleEngine::GetPositionFallbackRule(
+    const ScopedCSSName& scoped_name) {
+  const TreeScope* tree_scope = scoped_name.GetTreeScope();
+  if (!tree_scope) {
+    tree_scope = &GetDocument();
+  }
+  return GetStyleResolver().ResolvePositionFallbackRule(tree_scope,
+                                                        scoped_name.GetName());
 }
 
 void StyleEngine::RecalcStyle(StyleRecalcChange change,
@@ -4235,6 +4251,10 @@ void StyleEngine::MarkForLayoutTreeChangesAfterDetach() {
     }
   }
   parent_for_detached_subtree_ = nullptr;
+}
+
+void StyleEngine::InvalidateSVGResourcesAfterDetach() {
+  GetDocument().InvalidatePendingSVGResources();
 }
 
 bool StyleEngine::AllowSkipStyleRecalcForScope() const {

@@ -22,6 +22,7 @@ class Widget;
 
 namespace ash {
 
+class LayoutDividerController;
 class SplitViewController;
 class SplitViewDividerView;
 
@@ -40,7 +41,7 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
     kFast,
   };
 
-  explicit SplitViewDivider(SplitViewController* controller);
+  SplitViewDivider(LayoutDividerController* controller, int divider_position);
   SplitViewDivider(const SplitViewDivider&) = delete;
   SplitViewDivider& operator=(const SplitViewDivider&) = delete;
   ~SplitViewDivider() override;
@@ -109,6 +110,7 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
                              ui::PropertyChangeReason reason) override;
   void OnWindowStackingChanged(aura::Window* window) override;
   void OnWindowAddedToRootWindow(aura::Window* window) override;
+  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
 
   // wm::TransientWindowObserver:
   void OnTransientChildAdded(aura::Window* window,
@@ -121,7 +123,10 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
  private:
   friend class SplitViewController;
 
-  void CreateDividerWidget(SplitViewController* controller);
+  void CreateDividerWidget(int divider_position);
+
+  // Returns the root window of `divider_widget_`.
+  aura::Window* GetRootWindow() const;
 
   // Refreshes the stacking order of the `divider_widget_` to be right on top of
   // the `observed_windows_` and reparents the split view divider to be on the
@@ -134,7 +139,7 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
   void StartObservingTransientChild(aura::Window* transient);
   void StopObservingTransientChild(aura::Window* transient);
 
-  raw_ptr<SplitViewController, ExperimentalAsh> controller_;
+  const raw_ptr<LayoutDividerController> controller_;
 
   // Split view divider widget. It's a black bar stretching from one edge of the
   // screen to the other, containing a small white drag bar in the middle. As

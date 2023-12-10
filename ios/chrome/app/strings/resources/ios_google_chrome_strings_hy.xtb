@@ -58,6 +58,7 @@
 <translation id="2671426118752779020">Դուք կարող եք Google Գաղտնաբառերի կառավարիչում պահված գաղտնաբառերն օգտագործել ձեր iPhone-ի այլ հավելվածներում։</translation>
 <translation id="2689064829982324496">Բոլոր կայքերում ձեր Google հաշվից դուրս գալու համար <ph name="BEGIN_LINK" />դուրս եկեք Chrome-ից<ph name="END_LINK" />։</translation>
 <translation id="2695886661449553974">Chrome-ը չի կարող ստուգել թարմացումների առկայությունը։ Փորձեք ավելի ուշ։</translation>
+<translation id="2702250627063295552">Ավելացնել ընթերցանության ցանկին Chrome-ում</translation>
 <translation id="2736805085127235148">Chrome-ի ծանուցումներն այս պահին անջատված են սարքի կարգավորումներում։</translation>
 <translation id="2767464022270041271">Պահված գաղտնաբառեր չկան։ Google գաղտնաբառերի կառավարիչը կարող է ստուգել ձեր գաղտնաբառերը, երբ պահում եք դրանք։</translation>
 <translation id="2868822340714096138">Մաքրեք այցելությունների պատմությունը Chrome-ում</translation>
@@ -83,6 +84,7 @@
 <translation id="3744018071945602754">Գաղտնաբառերի կառավարում Chrome-ում</translation>
 <translation id="3827545470516145620">Այս սարքում միացված է անվտանգության ստանդարտ ռեժիմը</translation>
 <translation id="384394811301901750">Այս պահին Google Chrome-ը չի կարող օգտագործել ձեր ֆոտոխցիկը</translation>
+<translation id="3863841106411295595">Ավելացնում է մուտքագրված URL-ը ձեր ընթերցանության ցանկին Chrome-ում։</translation>
 <translation id="3901001113120561395">Օգտվեք Chrome-ի բոլոր հնարավորություններից։</translation>
 <translation id="3967382818307165056">Կառավարել վճարման եղանակները Chrome-ում</translation>
 <translation id="3980220367029651214">Դուք փոխարկում եք համաժամացվող հաշիվները՝ անցնելով <ph name="USER_EMAIL1" /> հաշվից <ph name="USER_EMAIL2" /> հաշիվ: Chrome-ի ձեր առկա տվյալները կառավարվում են <ph name="DOMAIN" /> տիրույթի կողմից: Այս սարքում պահված տվյալները կջնջվեն, սակայն կպահպանվեն ձեր <ph name="USER_EMAIL1" /> հաշվում:</translation>
@@ -96,7 +98,6 @@
 <translation id="424864128008805179">Դուրս գա՞լ Chrome-ից:</translation>
 <translation id="4251174643044751591">Բացում է վճարման եղանակների կարգավորման էջը Chrome-ում։</translation>
 <translation id="4453284704333523777">Chrome-ի կարգավորումների կառավարում</translation>
-<translation id="4471662743048412085">Հետևեք հայտնաբերված փաթեթներին Chrome-ում</translation>
 <translation id="4508370294876102450">Բացեք Chrome-ը ցանկացած հավելվածից</translation>
 <translation id="4523886039239821078">Որոշ հավելումներ առաջացնում են Chrome-ի աշխատանքի խափանում: Հեռացրեք դրանք՝</translation>
 <translation id="4633328489441962921">Chrome-ը չի կարող ստուգել թարմացումների առկայությունը</translation>

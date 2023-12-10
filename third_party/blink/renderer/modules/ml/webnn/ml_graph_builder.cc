@@ -10,12 +10,17 @@
 #include "components/ml/webnn/features.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_ml_batch_normalization_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_clamp_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_conv_2d_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_conv_transpose_2d_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_elu_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_ml_gather_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_gemm_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_ml_instance_normalization_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_ml_layer_normalization_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_leaky_relu_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_ml_linear_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_operand_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_pad_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_pool_2d_options.h"
@@ -51,46 +56,54 @@ namespace {
 
 MLGraphBuilder::BackendForTesting* g_backend_for_testing = nullptr;
 
-blink::V8MLOperandType::Enum ComponentOperandTypeToBlink(
-    webnn::Operand::DataType type) {
-  switch (type) {
+blink::V8MLOperandDataType::Enum ComponentOperandTypeToBlink(
+    webnn::Operand::DataType data_type) {
+  switch (data_type) {
     case webnn::Operand::DataType::kFloat32:
-      return blink::V8MLOperandType::Enum::kFloat32;
+      return blink::V8MLOperandDataType::Enum::kFloat32;
     case webnn::Operand::DataType::kFloat16:
-      return blink::V8MLOperandType::Enum::kFloat16;
+      return blink::V8MLOperandDataType::Enum::kFloat16;
     case webnn::Operand::DataType::kInt32:
-      return blink::V8MLOperandType::Enum::kInt32;
+      return blink::V8MLOperandDataType::Enum::kInt32;
     case webnn::Operand::DataType::kUint32:
-      return blink::V8MLOperandType::Enum::kUint32;
+      return blink::V8MLOperandDataType::Enum::kUint32;
+    case webnn::Operand::DataType::kInt64:
+      return blink::V8MLOperandDataType::Enum::kInt64;
+    case webnn::Operand::DataType::kUint64:
+      return blink::V8MLOperandDataType::Enum::kUint64;
     case webnn::Operand::DataType::kInt8:
-      return blink::V8MLOperandType::Enum::kInt8;
+      return blink::V8MLOperandDataType::Enum::kInt8;
     case webnn::Operand::DataType::kUint8:
-      return blink::V8MLOperandType::Enum::kUint8;
+      return blink::V8MLOperandDataType::Enum::kUint8;
   }
   NOTREACHED_NORETURN();
 }
 
 webnn::Operand::DataType BlinkOperandTypeToComponent(
-    blink::V8MLOperandType::Enum type) {
-  switch (type) {
-    case blink::V8MLOperandType::Enum::kFloat32:
+    blink::V8MLOperandDataType::Enum data_type) {
+  switch (data_type) {
+    case blink::V8MLOperandDataType::Enum::kFloat32:
       return webnn::Operand::DataType::kFloat32;
-    case blink::V8MLOperandType::Enum::kFloat16:
+    case blink::V8MLOperandDataType::Enum::kFloat16:
       return webnn::Operand::DataType::kFloat16;
-    case blink::V8MLOperandType::Enum::kInt32:
+    case blink::V8MLOperandDataType::Enum::kInt32:
       return webnn::Operand::DataType::kInt32;
-    case blink::V8MLOperandType::Enum::kUint32:
+    case blink::V8MLOperandDataType::Enum::kUint32:
       return webnn::Operand::DataType::kUint32;
-    case blink::V8MLOperandType::Enum::kInt8:
+    case blink::V8MLOperandDataType::Enum::kInt64:
+      return webnn::Operand::DataType::kInt64;
+    case blink::V8MLOperandDataType::Enum::kUint64:
+      return webnn::Operand::DataType::kUint64;
+    case blink::V8MLOperandDataType::Enum::kInt8:
       return webnn::Operand::DataType::kInt8;
-    case blink::V8MLOperandType::Enum::kUint8:
+    case blink::V8MLOperandDataType::Enum::kUint8:
       return webnn::Operand::DataType::kUint8;
   }
   NOTREACHED_NORETURN();
 }
 
 webnn::Operand ConvertToComponentOperand(const blink::MLOperand* ml_operand) {
-  return webnn::Operand(BlinkOperandTypeToComponent(ml_operand->Type()),
+  return webnn::Operand(BlinkOperandTypeToComponent(ml_operand->DataType()),
                         ml_operand->Dimensions());
 }
 
@@ -171,6 +184,20 @@ webnn::ReduceKind BlinkReduceKindToComponent(
     default:
       NOTREACHED_NORETURN();
   }
+}
+
+webnn::BatchNormalizationAttributes ConvertToBatchNormalizationAttributes(
+    const blink::MLBatchNormalizationOptions* options) {
+  CHECK(options);
+  webnn::BatchNormalizationAttributes attributes;
+  if (options->hasScale()) {
+    attributes.scale = ConvertToComponentOperand(options->scale());
+  }
+  if (options->hasBias()) {
+    attributes.bias = ConvertToComponentOperand(options->bias());
+  }
+  attributes.axis = options->axis();
+  return attributes;
 }
 
 template <typename MLConv2dOptionsType, typename Conv2dAttributesType>
@@ -336,6 +363,34 @@ webnn::GemmAttributes ConvertToGemmAttributes(
   return attributes;
 }
 
+webnn::InstanceNormalizationAttributes ConvertToInstanceNormalizationAttributes(
+    const blink::MLInstanceNormalizationOptions* options) {
+  CHECK(options);
+  webnn::InstanceNormalizationAttributes attributes;
+  if (options->hasScale()) {
+    attributes.scale = ConvertToComponentOperand(options->scale());
+  }
+  if (options->hasBias()) {
+    attributes.bias = ConvertToComponentOperand(options->bias());
+  }
+  attributes.layout =
+      BlinkInputOperandLayoutToComponent(options->layout().AsEnum());
+  return attributes;
+}
+
+webnn::LayerNormalizationAttributes ConvertToLayerNormalizationAttributes(
+    const blink::MLLayerNormalizationOptions* options) {
+  CHECK(options);
+  webnn::LayerNormalizationAttributes attributes;
+  if (options->hasScale()) {
+    attributes.scale = ConvertToComponentOperand(options->scale());
+  }
+  if (options->hasBias()) {
+    attributes.bias = ConvertToComponentOperand(options->bias());
+  }
+  return attributes;
+}
+
 bool ValidateClampOptions(const MLClampOptions* options,
                           ExceptionState& exception_state) {
   // The generated code of MLClampOptions uses blink::ToRestrictedFloat to
@@ -366,14 +421,21 @@ absl::optional<Vector<uint32_t>> BroadcastShapes(
   return Vector<uint32_t>(output_shape.value());
 }
 
+constexpr bool IsLogicalBinaryOperator(MLOperator::OperatorKind kind) {
+  return kind == MLOperator::OperatorKind::kEqual ||
+         kind == MLOperator::OperatorKind::kGreater ||
+         kind == MLOperator::OperatorKind::kLesser;
+}
+
 MLOperand* BuildElementWiseBinary(MLGraphBuilder* builder,
                                   MLOperator::OperatorKind kind,
                                   const MLOperand* a,
                                   const MLOperand* b,
                                   ExceptionState& exception_state) {
-  if (a->Type() != b->Type()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
-                                      "The input types don't match.");
+  if (a->DataType() != b->DataType()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kDataError,
+        "The input operand data types don't match.");
     return nullptr;
   }
   absl::optional<Vector<uint32_t>> dims_output =
@@ -384,8 +446,15 @@ MLOperand* BuildElementWiseBinary(MLGraphBuilder* builder,
         "The input shapes are not broadcastable.");
     return nullptr;
   }
+
+  // Logical operator outputs are bools, otherwise output operators are the same
+  // type as input operators.
+  V8MLOperandDataType::Enum data_type = IsLogicalBinaryOperator(kind)
+                                            ? V8MLOperandDataType::Enum::kUint8
+                                            : a->DataType();
+
   auto* binary = MakeGarbageCollected<MLOperator>(builder, kind);
-  auto output = MLOperand::ValidateAndCreateOutput(builder, a->Type(),
+  auto output = MLOperand::ValidateAndCreateOutput(builder, data_type,
                                                    dims_output.value(), binary);
   if (!output.has_value()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
@@ -403,19 +472,20 @@ MLOperand* BuildUnaryOperator(
     const webnn::DataTypeConstraintSet& data_type_constraint,
     const MLOperand* input,
     const bindings::DictionaryBase* options = nullptr) {
-  // The output tensor of unary operator has the same type and dimensions as its
-  // input tensor.
-  if (!data_type_constraint.Has(BlinkOperandTypeToComponent(input->Type()))) {
+  // The output tensor of unary operator has the same data type and dimensions
+  // as its input tensor.
+  if (!data_type_constraint.Has(
+          BlinkOperandTypeToComponent(input->DataType()))) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kDataError,
         String::Format(
-            "The input type must be one of the %s types.",
+            "The input data type must be one of the %s types.",
             webnn::DataTypeConstraintToString(data_type_constraint).c_str()));
     return nullptr;
   }
 
   auto* unary = MakeGarbageCollected<MLOperator>(builder, kind, options);
-  auto output = MLOperand::ValidateAndCreateOutput(builder, input->Type(),
+  auto output = MLOperand::ValidateAndCreateOutput(builder, input->DataType(),
                                                    input->Dimensions(), unary);
   if (!output.has_value()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
@@ -446,7 +516,7 @@ MLOperand* BuildReduce(MLGraphBuilder* builder,
   auto* reduce = MakeGarbageCollected<MLOperator>(builder, kind, options);
   // According to WebNN spec
   // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-reduce, the output
-  // tensor of reduce has the same type as its input.
+  // tensor of reduce has the same data type as its input.
   auto output = MLOperand::ValidateAndCreateOutput(
       builder, ComponentOperandTypeToBlink(validated_output->data_type),
       Vector<uint32_t>(validated_output->dimensions), reduce);
@@ -484,8 +554,8 @@ MLOperand* BuildPool2d(MLGraphBuilder* builder,
   // to its input and output operands.
   auto* pool2d = MakeGarbageCollected<MLOperator>(builder, kind, options);
   auto output = MLOperand::ValidateAndCreateOutput(
-      builder, input->Type(), Vector<uint32_t>(validated_output->dimensions),
-      pool2d);
+      builder, input->DataType(),
+      Vector<uint32_t>(validated_output->dimensions), pool2d);
   if (!output.has_value()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
                                       output.error());
@@ -521,7 +591,7 @@ MLOperand* MLGraphBuilder::input(String name,
   // If no dimensions, it represents a scalar. Set dimensions to empty.
   Vector<uint32_t> dimensions = desc->getDimensionsOr({});
   auto input_operand = MLOperand::ValidateAndCreateInput(
-      this, desc->type().AsEnum(), std::move(dimensions), std::move(name));
+      this, desc->dataType().AsEnum(), std::move(dimensions), std::move(name));
   if (!input_operand.has_value()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
                                       input_operand.error());
@@ -537,13 +607,57 @@ MLOperand* MLGraphBuilder::constant(const MLOperandDescriptor* desc,
   // If no dimensions, it represents a scalar. Set dimensions to empty.
   Vector<uint32_t> dimensions = desc->getDimensionsOr({});
   auto constant_operand = MLOperand::ValidateAndCreateConstant(
-      this, desc->type().AsEnum(), std::move(dimensions), buffer_view.Get());
+      this, desc->dataType().AsEnum(), std::move(dimensions),
+      buffer_view.Get());
   if (!constant_operand.has_value()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
                                       constant_operand.error());
     return nullptr;
   }
   return constant_operand.value();
+}
+
+MLOperand* MLGraphBuilder::batchNormalization(
+    const MLOperand* input,
+    const MLOperand* mean,
+    const MLOperand* variance,
+    const MLBatchNormalizationOptions* options,
+    ExceptionState& exception_state) {
+  const auto validated_output = webnn::ValidateBatchNormalizationAndInferOutput(
+      ConvertToComponentOperand(input), ConvertToComponentOperand(mean),
+      ConvertToComponentOperand(variance),
+      ConvertToBatchNormalizationAttributes(options));
+  if (!validated_output.has_value()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kDataError,
+        WTF::String::FromUTF8(validated_output.error()));
+    return nullptr;
+  }
+
+  // Create batchNormalization operator and its output operand. Connect the
+  // batchNormalization operator to its input and output operands.
+  auto* batch_normalization = MakeGarbageCollected<MLOperator>(
+      this, MLOperator::OperatorKind::kBatchNormalization, options);
+  HeapVector<Member<const MLOperand>> inputs = {input, mean, variance};
+  // Adding the optional operands into inputs ensures the graph traversal
+  // algorithm GetOperatorsInTopologicalOrder() works. For backends, the
+  // optional operands should be retrieved from the options instead of inputs.
+  if (options->hasScale()) {
+    inputs.push_back(options->scale());
+  }
+  if (options->hasBias()) {
+    inputs.push_back(options->bias());
+  }
+  auto output = MLOperand::ValidateAndCreateOutput(
+      this, ComponentOperandTypeToBlink(validated_output->data_type),
+      Vector<uint32_t>(validated_output->dimensions), batch_normalization);
+  if (!output.has_value()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
+                                      output.error());
+    return nullptr;
+  }
+  batch_normalization->Connect(std::move(inputs), {output.value()});
+  return output.value();
 }
 
 MLOperand* MLGraphBuilder::concat(const HeapVector<Member<MLOperand>>& inputs,
@@ -586,7 +700,7 @@ MLOperand* MLGraphBuilder::clamp(const MLOperand* input,
   }
   // According to WebNN spec
   // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-clamp, the output tensor of
-  // clamp has the same type and dimensions as its input.
+  // clamp has the same data type and dimensions as its input.
   return BuildUnaryOperator(
       this, exception_state, MLOperator::OperatorKind::kClamp,
       webnn::DataTypeConstraintSet::All(), input, options);
@@ -697,6 +811,9 @@ BUILD_ELEMENTWISE_BINARY_OP(div, kDiv)
 BUILD_ELEMENTWISE_BINARY_OP(min, kMin)
 BUILD_ELEMENTWISE_BINARY_OP(max, kMax)
 BUILD_ELEMENTWISE_BINARY_OP(pow, kPow)
+BUILD_ELEMENTWISE_BINARY_OP(equal, kEqual)
+BUILD_ELEMENTWISE_BINARY_OP(greater, kGreater)
+BUILD_ELEMENTWISE_BINARY_OP(lesser, kLesser)
 
 #define BUILD_ELEMENTWISE_UNARY_OP(op, op_kind, data_type_constraint) \
   MLOperand* MLGraphBuilder::op(const MLOperand* input,               \
@@ -733,6 +850,22 @@ BUILD_ELEMENTWISE_UNARY_OP(reciprocal,
                            webnn::DataTypeConstraint::kFloat)
 BUILD_ELEMENTWISE_UNARY_OP(sqrt, kSqrt, webnn::DataTypeConstraint::kFloat)
 
+MLOperand* MLGraphBuilder::cast(const MLOperand* input,
+                                const V8MLOperandDataType output_data_type,
+                                ExceptionState& exception_state) {
+  auto* cast =
+      MakeGarbageCollected<MLOperator>(this, MLOperator::OperatorKind::kCast);
+  auto output = MLOperand::ValidateAndCreateOutput(
+      this, output_data_type.AsEnum(), input->Dimensions(), cast);
+  if (!output.has_value()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
+                                      output.error());
+    return nullptr;
+  }
+  cast->Connect({input}, {output.value()});
+  return output.value();
+}
+
 #define BUILD_REDUCE_OP(op, op_kind)                                   \
   MLOperand* MLGraphBuilder::op(const MLOperand* input,                \
                                 const MLReduceOptions* options,        \
@@ -763,13 +896,13 @@ MLOperand* MLGraphBuilder::elu(const MLOperand* input,
         "The value of alpha must be greater than 0.");
     return nullptr;
   }
-  // The current spec doesn't specify the operand type constraints of elu. An
-  // issue has been filed to track it:
+  // The current spec doesn't specify the operand data type constraints of elu.
+  // An issue has been filed to track it:
   // https://github.com/webmachinelearning/webnn/issues/283.
   //
   // According to WebNN spec
   // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-elu, the output tensor of
-  // elu has the same type and dimensions as its input.
+  // elu has the same data type and dimensions as its input.
   return BuildUnaryOperator(this, exception_state,
                             MLOperator::OperatorKind::kElu,
                             webnn::DataTypeConstraint::kFloat, input, options);
@@ -806,13 +939,43 @@ MLOperand* MLGraphBuilder::expand(const MLOperand* input,
   auto* expand =
       MakeGarbageCollected<MLOperator>(this, MLOperator::OperatorKind::kExpand);
   auto output = MLOperand::ValidateAndCreateOutput(
-      this, input->Type(), output_shape.value(), expand);
+      this, input->DataType(), output_shape.value(), expand);
   if (!output.has_value()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
                                       output.error());
     return nullptr;
   }
   expand->Connect({input}, {output.value()});
+  return output.value();
+}
+
+MLOperand* MLGraphBuilder::gather(const MLOperand* input,
+                                  const MLOperand* indices,
+                                  const MLGatherOptions* options,
+                                  ExceptionState& exception_state) {
+  auto validated_output = webnn::ValidateGatherAndInferOutput(
+      ConvertToComponentOperand(input), ConvertToComponentOperand(indices),
+      options->axis());
+  if (!validated_output.has_value()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kDataError,
+        String::FromUTF8(validated_output.error()));
+    return nullptr;
+  }
+
+  auto* gather = MakeGarbageCollected<MLOperator>(
+      this, MLOperator::OperatorKind::kGather, options);
+  HeapVector<Member<const MLOperand>> inputs = {input, indices};
+  auto output = MLOperand::ValidateAndCreateOutput(
+      this, ComponentOperandTypeToBlink(validated_output->data_type),
+      Vector<uint32_t>(validated_output->dimensions), gather);
+  if (!output.has_value()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
+                                      output.error());
+    return nullptr;
+  }
+
+  gather->Connect(std::move(inputs), {output.value()});
   return output.value();
 }
 
@@ -849,13 +1012,13 @@ MLOperand* MLGraphBuilder::gemm(const MLOperand* a,
 
 MLOperand* MLGraphBuilder::hardSwish(const MLOperand* input,
                                      ExceptionState& exception_state) {
-  // The input type must be one of the floating point types. Although this
+  // The input data type must be one of the floating point types. Although this
   // constraint is not specified in current WebNN spec, there is a feature
   // request for that: https://github.com/webmachinelearning/webnn/issues/283
   //
   // According to WebNN spec
   // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-hard-swish, the output
-  // tensor of hard-swish has the same type and dimensions as its input.
+  // tensor of hard-swish has the same data type and dimensions as its input.
   return BuildUnaryOperator(this, exception_state,
                             MLOperator::OperatorKind::kHardSwish,
                             webnn::DataTypeConstraint::kFloat, input);
@@ -868,16 +1031,102 @@ MLActivation* MLGraphBuilder::hardSwish(ExceptionState& exception_state) {
       this, MLOperator::OperatorKind::kHardSwish);
 }
 
+MLOperand* MLGraphBuilder::instanceNormalization(
+    const MLOperand* input,
+    const MLInstanceNormalizationOptions* options,
+    ExceptionState& exception_state) {
+  const auto validated_output =
+      webnn::ValidateInstanceNormalizationAndInferOutput(
+          ConvertToComponentOperand(input),
+          ConvertToInstanceNormalizationAttributes(options));
+  if (!validated_output.has_value()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kDataError,
+        String::FromUTF8(validated_output.error()));
+    return nullptr;
+  }
+
+  auto* instance_normalization = MakeGarbageCollected<MLOperator>(
+      this, MLOperator::OperatorKind::kInstanceNormalization, options);
+  HeapVector<Member<const MLOperand>> inputs = {input};
+  // Adding the optional operands into inputs ensures the graph traversal
+  // algorithm GetOperatorsInTopologicalOrder() works. For backends, the
+  // optional operands should be retrieved from the options instead of inputs.
+  if (options->hasScale()) {
+    inputs.push_back(options->scale());
+  }
+  if (options->hasBias()) {
+    inputs.push_back(options->bias());
+  }
+
+  auto output = MLOperand::ValidateAndCreateOutput(
+      this, ComponentOperandTypeToBlink(validated_output->data_type),
+      Vector<uint32_t>(validated_output->dimensions), instance_normalization);
+  if (!output.has_value()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
+                                      output.error());
+    return nullptr;
+  }
+
+  instance_normalization->Connect(std::move(inputs), {output.value()});
+  return output.value();
+}
+
+MLOperand* MLGraphBuilder::layerNormalization(
+    const MLOperand* input,
+    const MLLayerNormalizationOptions* options,
+    ExceptionState& exception_state) {
+  // TODO(crbug.com/1273291): Figure out whether the `axes` should be required,
+  // tracked by issue: https://github.com/webmachinelearning/webnn/issues/487
+  const Vector<uint32_t> axes = options->getAxesOr(
+      CreateLayerNormalizationDefaultAxes(input->Dimensions().size()));
+
+  const auto validated_output = webnn::ValidateLayerNormalizationAndInferOutput(
+      ConvertToComponentOperand(input), axes,
+      ConvertToLayerNormalizationAttributes(options));
+  if (!validated_output.has_value()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kDataError,
+        String::FromUTF8(validated_output.error()));
+    return nullptr;
+  }
+
+  auto* layer_normalization = MakeGarbageCollected<MLOperator>(
+      this, MLOperator::OperatorKind::kLayerNormalization, options);
+  HeapVector<Member<const MLOperand>> inputs = {input};
+  // Adding the optional operands into inputs ensures the graph traversal
+  // algorithm GetOperatorsInTopologicalOrder() works. For backends, the
+  // optional operands should be retrieved from the options instead of inputs.
+  if (options->hasScale()) {
+    inputs.push_back(options->scale());
+  }
+  if (options->hasBias()) {
+    inputs.push_back(options->bias());
+  }
+
+  auto output = MLOperand::ValidateAndCreateOutput(
+      this, ComponentOperandTypeToBlink(validated_output->data_type),
+      Vector<uint32_t>(validated_output->dimensions), layer_normalization);
+  if (!output.has_value()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
+                                      output.error());
+    return nullptr;
+  }
+
+  layer_normalization->Connect(std::move(inputs), {output.value()});
+  return output.value();
+}
+
 MLOperand* MLGraphBuilder::leakyRelu(const MLOperand* input,
                                      const MLLeakyReluOptions* options,
                                      ExceptionState& exception_state) {
-  // The current spec doesn't specify the operand type constraints of leakyRelu.
-  // An issue has been filed to track it:
+  // The current spec doesn't specify the operand data type constraints of
+  // leakyRelu. An issue has been filed to track it:
   // https://github.com/webmachinelearning/webnn/issues/283.
   //
   // According to WebNN spec
-  // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-relu, the output tensor of
-  // relu has the same type and dimensions as its input.
+  // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-leakyrelu, the output
+  // tensor of leaky relu has the same type and dimensions as its input.
   return BuildUnaryOperator(this, exception_state,
                             MLOperator::OperatorKind::kLeakyRelu,
                             webnn::DataTypeConstraint::kFloat, input, options);
@@ -889,6 +1138,29 @@ MLActivation* MLGraphBuilder::leakyRelu(const MLLeakyReluOptions* options,
   // function.
   return MakeGarbageCollected<MLActivation>(
       this, MLOperator::OperatorKind::kLeakyRelu, options);
+}
+
+MLOperand* MLGraphBuilder::linear(const MLOperand* input,
+                                  const MLLinearOptions* options,
+                                  ExceptionState& exception_state) {
+  // The current spec doesn't specify the operand data type constraints of
+  // linear. An issue has been filed to track it:
+  // https://github.com/webmachinelearning/webnn/issues/283.
+  //
+  // According to WebNN spec
+  // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-linear, the output tensor
+  // of linear has the same type and dimensions as its input.
+  return BuildUnaryOperator(this, exception_state,
+                            MLOperator::OperatorKind::kLinear,
+                            webnn::DataTypeConstraint::kFloat, input, options);
+}
+
+MLActivation* MLGraphBuilder::linear(const MLLinearOptions* options,
+                                     ExceptionState& exception_state) {
+  // Create the linear operator that would be used as an activation
+  // function.
+  return MakeGarbageCollected<MLActivation>(
+      this, MLOperator::OperatorKind::kLinear, options);
 }
 
 MLOperand* MLGraphBuilder::matmul(const MLOperand* a,
@@ -944,9 +1216,10 @@ MLOperand* MLGraphBuilder::pad(const MLOperand* input,
                                                   ending_padding, options);
   // According to WebNN spec
   // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-pad, the output
-  // tensor of pad has the same type as its input.
+  // tensor of pad has the same data type as its input.
   auto output = MLOperand::ValidateAndCreateOutput(
-      this, input->Type(), Vector<uint32_t>(validated_output->dimensions), pad);
+      this, input->DataType(), Vector<uint32_t>(validated_output->dimensions),
+      pad);
   if (!output.has_value()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
                                       output.error());
@@ -1000,7 +1273,7 @@ MLOperand* MLGraphBuilder::relu(const MLOperand* input,
                                 ExceptionState& exception_state) {
   // According to WebNN spec
   // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-relu, the output tensor of
-  // relu has the same type and dimensions as its input.
+  // relu has the same data type and dimensions as its input.
   return BuildUnaryOperator(this, exception_state,
                             MLOperator::OperatorKind::kRelu,
                             webnn::DataTypeConstraintSet::All(), input);
@@ -1012,40 +1285,23 @@ MLActivation* MLGraphBuilder::relu(ExceptionState& exception_state) {
                                             MLOperator::OperatorKind::kRelu);
 }
 
-MLOperand* MLGraphBuilder::reshape(
-    const MLOperand* input,
-    const Vector<absl::optional<uint32_t>>& new_shape,
-    ExceptionState& exception_state) {
-  absl::optional<wtf_size_t> null_dim_index = absl::nullopt;
+MLOperand* MLGraphBuilder::reshape(const MLOperand* input,
+                                   const Vector<uint32_t>& new_shape,
+                                   ExceptionState& exception_state) {
   // Setting the initial number of elements to 1 would cover the 0-D scalar with
   // empty dimensions.
   base::CheckedNumeric<size_t> checked_newshape_number_of_elements = 1;
   Vector<uint32_t> output_shape(new_shape.size());
-  // According to WebNN spec:
-  // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-reshape, only one
-  // component of new shape can be the special value of null.
-  //
-  // TODO(crbug.com/1502361): Drop the special null value support.
   for (wtf_size_t i = 0; i < new_shape.size(); ++i) {
     auto dim = new_shape[i];
-    if (!dim) {
-      if (null_dim_index) {
-        exception_state.ThrowDOMException(
-            DOMExceptionCode::kDataError,
-            "Only one component of new shape can be null.");
-        return nullptr;
-      }
-      null_dim_index = i;
-    } else {
-      if (dim.value() == 0) {
-        exception_state.ThrowDOMException(
-            DOMExceptionCode::kDataError,
-            "The value of new shape should not be 0.");
-        return nullptr;
-      }
-      checked_newshape_number_of_elements *= dim.value();
-      output_shape[i] = dim.value();
+    if (dim == 0) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kDataError,
+          "The value of new shape should not be 0.");
+      return nullptr;
     }
+    checked_newshape_number_of_elements *= dim;
+    output_shape[i] = dim;
   }
   size_t newshape_number_of_elements;
   if (!checked_newshape_number_of_elements.AssignIfValid(
@@ -1056,45 +1312,21 @@ MLOperand* MLGraphBuilder::reshape(
     return nullptr;
   }
   DCHECK_NE(newshape_number_of_elements, size_t(0));
-  if (null_dim_index) {
-    // The size of the dimension with the value of null is computed so that the
-    // total size remains constant.
-    if (input->NumberOfElements() % newshape_number_of_elements != size_t(0)) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kDataError,
-          String::Format(
-              "The number of elements (%zu) in the input tensor can't be "
-              "divided evenly by the number of elements (%zu) implied by new "
-              "shape.",
-              input->NumberOfElements(), newshape_number_of_elements));
-      return nullptr;
-    }
-    // Check whether the quotient of type size_t is in the range of dimension of
-    // type uint32_t.
-    if (!base::CheckDiv(input->NumberOfElements(), newshape_number_of_elements)
-             .AssignIfValid(&output_shape[null_dim_index.value()])) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kDataError,
-          "The size of dimension with the value null is too large.");
-      return nullptr;
-    }
-  } else {
-    // The number of elements implied by new shape must be the same as the
-    // number of elements in the input tensor.
-    if (input->NumberOfElements() != newshape_number_of_elements) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kDataError,
-          String::Format(
-              "The number of elements (%zu) implied by new shape doesn't match "
-              "the number of elements (%zu) in the input tensor.",
-              newshape_number_of_elements, input->NumberOfElements()));
-      return nullptr;
-    }
+  // The number of elements implied by new shape must be the same as the
+  // number of elements in the input tensor.
+  if (input->NumberOfElements() != newshape_number_of_elements) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kDataError,
+        String::Format(
+            "The number of elements (%zu) implied by new shape doesn't match "
+            "the number of elements (%zu) in the input tensor.",
+            newshape_number_of_elements, input->NumberOfElements()));
+    return nullptr;
   }
   auto* reshape = MakeGarbageCollected<MLOperator>(
       this, MLOperator::OperatorKind::kReshape);
   auto output = MLOperand::ValidateAndCreateOutput(
-      this, input->Type(), std::move(output_shape), reshape);
+      this, input->DataType(), std::move(output_shape), reshape);
   if (!output.has_value()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
                                       output.error());
@@ -1150,8 +1382,8 @@ MLOperand* MLGraphBuilder::sigmoid(const MLOperand* input,
                                    ExceptionState& exception_state) {
   // According to WebNN spec
   // https://webmachinelearning.github.io/webnn/#api-mlgraphbuilder-sigmoid, the
-  // output tensor of sigmoid has the same type and dimensions as its input.
-  // And the input type must be one of the floating point types.
+  // output tensor of sigmoid has the same data type and dimensions as its
+  // input. And the input data type must be one of the floating point types.
   return BuildUnaryOperator(this, exception_state,
                             MLOperator::OperatorKind::kSigmoid,
                             webnn::DataTypeConstraint::kFloat, input);
@@ -1224,14 +1456,14 @@ MLActivation* MLGraphBuilder::softmax(ExceptionState& exception_state) {
 
 MLOperand* MLGraphBuilder::softsign(const MLOperand* input,
                                     ExceptionState& exception_state) {
-  // The input type must be one of the floating point types.
-  // The current spec doesn't specify the operand type constraints of softsign,
-  // an issue has been filed to track it-
+  // The input data type must be one of the floating point types.
+  // The current spec doesn't specify the operand data type constraints of
+  // softsign, an issue has been filed to track it-
   // https://github.com/webmachinelearning/webnn/issues/283.
   //
   // According to WebNN spec
   // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-softsign, the output tensor
-  // of softsign has the same type and dimensions as its input.
+  // of softsign has the same data type and dimensions as its input.
   return BuildUnaryOperator(this, exception_state,
                             MLOperator::OperatorKind::kSoftsign,
                             webnn::DataTypeConstraint::kFloat, input);
@@ -1316,14 +1548,14 @@ HeapVector<Member<const MLOperand>> MLGraphBuilder::split(
 
 MLOperand* MLGraphBuilder::tanh(const MLOperand* input,
                                 ExceptionState& exception_state) {
-  // The input type must be one of the floating point types.
-  // The current spec doesn't specify the operand type constraints of tanh, an
-  // issue has been filed to track it-
+  // The input data type must be one of the floating point types.
+  // The current spec doesn't specify the operand data type constraints of tanh,
+  // an issue has been filed to track it-
   // https://github.com/webmachinelearning/webnn/issues/283.
   //
   // According to WebNN spec
   // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-tanh, the output tensor of
-  // tanh has the same type and dimensions as its input.
+  // tanh has the same data type and dimensions as its input.
   return BuildUnaryOperator(this, exception_state,
                             MLOperator::OperatorKind::kTanh,
                             webnn::DataTypeConstraint::kFloat, input);
@@ -1358,7 +1590,7 @@ MLOperand* MLGraphBuilder::transpose(const MLOperand* input,
       this, MLOperator::OperatorKind::kTranspose, options);
   // According to WebNN spec
   // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-transpose, the output
-  // tensor of transpose has the same type as its input.
+  // tensor of transpose has the same data type as its input.
   auto output = MLOperand::ValidateAndCreateOutput(
       this, ComponentOperandTypeToBlink(validated_output->data_type),
       Vector<uint32_t>(validated_output->dimensions), transpose);
@@ -1368,6 +1600,35 @@ MLOperand* MLGraphBuilder::transpose(const MLOperand* input,
     return nullptr;
   }
   transpose->Connect({input}, {output.value()});
+  return output.value();
+}
+
+MLOperand* MLGraphBuilder::where(const MLOperand* condition,
+                                 const MLOperand* true_value,
+                                 const MLOperand* false_value,
+                                 ExceptionState& exception_state) {
+  const auto validated_output = webnn::ValidateWhereAndInferOutput(
+      ConvertToComponentOperand(condition),
+      ConvertToComponentOperand(true_value),
+      ConvertToComponentOperand(false_value));
+  if (!validated_output.has_value()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kDataError,
+        String::FromUTF8(validated_output.error()));
+    return nullptr;
+  }
+
+  auto* where =
+      MakeGarbageCollected<MLOperator>(this, MLOperator::OperatorKind::kWhere);
+  const auto output = MLOperand::ValidateAndCreateOutput(
+      this, ComponentOperandTypeToBlink(validated_output->data_type),
+      Vector<uint32_t>(validated_output->dimensions), where);
+  if (!output.has_value()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
+                                      output.error());
+    return nullptr;
+  }
+  where->Connect({condition, true_value, false_value}, {output.value()});
   return output.value();
 }
 

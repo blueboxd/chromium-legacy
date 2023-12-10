@@ -42,6 +42,7 @@
 #include "cc/input/overscroll_behavior.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/paint_holding_reason.h"
+#include "services/device/public/mojom/device_posture_provider.mojom-blink.h"
 #include "services/viz/public/mojom/hit_test/input_target_client.mojom-blink.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_gesture_device.h"
@@ -325,7 +326,6 @@ class CORE_EXPORT WebFrameWidgetImpl
 
   void OnTaskCompletedForFrame(base::TimeTicks start_time,
                                base::TimeTicks end_time,
-                               base::TimeTicks desired_execution_time,
                                LocalFrame*) override;
   void SetVirtualKeyboardResizeHeightForTesting(int);
   bool GetMayThrottleIfUndrawnFramesForTesting();
@@ -658,6 +658,9 @@ class CORE_EXPORT WebFrameWidgetImpl
       const gfx::Rect& compositor_viewport_pixel_rect);
   void UpdateCompositorViewportRect(
       const gfx::Rect& compositor_viewport_pixel_rect);
+  void OverrideDevicePostureForEmulation(
+      device::mojom::blink::DevicePostureType device_posture_param);
+  void DisableDevicePostureOverrideForEmulation();
   void SetWindowSegments(const std::vector<gfx::Rect>& window_segments);
   viz::FrameSinkId GetFrameSinkIdAtPoint(const gfx::PointF& point,
                                          gfx::PointF* local_point);
@@ -695,7 +698,6 @@ class CORE_EXPORT WebFrameWidgetImpl
 
  protected:
   // WidgetBaseClient overrides:
-  void WillBeginMainFrame() override;
   void ScheduleAnimation() override;
   void DidBeginMainFrame() override;
   std::unique_ptr<cc::LayerTreeFrameSink> AllocateNewLayerTreeFrameSink()
@@ -894,6 +896,8 @@ class CORE_EXPORT WebFrameWidgetImpl
                                        cc::ElementId scroll_latched_element_id);
   void SendEndOfScrollEvents(bool affects_outer_viewport,
                              cc::ElementId scroll_latched_element_id);
+  void SendSnapChangingEventIfNeeded(
+      const cc::CompositorCommitData& commit_data);
   void RecordManipulationTypeCounts(cc::ManipulationInfo info);
 
   enum DragAction { kDragEnter, kDragOver };

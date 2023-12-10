@@ -7,10 +7,11 @@ import {LoadImageRequest, type LoadImageResponse, LoadImageResponseStatus} from 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
 
 import {unwrapEntry} from '../../../common/js/entry_utils.js';
-import {FileType} from '../../../common/js/file_type.js';
+import {getType} from '../../../common/js/file_type.js';
 import {getSanitizedScriptUrl} from '../../../common/js/trusted_script_url_policy_util.js';
 import {testSendMessage} from '../../../common/js/util.js';
-import {ThumbnailLoader} from '../thumbnail_loader.js';
+import {FilesAppEntry} from '../../../externs/files_app_entry_interfaces.js';
+import {THUMBNAIL_MAX_HEIGHT, THUMBNAIL_MAX_WIDTH} from '../thumbnail_loader.js';
 
 import {MetadataItem, ParserMetadata} from './metadata_item.js';
 import {MetadataProvider} from './metadata_provider.js';
@@ -121,7 +122,8 @@ export class ContentMetadataProvider extends MetadataProvider {
    *     this callback is called asynchronously.
    */
   private getImpl_(
-      entry: Entry, names: string[], callback: (item: MetadataItem) => void) {
+      entry: Entry|FilesAppEntry, names: string[],
+      callback: (item: MetadataItem) => void) {
     if (entry.isDirectory) {
       const cause = 'Directories do not have a thumbnail.';
       const error = this.createError_(entry.toURL(), 'get', cause);
@@ -129,7 +131,7 @@ export class ContentMetadataProvider extends MetadataProvider {
       return;
     }
 
-    const type = FileType.getType(entry);
+    const type = getType(entry);
 
     if (type && type.type === 'image') {
       // Parse the image using the Worker image metadata parsers.
@@ -152,7 +154,8 @@ export class ContentMetadataProvider extends MetadataProvider {
        * Creates an ifdError metadata item: when reading the fileEntry failed
        * or extracting its ifd data failed.
        */
-      function createIfdError(fileEntry: Entry, error: string): MetadataItem {
+      function createIfdError(
+          fileEntry: Entry|FilesAppEntry, error: string): MetadataItem {
         const url = fileEntry.toURL();
         const step = 'read file entry';
         const item = new MetadataItem();
@@ -165,8 +168,8 @@ export class ContentMetadataProvider extends MetadataProvider {
             .file(
                 file => {
                   const request = LoadImageRequest.createForUrl(entry.toURL());
-                  request.maxWidth = ThumbnailLoader.THUMBNAIL_MAX_WIDTH;
-                  request.maxHeight = ThumbnailLoader.THUMBNAIL_MAX_HEIGHT;
+                  request.maxWidth = THUMBNAIL_MAX_WIDTH;
+                  request.maxHeight = THUMBNAIL_MAX_HEIGHT;
                   request.timestamp = file.lastModified;
                   request.cache = true;
                   request.priority = 0;

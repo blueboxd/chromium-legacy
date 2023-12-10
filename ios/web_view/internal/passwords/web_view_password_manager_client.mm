@@ -83,7 +83,7 @@ WebViewPasswordManagerClient::WebViewPasswordManagerClient(
       profile_store_(profile_store),
       account_store_(account_store),
       reuse_manager_(reuse_manager),
-      password_feature_manager_(pref_service, sync_service),
+      password_feature_manager_(sync_service),
       credentials_filter_(
           this,
           base::BindRepeating(&WebViewPasswordManagerClient::GetSyncService,
@@ -230,11 +230,14 @@ void WebViewPasswordManagerClient::NotifyStorePasswordCalled() {
 void WebViewPasswordManagerClient::NotifyUserCredentialsWereLeaked(
     password_manager::CredentialLeakType leak_type,
     const GURL& origin,
-    const std::u16string& username) {
+    const std::u16string& username,
+    bool in_account_store) {
   [bridge_ showPasswordBreachForLeakType:leak_type
                                      URL:origin
                                 username:username];
 }
+
+void WebViewPasswordManagerClient::NotifyKeychainError() {}
 
 bool WebViewPasswordManagerClient::IsSavingAndFillingEnabled(
     const GURL& url) const {

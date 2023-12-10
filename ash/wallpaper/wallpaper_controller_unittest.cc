@@ -841,6 +841,24 @@ class WallpaperControllerTestBase : public AshTestBase {
     RunAllTasksUntilIdle();
   }
 
+  void SetSeaPenWallpaper(gfx::ImageSkia* image, SkColor color) {
+    TestWallpaperControllerObserver observer(controller_);
+    std::string jpg_bytes = CreateEncodedImageForTesting(
+        {1, 1}, color, data_decoder::mojom::ImageCodec::kDefault, image);
+    ASSERT_TRUE(!jpg_bytes.empty());
+
+    base::test::TestFuture<bool> set_wallpaper_future;
+    controller_->SetSeaPenWallpaper(
+        kAccountId1,
+        {std::move(jpg_bytes), /*id=*/5, manta::proto::RESOLUTION_64},
+        set_wallpaper_future.GetCallback());
+
+    EXPECT_TRUE(set_wallpaper_future.Take());
+    EXPECT_EQ(1, observer.wallpaper_changed_count());
+    histogram_tester().ExpectUniqueSample("Ash.Wallpaper.SeaPen.Result2",
+                                          SetWallpaperResult::kSuccess, 1);
+  }
+
   TestWallpaperImageDownloader* test_wallpaper_image_downloader() {
     return static_cast<TestWallpaperImageDownloader*>(
         controller_->wallpaper_image_downloader_for_testing());
@@ -857,6 +875,17 @@ class WallpaperControllerTestBase : public AshTestBase {
                             }
                           }));
     run_loop.Run();
+  }
+
+  // Returns the last modified time of a file. Returns the old last modified
+  // time if the process fails.
+  base::Time GetLastModifiedTime(const base::FilePath& path) {
+    base::File::Info info;
+    base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+    if (file.GetInfo(&info)) {
+      return info.last_modified;
+    }
+    return base::Time();
   }
 
   raw_ptr<WallpaperControllerImpl, DanglingUntriaged | ExperimentalAsh>
@@ -2026,6 +2055,62 @@ TEST_P(WallpaperControllerTest, SetThirdPartyWallpaper_PolicyWallpaper) {
 
 TEST_P(WallpaperControllerTest, SetSeaPenWallpaper) {
   SimulateUserLogin(kAccountId1);
+
+  WallpaperInfo wallpaper_info;
+  ASSERT_FALSE(
+      pref_manager_->GetUserWallpaperInfo(kAccountId1, &wallpaper_info));
+
+  gfx::ImageSkia expected_image;
+  SetSeaPenWallpaper(&expected_image, SK_ColorGREEN);
+  EXPECT_TRUE(
+      pref_manager_->GetUserWallpaperInfo(kAccountId1, &wallpaper_info));
+  EXPECT_EQ(WallpaperType::kSeaPen, wallpaper_info.type);
+
+  // Use `AreBitmapsClose` because jpg encoding/decoding can alter the color
+  // channels +- 1.
+  EXPECT_TRUE(gfx::test::AreBitmapsClose(
+      *expected_image.bitmap(), *controller_->GetWallpaperImage().bitmap(),
+      /*max_deviation=*/1));
+}
+
+TEST_P(WallpaperControllerTest, ShowSeaPenWallpaperOnLogin) {
+  SimulateUserLogin(kAccountId1);
+
+  WallpaperInfo wallpaper_info;
+  ASSERT_FALSE(
+      pref_manager_->GetUserWallpaperInfo(kAccountId1, &wallpaper_info));
+
+  gfx::ImageSkia expected_image;
+  SetSeaPenWallpaper(&expected_image, SK_ColorBLUE);
+  EXPECT_TRUE(
+      pref_manager_->GetUserWallpaperInfo(kAccountId1, &wallpaper_info));
+  EXPECT_EQ(WallpaperType::kSeaPen, wallpaper_info.type);
+
+  // Simulates device reboot.
+  controller_->ReloadWallpaperForTesting(/*clear_cache=*/true);
+  ClearWallpaper();
+  ClearLogin();
+  SimulateUserLogin(kAccountId1);
+  const AccountId active_account_id =
+      Shell::Get()->session_controller()->GetActiveAccountId();
+  controller_->ShowUserWallpaper(active_account_id);
+  RunAllTasksUntilIdle();
+
+  WallpaperInfo new_wallpaper_info;
+  EXPECT_TRUE(pref_manager_->GetUserWallpaperInfo(active_account_id,
+                                                  &new_wallpaper_info));
+  EXPECT_EQ(WallpaperType::kSeaPen, new_wallpaper_info.type);
+  EXPECT_TRUE(wallpaper_info.MatchesAsset(new_wallpaper_info));
+
+  // Use `AreBitmapsClose` because jpg encoding/decoding can alter the color
+  // channels +- 1.
+  EXPECT_TRUE(gfx::test::AreBitmapsClose(
+      *expected_image.bitmap(), *controller_->GetWallpaperImage().bitmap(),
+      /*max_deviation=*/1));
+}
+
+TEST_P(WallpaperControllerTest, SetSeaPenWallpaperFromFile) {
+  SimulateUserLogin(kAccountId1);
   TestWallpaperControllerObserver observer(controller_);
 
   WallpaperInfo wallpaper_info;
@@ -2038,12 +2123,18 @@ TEST_P(WallpaperControllerTest, SetSeaPenWallpaper) {
       &expected_image);
   ASSERT_TRUE(!jpg_bytes.empty());
 
+  base::ScopedTempDir scoped_temp_dir;
+  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+  base::FilePath file_path = scoped_temp_dir.GetPath().Append("111.jpg");
+  ASSERT_TRUE(base::WriteFile(file_path, jpg_bytes));
+  // Updates the last modified time for the file.
+  ASSERT_TRUE(base::TouchFile(file_path, base::Time::Now() - base::Minutes(5),
+                              base::Time::Now() - base::Minutes(5)));
+  base::Time old_last_modified_time = GetLastModifiedTime(file_path);
+
   base::test::TestFuture<bool> set_wallpaper_future;
-  controller_->SetSeaPenWallpaper(
-      kAccountId1,
-      {std::move(jpg_bytes), /*id=*/5, /*query=*/std::string(),
-       manta::proto::RESOLUTION_64},
-      set_wallpaper_future.GetCallback());
+  controller_->SetSeaPenWallpaperFromFile(kAccountId1, file_path,
+                                          set_wallpaper_future.GetCallback());
 
   EXPECT_TRUE(set_wallpaper_future.Take());
   EXPECT_TRUE(
@@ -2057,6 +2148,9 @@ TEST_P(WallpaperControllerTest, SetSeaPenWallpaper) {
   EXPECT_TRUE(gfx::test::AreBitmapsClose(
       *expected_image.bitmap(), *controller_->GetWallpaperImage().bitmap(),
       /*max_deviation=*/1));
+
+  // Last Modified Time should be updated to current time.
+  EXPECT_TRUE(GetLastModifiedTime(file_path) > old_last_modified_time);
 }
 
 TEST_P(WallpaperControllerTest, SetDefaultWallpaperForRegularAccount) {
@@ -5023,7 +5117,7 @@ TEST_P(WallpaperControllerTest,
       /*daily_refresh_enabled=*/false, kUnitId, variants);
   // Force local info to not have a unit_id.
   WallpaperInfo local_info = WallpaperInfo(params, variants.front());
-  local_info.unit_id = absl::nullopt;
+  local_info.unit_id = std::nullopt;
   pref_manager_->SetLocalWallpaperInfo(kAccountId1, local_info);
 
   // synced info tracks dark variant.
@@ -5572,7 +5666,7 @@ TEST_P(WallpaperControllerTest, UpdateGooglePhotosDailyRefreshWallpaper) {
   GooglePhotosWallpaperParams params(
       kAccountId1, kFakeGooglePhotosAlbumId,
       /*daily_refresh_enabled=*/true, WALLPAPER_LAYOUT_CENTER_CROPPED,
-      /*preview_mode=*/false, /*dedup_key=*/absl::nullopt);
+      /*preview_mode=*/false, /*dedup_key=*/std::nullopt);
   WallpaperInfo info(params);
   pref_manager_->SetUserWallpaperInfo(kAccountId1, info);
 
@@ -5591,7 +5685,7 @@ TEST_P(WallpaperControllerTest, EmptyDailyGooglePhotosAlbumsDoNothing) {
   GooglePhotosWallpaperParams daily_google_photos_params(
       kAccountId1, kFakeGooglePhotosAlbumId, /*daily_refresh_enabled=*/true,
       WALLPAPER_LAYOUT_CENTER_CROPPED, /*preview_mode=*/false,
-      /*dedup_key=*/absl::nullopt);
+      /*dedup_key=*/std::nullopt);
   OnlineWallpaperParams online_params(
       kAccountId1, TestWallpaperControllerClient::kDummyCollectionId,
       WALLPAPER_LAYOUT_CENTER_CROPPED,
@@ -5622,7 +5716,7 @@ TEST_P(WallpaperControllerTest,
   controller_->SetGooglePhotosWallpaper(
       {kAccountId1, kFakeGooglePhotosAlbumId, /*daily_refresh_enabled=*/true,
        WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED,
-       /*preview_mode=*/false, /*dedup_key=*/absl::nullopt},
+       /*preview_mode=*/false, /*dedup_key=*/std::nullopt},
       google_photos_future.GetCallback());
   EXPECT_TRUE(google_photos_future.Get());
   RunAllTasksUntilIdle();
@@ -5655,7 +5749,7 @@ TEST_P(WallpaperControllerTest, DailyGooglePhotosAreCached) {
   controller_->SetGooglePhotosWallpaper(
       {kAccountId1, kFakeGooglePhotosAlbumId, /*daily_refresh_enabled=*/true,
        WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED,
-       /*preview_mode=*/false, /*dedup_key=*/absl::nullopt},
+       /*preview_mode=*/false, /*dedup_key=*/std::nullopt},
       google_photos_future.GetCallback());
   EXPECT_TRUE(google_photos_future.Get());
   RunAllTasksUntilIdle();
@@ -5695,7 +5789,7 @@ TEST_P(
   controller_->SetGooglePhotosWallpaper(
       {kAccountId1, kFakeGooglePhotosAlbumId, /*daily_refresh_enabled=*/true,
        WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED,
-       /*preview_mode=*/false, /*dedup_key=*/absl::nullopt},
+       /*preview_mode=*/false, /*dedup_key=*/std::nullopt},
       google_photos_future.GetCallback());
   EXPECT_TRUE(google_photos_future.Get());
   RunAllTasksUntilIdle();

@@ -578,7 +578,14 @@ public class CronetUrlRequestTest {
         builder.addHeader("header:name", "headervalue");
         IllegalArgumentException e =
                 assertThrows(IllegalArgumentException.class, () -> builder.build().start());
-        assertThat(e).hasMessageThat().isEqualTo("Invalid header header:name=headervalue");
+        if (mTestRule.implementationUnderTest() == CronetImplementation.AOSP_PLATFORM) {
+            // TODO(b/307234565): Remove check once AOSP propagates this change. Not using
+            // @IgnoreFor so this test fails when the propagation happens hence, serving as a
+            // notification.
+            assertThat(e).hasMessageThat().isEqualTo("Invalid header header:name=headervalue");
+        } else {
+            assertThat(e).hasMessageThat().isEqualTo("Invalid header with headername: header:name");
+        }
     }
 
     @Test
@@ -612,7 +619,16 @@ public class CronetUrlRequestTest {
         builder.addHeader("headername", "bad header\r\nvalue");
         IllegalArgumentException e =
                 assertThrows(IllegalArgumentException.class, () -> builder.build().start());
-        assertThat(e).hasMessageThat().isEqualTo("Invalid header headername=bad header\r\nvalue");
+        if (mTestRule.implementationUnderTest() == CronetImplementation.AOSP_PLATFORM) {
+            // TODO(b/307234565): Remove check once AOSP propagates this change. Not using
+            // @IgnoreFor so this test fails when the propagation happens hence, serving as a
+            // notification.
+            assertThat(e)
+                    .hasMessageThat()
+                    .isEqualTo("Invalid header headername=bad header\r\nvalue");
+        } else {
+            assertThat(e).hasMessageThat().isEqualTo("Invalid header with headername: headername");
+        }
     }
 
     @Test
@@ -2951,10 +2967,9 @@ public class CronetUrlRequestTest {
 
         if (mTestRule.implementationUnderTest() == CronetImplementation.AOSP_PLATFORM) {
             // android.net.http.UrlRequestBuilder#bindToNetwork requires an android.net.Network
-            // object. So, in this case, it
-            // will be the wrapper layer that will fail to translate that to a Network, not
-            // something in net's code. Hence, the failure will manifest itself at bind time, not at
-            // request execution time.
+            // object. So, in this case, it will be the wrapper layer that will fail to translate
+            // that to a Network, not something in net's code. Hence, the failure will manifest
+            // itself at bind time, not at request execution time.
             // Note: this will never happen in prod, as translation failure can only happen if we're
             // given a fake networkHandle.
             assertThrows(

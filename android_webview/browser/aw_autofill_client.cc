@@ -21,7 +21,7 @@
 #include "base/types/cxx23_to_underlying.h"
 #include "components/android_autofill/browser/android_autofill_manager.h"
 #include "components/android_autofill/browser/autofill_provider_android.h"
-#include "components/autofill/core/browser/autofill_download_manager.h"
+#include "components/autofill/core/browser/crowdsourcing/autofill_crowdsourcing_manager.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/ui/autofill_popup_delegate.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
@@ -71,16 +71,19 @@ AwAutofillClient::GetURLLoaderFactory() {
       ->GetURLLoaderFactoryForBrowserProcess();
 }
 
-autofill::AutofillDownloadManager* AwAutofillClient::GetDownloadManager() {
-  if (autofill::AutofillProvider::is_download_manager_disabled_for_testing()) {
+autofill::AutofillCrowdsourcingManager*
+AwAutofillClient::GetCrowdsourcingManager() {
+  if (autofill::AutofillProvider::
+          is_crowdsourcing_manager_disabled_for_testing()) {
     return nullptr;
   }
-  if (!download_manager_) {
+  if (!crowdsourcing_manager_) {
     // Lazy initialization to avoid virtual function calls in the constructor.
-    download_manager_ = std::make_unique<autofill::AutofillDownloadManager>(
-        this, GetChannel(), GetLogManager());
+    crowdsourcing_manager_ =
+        std::make_unique<autofill::AutofillCrowdsourcingManager>(
+            this, GetChannel(), GetLogManager());
   }
-  return download_manager_.get();
+  return crowdsourcing_manager_.get();
 }
 
 autofill::PersonalDataManager* AwAutofillClient::GetPersonalDataManager() {
@@ -272,13 +275,10 @@ bool AwAutofillClient::IsAutocompleteEnabled() const {
 }
 
 bool AwAutofillClient::IsPasswordManagerEnabled() {
-  // Android O+ relies on the AndroidAutofillManager, which does not call this
-  // function. If it ever does, the function needs to be implemented in a
-  // meaningful way.
-  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
-      base::android::SDK_VERSION_OREO) {
-    NOTREACHED();
-  }
+  // Android WebView (since Android O+) relies on the AndroidAutofillManager,
+  // which does not call this function. If it ever does, the function needs to
+  // be implemented in a meaningful way.
+  NOTREACHED();
   // This is behavior preserving: For pre-O versions, AwAutofill did rely on a
   // BrowserAutofillManager, which now calls the function. But pre-O only
   // offered an autocomplete feature that restored values of specific input
@@ -334,9 +334,7 @@ void AwAutofillClient::SuggestionSelected(JNIEnv* env,
                                           const JavaParamRef<jobject>& object,
                                           jint position) {
   if (delegate_) {
-    delegate_->DidAcceptSuggestion(
-        suggestions_[position], {.row = position},
-        autofill::AutofillSuggestionTriggerSource::kAndroidWebView);
+    delegate_->DidAcceptSuggestion(suggestions_[position], {.row = position});
   }
 }
 

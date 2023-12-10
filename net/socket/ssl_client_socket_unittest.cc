@@ -589,12 +589,12 @@ class DeleteSocketCallback : public TestCompletionCallbackBase {
 // anything.
 class MockCTVerifier : public CTVerifier {
  public:
-  MOCK_METHOD5(Verify,
-               void(X509Certificate*,
-                    base::StringPiece,
-                    base::StringPiece,
-                    SignedCertificateTimestampAndStatusList*,
-                    const NetLogWithSource&));
+  MOCK_CONST_METHOD5(Verify,
+                     void(X509Certificate*,
+                          base::StringPiece,
+                          base::StringPiece,
+                          SignedCertificateTimestampAndStatusList*,
+                          const NetLogWithSource&));
 };
 
 // A mock CTPolicyEnforcer that returns a custom verification result.
@@ -2798,32 +2798,6 @@ TEST_P(SSLClientSocketVersionTest, EVCertStatusMaintainedForCompliantCert) {
   ASSERT_TRUE(sock_->GetSSLInfo(&result));
 
   EXPECT_TRUE(result.cert_status & CERT_STATUS_IS_EV);
-}
-
-// Test that when a CT verifier and a CTPolicyEnforcer are defined, but
-// the EV certificate used does not conform to the CT/EV policy, its EV status
-// is removed.
-TEST_P(SSLClientSocketVersionTest, EVCertStatusRemovedForNonCompliantCert) {
-  ASSERT_TRUE(
-      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, GetServerConfig()));
-
-  SSLConfig ssl_config;
-  AddServerCertStatusToSSLConfig(CERT_STATUS_IS_EV, &ssl_config);
-
-  // Emulate non-compliance of the certificate to the policy.
-  EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(_, _, _))
-      .WillRepeatedly(
-          Return(ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
-
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
-  EXPECT_THAT(rv, IsOk());
-
-  SSLInfo result;
-  ASSERT_TRUE(sock_->GetSSLInfo(&result));
-
-  EXPECT_FALSE(result.cert_status & CERT_STATUS_IS_EV);
-  EXPECT_TRUE(result.cert_status & CERT_STATUS_CT_COMPLIANCE_FAILED);
 }
 
 // Tests that OCSP stapling is requested, as per Certificate Transparency (RFC
@@ -5750,7 +5724,6 @@ TEST_P(SSLHandshakeDetailsTest, Metrics) {
     ASSERT_TRUE(sock_->GetSSLInfo(&info));
     EXPECT_EQ(version, SSLConnectionStatusToVersion(info.connection_status));
     EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, info.handshake_type);
-    EXPECT_EQ(GetParam().alpn, sock_->WasAlpnNegotiated());
 
     histograms.ExpectUniqueSample("Net.SSLHandshakeDetails",
                                   GetParam().expected_initial, 1);
@@ -5772,7 +5745,6 @@ TEST_P(SSLHandshakeDetailsTest, Metrics) {
     ASSERT_TRUE(sock_->GetSSLInfo(&info));
     EXPECT_EQ(version, SSLConnectionStatusToVersion(info.connection_status));
     EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, info.handshake_type);
-    EXPECT_EQ(GetParam().alpn, sock_->WasAlpnNegotiated());
 
     histograms.ExpectUniqueSample("Net.SSLHandshakeDetails",
                                   GetParam().expected_resume, 1);
@@ -6087,9 +6059,9 @@ TEST_P(SSLClientSocketAlpsTest, Alps) {
 
   base::test::ScopedFeatureList feature_list;
   if (client_use_new_alps_) {
-    feature_list.InitAndEnableFeature(features::kUseAlpsNewCodepoint);
+    feature_list.InitAndEnableFeature(features::kUseNewAlpsCodepointHttp2);
   } else {
-    feature_list.InitAndDisableFeature(features::kUseAlpsNewCodepoint);
+    feature_list.InitAndDisableFeature(features::kUseNewAlpsCodepointHttp2);
   }
 
   if (client_alps_enabled_) {
@@ -6107,7 +6079,6 @@ TEST_P(SSLClientSocketAlpsTest, Alps) {
             SSLConnectionStatusToVersion(info.connection_status));
   EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, info.handshake_type);
 
-  EXPECT_EQ(true, sock_->WasAlpnNegotiated());
   EXPECT_EQ(kProtoHTTP2, sock_->GetNegotiatedProtocol());
 
   // ALPS is negotiated only if ALPS is enabled both on client and server.

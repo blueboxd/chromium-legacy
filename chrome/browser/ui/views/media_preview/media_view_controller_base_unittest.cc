@@ -20,7 +20,7 @@ class MediaViewControllerBaseTest : public TestWithBrowserView {
  protected:
   void SetUp() override {
     TestWithBrowserView::SetUp();
-    media_view_ = std::make_unique<MediaView>(/*is_subsection=*/false);
+    media_view_ = std::make_unique<MediaView>();
     controller_ = std::make_unique<MediaViewControllerBase>(
         *media_view_, /*needs_borders=*/true, /*model=*/nullptr,
         source_change_callback_.Get(), std::u16string(), std::u16string());
@@ -51,7 +51,7 @@ TEST_F(MediaViewControllerBaseTest, UpdateComboboxEnabledStateTest) {
 
   EXPECT_CALL(source_change_callback_, Run(testing::_))
       .WillOnce(
-          [](absl::optional<size_t> index) { EXPECT_EQ(std::nullopt, index); });
+          [](std::optional<size_t> index) { EXPECT_EQ(std::nullopt, index); });
   controller_->AdjustComboboxEnabledState(/*has_devices=*/true);
 
   EXPECT_FALSE(IsNoDeviceLabelVisible());

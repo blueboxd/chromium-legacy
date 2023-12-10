@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <optional>
 #include <set>
 #include <string>
 #include <utility>
@@ -93,7 +94,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/switches.h"
 #include "printing/buildflags/buildflags.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_switches.h"
@@ -645,7 +645,6 @@ bool StartupBrowserCreator::Start(const base::CommandLine& cmd_line,
                                   StartupProfileInfo profile_info,
                                   const Profiles& last_opened_profiles) {
   TRACE_EVENT0("startup", "StartupBrowserCreator::Start");
-  SCOPED_UMA_HISTOGRAM_TIMER("Startup.StartupBrowserCreator_Start");
   return ProcessCmdLineImpl(cmd_line, cur_dir,
                             chrome::startup::IsProcessStartup::kYes,
                             profile_info, last_opened_profiles);
@@ -664,6 +663,8 @@ void StartupBrowserCreator::LaunchBrowser(
     chrome::startup::IsFirstRun is_first_run,
     std::unique_ptr<OldLaunchModeRecorder> launch_mode_recorder) {
   TRACE_EVENT0("ui", "StartupBrowserCreator::LaunchBrowser");
+  SCOPED_UMA_HISTOGRAM_TIMER("Startup.StartupBrowserCreator.LaunchBrowser");
+
   DCHECK(profile);
 #if BUILDFLAG(IS_WIN)
   DCHECK(!command_line.HasSwitch(credential_provider::kGcpwSigninSwitch));

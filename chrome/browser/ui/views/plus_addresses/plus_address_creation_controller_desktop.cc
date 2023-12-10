@@ -22,8 +22,13 @@ PlusAddressCreationControllerDesktop::PlusAddressCreationControllerDesktop(
     : content::WebContentsUserData<PlusAddressCreationControllerDesktop>(
           *web_contents) {}
 
-PlusAddressCreationControllerDesktop::~PlusAddressCreationControllerDesktop() =
-    default;
+PlusAddressCreationControllerDesktop::~PlusAddressCreationControllerDesktop() {
+  // If the dialog is still open, ensure it gets cleaned up.
+  if (dialog_delegate_ && dialog_delegate_->GetWidget()) {
+    dialog_delegate_->GetWidget()->CloseNow();
+  }
+}
+
 void PlusAddressCreationControllerDesktop::OfferCreation(
     const url::Origin& main_frame_origin,
     PlusAddressCallback callback) {
@@ -38,9 +43,9 @@ void PlusAddressCreationControllerDesktop::OfferCreation(
     // missing email case below.
     return;
   }
-  absl::optional<std::string> maybe_email =
+  std::optional<std::string> maybe_email =
       plus_address_service->GetPrimaryEmail();
-  if (maybe_email == absl::nullopt) {
+  if (maybe_email == std::nullopt) {
     // TODO(b/295075403): Validate that early return is desired behavior for
     // the optional not-present case.
     return;
@@ -98,12 +103,17 @@ void PlusAddressCreationControllerDesktop::OnDialogDestroyed() {
   plus_profile_.reset();
 }
 
+PlusAddressCreationView*
+PlusAddressCreationControllerDesktop::get_view_for_testing() {
+  return dialog_delegate_.get();
+}
+
 void PlusAddressCreationControllerDesktop::set_suppress_ui_for_testing(
     bool should_suppress) {
   suppress_ui_for_testing_ = should_suppress;
 }
 
-absl::optional<PlusProfile>
+std::optional<PlusProfile>
 PlusAddressCreationControllerDesktop::get_plus_profile_for_testing() {
   return plus_profile_;
 }

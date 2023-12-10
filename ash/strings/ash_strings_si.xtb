@@ -66,7 +66,6 @@
 <translation id="1225748608451425081">දන්නා ගැටලුවක් හේතුවෙන් ඔබගේ Chromebook අගුලු දමා ඇත. ඔබට මෙම කාලයට පසුව පිරීමට හැකි වනු ඇත: <ph name="TIME_LEFT" />.</translation>
 <translation id="1226877728704622336">අක්‍රිය මේසය</translation>
 <translation id="1229194443904279055">තේරීම නවත්වන්න</translation>
-<translation id="1233979878541157665">ගොනු නාමය වෙනුවට "ඉර බැස යාම" හෝ "ගස" සෙවීමට උත්සාහ කරන්න. ඔබට සෙවීම් තීරුවේ රූප සෙවීම ක්‍රියාවිරහිත කළ හැක.</translation>
 <translation id="1235458158152011030">දන්නා ජාල</translation>
 <translation id="1239161794459865856"><ph name="FEATURE_NAME" /> සම්බන්ධයි.</translation>
 <translation id="1240638468526743569">යෙදුමක්</translation>
@@ -294,6 +293,7 @@
 <translation id="2224075387478458881">ආරක්ෂිත අන්තර්ගතයන් දෘශ්‍යමාන විට තිර පටිගත කිරීමට ඉඩ නොදේ</translation>
 <translation id="2227179592712503583">යෝජනාව ඉවත් කරන්න</translation>
 <translation id="2248634276911611268">සබැඳිය නව පටිත්තක විවෘත කර මෙම නව පටිත්තට මාරු වන්න</translation>
+<translation id="2253808149208613283">මෙම උපාංගය අභිරුචිකරණය කිරීමට යෙදුම ස්ථාපනය කරන්න</translation>
 <translation id="225680501294068881">උපාංග සොයයි...</translation>
 <translation id="2257486738914982088"><ph name="FILENAME" /> බාගන්නා අතරතුර යම් දෙයක් වැරදිණි</translation>
 <translation id="2258734398699965611">යෝජිත ගොනු</translation>
@@ -447,6 +447,7 @@
 <translation id="2914580577416829331">තිර ග්‍රහණ</translation>
 <translation id="2924416280450782352">අයිතම පෙන්විය නොහැක. මෙම පැනලය නැවත විවෘත කිරීමට උත්සාහ කරන්න.</translation>
 <translation id="2931572158271115754">මෙම කළ යුතු දේවල ලැයිස්තුවේ කිසිවක් නැත.</translation>
+<translation id="2935225303485967257">පැතිකඩවල් කළමනාකරණය කරන්න</translation>
 <translation id="2941112035454246133">අඩු</translation>
 <translation id="2942350706960889382">ඈඳන ලද විශාලකය</translation>
 <translation id="2942516765047364088">රාක්ක ස්ථානය</translation>
@@ -650,6 +651,7 @@
 <translation id="3659667652322717492">ඔබට පසුව ඕනෑම වේලාවක මයික් හැසිරීම වෙනස් කළ හැක.</translation>
 <translation id="3659814201068740063"><ph name="TIME_LEFT" /> පමණ ඉතිරිව ඇත (<ph name="PERCENTAGE" />%).
 ඔබගේ උපාංගය බලයට සම්බන්ධ කරන්න.</translation>
+<translation id="3660860940251915011">ඉහළ දෘශ්‍යතා <ph name="FEATURE_NAME" /> ටොගල් කරන්න</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> කළමනා කරන පරිශීලකයා</translation>
 <translation id="3666266999138159418">ඔබේ පාවෙන කවුළුව සැඟවීමට ස්වයිප් කරන්න</translation>
 <translation id="367531336287639526">ලිපින තීරුවේ වම් පස පළමු නිරූපකය තෝරන්න</translation>
@@ -658,6 +660,7 @@
 <translation id="36813544980941320">Wi-Fi ජාල ඔබගේ දුරකථනය සහ <ph name="DEVICE_NAME" /> අතර බෙදා ගනු ඇත</translation>
 <translation id="3682279812299376603"><ph name="MODIFIER_ONE" /><ph name="MODIFIER_TWO" /><ph name="KEY_ONE" /> අනතුරුව <ph name="KEY_TWO" /></translation>
 <translation id="3694122362646626770">වෙබ් අඩවි</translation>
+<translation id="3697991387880191195">තිර රූ කෙටිමඟ ඔබන්න</translation>
 <translation id="3702809606464356667">වත්මන් මේසයෙන් කවුළු පෙන්වමින්, සියලු මේසවලින් කවුළු පෙන්වීමට ඉහළට ඊතලය යතුර ඔබන්න</translation>
 <translation id="3702846122927433391">නයිජීරියාවේ ජනගහනය</translation>
 <translation id="3705722231355495246">-</translation>
@@ -833,6 +836,7 @@
 <translation id="4389184120735010762">ඔබ ඩොක් කළ විශාලකය සඳහා යතුරුපුවරු කෙටිමඟ ඔබා ඇත. ඔබට එය සක්‍රීය කළ යුතුද?</translation>
 <translation id="439598569299422042"><ph name="SIZE_INFO" />, විරාම කරන ලදි</translation>
 <translation id="440113666232554208">තිරසටහන සුරැකිය නොහැකිය</translation>
+<translation id="4403371424034411727"><ph name="PERIPHERAL_NAME" /> සම්බන්ධ වී ඇති අතර භාවිතයට සූදානම් වේ. ඔබට සැකසීම් තුළ ඔබේ මූසිකය අභිරුචිකරණය කළ හැක.</translation>
 <translation id="4405151984121254935">සම්බන්ධිත උපාංග වර්ගයට සහාය නොදක්වයි</translation>
 <translation id="4406883609789734330">සජීවී සිරස්තලය</translation>
 <translation id="4412944820643904175"><ph name="FEATURE_NAME" /> ක්‍රියාවිරහිතයි.</translation>
@@ -980,6 +984,7 @@
         <ph name="NOTIFICATION_1" />,
         <ph name="NOTIFICATION_2" />,
         <ph name="NUM_OTHER_NOTIFICATION" /></translation>
+<translation id="4981175556418720939"><ph name="DATE_AND_TIME" /> ට වෙනස් කරන ලදි</translation>
 <translation id="4987738733603015246">16 වෙනි මේසය</translation>
 <translation id="4989163558385430922">සියල්ල බලන්න</translation>
 <translation id="5003993274120026347">ඊළඟ වාක්‍යය</translation>
@@ -1141,6 +1146,7 @@
 <translation id="5620979661744857819">මෙය <ph name="APP_NAME" /> සහ කැමරා සහ මයික්‍රොෆෝන අවසර සහිත සියලු යෙදුම් සහ වෙබ් අඩවි සඳහා ප්‍රවේශයට ඉඩ දෙයි. ඔබට වෙබ් පිටුව නැවුම් කිරීමට හෝ යෙදුම නැවත ආරම්භ කිරීමට අවශ්‍ය වේවි.</translation>
 <translation id="5625955975703555628">LTE+</translation>
 <translation id="5627392655516693966">ඔබේ මුරපදය සත්‍යාපනය කළ නොහැකි විය. නැවත උත්සාහ කරන්න.</translation>
+<translation id="5632485077360054581">කෙසේද කියා මට පෙන්වන්න</translation>
 <translation id="5648021990716966815">මයික් ජැක්කුව</translation>
 <translation id="5652575806481723716"><ph name="FOCUSED_APP_NAME" /> ඔබගේ අවධානය ඉල්ලයි.</translation>
 <translation id="5662075790140998213">10 වෙනි මේසය</translation>
@@ -1290,6 +1296,7 @@
 <translation id="6199775032047436064">වත්මන් පිටුව නැවත ලබාගන්න</translation>
 <translation id="6200515304866777730">යෙදුම මගින් සහාය නොදක්වයි</translation>
 <translation id="6210042900243040400"><ph name="EMAIL" /> වෙත කලින් සුරකින ලද <ph name="NAME" /> සම්බන්ධ කරන්න</translation>
+<translation id="6212097153736801627">ඔබේ <ph name="PERIPHERAL_NAME" /> අභිරුචිකරණය කරන්න</translation>
 <translation id="6213808132343683860">අර්ධ තිර රුව හෝ තිර පටිගත කිරීම ලබා ගන්න</translation>
 <translation id="6220928844947387476">ඔබට දැන් ඔබව සහ ඔබගේ තිරය එකම අවස්ථාවේදී පටිගත කළ හැකිය</translation>
 <translation id="622484624075952240">පහළ</translation>
@@ -1334,7 +1341,6 @@
 <translation id="643593192654616063"><ph name="STORAGE_TOTAL_SIZE" /> ක එකතුවෙන් <ph name="STORAGE_IN_USE_SIZE" /> ක ගබඩාව භාවිත කෙරේ</translation>
 <translation id="6445835306623867477"><ph name="RECEIVER_NAME" /> මත <ph name="ROUTE_TITLE" /></translation>
 <translation id="6445915701151710649">cpu</translation>
-<translation id="6446225358675593408">අන්තර්ගතය අනුව ඔබේ රූප සොයා ගන්න</translation>
 <translation id="6447111710783417522"><ph name="DATE" />, සිදුවීම් <ph name="NUMBER" />ක්</translation>
 <translation id="6449483711453944360">Linux යෙදුම් සහ අප්‍රසිද්ධ කවුළු දැනට සහාය නොදක්වයි</translation>
 <translation id="6450245544201845082">දකුණු-ක්ලික් කිරීමේ කෙටිමඟ දැනට ක්‍රියාවිරහිතයි</translation>
@@ -1440,6 +1446,7 @@
 <translation id="6827049576281411231">සිදුවීම් පැනලය වසන්න</translation>
 <translation id="6831561626108366035"><ph name="ACTIVE_STATE" /> <ph name="DESK_NAME" /> බොත්තම වෙත යන්න.</translation>
 <translation id="6836499262298959512">අනතුරුදායක ගොනුව</translation>
+<translation id="6837621009301897464">තිර රුවක් ගැනීම සඳහා, ඔබන්න</translation>
 <translation id="6852052252232534364">සක්‍රිය ක්ලික්</translation>
 <translation id="6855029042976311970">මේ දැන් සංස්කරණය කරන ලදී</translation>
 <translation id="6856708615407876657">සෙවීම් ප්‍රතිඵල ප්‍රවර්ග ටොගල් කරන්න</translation>
@@ -1517,6 +1524,7 @@
 <translation id="7167913274352523149"><ph name="HOTSPOT" />,
         <ph name="NETWORK" /></translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> තුළ පැරණි විභේදනයට හරවනු ඇත</translation>
+<translation id="7173114856073700355">සැකසීම් විවෘත කරන්න</translation>
 <translation id="7180611975245234373">නැවුම් කරන්න</translation>
 <translation id="7188494361780961876">මෙනුව තිරයේ ඉහළ වම් කොණට ගෙන ගියා.</translation>
 <translation id="7189412385142492784">සිකුරු කොතරම් දුරද?</translation>
@@ -1530,13 +1538,13 @@
 <translation id="726276584504105859">බෙදුම් තිරය භාවිතයට මෙතැනට අදින්න</translation>
 <translation id="7262906531272962081">සිහිකැඳවීමක් සාදන්න</translation>
 <translation id="7278787617901301220"><ph name="LAUNCHER_KEY_NAME" /> + බැක්ස්පේස්</translation>
+<translation id="7285232777292757180">තිර රූ ගැනීමට ඉක්මන් සැකසීම් තුළ තිර ග්‍රහණ මෙවලම භාවිතා කරන්න</translation>
 <translation id="7302889331339392448">සජීවී සිරස්තල ක්‍රියාවිරහිතයි.</translation>
 <translation id="7303365578352795231">වෙනත් උපාංගයක් මත පිළිතුරු ලබා දෙයි.</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7312210124139670355">ඔබගේ පරිපාලක ඔබගේ eSIM යළි සකසයි. මෙයට මිනිත්තු කිහිපයක් ගත විය හැකිය.</translation>
 <translation id="7313193732017069507">කැමරාව පුළුල් කරන්න</translation>
 <translation id="7316261577130609484">නව කාර්යය එක් කරන්න</translation>
-<translation id="7321889295239318128">තව දැන ගැනීමට shift plus tab ඔබන්න</translation>
 <translation id="7330397557116570022">අනුලේඛනය භාවිතා කිරීමට පෙළ ක්ෂේත්‍රයකට යන්න</translation>
 <translation id="7331646370422660166">alt + පහළට ඊතලය</translation>
 <translation id="7340731148882810149">ස්වයංක්‍රීය ක්ලික් කිරීම් මෙනුව</translation>
@@ -1683,6 +1691,13 @@
 <translation id="7893503627044934815">මෙම ගොනුව පෙන්වීමට අවශ්‍ය නැත</translation>
 <translation id="7895348134893321514">Tote</translation>
 <translation id="7897375687985782769">ඔබ තිරයේ කරකැවීම සඳහා යතුරුපුවරු කෙටිමඟ ඔබා ඇත. ඔබට එය සක්‍රීය කළ යුතුද?</translation>
+<translation id="7897626842031123113">තත්ත්‍ව තැටිය, වේලාව <ph name="TIME" />,
+        <ph name="BATTERY" />
+        <ph name="CHANNEL" />
+        <ph name="NETWORK" />,
+        <ph name="MANAGED" />
+        <ph name="IME" />
+        <ph name="LOCALE" /></translation>
 <translation id="7901190436359881020">කවුළු මාරු කරන්න</translation>
 <translation id="7901405293566323524">දුරකථන මධ්‍යස්ථානය</translation>
 <translation id="7902625623987030061">ඇඟිලි සලකුණු සංවේදකය ස්පර්ශ කරන්න</translation>
@@ -1907,6 +1922,7 @@
 <translation id="888982883502837004">ඔබගේ උපාංගය සඳහා නිත්‍ය මෘදුකාංග යාවත්කාලීන තිබේ. සමාලෝචනය කිරීමට සහ යාවත්කාලීන කිරීමට ක්ලික් කරන්න.</translation>
 <translation id="8896630965521842259"><ph name="DESK_TEMPLATE_NAME" /> ස්ථිරවම මකනු ඇත</translation>
 <translation id="889790758758811533">බැටරිය <ph name="PERCENTAGE" />% ඉතිරිව ඇත (<ph name="TIME_LEFT" /> පමණ). ඔබේ උපාංගය බලයට සම්බන්ධ කරන්න.</translation>
+<translation id="8897940060812808966"><ph name="PERIPHERAL_NAME" /> සම්බන්ධ වී ඇති අතර භාවිතයට සූදානම් වේ. ඔබට ඔබේ චිත්‍රක ටැබ්ලටය සැකසීම් තුළ අභිරුචිකරණය කළ හැක.</translation>
 <translation id="88986195241502842">පිටුව පහළට</translation>
 <translation id="8905919797434099235">(මාතෘකාවක් නැත)</translation>
 <translation id="890616557918890486">මූලාශ්‍රය වෙනස් කරන්න</translation>

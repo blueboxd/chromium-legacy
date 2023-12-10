@@ -351,7 +351,6 @@ bool UtilityProcessHost::StartProcess() {
       switches::kEnableExperimentalWebPlatformFeatures,
       // These flags are used by the audio service:
       switches::kAudioBufferSize,
-      switches::kAudioServiceQuitTimeoutMs,
       switches::kDisableAudioInput,
       switches::kDisableAudioOutput,
       switches::kFailAudioStreamCreation,
@@ -367,11 +366,7 @@ bool UtilityProcessHost::StartProcess() {
 #endif
 #if BUILDFLAG(IS_WIN)
       switches::kDisableHighResTimer,
-      switches::kEnableExclusiveAudio,
-      switches::kForceWaveAudio,
       switches::kRaiseTimerFrequency,
-      switches::kTrySupportedChannelLayouts,
-      switches::kWaveOutBuffers,
       switches::kWebXrForceRuntime,
       sandbox::policy::switches::kAddXrAppContainerCaps,
 #endif
@@ -383,7 +378,6 @@ bool UtilityProcessHost::StartProcess() {
       switches::kEnableResourcesFileSharing,
 #endif
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-      switches::kChromeOSVideoDecoderTaskRunner,
       switches::kHardwareVideoDecodeFrameRate,
 #endif
     };

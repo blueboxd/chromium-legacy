@@ -112,7 +112,7 @@ arc::mojom::CaptionColorPtr GetCaptionColorFromPrefs(
   // generic, it does some redundant stuffs (like utf16 conversion, removing rgb
   // prefix). But since this path is frequently used, the benefit of reusing
   // method outweighs the cons.
-  absl::optional<SkColor> sk_color =
+  std::optional<SkColor> sk_color =
       ui::metadata::SkColorConverter::FromString(base::UTF8ToUTF16(color_str));
   if (!sk_color) {
     return nullptr;
@@ -186,7 +186,9 @@ bool GetHttpProxyServer(const ProxyConfigDictionary* proxy_config_dict,
   if (!proxy_list || proxy_list->IsEmpty())
     return false;
 
-  const net::ProxyServer& server = proxy_list->Get();
+  const net::ProxyChain& chain = proxy_list->First();
+  CHECK(chain.is_single_proxy());
+  const net::ProxyServer& server = chain.GetProxyServer(/*chain_index=*/0);
   *host = server.host_port_pair().host();
   *port = server.host_port_pair().port();
   return !host->empty() && *port;
@@ -278,7 +280,6 @@ class ArcSettingsServiceImpl : public TimezoneSettings::Observer,
   void SyncBackupEnabled() const;
   void SyncCaptionStyle() const;
   void SyncConsumerAutoUpdateToggle() const;
-  void SyncGIOBetaEnabled() const;
   void SyncLocale() const;
   void SyncLocationServiceEnabled() const;
   void SyncProxySettings() const;
@@ -357,7 +358,7 @@ class ArcSettingsServiceImpl : public TimezoneSettings::Observer,
   std::string default_network_name_;
 
   // Proxy configuration of the default network.
-  absl::optional<base::Value::Dict> default_proxy_config_;
+  std::optional<base::Value::Dict> default_proxy_config_;
 
   // The PAC URL associated with `default_network_name_`, received via the DHCP
   // discovery method.
@@ -581,7 +582,6 @@ void ArcSettingsServiceImpl::SyncBootTimeSettings() const {
   SyncAccessibilityVirtualKeyboardEnabled();
   SyncCaptionStyle();
   SyncConsumerAutoUpdateToggle();
-  SyncGIOBetaEnabled();
   SyncProxySettings();
   SyncReportingConsent(/*initial_sync=*/false);
   SyncPictureInPictureEnabled();
@@ -874,12 +874,6 @@ void ArcSettingsServiceImpl::SyncUse24HourClock() const {
   extras.Set("use24HourClock", use24HourClock);
   SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_USE_24_HOUR_CLOCK",
                         extras);
-}
-
-void ArcSettingsServiceImpl::SyncGIOBetaEnabled() const {
-  SendBoolValueSettingsBroadcast(
-      ash::features::IsArcInputOverlayBetaEnabled(), /*managed=*/false,
-      "org.chromium.arc.intent_helper.ACTION_SET_GIO_BETA_ENABLED");
 }
 
 void ArcSettingsServiceImpl::SyncUserGeolocation() const {

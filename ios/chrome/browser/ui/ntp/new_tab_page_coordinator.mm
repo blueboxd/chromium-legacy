@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator+Testing.h"
 
 #import <MaterialComponents/MaterialSnackbar.h>
 
@@ -25,16 +26,16 @@
 #import "components/sync/base/features.h"
 #import "components/sync/service/sync_service.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
-#import "ios/chrome/browser/discover_feed/discover_feed_observer_bridge.h"
-#import "ios/chrome/browser/discover_feed/discover_feed_service.h"
-#import "ios/chrome/browser/discover_feed/discover_feed_service_factory.h"
-#import "ios/chrome/browser/discover_feed/feed_constants.h"
-#import "ios/chrome/browser/discover_feed/feed_model_configuration.h"
-#import "ios/chrome/browser/follow/follow_browser_agent.h"
-#import "ios/chrome/browser/follow/followed_web_site.h"
-#import "ios/chrome/browser/follow/followed_web_site_state.h"
-#import "ios/chrome/browser/ntp/new_tab_page_state.h"
-#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
+#import "ios/chrome/browser/discover_feed/model/discover_feed_observer_bridge.h"
+#import "ios/chrome/browser/discover_feed/model/discover_feed_service.h"
+#import "ios/chrome/browser/discover_feed/model/discover_feed_service_factory.h"
+#import "ios/chrome/browser/discover_feed/model/feed_constants.h"
+#import "ios/chrome/browser/discover_feed/model/feed_model_configuration.h"
+#import "ios/chrome/browser/follow/model/follow_browser_agent.h"
+#import "ios/chrome/browser/follow/model/followed_web_site.h"
+#import "ios/chrome/browser/follow/model/followed_web_site_state.h"
+#import "ios/chrome/browser/ntp/model/new_tab_page_state.h"
+#import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
 #import "ios/chrome/browser/shared/coordinator/layout_guide/layout_guide_util.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
@@ -71,6 +72,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
 #import "ios/chrome/browser/ui/context_menu/link_preview/link_preview_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/discover_feed_constants.h"
+#import "ios/chrome/browser/ui/ntp/discover_feed_manage_delegate.h"
 #import "ios/chrome/browser/ui/ntp/discover_feed_preview_delegate.h"
 #import "ios/chrome/browser/ui/ntp/feed_control_delegate.h"
 #import "ios/chrome/browser/ui/ntp/feed_header_view_controller.h"
@@ -90,7 +92,6 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_component_factory_protocol.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_content_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller_delegate.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator+private.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_follow_delegate.h"
@@ -115,6 +116,7 @@
                                      AuthenticationServiceObserving,
                                      BooleanObserver,
                                      ContentSuggestionsDelegate,
+                                     DiscoverFeedManageDelegate,
                                      DiscoverFeedObserverBridgeDelegate,
                                      DiscoverFeedPreviewDelegate,
                                      FeedControlDelegate,
@@ -853,6 +855,12 @@
   }
 }
 
+#pragma mark - DiscoverFeedManageDelegate
+
+- (void)didTapDiscoverFeedManage {
+  [self handleFeedManageTapped];
+}
+
 #pragma mark - DiscoverFeedPreviewDelegate
 
 - (UIViewController*)discoverFeedPreviewWithURL:(const GURL)URL {
@@ -1514,6 +1522,7 @@
   viewControllerConfig.browser = self.browser;
   viewControllerConfig.scrollDelegate = self.NTPViewController;
   viewControllerConfig.previewDelegate = self;
+  viewControllerConfig.manageDelegate = self;
   viewControllerConfig.signInPromoDelegate = self;
 
   return viewControllerConfig;

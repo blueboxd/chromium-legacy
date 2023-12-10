@@ -142,7 +142,6 @@ import java.util.function.Consumer;
 @EnableFeatures({
     ChromeFeatureList.BOOKMARKS_REFRESH,
     ChromeFeatureList.SHOPPING_LIST,
-    ChromeFeatureList.EMPTY_STATES
 })
 public class BookmarkManagerMediatorTest {
     private static final GURL EXAMPLE_URL = JUnitTestGURLs.EXAMPLE_URL;
@@ -351,7 +350,8 @@ public class BookmarkManagerMediatorTest {
                 .getChildIds(mMobileFolderId);
         doReturn(mOtherFolderId).when(mBookmarkModel).getOtherFolderId();
         doReturn(mOtherFolderItem).when(mBookmarkModel).getBookmarkById(mOtherFolderId);
-        doReturn(mReadingListFolderId).when(mBookmarkModel).getReadingListFolder();
+        // TODO(crbug.com/1501998): Add account reading list folder support here.
+        doReturn(mReadingListFolderId).when(mBookmarkModel).getLocalOrSyncableReadingListFolder();
         doReturn(mReadingListFolderItem).when(mBookmarkModel).getBookmarkById(mReadingListFolderId);
         doReturn(true).when(mBookmarkModel).doesBookmarkExist(any());
         doReturn(Arrays.asList(mFolderId2, mFolderId3))
@@ -569,31 +569,7 @@ public class BookmarkManagerMediatorTest {
     }
 
     @Test
-    @DisableFeatures({ChromeFeatureList.EMPTY_STATES})
     public void testEmptyView_Bookmark() {
-        // Setup and open Bookmark folder.
-        finishLoading();
-        assertEquals(BookmarkUiMode.LOADING, mMediator.getCurrentUiMode());
-        mMediator.openFolder(mFolderId1);
-
-        // Verify empty view initialized.
-        verify(mSelectableListLayout).setEmptyViewText(R.string.bookmarks_folder_empty);
-    }
-
-    @Test
-    @DisableFeatures({ChromeFeatureList.EMPTY_STATES})
-    public void testEmptyView_ReadingList() {
-        // Setup and open Reading list folder.
-        finishLoading();
-        assertEquals(BookmarkUiMode.LOADING, mMediator.getCurrentUiMode());
-        mMediator.openFolder(mReadingListFolderId);
-
-        // Verify empty view initialized.
-        verify(mSelectableListLayout).setEmptyViewText(R.string.reading_list_empty_list_title);
-    }
-
-    @Test
-    public void testEmptyView_EmptyState_Bookmark() {
         // Setup and open Bookmark folder.
         finishLoading();
         assertEquals(BookmarkUiMode.LOADING, mMediator.getCurrentUiMode());
@@ -609,7 +585,7 @@ public class BookmarkManagerMediatorTest {
     }
 
     @Test
-    public void testEmptyView_EmptyState_ReadingList() {
+    public void testEmptyView_ReadingList() {
         // Setup and open Reading list folder.
         finishLoading();
         assertEquals(BookmarkUiMode.LOADING, mMediator.getCurrentUiMode());

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.ui.plus_addresses;
 import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
+import android.text.style.ClickableSpan;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -27,6 +28,8 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent.ContentPriority;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent.HeightMode;
 import org.chromium.ui.base.TestActivity;
+import org.chromium.ui.widget.TextViewWithClickableSpans;
+import org.chromium.url.GURL;
 
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -42,6 +45,7 @@ public class PlusAddressCreationBottomSheetContentTest {
     private static final String MODAL_CANCEL = "cancel";
     private static final String MODAL_PROPOSED_PLUS_ADDRESS = "plus+1@plus.plus";
     private static final String MODAL_ERROR_MESSAGE = "error!";
+    private static final GURL MANAGE_URL = new GURL("manage.com");
 
     @Rule public MockitoRule mMockitoRule = MockitoJUnit.rule();
     @Mock private PlusAddressCreationDelegate mDelegate;
@@ -58,7 +62,8 @@ public class PlusAddressCreationBottomSheetContentTest {
                         MODAL_PLUS_ADDRESS_DESCRIPTION,
                         MODAL_PROPOSED_PLUS_ADDRESS_PLACEHOLDER,
                         MODAL_OK,
-                        MODAL_CANCEL);
+                        MODAL_CANCEL,
+                        MANAGE_URL);
         mBottomSheetContent.setDelegate(mDelegate);
     }
 
@@ -67,7 +72,7 @@ public class PlusAddressCreationBottomSheetContentTest {
     public void testBottomSheetStrings() {
         TextView modalTitleView =
                 mBottomSheetContent.getContentView().findViewById(R.id.plus_address_notice_title);
-        TextView modalDescriptionView =
+        TextViewWithClickableSpans modalDescriptionView =
                 mBottomSheetContent
                         .getContentView()
                         .findViewById(R.id.plus_address_modal_explanation);
@@ -140,12 +145,40 @@ public class PlusAddressCreationBottomSheetContentTest {
 
     @Test
     @SmallTest
+    public void testBottomsheetLinkClicked_callsDelegateOpenManagementPage() {
+        TextViewWithClickableSpans modalDescriptionView =
+                mBottomSheetContent
+                        .getContentView()
+                        .findViewById(R.id.plus_address_modal_explanation);
+        ClickableSpan[] spans = modalDescriptionView.getClickableSpans();
+        Assert.assertEquals(spans.length, 1);
+        spans[0].onClick(modalDescriptionView);
+
+        verify(mDelegate).openManagementPage(MANAGE_URL);
+    }
+
+    @Test
+    @SmallTest
     public void testOnConfirmButtonClicked_callsDelegateOnConfirmRequested() {
         Button modalConfirmButton =
                 mBottomSheetContent.getContentView().findViewById(R.id.plus_address_confirm_button);
         modalConfirmButton.callOnClick();
 
         verify(mDelegate).onConfirmRequested();
+    }
+
+    @Test
+    @SmallTest
+    public void testOnConfirmButtonClicked_showsLoadingIndicator() {
+        Assert.assertFalse(mBottomSheetContent.showsLoadingIndicatorForTesting());
+        // Show the loading indicator once we click the Confirm button.
+        Button modalConfirmButton =
+                mBottomSheetContent.getContentView().findViewById(R.id.plus_address_confirm_button);
+        modalConfirmButton.callOnClick();
+        Assert.assertTrue(mBottomSheetContent.showsLoadingIndicatorForTesting());
+        // Hide the loading indicator if we show an error.
+        mBottomSheetContent.showError(MODAL_ERROR_MESSAGE);
+        Assert.assertFalse(mBottomSheetContent.showsLoadingIndicatorForTesting());
     }
 
     @Test

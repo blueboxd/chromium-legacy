@@ -5,11 +5,11 @@
 import {assert} from 'chrome://resources/js/assert.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 
-import {installMockChrome, MockCommandLinePrivate} from '../../common/js/mock_chrome.js';
+import {installMockChrome} from '../../common/js/mock_chrome.js';
 import {MockDirectoryEntry, MockFileEntry, MockFileSystem} from '../../common/js/mock_entry.js';
 import {assertRejected, waitUntil} from '../../common/js/test_error_reporting.js';
-import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
-import {VolumeManager} from '../../externs/volume_manager.js';
+import {FileSystemType, RootType, Source, VolumeError, VolumeType} from '../../common/js/volume_manager_types.js';
+import type {VolumeManager} from '../../externs/volume_manager.js';
 
 import {VolumeInfoImpl} from './volume_info_impl.js';
 import {volumeManagerFactory} from './volume_manager_factory.js';
@@ -107,37 +107,36 @@ export function setUp() {
   };
 
   installMockChrome(mockChrome);
-  new MockCommandLinePrivate();
   mockData.volumeMetadataList_ = [
     {
       volumeId: 'download:Downloads',
       volumeLabel: '',
-      volumeType: VolumeManagerCommon.VolumeType.DOWNLOADS,
+      volumeType: VolumeType.DOWNLOADS,
       isReadOnly: false,
       profile: getMockProfile(),
       configurable: false,
       watchable: true,
-      source: VolumeManagerCommon.Source.SYSTEM,
+      source: Source.SYSTEM,
     } as chrome.fileManagerPrivate.VolumeMetadata,
     {
       volumeId: 'drive:drive-foobar%40chromium.org-hash',
       volumeLabel: '',
-      volumeType: VolumeManagerCommon.VolumeType.DRIVE,
+      volumeType: VolumeType.DRIVE,
       isReadOnly: false,
       profile: getMockProfile(),
       configurable: false,
       watchable: true,
-      source: VolumeManagerCommon.Source.NETWORK,
+      source: Source.NETWORK,
     } as chrome.fileManagerPrivate.VolumeMetadata,
     {
       volumeId: 'android_files:0',
       volumeLabel: '',
-      volumeType: VolumeManagerCommon.VolumeType.ANDROID_FILES,
+      volumeType: VolumeType.ANDROID_FILES,
       isReadOnly: false,
       profile: getMockProfile(),
       configurable: false,
       watchable: true,
-      source: VolumeManagerCommon.Source.SYSTEM,
+      source: Source.SYSTEM,
     } as chrome.fileManagerPrivate.VolumeMetadata,
   ];
   mockData.fileSystemMap_ = {
@@ -205,7 +204,7 @@ export async function testGetVolumeInfo(done: VoidCallback) {
   const volumeInfo = volumeManager.getVolumeInfo(entry);
   assert(volumeInfo);
   assertEquals('download:Downloads', volumeInfo.volumeId);
-  assertEquals(VolumeManagerCommon.VolumeType.DOWNLOADS, volumeInfo.volumeType);
+  assertEquals(VolumeType.DOWNLOADS, volumeInfo.volumeType);
 
   done();
 }
@@ -297,13 +296,13 @@ export async function testMountArchiveAndUnmount(done: VoidCallback) {
     volumeMetadata: {
       volumeId: 'archive:foobar.zip',
       volumeLabel: 'foobar.zip',
-      volumeType: VolumeManagerCommon.VolumeType.ARCHIVE,
+      volumeType: VolumeType.ARCHIVE,
       isReadOnly: true,
       sourcePath: mountSourcePath,
       profile: getMockProfile(),
       configurable: false,
       watchable: true,
-      source: VolumeManagerCommon.Source.FILE,
+      source: Source.FILE,
     },
   });
 
@@ -342,7 +341,7 @@ export async function testCancelMountingArchive(done: VoidCallback) {
   setTimeout(
       () => mockChrome.fileManagerPrivate.onMountCompleted.dispatchEvent({
         eventType: 'mount',
-        status: VolumeManagerCommon.VolumeError.CANCELLED,
+        status: VolumeError.CANCELLED,
         volumeMetadata: {
           volumeId: null,
           volumeLabel: null,
@@ -362,7 +361,7 @@ export async function testCancelMountingArchive(done: VoidCallback) {
             'Downloads-test/foobar.zip',
         'My Password');
   } catch (error) {
-    assertEquals(error, VolumeManagerCommon.VolumeError.CANCELLED);
+    assertEquals(error, VolumeError.CANCELLED);
   }
 
   assertEquals(numberOfVolumes, volumeManager.volumeInfoList.length);
@@ -374,12 +373,12 @@ export async function testGetCurrentProfileVolumeInfo(done: VoidCallback) {
   const volumeManager = await volumeManagerFactory.getInstance();
   await waitAllVolumes(volumeManager);
 
-  const volumeInfo = volumeManager.getCurrentProfileVolumeInfo(
-      VolumeManagerCommon.VolumeType.DRIVE);
+  const volumeInfo =
+      volumeManager.getCurrentProfileVolumeInfo(VolumeType.DRIVE);
   assert(volumeInfo);
 
   assertEquals('drive:drive-foobar%40chromium.org-hash', volumeInfo.volumeId);
-  assertEquals(VolumeManagerCommon.VolumeType.DRIVE, volumeInfo.volumeType);
+  assertEquals(VolumeType.DRIVE, volumeInfo.volumeType);
 
   done();
 }
@@ -392,8 +391,7 @@ export async function testGetLocationInfo(done: VoidCallback) {
       new MockFileSystem('download:Downloads'), '/foo/bar/bla.zip');
   const downloadLocationInfo = volumeManager.getLocationInfo(downloadEntry);
   assert(downloadLocationInfo);
-  assertEquals(
-      VolumeManagerCommon.RootType.DOWNLOADS, downloadLocationInfo.rootType);
+  assertEquals(RootType.DOWNLOADS, downloadLocationInfo.rootType);
   assertFalse(downloadLocationInfo.hasFixedLabel);
   assertFalse(downloadLocationInfo.isReadOnly);
   assertFalse(downloadLocationInfo.isRootEntry);
@@ -402,7 +400,7 @@ export async function testGetLocationInfo(done: VoidCallback) {
       new MockFileSystem('drive:drive-foobar%40chromium.org-hash'), '/root');
   const driveLocationInfo = volumeManager.getLocationInfo(driveEntry);
   assert(driveLocationInfo);
-  assertEquals(VolumeManagerCommon.RootType.DRIVE, driveLocationInfo.rootType);
+  assertEquals(RootType.DRIVE, driveLocationInfo.rootType);
   assertTrue(driveLocationInfo.hasFixedLabel);
   assertFalse(driveLocationInfo.isReadOnly);
   assertTrue(driveLocationInfo.isRootEntry);
@@ -414,7 +412,7 @@ export async function testGetLocationInfo(done: VoidCallback) {
       volumeManager.getLocationInfo(teamDrivesGrandRoot);
   assert(teamDrivesGrandRootLocationInfo);
   assertEquals(
-      VolumeManagerCommon.RootType.SHARED_DRIVES_GRAND_ROOT,
+      RootType.SHARED_DRIVES_GRAND_ROOT,
       teamDrivesGrandRootLocationInfo.rootType);
   assertTrue(teamDrivesGrandRootLocationInfo.hasFixedLabel);
   assertTrue(teamDrivesGrandRootLocationInfo.isReadOnly);
@@ -425,9 +423,7 @@ export async function testGetLocationInfo(done: VoidCallback) {
       '/team_drives/MyTeamDrive');
   const teamDriveLocationInfo = volumeManager.getLocationInfo(teamDrive);
   assert(teamDriveLocationInfo);
-  assertEquals(
-      VolumeManagerCommon.RootType.SHARED_DRIVE,
-      teamDriveLocationInfo.rootType);
+  assertEquals(RootType.SHARED_DRIVE, teamDriveLocationInfo.rootType);
   assertFalse(teamDriveLocationInfo.hasFixedLabel);
   assertFalse(teamDriveLocationInfo.isReadOnly);
   assertTrue(teamDriveLocationInfo.isRootEntry);
@@ -439,7 +435,7 @@ export async function testGetLocationInfo(done: VoidCallback) {
       volumeManager.getLocationInfo(driveFilesByIdDirectoryEntry);
   assert(driveFilesByIdDirectoryLocationInfo);
   assertEquals(
-      VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME,
+      RootType.DRIVE_SHARED_WITH_ME,
       driveFilesByIdDirectoryLocationInfo.rootType);
   assertFalse(driveFilesByIdDirectoryLocationInfo.hasFixedLabel);
   assertTrue(driveFilesByIdDirectoryLocationInfo.isReadOnly);
@@ -452,8 +448,7 @@ export async function testGetLocationInfo(done: VoidCallback) {
       volumeManager.getLocationInfo(driveFilesByIdEntry);
   assert(driveFilesByIdLocationInfo);
   assertEquals(
-      VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME,
-      driveFilesByIdLocationInfo.rootType);
+      RootType.DRIVE_SHARED_WITH_ME, driveFilesByIdLocationInfo.rootType);
   assertFalse(driveFilesByIdLocationInfo.hasFixedLabel);
   assertFalse(driveFilesByIdLocationInfo.isReadOnly);
   assertFalse(driveFilesByIdLocationInfo.isRootEntry);
@@ -465,7 +460,7 @@ export async function testGetLocationInfo(done: VoidCallback) {
       volumeManager.getLocationInfo(driveShortcutTargetsByIdDirectoryEntry);
   assert(driveShortcutTargetsByIdDirectoryLocationInfo);
   assertEquals(
-      VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME,
+      RootType.DRIVE_SHARED_WITH_ME,
       driveShortcutTargetsByIdDirectoryLocationInfo.rootType);
   assertFalse(driveShortcutTargetsByIdDirectoryLocationInfo.hasFixedLabel);
   assertTrue(driveShortcutTargetsByIdDirectoryLocationInfo.isReadOnly);
@@ -478,7 +473,7 @@ export async function testGetLocationInfo(done: VoidCallback) {
       volumeManager.getLocationInfo(driveShortcutTargetsByIdEntry);
   assert(driveShortcutTargetsByIdLocationInfo);
   assertEquals(
-      VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME,
+      RootType.DRIVE_SHARED_WITH_ME,
       driveShortcutTargetsByIdLocationInfo.rootType);
   assertFalse(driveShortcutTargetsByIdLocationInfo.hasFixedLabel);
   assertFalse(driveShortcutTargetsByIdLocationInfo.isReadOnly);
@@ -506,8 +501,7 @@ export async function testGetLocationInfo(done: VoidCallback) {
       volumeManager.getLocationInfo(computersGrandRoot);
   assert(computersGrandRootLocationInfo);
   assertEquals(
-      VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT,
-      computersGrandRootLocationInfo.rootType);
+      RootType.COMPUTERS_GRAND_ROOT, computersGrandRootLocationInfo.rootType);
   assertTrue(computersGrandRootLocationInfo.hasFixedLabel);
   assertTrue(computersGrandRootLocationInfo.isReadOnly);
   assertTrue(computersGrandRootLocationInfo.isRootEntry);
@@ -517,8 +511,7 @@ export async function testGetLocationInfo(done: VoidCallback) {
       '/Computers/MyComputer');
   const computerLocationInfo = volumeManager.getLocationInfo(computer);
   assert(computerLocationInfo);
-  assertEquals(
-      VolumeManagerCommon.RootType.COMPUTER, computerLocationInfo.rootType);
+  assertEquals(RootType.COMPUTER, computerLocationInfo.rootType);
   assertFalse(computerLocationInfo.hasFixedLabel);
   assertTrue(computerLocationInfo.isReadOnly);
   assertTrue(computerLocationInfo.isRootEntry);
@@ -530,7 +523,7 @@ export async function testWhenReady(done: VoidCallback) {
   const volumeManager = await volumeManagerFactory.getInstance();
   const promiseBeforeAdd = volumeManager.whenVolumeInfoReady('volumeId');
   const volumeInfo = new VolumeInfoImpl(
-      /* volumeType */ VolumeManagerCommon.VolumeType.MY_FILES,
+      /* volumeType */ VolumeType.MY_FILES,
       /* volumeId */ 'volumeId',
       /* fileSystem */ null,
       /* error */ undefined,
@@ -544,8 +537,8 @@ export async function testWhenReady(done: VoidCallback) {
       /* hasMedia */ false,
       /* configurable */ false,
       /* watchable */ true,
-      /* source */ VolumeManagerCommon.Source.FILE,
-      /* diskFileSystemType */ VolumeManagerCommon.FileSystemType.UNKNOWN,
+      /* source */ Source.FILE,
+      /* diskFileSystemType */ FileSystemType.UNKNOWN,
       /* iconSet */ {icon16x16Url: '', icon32x32Url: ''},
       /* driveLabel */ 'TEST_DRIVE_LABEL',
       /* remoteMountPath*/ '',
@@ -576,7 +569,7 @@ export async function testDriveMountedDuringInitialization(done: VoidCallback) {
     status: 'success',
     volumeMetadata: {
       volumeId: 'drive:drive-foobar%40chromium.org-hash',
-      volumeType: VolumeManagerCommon.VolumeType.DRIVE,
+      volumeType: VolumeType.DRIVE,
       sourcePath: '/drive',
       profile: getMockProfile(),
     },
@@ -595,8 +588,7 @@ export async function testDriveMountedDuringInitialization(done: VoidCallback) {
   await waitUntil(() => volumeManager.volumeInfoList.length === 1);
 
   // Check volume manager.
-  assertTrue(!!volumeManager.getCurrentProfileVolumeInfo(
-      VolumeManagerCommon.VolumeType.DRIVE));
+  assertTrue(!!volumeManager.getCurrentProfileVolumeInfo(VolumeType.DRIVE));
 
   done();
 }
@@ -619,12 +611,12 @@ export async function testErrorPropagatedDuringInitialization(
 export async function testErrorInitializingVolume(done: VoidCallback) {
   // Confirm that a Drive volume is on faked getVolumeMetadataList().
   assertTrue(mockData.volumeMetadataList_.some(volumeMetadata => {
-    return volumeMetadata.volumeType === VolumeManagerCommon.VolumeType.DRIVE;
+    return volumeMetadata.volumeType === VolumeType.DRIVE;
   }));
 
   // Replace createVolumeInfo() to fail to create Drive volume.
   const createVolumeInfoFake: typeof createVolumeInfo = (volumeMetadata) => {
-    if (volumeMetadata.volumeType === VolumeManagerCommon.VolumeType.DRIVE) {
+    if (volumeMetadata.volumeType === VolumeType.DRIVE) {
       throw new Error('Fake security error');
     }
 
@@ -641,10 +633,9 @@ export async function testErrorInitializingVolume(done: VoidCallback) {
 
   assertEquals(2, volumeManager.volumeInfoList.length);
   assertEquals(
-      VolumeManagerCommon.VolumeType.DOWNLOADS,
-      volumeManager.volumeInfoList.item(0).volumeType);
+      VolumeType.DOWNLOADS, volumeManager.volumeInfoList.item(0).volumeType);
   assertEquals(
-      VolumeManagerCommon.VolumeType.ANDROID_FILES,
+      VolumeType.ANDROID_FILES,
       volumeManager.volumeInfoList.item(1).volumeType);
 
   done();
@@ -658,8 +649,7 @@ export async function testDriveWithNullFilesystem(done: VoidCallback) {
   // Get Drive volume metadata from faked getVolumeMetadataList().
   const driveVolumeMetadata =
       mockData.volumeMetadataList_.find(volumeMetadata => {
-        return volumeMetadata.volumeType ===
-            VolumeManagerCommon.VolumeType.DRIVE;
+        return volumeMetadata.volumeType === VolumeType.DRIVE;
       });
   assert(driveVolumeMetadata);
 
@@ -669,7 +659,8 @@ export async function testDriveWithNullFilesystem(done: VoidCallback) {
   // Create a VolumeInfo with null filesystem, in the same way that happens on
   // createVolumeInfo().
   const volumeInfo = new VolumeInfoImpl(
-      driveVolumeMetadata.volumeType, driveVolumeMetadata.volumeId,
+      driveVolumeMetadata.volumeType as VolumeType,
+      driveVolumeMetadata.volumeId,
       null,  // File system is not found.
       expectedError, driveVolumeMetadata.deviceType,
       driveVolumeMetadata.devicePath, driveVolumeMetadata.isReadOnly,
@@ -677,7 +668,8 @@ export async function testDriveWithNullFilesystem(done: VoidCallback) {
       driveVolumeMetadata.profile, localizedLabel,
       driveVolumeMetadata.providerId, driveVolumeMetadata.hasMedia,
       driveVolumeMetadata.configurable, driveVolumeMetadata.watchable,
-      driveVolumeMetadata.source, driveVolumeMetadata.diskFileSystemType || '',
+      driveVolumeMetadata.source as Source,
+      driveVolumeMetadata.diskFileSystemType as FileSystemType,
       driveVolumeMetadata.iconSet, driveVolumeMetadata.driveLabel,
       driveVolumeMetadata.remoteMountPath, driveVolumeMetadata.vmType);
 

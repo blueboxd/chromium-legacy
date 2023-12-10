@@ -12,6 +12,8 @@
 #import "components/signin/public/base/signin_metrics.h"
 #import "components/signin/public/base/signin_pref_names.h"
 #import "components/sync/base/features.h"
+#import "components/sync/base/user_selectable_type.h"
+#import "components/sync/service/sync_prefs.h"
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_user_settings.h"
 #import "google_apis/gaia/gaia_constants.h"
@@ -158,12 +160,6 @@ void ResetSigninPromoPreferences() {
   prefs->SetBoolean(prefs::kSigninShouldPromptForSigninAgain, false);
 }
 
-void ResetUserApprovedAccountListManager() {
-  ChromeBrowserState* browser_state = GetOriginalBrowserState();
-  PrefService* prefs = browser_state->GetPrefs();
-  prefs->ClearPref(prefs::kSigninLastAccounts);
-}
-
 void SignInWithoutSync(id<SystemIdentity> identity) {
   Browser* browser = GetMainBrowser();
   UIViewController* viewController = GetActiveViewController();
@@ -186,21 +182,21 @@ void ResetHistorySyncPreferencesForTesting() {
 }
 
 void ResetSyncSelectedDataTypes() {
-  ChromeBrowserState* browserState =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
-  syncer::SyncService* syncService =
-      SyncServiceFactory::GetForBrowserState(browserState);
-  syncer::SyncUserSettings* settings = syncService->GetUserSettings();
-  if (base::FeatureList::IsEnabled(
-          syncer::kReplaceSyncPromosWithSignInPromos)) {
-    // Clear the new per-account settings.
-    settings->KeepAccountSettingsPrefsOnlyForUsers({});
-  } else {
-    // Explicitly enable all selectable types, this ensures that
-    // BookmarksAndReadingListAccountStorageOptIn works as expected.
-    settings->SetSelectedTypes(
-        /*sync_everything=*/true, settings->GetRegisteredSelectableTypes());
-  }
+  // Clear the new per-account selected types.
+  SyncServiceFactory::GetForBrowserState(browser_state)
+      ->GetUserSettings()
+      ->KeepAccountSettingsPrefsOnlyForUsers({});
+  // And the old global selected types for syncing users. SyncUserSettings::
+  // SetSelectedTypes() CHECKs the user is signed-in, so go through SyncPrefs
+  // directly.
+  // TODO(crbug.com/1462552): Remove once sync-the-feature is gone on iOS.
+  syncer::SyncPrefs(browser_state->GetPrefs())
+      .SetSelectedTypesForSyncingUser(
+          /*sync_everything=*/true,
+          /*registered_types=*/syncer::UserSelectableTypeSet::All(),
+          /*selected_types=*/syncer::UserSelectableTypeSet::All());
 }
 
 }  // namespace chrome_test_util

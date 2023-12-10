@@ -134,8 +134,6 @@ TEST_F(PrivacySandboxSettingsDelegateTest,
 
 TEST_F(PrivacySandboxSettingsDelegateTest,
        CapabilityRestrictionForSignedOutUser) {
-  feature_list()->InitAndEnableFeature(
-      privacy_sandbox::kPrivacySandboxSettings3);
   // If the user is not signed in to Chrome then we don't use any age signal and
   // don't restrict the feature.
   EXPECT_FALSE(delegate()->IsPrivacySandboxRestricted());
@@ -230,14 +228,6 @@ TEST_F(PrivacySandboxSettingsDelegateTest,
   feature_list()->InitAndEnableFeatureWithParameters(
       privacy_sandbox::kPrivacySandboxSettings4,
       {{privacy_sandbox::kPrivacySandboxSettings4NoticeRequired.name, "true"}});
-
-  EXPECT_TRUE(delegate()->HasAppropriateTopicsConsent());
-
-  feature_list()->Reset();
-  feature_list()->InitAndEnableFeatureWithParameters(
-      privacy_sandbox::kPrivacySandboxSettings3,
-      {{privacy_sandbox::kPrivacySandboxSettings3ConsentRequired.name,
-        "true"}});
 
   EXPECT_TRUE(delegate()->HasAppropriateTopicsConsent());
 }
@@ -492,15 +482,7 @@ class CookieDeprecationExperimentEligibilityOTRProfileTest
 // The parameter indicates whether to disable 3pcs.
 class CookieDeprecationLabelAllowedTest
     : public PrivacySandboxSettingsDelegateTest,
-      public testing::WithParamInterface<bool> {
- public:
-  CookieDeprecationLabelAllowedTest() {
-    feature_list()->InitAndEnableFeatureWithParameters(
-        features::kCookieDeprecationFacilitatedTesting,
-        {{tpcd::experiment::kDisable3PCookiesName,
-          GetParam() ? "true" : "false"}});
-  }
-};
+      public testing::WithParamInterface<bool> {};
 
 }  // namespace
 
@@ -683,6 +665,11 @@ INSTANTIATE_TEST_SUITE_P(All,
                          testing::Bool());
 
 TEST_P(CookieDeprecationLabelAllowedTest, IsClientEligibleChecked) {
+  feature_list()->InitAndEnableFeatureWithParameters(
+      features::kCookieDeprecationFacilitatedTesting,
+      {{tpcd::experiment::kDisable3PCookiesName,
+        GetParam() ? "true" : "false"}});
+
   const bool disable_3pcs = GetParam();
   if (disable_3pcs) {
     auto* onboarding_service =
@@ -706,6 +693,7 @@ TEST_P(CookieDeprecationLabelAllowedTest, OnboardingStatusChecked) {
   const struct {
     privacy_sandbox::TrackingProtectionOnboarding::OnboardingStatus
         onboarding_status;
+    bool need_onboarding = false;
     bool expected_allowed;
   } kTestCases[] = {
       {
@@ -716,11 +704,25 @@ TEST_P(CookieDeprecationLabelAllowedTest, OnboardingStatusChecked) {
       {
           .onboarding_status = privacy_sandbox::TrackingProtectionOnboarding::
               OnboardingStatus::kEligible,
+          .need_onboarding = false,
+          .expected_allowed = true,
+      },
+      {
+          .onboarding_status = privacy_sandbox::TrackingProtectionOnboarding::
+              OnboardingStatus::kEligible,
+          .need_onboarding = true,
           .expected_allowed = false,
       },
       {
           .onboarding_status = privacy_sandbox::TrackingProtectionOnboarding::
               OnboardingStatus::kOnboarded,
+          .need_onboarding = false,
+          .expected_allowed = true,
+      },
+      {
+          .onboarding_status = privacy_sandbox::TrackingProtectionOnboarding::
+              OnboardingStatus::kOnboarded,
+          .need_onboarding = true,
           .expected_allowed = true,
       },
 
@@ -734,14 +736,26 @@ TEST_P(CookieDeprecationLabelAllowedTest, OnboardingStatusChecked) {
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(static_cast<int>(test_case.onboarding_status));
 
-    prefs()->SetInteger(prefs::kTrackingProtectionOnboardingStatus,
-                        static_cast<int>(test_case.onboarding_status));
+    feature_list()->InitAndEnableFeatureWithParameters(
+        features::kCookieDeprecationFacilitatedTesting,
+        {{tpcd::experiment::kDisable3PCookiesName,
+          disable_3pcs ? "true" : "false"},
+         {tpcd::experiment::kNeedOnboardingForLabelName,
+          test_case.need_onboarding ? "true" : "false"},
+         {tpcd::experiment::kEnableSilentOnboardingName, "true"}});
+
     if (disable_3pcs) {
-      EXPECT_EQ(delegate()->IsCookieDeprecationLabelAllowed(),
-                test_case.expected_allowed);
+      prefs()->SetInteger(prefs::kTrackingProtectionOnboardingStatus,
+                          static_cast<int>(test_case.onboarding_status));
     } else {
-      EXPECT_TRUE(delegate()->IsCookieDeprecationLabelAllowed());
+      prefs()->SetInteger(prefs::kTrackingProtectionSilentOnboardingStatus,
+                          static_cast<int>(test_case.onboarding_status));
     }
+
+    EXPECT_EQ(delegate()->IsCookieDeprecationLabelAllowed(),
+              test_case.expected_allowed);
+
+    feature_list()->Reset();
   }
 }
 

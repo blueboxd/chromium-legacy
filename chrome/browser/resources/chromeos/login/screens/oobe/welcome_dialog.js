@@ -14,7 +14,7 @@ import '../../components/hd_iron_icon.js';
 
 import {assert} from '//resources/ash/common/assert.js';
 import {loadTimeData} from '//resources/ash/common/load_time_data.m.js';
-import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {OobeDialogHostBehavior} from '../../components/behaviors/oobe_dialog_host_behavior.js';
 import {OobeI18nBehavior} from '../../components/behaviors/oobe_i18n_behavior.js';
@@ -22,6 +22,8 @@ import {OobeModalDialog} from '../../components/dialogs/oobe_modal_dialog.js';
 import {LongTouchDetector} from '../../components/long_touch_detector.js';
 import {OobeCrLottie} from '../../components/oobe_cr_lottie.js';
 import {QuickStartEntryPoint} from '../../components/quick_start_entry_point.js';
+
+import {getTemplate} from './welcome_dialog.html.js';
 
 /**
  * @constructor
@@ -49,7 +51,7 @@ export class OobeWelcomeDialog extends OobeWelcomeDialogBase {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -261,7 +263,6 @@ export class OobeWelcomeDialog extends OobeWelcomeDialogBase {
    * Play or pause welcome video.
    * @param {boolean} play - whether play or pause welcome video.
    * @private
-   * @suppress {missingProperties}
    */
   setVideoPlay_(play) {
     // Postpone the call until OOBE is loaded, if necessary.
@@ -274,8 +275,9 @@ export class OobeWelcomeDialog extends OobeWelcomeDialogBase {
       return;
     }
 
-    if (this.$$('#welcomeAnimation')) {
-      this.$$('#welcomeAnimation').playing = play;
+    const welcomeAnimation = this.shadowRoot.querySelector('#welcomeAnimation');
+    if (welcomeAnimation) {
+      welcomeAnimation.playing = play;
     }
   }
 

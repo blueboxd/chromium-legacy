@@ -22,15 +22,6 @@ chromium-metrics-reviews@google.com.
 
 <histograms>
 
-<histogram name="Signin" enum="SigninHelperFlow" expires_after="2023-08-20">
-  <owner>mlerman@chromium.org</owner>
-  <summary>
-    Tracks user interactions as they sign in through a flow. The suffix of the
-    histogram indicates what UI widget or application flow triggered the signin
-    flow.
-  </summary>
-</histogram>
-
 <histogram name="Signin.AccountCapabilities.FetchLatency" units="ms"
     expires_after="2024-06-30">
   <owner>tju@google.com</owner>
@@ -95,10 +86,8 @@ chromium-metrics-reviews@google.com.
     are tracking the time and the type of fetch (synchronous or asynchronous)
     from the user's perspective.
 
-    Recorded in two situations. 1. When an extended account info is updated and
-    the account info has Capabilities. 2. When the following conditions hold: an
-    Activity is resumed, the user is signed in and not syncing, and the primary
-    account info has Capabilities.
+    Recorded when the following conditions hold: an Activity is resumed, and the
+    user is signed in and not syncing.
 
     Android only.
   </summary>
@@ -263,7 +252,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Signin.AccountFetcher.AccountAvatarFetchTime" units="ms"
-    expires_after="2024-03-22">
+    expires_after="2024-05-26">
   <owner>triploblastic@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -277,7 +266,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Signin.AccountFetcher.AccountUserInfoFetchTime" units="ms"
-    expires_after="2024-03-17">
+    expires_after="2024-05-19">
   <owner>triploblastic@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -348,7 +337,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.AccountTracker.SeedAccountInfo.IsAccountIdEmpty"
-    enum="BooleanEmpty" expires_after="2024-03-31">
+    enum="BooleanEmpty" expires_after="2024-06-02">
   <owner>msarda@chromium.org</owner>
   <owner>sinhak@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -434,7 +423,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram base="true" name="Signin.AndroidGetAccountsTime" units="ms"
-    expires_after="2024-03-17">
+    expires_after="2024-05-19">
   <owner>alexilin@chromium.org</owner>
   <owner>bsazonov@chromium.org</owner>
   <summary>
@@ -442,19 +431,8 @@ prefs when the profile is loaded.  -->
   </summary>
 </histogram>
 
-<histogram name="Signin.AndroidIsFREStudyGroupConsistent"
-    enum="BooleanConsistent" expires_after="2023-12-04">
-  <owner>bsazonov@chromium.org</owner>
-  <owner>chrome-signin-team@google.com</owner>
-  <summary>
-    Whether the persisted name of the FREMobileIdentityConsistencyStudy is
-    consistent with the current value of low entropy source. Recorded on startup
-    when the trial is registered.
-  </summary>
-</histogram>
-
 <histogram name="Signin.AndroidNumberOfDeviceAccounts" units="accounts"
-    expires_after="2024-03-17">
+    expires_after="2024-05-19">
   <owner>triploblastic@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -463,7 +441,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.AuthError" enum="GoogleServiceAuthError"
-    expires_after="2024-03-17">
+    expires_after="2024-05-19">
   <owner>msarda@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <summary>
@@ -531,7 +509,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.BoundSessionCredentials.CookieRotationTotalDuration"
-    units="ms" expires_after="2024-01-14">
+    units="ms" expires_after="2024-05-26">
   <owner>alexilin@chromium.org</owner>
   <owner>msalama@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -543,7 +521,7 @@ prefs when the profile is loaded.  -->
   </summary>
 </histogram>
 
-<histogram name="Signin.BoundSessionCredentials.DeferredRequestDelay"
+<histogram name="Signin.BoundSessionCredentials.Deferred{Type}RequestDelay"
     units="ms" expires_after="2024-04-28">
   <owner>alexilin@chromium.org</owner>
   <owner>msalama@chromium.org</owner>
@@ -552,11 +530,18 @@ prefs when the profile is loaded.  -->
     Records for how long a request was delayed due to a missing bound cookie.
     Recorded every time a request was deferred by the bound session credentials
     throttle, right before the request is resumed or canceled.
+
+    {Type}
   </summary>
+  <token key="Type">
+    <variant name="" summary="Includes all requests."/>
+    <variant name="Navigation"
+        summary="Includes only main frame navigation requests."/>
+  </token>
 </histogram>
 
 <histogram name="Signin.BoundSessionCredentials.ResumeThrottledRequestsTrigger"
-    enum="ResumeBlockedRequestsTrigger" expires_after="2024-01-14">
+    enum="ResumeBlockedRequestsTrigger" expires_after="2024-05-26">
   <owner>alexilin@chromium.org</owner>
   <owner>msalama@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -583,7 +568,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.BoundSessionCredentials.SessionTerminationTrigger"
-    enum="SessionTerminationTrigger" expires_after="2024-01-14">
+    enum="SessionTerminationTrigger" expires_after="2024-05-26">
   <owner>alexilin@chromium.org</owner>
   <owner>msalama@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -764,7 +749,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.Extensions.LaunchWebAuthFlowResult"
-    enum="LaunchWebAuthFlowResult" expires_after="2024-03-17">
+    enum="LaunchWebAuthFlowResult" expires_after="2024-05-19">
   <owner>alexilin@chromium.org</owner>
   <owner>rsult@google.com</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -899,6 +884,19 @@ prefs when the profile is loaded.  -->
   </summary>
 </histogram>
 
+<histogram name="Signin.Intercept.ChromeSignin.BubbleShownCount"
+    units="shown_count" expires_after="2024-04-01">
+  <owner>rsult@google.com</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Records the number of times the Chrome Signin Bubble for a specific account
+    was shown to the user. The value is recorded every time the bubble is shown.
+    The number of impressions is incremented independently for each Google
+    Account the user signs in with, up to the maximum allowed number. Each
+    Chrome profile tracks these numbers separately.
+  </summary>
+</histogram>
+
 <histogram name="Signin.Intercept.ChromeSignin.ResponseTime{Result}" units="ms"
     expires_after="2024-04-01">
   <owner>rsult@google.com</owner>
@@ -920,6 +918,20 @@ prefs when the profile is loaded.  -->
   <summary>
     Records various events that occur during the first run experience after the
     sign-in interception.
+  </summary>
+</histogram>
+
+<histogram name="Signin.Intercept.Heuristic.ShouldShowChromeSigninBubble"
+    enum="BooleanShouldShow" expires_after="2024-04-28">
+  <owner>rsult@google.com</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Recorded when a Signin intercept happens and the heuristic outcome result
+    expects that the Chrome Signin Bubble should be shown later (or not) as part
+    of the intercept. However, since this value is also recorded when the Uno
+    feature is disabled, this metric does not guarantee that the bubble will be
+    shown, but rather that the context is right for the bubble to be shown
+    (disregarding the Uno feature flag).
   </summary>
 </histogram>
 
@@ -990,7 +1002,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.IOSDeviceRestoreSentinelError"
-    enum="SigninIOSDeviceRestoreSentinelError" expires_after="2024-04-01">
+    enum="SigninIOSDeviceRestoreSentinelError" expires_after="2024-06-02">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -1010,7 +1022,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.IOSDeviceRestoreSignedInState"
-    enum="IOSDeviceRestoreSignedinState" expires_after="2024-03-31">
+    enum="IOSDeviceRestoreSignedinState" expires_after="2024-06-02">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -1020,7 +1032,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.IOSGaiaCookieStateOnSignedInNavigation"
-    enum="GaiaCookieStateOnSignedInNavigation" expires_after="2024-04-01">
+    enum="GaiaCookieStateOnSignedInNavigation" expires_after="2024-06-02">
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -1035,7 +1047,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.IOSNumberOfDeviceAccounts" units="accounts"
-    expires_after="2024-03-31">
+    expires_after="2024-06-02">
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -1178,7 +1190,7 @@ the browser and content area. -->
 </histogram>
 
 <histogram name="Signin.LoadedIdentities.Count" units="identities"
-    expires_after="2024-04-01">
+    expires_after="2024-06-02">
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -1242,7 +1254,7 @@ the browser and content area. -->
 </histogram>
 
 <histogram name="Signin.OAuth2MintToken.ApiCallResult"
-    enum="OAuth2MintTokenApiCallResult" expires_after="2024-03-17">
+    enum="OAuth2MintTokenApiCallResult" expires_after="2024-05-19">
   <owner>alexilin@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <summary>
@@ -1310,7 +1322,7 @@ should be kept to monitor/debug signin Multilogin issues-->
 </histogram>
 
 <histogram name="Signin.ProcessMirrorHeaders.AllowedFromInitiator.GoIncognito"
-    enum="BooleanAllowed" expires_after="2024-01-14">
+    enum="BooleanAllowed" expires_after="2024-07-14">
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -1386,7 +1398,7 @@ should be kept to monitor/debug signin Multilogin issues-->
 
 <histogram
     name="Signin.Reconciler.RejectedRequestsDueToThrottler.{RequestType}"
-    units="requests" expires_after="2024-03-30">
+    units="requests" expires_after="2024-06-02">
   <owner>droger@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <owner>msalama@chromium.org</owner>
@@ -1651,7 +1663,7 @@ kept as long as profile signout is possible -->
 </histogram>
 
 <histogram base="true" name="Signin.SSOIdentityListRequest.CacheState"
-    enum="SigninSSOIdentityListRequestCacheState" expires_after="2024-04-01">
+    enum="SigninSSOIdentityListRequestCacheState" expires_after="2024-06-02">
 <!-- Name completed by histogram_suffixes name="SigninSSOIdentityListRequestCacheRequestState" -->
 
   <owner>jlebel@chromium.org</owner>
@@ -1664,7 +1676,7 @@ kept as long as profile signout is possible -->
 </histogram>
 
 <histogram base="true" name="Signin.SSOIdentityListRequest.Duration" units="ms"
-    expires_after="2024-04-01">
+    expires_after="2024-06-02">
 <!-- Name completed by histogram_suffixes name="SigninSSOIdentityListRequestDurationCacheState" -->
 
   <owner>jlebel@chromium.org</owner>
@@ -1677,7 +1689,7 @@ kept as long as profile signout is possible -->
 
 <histogram
     name="Signin.SSOIdentityListRequest.FetchIdentitiesWithCallback.Duration"
-    units="ms" expires_after="2024-04-01">
+    units="ms" expires_after="2024-06-02">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -1737,7 +1749,7 @@ kept as long as profile signout is possible -->
 </histogram>
 
 <histogram name="Signin.SyncErrorMessage{SyncErrorReason}"
-    enum="SyncErrorPromptUIAction" expires_after="2024-03-22">
+    enum="SyncErrorPromptUIAction" expires_after="2024-05-26">
   <owner>triploblastic@chromium.org</owner>
   <owner>bsazonov@chromium.org</owner>
   <summary>
@@ -1761,7 +1773,7 @@ kept as long as profile signout is possible -->
 </histogram>
 
 <histogram name="Signin.SyncFirstSetupCompleteSource"
-    enum="SyncFirstSetupCompleteSource" expires_after="2024-03-22">
+    enum="SyncFirstSetupCompleteSource" expires_after="2024-05-26">
   <owner>triploblastic@chromium.org</owner>
   <owner>bsazonov@chromium.org</owner>
   <summary>Tracks where FirstSetupComplete bit is set from.</summary>
@@ -1822,7 +1834,7 @@ kept as long as profile signout is possible -->
 </histogram>
 
 <histogram name="Signin.SyncPromo.{Action}.Count.{AccessPoint}"
-    units="bookmarks" expires_after="2024-03-22">
+    units="bookmarks" expires_after="2024-05-26">
   <owner>triploblastic@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -1894,7 +1906,7 @@ name="TransactionalReauthEntryPoint" -->
 </histogram>
 
 <histogram name="Signin.TransactionalReauthUserAction"
-    enum="SigninReauthUserAction" expires_after="2024-03-31">
+    enum="SigninReauthUserAction" expires_after="2024-06-02">
 <!-- Name completed by histogram_suffixes
 name="TransactionalReauthEntryPoint" -->
 

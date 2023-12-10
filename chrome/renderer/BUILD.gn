@@ -143,7 +143,7 @@ static_library("renderer") {
     "//chrome/common/cart:mojo_bindings",
     "//chrome/common/net",
     "//chrome/common/search:mojo_bindings",
-    "//chrome/renderer/companion/visual_search",
+    "//chrome/renderer/companion/visual_query",
     "//chrome/services/speech/buildflags",
     "//components/autofill/content/renderer",
     "//components/autofill/core/common:features",
@@ -293,10 +293,6 @@ static_library("renderer") {
       "//components/pdf/renderer",
       "//pdf:features",
     ]
-
-    if (is_linux || is_chromeos) {
-      deps += [ "//pdf:font_table_linux" ]
-    }
   }
 
   if (is_chromeos_ash) {
@@ -357,6 +353,7 @@ static_library("renderer") {
     ]
     deps += [
       "//chrome/common/extensions/api",
+      "//chrome/renderer/controlled_frame",
       "//components/guest_view/renderer",
       "//extensions:extensions_resources",
       "//extensions/common:mojom",

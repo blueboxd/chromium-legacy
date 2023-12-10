@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.compositor.overlays.strip;
 
 import android.app.Activity;
 import android.content.ClipData;
+import android.content.ClipDescription;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -17,6 +18,7 @@ import android.util.DisplayMetrics;
 import android.view.DragEvent;
 import android.view.View;
 import android.view.View.DragShadowBuilder;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
@@ -28,13 +30,15 @@ import org.chromium.base.Log;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
+import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
+import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.dragdrop.ChromeDragAndDropBrowserDelegate;
 import org.chromium.chrome.browser.dragdrop.ChromeDropDataAndroid;
 import org.chromium.chrome.browser.dragdrop.DragDropGlobalState;
 import org.chromium.chrome.browser.multiwindow.MultiInstanceManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
@@ -54,9 +58,12 @@ public class TabDragSource implements View.OnDragListener {
     private MultiInstanceManager mMultiInstanceManager;
     private DragAndDropDelegate mDragAndDropDelegate;
     private Supplier<StripLayoutHelper> mStripLayoutHelperSupplier;
+    private Supplier<TabContentManager> mTabContentManagerSupplier;
+    private Supplier<LayerTitleCache> mLayerTitleCacheSupplier;
     private BrowserControlsStateProvider mBrowserControlStateProvider;
     private View mDragSourceView;
-    private PointF mDragShadowOffset = new PointF(0, 0);
+    private StripTabDragShadowView mShadowView;
+    private PointF mDragShadowDefaultOffset = new PointF(0, 0);
     private float mPxToDp;
     private final float mTabStripHeightPx;
 
@@ -88,6 +95,8 @@ public class TabDragSource implements View.OnDragListener {
     public TabDragSource(
             @NonNull Context context,
             @NonNull Supplier<StripLayoutHelper> stripLayoutHelperSupplier,
+            @NonNull Supplier<TabContentManager> tabContentManagerSupplier,
+            @NonNull Supplier<LayerTitleCache> layerTitleCacheSupplier,
             @NonNull MultiInstanceManager multiInstanceManager,
             @NonNull DragAndDropDelegate dragAndDropDelegate,
             @NonNull BrowserControlsStateProvider browserControlStateProvider,
@@ -96,6 +105,8 @@ public class TabDragSource implements View.OnDragListener {
         // TODO(crbug.com/1498252): Use Toolbar#getTabStripHeight() instead.
         mTabStripHeightPx = context.getResources().getDimension(R.dimen.tab_strip_height);
         mStripLayoutHelperSupplier = stripLayoutHelperSupplier;
+        mTabContentManagerSupplier = tabContentManagerSupplier;
+        mLayerTitleCacheSupplier = layerTitleCacheSupplier;
         mMultiInstanceManager = multiInstanceManager;
         mDragAndDropDelegate = dragAndDropDelegate;
         mBrowserControlStateProvider = browserControlStateProvider;
@@ -119,11 +130,35 @@ public class TabDragSource implements View.OnDragListener {
                         != MultiWindowUtils.INVALID_INSTANCE_ID) {
             return false;
         }
+        if (!MultiWindowUtils.getInstance()
+                .isMoveToOtherWindowSupported(getActivity(), mTabModelSelector)) {
+            return false;
+        }
 
         setGlobalState(tabBeingDragged);
 
+        if (mShadowView == null) {
+            View rootView =
+                    View.inflate(
+                            toolbarContainerView.getContext(),
+                            R.layout.strip_tab_drag_shadow_view,
+                            (ViewGroup) toolbarContainerView.getRootView());
+            mShadowView = rootView.findViewById(R.id.strip_tab_drag_shadow_view);
+
+            mShadowView.initialize(
+                    mBrowserControlStateProvider,
+                    mTabContentManagerSupplier,
+                    mLayerTitleCacheSupplier,
+                    () -> {
+                        if (DragDropGlobalState.getInstance().dragShadowShowing) {
+                            showDragShadow(true);
+                        }
+                    });
+        }
+        mShadowView.setTab(tabBeingDragged);
+
         mDragSourceView = toolbarContainerView;
-        mDragShadowOffset =
+        mDragShadowDefaultOffset =
                 TabUiFeatureUtilities.isTabDragAsWindowEnabled()
                         ? getPositionOnScreen(toolbarContainerView, startPoint)
                         : new PointF(0f, 0f);
@@ -140,7 +175,9 @@ public class TabDragSource implements View.OnDragListener {
         boolean res = false;
         switch (dragEvent.getAction()) {
             case DragEvent.ACTION_DRAG_STARTED:
-                res = onDragStart(dragEvent.getX(), dragEvent.getY());
+                res =
+                        onDragStart(
+                                dragEvent.getX(), dragEvent.getY(), dragEvent.getClipDescription());
                 break;
             case DragEvent.ACTION_DRAG_ENDED:
                 res =
@@ -152,23 +189,27 @@ public class TabDragSource implements View.OnDragListener {
                                 mLastAction == DragEvent.ACTION_DRAG_EXITED);
                 break;
             case DragEvent.ACTION_DRAG_ENTERED:
-                res = didOccurInTabStrip(dragEvent.getY()) ? onDragEnter() : false;
+                // We'll trigger #onDragEnter when handling the following ACTION_DRAG_LOCATION so we
+                // have position data available (and can check if we've entered the tab strip).
+                res = false;
                 break;
             case DragEvent.ACTION_DRAG_EXITED:
                 res = onDragExit();
                 break;
             case DragEvent.ACTION_DRAG_LOCATION:
                 boolean isLastYInTabStrip = didOccurInTabStrip(mLastYDp / mPxToDp);
-                if (mLastAction == DragEvent.ACTION_DRAG_ENTERED
-                        || (isLastYInTabStrip && didOccurInTabStrip(dragEvent.getY()))) {
-                    // First move after drag enter OR drag moved within strip
-                    res = onDragLocation(dragEvent.getX(), dragEvent.getY());
+                boolean isCurrYInTabStrip = didOccurInTabStrip(dragEvent.getY());
+                if (isCurrYInTabStrip) {
+                    if (mLastAction == DragEvent.ACTION_DRAG_ENTERED || !isLastYInTabStrip) {
+                        // dragged onto strip from outside controls OR from toolbar.
+                        res = onDragEnter();
+                    } else {
+                        // drag moved within strip.
+                        res = onDragLocation(dragEvent.getX(), dragEvent.getY());
+                    }
                 } else if (isLastYInTabStrip) {
                     // drag moved from within to outside strip.
                     res = onDragExit();
-                } else if (didOccurInTabStrip(dragEvent.getY())) {
-                    // drag moved from outside to within strip.
-                    res = onDragEnter();
                 }
                 mLastXDp = dragEvent.getX() * mPxToDp;
                 mLastYDp = dragEvent.getY() * mPxToDp;
@@ -193,8 +234,11 @@ public class TabDragSource implements View.OnDragListener {
         return yPx <= mTabStripHeightPx;
     }
 
-    private boolean onDragStart(float xPx, float yPx) {
-        // TODO(crbug.com/1497784): Check or supported mime in ClipData before proceeding.
+    private boolean onDragStart(float xPx, float yPx, ClipDescription clipDescription) {
+        if (clipDescription.filterMimeTypes(ChromeDragAndDropBrowserDelegate.CHROME_MIMETYPE_TAB)
+                == null) {
+            return false;
+        }
         if (!isDragSource()) return true;
         mStartScreenPos = new PointF(xPx, yPx);
         mLastXDp = xPx * mPxToDp;
@@ -207,6 +251,7 @@ public class TabDragSource implements View.OnDragListener {
         mStripLayoutHelperSupplier
                 .get()
                 .dragActiveClickedTabOntoStrip(LayoutManagerImpl.time(), mLastXDp);
+        showDragShadow(false);
         return true;
     }
 
@@ -249,9 +294,12 @@ public class TabDragSource implements View.OnDragListener {
             View view, float xPx, float yPx, boolean dropHandled, boolean didExitToolbar) {
         if (!isDragSource()) return false;
         // If tab was dragged and dropped out of source toolbar but the drop was not handled, move
-        // to a new window. TODO (crbug.com/1497784): Add isTabDragAsWindowEnabled() check below.
+        // to a new window.
         Tab tabBeingDragged = DragDropGlobalState.getInstance().tabBeingDragged;
-        if (didExitToolbar && !dropHandled && tabBeingDragged != null) {
+        if (TabUiFeatureUtilities.isTabDragAsWindowEnabled()
+                && didExitToolbar
+                && !dropHandled
+                && DragDropGlobalState.getInstance().tabBeingDragged != null) {
             // Following call is device specific and is intended for specific platform
             // SysUI.
             sendPositionInfoToSysUI(view, mStartScreenPos.x, mStartScreenPos.y, xPx, yPx);
@@ -264,6 +312,7 @@ public class TabDragSource implements View.OnDragListener {
         DragDropGlobalState.getInstance().reset();
         // TODO (crbug.com/1497784): Remove this method.
         mStripLayoutHelperSupplier.get().clearActiveClickedTab();
+        mShadowView.clear();
         return true;
     }
 
@@ -278,6 +327,7 @@ public class TabDragSource implements View.OnDragListener {
 
     private void showDragShadow(boolean show) {
         assert mDragSourceView != null;
+        DragDropGlobalState.getInstance().dragShadowShowing = show;
         DragShadowBuilder builder = createTabDragShadowBuilder(mDragSourceView.getContext(), show);
         mDragSourceView.updateDragShadow(builder);
     }
@@ -391,17 +441,17 @@ public class TabDragSource implements View.OnDragListener {
                 addAppIconToShadow(imageView, context, shadowWidthPx, shadowHeightPx);
             }
         } else {
-            shadowWidthPx =
-                    context.getResources().getDimensionPixelSize(R.dimen.tab_hover_card_width);
-            shadowHeightPx =
-                    TabUtils.deriveGridCardHeight(
-                            shadowWidthPx, context, mBrowserControlStateProvider);
+            if (show) {
+                return new TabDragShadowBuilder(mShadowView, mDragShadowDefaultOffset);
+            }
+            shadowWidthPx = mShadowView.getWidth();
+            shadowHeightPx = mShadowView.getHeight();
         }
         if (show) {
             imageView.setBackgroundDrawable(new ColorDrawable(Color.LTGRAY));
         }
         imageView.layout(0, 0, shadowWidthPx, shadowHeightPx);
-        return new TabDragShadowBuilder(imageView, mDragShadowOffset);
+        return new TabDragShadowBuilder(imageView, mDragShadowDefaultOffset);
     }
 
     private void addAppIconToShadow(
@@ -500,5 +550,9 @@ public class TabDragSource implements View.OnDragListener {
                 (topLeftLocationOfToolbarView[1] - topLeftLocationOfDecorView[1])
                         + positionInView.y / mPxToDp;
         return new PointF(positionXOnScreen, positionYOnScreen);
+    }
+
+    View getShadowViewForTesting() {
+        return mShadowView;
     }
 }

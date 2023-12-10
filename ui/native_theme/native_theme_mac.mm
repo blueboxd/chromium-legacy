@@ -137,7 +137,7 @@ NativeTheme* NativeTheme::GetInstanceForNativeUi() {
 
 NativeTheme* NativeTheme::GetInstanceForDarkUI() {
   static base::NoDestructor<NativeThemeMac> s_native_theme(
-      /*configure_web_instance=*/false, /*should_only_use_dark_colors=*/true);
+      /*should_only_use_dark_colors=*/true);
   return s_native_theme.get();
 }
 
@@ -152,7 +152,8 @@ bool NativeTheme::SystemDarkModeSupported() {
 // static
 NativeThemeMac* NativeThemeMac::instance() {
   static base::NoDestructor<NativeThemeMac> s_native_theme(
-      /*configure_web_instance=*/true, /*should_only_use_dark_colors=*/false);
+      /*should_only_use_dark_colors=*/false,
+      /*theme_to_update=*/NativeTheme::GetInstanceForWeb());
   return s_native_theme.get();
 }
 
@@ -567,44 +568,30 @@ static void CaptionSettingsChangedNotificationCallback(CFNotificationCenterRef,
   NativeTheme::GetInstanceForWeb()->NotifyOnCaptionStyleUpdated();
 }
 
-NativeThemeMac::NativeThemeMac(bool configure_web_instance,
-                               bool should_only_use_dark_colors)
-    : NativeThemeBase(should_only_use_dark_colors) {
-  if (!should_only_use_dark_colors) {
+NativeThemeMac::NativeThemeMac(bool should_only_use_dark_colors,
+                               NativeTheme* theme_to_update)
+    : NativeThemeBase(should_only_use_dark_colors,
+                      ui::SystemTheme::kDefault,
+                      theme_to_update) {
+  if (!should_only_use_dark_colors)
     InitializeDarkModeStateAndObserver();
   }
 
-  static NSString* const*
-      NSWorkspaceAccessibilityDisplayOptionsDidChangeNotificationStr =
-          reinterpret_cast<NSString* const*>(dlsym(
-              ((void*)-2),
-              "NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification"));
-  if (NSWorkspaceAccessibilityDisplayOptionsDidChangeNotificationStr) {
-    set_prefers_reduced_transparency(PrefersReducedTransparency());
-    set_inverted_colors(InvertedColors());
-    if (!IsForcedHighContrast()) {
-      SetPreferredContrast(CalculatePreferredContrast());
-    }
-    __block auto theme = this;
-    display_accessibility_notification_token_ =
-        [NSWorkspace.sharedWorkspace.notificationCenter
-            addObserverForName:
-                NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification
-                        object:nil
-                         queue:nil
-                    usingBlock:^(NSNotification* notification) {
-                      if (!IsForcedHighContrast()) {
-                        theme->SetPreferredContrast(
-                            CalculatePreferredContrast());
-                      }
-                      theme->set_prefers_reduced_transparency(
-                          PrefersReducedTransparency());
-                      theme->set_inverted_colors(InvertedColors());
-                      theme->NotifyOnNativeThemeUpdated();
-                    }];
-  }
-  if (configure_web_instance) {
-    ConfigureWebInstance();
+  if (theme_to_update) {
+    theme_to_update->set_use_dark_colors(IsDarkMode());
+    theme_to_update->set_preferred_color_scheme(
+        CalculatePreferredColorScheme());
+    theme_to_update->SetPreferredContrast(CalculatePreferredContrast());
+    theme_to_update->set_prefers_reduced_transparency(
+        PrefersReducedTransparency());
+    theme_to_update->set_inverted_colors(InvertedColors());
+
+    // Observe caption style changes.
+    CFNotificationCenterAddObserver(
+        CFNotificationCenterGetLocalCenter(), this,
+        CaptionSettingsChangedNotificationCallback,
+        kMACaptionAppearanceSettingsChangedNotification, nullptr,
+        CFNotificationSuspensionBehaviorDeliverImmediately);
   }
 }
 
@@ -639,32 +626,9 @@ void NativeThemeMac::InitializeDarkModeStateAndObserver() {
       }];
 }
 
-void NativeThemeMac::ConfigureWebInstance() {
-  // NativeThemeAura is used as web instance so we need to initialize its state.
-  NativeTheme* web_instance = NativeTheme::GetInstanceForWeb();
-  web_instance->set_use_dark_colors(IsDarkMode());
-  web_instance->set_preferred_color_scheme(CalculatePreferredColorScheme());
-  web_instance->SetPreferredContrast(CalculatePreferredContrast());
-  web_instance->set_prefers_reduced_transparency(PrefersReducedTransparency());
-  web_instance->set_inverted_colors(InvertedColors());
-
-  // Add the web native theme as an observer to stay in sync with color scheme
-  // changes.
-  color_scheme_observer_ =
-      std::make_unique<NativeTheme::ColorSchemeNativeThemeObserver>(
-          NativeTheme::GetInstanceForWeb());
-  AddObserver(color_scheme_observer_.get());
-
-  // Observe caption style changes.
-  //  CFNotificationCenterAddObserver(
-  //      CFNotificationCenterGetLocalCenter(), this,
-  //      CaptionSettingsChangedNotificationCallback,
-  //      kMACaptionAppearanceSettingsChangedNotification, 0,
-  //      CFNotificationSuspensionBehaviorDeliverImmediately);
-}
-
 NativeThemeMacWeb::NativeThemeMacWeb()
-    : NativeThemeAura(IsOverlayScrollbarEnabled(), false) {}
+    : NativeThemeAura(/*use_overlay_scrollbars=*/IsOverlayScrollbarEnabled(),
+                      /*should_only_use_dark_colors=*/false) {}
 
 // static
 NativeThemeMacWeb* NativeThemeMacWeb::instance() {

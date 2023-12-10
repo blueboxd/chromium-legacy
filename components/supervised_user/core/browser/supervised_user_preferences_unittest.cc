@@ -158,11 +158,19 @@ class SupervisedUserPreferencesTestWithUrlFilteringFeature
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || \
     BUILDFLAG(IS_IOS)
     if (IsURLFilteringEnabled()) {
-      feature_list_.InitAndEnableFeature(
-          supervised_user::kFilterWebsitesForSupervisedUsersOnDesktopAndIOS);
+      feature_list_.InitWithFeatures(
+          {supervised_user::kFilterWebsitesForSupervisedUsersOnDesktopAndIOS,
+           supervised_user::kSupervisedPrefsControlledBySupervisedStore,
+           supervised_user::kEnableManagedByParentUi,
+           supervised_user::kClearingCookiesKeepsSupervisedUsersSignedIn},
+          {});
     } else {
-      feature_list_.InitAndDisableFeature(
-          supervised_user::kFilterWebsitesForSupervisedUsersOnDesktopAndIOS);
+      feature_list_.InitWithFeatures(
+          {},
+          {supervised_user::kFilterWebsitesForSupervisedUsersOnDesktopAndIOS,
+           supervised_user::kSupervisedPrefsControlledBySupervisedStore,
+           supervised_user::kEnableManagedByParentUi,
+           supervised_user::kClearingCookiesKeepsSupervisedUsersSignedIn});
     }
 #endif
   }
@@ -192,6 +200,22 @@ TEST_P(SupervisedUserPreferencesTestWithUrlFilteringFeature,
   // Set non-supervised user preference.
   pref_service_.SetString(prefs::kSupervisedUserId, std::string());
   EXPECT_FALSE(supervised_user::IsSubjectToParentalControls(pref_service_));
+}
+
+TEST_P(SupervisedUserPreferencesTestWithUrlFilteringFeature,
+       IsUrlFilteringEnabledForSupervisedUser) {
+  // Set supervised user preference.
+  pref_service_.SetString(prefs::kSupervisedUserId,
+                          supervised_user::kChildAccountSUID);
+  EXPECT_EQ(supervised_user::IsUrlFilteringEnabled(pref_service_),
+            IsURLFilteringEnabled());
+}
+
+TEST_P(SupervisedUserPreferencesTestWithUrlFilteringFeature,
+       IsUrlFilteringEnabledForNonSupervisedUser) {
+  // Set non-supervised user preference.
+  pref_service_.SetString(prefs::kSupervisedUserId, std::string());
+  EXPECT_FALSE(supervised_user::IsUrlFilteringEnabled(pref_service_));
 }
 
 INSTANTIATE_TEST_SUITE_P(

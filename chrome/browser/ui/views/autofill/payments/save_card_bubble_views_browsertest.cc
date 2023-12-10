@@ -63,8 +63,10 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/signin/public/base/signin_buildflags.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
+#include "components/sync/base/features.h"
 #include "components/sync/service/sync_service_impl.h"
 #include "components/sync/test/fake_server.h"
 #include "components/sync/test/fake_server_network_resources.h"
@@ -236,7 +238,7 @@ class SaveCardBubbleViewsFullFormBrowserTest
     return autofill_manager()
         ->client()
         .GetFormDataImporter()
-        ->credit_card_save_manager_.get();
+        ->GetCreditCardSaveManager();
   }
 
   // CreditCardSaveManager::ObserverForTest:
@@ -960,6 +962,12 @@ class SaveCardBubbleViewsSyncTransportFullFormBrowserTest
       disabled_features.push_back(
           features::kAutofillMoveLegalTermsAndIconForNewCardEnrollment);
     }
+    // Since server card saves upload address information, they are only offered
+    // when addresses are being synced. Enable CONTACT_INFO in transport mode.
+    enabled_features.push_back(syncer::kSyncDecoupleAddressPaymentSettings);
+    enabled_features.push_back(
+        syncer::kSyncEnableContactInfoDataTypeInTransportMode);
+    disabled_features.push_back(switches::kUnoDesktop);
     feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
 

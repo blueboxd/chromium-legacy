@@ -30,7 +30,7 @@
 #import "ios/chrome/browser/ui/sharing/activity_services/data/share_to_data_builder.h"
 #import "ios/chrome/browser/ui/sharing/sharing_params.h"
 #import "ios/chrome/browser/ui/sharing/sharing_positioner.h"
-#import "ios/chrome/browser/web/web_navigation_browser_agent.h"
+#import "ios/chrome/browser/web/model/web_navigation_browser_agent.h"
 #import "ios/web/public/web_state.h"
 #import "net/base/mac/url_conversions.h"
 #import "url/gurl.h"
@@ -399,8 +399,8 @@ constexpr CGFloat kAppIconPointSize = 80;
 
 - (NSItemProvider*)appIconProvider {
 #if BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
-  UIImage* image = MakeSymbolMulticolor(
-      CustomSymbolWithPointSize(kChromeSymbol, kAppIconPointSize));
+  UIImage* image = MakeSymbolMulticolor(CustomSymbolWithPointSize(
+      kMulticolorChromeballSymbol, kAppIconPointSize));
 #else
   UIImage* image = DefaultSymbolTemplateWithPointSize(kDefaultBrowserSymbol,
                                                       kAppIconPointSize);

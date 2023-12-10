@@ -30,6 +30,9 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/hats/hats_service.h"
+#include "chrome/browser/ui/hats/hats_service_factory.h"
+#include "chrome/browser/ui/hats/survey_config.h"
 #include "chrome/browser/ui/hats/trust_safety_sentiment_service.h"
 #include "chrome/browser/ui/hats/trust_safety_sentiment_service_factory.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
@@ -82,6 +85,12 @@ using password_manager::PasswordFormManagerForUI;
 int ManagePasswordsUIController::save_fallback_timeout_in_seconds_ = 90;
 
 namespace {
+
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+// Should be kept in sync with constant declared in
+// bubble_controllers/relaunch_chrome_bubble_controller.cc.
+constexpr int kMaxNumberOfTimesKeychainErrorBubbleIsShown = 3;
+#endif
 
 password_manager::PasswordStoreInterface* GetProfilePasswordStore(
     content::WebContents* web_contents) {
@@ -276,6 +285,16 @@ void ManagePasswordsUIController::OnAutomaticPasswordSave(
 
   bubble_status_ = BubbleStatus::SHOULD_POP_UP;
   UpdateBubbleAndIconVisibility();
+
+  HatsService* hats_service = HatsServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
+      /*create_if_necessary=*/true);
+  if (hats_service) {
+    hats_service->LaunchDelayedSurveyForWebContents(
+        kHatsSurveyTriggerSuggestedPasswordsExperiment, web_contents(),
+        /*timeout_ms=*/0, /*product_specific_bits_data=*/
+        {{"Suggested password accepted", true}});
+  }
 }
 
 void ManagePasswordsUIController::OnPasswordAutofilled(
@@ -373,8 +392,6 @@ void ManagePasswordsUIController::OnShowMoveToAccountBubble(
       "PasswordManager.AccountStorage.MoveToAccountStoreFlowOffered",
       password_manager::metrics_util::MoveToAccountStoreTrigger::
           kSuccessfulLoginWithProfileStorePassword);
-  if (!GetPasswordFeatureManager()->IsOptedInForAccountStorage())
-    GetPasswordFeatureManager()->RecordMoveOfferedToNonOptedInUser();
   passwords_data_.OnPasswordMovable(std::move(form_to_move));
   // TODO(crbug.com/1100814): Add smartness like OnPasswordSubmitted?
   bubble_status_ = BubbleStatus::SHOULD_POP_UP;
@@ -430,6 +447,24 @@ void ManagePasswordsUIController::OnBiometricAuthBeforeFillingDeclined() {
   CHECK(!dialog_controller_);
   passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
   UpdateBubbleAndIconVisibility();
+}
+
+void ManagePasswordsUIController::OnKeychainError() {
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+  CHECK(!dialog_controller_);
+  PrefService* prefs =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext())
+          ->GetPrefs();
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kRestartToGainAccessToKeychain) &&
+      prefs->GetInteger(
+          password_manager::prefs::kRelaunchChromeBubbleDismissedCounter) <=
+          kMaxNumberOfTimesKeychainErrorBubbleIsShown) {
+    passwords_data_.OnKeychainError();
+    bubble_status_ = BubbleStatus::SHOULD_POP_UP;
+    UpdateBubbleAndIconVisibility();
+  }
+#endif
 }
 
 void ManagePasswordsUIController::OnAddUsernameSaveClicked(
@@ -702,6 +737,16 @@ void ManagePasswordsUIController::SavePassword(const std::u16string& username,
     }
     MaybeShowPasswordManagerShortcutIPH(browser);
   }
+
+  HatsService* hats_service = HatsServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
+      /*create_if_necessary=*/true);
+  if (hats_service) {
+    hats_service->LaunchDelayedSurveyForWebContents(
+        kHatsSurveyTriggerSuggestedPasswordsExperiment, web_contents(),
+        /*timeout_ms=*/0, /*product_specific_bits_data=*/
+        {{"Suggested password accepted", false}});
+  }
 }
 
 void ManagePasswordsUIController::SaveUnsyncedCredentialsInProfileStore(
@@ -885,19 +930,6 @@ void ManagePasswordsUIController::RelaunchChrome() {
   chrome::AttemptRestart();
 }
 
-void ManagePasswordsUIController::
-    AuthenticateUserForAccountStoreOptInAndMovePassword() {
-  DCHECK_EQ(GetState(),
-            password_manager::ui::CAN_MOVE_PASSWORD_TO_ACCOUNT_STATE)
-      << GetState();
-  passwords_data_.client()->TriggerReauthForPrimaryAccount(
-      signin_metrics::ReauthAccessPoint::kPasswordMoveBubble,
-      base::BindOnce(&ManagePasswordsUIController::
-                         FinishMovingPasswordAfterAccountStoreOptInAuth,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     passwords_data_.form_manager()));
-}
-
 [[nodiscard]] std::unique_ptr<base::AutoReset<bool>>
 ManagePasswordsUIController::BypassUserAuthtForTesting() {
   return std::make_unique<base::AutoReset<bool>>(&bypass_user_auth_for_testing_,
@@ -1062,17 +1094,6 @@ void ManagePasswordsUIController::OnTriggerPostSaveCompromisedBubble(
   passwords_data_.TransitionToState(state);
   bubble_status_ = BubbleStatus::SHOULD_POP_UP;
   UpdateBubbleAndIconVisibility();
-}
-
-void ManagePasswordsUIController::
-    FinishMovingPasswordAfterAccountStoreOptInAuth(
-        password_manager::PasswordFormManagerForUI* form_manager,
-        password_manager::PasswordManagerClient::ReauthSucceeded
-            reauth_succeeded) {
-  if (!reauth_succeeded || passwords_data_.form_manager() != form_manager) {
-    return;
-  }
-  MovePasswordToAccountStore();
 }
 
 void ManagePasswordsUIController::MoveJustSavedPasswordAfterAccountStoreOptIn(

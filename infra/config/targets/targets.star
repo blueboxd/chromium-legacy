@@ -239,6 +239,11 @@ targets.console_test_launcher(
     label = "//third_party/blink/renderer/controller:blink_unittests",
 )
 
+targets.console_test_launcher(
+    name = "blink_unittests_v2",
+    label = "//third_party/blink/renderer/controller:blink_unittests_v2",
+)
+
 targets.generated_script(
     name = "blink_web_tests",
     label = "//:blink_web_tests",
@@ -831,6 +836,11 @@ targets.generated_script(
 )
 
 targets.console_test_launcher(
+    name = "cronet_smoketests_apk",
+    label = "//components/cronet/android:cronet_smoketests_apk",
+)
+
+targets.console_test_launcher(
     name = "cronet_smoketests_missing_native_library_instrumentation_apk",
     label = "//components/cronet/android:cronet_smoketests_missing_native_library_instrumentation_apk",
 )
@@ -1251,14 +1261,6 @@ targets.generated_script(
     ],
 )
 
-targets.generated_script(
-    name = "lacros_all_tast_tests_informational",
-    label = "//chromeos/lacros:lacros_all_tast_tests_informational",
-    args = [
-        "--logs-dir=${ISOLATED_OUTDIR}",
-    ],
-)
-
 targets.windowed_test_launcher(
     name = "lacros_chrome_browsertests",
     label = "//chrome/test:lacros_chrome_browsertests",
@@ -1275,14 +1277,6 @@ targets.console_test_launcher(
 targets.generated_script(
     name = "lacros_cq_tast_tests_eve",
     label = "//chromeos/lacros:lacros_cq_tast_tests_eve",
-    args = [
-        "--logs-dir=${ISOLATED_OUTDIR}",
-    ],
-)
-
-targets.generated_script(
-    name = "lacros_fyi_tast_tests",
-    label = "//chromeos/lacros:lacros_fyi_tast_tests",
     args = [
         "--logs-dir=${ISOLATED_OUTDIR}",
     ],
@@ -1537,6 +1531,16 @@ targets.console_test_launcher(
 targets.windowed_test_launcher(
     name = "notification_helper_unittests",
     label = "//chrome/notification_helper:notification_helper_unittests",
+)
+
+targets.compile_target(
+    name = "ondevice_model_benchmark",
+    label = "//components/optimization_guide/internal:ondevice_model_benchmark",
+)
+
+targets.compile_target(
+    name = "ondevice_model_example",
+    label = "//components/optimization_guide/internal:ondevice_model_example",
 )
 
 targets.console_test_launcher(

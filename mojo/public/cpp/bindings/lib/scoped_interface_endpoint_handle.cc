@@ -5,6 +5,7 @@
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 #include <string>
+#include <string_view>
 
 #include "base/check.h"
 #include "base/functional/bind.h"
@@ -351,7 +352,7 @@ void ScopedInterfaceEndpointHandle::reset() {
 
 void ScopedInterfaceEndpointHandle::ResetWithReason(
     uint32_t custom_reason,
-    base::StringPiece description) {
+    std::string_view description) {
   ResetInternal(DisconnectReason(custom_reason, std::string(description)));
 }
 

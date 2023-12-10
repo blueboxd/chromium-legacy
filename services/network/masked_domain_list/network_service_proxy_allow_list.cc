@@ -45,9 +45,7 @@ NetworkServiceProxyAllowList NetworkServiceProxyAllowList::CreateForTesting(
 }
 
 bool NetworkServiceProxyAllowList::IsEnabled() {
-  return base::FeatureList::IsEnabled(
-             net::features::kEnableIpProtectionProxy) &&
-         base::FeatureList::IsEnabled(network::features::kMaskedDomainList);
+  return base::FeatureList::IsEnabled(network::features::kMaskedDomainList);
 }
 
 bool NetworkServiceProxyAllowList::IsPopulated() {
@@ -69,8 +67,8 @@ NetworkServiceProxyAllowList::MakeIpProtectionCustomProxyConfig() {
 void NetworkServiceProxyAllowList::AddDomainWithBypass(
     const std::string& domain,
     net::SchemeHostPortMatcher bypass_matcher) {
-  url_matcher_with_bypass_.AddDomainWithBypass(domain,
-                                               std::move(bypass_matcher));
+  url_matcher_with_bypass_.AddDomainWithBypass(
+      domain, std::move(bypass_matcher), /*include_subdomains=*/true);
 }
 
 size_t NetworkServiceProxyAllowList::EstimateMemoryUsage() const {
@@ -80,6 +78,13 @@ size_t NetworkServiceProxyAllowList::EstimateMemoryUsage() const {
 bool NetworkServiceProxyAllowList::Matches(
     const GURL& request_url,
     const net::NetworkAnonymizationKey& network_anonymization_key) {
+  // TODO(https://crbug.com/1474932): Support proxying HTTP URLs by using
+  // CONNECT requests (i.e. tunnelling) instead of using the old-style proxy GET
+  // requests from the last proxy in the chain.
+  if (request_url.SchemeIs(url::kHttpScheme)) {
+    return false;
+  }
+
   absl::optional<net::SchemefulSite> top_frame_site =
       network_anonymization_key.GetTopFrameSite();
   switch (proxy_bypass_policy_) {
@@ -113,8 +118,17 @@ void NetworkServiceProxyAllowList::UseMaskedDomainList(
     const masked_domain_list::MaskedDomainList& mdl) {
   url_matcher_with_bypass_.Clear();
   for (auto owner : mdl.resource_owners()) {
+    // Group domains by partition first so that only one set of the owner's
+    // bypass rules are created per partition.
+    std::map<std::string, std::vector<std::string>> owned_domains_by_partition;
     for (auto resource : owner.owned_resources()) {
-      url_matcher_with_bypass_.AddMaskedDomainListRules(resource.domain(),
+      const std::string partition =
+          UrlMatcherWithBypass::PartitionMapKey(resource.domain());
+      owned_domains_by_partition[partition].emplace_back(resource.domain());
+    }
+
+    for (const auto& [partition, domains] : owned_domains_by_partition) {
+      url_matcher_with_bypass_.AddMaskedDomainListRules(domains, partition,
                                                         owner);
     }
   }

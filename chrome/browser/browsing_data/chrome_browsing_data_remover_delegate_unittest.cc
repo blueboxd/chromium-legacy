@@ -22,6 +22,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -59,6 +60,7 @@
 #include "chrome/browser/permissions/permission_actions_history_factory.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
+#include "chrome/browser/reading_list/reading_list_model_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/verdict_cache_manager_factory.h"
 #include "chrome/browser/segmentation_platform/segmentation_platform_service_factory.h"
@@ -122,9 +124,9 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/os_crypt/sync/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/features/password_features.h"
-#include "components/password_manager/core/browser/mock_password_store_interface.h"
-#include "components/password_manager/core/browser/mock_smart_bubble_stats_store.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "components/password_manager/core/browser/password_store/mock_password_store_interface.h"
+#include "components/password_manager/core/browser/password_store/mock_smart_bubble_stats_store.h"
 #include "components/password_manager/core/browser/password_store/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_store/password_store_interface.h"
 #include "components/payments/content/mock_payment_manifest_web_data_service.h"
@@ -138,6 +140,8 @@
 #include "components/privacy_sandbox/privacy_sandbox_attestations/privacy_sandbox_attestations.h"
 #include "components/privacy_sandbox/privacy_sandbox_attestations/scoped_privacy_sandbox_attestations.h"
 #include "components/privacy_sandbox/privacy_sandbox_settings.h"
+#include "components/reading_list/core/mock_reading_list_model_observer.h"
+#include "components/reading_list/core/reading_list_model.h"
 #include "components/safe_browsing/core/browser/verdict_cache_manager.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/segmentation_platform/public/features.h"
@@ -967,7 +971,8 @@ class RemoveAutofillTester {
   // Add one profile and two credit cards to the database. One credit card has a
   // web origin and the other has a Chrome origin.
   void AddProfilesAndCards() {
-    autofill::AutofillProfile profile;
+    autofill::AutofillProfile profile(
+        autofill::i18n_model_definition::kLegacyHierarchyCountryCode);
     profile.set_guid(base::Uuid::GenerateRandomV4().AsLowercaseString());
     profile.SetRawInfo(autofill::NAME_FIRST, u"Bob");
     profile.SetRawInfo(autofill::NAME_LAST, u"Smith");
@@ -1197,9 +1202,7 @@ class StrikeDatabaseTester {
 #if BUILDFLAG(ENABLE_NACL)
 class ScopedNaClBrowserDelegate {
  public:
-  ~ScopedNaClBrowserDelegate() {
-    nacl::NaClBrowser::ClearAndDeleteDelegateForTest();
-  }
+  ~ScopedNaClBrowserDelegate() { nacl::NaClBrowser::ClearAndDeleteDelegate(); }
 
   void Init(ProfileManager* profile_manager) {
     nacl::NaClBrowser::SetDelegate(
@@ -1389,6 +1392,19 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
         std::move(filter_builder), &completion_observer);
     base::ThreadPoolInstance::Get()->FlushForTesting();
     completion_observer.BlockUntilCompletion();
+  }
+
+  void WaitForReadingListModelLoaded(ReadingListModel* reading_list_model) {
+    testing::NiceMock<MockReadingListModelObserver> observer_;
+    base::RunLoop run_loop;
+    EXPECT_CALL(observer_, ReadingListModelLoaded).WillOnce([&run_loop] {
+      run_loop.Quit();
+    });
+    // If the ReadingListModel is already loaded, it'll call
+    // ReadingListModelLoaded() immediately.
+    reading_list_model->AddObserver(&observer_);
+    run_loop.Run();
+    reading_list_model->RemoveObserver(&observer_);
   }
 
   const base::Time& GetBeginTime() {
@@ -2122,6 +2138,21 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, DeleteBookmarks) {
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
                                 constants::DATA_TYPE_BOOKMARKS, false);
   EXPECT_EQ(0u, bookmark_model->bookmark_bar_node()->children().size());
+}
+
+TEST_F(ChromeBrowsingDataRemoverDelegateTest, ClearReadingList) {
+  TestingProfile* profile = GetProfile();
+  auto* reading_list_model =
+      ReadingListModelFactory::GetForBrowserContext(profile);
+  WaitForReadingListModelLoaded(reading_list_model);
+  reading_list_model->AddOrReplaceEntry(
+      GURL("http://url.com/"), "entry_title",
+      reading_list::ADDED_VIA_CURRENT_APP,
+      /*estimated_read_time=*/base::TimeDelta());
+  EXPECT_EQ(1u, reading_list_model->size());
+  BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
+                                constants::DATA_TYPE_READING_LIST, false);
+  EXPECT_EQ(0u, reading_list_model->size());
 }
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, DeleteBookmarkHistory) {
@@ -3128,6 +3159,9 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveFederatedContentSettings) {
       content::BrowsingDataRemover::DATA_TYPE_COOKIES,
       constants::DATA_TYPE_HISTORY, constants::DATA_TYPE_PASSWORDS};
   for (content::BrowsingDataRemover::DataType test_data_type : test_cases) {
+    SCOPED_TRACE(base::StringPrintf("Test data type %d",
+                                    static_cast<int>(test_data_type)));
+
     {
       FederatedIdentityPermissionContext federated_context(GetProfile());
 
@@ -3959,8 +3993,18 @@ class ChromeBrowsingDataRemoverDelegateEnabledPasswordsTest
     : public ChromeBrowsingDataRemoverDelegateTest {
  public:
   ChromeBrowsingDataRemoverDelegateEnabledPasswordsTest() {
+#if BUILDFLAG(IS_ANDROID)
+    // Using the account store on Android also requires UPM support for local
+    // passwords.
+    feature_list_.InitWithFeatures(
+        {password_manager::features::kEnablePasswordsAccountStorage,
+         password_manager::features::
+             kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration},
+        {});
+#else
     feature_list_.InitAndEnableFeature(
         password_manager::features::kEnablePasswordsAccountStorage);
+#endif
   }
 };
 

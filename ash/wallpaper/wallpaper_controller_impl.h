@@ -48,6 +48,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/user_manager/user_type.h"
 #include "ui/compositor/compositor_lock.h"
+#include "ui/display/display_observer.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_observer.h"
@@ -55,6 +56,10 @@
 namespace base {
 class SequencedTaskRunner;
 }  // namespace base
+
+namespace display {
+enum class TabletState;
+}  // namespace display
 
 namespace ash {
 
@@ -87,7 +92,7 @@ class ASH_EXPORT WallpaperControllerImpl
       public ShellObserver,
       public LoginDataDispatcher::Observer,
       public SessionObserver,
-      public TabletModeObserver,
+      public display::DisplayObserver,
       public OverviewObserver,
       public ui::CompositorLockClient,
       public ui::NativeThemeObserver,
@@ -128,13 +133,13 @@ class ASH_EXPORT WallpaperControllerImpl
   SkColor GetKMeanColor() const;
 
   // Returns the sampled color of the given user's wallpaper.
-  absl::optional<SkColor> GetCachedWallpaperColorForUser(
+  std::optional<SkColor> GetCachedWallpaperColorForUser(
       const AccountId& account_id,
       bool should_use_k_means) const;
 
   // Returns the set of calculated colors. If the colors have not yet been
   // calculated yet, returns an empty object.
-  const absl::optional<WallpaperCalculatedColors>& calculated_colors() const {
+  const std::optional<WallpaperCalculatedColors>& calculated_colors() const {
     return calculated_colors_;
   }
 
@@ -295,6 +300,11 @@ class ASH_EXPORT WallpaperControllerImpl
   void SetSeaPenWallpaper(const AccountId& account_id,
                           const SeaPenImage& sea_pen_image,
                           SetWallpaperCallback callback) override;
+
+  void SetSeaPenWallpaperFromFile(const AccountId& account_id,
+                                  const base::FilePath& file_path,
+                                  SetWallpaperCallback callback) override;
+
   void ConfirmPreviewWallpaper() override;
   void CancelPreviewWallpaper() override;
   void UpdateCurrentWallpaperLayout(const AccountId& account_id,
@@ -322,7 +332,7 @@ class ASH_EXPORT WallpaperControllerImpl
   bool IsActiveUserWallpaperControlledByPolicy() override;
   bool IsWallpaperControlledByPolicy(
       const AccountId& account_id) const override;
-  absl::optional<WallpaperInfo> GetActiveUserWallpaperInfo() const override;
+  std::optional<WallpaperInfo> GetActiveUserWallpaperInfo() const override;
   bool ShouldShowWallpaperSetting() override;
   void SetDailyRefreshCollectionId(const AccountId& account_id,
                                    const std::string& collection_id) override;
@@ -348,9 +358,8 @@ class ASH_EXPORT WallpaperControllerImpl
   void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
 
-  // TabletModeObserver:
-  void OnTabletModeStarted() override;
-  void OnTabletModeEnded() override;
+  // display::DisplayObserver:
+  void OnDisplayTabletStateChanged(display::TabletState state) override;
 
   // ScheduledFeature::CheckpointObserver:
   void OnCheckpointChanged(const ScheduledFeature* src,
@@ -483,11 +492,11 @@ class ASH_EXPORT WallpaperControllerImpl
   // Handler to receive Fetch*Wallpaper variants callbacks.
   void OnWallpaperVariantsFetched(WallpaperType type,
                                   SetWallpaperCallback callback,
-                                  absl::optional<OnlineWallpaperParams> params);
+                                  std::optional<OnlineWallpaperParams> params);
 
   // Repaints the online wallpaper with the information from `params`.
   // No-op if params does not exist.
-  void RepaintOnlineWallpaper(absl::optional<OnlineWallpaperParams> params);
+  void RepaintOnlineWallpaper(std::optional<OnlineWallpaperParams> params);
 
   // Used as the callback of decoding wallpapers of type
   // `WallpaperType::kOnline`. Shows the wallpaper immediately if `account_id`
@@ -517,13 +526,12 @@ class ASH_EXPORT WallpaperControllerImpl
       ash::personalization_app::mojom::GooglePhotosPhotoPtr photo,
       bool success);
 
-  void OnDailyGooglePhotosWallpaperDecoded(
-      const AccountId& account_id,
-      const std::string& photo_id,
-      const std::string& album_id,
-      absl::optional<std::string> dedup_key,
-      RefreshWallpaperCallback callback,
-      const gfx::ImageSkia& image);
+  void OnDailyGooglePhotosWallpaperDecoded(const AccountId& account_id,
+                                           const std::string& photo_id,
+                                           const std::string& album_id,
+                                           std::optional<std::string> dedup_key,
+                                           RefreshWallpaperCallback callback,
+                                           const gfx::ImageSkia& image);
 
   // Used as the callback of loading Google Photos wallpapers of type
   // `WallpaperType::kOnceGooglePhotos`. Shows the wallpaper immediately if
@@ -556,8 +564,8 @@ class ASH_EXPORT WallpaperControllerImpl
   // Used as the callback of SeaPen wallpaper decoding. Shows the wallpaper
   // immediately if `account_id` is for the active user.
   void OnSeaPenWallpaperDecoded(const AccountId& account_id,
+                                const base::FilePath& file_path,
                                 SetWallpaperCallback callback,
-                                uint32_t sea_pen_image_id,
                                 const gfx::ImageSkia& image_skia);
 
   // Saves |image| to disk if the user's data is not ephemeral, or if it is a
@@ -783,7 +791,7 @@ class ASH_EXPORT WallpaperControllerImpl
 
   // The calculated colors extracted from the current wallpaper.
   // Empty state is used to denote when colors have not yet been calculated.
-  absl::optional<WallpaperCalculatedColors> calculated_colors_;
+  std::optional<WallpaperCalculatedColors> calculated_colors_;
 
   // Account id of the current user.
   AccountId current_user_;
@@ -861,6 +869,8 @@ class ASH_EXPORT WallpaperControllerImpl
   base::ScopedObservation<ScheduledFeature,
                           ScheduledFeature::CheckpointObserver>
       time_of_day_scheduler_observation_{this};
+
+  display::ScopedDisplayObserver display_observer_{this};
 
   std::unique_ptr<ui::CompositorLock> compositor_lock_;
 

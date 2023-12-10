@@ -20,6 +20,7 @@ import './os_languages_page/os_languages_section.js';
 import './os_printing_page/os_printing_page.js';
 import './os_reset_page/os_reset_page.js';
 /** Subpages */
+import './date_time_page/timezone_subpage.js';
 import './device_page/customize_mouse_buttons_subpage.js';
 import './device_page/customize_pen_buttons_subpage.js';
 import './device_page/customize_tablet_buttons_subpage.js';
@@ -73,7 +74,6 @@ import './crostini_page/crostini_port_forwarding.js';
 import './crostini_page/crostini_port_forwarding_add_port_dialog.js';
 import './crostini_page/crostini_shared_usb_devices.js';
 import './crostini_page/crostini_subpage.js';
-import './date_time_page/system_geolocation_dialog.js';
 import './date_time_page/timezone_selector.js';
 import './guest_os/guest_os_container_select.js';
 import './guest_os/guest_os_shared_paths.js';
@@ -143,6 +143,8 @@ export {AppManagementSupportedLinksOverlappingAppsDialogElement} from 'chrome://
 // Tests should use this export of `sanitizerInnerHtml` to prevent repeated
 // TrustedTypes policies from being created.
 export {sanitizeInnerHtml} from 'chrome://resources/js/parse_html_subset.js';
+export {AppLanguageSelectionDialogElement} from './common/app_language_selection_dialog/app_language_selection_dialog.js';
+export {AppLanguageSelectionItemElement} from './common/app_language_selection_dialog/app_language_selection_item.js';
 export {BruschettaSubpageElement} from './crostini_page/bruschetta_subpage.js';
 export {SettingsCrostiniArcAdbElement} from './crostini_page/crostini_arc_adb.js';
 export {CrostiniBrowserProxy, CrostiniBrowserProxyImpl, CrostiniDiskInfo, CrostiniPortActiveSetting, CrostiniPortProtocol, CrostiniPortSetting} from './crostini_page/crostini_browser_proxy.js';
@@ -219,7 +221,7 @@ export {SettingsSwitchAccessActionAssignmentPaneElement} from './os_a11y_page/sw
 export {SwitchAccessCommand} from './os_a11y_page/switch_access_constants.js';
 export {SettingsSwitchAccessSetupGuideDialogElement} from './os_a11y_page/switch_access_setup_guide_dialog.js';
 export {SettingsSwitchAccessSubpageElement} from './os_a11y_page/switch_access_subpage.js';
-export {PdfOcrUserSelection, SettingsTextToSpeechSubpageElement} from './os_a11y_page/text_to_speech_subpage.js';
+export {PdfOcrUserSelection, ScreenAiInstallStatus, SettingsTextToSpeechSubpageElement} from './os_a11y_page/text_to_speech_subpage.js';
 export {SettingsTtsVoiceSubpageElement} from './os_a11y_page/tts_voice_subpage.js';
 export {SettingsAndroidAppsSubpageElement} from './os_apps_page/android_apps_subpage.js';
 export {AppManagementAppDetailViewElement} from './os_apps_page/app_management_page/app_detail_view.js';

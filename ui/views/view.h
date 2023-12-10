@@ -19,6 +19,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/safety_checks.h"
 #include "base/observer_list.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
@@ -51,7 +52,7 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/views/action_view_controller.h"
+#include "ui/views/action_view_interface.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/layout/layout_types.h"
 #include "ui/views/metadata/view_factory.h"
@@ -286,6 +287,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
                           public ui::EventHandler,
                           public ui::PropertyHandler,
                           public ui::metadata::MetaDataProvider {
+  // Do not remove this macro!
+  // The macro is maintained by the memory safety team.
+  ADVANCED_MEMORY_SAFETY_CHECKS();
+
  public:
   using Views = std::vector<View*>;
 
@@ -1585,6 +1590,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   void RemoveObserver(ViewObserver* observer);
   bool HasObserver(const ViewObserver* observer) const;
 
+  virtual std::unique_ptr<ActionViewInterface> GetActionViewInterface();
+
   // http://crbug.com/1162949 : Instrumentation that indicates if this is alive.
   // Callers should not depend on this as it is meant to be temporary.
   enum class LifeCycleState : uint32_t {
@@ -2217,7 +2224,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Tree operations -----------------------------------------------------------
 
   // This view's parent.
-  raw_ptr<View, AcrossTasksDanglingUntriaged> parent_ = nullptr;
+  raw_ptr<View> parent_ = nullptr;
 
   // This view's children.
   Views children_;
@@ -2430,15 +2437,15 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   LifeCycleState life_cycle_state_ = LifeCycleState::kAlive;
 };
 
-template <>
-struct ActionViewControllerSuperClassT<View> {
-  using SuperClass = ActionController;
-};
+class VIEWS_EXPORT BaseActionViewInterface : public ActionViewInterface {
+ public:
+  explicit BaseActionViewInterface(View* action_view);
+  ~BaseActionViewInterface() override = default;
+  void ActionItemChangedImpl(actions::ActionItem* action_item) override;
 
-template <>
-void ActionViewController<View, ActionController>::ActionItemChangedImpl(
-    View* action_view,
-    actions::ActionItem* action_item);
+ private:
+  raw_ptr<View> action_view_;
+};
 
 BEGIN_VIEW_BUILDER(VIEWS_EXPORT, View, BaseView)
 template <typename LayoutManager>

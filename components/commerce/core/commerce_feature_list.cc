@@ -154,10 +154,6 @@ BASE_FEATURE(kCommercePriceTracking,
              "CommercePriceTracking",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kCommercePriceTrackingChipExperiment,
-             "CommercePriceTrackingChipExperiment",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 #if BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kCommercePriceTrackingRegionLaunched,
              "CommercePriceTrackingRegionLaunched",
@@ -171,9 +167,16 @@ BASE_FEATURE(kCommercePriceTrackingRegionLaunched,
 BASE_FEATURE(kPriceInsights,
              "PriceInsights",
              base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS)
+BASE_FEATURE(kPriceInsightsRegionLaunched,
+             "PriceInsightsRegionLaunched",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#else
 BASE_FEATURE(kPriceInsightsRegionLaunched,
              "PriceInsightsRegionLaunched",
              base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 const char kPriceInsightsDelayChipParam[] = "price-inishgts-delay-chip";
 const base::FeatureParam<bool> kPriceInsightsDelayChip{
     &commerce::kPriceInsights, kPriceInsightsDelayChipParam, false};
@@ -184,7 +187,7 @@ const base::FeatureParam<bool> kPriceInsightsChipLabelExpandOnHighPrice{
     false};
 const char kPriceInsightsShowFeedbackParam[] = "price-insights-show-feedback";
 const base::FeatureParam<bool> kPriceInsightsShowFeedback{
-    &commerce::kPriceInsights, kPriceInsightsShowFeedbackParam, false};
+    &commerce::kPriceInsights, kPriceInsightsShowFeedbackParam, true};
 const char kPriceInsightsUseCacheParam[] = "price-insights-use-cache";
 const base::FeatureParam<bool> kPriceInsightsUseCache{
     &commerce::kPriceInsights, kPriceInsightsUseCacheParam, true};
@@ -258,10 +261,6 @@ BASE_FEATURE(kShoppingListRegionLaunched,
 
 BASE_FEATURE(kShoppingListTrackByDefault,
              "ShoppingListTrackByDefault",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kShoppingListWAARestrictionRemoval,
-             "ShoppingListWAARestrictionRemoval",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kShoppingPDPMetrics,
@@ -445,13 +444,6 @@ const char kRevertIconOnFailureParam[] =
     "shopping-list-revert-page-action-icon-on-failure";
 const base::FeatureParam<bool> kRevertIconOnFailure{
     &kShoppingList, kRevertIconOnFailureParam, false};
-
-// CommercePriceTrackingChipExperiment params.
-const char kCommercePriceTrackingChipExperimentVariationParam[] =
-    "price-tracking-chip-experiment-variation";
-const base::FeatureParam<int> kCommercePriceTrackingChipExperimentVariation{
-    &commerce::kCommercePriceTrackingChipExperiment,
-    kCommercePriceTrackingChipExperimentVariationParam, 0};
 
 bool IsPartnerMerchant(const GURL& url) {
   return commerce::IsCouponDiscountPartnerMerchant(url) ||

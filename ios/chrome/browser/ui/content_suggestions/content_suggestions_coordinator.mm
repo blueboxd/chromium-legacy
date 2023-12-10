@@ -22,15 +22,15 @@
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/commerce/model/shopping_service_factory.h"
-#import "ios/chrome/browser/discover_feed/discover_feed_service.h"
-#import "ios/chrome/browser/discover_feed/discover_feed_service_factory.h"
+#import "ios/chrome/browser/discover_feed/model/discover_feed_service.h"
+#import "ios/chrome/browser/discover_feed/model/discover_feed_service_factory.h"
 #import "ios/chrome/browser/favicon/ios_chrome_large_icon_cache_factory.h"
 #import "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/favicon/large_icon_cache.h"
 #import "ios/chrome/browser/net/crurl.h"
-#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
-#import "ios/chrome/browser/ntp/set_up_list_item_type.h"
-#import "ios/chrome/browser/ntp/set_up_list_prefs.h"
+#import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper.h"
+#import "ios/chrome/browser/ntp/model/set_up_list_item_type.h"
+#import "ios/chrome/browser/ntp/model/set_up_list_prefs.h"
 #import "ios/chrome/browser/ntp_tiles/model/ios_most_visited_sites_factory.h"
 #import "ios/chrome/browser/passwords/model/password_checkup_utils.h"
 #import "ios/chrome/browser/policy/policy_util.h"
@@ -38,7 +38,7 @@
 #import "ios/chrome/browser/reading_list/model/reading_list_model_factory.h"
 #import "ios/chrome/browser/safety_check/model/ios_chrome_safety_check_manager.h"
 #import "ios/chrome/browser/safety_check/model/ios_chrome_safety_check_manager_factory.h"
-#import "ios/chrome/browser/segmentation_platform/segmentation_platform_service_factory.h"
+#import "ios/chrome/browser/segmentation_platform/model/segmentation_platform_service_factory.h"
 #import "ios/chrome/browser/shared/coordinator/alert/action_sheet_coordinator.h"
 #import "ios/chrome/browser/shared/coordinator/alert/alert_coordinator.h"
 #import "ios/chrome/browser/shared/coordinator/layout_guide/layout_guide_util.h"
@@ -82,6 +82,8 @@
 #import "ios/chrome/browser/ui/content_suggestions/safety_check/safety_check_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/safety_check/types.h"
 #import "ios/chrome/browser/ui/content_suggestions/safety_check/utils.h"
+#import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_content_notification_promo_coordinator.h"
+#import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_content_notification_promo_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_default_browser_promo_coordinator.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_default_browser_promo_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_show_more_view_controller.h"
@@ -111,6 +113,7 @@
     ContentSuggestionsViewControllerAudience,
     MagicStackHalfSheetTableViewControllerDelegate,
     SafetyCheckViewDelegate,
+    SetUpListContentNotificationPromoCoordinatorDelegate,
     SetUpListDefaultBrowserPromoCoordinatorDelegate,
     MagicStackParcelListHalfSheetTableViewControllerDelegate,
     SetUpListViewDelegate>
@@ -139,6 +142,10 @@
   // The coordinator that displays the Default Browser Promo for the Set Up
   // List.
   SetUpListDefaultBrowserPromoCoordinator* _defaultBrowserPromoCoordinator;
+
+  // The coordinator that displays the Content Notification Promo for the Set Up
+  // List.
+  SetUpListContentNotificationPromoCoordinator* _contentNotificationCoordinator;
 
   // The coordinator used to present an action sheet for the Set Up List menu.
   ActionSheetCoordinator* _actionSheetCoordinator;
@@ -639,7 +646,7 @@
         [weakSelf showCredentialProviderPromo];
         break;
       case SetUpListItemType::kContentNotification:
-        // TODO(b/311068390): handle notification opt-in
+        [weakSelf showContentNotificationBottomSheet];
         break;
       case SetUpListItemType::kFollow:
       case SetUpListItemType::kAllSet:
@@ -778,11 +785,32 @@
                                   completion:nil];
 }
 
+- (void)showContentNotificationBottomSheet {
+  // Stop the coordinator if it is already running. If the user swipes to
+  // dismiss a previous instance and then clicks the item again the
+  // previous instance may not have been stopped yet due to the animation.
+  [_contentNotificationCoordinator stop];
+  _contentNotificationCoordinator =
+      [[SetUpListContentNotificationPromoCoordinator alloc]
+          initWithBaseViewController:[self viewController]
+                             browser:self.browser
+                         application:[UIApplication sharedApplication]];
+  _contentNotificationCoordinator.delegate = self;
+  [_contentNotificationCoordinator start];
+}
+
 #pragma mark - SetUpListDefaultBrowserPromoCoordinatorDelegate
 
 - (void)setUpListDefaultBrowserPromoDidFinish:(BOOL)success {
   [_defaultBrowserPromoCoordinator stop];
   _defaultBrowserPromoCoordinator = nil;
+}
+
+#pragma mark - SetUpListContentNotificationPromoCoordinatorDelegate
+
+- (void)setUpListContentNotificationPromoDidFinish {
+  [_contentNotificationCoordinator stop];
+  _contentNotificationCoordinator = nil;
 }
 
 #pragma mark - Helpers

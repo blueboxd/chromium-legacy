@@ -10,6 +10,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_auto_pad.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_ml_operand_data_type.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_operator.h"
@@ -23,14 +24,19 @@ namespace blink {
 
 class ExceptionState;
 class MLActivation;
+class MLBatchNormalizationOptions;
 class MLContext;
 class MLClampOptions;
 class MLConv2dOptions;
 class MLConvTranspose2dOptions;
 class MLEluOptions;
+class MLGatherOptions;
 class MLGemmOptions;
 class MLGraph;
+class MLInstanceNormalizationOptions;
+class MLLayerNormalizationOptions;
 class MLLeakyReluOptions;
+class MLLinearOptions;
 class MLPadOptions;
 class MLPool2dOptions;
 class MLReduceOptions;
@@ -74,6 +80,12 @@ class MODULES_EXPORT MLGraphBuilder final : public ScriptWrappable {
                       ExceptionState& exception_state);
 
   // The order of operations declaration is the same as spec.
+  MLOperand* batchNormalization(const MLOperand* input,
+                                const MLOperand* mean,
+                                const MLOperand* variance,
+                                const MLBatchNormalizationOptions* options,
+                                ExceptionState& exception_state);
+
   MLOperand* clamp(const MLOperand* input,
                    const MLClampOptions* options,
                    ExceptionState& exception_state);
@@ -116,6 +128,15 @@ class MODULES_EXPORT MLGraphBuilder final : public ScriptWrappable {
   MLOperand* pow(const MLOperand* a,
                  const MLOperand* b,
                  ExceptionState& exception_state);
+  MLOperand* equal(const MLOperand* a,
+                   const MLOperand* b,
+                   ExceptionState& exception_state);
+  MLOperand* greater(const MLOperand* a,
+                     const MLOperand* b,
+                     ExceptionState& exception_state);
+  MLOperand* lesser(const MLOperand* a,
+                    const MLOperand* b,
+                    ExceptionState& exception_state);
 
   // Element-wise unary operations
   MLOperand* abs(const MLOperand* input, ExceptionState& exception_state);
@@ -135,6 +156,10 @@ class MODULES_EXPORT MLGraphBuilder final : public ScriptWrappable {
                         ExceptionState& exception_state);
   MLOperand* sqrt(const MLOperand* input, ExceptionState& exception_state);
 
+  MLOperand* cast(const MLOperand* input,
+                  const V8MLOperandDataType output_data_type,
+                  ExceptionState& exception_state);
+
   MLOperand* elu(const MLOperand* input,
                  const MLEluOptions* options,
                  ExceptionState& exception_state);
@@ -145,6 +170,11 @@ class MODULES_EXPORT MLGraphBuilder final : public ScriptWrappable {
                     const Vector<uint32_t>& new_shape,
                     ExceptionState& exception_state);
 
+  MLOperand* gather(const MLOperand* input,
+                    const MLOperand* indices,
+                    const MLGatherOptions* options,
+                    ExceptionState& exception_state);
+
   MLOperand* gemm(const MLOperand* a,
                   const MLOperand* b,
                   const MLGemmOptions* options,
@@ -153,11 +183,26 @@ class MODULES_EXPORT MLGraphBuilder final : public ScriptWrappable {
   MLOperand* hardSwish(const MLOperand* input, ExceptionState& exception_state);
   MLActivation* hardSwish(ExceptionState& exception_state);
 
+  MLOperand* instanceNormalization(
+      const MLOperand* input,
+      const MLInstanceNormalizationOptions* options,
+      ExceptionState& exception_state);
+
+  MLOperand* layerNormalization(const MLOperand* input,
+                                const MLLayerNormalizationOptions* options,
+                                ExceptionState& exception_state);
+
   MLOperand* leakyRelu(const MLOperand* input,
                        const MLLeakyReluOptions* options,
                        ExceptionState& exception_state);
   MLActivation* leakyRelu(const MLLeakyReluOptions* options,
                           ExceptionState& exception_state);
+
+  MLOperand* linear(const MLOperand* input,
+                    const MLLinearOptions* options,
+                    ExceptionState& exception_state);
+  MLActivation* linear(const MLLinearOptions* options,
+                       ExceptionState& exception_state);
 
   MLOperand* matmul(const MLOperand* a,
                     const MLOperand* b,
@@ -217,7 +262,7 @@ class MODULES_EXPORT MLGraphBuilder final : public ScriptWrappable {
   MLActivation* relu(ExceptionState& exception_state);
 
   MLOperand* reshape(const MLOperand* input,
-                     const Vector<absl::optional<uint32_t>>& new_shape,
+                     const Vector<uint32_t>& new_shape,
                      ExceptionState& exception_state);
 
   MLOperand* resample2d(const MLOperand* input,
@@ -253,6 +298,11 @@ class MODULES_EXPORT MLGraphBuilder final : public ScriptWrappable {
   MLOperand* transpose(const MLOperand* input,
                        const MLTransposeOptions* options,
                        ExceptionState& exception_state);
+
+  MLOperand* where(const MLOperand* condition,
+                   const MLOperand* true_value,
+                   const MLOperand* false_value,
+                   ExceptionState& exception_state);
 
   ScriptPromise build(ScriptState* script_state,
                       const MLNamedOperands& outputs,

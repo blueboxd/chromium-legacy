@@ -10,6 +10,9 @@
 
 namespace compose {
 
+const char kComposeDialogInnerTextShortenedBy[] =
+    "Compose.Dialog.InnerTextShortenedBy";
+const char kComposeDialogInnerTextSize[] = "Compose.Dialog.InnerTextSize";
 const char kComposeDialogOpenLatency[] = "Compose.Dialog.OpenLatency";
 const char kComposeDialogSelectionLength[] = "Compose.Dialog.SelectionLength";
 const char kComposeResponseDurationOk[] = "Compose.Response.Duration.Ok";
@@ -21,6 +24,12 @@ const char kComposeSessionDialogShownCount[] =
     "Compose.Session.DialogShownCount";
 const char kComposeSessionUndoCount[] = "Compose.Session.UndoCount";
 const char kComposeShowStatus[] = "Compose.ContextMenu.ShowStatus";
+const char kComposeConsentSessionCloseReason[] =
+    "Compose.Session.Consent.CloseReason";
+const char kComposeConsentSessionDialogShownCount[] =
+    "Compose.Session.Consent.DialogShownCount";
+const char kComposeSessionConsentGivenInSession[] =
+    "Compose.Session.Consent.GivenInSession";
 
 void LogComposeContextMenuCtr(ComposeContextMenuCtrEvent event) {
   UMA_HISTOGRAM_ENUMERATION("Compose.ContextMenu.CTR", event);
@@ -36,11 +45,41 @@ void LogComposeRequestDuration(base::TimeDelta duration, bool is_valid) {
       duration);
 }
 
+void LogComposeConsentSessionCloseReason(
+    ComposeConsentSessionCloseReason reason) {
+  base::UmaHistogramEnumeration(kComposeConsentSessionCloseReason, reason);
+}
+
+void LogComposeConsentSessionDialogShownCount(
+    ComposeConsentSessionCloseReason reason,
+    int dialog_shown_count) {
+  std::string status;
+  switch (reason) {
+    case ComposeConsentSessionCloseReason::
+        kPageContentConsentAcceptedWithoutInsert:
+    case ComposeConsentSessionCloseReason::
+        kPageContentDisclaimerAcknowledgedWithoutInsert:
+    case ComposeConsentSessionCloseReason::kPageContentConsentGivenWithInsert:
+      status = ".Accepted";
+      break;
+    case ComposeConsentSessionCloseReason::kCloseButtonPressed:
+    case ComposeConsentSessionCloseReason::kPageContentConsentDeclined:
+    case compose::ComposeConsentSessionCloseReason::kEndedImplicitly:
+    case ComposeConsentSessionCloseReason::kNewSessionWithSelectedText:
+      status = ".Ignored";
+  }
+  base::UmaHistogramCounts1000(kComposeConsentSessionDialogShownCount + status,
+                               dialog_shown_count);
+}
+
 void LogComposeSessionCloseMetrics(ComposeSessionCloseReason reason,
                                    int compose_count,
                                    int dialog_shown_count,
-                                   int undo_count) {
-  UMA_HISTOGRAM_ENUMERATION(kComposeSessionCloseReason, reason);
+                                   int undo_count,
+                                   bool consent_given_in_session) {
+  base::UmaHistogramEnumeration(kComposeSessionCloseReason, reason);
+  base::UmaHistogramBoolean(kComposeSessionConsentGivenInSession,
+                            consent_given_in_session);
 
   std::string status;
   switch (reason) {
@@ -59,12 +98,20 @@ void LogComposeSessionCloseMetrics(ComposeSessionCloseReason reason,
   base::UmaHistogramCounts1000(kComposeSessionUndoCount + status, undo_count);
 }
 
+void LogComposeDialogInnerTextShortenedBy(int shortened_by) {
+  base::UmaHistogramCounts10M(kComposeDialogInnerTextShortenedBy, shortened_by);
+}
+
+void LogComposeDialogInnerTextSize(int size) {
+  base::UmaHistogramCounts10M(kComposeDialogInnerTextSize, size);
+}
+
 void LogComposeDialogOpenLatency(base::TimeDelta duration) {
   base::UmaHistogramMediumTimes(kComposeDialogOpenLatency, duration);
 }
 
 void LogComposeDialogSelectionLength(int length) {
-  // The autofil::kMaxSelectedTextLength is in UTF16 bytes so divide by 2 for
+  // The autofill::kMaxSelectedTextLength is in UTF16 bytes so divide by 2 for
   // the maximum number of unicode code points.
   const int max_selection_size = 51200 / 2;
   base::UmaHistogramCustomCounts(kComposeDialogSelectionLength, length, 1,

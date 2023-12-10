@@ -1347,15 +1347,20 @@ absl::optional<size_t> TableView::GetActiveVisibleColumnIndex() const {
 }
 
 void TableView::SetActiveVisibleColumnIndex(absl::optional<size_t> index) {
-  if (active_visible_column_index_ == index)
+  if (active_visible_column_index_ == index) {
     return;
+  }
   active_visible_column_index_ = index;
-
-  if (selection_model_.active().has_value() &&
-      active_visible_column_index_.has_value()) {
-    ScrollRectToVisible(
-        GetCellBounds(ModelToView(selection_model_.active().value()),
-                      active_visible_column_index_.value()));
+  if (active_visible_column_index_.has_value()) {
+    if (selection_model_.active().has_value()) {
+      ScrollRectToVisible(
+          GetCellBounds(ModelToView(selection_model_.active().value()),
+                        active_visible_column_index_.value()));
+    } else if (header_row_is_active()) {
+      const TableView::VisibleColumn& column =
+          GetVisibleColumn(active_visible_column_index_.value());
+      ScrollRectToVisible(gfx::Rect(column.x, 0, column.width, height()));
+    }
   }
 
   UpdateFocusRings();
@@ -1384,7 +1389,7 @@ void TableView::SetSelectionModel(ui::ListSelectionModel new_selection) {
 
   // Scroll the group for the active item to visible.
   if (selection_model_.active().has_value()) {
-    gfx::Rect vis_rect(GetVisibleBounds());
+    gfx::Rect vis_rect(GetMirroredRect(GetVisibleBounds()));
     const GroupRange range(GetGroupRange(selection_model_.active().value()));
     const int start_y = GetRowBounds(ModelToView(range.start)).y();
     const int end_y =
@@ -1950,7 +1955,7 @@ AXVirtualView* TableView::GetVirtualAccessibilityCellImpl(
   return i->get();
 }
 
-BEGIN_METADATA(TableView, View)
+BEGIN_METADATA(TableView)
 ADD_READONLY_PROPERTY_METADATA(size_t, RowCount)
 ADD_READONLY_PROPERTY_METADATA(absl::optional<size_t>, FirstSelectedRow)
 ADD_READONLY_PROPERTY_METADATA(bool, HasFocusIndicator)

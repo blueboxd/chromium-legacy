@@ -47,6 +47,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/types/cxx23_to_underlying.h"
+#include "chromeos/ash/services/assistant/public/cpp/assistant_enums.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
 #include "components/vector_icons/vector_icons.h"
@@ -389,9 +390,10 @@ class FilterMenuAdapter : public views::MenuModelAdapter {
   void ShowFilterMenu(SearchBoxView* search_box) {
     int run_types = views::MenuRunner::USE_ASH_SYS_UI_LAYOUT |
                     views::MenuRunner::FIXED_ANCHOR;
-    filter_menu_root_ = CreateMenu();
-    filter_menu_runner_ =
-        std::make_unique<views::MenuRunner>(filter_menu_root_, run_types);
+    std::unique_ptr<views::MenuItemView> filter_menu_root = CreateMenu();
+    filter_menu_root_ = filter_menu_root.get();
+    filter_menu_runner_ = std::make_unique<views::MenuRunner>(
+        std::move(filter_menu_root), run_types);
     filter_menu_runner_->RunMenuAt(
         search_box->GetWidget(), nullptr /*button_controller*/,
         search_box->filter_button()->GetBoundsInScreen(),
@@ -408,7 +410,7 @@ class FilterMenuAdapter : public views::MenuModelAdapter {
   // `category` button. This should only be called when the menu is opened.
   views::MenuItemView* GetFilterMenuItemByCategory(
       AppListSearchControlCategory category) {
-    absl::optional<size_t> index =
+    std::optional<size_t> index =
         model_->GetIndexOfCommandId(base::to_underlying(category));
     CHECK(index.has_value());
     return GetFilterMenuItemByIdx(index.value());
@@ -768,19 +770,19 @@ void SearchBoxView::OnThemeChanged() {
 
   const SkColor button_icon_color =
       GetColorProvider()->GetColor(kColorAshButtonIconColor);
-  close_button()->SetImage(
+  close_button()->SetImageModel(
       views::ImageButton::STATE_NORMAL,
-      gfx::CreateVectorIcon(views::kIcCloseIcon, GetSearchBoxIconSize(),
-                            button_icon_color));
-  assistant_button()->SetImage(
+      ui::ImageModel::FromVectorIcon(views::kIcCloseIcon, button_icon_color,
+                                     GetSearchBoxIconSize()));
+  assistant_button()->SetImageModel(
       views::ImageButton::STATE_NORMAL,
-      gfx::CreateVectorIcon(chromeos::kAssistantIcon, GetSearchBoxIconSize(),
-                            button_icon_color));
+      ui::ImageModel::FromVectorIcon(
+          chromeos::kAssistantIcon, button_icon_color, GetSearchBoxIconSize()));
   if (filter_button()) {
-    filter_button()->SetImage(
+    filter_button()->SetImageModel(
         views::ImageButton::STATE_NORMAL,
-        gfx::CreateVectorIcon(kFilterIcon, GetSearchBoxIconSize(),
-                              button_icon_color));
+        ui::ImageModel::FromVectorIcon(kFilterIcon, button_icon_color,
+                                       GetSearchBoxIconSize()));
   }
   auto* focus_ring = views::FocusRing::Get(assistant_button());
   focus_ring->SetOutsetFocusRingDisabled(true);
@@ -822,10 +824,13 @@ void SearchBoxView::RunLauncherSearchQuery(const std::u16string& query) {
 }
 
 void SearchBoxView::OpenAssistantPage() {
-  delegate_->AssistantButtonPressed();
+  view_delegate_->StartAssistant(
+      assistant::AssistantEntryPoint::kLauncherSearchIphChip);
 }
 
 void SearchBoxView::OnLauncherSearchChipPressed(const std::u16string& query) {
+  view_delegate_->EndAssistant(
+      assistant::AssistantExitPoint::kLauncherSearchIphChip);
   UpdateQuery(query);
 }
 
@@ -1000,7 +1005,7 @@ void SearchBoxView::UpdateLayout(AppListState target_state,
   // Horizontal margins are selected to match search box icon's vertical
   // margins. Space used for iph should be ignored.
   const int iph_height =
-      iph_view() ? iph_view()->GetPreferredSize().height() : 0;
+      GetIphView() ? GetIphView()->GetPreferredSize().height() : 0;
   const int horizontal_spacing =
       (target_state_height - iph_height - GetSearchBoxIconSize()) / 2;
   const int horizontal_right_padding =
@@ -1198,6 +1203,12 @@ void SearchBoxView::CloseButtonPressed() {
 }
 
 void SearchBoxView::AssistantButtonPressed() {
+  // If Launcher search IPH view is showing, notify it that the Assistant
+  // button is pressed.
+  if (GetIphView()) {
+    GetIphView()->NotifyAssistantButtonPressedEvent();
+  }
+
   delegate_->AssistantButtonPressed();
 }
 
@@ -1318,7 +1329,7 @@ bool SearchBoxView::HasAutocompleteText() {
 
 void SearchBoxView::OnBeforeUserAction(views::Textfield* sender) {
   if (a11y_active_descendant_)
-    SetA11yActiveDescendant(absl::nullopt);
+    SetA11yActiveDescendant(std::nullopt);
 }
 
 void SearchBoxView::SetAutocompleteText(
@@ -1407,7 +1418,7 @@ void SearchBoxView::ClearSearchAndDeactivateSearchBox() {
   if (!is_search_box_active())
     return;
 
-  SetA11yActiveDescendant(absl::nullopt);
+  SetA11yActiveDescendant(std::nullopt);
   // Set search box as inactive first, because ClearSearch() eventually calls
   // into AppListMainView::QueryChanged() which will hide search results based
   // on `is_search_box_active_`.
@@ -1417,7 +1428,7 @@ void SearchBoxView::ClearSearchAndDeactivateSearchBox() {
 }
 
 void SearchBoxView::SetA11yActiveDescendant(
-    const absl::optional<int32_t>& active_descendant) {
+    const std::optional<int32_t>& active_descendant) {
   a11y_active_descendant_ = active_descendant;
   search_box()->NotifyAccessibilityEvent(
       ax::mojom::Event::kActiveDescendantChanged, true);
@@ -1557,7 +1568,7 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
         close_button()->RequestFocus();
       }
 
-      SetA11yActiveDescendant(absl::nullopt);
+      SetA11yActiveDescendant(std::nullopt);
       break;
     case ResultSelectionController::MoveResult::kSelectionCycleAfterLastResult:
       // If move was about to cycle, clear the selection and move the focus to
@@ -1573,7 +1584,7 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
       } else {
         close_button()->RequestFocus();
       }
-      SetA11yActiveDescendant(absl::nullopt);
+      SetA11yActiveDescendant(std::nullopt);
       break;
     case ResultSelectionController::MoveResult::kResultChanged:
       UpdateSearchBoxForSelectedResult(
@@ -1657,7 +1668,7 @@ void SearchBoxView::UpdateIphViewVisibility() {
                                          ->show_assistant_button();
   const bool would_trigger_iph =
       AppListModelProvider::Get()->search_model()->would_trigger_iph();
-  const bool is_iph_showing = iph_view() != nullptr;
+  const bool is_iph_showing = GetIphView() != nullptr;
 
   const bool should_show_iph = show_assistant_button && is_iph_allowed_ &&
                                !HasValidQuery() &&

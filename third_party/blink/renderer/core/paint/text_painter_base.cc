@@ -25,7 +25,7 @@ namespace blink {
 TextPainterBase::TextPainterBase(GraphicsContext& context,
                                  const Font& font,
                                  const LineRelativeOffset& text_origin,
-                                 NGInlinePaintContext* inline_context,
+                                 InlinePaintContext* inline_context,
                                  bool horizontal)
     : inline_context_(inline_context),
       graphics_context_(context),
@@ -246,8 +246,8 @@ void TextPainterBase::PaintDecorationsOnlyLineThrough(
 //   2. Paint text
 //   3. Paint line through
 void TextPainterBase::PaintUnderOrOverLineDecorations(
-    const NGTextFragmentPaintInfo& fragment_paint_info,
-    const NGTextDecorationOffset& decoration_offset,
+    const TextFragmentPaintInfo& fragment_paint_info,
+    const TextDecorationOffset& decoration_offset,
     TextDecorationInfo& decoration_info,
     TextDecorationLine lines_to_paint,
     const PaintInfo& paint_info,
@@ -267,7 +267,7 @@ void TextPainterBase::PaintUnderOrOverLineDecorations(
   // Updating Graphics Context for text only (kTextProperOnly),
   // instead of the default text and shadows (kBothShadowsAndTextProper),
   // because shadows will be painted by
-  // NGTextPainterBase::PaintUnderOrOverLineDecorationShadows.
+  // TextPainterBase::PaintUnderOrOverLineDecorationShadows.
   UpdateGraphicsContext(context, text_style, state_saver,
                         ShadowMode::kTextProperOnly);
 
@@ -281,8 +281,8 @@ void TextPainterBase::PaintUnderOrOverLineDecorations(
 }
 
 void TextPainterBase::PaintUnderOrOverLineDecorationShadows(
-    const NGTextFragmentPaintInfo& fragment_paint_info,
-    const NGTextDecorationOffset& decoration_offset,
+    const TextFragmentPaintInfo& fragment_paint_info,
+    const TextDecorationOffset& decoration_offset,
     TextDecorationInfo& decoration_info,
     TextDecorationLine lines_to_paint,
     const cc::PaintFlags* flags,
@@ -320,8 +320,8 @@ void TextPainterBase::PaintUnderOrOverLineDecorationShadows(
 }
 
 void TextPainterBase::PaintUnderOrOverLineDecorations(
-    const NGTextFragmentPaintInfo& fragment_paint_info,
-    const NGTextDecorationOffset& decoration_offset,
+    const TextFragmentPaintInfo& fragment_paint_info,
+    const TextDecorationOffset& decoration_offset,
     TextDecorationInfo& decoration_info,
     TextDecorationLine lines_to_paint,
     const cc::PaintFlags* flags,
@@ -360,7 +360,7 @@ void TextPainterBase::PaintUnderOrOverLineDecorations(
 }
 
 void TextPainterBase::PaintDecorationUnderOrOverLine(
-    const NGTextFragmentPaintInfo& fragment_paint_info,
+    const TextFragmentPaintInfo& fragment_paint_info,
     GraphicsContext& context,
     TextDecorationInfo& decoration_info,
     TextDecorationLine line,

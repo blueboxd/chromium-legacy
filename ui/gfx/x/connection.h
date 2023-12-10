@@ -11,11 +11,14 @@
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
+#include "base/scoped_observation_traits.h"
 #include "base/sequence_checker.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/gfx/x/event_observer.h"
 #include "ui/gfx/x/extension_manager.h"
 #include "ui/gfx/x/future.h"
+#include "ui/gfx/x/window_event_manager.h"
 #include "ui/gfx/x/xlib_support.h"
 #include "ui/gfx/x/xproto.h"
 #include "ui/gfx/x/xproto_types.h"
@@ -24,8 +27,10 @@ typedef struct xcb_connection_t xcb_connection_t;
 
 namespace x11 {
 
+class AtomCache;
 class Event;
 class KeyboardState;
+class PropertyCache;
 class VisualManager;
 class WriteBuffer;
 
@@ -123,22 +128,13 @@ auto CompareSequenceIds(T t, U u) {
   return static_cast<SignedType>(t0 - u0);
 }
 
-// This interface is used by classes wanting to receive
-// Events directly.  For input events (mouse, keyboard, touch), a
-// PlatformEventObserver should be used instead.
-class EVENTS_EXPORT EventObserver {
- public:
-  virtual void OnEvent(const Event& xevent) = 0;
-
- protected:
-  virtual ~EventObserver() = default;
-};
-
 // Represents a socket to the X11 server.
 class COMPONENT_EXPORT(X11) Connection final : public XProto,
                                                public ExtensionManager {
  public:
   using IOErrorHandler = base::OnceClosure;
+
+  using ExtensionVersion = std::pair<uint32_t, uint32_t>;
 
   struct VisualInfo {
     raw_ptr<const Format> format;
@@ -205,6 +201,33 @@ class COMPONENT_EXPORT(X11) Connection final : public XProto,
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return dispatching_event_;
   }
+
+  ExtensionVersion randr_version() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return randr_version_;
+  }
+
+  ExtensionVersion render_version() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return render_version_;
+  }
+
+  ExtensionVersion screensaver_version() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return screensaver_version_;
+  }
+
+  ExtensionVersion shm_version() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return shm_version_;
+  }
+
+  ExtensionVersion xinput_version() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return xinput_version_;
+  }
+
+  WindowEventManager& window_event_manager() { return window_event_manager_; }
 
   // Returns the underlying socket's FD if the connection is valid, or -1
   // otherwise.
@@ -402,6 +425,15 @@ class COMPONENT_EXPORT(X11) Connection final : public XProto,
 
   void DefineCursor(Window window, Cursor cursor);
 
+  ScopedEventSelector ScopedSelectEvent(Window window, EventMask event_mask);
+
+  Atom GetAtom(const char* name) const;
+
+  // Returns an empty string if there is no window manager or the WM is unnamed.
+  std::string GetWmName() const;
+
+  bool WmSupportsHint(Atom atom) const;
+
   // The viz compositor thread hangs a PlatformEventSource off the connection so
   // that it gets destroyed at the appropriate time.
   // TODO(thomasanderson): This is a layering violation and this should be moved
@@ -439,6 +471,8 @@ class COMPONENT_EXPORT(X11) Connection final : public XProto,
 
   void InitRootDepthAndVisual();
 
+  void InitializeExtensions();
+
   void ProcessNextEvent();
 
   void ProcessNextResponse();
@@ -473,6 +507,10 @@ class COMPONENT_EXPORT(X11) Connection final : public XProto,
 
   uint32_t GenerateIdImpl();
 
+  void OnRootPropertyChanged(Atom property, const GetPropertyResponse& value);
+
+  bool WmSupportsEwmh() const;
+
   std::string display_string_;
   int default_screen_id_ = 0;
   std::unique_ptr<xcb_connection_t, void (*)(xcb_connection_t*)> connection_ = {
@@ -482,7 +520,13 @@ class COMPONENT_EXPORT(X11) Connection final : public XProto,
   bool synchronous_ = false;
   bool syncing_ = false;
 
+  // Extension data.
   uint32_t extended_max_request_length_ = 0;
+  ExtensionVersion randr_version_ = {0, 0};
+  ExtensionVersion render_version_ = {0, 0};
+  ExtensionVersion screensaver_version_ = {0, 0};
+  ExtensionVersion shm_version_ = {0, 0};
+  ExtensionVersion xinput_version_ = {0, 0};
 
   Setup setup_;
   raw_ptr<Screen> default_screen_ = nullptr;
@@ -514,12 +558,35 @@ class COMPONENT_EXPORT(X11) Connection final : public XProto,
 
   IOErrorHandler io_error_handler_;
 
+  WindowEventManager window_event_manager_;
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   // Must be after `sequence_checker_`.
   std::unique_ptr<VisualManager> visual_manager_;
+
+  std::unique_ptr<AtomCache> atom_cache_;
+
+  std::unique_ptr<PropertyCache> root_props_;
+  std::unique_ptr<PropertyCache> wm_props_;
 };
 
 }  // namespace x11
+
+namespace base {
+
+template <>
+struct ScopedObservationTraits<x11::Connection, x11::EventObserver> {
+  static void AddObserver(x11::Connection* connection,
+                          x11::EventObserver* observer) {
+    connection->AddEventObserver(observer);
+  }
+  static void RemoveObserver(x11::Connection* connection,
+                             x11::EventObserver* observer) {
+    connection->RemoveEventObserver(observer);
+  }
+};
+
+}  // namespace base
 
 #endif  // UI_GFX_X_CONNECTION_H_

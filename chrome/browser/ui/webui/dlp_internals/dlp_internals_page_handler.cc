@@ -4,13 +4,19 @@
 
 #include "chrome/browser/ui/webui/dlp_internals/dlp_internals_page_handler.h"
 
+#include <sys/stat.h>
+
 #include "base/check.h"
+#include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_content_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_content_restriction_set.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/dlp_internals/dlp_internals.mojom.h"
+#include "chrome/common/chrome_paths.h"
+#include "chromeos/dbus/dlp/dlp_client.h"
 #include "components/enterprise/data_controls/dlp_policy_event.pb.h"
 #include "components/enterprise/data_controls/rule.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -267,6 +273,32 @@ void DlpInternalsPageHandler::ObserveReporting(
   reporting_observers_.Add(std::move(observer));
 }
 
+void DlpInternalsPageHandler::GetFilesDatabaseEntries(
+    GetFilesDatabaseEntriesCallback callback) {
+  if (!chromeos::DlpClient::Get() || !chromeos::DlpClient::Get()->IsAlive()) {
+    std::move(callback).Run({});
+    return;
+  }
+  chromeos::DlpClient::Get()->GetDatabaseEntries(
+      base::BindOnce(&DlpInternalsPageHandler::ProcessDatabaseEntries,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void DlpInternalsPageHandler::GetFileInode(const std::string& file_name,
+                                           GetFileInodeCallback callback) {
+  base::FilePath downloads_path;
+  base::PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS_SAFE, &downloads_path);
+  auto file_path = downloads_path.Append(file_name);
+
+  struct stat file_stats;
+  if (stat(file_path.value().c_str(), &file_stats) != 0) {
+    std::move(callback).Run(0);
+    return;
+  }
+
+  std::move(callback).Run(file_stats.st_ino);
+}
+
 void DlpInternalsPageHandler::OnReportEvent(DlpPolicyEvent event) {
   dlp_internals::mojom::DlpEventPtr event_mojo =
       dlp_internals::mojom::DlpEvent::New();
@@ -309,6 +341,18 @@ void DlpInternalsPageHandler::OnReportEvent(DlpPolicyEvent event) {
   for (auto& observer : reporting_observers_) {
     observer->OnReportEvent(event_mojo.Clone());
   }
+}
+
+void DlpInternalsPageHandler::ProcessDatabaseEntries(
+    GetFilesDatabaseEntriesCallback callback,
+    ::dlp::GetDatabaseEntriesResponse response_proto) {
+  std::vector<dlp_internals::mojom::FileDatabaseEntryPtr> database_entries;
+  for (const auto& file_entry : response_proto.files_entries()) {
+    database_entries.push_back(dlp_internals::mojom::FileDatabaseEntry::New(
+        file_entry.inode(), file_entry.crtime(), file_entry.source_url(),
+        file_entry.referrer_url()));
+  }
+  std::move(callback).Run(std::move(database_entries));
 }
 
 }  // namespace policy

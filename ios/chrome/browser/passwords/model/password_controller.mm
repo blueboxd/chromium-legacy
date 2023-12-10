@@ -55,11 +55,11 @@
 #import "components/sync/base/features.h"
 #import "components/sync/service/sync_service.h"
 #import "components/ukm/ios/ukm_url_recorder.h"
-#import "ios/chrome/browser/autofill/bottom_sheet/autofill_bottom_sheet_tab_helper.h"
-#import "ios/chrome/browser/autofill/form_input_accessory_view_handler.h"
-#import "ios/chrome/browser/infobars/infobar_ios.h"
-#import "ios/chrome/browser/infobars/infobar_manager_impl.h"
-#import "ios/chrome/browser/infobars/infobar_type.h"
+#import "ios/chrome/browser/autofill/model/bottom_sheet/autofill_bottom_sheet_tab_helper.h"
+#import "ios/chrome/browser/autofill/model/form_input_accessory_view_handler.h"
+#import "ios/chrome/browser/infobars/model/infobar_ios.h"
+#import "ios/chrome/browser/infobars/model/infobar_manager_impl.h"
+#import "ios/chrome/browser/infobars/model/infobar_type.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_save_password_infobar_delegate.h"
 #import "ios/chrome/browser/passwords/model/notify_auto_signin_view_controller.h"
 #import "ios/chrome/browser/passwords/model/password_controller_delegate.h"
@@ -446,7 +446,7 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
   syncer::SyncService* syncService =
       SyncServiceFactory::GetForBrowserState(self.browserState);
   const std::optional<std::string> accountToStorePassword =
-      password_manager::sync_util::GetAccountForSaving(prefs, syncService);
+      password_manager::sync_util::GetAccountForSaving(syncService);
   const password_manager::features_util::PasswordAccountStorageUserState
       accountStorageUserState = password_manager::features_util::
           ComputePasswordAccountStorageUserState(prefs, syncService);

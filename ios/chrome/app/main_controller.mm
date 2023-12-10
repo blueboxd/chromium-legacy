@@ -47,6 +47,7 @@
 #import "ios/chrome/app/memory_monitor.h"
 #import "ios/chrome/app/post_restore_app_agent.h"
 #import "ios/chrome/app/safe_mode_app_state_agent.h"
+#import "ios/chrome/app/search_engine_choice_app_agent.h"
 #import "ios/chrome/app/spotlight/spotlight_manager.h"
 #import "ios/chrome/app/startup/chrome_app_startup_parameters.h"
 #import "ios/chrome/app/startup/chrome_main_starter.h"
@@ -78,9 +79,9 @@
 #import "ios/chrome/browser/mailto_handler/model/mailto_handler_service.h"
 #import "ios/chrome/browser/mailto_handler/model/mailto_handler_service_factory.h"
 #import "ios/chrome/browser/memory/model/memory_debugger_manager.h"
-#import "ios/chrome/browser/metrics/first_user_action_recorder.h"
-#import "ios/chrome/browser/metrics/incognito_usage_app_state_agent.h"
-#import "ios/chrome/browser/metrics/window_configuration_recorder.h"
+#import "ios/chrome/browser/metrics/model/first_user_action_recorder.h"
+#import "ios/chrome/browser/metrics/model/incognito_usage_app_state_agent.h"
+#import "ios/chrome/browser/metrics/model/window_configuration_recorder.h"
 #import "ios/chrome/browser/omaha/model/omaha_service.h"
 #import "ios/chrome/browser/passwords/model/password_manager_util_ios.h"
 #import "ios/chrome/browser/promos_manager/promos_manager_factory.h"
@@ -90,6 +91,7 @@
 #import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
 #import "ios/chrome/browser/sessions/session_restoration_service.h"
 #import "ios/chrome/browser/sessions/session_restoration_service_factory.h"
+#import "ios/chrome/browser/sessions/session_util.h"
 #import "ios/chrome/browser/share_extension/model/share_extension_service.h"
 #import "ios/chrome/browser/share_extension/model/share_extension_service_factory.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_delegate.h"
@@ -119,10 +121,7 @@
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
 #import "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
 #import "ios/chrome/browser/url_loading/model/url_loading_params.h"
-#import "ios/chrome/browser/web/certificate_policy_app_agent.h"
-#import "ios/chrome/browser/web/features.h"
-#import "ios/chrome/browser/web/session_state/web_session_state_cache.h"
-#import "ios/chrome/browser/web/session_state/web_session_state_cache_factory.h"
+#import "ios/chrome/browser/web/model/certificate_policy_app_agent.h"
 #import "ios/chrome/common/app_group/app_group_constants.h"
 #import "ios/chrome/common/app_group/app_group_field_trial_version.h"
 #import "ios/chrome/common/app_group/app_group_utils.h"
@@ -764,6 +763,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [appState addAgent:[[AppMetricsAppStateAgent alloc] init]];
   [appState addAgent:[[SafeModeAppAgent alloc] init]];
   [appState addAgent:[[FeedAppAgent alloc] init]];
+  [appState addAgent:[[SearchEngineChoiceAppAgent alloc] init]];
   [appState addAgent:[[VariationsAppStateAgent alloc] init]];
 
   // Create the window accessibility agent only when multiple windows are
@@ -1026,11 +1026,13 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [[DeferredInitializationRunner sharedInstance]
       enqueueBlockNamed:kPurgeWebSessionStates
                   block:^{
-                    if (web::UseNativeSessionRestorationCache()) {
-                      WebSessionStateCache* cache =
-                          WebSessionStateCacheFactory::GetForBrowserState(
-                              self.appState.mainBrowserState);
-                      [cache purgeUnassociatedData];
+                    ChromeBrowserState* browserState =
+                        self.appState.mainBrowserState;
+
+                    if (browserState) {
+                      SessionRestorationServiceFactory::GetForBrowserState(
+                          self.appState.mainBrowserState)
+                          ->PurgeUnassociatedData(base::DoNothing());
                     }
                   }];
 }
@@ -1354,9 +1356,12 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   std::set<std::string> identifiers;
   for (NSString* sessionID in sessionIDs) {
-    identifiers.insert(base::SysNSStringToUTF8(sessionID));
-    identifiers.insert(base::SysNSStringToUTF8(
-        [sessionID stringByAppendingString:@"-Inactive"]));
+    // Need to remove storage for both regular and inactive Browser. Removing
+    // data does nothing if there are no data to delete, so there is no need
+    // to check whether inactive tabs are enabled here.
+    const std::string identifier = base::SysNSStringToUTF8(sessionID);
+    identifiers.insert(session_util::GetSessionIdentifier(identifier, false));
+    identifiers.insert(session_util::GetSessionIdentifier(identifier, true));
   }
 
   ChromeBrowserState* browserState = self.appState.mainBrowserState;

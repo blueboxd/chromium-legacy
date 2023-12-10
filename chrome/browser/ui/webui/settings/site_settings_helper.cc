@@ -861,20 +861,15 @@ void GetRawExceptionsForContentSettingsType(
     }
 
     auto content_setting = setting.GetContentSetting();
-
+    // There is no user-facing concept of SESSION_ONLY cookie exceptions that
+    // use secondary patterns. These are instead presented as ALLOW.
+    // TODO(crbug.com/1404436): Perform a one time migration of the actual
+    // content settings when the extension API no-longer allows them to be
+    // created.
     if (type == ContentSettingsType::COOKIES &&
-        base::FeatureList::IsEnabled(
-            privacy_sandbox::kPrivacySandboxSettings4)) {
-      // With the changes to settings introduced in PrivacySandboxSettings4,
-      // there is no user-facing concept of SESSION_ONLY cookie exceptions that
-      // use secondary patterns. These are instead presented as ALLOW.
-      // TODO(crbug.com/1404436): Perform a one time migration of the actual
-      // content settings when the extension API no-longer allows them to be
-      // created.
-      if (content_setting == ContentSetting::CONTENT_SETTING_SESSION_ONLY &&
-          setting.secondary_pattern != ContentSettingsPattern::Wildcard()) {
-        content_setting = ContentSetting::CONTENT_SETTING_ALLOW;
-      }
+        content_setting == ContentSetting::CONTENT_SETTING_SESSION_ONLY &&
+        setting.secondary_pattern != ContentSettingsPattern::Wildcard()) {
+      content_setting = ContentSetting::CONTENT_SETTING_ALLOW;
     }
 
     all_patterns_settings[{setting.primary_pattern, setting.source}][{
@@ -960,6 +955,8 @@ void GetExceptionsForContentType(ContentSettingsType type,
 
   // Display the URLs with File System entries that are granted
   // permissions via File System Access Persistent Permissions.
+  // TODO(crbug.com/1467574): Remove `kFileSystemAccessPersistentPermissions`
+  // flag after FSA Persistent Permissions feature launch.
   if (base::FeatureList::IsEnabled(
           features::kFileSystemAccessPersistentPermissions) &&
       (type == ContentSettingsType::FILE_SYSTEM_READ_GUARD ||
@@ -1070,7 +1067,7 @@ ContentSetting GetContentSettingForOrigin(Profile* profile,
       permissions::PermissionDecisionAutoBlocker* auto_blocker =
           permissions::PermissionsClient::Get()
               ->GetPermissionDecisionAutoBlocker(profile);
-      absl::optional<content::PermissionResult> embargo_result =
+      std::optional<content::PermissionResult> embargo_result =
           auto_blocker->GetEmbargoResult(origin, content_type);
       if (embargo_result) {
         result = embargo_result.value();

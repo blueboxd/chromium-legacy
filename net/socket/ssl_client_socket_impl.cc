@@ -550,10 +550,6 @@ bool SSLClientSocketImpl::WasEverUsed() const {
   return was_ever_used_;
 }
 
-bool SSLClientSocketImpl::WasAlpnNegotiated() const {
-  return negotiated_protocol_ != kProtoUnknown;
-}
-
 NextProto SSLClientSocketImpl::GetNegotiatedProtocol() const {
   return negotiated_protocol_;
 }
@@ -862,7 +858,8 @@ int SSLClientSocketImpl::Init() {
   }
 
   SSL_set_alps_use_new_codepoint(
-      ssl_.get(), base::FeatureList::IsEnabled(features::kUseAlpsNewCodepoint));
+      ssl_.get(),
+      base::FeatureList::IsEnabled(features::kUseNewAlpsCodepointHttp2));
 
   if (!ssl_config_.alpn_protos.empty()) {
     std::vector<uint8_t> wire_protos =
@@ -1309,16 +1306,6 @@ int SSLClientSocketImpl::CheckCTCompliance() {
       context_->ct_policy_enforcer()->CheckCompliance(
           server_cert_verify_result_.verified_cert.get(), verified_scts,
           net_log_);
-  if (server_cert_verify_result_.cert_status & CERT_STATUS_IS_EV) {
-    if (server_cert_verify_result_.policy_compliance !=
-            ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS &&
-        server_cert_verify_result_.policy_compliance !=
-            ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY) {
-      server_cert_verify_result_.cert_status |=
-          CERT_STATUS_CT_COMPLIANCE_FAILED;
-      server_cert_verify_result_.cert_status &= ~CERT_STATUS_IS_EV;
-    }
-  }
 
   TransportSecurityState::CTRequirementsStatus ct_requirement_status =
       context_->transport_security_state()->CheckCTRequirements(

@@ -8,6 +8,8 @@
 
 #include "ash/constants/ash_switches.h"
 #include "ash/picker/views/picker_view.h"
+#include "ash/public/cpp/ash_web_view_factory.h"
+#include "ash/public/cpp/picker/picker_client.h"
 #include "base/command_line.h"
 #include "base/hash/sha1.h"
 
@@ -18,7 +20,31 @@ namespace {
 constexpr std::string_view kPickerFeatureKeyHash =
     "\xE1\xC0\x09\x7F\xBE\x03\xBF\x48\xA7\xA0\x30\x53\x07\x4F\xFB\xC5\x6D\xD4"
     "\x22\x5F";
+
+class PickerViewDelegateImpl : public PickerView::Delegate {
+ public:
+  explicit PickerViewDelegateImpl(PickerClient* client) : client_(client) {}
+
+  std::unique_ptr<AshWebView> CreateWebView(
+      const AshWebView::InitParams& params) override {
+    return client_->CreateWebView(params);
+  }
+
+ private:
+  raw_ptr<PickerClient> client_ = nullptr;
+};
+
 }  // namespace
+
+PickerController::PickerController() = default;
+
+PickerController::~PickerController() {
+  // `widget_` depends on `client_`, which is only valid for the lifetime of
+  // this class. Destroy the widget synchronously to avoid a dangling pointer.
+  if (widget_) {
+    widget_->CloseNow();
+  }
+}
 
 bool PickerController::IsFeatureKeyMatched() {
   // Command line looks like:
@@ -36,11 +62,26 @@ bool PickerController::IsFeatureKeyMatched() {
   return picker_key_matched;
 }
 
-void PickerController::ToggleWidget() {
+void PickerController::SetClient(PickerClient* client) {
+  // The widget depends on `client_`, so destroy it synchronously to avoid a
+  // dangling pointer.
+  if (widget_) {
+    widget_->CloseNow();
+  }
+
+  client_ = client;
+}
+
+void PickerController::ToggleWidget(
+    const base::TimeTicks trigger_event_timestamp) {
+  CHECK(client_);
+
   if (widget_) {
     widget_->Close();
   } else {
-    widget_ = PickerView::CreateWidget();
+    widget_ = PickerView::CreateWidget(
+        std::make_unique<PickerViewDelegateImpl>(client_),
+        trigger_event_timestamp);
     widget_->Show();
   }
 }

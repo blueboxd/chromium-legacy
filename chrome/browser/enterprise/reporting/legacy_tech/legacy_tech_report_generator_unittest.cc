@@ -8,6 +8,7 @@
 
 #include "base/time/time.h"
 #include "components/enterprise/common/proto/legacy_tech_events.pb.h"
+#include "content/public/browser/legacy_tech_cookie_issue_details.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -30,6 +31,7 @@ constexpr base::Time::Exploded kTestDateInMidnight = {.year = 2023,
 
 constexpr char kType[] = "type";
 constexpr char kUrl[] = "https://www.example.com/path";
+constexpr char kFrameUrl[] = "https://www.frame.com/something";
 constexpr char kMatchedUrl[] = "www.example.com";
 constexpr char kFileName[] = "filename.js";
 constexpr uint64_t kLine = 10;
@@ -53,6 +55,7 @@ TEST_F(LegacyTechGeneratorTest, Test) {
       /*type=*/kType,
       /*timestamp=*/base::Time(),
       /*url=*/GURL(kUrl),
+      /*frame_url=*/GURL(kFrameUrl),
       /*matched_url=*/kMatchedUrl,
       /*filename=*/kFileName,
       /*line=*/kLine,
@@ -65,6 +68,7 @@ TEST_F(LegacyTechGeneratorTest, Test) {
 
   EXPECT_EQ(kType, report->feature_id());
   EXPECT_EQ(kUrl, report->url());
+  EXPECT_EQ(kFrameUrl, report->frame_url());
   EXPECT_EQ(kMatchedUrl, report->allowlisted_url_match());
   EXPECT_EQ(kFileName, report->filename());
   EXPECT_EQ(kColumn, report->column());
@@ -79,20 +83,19 @@ TEST_F(LegacyTechGeneratorTest, Test) {
 }
 
 TEST_F(LegacyTechGeneratorTest, TestWithCookieIssueDetailsRead) {
-  LegacyTechReportGenerator::LegacyTechCookieIssueDetails cookie_issue_details =
-      {
-          kCookieTransferOrScriptUrl,
-          kCookieName,
-          kCookieDomain,
-          kCookiePath,
-          LegacyTechReportGenerator::LegacyTechCookieIssueDetails::
-              AccessOperation::kRead,
-      };
+  content::LegacyTechCookieIssueDetails cookie_issue_details = {
+      kCookieTransferOrScriptUrl,
+      kCookieName,
+      kCookieDomain,
+      kCookiePath,
+      content::LegacyTechCookieIssueDetails::AccessOperation::kRead,
+  };
 
   LegacyTechReportGenerator::LegacyTechData data = {
       /*type=*/kType,
       /*timestamp=*/base::Time(),
       /*url=*/GURL(kUrl),
+      /*frame_url=*/GURL(kFrameUrl),
       /*matched_url=*/kMatchedUrl,
       /*filename=*/kFileName,
       /*line=*/kLine,
@@ -115,20 +118,19 @@ TEST_F(LegacyTechGeneratorTest, TestWithCookieIssueDetailsRead) {
 }
 
 TEST_F(LegacyTechGeneratorTest, TestWithCookieIssueDetailsWrite) {
-  LegacyTechReportGenerator::LegacyTechCookieIssueDetails cookie_issue_details =
-      {
-          kCookieTransferOrScriptUrl,
-          kCookieName,
-          kCookieDomain,
-          kCookiePath,
-          LegacyTechReportGenerator::LegacyTechCookieIssueDetails::
-              AccessOperation::kWrite,
-      };
+  content::LegacyTechCookieIssueDetails cookie_issue_details = {
+      kCookieTransferOrScriptUrl,
+      kCookieName,
+      kCookieDomain,
+      kCookiePath,
+      content::LegacyTechCookieIssueDetails::AccessOperation::kWrite,
+  };
 
   LegacyTechReportGenerator::LegacyTechData data = {
       /*type=*/kType,
       /*timestamp=*/base::Time(),
       /*url=*/GURL(kUrl),
+      /*frame_url=*/GURL(kFrameUrl),
       /*matched_url=*/kMatchedUrl,
       /*filename=*/kFileName,
       /*line=*/kLine,

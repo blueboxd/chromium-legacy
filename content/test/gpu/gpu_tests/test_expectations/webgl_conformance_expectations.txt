@@ -12,7 +12,7 @@
 #             android-pixel-6 android-shield-android-tv android-sm-a135m
 #             android-sm-a235m
 #         chromeos-board-amd64-generic chromeos-board-eve chromeos-board-jacuzzi
-#             chromeos-board-octopus
+#             chromeos-board-octopus chromeos-board-volteer
 #         fuchsia-board-astro fuchsia-board-nelson fuchsia-board-sherlock
 #             fuchsia-board-qemu-x64 ]
 # Platform
@@ -409,7 +409,6 @@ crbug.com/1175371 [ angle-opengles chromeos mesa_ge_21.0 passthrough target-cpu-
 crbug.com/1175371 [ angle-opengl display-server-x linux passthrough renderer-skia-gl ] conformance/extensions/khr-parallel-shader-compile.html [ Failure ]
 crbug.com/1175371 [ angle-opengles display-server-wayland linux passthrough ] conformance/extensions/khr-parallel-shader-compile.html [ Failure ]
 crbug.com/1175371 [ mac angle-metal ] conformance/extensions/khr-parallel-shader-compile.html [ Failure ]
-crbug.com/1175371 [ win ] conformance/extensions/khr-parallel-shader-compile.html [ Failure ]
 
 # Won't investigate failure on validating command decoder. Remove once it's unshipped.
 crbug.com/angleproject/5499 [ no-passthrough ] conformance/glsl/misc/shaders-with-name-conflicts.html [ Failure ]
@@ -439,7 +438,6 @@ crbug.com/angleproject/6358 [ no-passthrough ] conformance/programs/program-test
 ####################
 
 crbug.com/1371306 [ fuchsia fuchsia-board-nelson web-engine-shell ] conformance/textures/misc/texture-video-transparent.html [ Failure ]
-crbug.com/1371306 [ fuchsia fuchsia-board-sherlock web-engine-shell ] conformance/textures/misc/texture-video-transparent.html [ Failure ]
 
 # Flaky tests
 crbug.com/1489477 [ fuchsia fuchsia-board-astro ] conformance/more/conformance/quickCheck* [ Failure ]
@@ -538,7 +536,6 @@ crbug.com/784817 [ mac nvidia-0xfe9 ] conformance/glsl/bugs/init-array-with-loop
 
 ## Mac / M1 / OpenGL ##
 
-crbug.com/1493524 [ mac apple passthrough angle-opengl ] conformance/renderbuffers/stencil-renderbuffer-initialization.html [ RetryOnFailure ]
 
 
 ####################
@@ -707,12 +704,11 @@ crbug.com/1492241 [ chromeos cros-chrome chromeos-board-jacuzzi ] conformance/re
 # Lacros failures #
 #####################
 
-
 crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi arm angle-opengles passthrough ] conformance/extensions/angle-instanced-arrays-out-of-bounds.html [ Failure ]
 crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance/glsl/bugs/constant-precision-qualifier.html [ Failure ]
 crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance/limits/gl-max-texture-dimensions.html [ Failure ]
 crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance/misc/shader-precision-format.html [ Failure ]
-crbug.com/1481267 [ chromeos lacros-chrome chromeos-board-octopus passthrough ] conformance/textures/misc/texture-size-limit.html [ Failure ]
+
 
 ###########################
 # Lacros/Wayland failures #
@@ -721,6 +717,11 @@ crbug.com/1481267 [ chromeos lacros-chrome chromeos-board-octopus passthrough ] 
 crbug.com/1185344 [ angle-opengles linux display-server-wayland intel ] WebglExtension_EXT_shader_texture_lod [ Failure ]
 
 crbug.com/angleproject/5038 [ linux intel display-server-wayland ] conformance/extensions/ext-color-buffer-half-float.html [ Failure ]
+
+###########################
+# SkiaGraphite failures #
+###########################
+crbug.com/1491023 [ mac angle-metal graphite-enabled amd ] conformance/canvas/draw-static-webgl-to-multiple-canvas-test.html [ Failure ]
 
 ###############################
 # New failures in WebGL rolls #

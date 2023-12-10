@@ -15,11 +15,11 @@
 #import "components/password_manager/ios/shared_password_controller.h"
 #import "components/prefs/pref_registry_simple.h"
 #import "components/prefs/testing_pref_service.h"
-#import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
+#import "ios/chrome/browser/autofill/model/form_suggestion_tab_helper.h"
 #import "ios/chrome/browser/favicon/favicon_service_factory.h"
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
-#import "ios/chrome/browser/history/history_service_factory.h"
+#import "ios/chrome/browser/history/model/history_service_factory.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_account_password_store_factory.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_password_check_manager.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_password_check_manager_factory.h"
@@ -250,15 +250,17 @@ class PasswordSuggestionBottomSheetMediatorTest : public PlatformTest {
                 chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS)
                 .get()));
     mediator_ = [[PasswordSuggestionBottomSheetMediator alloc]
-        initWithWebStateList:web_state_list_.get()
-               faviconLoader:IOSChromeFaviconLoaderFactory::GetForBrowserState(
-                                 chrome_browser_state_.get())
-                 prefService:prefs_.get()
-                      params:params_
-                reauthModule:nil
-                         URL:URL()
-        profilePasswordStore:store_
-        accountPasswordStore:nullptr];
+          initWithWebStateList:web_state_list_.get()
+                 faviconLoader:IOSChromeFaviconLoaderFactory::
+                                   GetForBrowserState(
+                                       chrome_browser_state_.get())
+                   prefService:prefs_.get()
+                        params:params_
+                  reauthModule:nil
+                           URL:URL()
+          profilePasswordStore:store_
+          accountPasswordStore:nullptr
+        sharedURLLoaderFactory:nullptr];
   }
 
   // Creates the bottom sheet mediator with custom suggestions `providers`.

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/side_panel/companion/companion_page_handler.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/companion/core/companion_metrics_logger.h"
@@ -28,7 +29,7 @@
 #include "chrome/browser/ui/webui/side_panel/companion/companion_side_panel_untrusted_ui.h"
 #include "chrome/browser/ui/webui/side_panel/companion/signin_delegate_impl.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
-#include "chrome/common/companion/visual_search/features.h"
+#include "chrome/common/companion/visual_query/features.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/feature_constants.h"
@@ -77,10 +78,10 @@ CompanionPageHandler::CompanionPageHandler(
         base::BindRepeating(&CompanionPageHandler::OnPageContentPrefChanged,
                             base::Unretained(this)));
   }
-  if (visual_search::features::IsVisualSearchSuggestionsEnabled()) {
+  if (visual_query::features::IsVisualQuerySuggestionsEnabled()) {
     visual_query_host_ =
-        std::make_unique<visual_search::VisualQueryClassifierHost>(
-            visual_search::VisualQuerySuggestionsServiceFactory::GetForProfile(
+        std::make_unique<visual_query::VisualQueryClassifierHost>(
+            visual_query::VisualQuerySuggestionsServiceFactory::GetForProfile(
                 GetProfile()));
   }
 }
@@ -152,11 +153,19 @@ void CompanionPageHandler::DidFinishNavigation(
     return;
   }
   NotifyURLChanged(/*is_full_reload=*/false);
+  page_title_available_ = false;
+  companion_ready_for_title_ = false;
 }
 
 void CompanionPageHandler::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
+  if (companion_ready_for_title_) {
+    NotifyTitleChanged();
+  } else {
+    page_title_available_ = true;
+  }
+
   // We only want to classify images in the main frame.
   if (!render_frame_host->IsInPrimaryMainFrame()) {
     return;
@@ -166,7 +175,7 @@ void CompanionPageHandler::DidFinishLoad(
   // on/off, use histogram check to determine whether or not classification was
   // called.
   if (visual_query_host_) {
-    visual_search::VisualQueryClassifierHost::ResultCallback callback =
+    visual_query::VisualQueryClassifierHost::ResultCallback callback =
         base::BindOnce(&CompanionPageHandler::HandleVisualQueryResult,
                        weak_ptr_factory_.GetWeakPtr());
     visual_query_host_->StartClassification(render_frame_host, validated_url,
@@ -175,7 +184,7 @@ void CompanionPageHandler::DidFinishLoad(
 }
 
 void CompanionPageHandler::SendVisualQueryResult(
-    const visual_search::VisualSuggestionsResults& results) {
+    const visual_query::VisualSuggestionsResults& results) {
   std::vector<side_panel::mojom::VisualSearchResultPtr> final_results;
   for (const auto& result : results) {
     final_results.emplace_back(side_panel::mojom::VisualSearchResult::New(
@@ -191,7 +200,7 @@ void CompanionPageHandler::SendVisualQueryResult(
 }
 
 void CompanionPageHandler::HandleVisualQueryResult(
-    const visual_search::VisualSuggestionsResults results,
+    const visual_query::VisualSuggestionsResults results,
     const VisualSuggestionsMetrics metrics) {
   // This is the only place where we log UKM metrics for the visual
   // classification pipeline. We record the metrics even when the UI is not
@@ -211,7 +220,15 @@ void CompanionPageHandler::HandleVisualQueryResult(
 
 void CompanionPageHandler::OnLoadingState(
     side_panel::mojom::LoadingState loading_state) {
-  // We only care about loading state, if VQS is enabled.
+  if (loading_state == side_panel::mojom::LoadingState::kStartedLoading) {
+    if (page_title_available_) {
+      NotifyTitleChanged();
+    } else {
+      companion_ready_for_title_ = true;
+    }
+  }
+
+  // Only continue if VQS is enabled.
   if (!visual_query_host_) {
     return;
   }
@@ -227,7 +244,7 @@ void CompanionPageHandler::OnLoadingState(
     if (visual_result) {
       SendVisualQueryResult(visual_result.value());
     } else {
-      visual_search::VisualQueryClassifierHost::ResultCallback callback =
+      visual_query::VisualQueryClassifierHost::ResultCallback callback =
           base::BindOnce(&CompanionPageHandler::HandleVisualQueryResult,
                          weak_ptr_factory_.GetWeakPtr());
       visual_query_host_->StartClassification(
@@ -335,6 +352,19 @@ void CompanionPageHandler::NotifyURLChanged(bool is_full_reload) {
   if (visual_query_host_) {
     visual_query_host_->CancelClassification(web_contents()->GetVisibleURL());
   }
+}
+
+void CompanionPageHandler::NotifyTitleChanged() {
+  auto* pref_service = GetProfile()->GetPrefs();
+  if (IsUserPermittedToSharePageContentWithCompanion(pref_service)) {
+    const std::u16string& page_title = web_contents()->GetTitle();
+    std::string str_title;
+    if (base::UTF16ToUTF8(page_title.c_str(), page_title.size(), &str_title)) {
+      page_->UpdatePageTitle(str_title);
+    }
+  }
+  page_title_available_ = false;
+  companion_ready_for_title_ = false;
 }
 
 void CompanionPageHandler::NotifyLinkOpened(
@@ -457,7 +487,7 @@ void CompanionPageHandler::OnCqJumptagClicked(
 }
 
 void CompanionPageHandler::OpenUrlInBrowser(
-    const absl::optional<GURL>& url_to_open,
+    const std::optional<GURL>& url_to_open,
     bool use_new_tab) {
   if (!url_to_open.has_value() || !url_to_open.value().is_valid()) {
     return;

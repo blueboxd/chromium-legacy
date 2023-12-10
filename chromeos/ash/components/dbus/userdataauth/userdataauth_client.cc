@@ -189,6 +189,14 @@ class UserDataAuthClientImpl : public UserDataAuthClient {
                     std::move(callback));
   }
 
+  void RestoreDeviceKey(
+      const ::user_data_auth::RestoreDeviceKeyRequest& request,
+      RestoreDeviceKeyCallback callback) override {
+    CallProtoMethod(::user_data_auth::kRestoreDeviceKey,
+                    ::user_data_auth::kUserDataAuthInterface, request,
+                    std::move(callback));
+  }
+
   void PreparePersistentVault(
       const ::user_data_auth::PreparePersistentVaultRequest& request,
       PreparePersistentVaultCallback callback) override {
@@ -325,7 +333,7 @@ class UserDataAuthClientImpl : public UserDataAuthClient {
           << "Failed to append protobuf when calling UserDataAuth method "
           << method_name;
       base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), absl::nullopt));
+          FROM_HERE, base::BindOnce(std::move(callback), std::nullopt));
       return;
     }
     // Bind with the weak pointer of |this| so the response is not
@@ -359,7 +367,7 @@ class UserDataAuthClientImpl : public UserDataAuthClient {
     ReplyType reply_proto;
     if (!ParseProto(response, &reply_proto)) {
       LOG(ERROR) << "Failed to parse reply protobuf from UserDataAuth method";
-      std::move(callback).Run(absl::nullopt);
+      std::move(callback).Run(std::nullopt);
       return;
     }
     std::move(callback).Run(reply_proto);

@@ -104,6 +104,7 @@ class MutableCSSPropertyValueSet;
 class NamedNodeMap;
 class PointerLockOptions;
 class PopoverData;
+class PositionFallbackData;
 class PseudoElement;
 class ResizeObservation;
 class ResizeObserver;
@@ -182,6 +183,21 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   Element(const QualifiedName& tag_name,
           Document*,
           ConstructionType = kCreateElement);
+
+  // IncludeShadowRoots and ForceHtml are used as parameters for HTML
+  // serialization and parsing functions in Element and serialization.h.
+  // IncludeShadowRoots specifies whether ShadowRoots should be included in the
+  // serialized HTML.
+  // ForceHtml specifies whether the HTML parser should be used when parsing
+  // markup even if we are in an XML document.
+  enum class IncludeShadowRoots {
+    kDontInclude = 0,
+    kInclude = 1,
+  };
+  enum class ForceHtml {
+    kDontForce = 0,
+    kForce = 1,
+  };
 
   // Animatable implementation.
   Element* GetAnimationTarget() override;
@@ -398,7 +414,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   gfx::RectF GetBoundingClientRectNoLifecycleUpdateNoAdjustment() const;
   // Returns a rectangle in CSS pixel units.  i.e. ignorign zoom.
   gfx::RectF GetBoundingClientRectNoLifecycleUpdate() const;
-  DOMRect* getBoundingClientRect();
+  DOMRect* GetBoundingClientRect();
+  DOMRect* GetBoundingClientRectForBinding();
 
   // Call the NoLifecycleUpdate variants if you are sure that the lifcycle is
   // already updated to at least pre-paint clean.
@@ -820,6 +837,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   enum class UpdateBehavior {
     kStyleAndLayout,
     kNoneForAccessibility,
+    kNoneForIsFocused,
   };
   // IsFocusable is true if the element SupportsFocus(), and is currently
   // focusable (using the mouse). This method can be called when layout is not
@@ -1003,6 +1021,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   virtual bool IsPickerIndicatorElement() const { return false; }
 
   virtual bool IsFormControlElement() const { return false; }
+  virtual bool IsFormControlElementWithState() const { return false; }
   virtual bool IsSpinButtonElement() const { return false; }
   // This returns true for <textarea> and some types of <input>.
   virtual bool IsTextControl() const { return false; }
@@ -1157,6 +1176,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   StyleScopeData& EnsureStyleScopeData();
   StyleScopeData* GetStyleScopeData() const;
+
+  PositionFallbackData& EnsurePositionFallbackData();
+  PositionFallbackData* GetPositionFallbackData() const;
 
   // See PostStyleUpdateScope::PseudoData::AddPendingBackdrop
   void ApplyPendingBackdropPseudoElementUpdate();
@@ -1652,7 +1674,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
                                                         const AtomicString&);
 
   void SetInnerHTMLInternal(const String&,
-                            bool include_shadow_roots,
+                            IncludeShadowRoots include_shadow_roots,
+                            ForceHtml force_html_over_xml,
                             ExceptionState&);
 
   ElementRareDataVector* GetElementRareData() const;
@@ -1662,8 +1685,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void DetachAllAttrNodesFromElement();
   void DetachAttrNodeFromElementWithValue(Attr*, const AtomicString& value);
   void DetachAttrNodeAtIndex(Attr*, wtf_size_t index);
-
-  FRIEND_TEST_ALL_PREFIXES(LayoutNGTextCombineTest, LegacyQuote);
 
   void SynchronizeContentAttributeAndElementReference(
       const QualifiedName& name);

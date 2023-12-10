@@ -1218,7 +1218,7 @@ void HTMLInputElement::SetSuggestedValue(const String& value) {
     }
 
     // Prevent fade out and displaying strong password label in narrow forms.
-    if (getBoundingClientRect()->width() < kMinStrongPasswordLabelWidth) {
+    if (GetBoundingClientRect()->width() < kMinStrongPasswordLabelWidth) {
       should_show_strong_password_label_ = false;
     }
     const AtomicString fade_out("fade-out-password");
@@ -2358,6 +2358,10 @@ bool HTMLInputElement::HandleInvokeInternal(HTMLElement& invoker,
                                             AtomicString& action) {
   if (HTMLElement::HandleInvokeInternal(invoker, action)) {
     return true;
+  }
+
+  if (!RuntimeEnabledFeatures::HTMLInvokeActionsV2Enabled()) {
+    return false;
   }
 
   // Step 3. If action is an ASCII case-insensitive match for showPicker ...

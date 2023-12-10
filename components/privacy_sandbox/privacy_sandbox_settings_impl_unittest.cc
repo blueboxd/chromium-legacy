@@ -41,105 +41,9 @@ using Topic = browsing_topics::Topic;
 
 namespace {
 
-// C++20 introduces the "using enum" construct, which significantly reduces the
-// required verbosity here. C++20 is support is coming to Chromium
-// (crbug.com/1284275), with Mac / Windows / Linux support at the time of
-// writing.
-// TODO (crbug.com/1401686): Replace groups with commented lines when C++20 is
-// supported.
-
-// using enum privacy_sandbox_test_util::TestState;
-using privacy_sandbox_test_util::StateKey;
-constexpr auto kM1TopicsEnabledUserPrefValue =
-    StateKey::kM1TopicsEnabledUserPrefValue;
-constexpr auto kM1FledgeEnabledUserPrefValue =
-    StateKey::kM1FledgeEnabledUserPrefValue;
-constexpr auto kM1AdMeasurementEnabledUserPrefValue =
-    StateKey::kM1AdMeasurementEnabledUserPrefValue;
-constexpr auto kCookieControlsModeUserPrefValue =
-    StateKey::kCookieControlsModeUserPrefValue;
-constexpr auto kSiteDataUserDefault = StateKey::kSiteDataUserDefault;
-constexpr auto kSiteDataUserExceptions = StateKey::kSiteDataUserExceptions;
-constexpr auto kIsIncognito = StateKey::kIsIncognito;
-constexpr auto kIsRestrictedAccount = StateKey::kIsRestrictedAccount;
-constexpr auto kHasAppropriateTopicsConsent =
-    StateKey::kHasAppropriateTopicsConsent;
-constexpr auto kAttestationsMap = StateKey::kAttestationsMap;
-constexpr auto kBlockFledgeJoiningForEtldplus1 =
-    StateKey::kBlockFledgeJoiningForEtldplus1;
-
-// using enum privacy_sandbox_test_util::InputKey;
-using privacy_sandbox_test_util::InputKey;
-constexpr auto kTopFrameOrigin = InputKey::kTopFrameOrigin;
-constexpr auto kTopicsURL = InputKey::kTopicsURL;
-constexpr auto kFledgeAuctionPartyOrigin = InputKey::kFledgeAuctionPartyOrigin;
-constexpr auto kAdMeasurementReportingOrigin =
-    InputKey::kAdMeasurementReportingOrigin;
-constexpr auto kAdMeasurementSourceOrigin =
-    InputKey::kAdMeasurementSourceOrigin;
-constexpr auto kAdMeasurementDestinationOrigin =
-    InputKey::kAdMeasurementDestinationOrigin;
-constexpr auto kAccessingOrigin = InputKey::kAccessingOrigin;
-constexpr auto kEventReportingDestinationOrigin =
-    InputKey::kEventReportingDestinationOrigin;
-
-// using enum privacy_sandbox_test_util::TestOutput;
-using privacy_sandbox_test_util::OutputKey;
-constexpr auto kIsTopicsAllowed = OutputKey::kIsTopicsAllowed;
-constexpr auto kIsTopicsAllowedForContext =
-    OutputKey::kIsTopicsAllowedForContext;
-constexpr auto kIsFledgeJoinAllowed = OutputKey::kIsFledgeJoinAllowed;
-constexpr auto kIsFledgeLeaveAllowed = OutputKey::kIsFledgeLeaveAllowed;
-constexpr auto kIsFledgeUpdateAllowed = OutputKey::kIsFledgeUpdateAllowed;
-constexpr auto kIsFledgeSellAllowed = OutputKey::kIsFledgeSellAllowed;
-constexpr auto kIsFledgeBuyAllowed = OutputKey::kIsFledgeBuyAllowed;
-constexpr auto kIsAttributionReportingAllowed =
-    OutputKey::kIsAttributionReportingAllowed;
-constexpr auto kMaySendAttributionReport = OutputKey::kMaySendAttributionReport;
-constexpr auto kIsSharedStorageAllowed = OutputKey::kIsSharedStorageAllowed;
-constexpr auto kIsSharedStorageSelectURLAllowed =
-    OutputKey::kIsSharedStorageSelectURLAllowed;
-constexpr auto kIsPrivateAggregationAllowed =
-    OutputKey::kIsPrivateAggregationAllowed;
-constexpr auto kIsPrivateAggregationDebugModeAllowed =
-    OutputKey::kIsPrivateAggregationDebugModeAllowed;
-constexpr auto kIsCookieDeprecationLabelAllowedForContext =
-    OutputKey::kIsCookieDeprecationLabelAllowedForContext;
-
-constexpr auto kIsTopicsAllowedMetric = OutputKey::kIsTopicsAllowedMetric;
-constexpr auto kIsTopicsAllowedForContextMetric =
-    OutputKey::kIsTopicsAllowedForContextMetric;
-constexpr auto kIsFledgeJoinAllowedMetric =
-    OutputKey::kIsFledgeJoinAllowedMetric;
-constexpr auto kIsFledgeLeaveAllowedMetric =
-    OutputKey::kIsFledgeLeaveAllowedMetric;
-constexpr auto kIsFledgeUpdateAllowedMetric =
-    OutputKey::kIsFledgeUpdateAllowedMetric;
-constexpr auto kIsFledgeSellAllowedMetric =
-    OutputKey::kIsFledgeSellAllowedMetric;
-constexpr auto kIsFledgeBuyAllowedMetric = OutputKey::kIsFledgeBuyAllowedMetric;
-constexpr auto kIsAttributionReportingAllowedMetric =
-    OutputKey::kIsAttributionReportingAllowedMetric;
-constexpr auto kMaySendAttributionReportMetric =
-    OutputKey::kMaySendAttributionReportMetric;
-constexpr auto kIsSharedStorageAllowedMetric =
-    OutputKey::kIsSharedStorageAllowedMetric;
-constexpr auto kIsSharedStorageSelectURLAllowedMetric =
-    OutputKey::kIsSharedStorageSelectURLAllowedMetric;
-constexpr auto kIsPrivateAggregationAllowedMetric =
-    OutputKey::kIsPrivateAggregationAllowedMetric;
-constexpr auto kIsAttributionReportingEverAllowed =
-    OutputKey::kIsAttributionReportingEverAllowed;
-constexpr auto kIsAttributionReportingEverAllowedMetric =
-    OutputKey::kIsAttributionReportingEverAllowedMetric;
-constexpr auto kIsEventReportingDestinationAttestedForFledge =
-    OutputKey::kIsEventReportingDestinationAttestedForFledge;
-constexpr auto kIsEventReportingDestinationAttestedForSharedStorage =
-    OutputKey::kIsEventReportingDestinationAttestedForSharedStorage;
-constexpr auto kIsEventReportingDestinationAttestedForFledgeMetric =
-    OutputKey::kIsEventReportingDestinationAttestedForFledgeMetric;
-constexpr auto kIsEventReportingDestinationAttestedForSharedStorageMetric =
-    OutputKey::kIsEventReportingDestinationAttestedForSharedStorageMetric;
+using enum privacy_sandbox_test_util::StateKey;
+using enum privacy_sandbox_test_util::InputKey;
+using enum privacy_sandbox_test_util::OutputKey;
 
 // using enum ContentSetting;
 constexpr auto CONTENT_SETTING_ALLOW = ContentSetting::CONTENT_SETTING_ALLOW;
@@ -209,10 +113,7 @@ class PrivacySandboxSettingsTest : public testing::Test {
 
   virtual void InitializePrefsBeforeStart() {}
 
-  virtual void InitializeFeaturesBeforeStart() {
-    feature_list_.InitAndDisableFeature(
-        privacy_sandbox::kPrivacySandboxSettings4);
-  }
+  virtual void InitializeFeaturesBeforeStart() {}
 
   virtual void InitializeDelegateBeforeStart() {
     mock_delegate()->SetUpIsPrivacySandboxRestrictedResponse(
@@ -765,7 +666,6 @@ class PrivacySandboxSettingsTestCookiesClearOnExitTurnedOff
                          std::make_unique<base::Value>(::base::TimeToValue(
                              base::Time::FromTimeT(12345))));
   }
-  void InitializeFeaturesBeforeStart() override {}
 };
 
 TEST_F(PrivacySandboxSettingsTestCookiesClearOnExitTurnedOff,
@@ -836,12 +736,6 @@ TEST_F(PrivacySandboxSettingLocalOverrideTest, FollowsOverrideBehavior) {
 
 // Tests class for the PrivacySandboxSettings4 / M1 launch.
 class PrivacySandboxSettingsM1Test : public PrivacySandboxSettingsTest {
- public:
-  void InitializeFeaturesBeforeStart() override {
-    feature_list_.InitAndEnableFeature(
-        privacy_sandbox::kPrivacySandboxSettings4);
-  }
-
  protected:
   void RunTestCase(const TestState& test_state,
                    const TestInput& test_input,
@@ -1544,11 +1438,6 @@ class PrivacySandboxAttestationsTest : public base::test::WithFeatureOverride,
         ->SetAllPrivacySandboxAttestedForTesting(false);
   }
 
-  void InitializeFeaturesBeforeStart() override {
-    feature_list_.InitAndEnableFeature(
-        privacy_sandbox::kPrivacySandboxSettings4);
-  }
-
   bool IsAttestationsDefaultAllowed() { return IsParamFeatureEnabled(); }
 };
 
@@ -2147,8 +2036,6 @@ class PrivacySandbox3pcdExperimentTest
   PrivacySandbox3pcdExperimentTest() = default;
 
   void InitializeFeaturesBeforeStart() override {
-    feature_list_.InitAndEnableFeature(
-        privacy_sandbox::kPrivacySandboxSettings4);
     cookie_deprecation_feature_list_.Reset();
   }
 

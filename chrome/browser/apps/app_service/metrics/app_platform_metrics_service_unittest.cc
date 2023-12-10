@@ -244,7 +244,6 @@ class AppPlatformMetricsServiceTest
       public ::testing::WithParamInterface<bool> {
  public:
   void SetUp() override {
-    AppPlatformMetricsServiceTestBase::SetUp();
     if (IsLacrosEnabled()) {
       feature_list_.InitWithFeatures(
           /*enabled_features=*/ash::standalone_browser::GetFeatureRefs(), {});
@@ -252,6 +251,7 @@ class AppPlatformMetricsServiceTest
       feature_list_.InitWithFeatures(
           {}, /*disabled_features=*/ash::standalone_browser::GetFeatureRefs());
     }
+    AppPlatformMetricsServiceTestBase::SetUp();
 
     InstallApps();
     // The WebAppProvider system must be started after the apps are added, as
@@ -574,7 +574,7 @@ class AppPlatformMetricsServiceTest
         GetPrefService()->GetDict(kAppRunningDuration);
     std::string key = GetAppTypeHistogramName(app_type_name);
 
-    absl::optional<base::TimeDelta> unreported_duration =
+    std::optional<base::TimeDelta> unreported_duration =
         base::ValueToTimeDelta(dict.FindByDottedPath(key));
     if (time_delta.is_zero()) {
       EXPECT_FALSE(unreported_duration.has_value());
@@ -628,7 +628,7 @@ class AppPlatformMetricsServiceTest
         GetPrefService()->GetDict(kAppActivatedCount);
     std::string key = GetAppTypeHistogramName(app_type_name);
 
-    absl::optional<int> activated_count = dict.FindIntByDottedPath(key);
+    std::optional<int> activated_count = dict.FindIntByDottedPath(key);
     if (expected_count == 0) {
       EXPECT_FALSE(activated_count.has_value());
       return;
@@ -3092,6 +3092,65 @@ TEST_P(AppDiscoveryMetricsTest, AppInstallStateMetricsRecorded) {
 
   proxy->UninstallSilently(app_id, kUninstallSource);
   uninstall_event_run_loop.Run();
+}
+
+TEST_P(AppDiscoveryMetricsTest, AppInstallNotEmittedIfAppInstalled) {
+  base::test::ScopedRunLoopTimeout default_timeout(FROM_HERE, base::Seconds(3));
+
+  // Setup publisher for arc app.
+  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile());
+  proxy->SetAppPlatformMetricsServiceForTesting(GetAppPlatformMetricsService());
+
+  // Install an ARC app to test.
+  AddApp(proxy,
+         {kAndroidAppId, AppType::kArc, kAndroidAppPublisherId,
+          Readiness::kReady, InstallReason::kUser, InstallSource::kPlayStore,
+          /*should_notify_initialized=*/true});
+
+  // Simulate registering publishers for the launch interface to record metrics.
+  proxy->RegisterPublishersForTesting();
+  FakePublisher fake_arc_apps(proxy, AppType::kArc);
+
+  // Try to install the same app.
+  auto app_type = AppType::kArc;
+  const std::string expected_app_id =
+      base::StrCat({"app://", kAndroidAppPublisherId});
+  auto install_source = InstallSource::kPlayStore;
+
+  // Install event should not be recorded.
+  auto install_record_callback =
+      base::BindLambdaForTesting([](const metrics::structured::Event& event) {
+        ADD_FAILURE() << "Should not be called!";
+      });
+  test_structured_metrics_provider()->SetOnEventsRecordClosure(
+      install_record_callback);
+
+  InstallOneApp(kAndroidAppId, app_type, kAndroidAppPublisherId,
+                Readiness::kReady, install_source);
+}
+
+TEST_P(AppDiscoveryMetricsTest, AppUninstallNotEmittedIfAppNotInstalled) {
+  base::test::ScopedRunLoopTimeout default_timeout(FROM_HERE, base::Seconds(3));
+
+  // Setup publisher for arc app.
+  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile());
+  proxy->SetAppPlatformMetricsServiceForTesting(GetAppPlatformMetricsService());
+
+  // Simulate registering publishers for the launch interface to record metrics.
+  proxy->RegisterPublishersForTesting();
+  FakePublisher fake_arc_apps(proxy, AppType::kArc);
+
+  // Try to uninstall an app that is not installed.
+  base::RunLoop uninstall_event_run_loop;
+  const auto kUninstallSource = UninstallSource::kAppList;
+  auto uninstall_record_callback =
+      base::BindLambdaForTesting([](const metrics::structured::Event& event) {
+        ADD_FAILURE() << "Should not be called!";
+      });
+  test_structured_metrics_provider()->SetOnEventsRecordClosure(
+      uninstall_record_callback);
+
+  proxy->UninstallSilently(kAndroidAppId, kUninstallSource);
 }
 
 TEST_P(AppDiscoveryMetricsTest, AppActivityMetricsRecorded) {

@@ -1051,7 +1051,10 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, MetaRefreshToHTTPDisallowed) {
   WaitForSigninScreen();
 }
 
-// Tests the sign-in flow when the credentials passing API is used.
+// Tests the sign-in flow in Oobe when the credentials passing
+// API is used in case of new account and existing account when
+// the handle account creation message feature flag is enabled
+// or disabled.
 IN_PROC_BROWSER_TEST_P(SamlWithCreateAccountAPITest,
                        CredentialPassingAPIWithNewAccount) {
   base::HistogramTester histogram_tester;
@@ -1076,12 +1079,22 @@ IN_PROC_BROWSER_TEST_P(SamlWithCreateAccountAPITest,
 
   // TODO (b/308176681): add test case for first user/non first user on the
   // device.
-  if (IsNewAccountSignedUp() && IsRecordCreateAccountFeatureEnabled()) {
-    histogram_tester.ExpectUniqueSample(
-        "ChromeOS.Gaia.CreateAccount.IsFirstUser", 1, 1);
+  if (IsRecordCreateAccountFeatureEnabled()) {
+    if (IsNewAccountSignedUp()) {
+      histogram_tester.ExpectUniqueSample(
+          "ChromeOS.Gaia.CreateAccount.IsFirstUser", 1, 1);
+      histogram_tester.ExpectUniqueSample("ChromeOS.Gaia.Done.Oobe.NewAccount",
+                                          1, 1);
+    } else {
+      histogram_tester.ExpectTotalCount(
+          "ChromeOS.Gaia.CreateAccount.IsFirstUser", 0);
+      histogram_tester.ExpectUniqueSample("ChromeOS.Gaia.Done.Oobe.NewAccount",
+                                          0, 1);
+    }
   } else {
     histogram_tester.ExpectTotalCount("ChromeOS.Gaia.CreateAccount.IsFirstUser",
                                       0);
+    histogram_tester.ExpectTotalCount("ChromeOS.Gaia.Done.Oobe.NewAccount", 0);
   }
 
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 1, 1);
@@ -1789,20 +1802,20 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, TestLoginMediaPermission) {
 
   // Mic should always be blocked.
   EXPECT_FALSE(web_contents_delegate->CheckMediaAccessPermission(
-      web_contents->GetPrimaryMainFrame(), url1,
+      web_contents->GetPrimaryMainFrame(), url::Origin::Create(url1),
       blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
 
   // Camera should be allowed if allowed by the allowlist, otherwise blocked.
   EXPECT_TRUE(web_contents_delegate->CheckMediaAccessPermission(
-      web_contents->GetPrimaryMainFrame(), url1,
+      web_contents->GetPrimaryMainFrame(), url::Origin::Create(url1),
       blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 
   EXPECT_TRUE(web_contents_delegate->CheckMediaAccessPermission(
-      web_contents->GetPrimaryMainFrame(), url2,
+      web_contents->GetPrimaryMainFrame(), url::Origin::Create(url2),
       blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 
   EXPECT_FALSE(web_contents_delegate->CheckMediaAccessPermission(
-      web_contents->GetPrimaryMainFrame(), url3,
+      web_contents->GetPrimaryMainFrame(), url::Origin::Create(url3),
       blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 
   // Camera should be blocked in the login screen, even if it's allowed via
@@ -1815,7 +1828,7 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, TestLoginMediaPermission) {
                                       CONTENT_SETTING_ALLOW);
 
   EXPECT_FALSE(web_contents_delegate->CheckMediaAccessPermission(
-      web_contents->GetPrimaryMainFrame(), url3,
+      web_contents->GetPrimaryMainFrame(), url::Origin::Create(url3),
       blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 }
 
@@ -1832,7 +1845,7 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, TestLockMediaPermission) {
                 kTestAuthSIDCookie1, kTestAuthLSIDCookie1);
   ScreenLockerTester().Lock();
 
-  absl::optional<LockScreenReauthDialogTestHelper> reauth_dialog_helper =
+  std::optional<LockScreenReauthDialogTestHelper> reauth_dialog_helper =
       LockScreenReauthDialogTestHelper::StartSamlAndWaitForIdpPageLoad();
   ASSERT_TRUE(reauth_dialog_helper);
 
@@ -1862,20 +1875,20 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, TestLockMediaPermission) {
 
   // Mic should always be blocked.
   EXPECT_FALSE(web_contents_delegate->CheckMediaAccessPermission(
-      web_contents->GetPrimaryMainFrame(), url1,
+      web_contents->GetPrimaryMainFrame(), url::Origin::Create(url1),
       blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
 
   // Camera should be allowed if allowed by the allowlist, otherwise blocked.
   EXPECT_TRUE(web_contents_delegate->CheckMediaAccessPermission(
-      web_contents->GetPrimaryMainFrame(), url1,
+      web_contents->GetPrimaryMainFrame(), url::Origin::Create(url1),
       blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 
   EXPECT_TRUE(web_contents_delegate->CheckMediaAccessPermission(
-      web_contents->GetPrimaryMainFrame(), url2,
+      web_contents->GetPrimaryMainFrame(), url::Origin::Create(url2),
       blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 
   EXPECT_FALSE(web_contents_delegate->CheckMediaAccessPermission(
-      web_contents->GetPrimaryMainFrame(), url3,
+      web_contents->GetPrimaryMainFrame(), url::Origin::Create(url3),
       blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 }
 

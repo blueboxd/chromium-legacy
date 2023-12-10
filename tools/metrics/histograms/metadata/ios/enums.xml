@@ -257,10 +257,23 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="Other WKErrorDomain Error"/>
 </enum>
 
-<enum name="IOSHandoffOrigin">
-  <int value="0" label="Unknown Origin"/>
-  <int value="1" label="Chrome on iOS"/>
-  <int value="2" label="Chrome on Mac"/>
+<enum name="IOSExternalAction">
+  <summary>
+    The action passed to Chrome for iOS using an external action URL.
+  </summary>
+  <int value="0" label="Invalid Action"/>
+  <int value="1" label="Open NTP"/>
+  <int value="2" label="Default Browser Settings"/>
+</enum>
+
+<enum name="IOSExternalActionDefaultBrowserPromoUsage">
+  <summary>
+    The action taken by the user after they landed on the Default Browser Promo
+    from an External Action (URL passed to Chrome with
+    &quot;ChromeExternalAction&quot; as host).
+  </summary>
+  <int value="0" label="Open iOS Settings"/>
+  <int value="1" label="Dismissed"/>
 </enum>
 
 <enum name="IOSHomeActionType">
@@ -301,6 +314,7 @@ chromium-metrics-reviews@google.com.
   <int value="7" label="X-Callback (incl. link shared to Chrome)"/>
   <int value="8" label="Handoff"/>
   <int value="9" label="Notification"/>
+  <int value="10" label="External action opened in Chrome"/>
 </enum>
 
 <enum name="IOSMagicStackModuleType">
@@ -516,6 +530,7 @@ chromium-metrics-reviews@google.com.
   <int value="7" label="Choice Promo"/>
   <int value="8" label="Post Restore Default Browser (Alert)"/>
   <int value="9" label="Default Browser Remind Me Later"/>
+  <int value="10" label="Omnibox Position"/>
 </enum>
 
 <enum name="IOSPromosManagerPromoImpressionLimitEvaluationType">
@@ -727,6 +742,7 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="Page Control Tap"/>
   <int value="3" label="Page Control Drag"/>
   <int value="4" label="Item Drag"/>
+  <int value="5" label="Voice Over Swipe"/>
 </enum>
 
 <enum name="IOSUserInterfaceStyle">

@@ -100,7 +100,6 @@
 #include "components/safe_browsing/core/common/features.h"
 #include "components/search_engines/search_engine_choice_utils.h"
 #include "components/signin/public/base/signin_pref_names.h"
-#include "components/signin/public/base/signin_switches.h"
 #include "components/sync/base/features.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
@@ -319,11 +318,14 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   }
 
   const bool is_search_engine_choice_settings_ui =
-      base::FeatureList::IsEnabled(switches::kSearchEngineChoiceSettingsUi) &&
       search_engines::IsChoiceScreenFlagEnabled(
           search_engines::ChoicePromo::kAny);
   html_source->AddBoolean("searchEngineChoiceSettingsUi",
                           is_search_engine_choice_settings_ui);
+
+  const bool is_eea_country = search_engines::IsEeaChoiceCountry(
+      search_engines::GetSearchEngineChoiceCountryId(profile->GetPrefs()));
+  html_source->AddBoolean("useLargeSearchEngineIcons", is_eea_country);
   if (is_search_engine_choice_settings_ui) {
     AddGeneratedIconResources(html_source, /*directory=*/"images/");
   }
@@ -381,6 +383,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
                               IsHashRealTimeLookupEligibleInSession());
 
   html_source->AddBoolean(
+      "enableHttpsFirstModeNewSettings",
+      base::FeatureList::IsEnabled(features::kHttpsFirstModeIncognito));
+
+  html_source->AddBoolean(
       "enablePageContentSetting",
       base::FeatureList::IsEnabled(features::kPageContentOptIn) ||
           base::FeatureList::IsEnabled(
@@ -394,7 +400,7 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 
   html_source->AddBoolean(
       "downloadBubblePartialViewControlledByPref",
-      download::IsDownloadBubbleEnabled(profile) &&
+      download::IsDownloadBubbleEnabled() &&
           download::IsDownloadBubblePartialViewControlledByPref());
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
@@ -479,20 +485,12 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       PrivacySandboxServiceFactory::GetForProfile(profile);
   bool is_privacy_sandbox_restricted =
       privacy_sandbox_service->IsPrivacySandboxRestricted();
-  bool is_privacy_sandbox_settings_4 =
-      base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4);
   bool is_restricted_notice_enabled =
       privacy_sandbox_service->IsRestrictedNoticeEnabled();
   html_source->AddBoolean("isPrivacySandboxRestricted",
                           is_privacy_sandbox_restricted);
-  html_source->AddBoolean("isPrivacySandboxSettings4",
-                          is_privacy_sandbox_settings_4);
   html_source->AddBoolean("isPrivacySandboxRestrictedNoticeEnabled",
                           is_restricted_notice_enabled);
-  if (!is_privacy_sandbox_restricted && !is_privacy_sandbox_settings_4) {
-    html_source->AddResourcePath(
-        "privacySandbox", IDR_SETTINGS_PRIVACY_SANDBOX_PRIVACY_SANDBOX_HTML);
-  }
 
   html_source->AddBoolean(
       "privateStateTokensEnabled",
@@ -574,8 +572,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   bool optimization_guide_feature_visible[4] = {false, false, false, false};
 
   for (size_t i = 0; i < 3; i++) {
-    const bool& visible = optimization_guide_service->IsSettingVisible(
-        optimization_guide_features[i]);
+    const bool visible = optimization_guide_service &&
+                         optimization_guide_service->IsSettingVisible(
+                             optimization_guide_features[i]);
     optimization_guide_feature_visible[i + 1] = visible;
 
     // The main toggle is visible only if at least one of the sub toggles is

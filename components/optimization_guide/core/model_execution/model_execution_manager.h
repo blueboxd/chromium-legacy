@@ -15,6 +15,7 @@
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_model_executor.h"
 #include "components/optimization_guide/proto/model_execution.pb.h"
+#include "components/optimization_guide/proto/model_quality_service.pb.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/on_device_model/public/mojom/on_device_model.mojom.h"
 #include "url/gurl.h"
@@ -39,7 +40,7 @@ class ModelExecutionManager {
   ModelExecutionManager(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       signin::IdentityManager* identity_manager,
-      std::unique_ptr<OnDeviceModelServiceController>
+      scoped_refptr<OnDeviceModelServiceController>
           on_device_model_service_controller,
       OptimizationGuideLogger* optimization_guide_logger);
 
@@ -48,17 +49,34 @@ class ModelExecutionManager {
   ModelExecutionManager(const ModelExecutionManager&) = delete;
   ModelExecutionManager& operator=(const ModelExecutionManager&) = delete;
 
-  void ExecuteModel(proto::ModelExecutionFeature feature,
-                    const google::protobuf::MessageLite& request_metadata,
-                    OptimizationGuideModelExecutionResultCallback callback);
+  // Executes the model when model execution happens remotely.
+  //
+  // As this can potentially be called as a fallback from on-device,
+  // `log_ai_data_request` may be populated already with any existing work prior
+  // to calling this function.
+  void ExecuteModel(
+      proto::ModelExecutionFeature feature,
+      const google::protobuf::MessageLite& request_metadata,
+      std::unique_ptr<proto::LogAiDataRequest> log_ai_data_request,
+      OptimizationGuideModelExecutionResultCallback callback);
 
+  // Starts a new session for `feature`.
   std::unique_ptr<OptimizationGuideModelExecutor::Session> StartSession(
       proto::ModelExecutionFeature feature);
 
  private:
+  // Called from SessionImpl (via ExecuteRemoteFn) when model execution happens
+  // remotely.
+  void ExecuteModelWithStreaming(
+      proto::ModelExecutionFeature feature,
+      const google::protobuf::MessageLite& request_metadata,
+      std::unique_ptr<proto::LogAiDataRequest> log_ai_data_request,
+      OptimizationGuideModelExecutionResultStreamingCallback callback);
+
   // Invoked when the model execution result is available.
   void OnModelExecuteResponse(
       proto::ModelExecutionFeature feature,
+      std::unique_ptr<proto::LogAiDataRequest> log_ai_data_request,
       OptimizationGuideModelExecutionResultCallback callback,
       base::expected<const proto::ExecuteResponse,
                      OptimizationGuideModelExecutionError> execute_response);
@@ -80,11 +98,8 @@ class ModelExecutionManager {
   // incognito profiles.
   const raw_ptr<signin::IdentityManager> identity_manager_;
 
-  // The set of OAuth scopes to use for requesting access token.
-  std::set<std::string> oauth_scopes_;
-
   // Controller for the on-device service.
-  std::unique_ptr<OnDeviceModelServiceController>
+  scoped_refptr<OnDeviceModelServiceController>
       on_device_model_service_controller_;
 
   SEQUENCE_CHECKER(sequence_checker_);

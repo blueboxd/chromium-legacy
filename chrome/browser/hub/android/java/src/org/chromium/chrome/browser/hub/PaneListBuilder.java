@@ -36,6 +36,11 @@ public class PaneListBuilder {
         mPaneOrderController = paneOrderController;
     }
 
+    /** Returns an object that holds the authoritative order of panes. */
+    public PaneOrderController getPaneOrderController() {
+        return mPaneOrderController;
+    }
+
     /**
      * Register a new Pane for the Hub. This operation is invalid if {@link #build()} was invoked.
      *
@@ -51,7 +56,7 @@ public class PaneListBuilder {
                     "PaneListBuilder#build() was already invoked. Cannot add a pane for " + paneId);
         }
         assert !mRegisteredPanes.containsKey(paneId)
-            : String.format(Locale.ENGLISH, "a pane for %d was already registered.", paneId);
+                : String.format(Locale.ENGLISH, "a pane for %d was already registered.", paneId);
 
         mRegisteredPanes.put(paneId, paneSupplier);
 
@@ -89,7 +94,8 @@ public class PaneListBuilder {
         }
 
         if (!mRegisteredPanes.isEmpty()) {
-            Log.d(TAG,
+            Log.d(
+                    TAG,
                     "Some registered panes were not used. PaneIds: " + mRegisteredPanes.keySet());
         }
         mRegisteredPanes = null;

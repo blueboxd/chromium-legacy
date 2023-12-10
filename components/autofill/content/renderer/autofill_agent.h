@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_CONTENT_RENDERER_AUTOFILL_AGENT_H_
 #define COMPONENTS_AUTOFILL_CONTENT_RENDERER_AUTOFILL_AGENT_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -109,7 +110,8 @@ class AutofillAgent : public content::RenderFrameObserver,
       base::OnceCallback<void(bool)> callback) override;
   void ApplyFormAction(mojom::ActionType action_type,
                        mojom::ActionPersistence action_persistence,
-                       const FormData& form) override;
+                       FormRendererId form_renderer_id,
+                       const std::vector<FormFieldData>& fields) override;
   void ApplyFieldAction(mojom::ActionPersistence action_persistence,
                         mojom::TextReplacement text_replacement,
                         FieldRendererId field_id,
@@ -168,7 +170,18 @@ class AutofillAgent : public content::RenderFrameObserver,
   // Instructs `form_tracker_` to track the autofilled `element`.
   void TrackAutofilledElement(const blink::WebFormControlElement& element);
 
-  FormTracker* form_tracker_for_testing() { return &form_tracker_; }
+  // Function that should be called whenever the value of |element| changes due
+  // to user input. This is separate from OnTextFieldDidChange() as that
+  // function may trigger UI and should only be called when other UI won't be
+  // shown.
+  void UpdateStateForTextChange(const blink::WebFormControlElement& element,
+                                FieldPropertiesFlags flag);
+
+  FormTracker* form_tracker_for_testing() { return form_tracker_.get(); }
+  void set_form_tracker_for_testing(
+      std::unique_ptr<FormTracker>&& form_tracker) {
+    form_tracker_ = std::move(form_tracker);
+  }
 
   bool is_heavy_form_data_scraping_enabled() {
     return is_heavy_form_data_scraping_enabled_;
@@ -176,8 +189,8 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   bool IsPrerendering() const;
 
-  const blink::WebFormControlElement& focused_element() const {
-    return last_queried_element_;
+  blink::WebFormControlElement focused_element() const {
+    return last_queried_element_.GetField();
   }
 
   FieldDataManager& field_data_manager() const {
@@ -338,7 +351,12 @@ class AutofillAgent : public content::RenderFrameObserver,
   void ExtractForms(base::OneShotTimer& timer,
                     base::OnceCallback<void(bool)> callback);
 
-  // Extracts new and/or removed forms and triggers AutofillDriver::FormsSeen().
+  // This function can be implemented through the one above, but it exists to
+  // avoid memory allocation for the OnceCallback state. Allocation and
+  // destruction of this callback in the hot path (when timer is already
+  // running) is expensive.
+  void ExtractFormsForPasswordAutofillAgent(base::OneShotTimer& timer);
+
   void ExtractFormsUnthrottled(base::OnceCallback<void(bool)> callback);
 
   // Hides any currently showing Autofill popup.
@@ -359,12 +377,6 @@ class AutofillAgent : public content::RenderFrameObserver,
   // cleared in this method.
   void OnFormNoLongerSubmittable();
 
-  // Trigger a refill if the `form` has just changed dynamically (other than the
-  // field values). The refill is triggered by informing the browser process
-  // about the form. The browser process makes the final decision whether or not
-  // to execute a refill.
-  void TriggerRefillIfNeeded(const FormData& form);
-
   // Helpers for SelectOrSelectListFieldOptionsChanged() and
   // DataListOptionsChanged(), which get called after a timer that is restarted
   // when another event of the same type started.
@@ -384,10 +396,10 @@ class AutofillAgent : public content::RenderFrameObserver,
   std::unique_ptr<PasswordGenerationAgent> password_generation_agent_;
 
   // The element corresponding to the last request sent for form field Autofill.
-  blink::WebFormControlElement last_queried_element_;
+  FieldRef last_queried_element_;
 
   // The elements that currently are being previewed.
-  std::vector<blink::WebFormControlElement> previewed_elements_;
+  std::vector<FieldRef> previewed_elements_;
 
   // Records the last autofill action (Fill or Undo) done by the agent. Used in
   // ClearPreviewedForm to get the default state of previewed fields
@@ -395,7 +407,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   mojom::ActionType last_action_type_ = mojom::ActionType::kFill;
 
   // Last form which was interacted with by the user.
-  blink::WebFormElement last_interacted_form_;
+  FormRef last_interacted_form_;
 
   // When dealing with an unowned form, we keep track of the unowned fields
   // the user has modified so we can determine when submission occurs.
@@ -424,10 +436,6 @@ class AutofillAgent : public content::RenderFrameObserver,
   // messages to close the Autofill popup when it can't possibly be showing.
   bool is_popup_possibly_visible_;
 
-  // Whether or not a user gesture is required before notification of a text
-  // field change. Default to true.
-  bool is_user_gesture_required_;
-
   // Whether or not the secure context is required to query autofill suggestion.
   // Default to false.
   bool is_secure_context_required_;
@@ -440,7 +448,9 @@ class AutofillAgent : public content::RenderFrameObserver,
   bool last_left_mouse_down_or_gesture_tap_in_node_caused_focus_ = false;
   FieldRendererId last_clicked_form_control_element_for_testing_;
 
-  FormTracker form_tracker_;
+  // This is never null, it is created at construction time and is not changed
+  // until destruction time.
+  std::unique_ptr<FormTracker> form_tracker_;
 
   // Whether or not we delay focus handling until scrolling occurs.
   bool focus_requires_scroll_ = true;
@@ -475,7 +485,8 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   // Map WebFormControlElement to the pair of:
   // 1) The most recent text that user typed or autofilled in input elements.
-  // Used for storing username/password before JavaScript changes them.
+  // Used for storing credit card number/username/password before JavaScript
+  // changes them.
   // 2) Field properties mask, i.e. whether the field was autofilled, modified
   // by user, etc. (see FieldPropertiesMask).
   scoped_refptr<FieldDataManager> field_data_manager_;

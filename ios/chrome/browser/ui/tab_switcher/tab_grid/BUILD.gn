@@ -6,7 +6,6 @@ import("//ios/public/provider/chrome/browser/build_config.gni")
 
 source_set("tab_grid") {
   sources = [
-    "tab_grid_coordinator+private.h",
     "tab_grid_coordinator.h",
     "tab_grid_coordinator.mm",
     "tab_grid_coordinator_delegate.h",
@@ -32,7 +31,7 @@ source_set("tab_grid") {
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/find_in_page/model",
     "//ios/chrome/browser/find_in_page/model:util",
-    "//ios/chrome/browser/main",
+    "//ios/chrome/browser/main/model",
     "//ios/chrome/browser/policy:policy_util",
     "//ios/chrome/browser/reading_list/model",
     "//ios/chrome/browser/search_engines/model:template_url_service_factory",
@@ -238,7 +237,7 @@ source_set("eg2_tests") {
     "//components/bookmarks/common",
     "//components/sync/base:features",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser/metrics:eg_test_support+eg2",
+    "//ios/chrome/browser/metrics/model:eg_test_support+eg2",
     "//ios/chrome/browser/shared/public/features",
     "//ios/chrome/browser/signin/model:fake_system_identity",
     "//ios/chrome/browser/tabs/model/inactive_tabs:features",
@@ -257,7 +256,6 @@ source_set("eg2_tests") {
     "//ios/chrome/common/ui/table_view:cells_constants",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",
-    "//ios/web/common:features",
     "//ios/web/public/test/http_server",
     "//net:test_support",
     "//ui/base",

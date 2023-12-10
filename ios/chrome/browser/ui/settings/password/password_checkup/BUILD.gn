@@ -6,7 +6,7 @@ source_set("password_checkup") {
   sources = [
     "password_checkup_coordinator.h",
     "password_checkup_coordinator.mm",
-    "password_checkup_mediator+private.h",
+    "password_checkup_mediator+Testing.h",
     "password_checkup_mediator.h",
     "password_checkup_mediator.mm",
   ]
@@ -28,6 +28,7 @@ source_set("password_checkup") {
     "//ios/chrome/browser/ui/settings/password:features",
     "//ios/chrome/browser/ui/settings/password/password_issues",
     "//ios/chrome/browser/ui/settings/password/reauthentication",
+    "//ios/chrome/browser/ui/settings/password/reauthentication:reauthentication_delegate",
     "//ios/chrome/browser/ui/settings/password/widget_promo_instructions",
     "//ios/chrome/common:string_util",
     "//ios/chrome/common/ui/reauthentication",
@@ -130,6 +131,7 @@ source_set("eg2_tests") {
     "//ios/chrome/browser/ui/authentication:eg_test_support+eg2",
     "//ios/chrome/browser/ui/settings/password:eg_test_support",
     "//ios/chrome/browser/ui/settings/password:eg_test_support+eg2",
+    "//ios/chrome/browser/ui/settings/password:features",
     "//ios/chrome/browser/ui/settings/password/password_details:password_details_table_view_constants",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",

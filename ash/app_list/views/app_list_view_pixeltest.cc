@@ -79,7 +79,7 @@ class AppListViewPixelRTLTest
     : public AshTestBase,
       public testing::WithParamInterface<std::tuple<bool /*is_rtl=*/>> {
  public:
-  absl::optional<pixel_test::InitParams> CreatePixelTestInitParams()
+  std::optional<pixel_test::InitParams> CreatePixelTestInitParams()
       const override {
     pixel_test::InitParams init_params;
     init_params.under_rtl = IsRtl();
@@ -300,7 +300,7 @@ class AppListViewLauncherSearchIphTest
     : public AssistantAshTestBase,
       public testing::WithParamInterface<TestVariantsParam> {
  public:
-  absl::optional<pixel_test::InitParams> CreatePixelTestInitParams()
+  std::optional<pixel_test::InitParams> CreatePixelTestInitParams()
       const override {
     pixel_test::InitParams init_params;
     init_params.under_rtl = IsRtl(GetParam());
@@ -347,9 +347,9 @@ TEST_P(AppListViewLauncherSearchIphTest, DISABLED_Basic) {
     event_generator->ClickLeftButton();
   }
 
-  ASSERT_TRUE(search_box_view->iph_view());
+  ASSERT_TRUE(search_box_view->GetIphView());
   ViewDrawnWaiter view_drawn_waiter;
-  view_drawn_waiter.Wait(search_box_view->iph_view());
+  view_drawn_waiter.Wait(search_box_view->GetIphView());
 
   UseFixedPlaceholderTextAndHideCursor(search_box_view);
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
@@ -361,7 +361,7 @@ class AppListViewTabletPixelTest
       public testing::WithParamInterface<std::tuple</*rtl=*/bool>> {
  public:
   // AshTestBase:
-  absl::optional<pixel_test::InitParams> CreatePixelTestInitParams()
+  std::optional<pixel_test::InitParams> CreatePixelTestInitParams()
       const override {
     pixel_test::InitParams init_params;
     init_params.under_rtl = IsRtl();
@@ -453,7 +453,7 @@ class AppListViewAssistantZeroStateTest
     : public AssistantAshTestBase,
       public testing::WithParamInterface<TestVariantsParam> {
  public:
-  absl::optional<pixel_test::InitParams> CreatePixelTestInitParams()
+  std::optional<pixel_test::InitParams> CreatePixelTestInitParams()
       const override {
     pixel_test::InitParams init_params;
     init_params.under_rtl = IsRtl(GetParam());

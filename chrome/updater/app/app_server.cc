@@ -4,6 +4,7 @@
 
 #include "chrome/updater/app/app_server.h"
 
+#include <memory>
 #include <optional>
 #include <string>
 #include <utility>
@@ -18,6 +19,7 @@
 #include "base/process/process.h"
 #include "base/time/time.h"
 #include "base/version.h"
+#include "chrome/updater/activity.h"
 #include "chrome/updater/app/app_utils.h"
 #include "chrome/updater/configurator.h"
 #include "chrome/updater/constants.h"
@@ -36,23 +38,7 @@
 #include "chrome/updater/util/util.h"
 #include "components/prefs/pref_service.h"
 
-#if BUILDFLAG(IS_WIN)
-#include "chrome/updater/win/setup/setup_util.h"
-#endif  // BUILDFLAG(IS_WIN)
-
 namespace updater {
-
-namespace {
-#if BUILDFLAG(IS_WIN)
-void RestoreComInterfaces(UpdaterScope scope, bool is_internal) {
-  if (AreComInterfacesPresent(scope, is_internal)) {
-    return;
-  }
-
-  InstallComInterfaces(scope, is_internal);
-}
-#endif  // BUILDFLAG(IS_WIN)
-}  // namespace
 
 bool IsInternalService() {
   return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -132,9 +118,7 @@ base::OnceClosure AppServer::ModeCheck() {
   CHECK_EQ(base::Version(global_prefs->GetActiveVersion()),
            base::Version(kUpdaterVersion));
 
-#if BUILDFLAG(IS_WIN)
-  RestoreComInterfaces(updater_scope(), IsInternalService());
-#endif  // BUILDFLAG(IS_WIN)
+  RepairUpdater(updater_scope(), IsInternalService());
 
   if (IsInternalService()) {
     prefs_ = CreateLocalPrefs(updater_scope());
@@ -198,12 +182,12 @@ void AppServer::Uninitialize() {
 }
 
 void AppServer::MaybeUninstall() {
-  if (!prefs_ || IsInternalService()) {
+  if (!config_ || IsInternalService()) {
     return;
   }
 
-  auto persisted_data = base::MakeRefCounted<PersistedData>(
-      updater_scope(), prefs_->GetPrefService());
+  scoped_refptr<PersistedData> persisted_data =
+      config_->GetUpdaterPersistedData();
   if (ShouldUninstall(persisted_data->GetAppIds(), server_starts_,
                       persisted_data->GetHadApps())) {
     std::optional<base::FilePath> executable =
@@ -249,7 +233,8 @@ bool AppServer::SwapVersions(GlobalPrefs* global_prefs,
     if (!MigrateLegacyUpdaters(base::BindRepeating(
             &PersistedData::RegisterApp,
             base::MakeRefCounted<PersistedData>(
-                updater_scope(), global_prefs->GetPrefService())))) {
+                updater_scope(), global_prefs->GetPrefService(),
+                std::make_unique<ActivityDataService>(GetUpdaterScope()))))) {
       return false;
     }
     global_prefs->SetMigratedLegacyUpdaters();

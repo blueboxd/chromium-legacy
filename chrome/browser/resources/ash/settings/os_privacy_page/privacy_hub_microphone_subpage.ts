@@ -13,16 +13,19 @@ import './privacy_hub_app_permission_row.js';
 import {PermissionType} from 'chrome://resources/cr_components/app_management/app_management.mojom-webui.js';
 import {isPermissionEnabled} from 'chrome://resources/cr_components/app_management/permission_util.js';
 import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
+import {CrToggleElement} from 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {castExists} from '../assert_extras.js';
 import {App, AppPermissionsHandlerInterface, AppPermissionsObserverReceiver} from '../mojom-webui/app_permission_handler.mojom-webui.js';
 
 import {MediaDevicesProxy} from './media_devices_proxy.js';
 import {getAppPermissionProvider} from './mojo_interface_provider.js';
 import {PrivacyHubBrowserProxy, PrivacyHubBrowserProxyImpl} from './privacy_hub_browser_proxy.js';
+import {MICROPHONE_SUBPAGE_USER_ACTION_HISTOGRAM_NAME, NUMBER_OF_POSSIBLE_USER_ACTIONS, PrivacyHubSensorSubpageUserAction} from './privacy_hub_metrics_util.js';
 import {getTemplate} from './privacy_hub_microphone_subpage.html.js';
 
 /**
@@ -187,6 +190,11 @@ export class SettingsPrivacyHubMicrophoneSubpage extends
   }
 
   private onManagePermissionsInChromeRowClick_(): void {
+    chrome.metricsPrivate.recordEnumerationValue(
+        MICROPHONE_SUBPAGE_USER_ACTION_HISTOGRAM_NAME,
+        PrivacyHubSensorSubpageUserAction.WEBSITE_PERMISSION_LINK_CLICKED,
+        NUMBER_OF_POSSIBLE_USER_ACTIONS);
+
     window.open('chrome://settings/content/microphone');
   }
 
@@ -221,6 +229,26 @@ export class SettingsPrivacyHubMicrophoneSubpage extends
     if (idx !== -1) {
       this.splice('appList_', idx, 1);
     }
+  }
+
+  private getMicrophoneToggle_(): CrToggleElement {
+    return castExists(
+        this.shadowRoot!.querySelector<CrToggleElement>('#microphoneToggle'));
+  }
+
+  private onAccessStatusRowClick_(): void {
+    if (this.shouldDisableMicrophoneToggle_) {
+      return;
+    }
+
+    this.getMicrophoneToggle_().click();
+  }
+
+  private onMicrophoneToggleClick_(): void {
+    chrome.metricsPrivate.recordEnumerationValue(
+        MICROPHONE_SUBPAGE_USER_ACTION_HISTOGRAM_NAME,
+        PrivacyHubSensorSubpageUserAction.SYSTEM_ACCESS_CHANGED,
+        NUMBER_OF_POSSIBLE_USER_ACTIONS);
   }
 }
 

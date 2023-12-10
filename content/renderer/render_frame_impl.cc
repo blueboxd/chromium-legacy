@@ -2058,6 +2058,7 @@ bool RenderFrameImpl::Send(IPC::Message* message) {
 }
 
 bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
+#if BUILDFLAG(CONTENT_ENABLE_LEGACY_IPC)
   // We may get here while detaching, when the WebFrame has been deleted.  Do
   // not process any messages in this state.
   if (!frame_)
@@ -2073,7 +2074,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     if (observer.OnMessageReceived(msg))
       return true;
   }
-
+#endif
   return false;
 }
 
@@ -2837,7 +2838,18 @@ void RenderFrameImpl::CommitNavigationWithParams(
     CHECK(!commit_params->not_restored_reasons);
   }
 
-  frame_->SetLCPPHint(std::move(commit_params->lcpp_hint));
+  // Skip LCPP hints if the document isn't being loaded in the main frame,
+  // if the LCPP performance experiment is enabled.
+  if (!blink::features::
+           kLCPCriticalPathPredictorEnableElementLocatorPerformanceImprovements
+               .Get() ||
+      frame_->IsOutermostMainFrame()) {
+    frame_->SetLCPPHint(std::move(commit_params->lcpp_hint));
+  } else {
+    // When there's a pre-existing LCPP hint on frame, we want to remove the
+    // existing hint. Hence calling SetLCPPHint(nullptr) is required.
+    frame_->SetLCPPHint(nullptr);
+  }
 
   // Note: this intentionally does not call |Detach()| before |reset()|. If
   // there is an active |MHTMLBodyLoaderClient|, the browser-side navigation
@@ -3582,8 +3594,7 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
 
   // Now create the child frame in the browser via an asynchronous call.
   GetFrameHost()->CreateChildFrame(
-      child_routing_id,
-      pending_frame_receiver.InitWithNewEndpointAndPassRemote(),
+      frame_token, pending_frame_receiver.InitWithNewEndpointAndPassRemote(),
       browser_interface_broker.InitWithNewPipeAndPassReceiver(),
       blink::mojom::PolicyContainerBindParams::New(
           std::move(policy_container_bind_params.receiver)),
@@ -3695,24 +3706,24 @@ RenderFrameImpl::PreviousWidgetForLazyCompositorInitialization(
   return previous_web_frame->ToWebLocalFrame()->FrameWidget();
 }
 
-void RenderFrameImpl::WillSwap() {
-  if (navigation_client_impl_ &&
-      ShouldQueueNavigationsWhenPendingCommitRFHExists()) {
-    navigation_client_impl_->ResetWithoutCancelling();
+void RenderFrameImpl::WillDetach(blink::DetachReason detach_reason) {
+  if (detach_reason == blink::DetachReason::kNavigation) {
+    if (navigation_client_impl_ &&
+        ShouldQueueNavigationsWhenPendingCommitRFHExists()) {
+      navigation_client_impl_->ResetWithoutCancelling();
+    }
+
+    // Defer initializing the new widget until the previous Document has been
+    // torn down. Script handles like unload dispatched during tear down can
+    // access the compositor.
+    if (provisional_frame_for_local_root_swap_) {
+      provisional_frame_for_local_root_swap_->EnsureWidgetInitialized();
+      provisional_frame_for_local_root_swap_ = nullptr;
+    }
   }
 
-  // Defer initializing the new widget until the previous Document has been torn
-  // down. Script handles like unload dispatched during tear down can access
-  // the compositor.
-  if (provisional_frame_for_local_root_swap_) {
-    provisional_frame_for_local_root_swap_->EnsureWidgetInitialized();
-    provisional_frame_for_local_root_swap_ = nullptr;
-  }
-}
-
-void RenderFrameImpl::WillDetach() {
   for (auto& observer : observers_)
-    observer.WillDetach();
+    observer.WillDetach(detach_reason);
 
   // blink::AudioOutputIPCFactory::io_task_runner_ may be null in tests.
   auto& factory = blink::AudioOutputIPCFactory::GetInstance();
@@ -4486,10 +4497,11 @@ void RenderFrameImpl::DidChangePerformanceTiming() {
 void RenderFrameImpl::DidObserveUserInteraction(
     base::TimeTicks max_event_start,
     base::TimeTicks max_event_end,
-    blink::UserInteractionType interaction_type) {
+    blink::UserInteractionType interaction_type,
+    uint64_t interaction_offset) {
   for (auto& observer : observers_)
     observer.DidObserveUserInteraction(max_event_start, max_event_end,
-                                       interaction_type);
+                                       interaction_type, interaction_offset);
 }
 
 void RenderFrameImpl::DidChangeCpuTiming(base::TimeDelta time) {

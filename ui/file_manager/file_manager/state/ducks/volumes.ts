@@ -6,7 +6,7 @@ import {isOneDriveId, isSameEntry, sortEntries} from '../../common/js/entry_util
 import {EntryList, VolumeEntry} from '../../common/js/files_app_entry_types.js';
 import {isGuestOsEnabled, isSinglePartitionFormatEnabled} from '../../common/js/flags.js';
 import {str} from '../../common/js/translations.js';
-import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {RootType, Source, VolumeType} from '../../common/js/volume_manager_types.js';
 import {FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
 import {FileKey, PropStatus, State, Volume, VolumeId} from '../../externs/ts/state.js';
 import type {VolumeInfo} from '../../externs/volume_info.js';
@@ -14,45 +14,36 @@ import {constants} from '../../foreground/js/constants.js';
 import {Slice} from '../../lib/base_store.js';
 import {getEntry, getFileData} from '../store.js';
 
-import {cacheEntries, getMyFiles, updateFileData} from './all_entries.js';
+import {cacheEntries, getMyFiles, updateFileDataInPlace} from './all_entries.js';
 import {updateDeviceConnectionState} from './device.js';
 
 /**
  * @fileoverview Volumes slice of the store.
- * @suppress {checkTypes}
  */
 
 const slice = new Slice<State, State['volumes']>('volumes');
 export {slice as volumesSlice};
 
-const VolumeType = VolumeManagerCommon.VolumeType;
-export const myFilesEntryListKey =
-    `entry-list://${VolumeManagerCommon.RootType.MY_FILES}`;
-export const crostiniPlaceHolderKey =
-    `fake-entry://${VolumeManagerCommon.RootType.CROSTINI}`;
-export const drivePlaceHolderKey =
-    `fake-entry://${VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT}`;
-export const recentRootKey =
-    `fake-entry://${VolumeManagerCommon.RootType.RECENT}/all`;
-export const trashRootKey =
-    `fake-entry://${VolumeManagerCommon.RootType.TRASH}`;
-export const driveRootEntryListKey =
-    `entry-list://${VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT}`;
+export const myFilesEntryListKey = `entry-list://${RootType.MY_FILES}`;
+export const crostiniPlaceHolderKey = `fake-entry://${RootType.CROSTINI}`;
+export const drivePlaceHolderKey = `fake-entry://${RootType.DRIVE_FAKE_ROOT}`;
+export const recentRootKey = `fake-entry://${RootType.RECENT}/all`;
+export const trashRootKey = `fake-entry://${RootType.TRASH}`;
+export const driveRootEntryListKey = `entry-list://${RootType.DRIVE_FAKE_ROOT}`;
 export const makeRemovableParentKey =
     (volume: Volume|chrome.fileManagerPrivate.VolumeMetadata) => {
       // Should be consistent with EntryList's toURL() method.
       if (volume.devicePath) {
-        return `entry-list://${VolumeManagerCommon.RootType.REMOVABLE}/${
-            volume.devicePath}`;
+        return `entry-list://${RootType.REMOVABLE}/${volume.devicePath}`;
       }
-      return `entry-list://${VolumeManagerCommon.RootType.REMOVABLE}`;
+      return `entry-list://${RootType.REMOVABLE}`;
     };
 export const removableGroupKey =
     (volume: Volume|chrome.fileManagerPrivate.VolumeMetadata) =>
         `${volume.devicePath}/${volume.driveLabel}`;
 
 export function getVolumeTypesNestedInMyFiles() {
-  const myFilesNestedVolumeTypes = new Set<VolumeManagerCommon.VolumeType>([
+  const myFilesNestedVolumeTypes = new Set<VolumeType>([
     VolumeType.ANDROID_FILES,
     VolumeType.CROSTINI,
   ]);
@@ -75,7 +66,7 @@ export function convertVolumeInfoAndMetadataToVolume(
   const volumeRootKey = volumeInfo.displayRoot.toURL();
   return {
     volumeId: volumeMetadata.volumeId,
-    volumeType: volumeMetadata.volumeType,
+    volumeType: volumeMetadata.volumeType as VolumeType,
     rootKey: volumeRootKey,
     status: PropStatus.SUCCESS,
     label: volumeInfo.label,
@@ -141,14 +132,12 @@ function addVolumeReducer(currentState: State, payload: {
   // Update isEjectable/shouldDelayLoadingChildren fields in the FileData.
   currentState.allEntries[volumeRootKey] = {
     ...currentState.allEntries[volumeRootKey]!,
-    isEjectable:
-        (volumeInfo.source === VolumeManagerCommon.Source.DEVICE &&
-         volumeInfo.volumeType !== VolumeManagerCommon.VolumeType.MTP) ||
-        volumeInfo.source === VolumeManagerCommon.Source.FILE,
-    shouldDelayLoadingChildren:
-        volumeInfo.source === VolumeManagerCommon.Source.NETWORK &&
-        (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.PROVIDED ||
-         volumeInfo.volumeType === VolumeManagerCommon.VolumeType.SMB),
+    isEjectable: (volumeInfo.source === Source.DEVICE &&
+                  volumeInfo.volumeType !== VolumeType.MTP) ||
+        volumeInfo.source === Source.FILE,
+    shouldDelayLoadingChildren: volumeInfo.source === Source.NETWORK &&
+        (volumeInfo.volumeType === VolumeType.PROVIDED ||
+         volumeInfo.volumeType === VolumeType.SMB),
   };
 
   const volume =
@@ -172,7 +161,7 @@ function addVolumeReducer(currentState: State, payload: {
     // the same object might be referenced in the UI.
     const myFilesFileData = {...getFileData(currentState, myFilesEntryKey)!};
     // Nest the entry for the new volume info in MyFiles.
-    const uiEntryPlaceholder = myFilesEntry.getUIChildren().find(
+    const uiEntryPlaceholder = myFilesEntry.getUiChildren().find(
         childEntry => childEntry.name === newVolumeEntry.name);
     // Remove a placeholder for the currently mounting volume.
     if (uiEntryPlaceholder) {
@@ -224,7 +213,7 @@ function addVolumeReducer(currentState: State, payload: {
     if (myFilesEntryList) {
       // We need to copy the children of the entry list to the real volume
       // entry.
-      const uiChildren = [...myFilesEntryList.getUIChildren()];
+      const uiChildren = [...myFilesEntryList.getUiChildren()];
       for (const childEntry of uiChildren) {
         appendChildIfNotExisted(newVolumeEntry, childEntry);
         myFilesEntryList.removeChildEntry(childEntry);
@@ -252,9 +241,8 @@ function addVolumeReducer(currentState: State, payload: {
     let driveFakeRoot: EntryList|null =
         getEntry(currentState, driveRootEntryListKey) as EntryList;
     if (!driveFakeRoot) {
-      driveFakeRoot = new EntryList(
-          str('DRIVE_DIRECTORY_LABEL'),
-          VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT);
+      driveFakeRoot =
+          new EntryList(str('DRIVE_DIRECTORY_LABEL'), RootType.DRIVE_FAKE_ROOT);
       cacheEntries(currentState, [driveFakeRoot]);
       currentState.uiEntries =
           [...currentState.uiEntries, driveFakeRoot.toURL()];
@@ -293,8 +281,7 @@ function addVolumeReducer(currentState: State, payload: {
     }
 
     // Add "Shared with me" into Drive.
-    const fakeSharedWithMe =
-        fakeEntries[VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME];
+    const fakeSharedWithMe = fakeEntries[RootType.DRIVE_SHARED_WITH_ME];
     if (fakeSharedWithMe) {
       cacheEntries(currentState, [fakeSharedWithMe]);
       currentState.uiEntries =
@@ -304,7 +291,7 @@ function addVolumeReducer(currentState: State, payload: {
     }
 
     // Add "Offline" into Drive.
-    const fakeOffline = fakeEntries[VolumeManagerCommon.RootType.DRIVE_OFFLINE];
+    const fakeOffline = fakeEntries[RootType.DRIVE_OFFLINE];
     if (fakeOffline) {
       cacheEntries(currentState, [fakeOffline]);
       currentState.uiEntries = [...currentState.uiEntries, fakeOffline.toURL()];
@@ -340,8 +327,8 @@ function addVolumeReducer(currentState: State, payload: {
       let parentEntry = getEntry(currentState, parentKey) as EntryList | null;
       if (!parentEntry) {
         parentEntry = new EntryList(
-            volumeMetadata.driveLabel || '',
-            VolumeManagerCommon.RootType.REMOVABLE, volumeMetadata.devicePath);
+            volumeMetadata.driveLabel || '', RootType.REMOVABLE,
+            volumeMetadata.devicePath);
         cacheEntries(currentState, [parentEntry]);
         currentState.uiEntries =
             [...currentState.uiEntries, parentEntry.toURL()];
@@ -350,16 +337,24 @@ function addVolumeReducer(currentState: State, payload: {
       // Update the siblings too.
       Object.values<Volume>(currentState.volumes)
           .filter(
-              // volume with `prefixKey` has already been processed.
-              v => !v.prefixKey && v.volumeType === VolumeType.REMOVABLE &&
+              v => v.volumeType === VolumeType.REMOVABLE &&
                   removableGroupKey(v) === groupingKey,
               )
           .forEach(v => {
-            v.prefixKey = parentEntry!.toURL();
             const fileData = getFileData(currentState, v.rootKey!);
-            if (fileData?.entry) {
+            if (!fileData) {
+              return;
+            }
+            // Volume with `prefixKey` has already been processed, however,
+            // regardless of processed or not we always need to put it in
+            // `partitionChildEntries` because we are trying to construct the
+            // full children array here, at the end we will use
+            // `partitionChildEntries` to replace the current
+            // `FileData.children`.
+            partitionChildEntries.push(fileData.entry);
+            if (!v.prefixKey) {
+              v.prefixKey = parentEntry!.toURL();
               appendChildIfNotExisted(parentEntry!, fileData.entry);
-              partitionChildEntries.push(fileData.entry);
               // For sub-partition from a removable volume, its children icon
               // should be UNKNOWN_REMOVABLE, and it shouldn't be ejectable.
               currentState.allEntries[v.rootKey!] = {
@@ -404,7 +399,7 @@ function addVolumeReducer(currentState: State, payload: {
 function appendChildIfNotExisted(
     parentEntry: VolumeEntry|EntryList,
     childEntry: Entry|FilesAppEntry): boolean {
-  if (!parentEntry.getUIChildren().find(
+  if (!parentEntry.getUiChildren().find(
           (entry) => isSameEntry(entry, childEntry))) {
     parentEntry.addEntry(childEntry);
     return true;
@@ -447,7 +442,7 @@ function removeVolumeReducer(currentState: State, payload: {
 
     // If the prefix entry is an entry list for removable partitions, and this
     // is the last child, remove the prefix entry.
-    if (prefixEntry.rootType === VolumeManagerCommon.RootType.REMOVABLE &&
+    if (prefixEntry.rootType === RootType.REMOVABLE &&
         newChildren.length === 0) {
       currentState.uiEntries = currentState.uiEntries.filter(
           uiEntryKey => uiEntryKey !== volumeToRemove.prefixKey!);
@@ -538,7 +533,8 @@ function updateDeviceConnectionStateReducer(
     }
     // Make the ODFS FileData/VolumeEntry consistent with its volume in the
     // store.
-    updateFileData(currentState, volume.rootKey!, {disabled: disableODFS});
+    updateFileDataInPlace(
+        currentState, volume.rootKey!, {disabled: disableODFS});
     const odfsVolumeEntry =
         getEntry(currentState, volume.rootKey!) as VolumeEntry;
     if (odfsVolumeEntry) {

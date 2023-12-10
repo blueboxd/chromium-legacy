@@ -259,7 +259,11 @@ test("components_unittests") {
     "//components/password_manager/core/browser/affiliation:unit_tests",
     "//components/password_manager/core/browser/export:unit_tests",
     "//components/password_manager/core/browser/features:unit_tests",
+    "//components/password_manager/core/browser/form_parsing:unit_tests",
     "//components/password_manager/core/browser/generation:unit_tests",
+    "//components/password_manager/core/browser/import:csv_unit_tests",
+    "//components/password_manager/core/browser/leak_detection:unit_tests",
+    "//components/password_manager/core/browser/password_store:unit_tests",
     "//components/password_manager/core/browser/sharing:unit_tests",
     "//components/password_manager/core/browser/sync:unit_tests",
     "//components/password_manager/core/browser/ui:unit_tests",
@@ -456,6 +460,7 @@ test("components_unittests") {
       "//components/navigation_interception:unit_tests",
       "//components/no_state_prefetch/browser:unit_tests",
       "//components/no_state_prefetch/common:unit_tests",
+      "//components/offline_pages:unit_tests",
       "//components/optimization_guide/content/browser:unit_tests",
       "//components/optimization_guide/content/renderer:unit_tests",
       "//components/origin_trials:unit_tests",
@@ -475,6 +480,7 @@ test("components_unittests") {
       "//components/query_tiles:unit_tests",
       "//components/reporting/resources:unit_tests",
       "//components/services/heap_profiling:unit_tests",
+      "//components/services/paint_preview_compositor:unit_tests",
       "//components/services/storage:tests",
       "//components/session_proto_db:unit_tests",
       "//components/subresource_filter/content/common:unit_tests",
@@ -507,8 +513,11 @@ test("components_unittests") {
   }
 
   if (is_ios) {
+    bundle_deps = [ ":components_tests_pak_bundle_data" ]
+    if (use_blink) {
+      bundle_deps += [ "//testing/buildbot/filters:components_unittests_use_blink_filters_bundle_data" ]
+    }
     deps += [
-      ":components_tests_pak_bundle_data",
       "//components/autofill/ios/browser:unit_tests",
       "//components/autofill/ios/form_util:unit_tests",
       "//components/commerce/ios/browser:unit_tests",
@@ -539,7 +548,6 @@ test("components_unittests") {
       "//components/media_router/browser:unit_tests",
       "//components/media_router/common:unit_tests",
       "//components/media_router/common/providers/cast/channel:unit_tests",
-      "//components/offline_pages:unit_tests",
       "//components/page_load_metrics/browser:unit_tests",
       "//components/page_load_metrics/browser/observers/ad_metrics:unit_tests",
       "//components/page_load_metrics/renderer:unit_tests",
@@ -555,7 +563,6 @@ test("components_unittests") {
       "//components/safe_browsing/content/browser/web_ui:unit_tests",
       "//components/safety_check:unit_tests",
       "//components/security_interstitials/content:unit_tests",
-      "//components/services/paint_preview_compositor:unit_tests",
       "//components/services/quarantine:unit_tests",
       "//components/site_engagement/content:unit_tests",
       "//components/site_isolation:unit_tests",
@@ -694,8 +701,6 @@ test("components_unittests") {
       "//components/arc:unit_tests",
       "//components/desks_storage:unit_tests",
       "//components/guest_os:unit_tests",
-      "//components/metrics/structured:unit_tests",
-      "//components/metrics/structured/mojom:unit_tests",
       "//components/ownership:unit_tests",
       "//components/user_manager:unit_tests",
       "//components/variations/cros_evaluate_seed:unit_tests",
@@ -798,6 +803,8 @@ test("components_unittests") {
 
   if (is_win || is_mac || is_linux || is_chromeos) {
     deps += [
+      "//components/metrics/structured:unit_tests",
+      "//components/metrics/structured/mojom:unit_tests",
       "//components/user_notes/browser:unit_tests",
       "//components/user_notes/storage:unit_tests",
     ]
@@ -1006,7 +1013,7 @@ if (use_blink) {
     }
 
     if (is_ios) {
-      deps += [
+      bundle_deps = [
         ":components_tests_distiller_bundle_data",
         ":components_tests_pak_bundle_data",
         "test:dom_distiller_test_bundle_data",

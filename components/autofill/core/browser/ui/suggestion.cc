@@ -29,15 +29,6 @@ Suggestion::Text& Suggestion::Text::operator=(Text&& other) = default;
 
 Suggestion::Text::~Text() = default;
 
-bool Suggestion::Text::operator==(const Suggestion::Text& text) const {
-  return value == text.value && is_primary == text.is_primary &&
-         should_truncate == text.should_truncate;
-}
-
-bool Suggestion::Text::operator!=(const Suggestion::Text& text) const {
-  return !operator==(text);
-}
-
 Suggestion::Suggestion() = default;
 
 Suggestion::Suggestion(std::u16string main_text)
@@ -60,6 +51,15 @@ Suggestion::Suggestion(base::StringPiece main_text,
   if (!label.empty())
     this->labels = {{Text(base::UTF8ToUTF16(label))}};
 }
+
+Suggestion::Suggestion(base::StringPiece main_text,
+                       std::vector<std::vector<Text>> labels,
+                       Icon icon,
+                       PopupItemId popup_item_id)
+    : popup_item_id(popup_item_id),
+      main_text(base::UTF8ToUTF16(main_text), Text::IsPrimary(true)),
+      labels(std::move(labels)),
+      icon(icon) {}
 
 Suggestion::Suggestion(base::StringPiece main_text,
                        base::StringPiece minor_text,

@@ -20,12 +20,13 @@ struct FidoAssertionInfo {
   ~FidoAssertionInfo();
   FidoAssertionInfo(const FidoAssertionInfo& other);
   FidoAssertionInfo& operator=(const FidoAssertionInfo& other);
+  bool operator==(const FidoAssertionInfo& rhs) const;
 
   // User's email.
   std::string email;
 
   // Key identifier of the key used.
-  Base64String credential_id;
+  Base64UrlString credential_id;
 
   // The authenticator data returned by the authenticator.
   // https://www.w3.org/TR/webauthn/#dom-authenticatorassertionresponse-authenticatordata

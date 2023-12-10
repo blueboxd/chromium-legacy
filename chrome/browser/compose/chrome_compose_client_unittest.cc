@@ -19,6 +19,7 @@
 #include "base/test/test_future.h"
 #include "chrome/browser/compose/compose_enabling.h"
 #include "chrome/common/compose/compose.mojom.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/common/unique_ids.h"
@@ -31,6 +32,7 @@
 #include "components/optimization_guide/proto/features/compose.pb.h"
 #include "components/optimization_guide/proto/model_execution.pb.h"
 #include "components/optimization_guide/proto/model_quality_service.pb.h"
+#include "components/unified_consent/pref_names.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/test/test_renderer_host.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -47,6 +49,8 @@ using ComposeCallback = base::OnceCallback<void(const std::u16string&)>;
 
 namespace {
 
+const uint64_t kSessionIdHigh = 1234;
+const uint64_t kSessionIdLow = 5678;
 constexpr char kTypeURL[] =
     "type.googleapis.com/optimization_guide.proto.ComposeResponse";
 
@@ -75,7 +79,6 @@ class MockModelQualityLogsUploader
 class MockSession
     : public optimization_guide::OptimizationGuideModelExecutor::Session {
  public:
-  MOCK_METHOD(void, SetDisconnectHandler, (base::OnceClosure on_disconnect));
   MOCK_METHOD(void,
               AddContext,
               (const google::protobuf::MessageLite& request_metadata));
@@ -94,9 +97,6 @@ class MockSessionWrapper
  public:
   explicit MockSessionWrapper(MockSession& session) : session_(session) {}
 
-  void SetDisconnectHandler(base::OnceClosure on_disconnect) override {
-    session_->SetDisconnectHandler(std::move(on_disconnect));
-  }
   void AddContext(
       const google::protobuf::MessageLite& request_metadata) override {
     session_->AddContext(request_metadata);
@@ -130,11 +130,13 @@ class ChromeComposeClientTest : public BrowserWithTestWindowTest {
         {compose::features::kEnableCompose,
          optimization_guide::features::kOptimizationGuideModelExecution},
         {});
+    SetPrefsForComposeConsentState(compose::mojom::ConsentState::kConsented);
     AddTab(browser(), GetPageUrl());
     client_ = ChromeComposeClient::FromWebContents(web_contents());
     client_->SetModelExecutorForTest(&model_executor_);
-    client_->SetSkipShowDialogForTest();
+    client_->SetSkipShowDialogForTest(true);
     client_->SetModelQualityLogsUploaderForTest(&model_quality_logs_uploader_);
+    client_->SetSessionIdForTest(base::Token(kSessionIdHigh, kSessionIdLow));
 
     ON_CALL(model_executor_, StartSession(_)).WillByDefault([&] {
       return std::make_unique<MockSessionWrapper>(session());
@@ -155,13 +157,22 @@ class ChromeComposeClientTest : public BrowserWithTestWindowTest {
                           std::make_unique<
                               optimization_guide::proto::LogAiDataRequest>())));
             })));
-    ON_CALL(compose_dialog(), ResponseReceived(_))
-        .WillByDefault(
-            testing::Invoke([&](compose::mojom::ComposeResponsePtr response) {
-              compose_future_.SetValue(std::move(response));
-            }));
-
     test_timer_ = std::make_unique<base::ScopedMockElapsedTimersForTest>();
+  }
+
+  void SetPrefsForComposeConsentState(
+      compose::mojom::ConsentState consent_state) {
+    PrefService* prefs = GetProfile()->GetPrefs();
+    prefs->SetBoolean(prefs::kPrefHasAcceptedComposeConsent, false);
+    prefs->SetBoolean(unified_consent::prefs::kPageContentCollectionEnabled,
+                      false);
+    if (consent_state != compose::mojom::ConsentState::kUnset) {
+      prefs->SetBoolean(unified_consent::prefs::kPageContentCollectionEnabled,
+                        true);
+    }
+    if (consent_state == compose::mojom::ConsentState::kConsented) {
+      prefs->SetBoolean(prefs::kPrefHasAcceptedComposeConsent, true);
+    }
   }
 
   void ShowDialogAndBindMojo(ComposeCallback callback = base::NullCallback()) {
@@ -228,10 +239,6 @@ class ChromeComposeClientTest : public BrowserWithTestWindowTest {
     return page_handler_;
   }
 
-  base::test::TestFuture<compose::mojom::ComposeResponsePtr>& compose_future() {
-    return compose_future_;
-  }
-
   GURL GetPageUrl() { return GURL("http://foo/1"); }
 
   void TearDown() override {
@@ -256,16 +263,7 @@ class ChromeComposeClientTest : public BrowserWithTestWindowTest {
   optimization_guide::proto::ComposeRequest ComposeRequest(
       std::string user_input) {
     optimization_guide::proto::ComposeRequest request;
-    request.set_user_input(user_input);
-    request.set_tone(
-        optimization_guide::proto::ComposeTone::COMPOSE_UNSPECIFIED_TONE);
-    request.set_length(
-        optimization_guide::proto::ComposeLength::COMPOSE_UNSPECIFIED_LENGTH);
-
-    optimization_guide::proto::ComposeRequest::GenerateParams generate_params;
-    generate_params.set_user_input(user_input);
-    *request.mutable_generate_params() = std::move(generate_params);
-
+    request.mutable_generate_params()->set_user_input(user_input);
     return request;
   }
 
@@ -291,6 +289,18 @@ class ChromeComposeClientTest : public BrowserWithTestWindowTest {
 
   const base::HistogramTester& histograms() const { return histogram_tester_; }
 
+  // This helper function is a shortcut to adding a test future to listen for
+  // compose responses.
+  void BindComposeFutureToOnResponseReceived(
+      base::test::TestFuture<compose::mojom::ComposeResponsePtr>&
+          compose_future) {
+    ON_CALL(compose_dialog(), ResponseReceived(_))
+        .WillByDefault(
+            testing::Invoke([&](compose::mojom::ComposeResponsePtr response) {
+              compose_future.SetValue(std::move(response));
+            }));
+  }
+
   base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
@@ -302,7 +312,6 @@ class ChromeComposeClientTest : public BrowserWithTestWindowTest {
   autofill::FormFieldData field_data_;
   raw_ptr<content::WebContents> contents_;
   base::HistogramTester histogram_tester_;
-  base::test::TestFuture<compose::mojom::ComposeResponsePtr> compose_future_;
 
   std::unique_ptr<mojo::Receiver<compose::mojom::ComposeDialog>>
       callback_router_;
@@ -330,9 +339,7 @@ TEST_F(ChromeComposeClientTest, TestCompose) {
             test_future.SetValue(std::move(response));
           }));
 
-  auto style_modifiers = compose::mojom::StyleModifiers::New();
-  page_handler()->Compose(std::move(style_modifiers), "a user typed this",
-                          /*rewrite=*/false);
+  page_handler()->Compose("", false);
 
   compose::mojom::ComposeResponsePtr result = test_future.Take();
 
@@ -384,8 +391,7 @@ TEST_F(ChromeComposeClientTest, TestComposeWithIncompleteResponses) {
             test_future.SetValue(std::move(response));
           }));
 
-  auto style_modifiers = compose::mojom::StyleModifiers::New();
-  page_handler()->Compose(std::move(style_modifiers), input, /*rewrite=*/false);
+  page_handler()->Compose(input, false);
 
   compose::mojom::ComposeResponsePtr result = test_future.Take();
   EXPECT_EQ(compose::mojom::ComposeStatus::kOk, result->status);
@@ -452,15 +458,13 @@ TEST_F(ChromeComposeClientTest, TestComposeSessionIgnoresPreviousResponse) {
             test_future.SetValue(std::move(response));
           }));
 
-  page_handler()->Compose(compose::mojom::StyleModifiers::New(), input,
-                          /*rewrite=*/false);
+  page_handler()->Compose(input, false);
 
   compose::mojom::ComposeResponsePtr result = test_future.Take();
   EXPECT_EQ(compose::mojom::ComposeStatus::kOk, result->status);
   EXPECT_EQ("Cucu", result->result);
 
-  page_handler()->Compose(compose::mojom::StyleModifiers::New(), input2,
-                          /*rewrite=*/false);
+  page_handler()->Compose(input2, false);
   result = test_future.Take();
   EXPECT_EQ(compose::mojom::ComposeStatus::kOk, result->status);
   EXPECT_EQ("Cucumbers", result->result);
@@ -495,9 +499,7 @@ TEST_F(ChromeComposeClientTest, TestComposeParams) {
             test_future.SetValue(std::move(response));
           }));
 
-  auto style_modifiers = compose::mojom::StyleModifiers::New();
-  page_handler()->Compose(std::move(style_modifiers), user_input,
-                          /*rewrite=*/false);
+  page_handler()->Compose(user_input, false);
 
   compose::mojom::ComposeResponsePtr result = test_future.Take();
   EXPECT_EQ(compose::mojom::ComposeStatus::kOk, result->status);
@@ -517,7 +519,10 @@ TEST_F(ChromeComposeClientTest, TestComposeNoResponse) {
                             optimization_guide::
                                 OptimizationGuideModelExecutionError::
                                     ModelExecutionError::kGenericFailure)),
-                nullptr);
+
+                std::make_unique<optimization_guide::ModelQualityLogEntry>(
+                    std::make_unique<
+                        optimization_guide::proto::LogAiDataRequest>()));
           })));
 
   base::test::TestFuture<compose::mojom::ComposeResponsePtr> test_future;
@@ -527,12 +532,38 @@ TEST_F(ChromeComposeClientTest, TestComposeNoResponse) {
             test_future.SetValue(std::move(response));
           }));
 
-  auto style_modifiers = compose::mojom::StyleModifiers::New();
-  page_handler()->Compose(std::move(style_modifiers), "a user typed this",
-                          /*rewrite=*/false);
+  base::test::TestFuture<
+      std::unique_ptr<optimization_guide::ModelQualityLogEntry>>
+      quality_test_future;
+
+  EXPECT_CALL(model_quality_logs_uploader(), UploadModelQualityLogs(_))
+      .WillRepeatedly(testing::Invoke(
+          [&](std::unique_ptr<optimization_guide::ModelQualityLogEntry>
+                  response) {
+            quality_test_future.SetValue(std::move(response));
+          }));
+
+  page_handler()->Compose("a user typed this", false);
 
   compose::mojom::ComposeResponsePtr result = test_future.Take();
   EXPECT_EQ(compose::mojom::ComposeStatus::kTryAgainLater, result->status);
+  // Check that the quality modeling log is still correct
+
+  client_page_handler()->CloseUI(compose::mojom::CloseReason::kCloseButton);
+
+  std::unique_ptr<optimization_guide::ModelQualityLogEntry> quality_result =
+      quality_test_future.Take();
+
+  EXPECT_EQ(
+      kSessionIdHigh,
+      quality_result->quality_data<optimization_guide::ComposeFeatureTypeMap>()
+          ->session_id()
+          .high());
+  EXPECT_EQ(
+      kSessionIdLow,
+      quality_result->quality_data<optimization_guide::ComposeFeatureTypeMap>()
+          ->session_id()
+          .low());
 }
 
 // Tests that we return an error if Optimization Guide is unable to parse the
@@ -555,9 +586,7 @@ TEST_F(ChromeComposeClientTest, TestComposeNoParsedAny) {
             test_future.SetValue(std::move(response));
           }));
 
-  auto style_modifiers = compose::mojom::StyleModifiers::New();
-  page_handler()->Compose(std::move(style_modifiers), "a user typed this",
-                          /*rewrite=*/false);
+  page_handler()->Compose("a user typed this", false);
 
   compose::mojom::ComposeResponsePtr result = test_future.Take();
   EXPECT_EQ(compose::mojom::ComposeStatus::kTryAgain, result->status);
@@ -590,9 +619,7 @@ TEST_F(ChromeComposeClientTest, TestOptimizationGuideDisabled) {
             test_future.SetValue(std::move(response));
           }));
 
-  auto style_modifiers = compose::mojom::StyleModifiers::New();
-  page_handler()->Compose(std::move(style_modifiers), "a user typed this",
-                          /*rewrite=*/false);
+  page_handler()->Compose("a user typed this", false);
 
   compose::mojom::ComposeResponsePtr result = test_future.Take();
   EXPECT_EQ(compose::mojom::ComposeStatus::kMisconfiguration, result->status);
@@ -610,9 +637,7 @@ TEST_F(ChromeComposeClientTest, TestNoModelExecutor) {
             test_future.SetValue(std::move(response));
           }));
 
-  auto style_modifiers = compose::mojom::StyleModifiers::New();
-  page_handler()->Compose(std::move(style_modifiers), "a user typed this",
-                          /*rewrite=*/false);
+  page_handler()->Compose("a user typed this", false);
 
   compose::mojom::ComposeResponsePtr result = test_future.Take();
   EXPECT_EQ(compose::mojom::ComposeStatus::kMisconfiguration, result->status);
@@ -638,11 +663,7 @@ TEST_F(ChromeComposeClientTest, TestRestoreStateAfterRequestResponse) {
             test_future.SetValue(std::move(response));
           }));
 
-  auto style_modifiers = compose::mojom::StyleModifiers::New();
-  style_modifiers->tone = compose::mojom::Tone::kCasual;
-  style_modifiers->length = compose::mojom::Length::kLonger;
-  page_handler()->Compose(std::move(style_modifiers), "a user typed this",
-                          /*rewrite=*/false);
+  page_handler()->Compose("a user typed this", false);
 
   base::test::TestFuture<compose::mojom::OpenMetadataPtr> open_test_future;
   page_handler()->RequestInitialState(open_test_future.GetCallback());
@@ -703,8 +724,7 @@ TEST_F(ChromeComposeClientTest, TestSaveThenComposeThenRestoreWebUIState) {
           }));
 
   page_handler()->SaveWebUIState("web ui state");
-  page_handler()->Compose(compose::mojom::StyleModifiers::New(), "",
-                          /*rewrite=*/false);
+  page_handler()->Compose("", false);
 
   compose::mojom::ComposeResponsePtr response = compose_test_future.Take();
   EXPECT_FALSE(response->undo_available)
@@ -739,9 +759,7 @@ TEST_F(ChromeComposeClientTest, NoStateWorksAtChromeCompose) {
             test_future.SetValue(std::move(response));
           }));
 
-  auto style_modifiers = compose::mojom::StyleModifiers::New();
-  page_handler()->Compose(std::move(style_modifiers), "a user typed this",
-                          /*rewrite=*/false);
+  page_handler()->Compose("a user typed this", false);
 
   compose::mojom::ComposeResponsePtr result = test_future.Take();
 
@@ -825,9 +843,11 @@ TEST_F(ChromeComposeClientTest, TestEmptyUndo) {
 // Tests that Undo is not possible after only one Compose() invocation.
 TEST_F(ChromeComposeClientTest, TestUndoUnavailableFirstCompose) {
   ShowDialogAndBindMojo();
-  page_handler()->Compose(compose::mojom::StyleModifiers::New(), "",
-                          /*rewrite=*/false);
-  compose::mojom::ComposeResponsePtr response = compose_future().Take();
+  base::test::TestFuture<compose::mojom::ComposeResponsePtr> compose_future;
+  BindComposeFutureToOnResponseReceived(compose_future);
+
+  page_handler()->Compose("", false);
+  compose::mojom::ComposeResponsePtr response = compose_future.Take();
   EXPECT_FALSE(response->undo_available)
       << "First Compose() response should say undo not available.";
 
@@ -849,23 +869,25 @@ TEST_F(ChromeComposeClientTest, TestUndoUnavailableFirstCompose) {
 TEST_F(ChromeComposeClientTest, TestComposeTwiceThenUpdateWebUIStateThenUndo) {
   ShowDialogAndBindMojo();
 
-  page_handler()->SaveWebUIState("this state should be restored with undo");
-  page_handler()->Compose(compose::mojom::StyleModifiers::New(), "",
-                          /*rewrite=*/false);
+  base::test::TestFuture<compose::mojom::ComposeResponsePtr> compose_future;
+  BindComposeFutureToOnResponseReceived(compose_future);
 
-  compose::mojom::ComposeResponsePtr response = compose_future().Take();
+  page_handler()->SaveWebUIState("this state should be restored with undo");
+  page_handler()->Compose("", false);
+
+  compose::mojom::ComposeResponsePtr response = compose_future.Take();
   EXPECT_FALSE(response->undo_available) << "First Compose() response should "
                                             "say undo is not available.";
   page_handler()->SaveWebUIState("second state");
-  page_handler()->Compose(compose::mojom::StyleModifiers::New(), "",
-                          /*rewrite=*/false);
+  page_handler()->Compose("", false);
 
-  response = compose_future().Take();
+  response = compose_future.Take();
   EXPECT_TRUE(response->undo_available) << "Second Compose() response should "
                                            "say undo is available.";
   page_handler()->SaveWebUIState("user edited the input field further");
 
   base::test::TestFuture<compose::mojom::OpenMetadataPtr> open_future;
+
   page_handler()->RequestInitialState(open_future.GetCallback());
   compose::mojom::OpenMetadataPtr open_metadata = open_future.Take();
   EXPECT_TRUE(open_metadata->compose_state->response->undo_available)
@@ -886,25 +908,25 @@ TEST_F(ChromeComposeClientTest, TestComposeTwiceThenUpdateWebUIStateThenUndo) {
 TEST_F(ChromeComposeClientTest, TestUndoStackMultipleUndos) {
   ShowDialogAndBindMojo();
 
-  page_handler()->SaveWebUIState("first state");
-  page_handler()->Compose(compose::mojom::StyleModifiers::New(), "",
-                          /*rewrite=*/false);
+  base::test::TestFuture<compose::mojom::ComposeResponsePtr> compose_future;
+  BindComposeFutureToOnResponseReceived(compose_future);
 
-  compose::mojom::ComposeResponsePtr response = compose_future().Take();
+  page_handler()->SaveWebUIState("first state");
+  page_handler()->Compose("", false);
+
+  compose::mojom::ComposeResponsePtr response = compose_future.Take();
   EXPECT_FALSE(response->undo_available) << "First Compose() response should "
                                             "say undo is not available.";
   page_handler()->SaveWebUIState("second state");
-  page_handler()->Compose(compose::mojom::StyleModifiers::New(), "",
-                          /*rewrite=*/false);
-  response = compose_future().Take();
+  page_handler()->Compose("", false);
+  response = compose_future.Take();
   EXPECT_TRUE(response->undo_available) << "Second Compose() response should "
                                            "say undo is available.";
 
   page_handler()->SaveWebUIState("third state");
-  page_handler()->Compose(compose::mojom::StyleModifiers::New(), "",
-                          /*rewrite=*/false);
+  page_handler()->Compose("", false);
 
-  response = compose_future().Take();
+  response = compose_future.Take();
   EXPECT_TRUE(response->undo_available) << "Third Compose() response should "
                                            "say undo is available.";
 
@@ -927,19 +949,21 @@ TEST_F(ChromeComposeClientTest, TestUndoStackMultipleUndos) {
 // state A.
 TEST_F(ChromeComposeClientTest, TestUndoComposeThenUndoAgain) {
   ShowDialogAndBindMojo();
-  page_handler()->SaveWebUIState("first state");
-  page_handler()->Compose(compose::mojom::StyleModifiers::New(), "",
-                          /*rewrite=*/false);
 
-  compose::mojom::ComposeResponsePtr response = compose_future().Take();
+  base::test::TestFuture<compose::mojom::ComposeResponsePtr> compose_future;
+  BindComposeFutureToOnResponseReceived(compose_future);
+
+  page_handler()->SaveWebUIState("first state");
+  page_handler()->Compose("", false);
+
+  compose::mojom::ComposeResponsePtr response = compose_future.Take();
   EXPECT_FALSE(response->undo_available) << "First Compose() response should "
                                             "say undo is not available.";
 
   page_handler()->SaveWebUIState("second state");
-  page_handler()->Compose(compose::mojom::StyleModifiers::New(), "",
-                          /*rewrite=*/false);
+  page_handler()->Compose("", false);
 
-  response = compose_future().Take();
+  response = compose_future.Take();
   EXPECT_TRUE(response->undo_available) << "Second Compose() response should "
                                            "say undo is available.";
   page_handler()->SaveWebUIState("wip web ui state");
@@ -949,10 +973,9 @@ TEST_F(ChromeComposeClientTest, TestUndoComposeThenUndoAgain) {
   EXPECT_EQ("first state", undo_future.Take()->webui_state);
 
   page_handler()->SaveWebUIState("third state");
-  page_handler()->Compose(compose::mojom::StyleModifiers::New(), "",
-                          /*rewrite=*/false);
+  page_handler()->Compose("", false);
 
-  response = compose_future().Take();
+  response = compose_future.Take();
   EXPECT_TRUE(response->undo_available) << "Third Compose() response should "
                                            "say undo is available.";
 
@@ -982,9 +1005,7 @@ TEST_F(ChromeComposeClientTest, TestAcceptComposeResultCallback) {
   page_handler()->AcceptComposeResult(accept_future_1.GetCallback());
   EXPECT_EQ(false, accept_future_1.Take());
 
-  auto style_modifiers = compose::mojom::StyleModifiers::New();
-  page_handler()->Compose(std::move(style_modifiers), "a user typed this",
-                          /*rewrite=*/false);
+  page_handler()->Compose("a user typed this", false);
 
   base::test::TestFuture<bool> accept_future_2;
   page_handler()->AcceptComposeResult(accept_future_2.GetCallback());
@@ -994,7 +1015,7 @@ TEST_F(ChromeComposeClientTest, TestAcceptComposeResultCallback) {
   EXPECT_EQ(u"Cucumbers", accept_callback.Take());
 }
 
-TEST_F(ChromeComposeClientTest, ThumbsDownOpensCorrectURL) {
+TEST_F(ChromeComposeClientTest, BugReportOpensCorrectURL) {
   GURL bug_url("https://goto.google.com/ccbrfd");
 
   ShowDialogAndBindMojo();
@@ -1013,12 +1034,30 @@ TEST_F(ChromeComposeClientTest, ThumbsDownOpensCorrectURL) {
   EXPECT_EQ(bug_url, new_tab_webcontents->GetVisibleURL());
 }
 
+TEST_F(ChromeComposeClientTest, SurveyLinkOpensCorrectURL) {
+  GURL survey_url("https://goto.google.com/ccfsfd");
+
+  ShowDialogAndBindMojo();
+
+  ui_test_utils::TabAddedWaiter tab_add_waiter(browser());
+  page_handler()->OpenFeedbackSurveyLink();
+
+  // Wait for the resulting new tab to be created.
+  tab_add_waiter.Wait();
+  // Check that the new foreground tab is opened.
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
+  // Check expected URL of the new tab.
+  content::WebContents* new_tab_webcontents =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+  EXPECT_EQ(survey_url, new_tab_webcontents->GetVisibleURL());
+}
+
 TEST_F(ChromeComposeClientTest, ResetClientOnNavigation) {
   ShowDialogAndBindMojo();
 
   page_handler()->SaveWebUIState("first state");
-  page_handler()->Compose(compose::mojom::StyleModifiers::New(), "",
-                          /*rewrite=*/false);
+  page_handler()->Compose("", false);
 
   autofill::FormFieldData field_2;
   field_2.unique_renderer_id = autofill::FieldRendererId(2);
@@ -1038,18 +1077,18 @@ TEST_F(ChromeComposeClientTest, ResetClientOnNavigation) {
 TEST_F(ChromeComposeClientTest, CloseButtonHistogramTest) {
   ShowDialogAndBindMojo();
 
+  base::test::TestFuture<compose::mojom::ComposeResponsePtr> compose_future;
+  BindComposeFutureToOnResponseReceived(compose_future);
+
   // Simulate three compose request.
-  page_handler()->Compose(compose::mojom::StyleModifiers::New(), "",
-                          /*rewrite=*/false);
-  compose::mojom::ComposeResponsePtr response = compose_future().Take();
+  page_handler()->Compose("", false);
+  compose::mojom::ComposeResponsePtr response = compose_future.Take();
 
-  page_handler()->Compose(compose::mojom::StyleModifiers::New(), "",
-                          /*rewrite=*/false);
-  response = compose_future().Take();
+  page_handler()->Compose("", false);
+  response = compose_future.Take();
 
-  page_handler()->Compose(compose::mojom::StyleModifiers::New(), "",
-                          /*rewrite=*/false);
-  response = compose_future().Take();
+  page_handler()->Compose("", false);
+  response = compose_future.Take();
 
   // Show the dialog a second time.
   ShowDialogAndBindMojo();
@@ -1078,23 +1117,189 @@ TEST_F(ChromeComposeClientTest, CloseButtonHistogramTest) {
       compose::kComposeSessionDialogShownCount + std::string(".Ignored"),
       2,  // Expect that the dialog was shown twice.
       1);
+
+  histograms().ExpectBucketCount(
+      compose::kComposeSessionConsentGivenInSession,
+      0,  // Consent was already given when this session was created.
+      1);
+  // No consent related close reasons should have been recorded.
+  histograms().ExpectTotalCount(compose::kComposeConsentSessionCloseReason, 0);
+}
+
+TEST_F(ChromeComposeClientTest, ConsentUICloseDialogHistogramTest) {
+  // Set unset consent state and show the dialog
+  SetPrefsForComposeConsentState(compose::mojom::ConsentState::kUnset);
+  ShowDialogAndBindMojo();
+  client().CloseUI(compose::mojom::CloseReason::kConsentCloseButton);
+  histograms().ExpectBucketCount(
+      compose::kComposeConsentSessionCloseReason,
+      compose::ComposeConsentSessionCloseReason::kCloseButtonPressed, 1);
+  // Expect that the dialog was shown once ending without consent given.
+  histograms().ExpectBucketCount(
+      compose::kComposeConsentSessionDialogShownCount + std::string(".Ignored"),
+      1, 1);
+
+  // Show the consent dialog and close by declining consent
+  ShowDialogAndBindMojo();
+  client().CloseUI(compose::mojom::CloseReason::kPageContentConsentDeclined);
+  histograms().ExpectBucketCount(
+      compose::kComposeConsentSessionCloseReason,
+      compose::ComposeConsentSessionCloseReason::kPageContentConsentDeclined,
+      1);
+  histograms().ExpectBucketCount(
+      compose::kComposeConsentSessionDialogShownCount + std::string(".Ignored"),
+      1,  // Expect that the dialog was shown once.
+      2);
+
+  // Show the consent dialog and end the session by re-opening with selection
+  ShowDialogAndBindMojo();
+  field_data().value = u"user selected text";
+  SetSelection(u"selected text");
+  ShowDialogAndBindMojo();
+  histograms().ExpectBucketCount(
+      compose::kComposeConsentSessionCloseReason,
+      compose::ComposeConsentSessionCloseReason::kNewSessionWithSelectedText,
+      1);
+  histograms().ExpectBucketCount(
+      compose::kComposeConsentSessionDialogShownCount + std::string(".Ignored"),
+      1,  // Expect that the dialog was shown once.
+      3);
+
+  // Throughout all sessions no main dialog metrics should have been logged, as
+  // the dialog never moved past the consent UI.
+  histograms().ExpectTotalCount(compose::kComposeSessionCloseReason, 0);
+  histograms().ExpectTotalCount(
+      compose::kComposeSessionDialogShownCount + std::string(".Ignored"), 0);
+}
+
+TEST_F(ChromeComposeClientTest, ConsentAcceptedHistogramTest) {
+  // Set unset consent state and show the dialog
+  SetPrefsForComposeConsentState(compose::mojom::ConsentState::kUnset);
+  ShowDialogAndBindMojo();
+  // Show the dialog a second time.
+  ShowDialogAndBindMojo();
+
+  // Accept consent and close
+  client().ApproveConsent();
+  client().CloseUI(compose::mojom::CloseReason::kCloseButton);
+
+  histograms().ExpectBucketCount(compose::kComposeConsentSessionCloseReason,
+                                 compose::ComposeConsentSessionCloseReason::
+                                     kPageContentConsentAcceptedWithoutInsert,
+                                 1);
+  // Expect that the dialog was shown twice ending with consent given
+  histograms().ExpectBucketCount(
+      compose::kComposeConsentSessionDialogShownCount +
+          std::string(".Accepted"),
+      2, 1);
+
+  // After consent is accepted, a new set of metrics should be collected for the
+  // remainder of the session.
+  histograms().ExpectBucketCount(compose::kComposeSessionConsentGivenInSession,
+                                 1, 1);
+  histograms().ExpectBucketCount(
+      compose::kComposeSessionCloseReason,
+      compose::ComposeSessionCloseReason::kCloseButtonPressed, 1);
+  histograms().ExpectBucketCount(
+      compose::kComposeSessionDialogShownCount + std::string(".Ignored"),
+      1,  // The dialog was only shown once after having proceeded past consent.
+      1);
+}
+
+TEST_F(ChromeComposeClientTest, DisclaimerAcknowledgedHistogramTest) {
+  // Set externally consented state and show the dialog
+  SetPrefsForComposeConsentState(
+      compose::mojom::ConsentState::kExternalConsented);
+  ShowDialogAndBindMojo();
+  // Show the dialog a second time.
+  ShowDialogAndBindMojo();
+
+  // Acknowledge consent and close
+  client().AcknowledgeConsentDisclaimer();
+  client().CloseUI(compose::mojom::CloseReason::kCloseButton);
+
+  histograms().ExpectBucketCount(
+      compose::kComposeConsentSessionCloseReason,
+      compose::ComposeConsentSessionCloseReason::
+          kPageContentDisclaimerAcknowledgedWithoutInsert,
+      1);
+  // Expect that the dialog was shown twice ending with consent acknowledged.
+  histograms().ExpectBucketCount(
+      compose::kComposeConsentSessionDialogShownCount +
+          std::string(".Accepted"),
+      2, 1);
+
+  // After the disclaimer is acknowledged, a new set of metrics should be
+  // collected for the remainder of the session.
+  histograms().ExpectBucketCount(compose::kComposeSessionConsentGivenInSession,
+                                 1, 1);
+  histograms().ExpectBucketCount(
+      compose::kComposeSessionCloseReason,
+      compose::ComposeSessionCloseReason::kCloseButtonPressed, 1);
+  histograms().ExpectBucketCount(
+      compose::kComposeSessionDialogShownCount + std::string(".Ignored"),
+      1,  // The dialog was only shown once after having proceeded past consent.
+      1);
+}
+
+TEST_F(ChromeComposeClientTest,
+       ConsentGivenThenSuggestionAcceptedHistogramTest) {
+  // Set unset consent state and show the dialog
+  SetPrefsForComposeConsentState(compose::mojom::ConsentState::kUnset);
+  ShowDialogAndBindMojo();
+
+  // Accept consent then close by inserting
+  client().ApproveConsent();
+  client().CloseUI(compose::mojom::CloseReason::kInsertButton);
+
+  histograms().ExpectBucketCount(compose::kComposeConsentSessionCloseReason,
+                                 compose::ComposeConsentSessionCloseReason::
+                                     kPageContentConsentGivenWithInsert,
+                                 1);
+
+  // Repeat the above test with acknowledging consent disclaimer
+  SetPrefsForComposeConsentState(
+      compose::mojom::ConsentState::kExternalConsented);
+  ShowDialogAndBindMojo();
+  client().AcknowledgeConsentDisclaimer();
+  client().CloseUI(compose::mojom::CloseReason::kInsertButton);
+
+  histograms().ExpectBucketCount(compose::kComposeConsentSessionCloseReason,
+                                 compose::ComposeConsentSessionCloseReason::
+                                     kPageContentConsentGivenWithInsert,
+                                 2);
+}
+
+TEST_F(ChromeComposeClientTest, AllSessionsConsentUpdatedHistogramTest) {
+  // Set unset consent state and show the dialog
+  SetPrefsForComposeConsentState(compose::mojom::ConsentState::kUnset);
+  ShowDialogAndBindMojo();
+
+  // If consent is given in this session, then main session metrics should be
+  // logged.
+  client().UpdateAllSessionsWithConsentApproved();
+  client().CloseUI(compose::mojom::CloseReason::kCloseButton);
+
+  histograms().ExpectBucketCount(
+      compose::kComposeSessionCloseReason,
+      compose::ComposeSessionCloseReason::kCloseButtonPressed, 1);
 }
 
 TEST_F(ChromeComposeClientTest, AcceptSuggestionHistogramTest) {
   ShowDialogAndBindMojo();
 
+  base::test::TestFuture<compose::mojom::ComposeResponsePtr> compose_future;
+  BindComposeFutureToOnResponseReceived(compose_future);
+
   // Simulate three compose request.
-  page_handler()->Compose(compose::mojom::StyleModifiers::New(), "",
-                          /*rewrite=*/false);
-  compose::mojom::ComposeResponsePtr response = compose_future().Take();
+  page_handler()->Compose("", false);
+  compose::mojom::ComposeResponsePtr response = compose_future.Take();
 
-  page_handler()->Compose(compose::mojom::StyleModifiers::New(), "",
-                          /*rewrite=*/false);
-  response = compose_future().Take();
+  page_handler()->Compose("", false);
+  response = compose_future.Take();
 
-  page_handler()->Compose(compose::mojom::StyleModifiers::New(), "",
-                          /*rewrite=*/false);
-  response = compose_future().Take();
+  page_handler()->Compose("", false);
+  response = compose_future.Take();
 
   // Show the dialog a second time.
   ShowDialogAndBindMojo();
@@ -1135,6 +1340,20 @@ TEST_F(ChromeComposeClientTest, LoseFocusHistogramTest) {
   histograms().ExpectBucketCount(
       compose::kComposeSessionCloseReason,
       compose::ComposeSessionCloseReason::kEndedImplicitly, 1);
+}
+
+TEST_F(ChromeComposeClientTest, LoseFocusConsentHistogramTest) {
+  // Set unset consent state and show the dialog
+  SetPrefsForComposeConsentState(compose::mojom::ConsentState::kUnset);
+  ShowDialogAndBindMojo();
+
+  // Dismiss dialog by losing focus by navigating.
+  GURL next_page("http://example.com/a.html");
+  NavigateAndCommit(web_contents(), next_page);
+
+  histograms().ExpectBucketCount(
+      compose::kComposeConsentSessionCloseReason,
+      compose::ComposeConsentSessionCloseReason::kEndedImplicitly, 1);
 }
 
 TEST_F(ChromeComposeClientTest, TestAutoCompose) {
@@ -1275,27 +1494,134 @@ TEST_F(ChromeComposeClientTest, TestAutoComposeWithRepeatedRightClick) {
   EXPECT_EQ(base::UTF16ToUTF8(selection), result->initial_input);
 }
 
-TEST_F(ChromeComposeClientTest, TestComposeQualityLatency) {
+TEST_F(ChromeComposeClientTest, TestNoAutoComposeWithoutConsent) {
+  EXPECT_CALL(session(), ExecuteModel(_, _)).Times(0);
+
+  SetPrefsForComposeConsentState(compose::mojom::ConsentState::kUnset);
+  // Valid selection for auto compose to use.
+  std::u16string selection = u"testing alpha bravo charlie";
+  SetSelection(selection);
   ShowDialogAndBindMojo();
 
-  // optimization_guide::proto::ComposeQuality quality;
-  EXPECT_CALL(session(), ExecuteModel(_, _)).Times(1);
+  // Without consent auto compose should not execute.
+  base::test::TestFuture<compose::mojom::OpenMetadataPtr> open_test_future;
+  page_handler()->RequestInitialState(open_test_future.GetCallback());
+  compose::mojom::OpenMetadataPtr result = open_test_future.Take();
+  EXPECT_FALSE(result->compose_state->has_pending_request);
+}
+
+TEST_F(ChromeComposeClientTest, TestComposeQualitySessionId) {
+  ShowDialogAndBindMojo();
+
+  base::test::TestFuture<compose::mojom::ComposeResponsePtr> compose_future;
+  BindComposeFutureToOnResponseReceived(compose_future);
+
+  EXPECT_CALL(session(), ExecuteModel(_, _)).Times(2);
 
   base::test::TestFuture<
       std::unique_ptr<optimization_guide::ModelQualityLogEntry>>
-      test_future;
+      quality_test_future;
+
   EXPECT_CALL(model_quality_logs_uploader(), UploadModelQualityLogs(_))
-      .WillOnce(testing::Invoke(
+      .WillRepeatedly(testing::Invoke(
           [&](std::unique_ptr<optimization_guide::ModelQualityLogEntry>
-                  response) { test_future.SetValue(std::move(response)); }));
+                  response) {
+            quality_test_future.SetValue(std::move(response));
+          }));
 
-  auto style_modifiers = compose::mojom::StyleModifiers::New();
+  page_handler()->Compose("a user typed this", false);
 
-  page_handler()->Compose(std::move(style_modifiers), "a user typed this",
-                          /*rewrite=*/false);
+  EXPECT_TRUE(compose_future.Wait());
+  // Reset future for second compose call.
+  compose_future.Clear();
 
+  page_handler()->Compose("a user typed that", false);
+  EXPECT_TRUE(compose_future.Wait());
+
+  base::test::TestFuture<compose::mojom::ComposeStatePtr> undo_future;
+  page_handler()->Undo(undo_future.GetCallback());
+  compose::mojom::ComposeStatePtr state = undo_future.Take();
+  EXPECT_TRUE(state)
+      << "Undo should return valid state after second Compose() invocation.";
+
+  // This take should clear the test future for the second commit.
   std::unique_ptr<optimization_guide::ModelQualityLogEntry> result =
-      test_future.Take();
+      quality_test_future.Take();
+
+  EXPECT_EQ(kSessionIdHigh,
+            result->quality_data<optimization_guide::ComposeFeatureTypeMap>()
+                ->session_id()
+                .high());
+
+  EXPECT_EQ(kSessionIdLow,
+            result->quality_data<optimization_guide::ComposeFeatureTypeMap>()
+                ->session_id()
+                .low());
+
+  // Close UI to submit quality logs.
+  client_page_handler()->CloseUI(compose::mojom::CloseReason::kCloseButton);
+
+  result = quality_test_future.Take();
+
+  EXPECT_EQ(kSessionIdHigh,
+            result->quality_data<optimization_guide::ComposeFeatureTypeMap>()
+                ->session_id()
+                .high());
+  EXPECT_EQ(kSessionIdLow,
+            result->quality_data<optimization_guide::ComposeFeatureTypeMap>()
+                ->session_id()
+                .low());
+}
+
+TEST_F(ChromeComposeClientTest, TestComposeQualityLatency) {
+  ShowDialogAndBindMojo();
+
+  base::test::TestFuture<compose::mojom::ComposeResponsePtr> compose_future;
+  BindComposeFutureToOnResponseReceived(compose_future);
+
+  EXPECT_CALL(session(), ExecuteModel(_, _)).Times(2);
+
+  base::test::TestFuture<
+      std::unique_ptr<optimization_guide::ModelQualityLogEntry>>
+      quality_test_future;
+
+  EXPECT_CALL(model_quality_logs_uploader(), UploadModelQualityLogs(_))
+      .WillRepeatedly(testing::Invoke(
+          [&](std::unique_ptr<optimization_guide::ModelQualityLogEntry>
+                  response) {
+            quality_test_future.SetValue(std::move(response));
+          }));
+
+  page_handler()->Compose("a user typed this", false);
+
+  EXPECT_TRUE(compose_future.Wait());
+  // Reset future for second compose call.
+  compose_future.Clear();
+
+  page_handler()->Compose("a user typed that", false);
+
+  // Ensure compose is finished before calling undo
+  EXPECT_TRUE(compose_future.Wait());
+
+  base::test::TestFuture<compose::mojom::ComposeStatePtr> undo_future;
+  page_handler()->Undo(undo_future.GetCallback());
+  compose::mojom::ComposeStatePtr state = undo_future.Take();
+  EXPECT_TRUE(state)
+      << "Undo should return valid state after second Compose() invocation.";
+
+  // This take should clear the quality future from the model that was undone.
+  std::unique_ptr<optimization_guide::ModelQualityLogEntry> result =
+      quality_test_future.Take();
+
+  EXPECT_EQ(
+      base::ScopedMockElapsedTimersForTest::kMockElapsedTime.InMilliseconds(),
+      result->quality_data<optimization_guide::ComposeFeatureTypeMap>()
+          ->request_latency_ms());
+
+  // Close UI to submit remaining quality logs.
+  client_page_handler()->CloseUI(compose::mojom::CloseReason::kCloseButton);
+
+  result = quality_test_future.Take();
 
   EXPECT_EQ(
       base::ScopedMockElapsedTimersForTest::kMockElapsedTime.InMilliseconds(),
@@ -1303,11 +1629,114 @@ TEST_F(ChromeComposeClientTest, TestComposeQualityLatency) {
           ->request_latency_ms());
 }
 
+TEST_F(ChromeComposeClientTest,
+       TestComposeQualityOnlyOneLogEntryAbandonedOnClose) {
+  ShowDialogAndBindMojo();
+
+  base::test::TestFuture<compose::mojom::ComposeResponsePtr> compose_future;
+  BindComposeFutureToOnResponseReceived(compose_future);
+
+  EXPECT_CALL(session(), ExecuteModel(_, _)).Times(2);
+
+  base::test::TestFuture<
+      std::unique_ptr<optimization_guide::ModelQualityLogEntry>>
+      quality_test_future;
+  base::test::TestFuture<
+      std::unique_ptr<optimization_guide::ModelQualityLogEntry>>
+      quality_test_future_2;
+
+  EXPECT_CALL(model_quality_logs_uploader(), UploadModelQualityLogs(_))
+      .WillRepeatedly(testing::Invoke(
+          [&](std::unique_ptr<optimization_guide::ModelQualityLogEntry>
+                  response) {
+            if (!quality_test_future.IsReady()) {
+              quality_test_future.SetValue(std::move(response));
+            } else {
+              quality_test_future_2.SetValue(std::move(response));
+            }
+          }));
+
+  page_handler()->Compose("a user typed this", false);
+
+  EXPECT_TRUE(compose_future.Wait());  // Reset future for second compose call.
+  compose_future.Clear();
+
+  page_handler()->Compose("a user typed that", false);
+
+  EXPECT_TRUE(compose_future.Wait());
+  // Close UI to submit remaining quality logs.
+  client_page_handler()->CloseUI(compose::mojom::CloseReason::kCloseButton);
+
+  // This take should clear the quality future from the model that was undone.
+  std::unique_ptr<optimization_guide::ModelQualityLogEntry> result =
+      quality_test_future.Take();
+
+  EXPECT_EQ(optimization_guide::proto::FinalStatus::STATUS_ABANDONED,
+            result->quality_data<optimization_guide::ComposeFeatureTypeMap>()
+                ->final_status());
+
+  result = quality_test_future_2.Take();
+
+  EXPECT_EQ(optimization_guide::proto::FinalStatus::STATUS_UNSPECIFIED,
+            result->quality_data<optimization_guide::ComposeFeatureTypeMap>()
+                ->final_status());
+}
+
+TEST_F(ChromeComposeClientTest, TestComposeQualityWasEdited) {
+  ShowDialogAndBindMojo();
+
+  base::test::TestFuture<compose::mojom::ComposeResponsePtr> compose_future;
+  BindComposeFutureToOnResponseReceived(compose_future);
+
+  EXPECT_CALL(session(), ExecuteModel(_, _)).Times(2);
+
+  base::test::TestFuture<
+      std::unique_ptr<optimization_guide::ModelQualityLogEntry>>
+      quality_test_future;
+  base::test::TestFuture<
+      std::unique_ptr<optimization_guide::ModelQualityLogEntry>>
+      quality_test_future_2;
+
+  EXPECT_CALL(model_quality_logs_uploader(), UploadModelQualityLogs(_))
+      .WillRepeatedly(testing::Invoke(
+          [&](std::unique_ptr<optimization_guide::ModelQualityLogEntry>
+                  response) {
+            if (!quality_test_future.IsReady()) {
+              quality_test_future.SetValue(std::move(response));
+            } else {
+              quality_test_future_2.SetValue(std::move(response));
+            }
+          }));
+
+  page_handler()->Compose("a user typed this", false);
+
+  EXPECT_TRUE(compose_future.Wait());  // Reset future for second compose call.
+  compose_future.Clear();
+
+  page_handler()->Compose("a user typed that", true);
+
+  EXPECT_TRUE(compose_future.Wait());
+  // Close UI to submit remaining quality logs.
+  client_page_handler()->CloseUI(compose::mojom::CloseReason::kCloseButton);
+
+  // This take should clear the quality future from the model that was undone.
+  std::unique_ptr<optimization_guide::ModelQualityLogEntry> result =
+      quality_test_future.Take();
+
+  EXPECT_TRUE(result->quality_data<optimization_guide::ComposeFeatureTypeMap>()
+                  ->was_generated_via_edit());
+
+  result = quality_test_future_2.Take();
+
+  EXPECT_FALSE(result->quality_data<optimization_guide::ComposeFeatureTypeMap>()
+                   ->was_generated_via_edit());
+}
+
 #if defined(GTEST_HAS_DEATH_TEST)
 // Tests that the Compose client crashes the browser if a webcontents
 // tries to bind mojo without opening the dialog at a non Compose URL.
 TEST_F(ChromeComposeClientTest, NoStateCrashesAtOtherUrls) {
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  GTEST_FLAG_SET(death_test_style, "threadsafe");
   // We skip the dialog showing here, to validate that non special URLs check.
   EXPECT_DEATH(BindMojo(), "");
 }
@@ -1315,14 +1744,14 @@ TEST_F(ChromeComposeClientTest, NoStateCrashesAtOtherUrls) {
 // Tests that the Compose client crashes the browser if a webcontents
 // sends any message when the dialog has not been shown.
 TEST_F(ChromeComposeClientTest, TestCannotSendMessagesToNotShownDialog) {
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  GTEST_FLAG_SET(death_test_style, "threadsafe");
   EXPECT_DEATH(page_handler()->SaveWebUIState(""), "");
 }
 
 // Tests that the Compose client crashes the browser if a webcontents
 // tries to close the dialog when the dialog has not been shown.
 TEST_F(ChromeComposeClientTest, TestCannotCloseNotShownDialog) {
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  GTEST_FLAG_SET(death_test_style, "threadsafe");
   EXPECT_DEATH(
       client_page_handler()->CloseUI(compose::mojom::CloseReason::kCloseButton),
       "");
@@ -1331,7 +1760,7 @@ TEST_F(ChromeComposeClientTest, TestCannotCloseNotShownDialog) {
 // Tests that the Compose client crashes the browser if a webcontents
 // tries to close the dialog when the dialog has not been shown.
 TEST_F(ChromeComposeClientTest, TestCannotSendMessagesAfterClosingDialog) {
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  GTEST_FLAG_SET(death_test_style, "threadsafe");
   ShowDialogAndBindMojo();
   client_page_handler()->CloseUI(compose::mojom::CloseReason::kCloseButton);
   // Any message after closing the session will crash.
@@ -1342,7 +1771,7 @@ TEST_F(ChromeComposeClientTest, TestCannotSendMessagesAfterClosingDialog) {
 // sends any more messages after closing the dialog at chrome://contents.
 TEST_F(ChromeComposeClientTest,
        TestCannotSendMessagesAfterClosingDialogAtChromeCompose) {
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  GTEST_FLAG_SET(death_test_style, "threadsafe");
   NavigateAndCommitActiveTab(GURL("chrome://compose"));
   // We skip the dialog showing here, as there is no dialog required at this
   // URL.

@@ -21,7 +21,6 @@ ci.defaults.set(
     sheriff_rotations = sheriff_rotations.CHROMIUM,
     tree_closing = True,
     main_console_view = "main",
-    contact_team_email = "chrome-linux-engprod@google.com",
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
     health_spec = health_spec.DEFAULT,
     notifies = ["chromium.linux"],
@@ -59,11 +58,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-linux-archive",
     ),
-    ssd = True,
-    console_view_entry = consoles.console_view_entry(
-        category = "cast",
-        short_name = "aud",
-    ),
     gn_args = gn_args.config(
         configs = [
             "cast_receiver",
@@ -73,6 +67,11 @@ ci.builder(
             "reclient",
             "minimal_symbols",
         ],
+    ),
+    ssd = True,
+    console_view_entry = consoles.console_view_entry(
+        category = "cast",
+        short_name = "aud",
     ),
 )
 
@@ -95,11 +94,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-linux-archive",
     ),
-    console_view_entry = consoles.console_view_entry(
-        category = "cast",
-        short_name = "vid",
-    ),
-    cq_mirrors_console_view = "mirrors",
     gn_args = gn_args.config(
         configs = [
             "cast_receiver",
@@ -109,6 +103,11 @@ ci.builder(
             "minimal_symbols",
         ],
     ),
+    console_view_entry = consoles.console_view_entry(
+        category = "cast",
+        short_name = "vid",
+    ),
+    cq_mirrors_console_view = "mirrors",
 )
 
 ci.builder(
@@ -130,13 +129,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-linux-archive",
     ),
-    # TODO(crbug.com/1173333): Make it tree-closing.
-    tree_closing = False,
-    console_view_entry = consoles.console_view_entry(
-        category = "cast",
-        short_name = "dbg",
-    ),
-    cq_mirrors_console_view = "mirrors",
     gn_args = gn_args.config(
         configs = [
             "cast_receiver",
@@ -145,6 +137,13 @@ ci.builder(
             "reclient",
         ],
     ),
+    # TODO(crbug.com/1173333): Make it tree-closing.
+    tree_closing = False,
+    console_view_entry = consoles.console_view_entry(
+        category = "cast",
+        short_name = "dbg",
+    ),
+    cq_mirrors_console_view = "mirrors",
 )
 
 ci.builder(
@@ -167,12 +166,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-linux-archive",
     ),
-    tree_closing = False,
-    console_view_entry = consoles.console_view_entry(
-        category = "cast",
-        short_name = "arm64",
-    ),
-    cq_mirrors_console_view = "mirrors",
     gn_args = gn_args.config(
         configs = [
             "cast_receiver",
@@ -183,11 +176,24 @@ ci.builder(
             "minimal_symbols",
         ],
     ),
+    tree_closing = False,
+    console_view_entry = consoles.console_view_entry(
+        category = "cast",
+        short_name = "arm64",
+    ),
+    cq_mirrors_console_view = "mirrors",
 )
 
 ci.builder(
     name = "Deterministic Linux",
     executable = "recipe:swarming/deterministic_build",
+    gn_args = gn_args.config(
+        configs = [
+            "release_builder",
+            "reclient",
+            "minimal_symbols",
+        ],
+    ),
     ssd = True,
     free_space = builders.free_space.high,
     # Set tree_closing to false to disable the defaualt tree closer, which
@@ -198,14 +204,8 @@ ci.builder(
         category = "release",
         short_name = "det",
     ),
+    contact_team_email = "chrome-build-team@google.com",
     execution_timeout = 6 * time.hour,
-    gn_args = gn_args.config(
-        configs = [
-            "release_builder",
-            "reclient",
-            "minimal_symbols",
-        ],
-    ),
     notifies = ["Deterministic Linux", "close-on-any-step-failure"],
     reclient_jobs = reclient.jobs.DEFAULT,
 )
@@ -213,18 +213,19 @@ ci.builder(
 ci.builder(
     name = "Deterministic Linux (dbg)",
     executable = "recipe:swarming/deterministic_build",
-    cores = 32,
-    console_view_entry = consoles.console_view_entry(
-        category = "debug|builder",
-        short_name = "det",
-    ),
-    execution_timeout = 7 * time.hour,
     gn_args = {
         "local": "debug_builder",
         "reclient": gn_args.config(
             configs = ["debug_builder", "reclient"],
         ),
     },
+    cores = 32,
+    console_view_entry = consoles.console_view_entry(
+        category = "debug|builder",
+        short_name = "det",
+    ),
+    contact_team_email = "chrome-build-team@google.com",
+    execution_timeout = 7 * time.hour,
     reclient_jobs = reclient.jobs.DEFAULT,
 )
 
@@ -240,6 +241,9 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-linux-archive",
     ),
+    gn_args = gn_args.config(
+        configs = ["release_builder", "reclient"],
+    ),
     sheriff_rotations = args.ignore_default(None),
     tree_closing = False,
     console_view_entry = consoles.console_view_entry(
@@ -248,9 +252,6 @@ ci.builder(
         short_name = "lk",
     ),
     main_console_view = None,
-    gn_args = gn_args.config(
-        configs = ["release_builder", "reclient"],
-    ),
     notifies = args.ignore_default([]),
     reclient_jobs = reclient.jobs.DEFAULT,
 )
@@ -275,11 +276,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-linux-archive",
     ),
-    console_view_entry = consoles.console_view_entry(
-        category = "release",
-        short_name = "bld",
-    ),
-    cq_mirrors_console_view = "mirrors",
     gn_args = gn_args.config(
         configs = [
             "gpu_tests",
@@ -288,6 +284,12 @@ ci.builder(
             "devtools_do_typecheck",
         ],
     ),
+    console_view_entry = consoles.console_view_entry(
+        category = "release",
+        short_name = "bld",
+    ),
+    cq_mirrors_console_view = "mirrors",
+    contact_team_email = "chrome-linux-engprod@google.com",
 )
 
 ci.builder(
@@ -305,11 +307,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-linux-archive",
     ),
-    console_view_entry = consoles.console_view_entry(
-        category = "debug|builder",
-        short_name = "64",
-    ),
-    cq_mirrors_console_view = "mirrors",
     gn_args = gn_args.config(
         configs = [
             "gpu_tests",
@@ -317,6 +314,12 @@ ci.builder(
             "reclient",
         ],
     ),
+    console_view_entry = consoles.console_view_entry(
+        category = "debug|builder",
+        short_name = "64",
+    ),
+    cq_mirrors_console_view = "mirrors",
+    contact_team_email = "chrome-linux-engprod@google.com",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
@@ -340,11 +343,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-linux-archive",
     ),
-    console_view_entry = consoles.console_view_entry(
-        category = "release",
-        short_name = "bld-wl",
-    ),
-    cq_mirrors_console_view = "mirrors",
     gn_args = gn_args.config(
         configs = [
             "gpu_tests",
@@ -354,6 +352,12 @@ ci.builder(
             "ozone_headless",
         ],
     ),
+    console_view_entry = consoles.console_view_entry(
+        category = "release",
+        short_name = "bld-wl",
+    ),
+    cq_mirrors_console_view = "mirrors",
+    contact_team_email = "chrome-linux-engprod@google.com",
     reclient_jobs = reclient.jobs.DEFAULT,
 )
 
@@ -384,6 +388,7 @@ ci.thin_tester(
         short_name = "tst",
     ),
     cq_mirrors_console_view = "mirrors",
+    contact_team_email = "chrome-linux-engprod@google.com",
     # TODO(crbug.com/1249968): Roll this out more broadly.
     resultdb_bigquery_exports = [
         resultdb.export_text_artifacts(
@@ -419,6 +424,7 @@ ci.thin_tester(
         short_name = "64",
     ),
     cq_mirrors_console_view = "mirrors",
+    contact_team_email = "chrome-linux-engprod@google.com",
 )
 
 ci.thin_tester(
@@ -448,6 +454,7 @@ ci.thin_tester(
         short_name = "tst-wl",
     ),
     cq_mirrors_console_view = "mirrors",
+    contact_team_email = "chrome-linux-engprod@google.com",
 )
 
 ci.builder(
@@ -468,13 +475,14 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-linux-archive",
     ),
+    gn_args = gn_args.config(
+        configs = ["release_builder", "reclient"],
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "release",
         short_name = "nsl",
     ),
-    gn_args = gn_args.config(
-        configs = ["release_builder", "reclient"],
-    ),
+    contact_team_email = "chrome-linux-engprod@google.com",
     reclient_jobs = reclient.jobs.DEFAULT,
 )
 
@@ -496,13 +504,14 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-linux-archive",
     ),
+    gn_args = gn_args.config(
+        configs = ["release_builder_blink", "reclient"],
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "bfcache",
         short_name = "bfc",
     ),
-    gn_args = gn_args.config(
-        configs = ["release_builder_blink", "reclient"],
-    ),
+    contact_team_email = "chrome-linux-engprod@google.com",
     reclient_jobs = reclient.jobs.DEFAULT,
 )
 
@@ -524,10 +533,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-linux-archive",
     ),
-    console_view_entry = consoles.console_view_entry(
-        category = "release",
-        short_name = "trc",
-    ),
     gn_args = gn_args.config(
         configs = [
             "release_builder",
@@ -535,6 +540,11 @@ ci.builder(
             "extended_tracing",
         ],
     ),
+    console_view_entry = consoles.console_view_entry(
+        category = "release",
+        short_name = "trc",
+    ),
+    contact_team_email = "chrome-linux-engprod@google.com",
     reclient_jobs = reclient.jobs.DEFAULT,
 )
 
@@ -556,12 +566,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-linux-archive",
     ),
-    # Focal is needed for better C++20 support. See crbug.com/1284275.
-    os = os.LINUX_FOCAL,
-    console_view_entry = consoles.console_view_entry(
-        category = "release",
-        short_name = "gcc",
-    ),
     gn_args = gn_args.config(
         configs = [
             "release_builder",
@@ -570,6 +574,13 @@ ci.builder(
             "no_goma",
         ],
     ),
+    # Focal is needed for better C++20 support. See crbug.com/1284275.
+    os = os.LINUX_FOCAL,
+    console_view_entry = consoles.console_view_entry(
+        category = "release",
+        short_name = "gcc",
+    ),
+    contact_team_email = "build@chromium.org",
     reclient_instance = None,
 )
 
@@ -592,11 +603,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-linux-archive",
     ),
-    tree_closing = False,
-    console_view_entry = consoles.console_view_entry(
-        category = "linux",
-    ),
-    cq_mirrors_console_view = "mirrors",
     gn_args = gn_args.config(
         configs = [
             "v4l2_codec",
@@ -605,4 +611,9 @@ ci.builder(
             "reclient",
         ],
     ),
+    tree_closing = False,
+    console_view_entry = consoles.console_view_entry(
+        category = "linux",
+    ),
+    cq_mirrors_console_view = "mirrors",
 )

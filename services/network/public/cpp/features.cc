@@ -374,6 +374,9 @@ BASE_FEATURE(kPrefetchNoVarySearch,
              "PrefetchNoVarySearch",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+const base::FeatureParam<bool> kPrefetchNoVarySearchShippedByDefault{
+    &kPrefetchNoVarySearch, "shipped_by_default", true};
+
 // Enables the backend of the compression dictionary transport feature.
 // When this feature is enabled, the following will happen:
 //   * The network service loads the metadata database.
@@ -399,6 +402,19 @@ BASE_FEATURE(kCompressionDictionaryTransport,
              "CompressionDictionaryTransport",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// When this feature is enabled, Chromium can use stored shared dictionaries
+// even when the connection is using HTTP/1 for non-localhost requests.
+BASE_FEATURE(kCompressionDictionaryTransportOverHttp1,
+             "CompressionDictionaryTransportOverHttp1",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When this feature is enabled, Chromium will use stored shared dictionaries
+// only if the request URL is a localhost URL or the transport layer is using a
+// certificate rooted at a standard CA root.
+BASE_FEATURE(kCompressionDictionaryTransportRequireKnownRootCert,
+             "CompressionDictionaryTransportRequireKnownRootCert",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kVisibilityAwareResourceScheduler,
              "VisibilityAwareResourceScheduler",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -410,6 +426,13 @@ BASE_FEATURE(kSharedZstd, "SharedZstd", base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kCookieAccessDetailsNotificationDeDuping,
              "CookieAccessDetailsNotificationDeDuping",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// This feature will reduce TransferSizeUpdated IPC from the network service.
+// When enabled, the network service will send the IPC only when DevTools is
+// attached or the request is for an ad request.
+BASE_FEATURE(kReduceTransferSizeUpdatedIPC,
+             "ReduceTransferSizeUpdatedIPC",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // This feature allows skipping TPCD mitigation checks when the cookie access
 // is tagged as being used for advertising purposes. This means that cookies

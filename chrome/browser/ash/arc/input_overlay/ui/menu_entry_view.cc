@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/arc/input_overlay/ui/menu_entry_view.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "ash/app_list/app_list_util.h"
 #include "ash/style/style_util.h"
@@ -60,9 +61,10 @@ MenuEntryView* MenuEntryView::Show(
     DisplayOverlayController* display_overlay_controller) {
   auto* menu_entry =
       display_overlay_controller->GetOverlayWidgetContentsView()->AddChildView(
-          std::make_unique<MenuEntryView>(pressed_callback,
-                                          on_position_changed_callback,
-                                          display_overlay_controller));
+          std::make_unique<MenuEntryView>(
+              std::move(pressed_callback),
+              std::move(on_position_changed_callback),
+              display_overlay_controller));
   menu_entry->Init();
   return menu_entry;
 }
@@ -101,7 +103,7 @@ void MenuEntryView::OnMouseDragEndCallback() {
   // underneath the overlay. So it needs to leave focus to make event target
   // leave from the overlay layer.
   on_position_changed_callback_.Run(/*leave_focus=*/true,
-                                    absl::make_optional(origin()));
+                                    std::make_optional(origin()));
   RecordInputOverlayMenuEntryReposition(
       display_overlay_controller_->GetPackageName(),
       RepositionType::kMouseDragRepostion,
@@ -111,7 +113,7 @@ void MenuEntryView::OnMouseDragEndCallback() {
 void MenuEntryView::OnGestureDragEndCallback() {
   ChangeMenuEntryOnDrag(/*is_dragging=*/false);
   on_position_changed_callback_.Run(/*leave_focus=*/true,
-                                    absl::make_optional(origin()));
+                                    std::make_optional(origin()));
   RecordInputOverlayMenuEntryReposition(
       display_overlay_controller_->GetPackageName(),
       RepositionType::kTouchscreenDragRepostion,
@@ -120,7 +122,7 @@ void MenuEntryView::OnGestureDragEndCallback() {
 
 void MenuEntryView::OnKeyReleasedCallback() {
   on_position_changed_callback_.Run(/*leave_focus=*/false,
-                                    absl::make_optional(origin()));
+                                    std::make_optional(origin()));
   RecordInputOverlayMenuEntryReposition(
       display_overlay_controller_->GetPackageName(),
       RepositionType::kKeyboardArrowKeyReposition,

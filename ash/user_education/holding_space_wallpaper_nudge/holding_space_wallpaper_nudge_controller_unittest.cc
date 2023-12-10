@@ -135,7 +135,7 @@ std::unique_ptr<views::Widget> CreateTestWidgetForDisplayId(
 }
 
 bool HasHelpBubble(HoldingSpaceTray* tray) {
-  absl::optional<HelpBubbleId> help_bubble_id =
+  std::optional<HelpBubbleId> help_bubble_id =
       UserEducationHelpBubbleController::Get()->GetHelpBubbleId(
           kHoldingSpaceTrayElementId,
           views::ElementTrackerViews::GetContextForView(tray));
@@ -148,7 +148,7 @@ bool HasHelpBubble(HoldingSpaceTray* tray) {
 }
 
 bool HasPing(HoldingSpaceTray* tray) {
-  absl::optional<PingId> ping_id =
+  std::optional<PingId> ping_id =
       UserEducationPingController::Get()->GetPingId(tray);
 
   // Add failures if the ping is not the one that's expected.
@@ -156,6 +156,11 @@ bool HasPing(HoldingSpaceTray* tray) {
             PingId::kHoldingSpaceWallpaperNudge);
 
   return ping_id.has_value();
+}
+
+bool HasPinnedFilesPlaceholder(TrayBubbleView* bubble_view) {
+  return bubble_view->GetViewByID(
+      kHoldingSpacePinnedFilesSectionPlaceholderLabelId);
 }
 
 bool HasWallpaperHighlight(int64_t display_id) {
@@ -263,8 +268,8 @@ class HoldingSpaceWallpaperNudgeControllerTestBase
     : public UserEducationAshTestBase {
  public:
   HoldingSpaceWallpaperNudgeControllerTestBase(
-      absl::optional<bool> counterfactual_enabled,
-      absl::optional<bool> drop_to_pin_enabled,
+      std::optional<bool> counterfactual_enabled,
+      std::optional<bool> drop_to_pin_enabled,
       bool rate_limiting_enabled,
       base::test::TaskEnvironment::TimeSource time_source)
       : UserEducationAshTestBase(time_source) {
@@ -538,7 +543,7 @@ TEST_F(HoldingSpaceWallpaperNudgeControllerTest, HideBubbleOnHoldingSpaceOpen) {
 class HoldingSpaceWallpaperNudgeControllerDragAndDropTest
     : public HoldingSpaceWallpaperNudgeControllerTestBase,
       public testing::WithParamInterface<
-          std::tuple</*drop_to_pin_enabled=*/absl::optional<bool>,
+          std::tuple</*drop_to_pin_enabled=*/std::optional<bool>,
                      /*drag_files_app_data=*/bool,
                      /*complete_drop=*/bool>> {
  public:
@@ -550,7 +555,7 @@ class HoldingSpaceWallpaperNudgeControllerDragAndDropTest
             base::test::TaskEnvironment::TimeSource::SYSTEM_TIME) {}
 
   // Whether the drop-to-pin feature param is enabled.
-  absl::optional<bool> drop_to_pin_enabled() const {
+  std::optional<bool> drop_to_pin_enabled() const {
     return std::get<0>(GetParam());
   }
 
@@ -566,7 +571,7 @@ INSTANTIATE_TEST_SUITE_P(
     All,
     HoldingSpaceWallpaperNudgeControllerDragAndDropTest,
     testing::Combine(
-        /*drop_to_pin_enabled=*/testing::Values(absl::nullopt, false, true),
+        /*drop_to_pin_enabled=*/testing::Values(std::nullopt, false, true),
         /*drag_files_app_data=*/testing::Bool(),
         /*complete_drop=*/testing::Bool()));
 
@@ -819,7 +824,7 @@ TEST_P(HoldingSpaceWallpaperNudgeControllerDragAndDropTest, DragAndDrop) {
 class HoldingSpaceWallpaperNudgeControllerRateLimitingTest
     : public HoldingSpaceWallpaperNudgeControllerTestBase,
       public testing::WithParamInterface<
-          /*drop_to_pin_enabled=*/absl::optional<bool>> {
+          /*drop_to_pin_enabled=*/std::optional<bool>> {
  public:
   HoldingSpaceWallpaperNudgeControllerRateLimitingTest()
       : HoldingSpaceWallpaperNudgeControllerTestBase(
@@ -829,12 +834,12 @@ class HoldingSpaceWallpaperNudgeControllerRateLimitingTest
             base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   // Whether the drop-to-pin feature param is enabled.
-  absl::optional<bool> drop_to_pin_enabled() const { return GetParam(); }
+  std::optional<bool> drop_to_pin_enabled() const { return GetParam(); }
 };
 
 INSTANTIATE_TEST_SUITE_P(All,
                          HoldingSpaceWallpaperNudgeControllerRateLimitingTest,
-                         testing::Values(absl::nullopt, false, true));
+                         testing::Values(std::nullopt, false, true));
 
 // Tests -----------------------------------------------------------------------
 
@@ -882,6 +887,9 @@ TEST_P(HoldingSpaceWallpaperNudgeControllerRateLimitingTest, RateLimiting) {
   EXPECT_FALSE(shelf->IsVisible());
   EXPECT_FALSE(tray->GetVisible());
 
+  const bool drop_to_pin_behavior_expected =
+      drop_to_pin_enabled().value_or(false);
+
   for (size_t day = 0; day < 3; ++day) {
     // Ensure a non-zero animation duration so there is sufficient time to
     // detect pings before they are automatically destroyed on animation
@@ -903,8 +911,7 @@ TEST_P(HoldingSpaceWallpaperNudgeControllerRateLimitingTest, RateLimiting) {
     EXPECT_TRUE(tray->GetVisible());
 
     // The wallpaper highlight should also show if drop-to-pin is enabled.
-    EXPECT_EQ(HasWallpaperHighlight(display_id),
-              drop_to_pin_enabled().value_or(false));
+    EXPECT_EQ(HasWallpaperHighlight(display_id), drop_to_pin_behavior_expected);
 
     // Reset the UI state, using zero-scaled animations to save time.
     SetAnimationDurationMultiplier(
@@ -926,16 +933,16 @@ TEST_P(HoldingSpaceWallpaperNudgeControllerRateLimitingTest, RateLimiting) {
     EXPECT_FALSE(HasHelpBubble(tray));
     EXPECT_FALSE(HasPing(tray));
 
-    // The shelf should be hidden if the nudge is not showing, but the tray
-    // should always be visible so users can use the holding space after
-    // learning about it.
-    EXPECT_FALSE(shelf->IsVisible());
-    EXPECT_TRUE(tray->GetVisible());
+    // The shelf and tray should be visible if the user is dragging and
+    // drop-to-pin is disabled to allow them to drop onto holding space. They
+    // both should be hidden if drop-to-pin is enabled because we want to
+    // encourage that behavior instead.
+    EXPECT_NE(shelf->IsVisible(), drop_to_pin_behavior_expected);
+    EXPECT_NE(tray->GetVisible(), drop_to_pin_behavior_expected);
 
     // Even if not showing the nudge, the wallpaper highlight should be shown if
     // drop-to-pin is enabled.
-    EXPECT_EQ(HasWallpaperHighlight(display_id),
-              drop_to_pin_enabled().value_or(false));
+    EXPECT_EQ(HasWallpaperHighlight(display_id), drop_to_pin_behavior_expected);
 
     // Reset the UI state, using zero-scaled animations to save time.
     SetAnimationDurationMultiplier(
@@ -957,8 +964,72 @@ TEST_P(HoldingSpaceWallpaperNudgeControllerRateLimitingTest, RateLimiting) {
 
   EXPECT_FALSE(HasHelpBubble(tray));
   EXPECT_FALSE(HasPing(tray));
-  EXPECT_FALSE(shelf->IsVisible());
-  EXPECT_TRUE(tray->GetVisible());
+  EXPECT_NE(shelf->IsVisible(), drop_to_pin_behavior_expected);
+  EXPECT_NE(tray->GetVisible(), drop_to_pin_behavior_expected);
+  EXPECT_EQ(HasWallpaperHighlight(display_id),
+            drop_to_pin_enabled().value_or(false));
+
+  // Clean up holding space controller.
+  HoldingSpaceController::Get()->RegisterClientAndModelForUser(
+      account_id, /*client=*/nullptr, /*model=*/nullptr);
+}
+
+// Verifies that the Holding Space wallpaper nudge is not shown for users that
+// have pinned a file before.
+TEST_P(HoldingSpaceWallpaperNudgeControllerRateLimitingTest,
+       UserHasPinnedFiles) {
+  const int64_t display_id = GetPrimaryDisplay().id();
+
+  // Log in a regular user.
+  const AccountId& account_id = AccountId::FromUserEmail("user@test");
+  SimulateUserLogin(account_id);
+
+  // Register a model and client for holding space.
+  HoldingSpaceModel holding_space_model;
+  testing::StrictMock<MockHoldingSpaceClient> holding_space_client;
+  HoldingSpaceController::Get()->RegisterClientAndModelForUser(
+      account_id, &holding_space_client, &holding_space_model);
+
+  // Configure the client to crack file system URLs.
+  EXPECT_CALL(holding_space_client, CrackFileSystemUrl)
+      .WillRepeatedly(Invoke([](const GURL& file_system_url) {
+        return base::FilePath(base::StrCat(
+            {"//path/to/", std::string(&file_system_url.spec().back())}));
+      }));
+
+  // Create and show a widget from which data can be drag-and-dropped.
+  auto widget = CreateTestWidgetForDisplayId(display_id);
+  widget->SetContentsView(std::make_unique<DraggableView>(
+      base::BindLambdaForTesting([&](ui::OSExchangeData* data) {
+        data->SetString(u"Payload");
+        SetFilesAppData(data, u"file-system:a\nfile-system:b");
+      })));
+  widget->CenterWindow(gfx::Size(100, 100));
+  widget->Show();
+
+  auto* const shelf = GetShelfForDisplayId(display_id);
+  auto* const tray = GetHoldingSpaceTrayForShelf(shelf);
+
+  // Modify prefs directly to indicate that the user has pinned a file. Note
+  // that it doesn't matter if a file is currently pinned, only that they have
+  // used the functionality at some point.
+  holding_space_prefs::MarkTimeOfFirstPin(
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService());
+
+  // Make animations non-zero so that the checks below don't miss them.
+  SetAnimationDurationMultiplier(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Drag a file over the wallpaper, and expect that the nudge does not show.
+  MoveMouseTo(widget.get());
+  PressLeftButton();
+  MoveMouseBy(/*x=*/widget->GetWindowBoundsInScreen().width(), /*y=*/0);
+
+  EXPECT_FALSE(HasHelpBubble(tray));
+  EXPECT_FALSE(HasPing(tray));
+
+  // The wallpaper highlight for drop-to-pin functionality should still appear
+  // when the nudge is suppressed.
   EXPECT_EQ(HasWallpaperHighlight(display_id),
             drop_to_pin_enabled().value_or(false));
 
@@ -974,8 +1045,8 @@ TEST_P(HoldingSpaceWallpaperNudgeControllerRateLimitingTest, RateLimiting) {
 class HoldingSpaceWallpaperNudgeControllerCounterfactualTest
     : public HoldingSpaceWallpaperNudgeControllerTestBase,
       public ::testing::WithParamInterface<
-          std::tuple</*counterfactual_enabled=*/absl::optional<bool>,
-                     /*drop_to_pin_enabled=*/absl::optional<bool>>> {
+          std::tuple</*counterfactual_enabled=*/std::optional<bool>,
+                     /*drop_to_pin_enabled=*/std::optional<bool>>> {
  public:
   HoldingSpaceWallpaperNudgeControllerCounterfactualTest()
       : HoldingSpaceWallpaperNudgeControllerTestBase(
@@ -985,12 +1056,12 @@ class HoldingSpaceWallpaperNudgeControllerCounterfactualTest
             base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   // Whether the is-counterfactual feature parameter is enabled.
-  absl::optional<bool> counterfactual_enabled() const {
+  std::optional<bool> counterfactual_enabled() const {
     return std::get<1>(GetParam());
   }
 
   // Whether the drop-to-pin feature parameter is enabled.
-  absl::optional<bool> drop_to_pin_enabled() const {
+  std::optional<bool> drop_to_pin_enabled() const {
     return std::get<0>(GetParam());
   }
 };
@@ -999,13 +1070,13 @@ INSTANTIATE_TEST_SUITE_P(All,
                          HoldingSpaceWallpaperNudgeControllerCounterfactualTest,
                          testing::Combine(
                              /*counterfactual_enabled=*/
-                             ::testing::Values(absl::make_optional(true),
-                                               absl::make_optional(false),
-                                               absl::nullopt),
+                             ::testing::Values(std::make_optional(true),
+                                               std::make_optional(false),
+                                               std::nullopt),
                              /*drop_to_pin_enabled=*/
-                             ::testing::Values(absl::make_optional(true),
-                                               absl::make_optional(false),
-                                               absl::nullopt)));
+                             ::testing::Values(std::make_optional(true),
+                                               std::make_optional(false),
+                                               std::nullopt)));
 
 // Tests -----------------------------------------------------------------------
 
@@ -1114,6 +1185,73 @@ TEST_P(HoldingSpaceWallpaperNudgeControllerCounterfactualTest,
     EXPECT_TRUE(tray->GetBubbleWidget()->IsVisible());
     tray->GetBubbleWidget()->CloseNow();
   }
+
+  // Clean up holding space controller.
+  HoldingSpaceController::Get()->RegisterClientAndModelForUser(
+      account_id, /*client=*/nullptr, /*model=*/nullptr);
+}
+
+// HoldingSpaceWallpaperNudgePlaceholderTest -----------------------------------
+
+// Base class for tests of the `HoldingSpaceWallpaperNudgeController` which are
+// concerned with the placeholder shown in cases where the Holding Space is
+// opened when empty.
+class HoldingSpaceWallpaperNudgePlaceholderTest
+    : public AshTestBase,
+      public testing::WithParamInterface</*nudge_enabled=*/bool> {
+ public:
+  HoldingSpaceWallpaperNudgePlaceholderTest() {
+    // The Holding Space Wallpaper Nudge feature is parameterized, while the
+    // Predictability and Suggestions experiments are explicitly disabled to
+    // make sure we've isolated the placeholder's behavior as it pertains to the
+    // nudge.
+    std::vector<base::test::FeatureRef> enabled_features;
+    std::vector<base::test::FeatureRef> disabled_features{
+        features::kHoldingSpacePredictability,
+        features::kHoldingSpaceSuggestions};
+    (nudge_enabled() ? enabled_features : disabled_features)
+        .push_back(features::kHoldingSpaceWallpaperNudge);
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
+  }
+
+  bool nudge_enabled() const { return GetParam(); }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         HoldingSpaceWallpaperNudgePlaceholderTest,
+                         /*nudge_enabled=*/testing::Bool());
+
+// Tests -----------------------------------------------------------------------
+
+TEST_P(HoldingSpaceWallpaperNudgePlaceholderTest, HasPinnedFilesPlaceholder) {
+  // Log in a regular user.
+  const AccountId& account_id = AccountId::FromUserEmail("user@test");
+  SimulateUserLogin(account_id);
+
+  // Register a model and client for holding space.
+  HoldingSpaceModel holding_space_model;
+  testing::StrictMock<MockHoldingSpaceClient> holding_space_client;
+  HoldingSpaceController::Get()->RegisterClientAndModelForUser(
+      account_id, &holding_space_client, &holding_space_model);
+
+  // Needed by the client to create the placeholder.
+  EXPECT_CALL(holding_space_client, IsDriveDisabled)
+      .WillRepeatedly(testing::Return(false));
+
+  // Mark the holding space feature as available since there is no holding
+  // space keyed service which would otherwise be responsible for doing so.
+  holding_space_prefs::MarkTimeOfFirstAvailability(
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService());
+
+  auto* const tray = GetHoldingSpaceTrayForShelf(
+      GetShelfForDisplayId(GetPrimaryDisplay().id()));
+
+  tray->ShowBubble();
+  EXPECT_EQ(HasPinnedFilesPlaceholder(tray->GetBubbleView()), nudge_enabled());
+  tray->CloseBubble();
 
   // Clean up holding space controller.
   HoldingSpaceController::Get()->RegisterClientAndModelForUser(

@@ -130,7 +130,8 @@ void ResourceLoadObserverForFrame::DidStartRequest(
       Vector<String> argv = {
           Resource::ResourceTypeToString(resource_type, initiator_name),
           params.Url()};
-      activity_logger->LogEvent("blinkRequestResource", argv.size(),
+      activity_logger->LogEvent(document_->GetExecutionContext(),
+                                "blinkRequestResource", argv.size(),
                                 argv.data());
     }
   }
@@ -156,7 +157,7 @@ void ResourceLoadObserverForFrame::WillSendRequest(
       request, redirect_response, resource);
 
   probe::WillSendRequest(
-      GetProbe(), document_loader_,
+      document_->domWindow(), document_loader_,
       fetcher_properties_->GetFetchClientSettingsObject().GlobalObjectUrl(),
       request, redirect_response, options, resource_type,
       render_blocking_behavior, base::TimeTicks::Now());

@@ -12,12 +12,13 @@ import './tab_organization_not_started.js';
 import './tab_organization_results.js';
 import './tab_organization_shared_style.css.js';
 
+import {CrFeedbackOption} from 'chrome://resources/cr_elements/cr_feedback_buttons/cr_feedback_buttons.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {mojoString16ToString} from 'chrome://resources/js/mojo_type_util.js';
 import {afterNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './tab_organization_page.html.js';
-import {Tab, TabOrganization, TabOrganizationError, TabOrganizationSession, TabOrganizationState} from './tab_search.mojom-webui.js';
+import {Tab, TabOrganization, TabOrganizationError, TabOrganizationSession, TabOrganizationState, UserFeedback} from './tab_search.mojom-webui.js';
 import {TabSearchApiProxy, TabSearchApiProxyImpl} from './tab_search_api_proxy.js';
 
 const BODY_VERTICAL_MARGIN: number = 32;
@@ -30,7 +31,6 @@ export interface TabOrganizationPageElement {
     inProgress: HTMLElement,
     results: HTMLElement,
     failure: HTMLElement,
-    footer: HTMLElement,
   };
 }
 
@@ -136,6 +136,11 @@ export class TabOrganizationPageElement extends PolymerElement {
       case TabOrganizationState.kFailure:
         contentsHeight = this.$.failure.scrollHeight -
             this.getPaddingTopValue_(this.$.failure) + BODY_VERTICAL_MARGIN;
+        if (this.showFRE_) {
+          // If the failure footer is shown, exclude bottom margin as the
+          // footer should extend to the bottom of the bubble.
+          contentsHeight -= BODY_VERTICAL_MARGIN / 2;
+        }
         break;
     }
     this.$.contents.style.height = contentsHeight + 'px';
@@ -227,8 +232,43 @@ export class TabOrganizationPageElement extends PolymerElement {
         this.sessionId_, this.organizationId_, this.name_, this.tabs_);
   }
 
+  private onCheckNow_() {
+    this.apiProxy_.resetSession();
+  }
+
   private onTipClick_() {
     this.apiProxy_.startTabGroupTutorial();
+  }
+
+  private onRemoveTab_(event: CustomEvent<{tab: Tab}>) {
+    this.apiProxy_.removeTabFromOrganization(
+        this.sessionId_, this.organizationId_, event.detail.tab);
+  }
+
+  private onLearnMoreClick_() {
+    this.apiProxy_.openHelpPage();
+  }
+
+  private onFeedback_(event: CustomEvent<{value: CrFeedbackOption}>) {
+    switch (event.detail.value) {
+      case CrFeedbackOption.UNSPECIFIED:
+        this.apiProxy_.setUserFeedback(
+            this.sessionId_, this.organizationId_,
+            UserFeedback.kUserFeedBackUnspecified);
+        return;
+      case CrFeedbackOption.THUMBS_UP:
+        this.apiProxy_.setUserFeedback(
+            this.sessionId_, this.organizationId_,
+            UserFeedback.kUserFeedBackPositive);
+        return;
+      case CrFeedbackOption.THUMBS_DOWN:
+        this.apiProxy_.setUserFeedback(
+            this.sessionId_, this.organizationId_,
+            UserFeedback.kUserFeedBackNegative);
+        // Show feedback dialog
+        this.apiProxy_.triggerFeedback(this.sessionId_);
+        return;
+    }
   }
 }
 

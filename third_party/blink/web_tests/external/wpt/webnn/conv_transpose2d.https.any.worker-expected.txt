@@ -1,7 +1,12 @@
 This is a testharness.js-based test.
+Found 49 FAIL, 0 TIMEOUT, 0 NOTRUN.
 [FAIL] convTranspose2d float32 4D input and filter(non-constant) tensors default options / sync
   Failed to execute 'buildSync' on 'MLGraphBuilder': The input layout nchw is not supported.
 [FAIL] convTranspose2d float32 4D input and filter tensors default options / sync
+  Failed to execute 'buildSync' on 'MLGraphBuilder': The input layout nchw is not supported.
+[FAIL] convTranspose2d float32 4D input and filter tensors options.groups / sync
+  Failed to execute 'buildSync' on 'MLGraphBuilder': The input layout nchw is not supported.
+[FAIL] convTranspose2d float32 4D input and filter tensors options.groups=2 options.strides=[2, 2] / sync
   Failed to execute 'buildSync' on 'MLGraphBuilder': The input layout nchw is not supported.
 [FAIL] convTranspose2d float32 4D input and filter tensors options.padding / sync
   Failed to execute 'buildSync' on 'MLGraphBuilder': The input layout nchw is not supported.
@@ -37,7 +42,6 @@ This is a testharness.js-based test.
   Failed to execute 'buildSync' on 'MLGraphBuilder': The filter layout iohw is not supported.
 [FAIL] convTranspose2d float32 4D input and filter tensors options.inputLayout=nhwc options.filterLayout=hwoi / sync
   Failed to execute 'buildSync' on 'MLGraphBuilder': The filter layout hwoi is not supported.
-[PASS] convTranspose2d float32 4D input and filter tensors options.inputLayout=nhwc options.filterLayout=ohwi / sync
 [FAIL] convTranspose2d float32 4D input and filter tensors options.bias / sync
   Failed to execute 'buildSync' on 'MLGraphBuilder': The input layout nchw is not supported.
 [FAIL] convTranspose2d float32 4D input and filter tensors, both negative input tensor and options.bias / sync
@@ -47,6 +51,10 @@ This is a testharness.js-based test.
 [FAIL] convTranspose2d float32 4D input and filter(non-constant) tensors default options / async
   promise_test: Unhandled rejection with value: object "TypeError: builder.build is not a function"
 [FAIL] convTranspose2d float32 4D input and filter tensors default options / async
+  promise_test: Unhandled rejection with value: object "TypeError: builder.build is not a function"
+[FAIL] convTranspose2d float32 4D input and filter tensors options.groups / async
+  promise_test: Unhandled rejection with value: object "TypeError: builder.build is not a function"
+[FAIL] convTranspose2d float32 4D input and filter tensors options.groups=2 options.strides=[2, 2] / async
   promise_test: Unhandled rejection with value: object "TypeError: builder.build is not a function"
 [FAIL] convTranspose2d float32 4D input and filter tensors options.padding / async
   promise_test: Unhandled rejection with value: object "TypeError: builder.build is not a function"

@@ -7,6 +7,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "base/check.h"
+#include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/functional/bind.h"
@@ -126,7 +127,7 @@ void AuthSessionAuthenticator::OnStartAuthSessionForLogin(
     StartAuthSessionCallback callback,
     bool user_exists,
     std::unique_ptr<UserContext> context,
-    absl::optional<AuthenticationError> error) {
+    std::optional<AuthenticationError> error) {
   if (error.has_value()) {
     std::move(callback).Run(/*user_exists=*/false, std::move(context),
                             error.value());
@@ -141,7 +142,7 @@ void AuthSessionAuthenticator::OnStartAuthSessionForLogin(
     return;
   }
   std::move(callback).Run(user_exists, std::move(context),
-                          /*error=*/absl::nullopt);
+                          /*error=*/std::nullopt);
 }
 
 void AuthSessionAuthenticator::RemoveStaleUserForEphemeral(
@@ -166,7 +167,7 @@ void AuthSessionAuthenticator::OnRemoveStaleUserForEphemeral(
     std::unique_ptr<UserContext> original_context,
     AuthSessionIntent intent,
     StartAuthSessionCallback callback,
-    absl::optional<user_data_auth::RemoveReply> reply) {
+    std::optional<user_data_auth::RemoveReply> reply) {
   auto error = user_data_auth::ReplyToCryptohomeError(reply);
   if (cryptohome::HasError(error)) {
     LOGIN_LOG(ERROR) << "Stale ephemeral user removal failed with error "
@@ -187,7 +188,7 @@ void AuthSessionAuthenticator::OnStartAuthSessionForLoginAfterStaleRemoval(
     StartAuthSessionCallback callback,
     bool user_exists,
     std::unique_ptr<UserContext> context,
-    absl::optional<AuthenticationError> error) {
+    std::optional<AuthenticationError> error) {
   if (error.has_value()) {
     std::move(callback).Run(/*user_exists=*/false, std::move(context),
                             error.value());
@@ -200,7 +201,7 @@ void AuthSessionAuthenticator::OnStartAuthSessionForLoginAfterStaleRemoval(
     return;
   }
   std::move(callback).Run(user_exists, std::move(context),
-                          /*error=*/absl::nullopt);
+                          /*error=*/std::nullopt);
 }
 
 void AuthSessionAuthenticator::StartAuthSessionForLoggedIn(
@@ -218,7 +219,7 @@ void AuthSessionAuthenticator::RecordCreatingNewUser(
   user_manager::UserDirectoryIntegrityManager integrity_manager(local_state_);
   integrity_manager.RecordCreatingNewUser(context->GetAccountId());
   std::move(callback).Run(std::move(context),
-                          /*authentication_error=*/absl::nullopt);
+                          /*authentication_error=*/std::nullopt);
 }
 
 void AuthSessionAuthenticator::RecordFirstAuthFactorAdded(
@@ -227,14 +228,14 @@ void AuthSessionAuthenticator::RecordFirstAuthFactorAdded(
   user_manager::UserDirectoryIntegrityManager integrity_manager(local_state_);
   integrity_manager.ClearPrefs();
   std::move(callback).Run(std::move(context),
-                          /*authentication_error=*/absl::nullopt);
+                          /*authentication_error=*/std::nullopt);
 }
 
 void AuthSessionAuthenticator::DoCompleteLogin(
     bool ephemeral,
     bool user_exists,
     std::unique_ptr<UserContext> context,
-    absl::optional<AuthenticationError> error) {
+    std::optional<AuthenticationError> error) {
   AuthErrorCallback error_callback =
       base::BindOnce(&AuthSessionAuthenticator::ProcessCryptohomeError,
                      weak_factory_.GetWeakPtr(),
@@ -283,6 +284,9 @@ void AuthSessionAuthenticator::DoCompleteLogin(
       steps.push_back(
           base::BindOnce(&AuthFactorEditor::AddContextChallengeResponseKey,
                          auth_factor_editor_->AsWeakPtr()));
+      steps.push_back(
+          base::BindOnce(&AuthSessionAuthenticator::RecordFirstAuthFactorAdded,
+                         weak_factory_.GetWeakPtr()));
     } else {
       if (ash::switches::AreEmptyPasswordsAllowedForForTesting()) {
         // Empty passwords are currently not supported in ChromeOS, and
@@ -323,11 +327,11 @@ void AuthSessionAuthenticator::DoCompleteLogin(
       // Password-based login
       if (ash::features::AreLocalPasswordsEnabledForConsumers()) {
         const auto& factors = context->GetAuthFactorsData();
-        if (!factors.FindOnlinePasswordFactor() &&
-            !factors.FindRecoveryFactor()) {
-          // User has knowledge factor other than online password and recovery
-          // flow can't be used
-          NotifyLocalAuthenticationRequired(std::move(context));
+        if (!factors.FindOnlinePasswordFactor()) {
+          // User has knowledge factor other than online password need
+          // to go through custom flow.
+          NotifyOnlinePasswordUnusable(std::move(context),
+                                       /*online_password_mismatch=*/false);
           return;
         }
       }
@@ -415,8 +419,19 @@ void AuthSessionAuthenticator::AuthenticateToUnlock(
     }
   }
 
+  AuthSessionIntent intent = AuthSessionIntent::kVerifyOnly;
+
+  // Full authentication is needed to restore keyset. It is only for
+  // non-ephemeral user sessions.
+  if (switches::ShouldRestoreKeyOnLockScreen() && !ephemeral) {
+    LOGIN_LOG(EVENT)
+        << "AuthenticateToUnlock starts AuthSession for decrypt to "
+           "restore keyset.";
+    intent = AuthSessionIntent::kDecrypt;
+  }
+
   StartAuthSessionForLoggedIn(
-      ephemeral, std::move(user_context), AuthSessionIntent::kVerifyOnly,
+      ephemeral, std::move(user_context), intent,
       base::BindOnce(&AuthSessionAuthenticator::DoUnlock,
                      weak_factory_.GetWeakPtr(), ephemeral));
 }
@@ -425,7 +440,7 @@ void AuthSessionAuthenticator::DoLoginAsExistingUser(
     bool ephemeral,
     bool user_exists,
     std::unique_ptr<UserContext> context,
-    absl::optional<AuthenticationError> error) {
+    std::optional<AuthenticationError> error) {
   AuthErrorCallback error_callback =
       base::BindOnce(&AuthSessionAuthenticator::ProcessCryptohomeError,
                      weak_factory_.GetWeakPtr(),
@@ -488,7 +503,7 @@ void AuthSessionAuthenticator::DoUnlock(
     bool ephemeral,
     bool user_exists,
     std::unique_ptr<UserContext> context,
-    absl::optional<AuthenticationError> error) {
+    std::optional<AuthenticationError> error) {
   AuthErrorCallback error_callback =
       base::BindOnce(&AuthSessionAuthenticator::ProcessCryptohomeError,
                      weak_factory_.GetWeakPtr(), AuthFailure::UNLOCK_FAILED);
@@ -528,6 +543,11 @@ void AuthSessionAuthenticator::DoUnlock(
         base::BindOnce(&AuthPerformer::AuthenticateUsingKnowledgeKey,
                        auth_performer_->AsWeakPtr()));
   }
+  if (switches::ShouldRestoreKeyOnLockScreen() && !ephemeral) {
+    steps.push_back(base::BindOnce(&MountPerformer::RestoreEvictedVaultKey,
+                                   mount_performer_->AsWeakPtr()));
+  }
+
   RunOperationChain(std::move(context), std::move(steps),
                     std::move(success_callback), std::move(error_callback));
 }
@@ -587,7 +607,7 @@ void AuthSessionAuthenticator::LoginAsPublicSession(
 void AuthSessionAuthenticator::DoLoginAsPublicSession(
     bool user_exists,
     std::unique_ptr<UserContext> context,
-    absl::optional<AuthenticationError> error) {
+    std::optional<AuthenticationError> error) {
   AuthErrorCallback error_callback = base::BindOnce(
       &AuthSessionAuthenticator::ProcessCryptohomeError,
       weak_factory_.GetWeakPtr(), AuthFailure::COULD_NOT_MOUNT_TMPFS);
@@ -667,7 +687,7 @@ void AuthSessionAuthenticator::DoLoginAsKiosk(
     bool ephemeral,
     bool user_exists,
     std::unique_ptr<UserContext> context,
-    absl::optional<AuthenticationError> error) {
+    std::optional<AuthenticationError> error) {
   AuthErrorCallback error_callback =
       base::BindOnce(&AuthSessionAuthenticator::ProcessCryptohomeError,
                      weak_factory_.GetWeakPtr(),
@@ -1002,26 +1022,22 @@ void AuthSessionAuthenticator::HandlePasswordChangeDetected(
           error.get_cryptohome_code(),
           user_data_auth::CRYPTOHOME_ERROR_AUTHORIZATION_KEY_FAILED)) {
     LOGIN_LOG(EVENT) << "Password change detected";
-    if (!consumer_) {
-      return;
-    }
-    if (ash::features::IsCryptohomeRecoveryEnabled()) {
-      consumer_->OnPasswordChangeDetected(std::move(context));
-    } else {
-      consumer_->OnPasswordChangeDetectedLegacy(*context);
-    }
+    NotifyOnlinePasswordUnusable(std::move(context),
+                                 /*online_password_mismatch=*/true);
     return;
   }
   std::move(fallback).Run(std::move(context), std::move(error));
 }
 
-void AuthSessionAuthenticator::NotifyLocalAuthenticationRequired(
-    std::unique_ptr<UserContext> context) {
-  LOGIN_LOG(EVENT) << "Local authentication required";
+void AuthSessionAuthenticator::NotifyOnlinePasswordUnusable(
+    std::unique_ptr<UserContext> context,
+    bool online_password_mismatch) {
+  LOGIN_LOG(EVENT) << "Online password unusable / " << online_password_mismatch;
   if (!consumer_) {
     return;
   }
-  consumer_->OnLocalAuthenticationRequired(std::move(context));
+  consumer_->OnOnlinePasswordUnusable(std::move(context),
+                                      online_password_mismatch);
 }
 
 void AuthSessionAuthenticator::HandleMigrationRequired(
@@ -1082,7 +1098,7 @@ void AuthSessionAuthenticator::CheckOwnershipOperation(
     std::unique_ptr<UserContext> context,
     AuthOperationCallback callback) {
   if (!safe_mode_delegate_->IsSafeMode()) {
-    std::move(callback).Run(std::move(context), absl::nullopt);
+    std::move(callback).Run(std::move(context), std::nullopt);
     return;
   }
   LOGIN_LOG(EVENT) << "Running in safe mode";
@@ -1102,7 +1118,7 @@ void AuthSessionAuthenticator::OnSafeModeOwnershipCheck(
     bool is_owner) {
   if (is_owner) {
     LOGIN_LOG(EVENT) << "Safe mode: owner";
-    std::move(callback).Run(std::move(context), absl::nullopt);
+    std::move(callback).Run(std::move(context), std::nullopt);
     return;
   }
   LOGIN_LOG(EVENT) << "Safe mode: non-owner";
@@ -1116,7 +1132,7 @@ void AuthSessionAuthenticator::OnSafeModeOwnershipCheck(
 // Crash if directory could not be unmounted
 void AuthSessionAuthenticator::OnUnmountForNonOwner(
     std::unique_ptr<UserContext> context,
-    absl::optional<AuthenticationError> error) {
+    std::optional<AuthenticationError> error) {
   if (error) {
     // Crash if could not unmount home directory, and let session_manager
     // handle it.
@@ -1131,7 +1147,7 @@ void AuthSessionAuthenticator::SaveKnownUser(
     std::unique_ptr<UserContext> context,
     AuthOperationCallback callback) {
   user_recorder_.Run(context->GetAccountId());
-  std::move(callback).Run(std::move(context), absl::nullopt);
+  std::move(callback).Run(std::move(context), std::nullopt);
 }
 
 }  // namespace ash

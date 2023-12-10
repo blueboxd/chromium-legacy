@@ -47,6 +47,7 @@
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_table_encryptor.h"
 #include "components/autofill/core/browser/webdata/autofill_table_encryptor_factory.h"
+#include "components/autofill/core/browser/webdata/autofill_table_utils.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -374,255 +375,6 @@ constexpr std::initializer_list<std::pair<std::string_view, std::string_view>>
         {kBankName, "VARCHAR"},
         {kAccountNumberSuffix, "VARCHAR"},
         {kAccountType, "INTEGER DEFAULT 0"}};
-
-// Helper functions to construct SQL statements from string constants.
-// - Functions with names corresponding to SQL keywords execute the statement
-//   directly and return if it was successful.
-// - Builder functions only assign the statement, which enables binding
-//   values to placeholders before running it.
-
-// Executes a CREATE TABLE statement on `db` which the provided
-// `table_name`. The columns are described in `column_names_and_types` as
-// pairs of (name, type), where type can include modifiers such as NOT NULL.
-// By specifying `compositive_primary_key`, a PRIMARY KEY (col1, col2, ..)
-// clause is generated.
-// Returns true if successful.
-bool CreateTable(
-    sql::Database* db,
-    std::string_view table_name,
-    std::initializer_list<std::pair<std::string_view, std::string_view>>
-        column_names_and_types,
-    std::initializer_list<std::string_view> composite_primary_key = {}) {
-  DCHECK(composite_primary_key.size() == 0 ||
-         composite_primary_key.size() >= 2);
-
-  std::vector<std::string> combined_names_and_types;
-  combined_names_and_types.reserve(column_names_and_types.size());
-  for (const auto& [name, type] : column_names_and_types)
-    combined_names_and_types.push_back(base::StrCat({name, " ", type}));
-
-  auto primary_key_clause =
-      composite_primary_key.size() == 0
-          ? ""
-          : base::StrCat({", PRIMARY KEY (",
-                          base::JoinString(composite_primary_key, ", "), ")"});
-
-  return db->Execute(
-      base::StrCat({"CREATE TABLE ", table_name, " (",
-                    base::JoinString(combined_names_and_types, ", "),
-                    primary_key_clause, ")"})
-          .c_str());
-}
-
-// Wrapper around `CreateTable()` that condition the creation on the
-// `table_name` not existing.
-// Returns true if the table now exists.
-bool CreateTableIfNotExists(
-    sql::Database* db,
-    std::string_view table_name,
-    std::initializer_list<std::pair<std::string_view, std::string_view>>
-        column_names_and_types,
-    std::initializer_list<std::string_view> composite_primary_key = {}) {
-  return db->DoesTableExist(table_name) ||
-         CreateTable(db, table_name, column_names_and_types,
-                     composite_primary_key);
-}
-
-// Creates and index on `table_name` for the provided `columns`.
-// The index is named after the table and columns, separated by '_'.
-// Returns true if successful.
-bool CreateIndex(sql::Database* db,
-                 std::string_view table_name,
-                 std::initializer_list<std::string_view> columns) {
-  auto index_name =
-      base::StrCat({table_name, "_", base::JoinString(columns, "_")});
-  return db->Execute(
-      base::StrCat({"CREATE INDEX ", index_name, " ON ", table_name, "(",
-                    base::JoinString(columns, ", "), ")"})
-          .c_str());
-}
-
-// Initializes `statement` with INSERT INTO `table_name`, with placeholders for
-// all `column_names`.
-// By setting `or_replace`, INSERT OR REPLACE INTO is used instead.
-void InsertBuilder(sql::Database* db,
-                   sql::Statement& statement,
-                   std::string_view table_name,
-                   std::initializer_list<std::string_view> column_names,
-                   bool or_replace = false) {
-  auto insert_or_replace =
-      base::StrCat({"INSERT ", or_replace ? "OR REPLACE " : ""});
-  auto placeholders = base::JoinString(
-      std::vector<std::string>(column_names.size(), "?"), ", ");
-  statement.Assign(db->GetUniqueStatement(
-      base::StrCat({insert_or_replace, "INTO ", table_name, " (",
-                    base::JoinString(column_names, ", "), ") VALUES (",
-                    placeholders, ")"})
-          .c_str()));
-}
-
-// Renames the table `from` into `to` and returns true if successful.
-bool RenameTable(sql::Database* db,
-                 std::string_view from,
-                 std::string_view to) {
-  return db->Execute(
-      base::StrCat({"ALTER TABLE ", from, " RENAME TO ", to}).c_str());
-}
-
-// Wrapper around `sql::Database::DoesColumnExist()`, because that function
-// only accepts const char* parameters.
-bool DoesColumnExist(sql::Database* db,
-                     std::string_view table_name,
-                     std::string_view column_name) {
-  return db->DoesColumnExist(std::string(table_name).c_str(),
-                             std::string(column_name).c_str());
-}
-
-// Adds a column named `column_name` of `type` to `table_name` and returns true
-// if successful.
-bool AddColumn(sql::Database* db,
-               std::string_view table_name,
-               std::string_view column_name,
-               std::string_view type) {
-  return db->Execute(base::StrCat({"ALTER TABLE ", table_name, " ADD COLUMN ",
-                                   column_name, " ", type})
-                         .c_str());
-}
-
-// Like `AddColumn()`, but conditioned on `column` not existing in `table_name`.
-// Returns true if the column is now part of the table
-bool AddColumnIfNotExists(sql::Database* db,
-                          std::string_view table_name,
-                          std::string_view column_name,
-                          std::string_view type) {
-  return DoesColumnExist(db, table_name, column_name) ||
-         AddColumn(db, table_name, column_name, type);
-}
-
-// Drops the column named `column_name` from `table_name` and returns true if
-// successful.
-bool DropColumn(sql::Database* db,
-                std::string_view table_name,
-                std::string_view column_name) {
-  return db->Execute(
-      base::StrCat({"ALTER TABLE ", table_name, " DROP COLUMN ", column_name})
-          .c_str());
-  ;
-}
-
-// Drops `table_name`, if the table exists. Returns true if the statement
-// finishes successfully, independently of whether a table was actually dropped.
-bool DropTableIfExists(sql::Database* db, std::string_view table_name) {
-  return db->Execute(
-      base::StrCat({"DROP TABLE IF EXISTS ", table_name}).c_str());
-}
-
-// Initializes `statement` with DELETE FROM `table_name`. A WHERE clause
-// can optionally be specified in `where_clause`.
-void DeleteBuilder(sql::Database* db,
-                   sql::Statement& statement,
-                   std::string_view table_name,
-                   std::string_view where_clause = "") {
-  auto where =
-      where_clause.empty() ? "" : base::StrCat({" WHERE ", where_clause});
-  statement.Assign(db->GetUniqueStatement(
-      base::StrCat({"DELETE FROM ", table_name, where}).c_str()));
-}
-
-// Like `DeleteBuilder()`, but runs the statement and returns true if it was
-// successful.
-bool Delete(sql::Database* db,
-            std::string_view table_name,
-            std::string_view where_clause = "") {
-  sql::Statement statement;
-  DeleteBuilder(db, statement, table_name, where_clause);
-  return statement.Run();
-}
-
-// Wrapper around `DeleteBuilder()`, which initializes the where clause as
-// `column` = `value`.
-// Runs the statement and returns true if it was successful.
-bool DeleteWhereColumnEq(sql::Database* db,
-                         std::string_view table_name,
-                         std::string_view column,
-                         std::string_view value) {
-  sql::Statement statement;
-  DeleteBuilder(db, statement, table_name, base::StrCat({column, " = ?"}));
-  statement.BindString(0, value);
-  return statement.Run();
-}
-
-// Wrapper around `DeleteBuilder()`, which initializes the where clause as
-// `column` = `value` for int64_t type.
-// Runs the statement and returns true if it was successful.
-bool DeleteWhereColumnEq(sql::Database* db,
-                         std::string_view table_name,
-                         std::string_view column,
-                         int64_t value) {
-  sql::Statement statement;
-  DeleteBuilder(db, statement, table_name, base::StrCat({column, " = ?"}));
-  statement.BindInt64(0, value);
-  return statement.Run();
-}
-
-// Initializes `statement` with UPDATE `table_name` SET `column_names` = ?, with
-// a placeholder for every `column_names`. A WHERE clause can optionally be
-// specified in `where_clause`.
-void UpdateBuilder(sql::Database* db,
-                   sql::Statement& statement,
-                   std::string_view table_name,
-                   std::initializer_list<std::string_view> column_names,
-                   std::string_view where_clause = "") {
-  auto columns_with_placeholders =
-      base::JoinString(column_names, " = ?, ") + " = ?";
-  auto where =
-      where_clause.empty() ? "" : base::StrCat({" WHERE ", where_clause});
-  statement.Assign(
-      db->GetUniqueStatement(base::StrCat({"UPDATE ", table_name, " SET ",
-                                           columns_with_placeholders, where})
-                                 .c_str()));
-}
-
-// Initializes `statement` with SELECT `columns` FROM `table_name` and
-// optionally further `modifiers`, such as WHERE, ORDER BY, etc.
-void SelectBuilder(sql::Database* db,
-                   sql::Statement& statement,
-                   std::string_view table_name,
-                   std::initializer_list<std::string_view> columns,
-                   std::string_view modifiers = "") {
-  statement.Assign(db->GetUniqueStatement(
-      base::StrCat({"SELECT ", base::JoinString(columns, ", "), " FROM ",
-                    table_name, " ", modifiers})
-          .c_str()));
-}
-
-// Wrapper around `SelectBuilder()` that restricts the it to the provided
-// `guid`. Returns `statement.is_valid() && statement.Step()`.
-bool SelectByGuid(sql::Database* db,
-                  sql::Statement& statement,
-                  std::string_view table_name,
-                  std::initializer_list<std::string_view> columns,
-                  std::string_view guid) {
-  SelectBuilder(db, statement, table_name, columns, "WHERE guid=?");
-  statement.BindString(0, guid);
-  return statement.is_valid() && statement.Step();
-}
-
-// Wrapper around `SelectBuilder()` that restricts it to the half-open interval
-// [low, high[ of `column_between`.
-void SelectBetween(sql::Database* db,
-                   sql::Statement& statement,
-                   std::string_view table_name,
-                   std::initializer_list<std::string_view> columns,
-                   std::string_view column_between,
-                   int64_t low,
-                   int64_t high) {
-  auto between_selector = base::StrCat(
-      {"WHERE ", column_between, " >= ? AND ", column_between, " < ?"});
-  SelectBuilder(db, statement, table_name, columns, between_selector);
-  statement.BindInt64(0, low);
-  statement.BindInt64(1, high);
-}
 
 // Helper struct for AutofillTable::RemoveFormElementsAddedBetween().
 // Contains all the necessary fields to update a row in the 'autofill' table.
@@ -1330,78 +1082,56 @@ bool AutofillTable::MigrateToVersion(int version,
 bool AutofillTable::AddFormFieldValues(
     const std::vector<FormFieldData>& elements,
     std::vector<AutocompleteChange>* changes) {
-  return AddFormFieldValuesTime(elements, changes, AutofillClock::Now());
-}
-
-bool AutofillTable::AddFormFieldValue(
-    const FormFieldData& element,
-    std::vector<AutocompleteChange>* changes) {
-  return AddFormFieldValueTime(element, changes, AutofillClock::Now());
+  const base::Time now = AutofillClock::Now();
+  // Only add one new entry for each unique element name.  Use |seen_names|
+  // to track this.  Add up to |kMaximumUniqueNames| unique entries per
+  // form.
+  const size_t kMaximumUniqueNames = 256;
+  std::set<std::u16string> seen_names;
+  for (const FormFieldData& element : elements) {
+    if (!seen_names.insert(element.name).second) {
+      continue;
+    }
+    if (seen_names.size() == kMaximumUniqueNames) {
+      break;
+    }
+    if (!AddFormFieldValueTime(element, now, changes)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 bool AutofillTable::GetFormValuesForElementName(
     const std::u16string& name,
     const std::u16string& prefix,
-    std::vector<AutocompleteEntry>* entries,
-    int limit) {
-  DCHECK(entries);
-  bool succeeded = false;
+    int limit,
+    std::vector<AutocompleteEntry>& entries) {
+  sql::Statement s;
+  SelectBuilder(db_, s, kAutofillTable,
+                {kName, kValue, kDateCreated, kDateLastUsed},
+                "WHERE name = ? AND value_lower LIKE ? "
+                "ORDER BY count DESC LIMIT ?");
+  s.BindString16(0, name);
+  s.BindString16(1, base::i18n::ToLower(prefix) + u"%");
+  s.BindInt(2, limit);
 
-  if (prefix.empty()) {
-    sql::Statement s;
-    SelectBuilder(db_, s, kAutofillTable,
-                  {kName, kValue, kDateCreated, kDateLastUsed},
-                  "WHERE name = ? ORDER BY count DESC LIMIT ?");
-    s.BindString16(0, name);
-    s.BindInt(1, limit);
-
-    entries->clear();
-    while (s.Step()) {
-      entries->push_back(AutocompleteEntry(
-          AutocompleteKey(/*name=*/s.ColumnString16(0),
-                          /*value=*/s.ColumnString16(1)),
-          /*date_created=*/base::Time::FromTimeT(s.ColumnInt64(2)),
-          /*date_last_used=*/base::Time::FromTimeT(s.ColumnInt64(3))));
-    }
-
-    succeeded = s.Succeeded();
-  } else {
-    std::u16string prefix_lower = base::i18n::ToLower(prefix);
-    std::u16string next_prefix = prefix_lower;
-    next_prefix.back()++;
-
-    sql::Statement s1;
-    SelectBuilder(db_, s1, kAutofillTable,
-                  {kName, kValue, kDateCreated, kDateLastUsed},
-                  "WHERE name = ? AND "
-                  "value_lower >= ? AND "
-                  "value_lower < ? "
-                  "ORDER BY count DESC "
-                  "LIMIT ?");
-    s1.BindString16(0, name);
-    s1.BindString16(1, prefix_lower);
-    s1.BindString16(2, next_prefix);
-    s1.BindInt(3, limit);
-
-    entries->clear();
-    while (s1.Step()) {
-      entries->push_back(AutocompleteEntry(
-          AutocompleteKey(/*name=*/s1.ColumnString16(0),
-                          /*value=*/s1.ColumnString16(1)),
-          /*date_created=*/base::Time::FromTimeT(s1.ColumnInt64(2)),
-          /*date_last_used=*/base::Time::FromTimeT(s1.ColumnInt64(3))));
-    }
-
-    succeeded = s1.Succeeded();
+  entries.clear();
+  while (s.Step()) {
+    entries.emplace_back(
+        AutocompleteKey(/*name=*/s.ColumnString16(0),
+                        /*value=*/s.ColumnString16(1)),
+        /*date_created=*/base::Time::FromTimeT(s.ColumnInt64(2)),
+        /*date_last_used=*/base::Time::FromTimeT(s.ColumnInt64(3)));
   }
 
-  return succeeded;
+  return s.Succeeded();
 }
 
 bool AutofillTable::RemoveFormElementsAddedBetween(
     const base::Time& delete_begin,
     const base::Time& delete_end,
-    std::vector<AutocompleteChange>* changes) {
+    std::vector<AutocompleteChange>& changes) {
   const time_t delete_begin_time_t = delete_begin.ToTimeT();
   const time_t delete_end_time_t = GetEndTime(delete_end);
 
@@ -1501,12 +1231,12 @@ bool AutofillTable::RemoveFormElementsAddedBetween(
   if (!transaction.Commit())
     return false;
 
-  *changes = tentative_changes;
+  changes = std::move(tentative_changes);
   return true;
 }
 
 bool AutofillTable::RemoveExpiredFormElements(
-    std::vector<AutocompleteChange>* changes) {
+    std::vector<AutocompleteChange>& changes) {
   const auto change_type = AutocompleteChange::EXPIRE;
 
   base::Time expiration_time =
@@ -1535,7 +1265,7 @@ bool AutofillTable::RemoveExpiredFormElements(
   if (!delete_data_statement.Run())
     return false;
 
-  *changes = tentative_changes;
+  changes = std::move(tentative_changes);
   return true;
 }
 
@@ -1548,8 +1278,8 @@ bool AutofillTable::RemoveFormElement(const std::u16string& name,
   return s.Run();
 }
 
-int AutofillTable::GetCountOfValuesContainedBetween(const base::Time& begin,
-                                                    const base::Time& end) {
+int AutofillTable::GetCountOfValuesContainedBetween(base::Time begin,
+                                                    base::Time end) {
   const time_t begin_time_t = begin.ToTimeT();
   const time_t end_time_t = GetEndTime(end);
 
@@ -1581,30 +1311,29 @@ bool AutofillTable::GetAllAutocompleteEntries(
     std::u16string value = s.ColumnString16(1);
     base::Time date_created = base::Time::FromTimeT(s.ColumnInt64(2));
     base::Time date_last_used = base::Time::FromTimeT(s.ColumnInt64(3));
-    entries->push_back(AutocompleteEntry(AutocompleteKey(name, value),
-                                         date_created, date_last_used));
+    entries->emplace_back(AutocompleteKey(name, value), date_created,
+                          date_last_used);
   }
 
   return s.Succeeded();
 }
 
-bool AutofillTable::GetAutofillTimestamps(const std::u16string& name,
-                                          const std::u16string& value,
-                                          base::Time* date_created,
-                                          base::Time* date_last_used) {
+std::optional<AutocompleteEntry> AutofillTable::GetAutocompleteEntry(
+    const std::u16string& name,
+    const std::u16string& value) {
   sql::Statement s;
   SelectBuilder(db_, s, kAutofillTable, {kDateCreated, kDateLastUsed},
                 "WHERE name = ? AND value = ?");
   s.BindString16(0, name);
   s.BindString16(1, value);
-  if (!s.Step())
-    return false;
-
-  *date_created = base::Time::FromTimeT(s.ColumnInt64(0));
-  *date_last_used = base::Time::FromTimeT(s.ColumnInt64(1));
-
+  if (!s.Step()) {
+    return std::nullopt;
+  }
+  AutocompleteEntry entry({name, value},
+                          base::Time::FromTimeT(s.ColumnInt64(0)),
+                          base::Time::FromTimeT(s.ColumnInt64(1)));
   DCHECK(!s.Step());
-  return true;
+  return entry;
 }
 
 bool AutofillTable::UpdateAutocompleteEntries(
@@ -2651,8 +2380,9 @@ bool AutofillTable::AddOrUpdateServerIbanMetadata(
 }
 
 bool AutofillTable::RemoveServerIbanMetadata(const std::string& instrument_id) {
-  return DeleteWhereColumnEq(db_, kMaskedIbansMetadataTable, kInstrumentId,
-                             instrument_id);
+  DeleteWhereColumnEq(db_, kMaskedIbansMetadataTable, kInstrumentId,
+                      instrument_id);
+  return db_->GetLastChangeCount() > 0;
 }
 
 std::vector<AutofillMetadata> AutofillTable::GetServerIbansMetadata() const {
@@ -2805,7 +2535,7 @@ bool AutofillTable::GetServerIbans(std::vector<std::unique_ptr<Iban>>& ibans) {
   return s.Succeeded();
 }
 
-bool AutofillTable::SetServerIbans(const std::vector<Iban>& ibans) {
+bool AutofillTable::SetServerIbansData(const std::vector<Iban>& ibans) {
   sql::Transaction transaction(db_);
   if (!transaction.Begin()) {
     return false;
@@ -2813,7 +2543,7 @@ bool AutofillTable::SetServerIbans(const std::vector<Iban>& ibans) {
 
   // Delete all old ones first.
   Delete(db_, kMaskedIbansTable);
-  Delete(db_, kMaskedIbansMetadataTable);
+
   sql::Statement s;
   InsertBuilder(db_, s, kMaskedIbansTable,
                 {kInstrumentId, kNickname, kPrefix, kSuffix, kLength});
@@ -2829,11 +2559,16 @@ bool AutofillTable::SetServerIbans(const std::vector<Iban>& ibans) {
       return false;
     }
     s.Reset(/*clear_bound_vars=*/true);
-
-    // Save the use count and use date of the IBAN.
-    AddOrUpdateServerIbanMetadata(iban.GetMetadata());
   }
   return transaction.Commit();
+}
+
+void AutofillTable::SetServerIbansForTesting(const std::vector<Iban>& ibans) {
+  Delete(db_, kMaskedIbansMetadataTable);
+  SetServerIbansData(ibans);
+  for (const Iban& iban : ibans) {
+    AddOrUpdateServerIbanMetadata(iban.GetMetadata());
+  }
 }
 
 void AutofillTable::SetPaymentsCustomerData(
@@ -3773,31 +3508,10 @@ bool AutofillTable::MigrateToVersion121DropServerAddressTables() {
          transaction.Commit();
 }
 
-bool AutofillTable::AddFormFieldValuesTime(
-    const std::vector<FormFieldData>& elements,
-    std::vector<AutocompleteChange>* changes,
-    base::Time time) {
-  // Only add one new entry for each unique element name.  Use |seen_names|
-  // to track this.  Add up to |kMaximumUniqueNames| unique entries per
-  // form.
-  const size_t kMaximumUniqueNames = 256;
-  std::set<std::u16string> seen_names;
-  bool result = true;
-  for (const FormFieldData& element : elements) {
-    if (seen_names.size() >= kMaximumUniqueNames)
-      break;
-    if (base::Contains(seen_names, element.name))
-      continue;
-    result = result && AddFormFieldValueTime(element, changes, time);
-    seen_names.insert(element.name);
-  }
-  return result;
-}
-
 bool AutofillTable::AddFormFieldValueTime(
     const FormFieldData& element,
-    std::vector<AutocompleteChange>* changes,
-    base::Time time) {
+    base::Time time,
+    std::vector<AutocompleteChange>* changes) {
   if (!db_->is_open()) {
     return false;
   }
@@ -3819,17 +3533,9 @@ bool AutofillTable::AddFormFieldValueTime(
     return base::StrCat(message_parts);
   };
 
-  sql::Statement s_exists(db_->GetUniqueStatement(
-      "SELECT COUNT(*) FROM autofill WHERE name = ? AND value = ?"));
-  s_exists.BindString16(0, element.name);
-  s_exists.BindString16(1, element.value);
-  if (!s_exists.Step()) {
-    DUMP_WILL_BE_NOTREACHED_NORETURN() << create_debug_info("SELECT");
-    return false;
-  }
-
-  bool already_exists = s_exists.ColumnInt(0) > 0;
-  if (already_exists) {
+  AutocompleteChange::Type change_type;
+  if (GetAutocompleteEntry(element.name, element.value).has_value()) {
+    change_type = AutocompleteChange::UPDATE;
     sql::Statement s(db_->GetUniqueStatement(
         "UPDATE autofill SET date_last_used = ?, count = count + 1 "
         "WHERE name = ? AND value = ?"));
@@ -3841,27 +3547,17 @@ bool AutofillTable::AddFormFieldValueTime(
       return false;
     }
   } else {
-    time_t time_as_time_t = time.ToTimeT();
-    sql::Statement s;
-    InsertBuilder(
-        db_, s, kAutofillTable,
-        {kName, kValue, kValueLower, kDateCreated, kDateLastUsed, kCount});
-    s.BindString16(0, element.name);
-    s.BindString16(1, element.value);
-    s.BindString16(2, base::i18n::ToLower(element.value));
-    s.BindInt64(3, time_as_time_t);
-    s.BindInt64(4, time_as_time_t);
-    s.BindInt(5, 1);
-    if (!s.Run()) {
+    change_type = AutocompleteChange::ADD;
+    if (!InsertAutocompleteEntry({{element.name, element.value},
+                                  /*date_created=*/time,
+                                  /*date_last_used=*/time})) {
       DUMP_WILL_BE_NOTREACHED_NORETURN() << create_debug_info("INSERT");
       return false;
     }
   }
 
-  AutocompleteChange::Type change_type =
-      already_exists ? AutocompleteChange::UPDATE : AutocompleteChange::ADD;
-  changes->push_back(AutocompleteChange(
-      change_type, AutocompleteKey(element.name, element.value)));
+  changes->emplace_back(change_type,
+                        AutocompleteKey(element.name, element.value));
   return true;
 }
 

@@ -33,8 +33,8 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/flex/ng_flex_line.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/logical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/min_max_sizes.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 
 namespace blink {
@@ -181,7 +181,7 @@ LayoutUnit FlexItem::MarginBoxAscent(bool is_last_baseline,
   DCHECK(layout_result_);
   LogicalBoxFragment baseline_fragment(
       baseline_writing_direction_,
-      To<NGPhysicalBoxFragment>(layout_result_->PhysicalFragment()));
+      To<PhysicalBoxFragment>(layout_result_->GetPhysicalFragment()));
 
   const auto font_baseline = algorithm_->StyleRef().GetFontBaseline();
   LayoutUnit baseline =

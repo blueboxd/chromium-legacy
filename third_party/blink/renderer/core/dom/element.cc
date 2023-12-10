@@ -179,7 +179,6 @@
 #include "third_party/blink/renderer/core/layout/layout_text_combine.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -505,7 +504,7 @@ void EnqueueAutofocus(Element& element) {
 
 bool WillUpdateSizeContainerDuringLayout(const LayoutObject& layout_object) {
   // When a size-container LayoutObject is marked as needs layout,
-  // NGBlockNode::Layout() will resume style recalc with an up-to-date size in
+  // BlockNode::Layout() will resume style recalc with an up-to-date size in
   // StyleEngine::UpdateStyleAndLayoutTreeForContainer().
   return layout_object.NeedsLayout() &&
          layout_object.IsEligibleForSizeContainment();
@@ -617,7 +616,7 @@ bool Element::IsFocusableStyle(UpdateBehavior update_behavior) const {
   // activation reason, we simply return false to avoid updating style & layout
   // tree for this node.
   absl::optional<DocumentLifecycle::DisallowTransitionScope> disallow_scope;
-  if (UNLIKELY(update_behavior == UpdateBehavior::kNoneForAccessibility)) {
+  if (UNLIKELY(update_behavior != UpdateBehavior::kStyleAndLayout)) {
     DCHECK(!NeedsStyleRecalc()) << this;
     disallow_scope.emplace(GetDocument().Lifecycle());
   } else {
@@ -2075,7 +2074,7 @@ Vector<gfx::Rect> Element::OutlineRectsInWidget(
 
   Vector<PhysicalRect> outline_rects = layout_object->OutlineRects(
       nullptr, PhysicalOffset(),
-      layout_object->StyleRef().OutlineRectsShouldIncludeBlockVisualOverflow());
+      layout_object->StyleRef().OutlineRectsShouldIncludeBlockInkOverflow());
   for (auto& r : outline_rects) {
     PhysicalRect physical_rect = layout_object->LocalToAbsoluteRect(r);
     gfx::Rect absolute_rect =
@@ -2193,10 +2192,14 @@ gfx::RectF Element::GetBoundingClientRectNoLifecycleUpdate() const {
   return result;
 }
 
-DOMRect* Element::getBoundingClientRect() {
+DOMRect* Element::GetBoundingClientRect() {
   GetDocument().EnsurePaintLocationDataValidForNode(
       this, DocumentUpdateReason::kJavaScript);
   return DOMRect::FromRectF(GetBoundingClientRectNoLifecycleUpdate());
+}
+
+DOMRect* Element::GetBoundingClientRectForBinding() {
+  return GetBoundingClientRect();
 }
 
 const AtomicString& Element::computedRole() {
@@ -2207,7 +2210,6 @@ const AtomicString& Element::computedRole() {
   AXContext ax_context(document, ui::kAXModeBasic);
   document.View()->UpdateAllLifecyclePhasesExceptPaint(
       DocumentUpdateReason::kJavaScript);
-  ax_context.GetAXObjectCache().ProcessDeferredAccessibilityEvents(document);
   return ax_context.GetAXObjectCache().ComputedRoleForNode(this);
 }
 
@@ -2226,7 +2228,6 @@ const AtomicString& Element::ComputedRoleNoLifecycleUpdate() {
   // Allocating the AXContext needs to not change lifecycle states.
   DCHECK_GE(document.Lifecycle().GetState(), DocumentLifecycle::kPrePaintClean)
       << " State was: " << document.Lifecycle().GetState();
-  ax_context.GetAXObjectCache().ProcessDeferredAccessibilityEvents(document);
   return ax_context.GetAXObjectCache().ComputedRoleForNode(this);
 }
 
@@ -2238,7 +2239,6 @@ String Element::computedName() {
   AXContext ax_context(document, ui::kAXModeBasic);
   document.View()->UpdateAllLifecyclePhasesExceptPaint(
       DocumentUpdateReason::kJavaScript);
-  ax_context.GetAXObjectCache().ProcessDeferredAccessibilityEvents(document);
   return ax_context.GetAXObjectCache().ComputedNameForNode(this);
 }
 
@@ -2257,7 +2257,6 @@ String Element::ComputedNameNoLifecycleUpdate() {
   // Allocating the AXContext needs to not change lifecycle states.
   DCHECK_GE(document.Lifecycle().GetState(), DocumentLifecycle::kPrePaintClean)
       << " State was: " << document.Lifecycle().GetState();
-  ax_context.GetAXObjectCache().ProcessDeferredAccessibilityEvents(document);
   return ax_context.GetAXObjectCache().ComputedNameForNode(this);
 }
 
@@ -3182,7 +3181,8 @@ const ComputedStyle* Element::StyleForLayoutObject(
     style = context->AdjustElementStyle(style);
   }
 
-  if (style->DependsOnSizeContainerQueries()) {
+  // TODO(crbug.com/1502666): Descendants can also depend on position-fallback.
+  if (style->DependsOnSizeContainerQueries() || style->PositionFallback()) {
     GetDocument().GetStyleEngine().SetStyleAffectedByLayout();
   }
 
@@ -3251,7 +3251,7 @@ bool Element::SkipStyleRecalcForContainer(
 
   // We are both a size container and trying to compute position-fallback styles
   // from layout. Our children should be the first opportunity to skip recalc.
-  if (style_recalc_context.position_fallback) {
+  if (style_recalc_context.is_position_fallback) {
     return false;
   }
 
@@ -3366,7 +3366,7 @@ void Element::RecalcStyle(const StyleRecalcChange change,
   }
 
   StyleRecalcContext child_recalc_context = local_style_recalc_context;
-  child_recalc_context.position_fallback = nullptr;
+  child_recalc_context.is_position_fallback = false;
 
   if (const ComputedStyle* style = GetComputedStyle()) {
     if (style->CanMatchSizeContainerQueries(*this)) {
@@ -3446,7 +3446,13 @@ void Element::RecalcStyle(const StyleRecalcChange change,
     // If we are re-attaching us or any of our descendants, we need to attach
     // the descendants before we know if this element generates a ::first-letter
     // and which element the ::first-letter inherits style from.
-    if (child_change.ReattachLayoutTree()) {
+    //
+    // If style recalc was suppressed for this element, it means it's a size
+    // query container, and child_change.ReattachLayoutTree() comes from the
+    // skipped style recalc. In that case we haven't updated the style, and we
+    // will not update the ::first-letter style in the originating element's
+    // AttachLayoutTree().
+    if (child_change.ReattachLayoutTree() && !change.IsSuppressed()) {
       // Make sure we reach this element during reattachment. There are cases
       // where we compute and store the styles for a subtree but stop attaching
       // layout objects at an element that does not allow child boxes. Marking
@@ -3522,7 +3528,7 @@ static bool NeedsContainerQueryEvaluator(
     const ComputedStyle& new_style) {
   return evaluator.DependsOnStyle() ||
          new_style.IsContainerForSizeContainerQueries() ||
-         new_style.IsContainerForStickyContainerQueries();
+         new_style.IsContainerForScrollStateContainerQueries();
 }
 
 static const StyleRecalcChange ApplyComputedStyleDiff(
@@ -3690,9 +3696,11 @@ StyleRecalcChange Element::RecalcOwnStyle(
 
   // Update style containment tree if the style containment of the element
   // has changed.
-  if ((!new_style && old_style && old_style->ContainsStyle()) ||
-      (old_style && new_style &&
-       old_style->ContainsStyle() != new_style->ContainsStyle())) {
+  // Don't update if the style containment tree has not been initialized.
+  if (GetDocument().GetStyleEngine().GetStyleContainmentScopeTree() &&
+      ((!new_style && old_style && old_style->ContainsStyle()) ||
+       (old_style && new_style &&
+        old_style->ContainsStyle() != new_style->ContainsStyle()))) {
     StyleContainmentScopeTree& tree =
         GetDocument().GetStyleEngine().EnsureStyleContainmentScopeTree();
     if (old_style && old_style->ContainsStyle()) {
@@ -4960,7 +4968,7 @@ const RegionCaptureCropId* Element::GetRegionCaptureCropId() const {
 }
 
 void Element::SetRestrictionTargetId(std::unique_ptr<RestrictionTargetId> id) {
-  CHECK(RuntimeEnabledFeatures::ElementCaptureEnabled());
+  CHECK(RuntimeEnabledFeatures::ElementCaptureEnabled(GetExecutionContext()));
 
   ElementRareDataVector& rare_data = EnsureElementRareData();
   CHECK(!rare_data.GetRestrictionTargetId());
@@ -5868,7 +5876,13 @@ void Element::SetFocused(bool received, mojom::blink::FocusType focus_type) {
     }
   }
 
-  if (IsFocused() == received) {
+  // We'd like to invalidate :focus style for kPage even if element's focus
+  // state has not been changed, because the element might have been focused
+  // while the page was inactive.
+  if (IsFocused() == received &&
+      (!RuntimeEnabledFeatures::
+           FocusStyleInvalidationOnPageActivationEnabled() ||
+       focus_type != mojom::blink::FocusType::kPage)) {
     return;
   }
 
@@ -6083,11 +6097,13 @@ bool Element::CanBeKeyboardFocusableScroller(
   // to have up to date style and layout before calling IsScrollableNode.
   // However, for a11y code, layout updates should not be performed here.
   absl::optional<DocumentLifecycle::DisallowTransitionScope> disallow_scope;
-  if (UNLIKELY(update_behavior == UpdateBehavior::kNoneForAccessibility)) {
+  if (UNLIKELY(update_behavior != UpdateBehavior::kStyleAndLayout)) {
     disallow_scope.emplace(GetDocument().Lifecycle());
   } else {
     auto* box = GetLayoutObject();
-    if (box && box->NeedsLayout()) {
+    if (box && (box->SelfNeedsFullLayout() || box->NeedsSimplifiedLayout() ||
+                (!box->ChildLayoutBlockedByDisplayLock() &&
+                 box->ChildNeedsFullLayout()))) {
       GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kFocus);
     }
   }
@@ -6126,11 +6142,11 @@ bool Element::IsKeyboardFocusable(UpdateBehavior update_behavior) const {
   if (!Element::IsFocusable(update_behavior)) {
     return false;
   }
-  // Note that IsKeyboardFocusableScroller() will get
-  // called twice, once in IsFocusable (via SupportsFocus) and the other
-  // here. Note that IsKeyboardFocusableScroller is slow.
-  return GetIntegralAttribute(html_names::kTabindexAttr, 0) >= 0 ||
-         IsKeyboardFocusableScroller(update_behavior);
+  if (!HasElementFlag(ElementFlags::kTabIndexWasSetExplicitly) &&
+      CanBeKeyboardFocusableScroller(update_behavior)) {
+    return IsKeyboardFocusableScroller(update_behavior);
+  }
+  return GetIntegralAttribute(html_names::kTabindexAttr, 0) >= 0;
 }
 
 bool Element::IsFocusable(UpdateBehavior update_behavior) const {
@@ -6148,7 +6164,7 @@ bool Element::SupportsFocus(UpdateBehavior update_behavior) const {
 
   return HasElementFlag(ElementFlags::kTabIndexWasSetExplicitly) ||
          IsRootEditableElementWithCounting(*this) ||
-         IsKeyboardFocusableScroller(update_behavior) ||
+         CanBeKeyboardFocusableScroller(update_behavior) ||
          SupportsSpatialNavigationFocus();
 }
 
@@ -6501,14 +6517,15 @@ String Element::outerHTML() const {
 }
 
 void Element::SetInnerHTMLInternal(const String& html,
-                                   bool include_shadow_roots,
+                                   IncludeShadowRoots include_shadow_roots,
+                                   ForceHtml force_html,
                                    ExceptionState& exception_state) {
   if (html.empty() && !HasNonInBodyInsertionMode()) {
     setTextContent(html);
   } else {
     if (DocumentFragment* fragment = CreateFragmentForInnerOuterHTML(
             html, this, kAllowScriptingContent, include_shadow_roots,
-            exception_state)) {
+            force_html, exception_state)) {
       ContainerNode* container = this;
       bool swap_dom_parts{false};
       if (auto* template_element = DynamicTo<HTMLTemplateElement>(*this)) {
@@ -6535,13 +6552,14 @@ void Element::SetInnerHTMLInternal(const String& html,
 void Element::setInnerHTML(const String& html,
                            ExceptionState& exception_state) {
   probe::BreakableLocation(GetExecutionContext(), "Element.setInnerHTML");
-  SetInnerHTMLInternal(html, /*include_shadow_roots=*/false, exception_state);
+  SetInnerHTMLInternal(html, IncludeShadowRoots::kDontInclude,
+                       ForceHtml::kDontForce, exception_state);
 }
 
 void Element::setInnerHTMLWithDeclarativeShadowDOMForTesting(
     const String& html) {
-  SetInnerHTMLInternal(html, /*include_shadow_roots=*/true,
-                       ASSERT_NO_EXCEPTION);
+  SetInnerHTMLInternal(html, IncludeShadowRoots::kInclude,
+                       ForceHtml::kDontForce, ASSERT_NO_EXCEPTION);
 }
 
 String Element::getInnerHTML(const GetInnerHTMLOptions* options) const {
@@ -6580,8 +6598,8 @@ void Element::setOuterHTML(const String& html,
   Node* next = nextSibling();
 
   DocumentFragment* fragment = CreateFragmentForInnerOuterHTML(
-      html, parent, kAllowScriptingContent,
-      /*include_shadow_roots=*/false, exception_state);
+      html, parent, kAllowScriptingContent, IncludeShadowRoots::kDontInclude,
+      ForceHtml::kDontForce, exception_state);
   if (exception_state.HadException()) {
     return;
   }
@@ -6731,6 +6749,15 @@ StyleScopeData* Element::GetStyleScopeData() const {
   return HasRareData() ? GetElementRareData()->GetStyleScopeData() : nullptr;
 }
 
+PositionFallbackData& Element::EnsurePositionFallbackData() {
+  return EnsureElementRareData().EnsurePositionFallbackData();
+}
+
+PositionFallbackData* Element::GetPositionFallbackData() const {
+  return HasRareData() ? GetElementRareData()->GetPositionFallbackData()
+                       : nullptr;
+}
+
 bool Element::SkippedContainerStyleRecalc() const {
   if (const ContainerQueryData* cq_data = GetContainerQueryData()) {
     return cq_data->SkippedStyleRecalc();
@@ -6800,7 +6827,7 @@ void Element::insertAdjacentHTML(const String& where,
   // Step 3 of http://domparsing.spec.whatwg.org/#insertadjacenthtml()
   DocumentFragment* fragment = CreateFragmentForInnerOuterHTML(
       markup, context_element, kAllowScriptingContent,
-      /*include_shadow_roots=*/false, exception_state);
+      IncludeShadowRoots::kDontInclude, ForceHtml::kDontForce, exception_state);
   if (!fragment) {
     return;
   }
@@ -8873,7 +8900,8 @@ void Element::LogAddElementIfIsolatedWorldAndInDocument(
   Vector<String, 2> argv;
   argv.push_back(element);
   argv.push_back(FastGetAttribute(attr1));
-  activity_logger->LogEvent("blinkAddElement", argv.size(), argv.data());
+  activity_logger->LogEvent(GetDocument().GetExecutionContext(),
+                            "blinkAddElement", argv.size(), argv.data());
 }
 
 void Element::LogAddElementIfIsolatedWorldAndInDocument(
@@ -8894,7 +8922,8 @@ void Element::LogAddElementIfIsolatedWorldAndInDocument(
   argv.push_back(element);
   argv.push_back(FastGetAttribute(attr1));
   argv.push_back(FastGetAttribute(attr2));
-  activity_logger->LogEvent("blinkAddElement", argv.size(), argv.data());
+  activity_logger->LogEvent(GetDocument().GetExecutionContext(),
+                            "blinkAddElement", argv.size(), argv.data());
 }
 
 void Element::LogAddElementIfIsolatedWorldAndInDocument(
@@ -8917,7 +8946,8 @@ void Element::LogAddElementIfIsolatedWorldAndInDocument(
   argv.push_back(FastGetAttribute(attr1));
   argv.push_back(FastGetAttribute(attr2));
   argv.push_back(FastGetAttribute(attr3));
-  activity_logger->LogEvent("blinkAddElement", argv.size(), argv.data());
+  activity_logger->LogEvent(GetDocument().GetExecutionContext(),
+                            "blinkAddElement", argv.size(), argv.data());
 }
 
 void Element::LogUpdateAttributeIfIsolatedWorldAndInDocument(
@@ -8938,7 +8968,8 @@ void Element::LogUpdateAttributeIfIsolatedWorldAndInDocument(
   argv.push_back(params.name.ToString());
   argv.push_back(params.old_value);
   argv.push_back(params.new_value);
-  activity_logger->LogEvent("blinkSetAttribute", argv.size(), argv.data());
+  activity_logger->LogEvent(GetDocument().GetExecutionContext(),
+                            "blinkSetAttribute", argv.size(), argv.data());
 }
 
 void Element::Trace(Visitor* visitor) const {
@@ -9621,7 +9652,7 @@ AnchorPositionScrollData* Element::GetAnchorPositionScrollData() const {
 void Element::IncrementImplicitlyAnchoredElementCount() {
   DCHECK(RuntimeEnabledFeatures::CSSAnchorPositioningEnabled());
   if (!HasImplicitlyAnchoredElement() && GetLayoutObject()) {
-    // Invalidate layout to populate itself into NGPhysical/LogicalAnchorQuery.
+    // Invalidate layout to populate itself into Physical/LogicalAnchorQuery.
     GetLayoutObject()->SetNeedsLayoutAndFullPaintInvalidation(
         layout_invalidation_reason::kAnchorPositioning);
     GetLayoutObject()->MarkMayHaveAnchorQuery();
@@ -9675,7 +9706,8 @@ Element* Element::ImplicitAnchorElement() {
 void Element::setHTMLUnsafe(const String& html,
                             ExceptionState& exception_state) {
   CHECK(RuntimeEnabledFeatures::HTMLUnsafeMethodsEnabled());
-  SetInnerHTMLInternal(html, /*include_shadow_roots=*/true, exception_state);
+  SetInnerHTMLInternal(html, IncludeShadowRoots::kInclude, ForceHtml::kForce,
+                       exception_state);
 }
 
 }  // namespace blink

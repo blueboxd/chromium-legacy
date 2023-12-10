@@ -30,7 +30,6 @@
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/main/bvc_container_view_controller.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_coordinator.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_coordinator+private.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_coordinator_delegate.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/test/block_cleanup_test.h"
@@ -79,10 +78,12 @@
 
 namespace {
 
+// Name of the directory where snapshots are saved.
+const char kIdentifier[] = "Identifier";
+
 void AddAgentsToBrowser(Browser* browser) {
   SnapshotBrowserAgent::CreateForBrowser(browser);
-  SnapshotBrowserAgent::FromBrowser(browser)->SetSessionID(
-      [[NSUUID UUID] UUIDString]);
+  SnapshotBrowserAgent::FromBrowser(browser)->SetSessionID(kIdentifier);
 }
 
 class TabGridCoordinatorTest : public BlockCleanupTest {
@@ -151,7 +152,6 @@ class TabGridCoordinatorTest : public BlockCleanupTest {
 
     UIWindow* window = GetAnyKeyWindow();
 
-    // TODO(crbug.com/1414048): Add inactive browser.
     coordinator_ = [[TabGridCoordinator alloc]
                      initWithWindow:window
          applicationCommandEndpoint:OCMProtocolMock(
@@ -159,7 +159,7 @@ class TabGridCoordinatorTest : public BlockCleanupTest {
         browsingDataCommandEndpoint:OCMProtocolMock(
                                         @protocol(BrowsingDataCommands))
                      regularBrowser:browser_.get()
-                    inactiveBrowser:nil
+                    inactiveBrowser:browser_->CreateInactiveBrowser()
                    incognitoBrowser:incognito_browser_.get()];
     coordinator_.animationsDisabledForTesting = YES;
 
@@ -202,7 +202,7 @@ class TabGridCoordinatorTest : public BlockCleanupTest {
   // Browser for the coordinator.
   std::unique_ptr<Browser> browser_;
 
-  // Browser for the coordinator.
+  // Incognito browser for the coordinator.
   std::unique_ptr<Browser> incognito_browser_;
 
   // Scene state emulated in this test.

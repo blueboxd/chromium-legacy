@@ -35,8 +35,10 @@ class CreditCardRiskBasedAuthenticator {
       // The user needs to complete further authentication to retrieve the card.
       // Also known as yellow path.
       kAuthenticationRequired = 2,
+      // The authentication has been cancelled.
+      kAuthenticationCancelled = 3,
       // The authentication failed. Also known as red path.
-      kError = 3,
+      kError = 4,
       kMaxValue = kError,
     };
 
@@ -107,6 +109,13 @@ class CreditCardRiskBasedAuthenticator {
   virtual void Authenticate(CreditCard card,
                             base::WeakPtr<Requester> requester);
 
+  // Callback function invoked when an unmask response has been cancelled.
+  void OnUnmaskCancelled();
+
+  base::WeakPtr<CreditCardRiskBasedAuthenticator> AsWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
   void OnUnmaskResponseReceivedForTesting(
       AutofillClient::PaymentsRpcResult result,
       payments::PaymentsNetworkInterface::UnmaskResponseDetails&
@@ -140,6 +149,9 @@ class CreditCardRiskBasedAuthenticator {
   // server.
   std::unique_ptr<payments::PaymentsNetworkInterface::UnmaskRequestDetails>
       unmask_request_details_;
+
+  // The timestamp when the unmask request is sent. Used for logging.
+  absl::optional<base::TimeTicks> unmask_card_request_timestamp_;
 
   base::WeakPtrFactory<CreditCardRiskBasedAuthenticator> weak_ptr_factory_{
       this};

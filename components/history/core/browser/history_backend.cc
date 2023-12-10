@@ -1070,7 +1070,8 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
       // case we don't need to reconnect the new redirect with the existing
       // chain.
       if (request.referrer.is_valid()) {
-        DCHECK_EQ(request.referrer, redirects[0]);
+        // redirects.begin() should equal request.referrer, but sometimes it
+        // doesn't for an unknown reason. See crbug.com/1502514.
         redirects.erase(redirects.begin());
 
         // If the navigation entry for this visit has replaced that for the
@@ -2803,8 +2804,6 @@ MostVisitedURLList HistoryBackend::QueryMostVisitedURLs(int result_count) {
   if (!db_)
     return {};
 
-  base::TimeTicks begin_time = base::TimeTicks::Now();
-
   auto url_filter =
       backend_client_
           ? base::BindRepeating(&HistoryBackendClient::IsWebSafe,
@@ -2820,10 +2819,6 @@ MostVisitedURLList HistoryBackend::QueryMostVisitedURLs(int result_count) {
     result.back().last_visit_time = current_data->GetLastVisitTimeslot();
     result.back().score = current_data->GetScore();
   }
-
-  UMA_HISTOGRAM_TIMES("History.QueryMostVisitedURLsTime",
-                      base::TimeTicks::Now() - begin_time);
-
   return result;
 }
 
@@ -3265,8 +3260,6 @@ void HistoryBackend::BeginSingletonTransaction() {
     // start another transaction again at the next commit interval. Clear out
     // the `singleton_transaction_` pointer, because it's only kept around if
     // it was successfully begun.
-    sql::UmaHistogramSqliteResult("History.Backend.TransactionBeginError",
-                                  diagnostics_.reported_sqlite_error_code);
     singleton_transaction_.reset();
   }
 }

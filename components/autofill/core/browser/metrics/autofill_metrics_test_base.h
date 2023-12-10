@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_browser_autofill_manager.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "components/sync/test/test_sync_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -170,10 +171,13 @@ class AutofillMetricsBaseTest {
     return form;
   }
 
-  void DidShowAutofillSuggestions(const FormData& form,
-                                  size_t field_index = 0) {
+  void DidShowAutofillSuggestions(
+      const FormData& form,
+      size_t field_index = 0,
+      PopupItemId suggestion_type = PopupItemId::kAddressEntry) {
     autofill_manager().DidShowSuggestions(
-        /*has_autofill_suggestions=*/true, form, form.fields[field_index]);
+        std::vector<PopupItemId>({suggestion_type}), form,
+        form.fields[field_index]);
   }
 
   void FillTestProfile(const FormData& form) {
@@ -181,6 +185,11 @@ class AutofillMetricsBaseTest {
         mojom::ActionPersistence::kFill, form, form.fields.front(),
         *personal_data().GetProfileByGUID(kTestProfileId),
         {.trigger_source = AutofillTriggerSource::kPopup});
+  }
+
+  void UndoAutofill(const FormData& form) {
+    autofill_manager().UndoAutofill(mojom::ActionPersistence::kFill, form,
+                                    form.fields.front());
   }
 
   [[nodiscard]] FormData CreateEmptyForm() {

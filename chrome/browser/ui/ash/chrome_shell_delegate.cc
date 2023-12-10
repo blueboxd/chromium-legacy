@@ -97,7 +97,7 @@ const char kKeyboardShortcutHelpPageUrl[] =
 
 // Browser tests are always started with --disable-logging-redirect, so we need
 // independent option here.
-absl::optional<bool> disable_logging_redirect_for_testing;
+std::optional<bool> disable_logging_redirect_for_testing;
 
 // Returns the TabStripModel that associates with |window| if the given |window|
 // contains a browser frame, otherwise returns nullptr.
@@ -119,6 +119,8 @@ content::WebContents* GetActiveWebContentsForNativeBrowserWindow(
 chrome::FeedbackSource ToChromeFeedbackSource(
     ash::ShellDelegate::FeedbackSource source) {
   switch (source) {
+    case ash::ShellDelegate::FeedbackSource::kFocusMode:
+      return chrome::FeedbackSource::kFeedbackSourceFocusMode;
     case ash::ShellDelegate::FeedbackSource::kGameDashboard:
       return chrome::FeedbackSource::kFeedbackSourceGameDashboard;
     case ash::ShellDelegate::FeedbackSource::kWindowLayoutMenu:
@@ -237,7 +239,7 @@ bool ChromeShellDelegate::AllowDefaultTouchActions(gfx::NativeWindow window) {
       render_widget_host_view->GetRenderWidgetHost();
   if (!render_widget_host)
     return true;
-  absl::optional<cc::TouchAction> allowed_touch_action =
+  std::optional<cc::TouchAction> allowed_touch_action =
       render_widget_host->GetAllowedTouchAction();
   return allowed_touch_action.has_value()
              ? *allowed_touch_action != cc::TouchAction::kNone

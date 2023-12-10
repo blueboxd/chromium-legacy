@@ -8,6 +8,7 @@
 #import "base/check.h"
 #import "base/check_op.h"
 #import "base/i18n/message_formatter.h"
+#import "base/metrics/histogram_functions.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/bookmarks/browser/bookmark_model.h"
 #import "components/bookmarks/browser/bookmark_utils.h"
@@ -38,6 +39,7 @@
 #import "ios/chrome/browser/shared/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/sync/model/sync_observer_bridge.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
+#import "ios/chrome/browser/ui/authentication/account_settings_presenter.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_signin_promo_item.h"
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
@@ -80,7 +82,8 @@ bool IsABookmarkNodeSectionForIdentifier(
   NOTREACHED_NORETURN();
 }
 
-@interface BookmarksHomeMediator () <BookmarkModelBridgeObserver,
+@interface BookmarksHomeMediator () <AccountSettingsPresenter,
+                                     BookmarkModelBridgeObserver,
                                      BookmarkPromoControllerDelegate,
                                      PrefObserverDelegate,
                                      SigninPresenter,
@@ -132,9 +135,7 @@ bool IsABookmarkNodeSectionForIdentifier(
 
     _browser = browser->AsWeakPtr();
     _localOrSyncableBookmarkModel = localOrSyncableBookmarkModel->AsWeakPtr();
-    if (base::FeatureList::IsEnabled(syncer::kEnableBookmarksAccountStorage)) {
-      _accountBookmarkModel = accountBookmarkModel->AsWeakPtr();
-    }
+    _accountBookmarkModel = accountBookmarkModel->AsWeakPtr();
     _displayedNode = displayedNode;
   }
   return self;
@@ -147,10 +148,8 @@ bool IsABookmarkNodeSectionForIdentifier(
   ChromeBrowserState* browserState = [self originalBrowserState];
   _localOrSyncableBookmarkModelBridge = std::make_unique<BookmarkModelBridge>(
       self, _localOrSyncableBookmarkModel.get());
-  if (base::FeatureList::IsEnabled(syncer::kEnableBookmarksAccountStorage)) {
     _accountBookmarkModelBridge = std::make_unique<BookmarkModelBridge>(
         self, _accountBookmarkModel.get());
-  }
   _syncedBookmarksObserver =
       std::make_unique<sync_bookmarks::SyncedBookmarksObserverBridge>(
           self, browserState);
@@ -159,7 +158,8 @@ bool IsABookmarkNodeSectionForIdentifier(
       [[BookmarkPromoController alloc] initWithBrowser:_browser.get()
                                            syncService:_syncService
                                               delegate:self
-                                             presenter:self];
+                                       signinPresenter:self
+                              accountSettingsPresenter:self];
 
   _prefChangeRegistrar = std::make_unique<PrefChangeRegistrar>();
   _prefChangeRegistrar->Init(browserState->GetPrefs());
@@ -407,9 +407,7 @@ bool IsABookmarkNodeSectionForIdentifier(
             initWithType:BookmarksHomeItemTypePromo];
     signinPromoItem.configurator = [signinPromoViewMediator createConfigurator];
     signinPromoItem.text =
-        base::FeatureList::IsEnabled(syncer::kEnableBookmarksAccountStorage)
-            ? l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_BOOKMARKS)
-            : l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_BOOKMARKS_WITH_UNITY);
+        l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_BOOKMARKS);
     signinPromoItem.delegate = signinPromoViewMediator;
     [signinPromoViewMediator signinPromoViewIsVisible];
 
@@ -649,6 +647,12 @@ bool IsABookmarkNodeSectionForIdentifier(
   [self.consumer showSignin:command];
 }
 
+#pragma mark - AccountSettingsPresenter
+
+- (void)showAccountSettings {
+  [self.consumer showAccountSettings];
+}
+
 #pragma mark - SyncObserverModelBridge
 
 - (void)onSyncStateChanged {
@@ -781,6 +785,9 @@ bool IsABookmarkNodeSectionForIdentifier(
                 toSectionWithIdentifier:BookmarksBatchUploadSectionIdentifier];
   [self.consumer.tableViewModel addItem:button
                 toSectionWithIdentifier:BookmarksBatchUploadSectionIdentifier];
+
+  base::UmaHistogramBoolean(
+      "IOS.Bookmarks.BulkSaveBookmarksInAccountViewRecreated", true);
 
   [self.consumer.tableView reloadData];
 }

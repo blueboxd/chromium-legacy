@@ -39,6 +39,13 @@ consoles.list_view(
 try_.builder(
     name = "win-annotator-rel",
     mirrors = ["ci/win-annotator-rel"],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/win-annotator-rel",
+            "try_builder",
+            "no_symbols",
+        ],
+    ),
 )
 
 try_.builder(
@@ -46,6 +53,7 @@ try_.builder(
     mirrors = [
         "ci/win-asan",
     ],
+    gn_args = "ci/win-asan",
     cores = 16,
     ssd = True,
     execution_timeout = 9 * time.hour,
@@ -68,6 +76,13 @@ try_.builder(
     mirrors = [
         "ci/win-archive-rel",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/win-archive-rel",
+            "no_symbols",
+            "dcheck_always_on",
+        ],
+    ),
     contact_team_email = "chrome-desktop-engprod@google.com",
 )
 
@@ -77,6 +92,9 @@ try_.builder(
     executable = "recipe:chromium/fuzz",
     builderless = False,
     os = os.WINDOWS_ANY,
+    experiments = {
+        "chromium.skip_successful_tests": 50,
+    },
     main_list_view = "try",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     tryjob = try_.job(),
@@ -91,13 +109,6 @@ try_.orchestrator_builder(
         "ci/GPU Win x64 Builder",
         "ci/Win10 x64 Release (NVIDIA)",
     ],
-    compilator = "win-rel-compilator",
-    coverage_test_types = ["unit", "overall"],
-    experiments = {
-        # go/nplus1shardsproposal
-        "chromium.add_one_test_shard": 5,
-        "chromium.compilator_can_outlive_parent": 100,
-    },
     gn_args = gn_args.config(
         configs = [
             "ci/Win x64 Builder",
@@ -108,6 +119,14 @@ try_.orchestrator_builder(
             "enable_dangling_raw_ptr_feature_flag",
         ],
     ),
+    compilator = "win-rel-compilator",
+    coverage_test_types = ["unit", "overall"],
+    experiments = {
+        # go/nplus1shardsproposal
+        "chromium.add_one_test_shard": 5,
+        "chromium.compilator_can_outlive_parent": 100,
+        "chromium.skip_successful_tests": 50,
+    },
     main_list_view = "try",
     tryjob = try_.job(),
     use_clang_coverage = True,
@@ -123,38 +142,6 @@ try_.compilator_builder(
     # TODO (crbug.com/1245171): Revert when root issue is fixed
     grace_period = 4 * time.minute,
     main_list_view = "try",
-)
-
-# TODO: crbug.com/1502025 - Reduce duplicated configs from the shadow builder.
-try_.orchestrator_builder(
-    name = "win-siso-rel",
-    description_html = """\
-This builder shadows win-rel builder to compare between Siso builds and Ninja builds.<br/>
-This builder should be removed after migrating win-rel from Ninja to Siso. b/277863839
-""",
-    mirrors = builder_config.copy_from("try/win-rel"),
-    compilator = "win-siso-rel-compilator",
-    coverage_test_types = ["unit", "overall"],
-    experiments = {
-        # go/nplus1shardsproposal
-        "chromium.add_one_test_shard": 5,
-    },
-    main_list_view = "try",
-    tryjob = try_.job(
-        # Decreasing the experiment percentage while enabling tests to reduce
-        # extra workloads on the test pool.
-        experiment_percentage = 10,
-    ),
-    use_clang_coverage = True,
-)
-
-try_.compilator_builder(
-    name = "win-siso-rel-compilator",
-    # TODO(jwata): Change to 32 once bots have landed
-    cores = "16|32",
-    # TODO (crbug.com/1245171): Revert when root issue is fixed
-    grace_period = 4 * time.minute,
-    main_list_view = "try",
     siso_enabled = True,
 )
 
@@ -163,6 +150,12 @@ try_.builder(
     mirrors = [
         "ci/win32-archive-rel",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/win32-archive-rel",
+            "release_try_builder",
+        ],
+    ),
     contact_team_email = "chrome-desktop-engprod@google.com",
 )
 
@@ -176,15 +169,14 @@ try_.builder(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
-    builderless = False,
-    cores = 16,
-    ssd = True,
     gn_args = gn_args.config(
         configs = [
             "ci/Win Builder (dbg)",
-            "use_dummy_lastchange",
         ],
     ),
+    builderless = False,
+    cores = 16,
+    ssd = True,
     main_list_view = "try",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     tryjob = try_.job(
@@ -252,10 +244,25 @@ try_.builder(
         "ci/Win x64 Builder (dbg)",
         "ci/Win10 Tests x64 (dbg)",
     ],
+    gn_args = "ci/Win x64 Builder (dbg)",
     cores = 16,
     os = os.WINDOWS_10,
     ssd = True,
-    gn_args = "ci/Win x64 Builder (dbg)",
+)
+
+try_.builder(
+    name = "win10-multiscreen-fyi-rel",
+    description_html = (
+        "This builder is intended to run tests related to multiscreen " +
+        "functionality on Windows. For more info, see " +
+        "<a href=\"http://shortn/_4L6uYvA1xU\">http://shortn/_4L6uYvA1xU</a>."
+    ),
+    mirrors = [
+        "ci/win10-multiscreen-fyi-rel",
+    ],
+    gn_args = "ci/win10-multiscreen-fyi-rel",
+    os = os.WINDOWS_10,
+    contact_team_email = "web-windowing-team@google.com",
 )
 
 try_.builder(
@@ -263,6 +270,7 @@ try_.builder(
     mirrors = [
         "ci/win10-wpt-content-shell-fyi-rel",
     ],
+    gn_args = "ci/win10-wpt-content-shell-fyi-rel",
     os = os.WINDOWS_10,
 )
 
@@ -271,6 +279,7 @@ try_.builder(
     mirrors = [
         "ci/win11-wpt-content-shell-fyi-rel",
     ],
+    gn_args = "ci/win11-wpt-content-shell-fyi-rel",
     os = os.WINDOWS_ANY,
 )
 
@@ -280,9 +289,6 @@ try_.builder(
         "ci/Win x64 Builder",
         "ci/Win11 Tests x64",
     ],
-    builderless = True,
-    os = os.WINDOWS_10,
-    coverage_test_types = ["unit", "overall"],
     gn_args = gn_args.config(
         configs = [
             "ci/Win x64 Builder",
@@ -293,6 +299,9 @@ try_.builder(
             "enable_dangling_raw_ptr_feature_flag",
         ],
     ),
+    builderless = True,
+    os = os.WINDOWS_10,
+    coverage_test_types = ["unit", "overall"],
     tryjob = try_.job(
         # TODO(https://crbug.com/1441206): Enable after resources verified.
         experiment_percentage = 10,
@@ -307,6 +316,7 @@ try_.builder(
 try_.builder(
     name = "win-fieldtrial-rel",
     mirrors = ["ci/win-fieldtrial-rel"],
+    gn_args = "ci/win-fieldtrial-rel",
     os = os.WINDOWS_DEFAULT,
 )
 
@@ -315,11 +325,19 @@ try_.builder(
     mirrors = [
         "ci/win-perfetto-rel",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/win-perfetto-rel",
+            "try_builder",
+            "no_symbols",
+        ],
+    ),
 )
 
 try_.builder(
     name = "win10-code-coverage",
     mirrors = ["ci/win10-code-coverage"],
+    gn_args = "ci/win10-code-coverage",
     execution_timeout = 20 * time.hour,
 )
 

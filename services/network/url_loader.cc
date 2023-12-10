@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -53,6 +54,7 @@
 #include "net/cookies/site_for_cookies.h"
 #include "net/cookies/static_cookie_policy.h"
 #include "net/dns/public/secure_dns_policy.h"
+#include "net/http/http_connection_info.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log_source_type.h"
@@ -435,16 +437,27 @@ const char* GetCertStatePartString(const net::SSLInfo& ssl_info) {
 void MaybeRecordSharedDictionaryUsedResponseMetrics(
     int error_code,
     network::mojom::RequestDestination destination,
-    const net::HttpResponseInfo& response_info) {
-  if (!response_info.did_use_shared_dictionary) {
-    return;
+    const net::HttpResponseInfo& response_info,
+    bool shared_dictionary_allowed_check_passed) {
+  if (response_info.did_use_shared_dictionary) {
+    base::UmaHistogramSparse(
+        base::StrCat({"Net.SharedDictionaryUsedResponseErrorCodes.",
+                      GetDestinationTypePartString(destination), ".",
+                      GetCertStatePartString(response_info.ssl_info)}),
+        -error_code);
   }
 
-  base::UmaHistogramSparse(
-      base::StrCat({"Net.SharedDictionaryUsedResponseErrorCodes.",
-                    GetDestinationTypePartString(destination), ".",
-                    GetCertStatePartString(response_info.ssl_info)}),
-      -error_code);
+  if (shared_dictionary_allowed_check_passed &&
+      destination == network::mojom::RequestDestination::kDocument) {
+    base::UmaHistogramBoolean(
+        base::StrCat(
+            {"Net.SharedDictionaryUsedByResponseWhenAvailable.MainFrame.",
+             net::HttpConnectionInfoCoarseToString(
+                 net::HttpConnectionInfoToCoarse(
+                     response_info.connection_info)),
+             ".", GetCertStatePartString(response_info.ssl_info)}),
+        response_info.did_use_shared_dictionary);
+  }
 }
 
 }  // namespace
@@ -1270,7 +1283,7 @@ int URLLoader::OnConnected(net::URLRequest* url_request,
             PrivateNetworkAccessCheckResult::kBlockedByTargetIpAddressSpace) {
       return net::ERR_INCONSISTENT_IP_ADDRESS_SPACE;
     }
-    return net::ERR_FAILED;
+    return net::ERR_BLOCKED_BY_PRIVATE_NETWORK_ACCESS_CHECKS;
   }
 
   if (!accept_ch_frame_observer_ || info.accept_ch_frame.empty() ||
@@ -1342,8 +1355,6 @@ mojom::URLResponseHeadPtr URLLoader::BuildResponseHead() const {
     url_request_->GetLoadTimingInfo(&response->load_timing);
 
   if (url_request_->ssl_info().cert.get()) {
-    response->ct_policy_compliance =
-        url_request_->ssl_info().ct_policy_compliance;
     response->cert_status = url_request_->ssl_info().cert_status;
     if ((options_ & mojom::kURLLoadOptionSendSSLInfoWithResponse) ||
         (net::IsCertStatusError(url_request_->ssl_info().cert_status) &&
@@ -1923,10 +1934,13 @@ void URLLoader::DidRead(int num_bytes,
     // started sending response.
     if (!consumer_handle_.is_valid()) {
       int64_t total_encoded_bytes = url_request_->GetTotalReceivedBytes();
-      int64_t delta = total_encoded_bytes - reported_total_encoded_bytes_;
-      DCHECK_LE(0, delta);
-      if (delta)
-        url_loader_client_.Get()->OnTransferSizeUpdated(delta);
+      if (ShouldSendTransferSizeUpdated()) {
+        int64_t delta = total_encoded_bytes - reported_total_encoded_bytes_;
+        DCHECK_LE(0, delta);
+        if (delta) {
+          url_loader_client_.Get()->OnTransferSizeUpdated(delta);
+        }
+      }
       reported_total_encoded_bytes_ = total_encoded_bytes;
     }
   }
@@ -1948,7 +1962,7 @@ void URLLoader::DidRead(int num_bytes,
       if (data_length > net::kMaxBytesToSniff)
         data_length = net::kMaxBytesToSniff;
 
-      base::StringPiece data(pending_write_->buffer(), data_length);
+      std::string_view data(pending_write_->buffer(), data_length);
       bool stop_sniffing_after_processing_current_data =
           (num_bytes <= 0 ||
            pending_write_buffer_offset_ >= net::kMaxBytesToSniff);
@@ -2205,7 +2219,8 @@ void URLLoader::NotifyCompleted(int error_code) {
   }
 
   MaybeRecordSharedDictionaryUsedResponseMetrics(
-      error_code, request_destination_, url_request_->response_info());
+      error_code, request_destination_, url_request_->response_info(),
+      shared_dictionary_allowed_check_passed_);
 
   if ((total_received > 0 || total_sent > 0)) {
     if (url_loader_network_observer_ && provide_data_use_updates_) {
@@ -2378,9 +2393,11 @@ void URLLoader::SetRawRequestHeadersAndNotify(
 }
 
 bool URLLoader::IsSharedDictionaryReadAllowed() {
-  return shared_dictionary_checker_->CheckAllowedToReadAndReport(
-      url_request_->url(), url_request_->site_for_cookies(),
-      url_request_->isolation_info());
+  shared_dictionary_allowed_check_passed_ =
+      shared_dictionary_checker_->CheckAllowedToReadAndReport(
+          url_request_->url(), url_request_->site_for_cookies(),
+          url_request_->isolation_info());
+  return shared_dictionary_allowed_check_passed_;
 }
 
 void URLLoader::DispatchOnRawRequest(
@@ -2876,6 +2893,11 @@ bool URLLoader::CoepAllowCredentials(const GURL& url) {
 
   // [spec]: 5. Return false.
   return false;
+}
+
+bool URLLoader::ShouldSendTransferSizeUpdated() const {
+  return devtools_request_id() || url_request_->ad_tagged() ||
+         !base::FeatureList::IsEnabled(features::kReduceTransferSizeUpdatedIPC);
 }
 
 }  // namespace network

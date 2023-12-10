@@ -77,10 +77,11 @@ CookieControlsBubbleViewController::CookieControlsBubbleViewController(
 
   bubble_view_->GetReloadingView()->SetVisible(false);
   bubble_view_->GetContentView()->SetVisible(true);
+  bubble_view_->GetContentView()->SetAccessibleRole(ax::mojom::Role::kAlert);
 }
 
 void CookieControlsBubbleViewController::OnUserClosedContentView() {
-  if (!controller_->HasCookieBlockingChangedForSite()) {
+  if (!controller_->HasUserChangedCookieBlockingForSite()) {
     controller_observation_.Reset();
     bubble_view_->CloseWidget();
     return;
@@ -348,6 +349,8 @@ void CookieControlsBubbleViewController::OnToggleButtonPressed(
         "CookieControls.Bubble.BlockThirdPartyCookies"));
   }
   controller_->OnCookieBlockingEnabledForSite(!allow_third_party_cookies);
+  bubble_view_->GetContentView()->NotifyAccessibilityEvent(
+      ax::mojom::Event::kAlert, true);
 }
 
 void CookieControlsBubbleViewController::OnFeedbackButtonPressed() {
@@ -378,7 +381,7 @@ CookieControlsBubbleViewController::InitReloadingView(
 
   auto progress_bar = std::make_unique<views::ProgressBar>();
   progress_bar->SetPreferredHeight(kProgressBarHeight);
-  progress_bar->SetPreferredCornerRadii(absl::nullopt);
+  progress_bar->SetPreferredCornerRadii(std::nullopt);
   progress_bar->SetValue(-1);
 
   auto reloading_content = std::make_unique<views::View>();

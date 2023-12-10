@@ -14,63 +14,110 @@ load("./structs.star", "structs")
 
 _HEALTH_SPEC = nodes.create_bucket_scoped_node_type("health_spec")
 
-# See https://source.chromium.org/chromium/infra/infra/+/main:go/src/infra/cr_builder_health/thresholds.go?q=f:thresholds.go%20%22type%20BuilderThresholds%22
+# See https://source.chromium.org/chromium/infra/infra/+/main:go/src/infra/cr_builder_health/src_config.go
 # for all configurable thresholds.
-_default_thresholds = struct(
-    # If any of these threholds are exceeded, the builder will be deemed unhealthy.
-    # Setting a value of None will ignore that threshold
-    infra_fail_rate = struct(
-        average = 0.05,
+_default_specs = {
+    "Unhealthy": struct(
+        score = 5,
+        period_days = 7,
+        # If any of these thresholds are exceeded, the builder will be deemed
+        # unhealthy.
+        # Setting a value of None will ignore that threshold
+        infra_fail_rate = struct(
+            average = 0.05,
+        ),
+        fail_rate = struct(
+            average = 0.2,
+        ),
+        build_time = struct(
+            p50_mins = None,
+        ),
+        pending_time = struct(
+            p50_mins = 20,
+        ),
     ),
-    fail_rate = struct(
-        average = 0.2,
+    "Low Value": struct(
+        score = 1,
+        period_days = 90,
+        # If any of these thresholds are met, the builder will be deemed
+        # low-value and will be considered for deletion.
+        # Setting a value of None will ignore that threshold
+        fail_rate = struct(
+            average = 0.99,
+        ),
     ),
-    build_time = struct(
-        p50_mins = None,
-    ),
-    pending_time = struct(
-        p50_mins = 20,
-    ),
-)
+}
 
-_default_spec = struct(
-    thresholds = _default_thresholds,
-    contact_team_email = "",
-)
-
-_blank_thresholds = struct(
-    infra_fail_rate = struct(
-        average = None,
+_blank_thresholds = {
+    "Unhealthy": struct(
+        score = 5,
+        period_days = 7,
+        infra_fail_rate = struct(
+            average = None,
+        ),
+        fail_rate = struct(
+            average = None,
+        ),
+        build_time = struct(
+            p50_mins = None,
+        ),
+        pending_time = struct(
+            p50_mins = None,
+        ),
     ),
-    fail_rate = struct(
-        average = None,
+    "Low Value": struct(
+        score = 1,
+        period_days = 90,
+        fail_rate = struct(
+            average = None,
+        ),
     ),
-    build_time = struct(
-        p50_mins = None,
+}
+
+DEFAULT = {
+    "Unhealthy": struct(
+        score = 5,
+        period_days = 7,
+        _default = "_default",
     ),
-    pending_time = struct(
-        p50_mins = None,
+    "Low Value": struct(
+        score = 1,
+        period_days = 90,
+        _default = "_default",
     ),
-)
+}
 
-DEFAULT = struct(_default = "_default")
+# Users define the specs as {problem_name -> problem_spec} for aesthetic reasons
+# So all user-exposed functions expect a dictionary.
+# We then convert that into a list of [problem_specs] so the object encapsulates
+# its own name, for ease of processing
+def thresholds(modifications):
+    return _merge_mods(_blank_thresholds, modifications)
 
-def thresholds(**kwargs):
-    return structs.evolve(_blank_thresholds, **kwargs)
+def modified_default(modifications):
+    return _merge_mods(_default_specs, modifications)
 
-def modified_default(**kwargs):
-    return structs.evolve(_default_thresholds, **kwargs)
+def _merge_mods(base, modifications):
+    spec = dict(base)
+
+    for mod_name in modifications:
+        if mod_name not in spec:
+            spec[mod_name] = modifications[mod_name]
+        else:
+            spec[mod_name] = structs.evolve(spec[mod_name], **structs.to_proto_properties(modifications[mod_name]))
+
+    return spec
 
 def _exempted_from_contact(bucket, builder):
     return builder in _exempted_from_contact_builders.get(bucket, [])
 
-def register_health_spec(bucket, name, thresholds, contact_team_email):
+def register_health_spec(bucket, name, specs, contact_team_email):
     if not contact_team_email and not _exempted_from_contact(bucket, name):
         fail("Builder " + name + " must have a contact_team_email. All new builders must specify a team email for contact in case the builder stops being healthy or providing value.")
 
-    if thresholds:
+    if specs:
         spec = struct(
-            thresholds = thresholds,
+            problem_specs = _convert_specs(specs),
             contact_team_email = contact_team_email,
         )
         health_spec_key = _HEALTH_SPEC.add(
@@ -82,6 +129,24 @@ def register_health_spec(bucket, name, thresholds, contact_team_email):
 
         graph.add_edge(keys.project(), health_spec_key)
 
+def _convert_specs(specs):
+    """Users define the specs as {problem_name -> problem_spec} for aesthetic reasons,
+
+    So all user-exposed functions expect a dictionary.
+    We then convert that into a list of [problem_specs] so the object encapsulates its own name, for ease of processing
+    """
+    converted_specs = []
+    for name, spec in specs.items():
+        scoreless_spec = structs.to_proto_properties(spec)
+        scoreless_spec.pop("score")
+        converted_specs.append(struct(
+            name = name,
+            score = spec.score,
+            thresholds = scoreless_spec,
+        ))
+
+    return converted_specs
+
 def _generate_health_specs(ctx):
     specs = {}
 
@@ -91,14 +156,16 @@ def _generate_health_specs(ctx):
         specs.setdefault(bucket, {})[builder] = node.props
 
     result = {
-        "_default": _default_spec,
+        "_default_specs": _convert_specs(_default_specs),
         "specs": specs,
     }
 
     ctx.output["health-specs/health-specs.json"] = json.indent(json.encode(result), indent = "  ")
 
-# This dict should NOT be added to. It contains a list of builders that are exempted from needing a contact_team_email field.
-# It's intended as a stopgap for older builders. All new builders should have a contact_team_email field for the good of our code and CI system.
+# This dict should NOT be added to. It contains a list of builders that are
+# exempted from needing a contact_team_email field.
+# It's intended as a stopgap for older builders. All new builders should have a
+# contact_team_email field for the good of our code and CI system.
 # Builders should be removed from here once their contact is assigned.
 _exempted_from_contact_builders = {
     "ci": [
@@ -339,7 +406,6 @@ _exempted_from_contact_builders = {
         "linux-chromeos-dbg",
         "linux-chromeos-rel",
         "linux-code-coverage",
-        "linux-exp-asan-lsan-fyi-rel",
         "linux-exp-msan-fyi-rel",
         "linux-exp-tsan-fyi-rel",
         "linux-extended-tracing-rel",
@@ -378,10 +444,10 @@ _exempted_from_contact_builders = {
         "linux-updater-tester-rel",
         "linux-upload-perfetto",
         "linux-v4l2-codec-rel",
+        "linux-wpt-chromium-rel",
         "linux-wpt-content-shell-asan-fyi-rel",
         "linux-wpt-content-shell-fyi-rel",
         "linux-wpt-content-shell-leak-detection",
-        "linux-wpt-fyi-rel",
         "mac-angle-chromium-builder",
         "mac-angle-chromium-intel",
         "mac-archive-rel",
@@ -482,8 +548,6 @@ _exempted_from_contact_builders = {
         "android-arm64-all-targets-dbg",
         "android-arm64-rel",
         "android-arm64-rel-compilator",
-        "android-arm64-siso-rel",
-        "android-arm64-siso-rel-compilator",
         "android-asan-compile-dbg",
         "android-bfcache-rel",
         "android-binary-size",
@@ -669,7 +733,6 @@ _exempted_from_contact_builders = {
         "linux-code-coverage",
         "linux-dawn-rel",
         "linux-dcheck-off-rel",
-        "linux-exp-asan-lsan-fyi-rel",
         "linux-exp-msan-fyi-rel",
         "linux-exp-tsan-fyi-rel",
         "linux-extended-tracing-rel",
@@ -698,8 +761,6 @@ _exempted_from_contact_builders = {
         "linux-rel-compilator",
         "linux-rust-x64-dbg",
         "linux-rust-x64-rel",
-        "linux-siso-rel",
-        "linux-siso-rel-compilator",
         "linux-swangle-chromium-try-x64",
         "linux-swangle-chromium-try-x64-exp",
         "linux-swangle-try-tot-swiftshader-x64",
@@ -825,8 +886,6 @@ _exempted_from_contact_builders = {
         "win-rel-compilator",
         "win-rust-x64-dbg",
         "win-rust-x64-rel",
-        "win-siso-rel",
-        "win-siso-rel-compilator",
         "win-swangle-chromium-try-x86",
         "win-swangle-try-tot-swiftshader-x64",
         "win-swangle-try-tot-swiftshader-x86",
@@ -972,7 +1031,7 @@ _exempted_from_contact_builders = {
 
 health_spec = struct(
     DEFAULT = DEFAULT,
-    spec = thresholds,
+    thresholds = thresholds,
     modified_default = modified_default,
 )
 

@@ -186,7 +186,7 @@ wgpu::BackendType DawnContextProvider::GetDefaultBackendType() {
   return base::FeatureList::IsEnabled(features::kSkiaGraphiteDawnUseD3D12)
              ? wgpu::BackendType::D3D12
              : wgpu::BackendType::D3D11;
-#elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
   return wgpu::BackendType::Vulkan;
 #elif BUILDFLAG(IS_APPLE)
   return wgpu::BackendType::Metal;
@@ -230,7 +230,11 @@ bool DawnContextProvider::Initialize(
 
   platform_ = std::make_unique<Platform>(std::move(caching_interface),
                                          /*uma_prefix=*/"GPU.GraphiteDawn.");
-  instance_ = webgpu::DawnInstance::Create(platform_.get(), gpu_preferences);
+
+  // Make Dawn experimental API and WGSL features available since access to this
+  // instance doesn't exit the GPU process.
+  instance_ = webgpu::DawnInstance::Create(platform_.get(), gpu_preferences,
+                                           webgpu::SafetyLevel::kUnsafe);
 
   // If a new toggle is added here, ForceDawnTogglesForSkia() which collects
   // info for about:gpu should be updated as well.
@@ -252,14 +256,7 @@ bool DawnContextProvider::Initialize(
   }
   enabled_toggles.push_back("disable_robustness");
 #endif
-
   enabled_toggles.push_back("disable_lazy_clear_for_mapped_at_creation_buffer");
-
-#if BUILDFLAG(IS_APPLE)
-  // We need MultiPlanarFormatExtendedUsages to copy to/from multiplanar
-  // texture. And this feature is currently experimental.
-  enabled_toggles.push_back("allow_unsafe_apis");
-#endif  // BUILDFLAG(IS_APPLE)
 
   wgpu::DawnTogglesDescriptor toggles_desc;
   toggles_desc.enabledToggles = enabled_toggles.data();
@@ -270,7 +267,6 @@ bool DawnContextProvider::Initialize(
   wgpu::DeviceDescriptor descriptor;
   descriptor.nextInChain = &toggles_desc;
 
-  // TODO(crbug.com/1456492): verify the required features.
   std::vector<wgpu::FeatureName> features = {
       wgpu::FeatureName::DawnInternalUsages,
       wgpu::FeatureName::DawnMultiPlanarFormats,
@@ -296,6 +292,7 @@ bool DawnContextProvider::Initialize(
   dawn::native::d3d::RequestAdapterOptionsLUID adapter_options_luid;
   if (GetANGLED3D11DeviceLUID(&adapter_options_luid.adapterLUID)) {
     // Request the GPU that ANGLE is using if possible.
+    adapter_options_luid.nextInChain = adapter_options.nextInChain;
     adapter_options.nextInChain = &adapter_options_luid;
   }
 
@@ -333,14 +330,19 @@ bool DawnContextProvider::Initialize(
   }
 
   const wgpu::FeatureName kOptionalFeatures[] = {
+      wgpu::FeatureName::BGRA8UnormStorage,
       wgpu::FeatureName::DualSourceBlending,
       wgpu::FeatureName::MultiPlanarFormatExtendedUsages,
       wgpu::FeatureName::MultiPlanarFormatP010,
-#if BUILDFLAG(IS_MAC)
       wgpu::FeatureName::MultiPlanarFormatNv12a,
-#endif  // BUILDFLAG(IS_MAC)
       wgpu::FeatureName::MultiPlanarRenderTargets,
       wgpu::FeatureName::Norm16TextureFormats,
+
+      // The following features are always supported when running on the
+      // Metal backend.
+      wgpu::FeatureName::SharedTextureMemoryIOSurface,
+      wgpu::FeatureName::SharedFenceMTLSharedEvent,
+
       wgpu::FeatureName::TransientAttachments,
   };
 
@@ -361,6 +363,17 @@ bool DawnContextProvider::Initialize(
 
   descriptor.requiredFeatures = features.data();
   descriptor.requiredFeatureCount = std::size(features);
+
+  // Use best limits for the device.
+  wgpu::SupportedLimits supportedLimits = {};
+  if (!adapter.GetLimits(&supportedLimits)) {
+    LOG(ERROR) << "Failed to call adapter.GetLimits().";
+    return false;
+  }
+
+  wgpu::RequiredLimits deviceCreationLimits = {};
+  deviceCreationLimits.limits = supportedLimits.limits;
+  descriptor.requiredLimits = &deviceCreationLimits;
 
   // ANGLE always tries creating D3D11 device with debug layer when dcheck is
   // on, so tries creating dawn device with backend validation as well.

@@ -48,6 +48,8 @@ struct SyntheticTrialTestCase {
   absl::optional<std::string> expected_group_name;
   std::string group_name_override;
   bool disable_3pcs = false;
+  bool need_onboarding = false;
+  bool enable_silent_onboarding = false;
 };
 
 constexpr char kEligibleGroupName[] = "eligible";
@@ -57,7 +59,9 @@ class ExperimentManagerImplBrowserTest : public InProcessBrowserTest {
  public:
   ExperimentManagerImplBrowserTest(bool force_profiles_eligible_chromeos,
                                    std::string group_name_override,
-                                   bool disable_3pcs) {
+                                   bool disable_3pcs,
+                                   bool need_onboarding,
+                                   bool enable_silent_onboarding = false) {
     // Force profile eligibility on ChromeOS. There is a flaky issue where
     // `SetClientEligibility` is sometimes called twice, the second time with an
     // ineligible profile even if the first was eligible.
@@ -72,7 +76,11 @@ class ExperimentManagerImplBrowserTest : public InProcessBrowserTest {
         {{"label", kEligibleGroupName},
          {"force_profiles_eligible", force_profiles_eligible_str},
          {"synthetic_trial_group_override", group_name_override},
-         {kDisable3PCookiesName, disable_3pcs ? "true" : "false"}});
+         {kDisable3PCookiesName, disable_3pcs ? "true" : "false"},
+         {kNeedOnboardingForSyntheticTrialName,
+          need_onboarding ? "true" : "false"},
+         {kEnableSilentOnboardingName,
+          enable_silent_onboarding ? "true" : "false"}});
   }
 
   void Wait() {
@@ -112,7 +120,9 @@ class ExperimentManagerImplSyntheticTrialTest
       : ExperimentManagerImplBrowserTest(
             /*force_profiles_eligible_chromeos=*/GetParam().new_state_eligible,
             GetParam().group_name_override,
-            /*disable_3pcs=*/GetParam().disable_3pcs) {}
+            GetParam().disable_3pcs,
+            GetParam().need_onboarding,
+            GetParam().enable_silent_onboarding) {}
 };
 
 IN_PROC_BROWSER_TEST_P(ExperimentManagerImplSyntheticTrialTest,
@@ -202,6 +212,33 @@ const SyntheticTrialTestCase kTestCases[] = {
         .expected_group_name = kEligibleGroupName,
     },
     {
+        .prev_state = utils::ExperimentState::kEligible,
+        .new_state_eligible = true,
+        .expected_group_name = kEligibleGroupName,
+        .need_onboarding = true,
+        .enable_silent_onboarding = false,
+    },
+    {
+        .prev_state = utils::ExperimentState::kEligible,
+        .new_state_eligible = true,
+        .expected_group_name = absl::nullopt,
+        .need_onboarding = true,
+        .enable_silent_onboarding = true,
+    },
+    {
+        .prev_state = utils::ExperimentState::kOnboarded,
+        .new_state_eligible = true,
+        .expected_group_name = kEligibleGroupName,
+        .need_onboarding = true,
+        .enable_silent_onboarding = true,
+    },
+    {
+        .prev_state = utils::ExperimentState::kOnboarded,
+        .new_state_eligible = true,
+        .expected_group_name = kEligibleGroupName,
+        .need_onboarding = false,
+    },
+    {
         .prev_state = utils::ExperimentState::kIneligible,
         .new_state_eligible = false,
         .expected_group_name = kSyntheticTrialInvalidGroupName,
@@ -212,12 +249,28 @@ const SyntheticTrialTestCase kTestCases[] = {
         .new_state_eligible = true,
         .expected_group_name = absl::nullopt,
         .disable_3pcs = true,
+        .need_onboarding = true,
+    },
+    {
+        .prev_state = utils::ExperimentState::kEligible,
+        .new_state_eligible = true,
+        .expected_group_name = kEligibleGroupName,
+        .disable_3pcs = true,
+        .need_onboarding = false,
     },
     {
         .prev_state = utils::ExperimentState::kOnboarded,
         .new_state_eligible = true,
         .expected_group_name = kEligibleGroupName,
         .disable_3pcs = true,
+        .need_onboarding = true,
+    },
+    {
+        .prev_state = utils::ExperimentState::kOnboarded,
+        .new_state_eligible = true,
+        .expected_group_name = kEligibleGroupName,
+        .disable_3pcs = true,
+        .need_onboarding = false,
     },
 };
 
@@ -232,7 +285,8 @@ class ExperimentManagerImplDisable3PCsSyntheticTrialTest
       : ExperimentManagerImplBrowserTest(
             /*force_profiles_eligible_chromeos=*/false,
             /*group_name_override=*/"",
-            /*disable_3pcs=*/true) {}
+            /*disable_3pcs=*/true,
+            /*need_onboarding=*/true) {}
 };
 
 IN_PROC_BROWSER_TEST_F(ExperimentManagerImplDisable3PCsSyntheticTrialTest,
@@ -255,6 +309,46 @@ IN_PROC_BROWSER_TEST_F(ExperimentManagerImplDisable3PCsSyntheticTrialTest,
       TrackingProtectionOnboardingFactory::GetForProfile(browser()->profile());
   // Simulate onboarding a profile.
   onboarding_service->OnboardingNoticeShown();
+
+  // Verify that the user has been registered with the correct synthetic
+  // trial group.
+  group_name_hash = GetSyntheticTrialGroupNameHash();
+  ASSERT_NE(group_name_hash, 0u);
+  EXPECT_EQ(group_name_hash, HashName(kEligibleGroupName));
+}
+
+class ExperimentManagerImplSilentOnboardingSyntheticTrialTest
+    : public ExperimentManagerImplBrowserTest {
+ public:
+  ExperimentManagerImplSilentOnboardingSyntheticTrialTest()
+      : ExperimentManagerImplBrowserTest(
+            /*force_profiles_eligible_chromeos=*/false,
+            /*group_name_override=*/"",
+            /*disable_3pcs=*/false,
+            /*need_onboarding=*/true,
+            /*enable_silent_onboarding=*/true) {}
+};
+
+IN_PROC_BROWSER_TEST_F(ExperimentManagerImplSilentOnboardingSyntheticTrialTest,
+                       PRE_RegistersSyntheticTrial) {
+  Wait();
+
+  // Set up the previous state in the local state prefs.
+  g_browser_process->local_state()->SetInteger(
+      prefs::kTPCDExperimentClientState,
+      static_cast<int>(utils::ExperimentState::kEligible));
+}
+
+IN_PROC_BROWSER_TEST_F(ExperimentManagerImplSilentOnboardingSyntheticTrialTest,
+                       RegistersSyntheticTrial) {
+  // Verify that the user has not been registered.
+  uint32_t group_name_hash = GetSyntheticTrialGroupNameHash();
+  ASSERT_EQ(group_name_hash, 0u);
+
+  auto* onboarding_service =
+      TrackingProtectionOnboardingFactory::GetForProfile(browser()->profile());
+  // Simulate onboarding a profile.
+  onboarding_service->SilentOnboardingNoticeShown();
 
   // Verify that the user has been registered with the correct synthetic
   // trial group.

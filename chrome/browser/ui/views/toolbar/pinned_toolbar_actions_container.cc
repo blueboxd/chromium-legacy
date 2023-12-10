@@ -5,10 +5,12 @@
 #include "chrome/browser/ui/views/toolbar/pinned_toolbar_actions_container.h"
 
 #include <algorithm>
+#include <iterator>
 #include <memory>
 #include <string>
 #include <type_traits>
 
+#include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/user_metrics.h"
@@ -46,6 +48,8 @@
 #include "ui/views/view_class_properties.h"
 
 namespace {
+const gfx::VectorIcon kEmptyIcon;
+
 void RecordPinnedActionsCount(int count) {
   base::UmaHistogramCounts100("Browser.Actions.PinnedActionsCount", count);
 }
@@ -64,7 +68,8 @@ PinnedToolbarActionsContainer::PinnedActionToolbarButton::
           base::BindRepeating(&PinnedActionToolbarButton::ButtonPressed,
                               base::Unretained(this)),
           CreateMenuModel(),
-          nullptr),
+          nullptr,
+          false),
       browser_(browser),
       action_item_(actions::ActionManager::Get().FindAction(
           action_id,
@@ -128,30 +133,57 @@ bool PinnedToolbarActionsContainer::PinnedActionToolbarButton::
   return invoking_action_;
 }
 
+void PinnedToolbarActionsContainer::PinnedActionToolbarButton::
+    GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  ToolbarButton::GetAccessibleNodeData(node_data);
+  // TODO(shibalik): Revisit since all pinned actions should not be toggle
+  // buttons.
+  node_data->role = ax::mojom::Role::kToggleButton;
+  node_data->SetCheckedState(IsActive() ? ax::mojom::CheckedState::kTrue
+                                        : ax::mojom::CheckedState::kFalse);
+}
+
 bool PinnedToolbarActionsContainer::PinnedActionToolbarButton::IsActive() {
   return anchor_higlight_.has_value();
 }
 
 void PinnedToolbarActionsContainer::PinnedActionToolbarButton::AddHighlight() {
   anchor_higlight_ = AddAnchorHighlight();
+  if (pinned_) {
+    NotifyAccessibilityEvent(ax::mojom::Event::kCheckedStateChanged,
+                             /*send_native_event=*/true);
+  }
 }
 
 void PinnedToolbarActionsContainer::PinnedActionToolbarButton::
     ResetHighlight() {
   anchor_higlight_.reset();
+  if (pinned_) {
+    NotifyAccessibilityEvent(ax::mojom::Event::kCheckedStateChanged,
+                             /*send_native_event=*/true);
+  }
 }
 
 void PinnedToolbarActionsContainer::PinnedActionToolbarButton::
     SetIconVisibility(bool visible) {
   if (action_item_->GetImage().IsVectorIcon()) {
-    const auto empty_icon = gfx::VectorIcon();
     SetVectorIcon(visible
                       ? *action_item_->GetImage().GetVectorIcon().vector_icon()
-                      : empty_icon);
+                      : kEmptyIcon);
   } else {
     SetImageModel(views::Button::STATE_NORMAL,
                   visible ? action_item_->GetImage() : ui::ImageModel());
   }
+}
+
+void PinnedToolbarActionsContainer::PinnedActionToolbarButton::SetPinned(
+    bool pinned) {
+  if (pinned_ == pinned) {
+    return;
+  }
+
+  pinned_ = pinned;
+  ActionItemChanged();
 }
 
 gfx::Size PinnedToolbarActionsContainer::PinnedActionToolbarButton::
@@ -178,9 +210,18 @@ void PinnedToolbarActionsContainer::PinnedActionToolbarButton::
                           ? action_item_->GetText()
                           : action_item_->GetTooltipText();
   SetTooltipText(tooltip_text);
-  if (!action_item_->GetAccessibleName().empty()) {
-    SetAccessibleName(action_item_->GetAccessibleName());
-  }
+
+  // Set the accessible name. Fall back to the tooltip if one is not provided.
+  // If pinned, the pinned state is added to the accessible name.
+  auto accessible_name = action_item_->GetAccessibleName().empty()
+                             ? tooltip_text
+                             : action_item_->GetAccessibleName();
+  auto stateful_accessible_name =
+      pinned_ ? l10n_util::GetStringFUTF16(
+                    IDS_PINNED_ACTION_BUTTON_ACCESSIBLE_TITLE, accessible_name)
+              : accessible_name;
+  SetAccessibleName(stateful_accessible_name);
+
   // If possible use the vector icon so that it updates as the theme updates.
   if (action_item_->GetImage().IsVectorIcon()) {
     SetVectorIcon(*action_item_->GetImage().GetVectorIcon().vector_icon());
@@ -243,8 +284,19 @@ void PinnedToolbarActionsContainer::PinnedActionToolbarButton::
       PinnedToolbarActionsModel::Get(browser_->profile());
   actions::ActionId action_id = action_item_->GetActionId().value();
 
-  actions_model->UpdatePinnedState(
-      action_id, container_->IsActionPinned(action_id) ? false : true);
+  const bool updated_pin_state = !container_->IsActionPinned(action_id);
+  const std::optional<std::string> metrics_name =
+      actions::ActionIdMap::ActionIdToString(action_id);
+  CHECK(metrics_name.has_value());
+  base::RecordComputedAction(
+      base::StrCat({"Actions.PinnedToolbarButton.",
+                    updated_pin_state ? "Pinned" : "Unpinned",
+                    ".ByContextMenu.", metrics_name.value()}));
+  // TODO(corising): Update the text for these notifications once pinning
+  // expands past side panels.
+  GetViewAccessibility().AnnounceText(l10n_util::GetStringUTF16(
+      updated_pin_state ? IDS_SIDE_PANEL_PINNED : IDS_SIDE_PANEL_UNPINNED));
+  actions_model->UpdatePinnedState(action_id, updated_pin_state);
 }
 
 BEGIN_METADATA(PinnedToolbarActionsContainer,
@@ -310,10 +362,8 @@ PinnedToolbarActionsContainer::PinnedToolbarActionsContainer(
       gfx::Insets::VH(0, GetLayoutConstant(TOOLBAR_DIVIDER_SPACING)));
   toolbar_divider_->SetVisible(false);
 
-  // Create the pinned action buttons.
-  for (const auto& id : model_->pinned_action_ids()) {
-    AddPinnedActionButtonFor(id);
-  }
+  // Initialize the pinned action buttons.
+  UpdateViews();
 }
 
 PinnedToolbarActionsContainer::~PinnedToolbarActionsContainer() = default;
@@ -330,6 +380,12 @@ void PinnedToolbarActionsContainer::UpdateActionState(actions::ActionId id,
       button = AddPopOutButtonFor(id);
     }
   }
+  // If the button doesn't exist, do nothing. This could happen if |is_active|
+  // is false and there is no existing pinned out popped out button for the
+  // |id|.
+  if (!button) {
+    return;
+  }
 
   // Update button highlight and force visibility if the button is active.
   if (is_active) {
@@ -343,6 +399,27 @@ void PinnedToolbarActionsContainer::UpdateActionState(actions::ActionId id,
   if (!pinned && !is_active) {
     RemovePoppedOutButtonFor(id);
   }
+
+  UpdateDividerFlexSpecification();
+  InvalidateLayout();
+}
+
+void PinnedToolbarActionsContainer::UpdateDividerFlexSpecification() {
+  bool force_divider_visibility = false;
+  for (auto* const pinned_button : pinned_buttons_) {
+    if (pinned_button->IsActive()) {
+      force_divider_visibility = true;
+      break;
+    }
+  }
+
+  if (force_divider_visibility) {
+    toolbar_divider_->SetProperty(views::kFlexBehaviorKey,
+                                  views::FlexSpecification());
+  } else {
+    toolbar_divider_->ClearProperty(views::kFlexBehaviorKey);
+  }
+  InvalidateLayout();
 }
 
 void PinnedToolbarActionsContainer::UpdateAllIcons() {
@@ -388,7 +465,9 @@ int PinnedToolbarActionsContainer::OnDragUpdated(
 
   // Check if the action item for the dragged icon is pinned (e.g. an action
   // item could be unpinned through a sync update while dragging its icon).
-  if (!model_->Contains(*actions::ActionIdMap::StringToActionId(data.id()))) {
+  std::optional<actions::ActionId> action_id =
+      actions::ActionIdMap::StringToActionId(data.id());
+  if (!action_id.has_value() || !model_->Contains(*action_id)) {
     return ui::DragDropTypes::DRAG_NONE;
   }
 
@@ -449,30 +528,24 @@ views::View::DropCallback PinnedToolbarActionsContainer::GetDropCallback(
 }
 
 void PinnedToolbarActionsContainer::OnActionAdded(const actions::ActionId& id) {
-  const auto iter = base::ranges::find(
-      pinned_buttons_, id, [](auto* button) { return button->GetActionId(); });
-  if (iter != pinned_buttons_.end()) {
-    return;
-  }
-  AddPinnedActionButtonFor(id);
   RecordPinnedActionsCount(model_->pinned_action_ids().size());
-
   drop_weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void PinnedToolbarActionsContainer::OnActionRemoved(
     const actions::ActionId& id) {
-  RemovePinnedActionButtonFor(id);
   RecordPinnedActionsCount(model_->pinned_action_ids().size());
-
   drop_weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void PinnedToolbarActionsContainer::OnActionMoved(const actions::ActionId& id,
                                                   int from_index,
                                                   int to_index) {
-  ReorderViews();
+  drop_weak_ptr_factory_.InvalidateWeakPtrs();
+}
 
+void PinnedToolbarActionsContainer::OnActionsChanged() {
+  UpdateViews();
   drop_weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
@@ -562,14 +635,18 @@ void PinnedToolbarActionsContainer::AddPinnedActionButtonFor(
     const auto iter =
         base::ranges::find(popped_out_buttons_, id,
                            [](auto* button) { return button->GetActionId(); });
+    (*iter)->SetPinned(true);
     pinned_buttons_.push_back(*iter);
     popped_out_buttons_.erase(iter);
+    // Flex specification of the divider might need to be updated when an active
+    // button moves from popped out to pinned state.
+    UpdateDividerFlexSpecification();
   } else {
     auto button = std::make_unique<PinnedActionToolbarButton>(
         browser_view_->browser(), id, this);
+    button->SetPinned(true);
     pinned_buttons_.push_back(AddChildView(std::move(button)));
   }
-  ReorderViews();
 }
 
 void PinnedToolbarActionsContainer::RemovePinnedActionButtonFor(
@@ -582,10 +659,14 @@ void PinnedToolbarActionsContainer::RemovePinnedActionButtonFor(
   if (!(*iter)->IsActive()) {
     RemoveButton(*iter);
   } else {
+    (*iter)->SetPinned(false);
     popped_out_buttons_.push_back(*iter);
   }
   pinned_buttons_.erase(iter);
-  ReorderViews();
+
+  // Flex specification of the divider needs to be updated when an active pinned
+  // button moves to popped out state.
+  UpdateDividerFlexSpecification();
 }
 
 PinnedToolbarActionsContainer::PinnedActionToolbarButton*
@@ -654,6 +735,49 @@ void PinnedToolbarActionsContainer::ReorderViews() {
     ReorderChildView(popped_out_button, index);
     index++;
   }
+}
+
+void PinnedToolbarActionsContainer::UpdateViews() {
+  std::vector<actions::ActionId> old_ids;
+  for (PinnedActionToolbarButton* const button : pinned_buttons_) {
+    old_ids.push_back(button->GetActionId());
+  }
+
+  const std::vector<actions::ActionId>& new_ids = model_->pinned_action_ids();
+
+  // 1. Remove buttons for actions in the UI that are not present in the
+  // model.
+  for (const actions::ActionId& id : old_ids) {
+    if (base::Contains(new_ids, id)) {
+      continue;
+    }
+
+    // End the drag session if the dragged button is being removed.
+    if (drop_info_ && drop_info_->action_id == id) {
+      drop_info_.reset();
+    }
+
+    RemovePinnedActionButtonFor(id);
+  }
+
+  // 2. Add buttons for actions that are in the model but not in the UI.
+  for (const actions::ActionId& id : new_ids) {
+    if (base::Contains(old_ids, id)) {
+      continue;
+    }
+
+    AddPinnedActionButtonFor(id);
+  }
+
+  // 3. Clamp the drag index within the new bounds of the container in cases
+  // where a button was removed by sync while a user was dragging a different
+  // button.
+  if (drop_info_.get() && drop_info_->index >= pinned_buttons_.size()) {
+    drop_info_->index = std::max(size_t(0), pinned_buttons_.size() - 1);
+  }
+
+  // 4. Ensure the views match the ordering in the model.
+  ReorderViews();
 }
 
 void PinnedToolbarActionsContainer::SetActionButtonIconVisibility(

@@ -442,6 +442,9 @@ class CORE_EXPORT LocalFrame final
       StyleEnvironmentVariables& vars,
       const WebVector<gfx::Rect>& window_segments);
 
+  void OverrideDevicePostureForEmulation(
+      device::mojom::blink::DevicePostureType device_posture_param);
+  void DisableDevicePostureOverrideForEmulation();
   device::mojom::blink::DevicePostureType GetDevicePosture();
 
   String SelectedText() const;
@@ -656,6 +659,7 @@ class CORE_EXPORT LocalFrame final
   SmoothScrollSequencer* GetSmoothScrollSequencer() const;
 
   mojom::blink::ReportingServiceProxy* GetReportingService();
+  device::mojom::blink::DevicePostureProvider* GetDevicePostureProvider();
 
   // Returns the frame host ptr. The interface returned is backed by an
   // associated interface with the legacy Chrome IPC channel.
@@ -734,6 +738,8 @@ class CORE_EXPORT LocalFrame final
       bool enable);
   void RequestVideoFrameAt(
       const gfx::Point& viewport_position,
+      const gfx::Size& max_size,
+      int max_area,
       base::OnceCallback<void(const gfx::ImageSkia&)> callback);
 
   // Handle the request as a download. If the request is for a blob: URL,
@@ -960,8 +966,7 @@ class CORE_EXPORT LocalFrame final
       BlockingDetails details) override;
   const base::UnguessableToken& GetAgentClusterId() const override;
   void OnTaskCompleted(base::TimeTicks start_time,
-                       base::TimeTicks end_time,
-                       base::TimeTicks desired_execution_time) override;
+                       base::TimeTicks end_time) override;
   void MainFrameInteractive() override;
 
   // Activates the user activation states of this frame and all its ancestors.

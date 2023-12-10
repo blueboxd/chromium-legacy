@@ -89,6 +89,8 @@ void FakeLocalFrame::MediaPlayerActionAt(
     blink::mojom::MediaPlayerActionPtr action) {}
 
 void FakeLocalFrame::RequestVideoFrameAt(const gfx::Point& window_point,
+                                         const gfx::Size& max_size,
+                                         int max_area,
                                          RequestVideoFrameAtCallback callback) {
 }
 
@@ -196,6 +198,11 @@ void FakeLocalFrame::TraverseCancelled(
     const std::string& navigation_api_key,
     blink::mojom::TraverseCancelledReason reason) {}
 
+void FakeLocalFrame::DispatchNavigateEventForCrossDocumentTraversal(
+    const GURL&,
+    const std::string& page_state,
+    bool is_browser_initiated) {}
+
 void FakeLocalFrame::SnapshotDocumentForViewTransition(
     SnapshotDocumentForViewTransitionCallback callback) {}
 
@@ -209,7 +216,7 @@ void FakeLocalFrame::AddResourceTimingEntryForFailedSubframeNavigation(
     uint32_t response_code,
     const std::string& mime_type,
     const ::net::LoadTimingInfo& load_timing_info,
-    ::net::HttpResponseInfo::ConnectionInfo connection_info,
+    ::net::HttpConnectionInfo connection_info,
     const std::string& alpn_negotiated_protocol,
     bool is_secure_transport,
     bool is_validated,

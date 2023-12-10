@@ -81,6 +81,11 @@ void AuthFactorConfig::NotifyFactorObserversAfterFailure(
 }
 
 void AuthFactorConfig::OnUserHasKnowledgeFactor(const UserContext& context) {
+  if (add_knowledge_factor_callback_) {
+    std::move(add_knowledge_factor_callback_).Run();
+    return;
+  }
+
   user_manager::UserDirectoryIntegrityManager(local_state_).ClearPrefs();
 }
 
@@ -110,11 +115,6 @@ void AuthFactorConfig::IsSupportedWithContext(
 
   switch (factor) {
     case mojom::AuthFactor::kRecovery: {
-      if (!features::IsCryptohomeRecoveryEnabled()) {
-        std::move(callback).Run(false);
-        return;
-      }
-
       std::move(callback).Run(cryptohome_supported_factors.Has(
           cryptohome::AuthFactorType::kRecovery));
       return;
@@ -161,7 +161,6 @@ void AuthFactorConfig::IsConfiguredWithContext(
 
   switch (factor) {
     case mojom::AuthFactor::kRecovery: {
-      DCHECK(features::IsCryptohomeRecoveryEnabled());
       std::move(callback).Run(
           config.HasConfiguredFactor(cryptohome::AuthFactorType::kRecovery));
       return;
@@ -224,7 +223,6 @@ void AuthFactorConfig::GetManagementType(
     base::OnceCallback<void(mojom::ManagementType)> callback) {
   switch (factor) {
     case mojom::AuthFactor::kRecovery: {
-      DCHECK(features::IsCryptohomeRecoveryEnabled());
       const auto* user = ::user_manager::UserManager::Get()->GetPrimaryUser();
       CHECK(user);
       const PrefService* prefs = quick_unlock_storage_->GetPrefService(*user);
@@ -286,7 +284,6 @@ void AuthFactorConfig::IsEditableWithContext(
 
   switch (factor) {
     case mojom::AuthFactor::kRecovery: {
-      DCHECK(features::IsCryptohomeRecoveryEnabled());
       const auto* user = ::user_manager::UserManager::Get()->GetPrimaryUser();
       CHECK(user);
 
@@ -371,7 +368,7 @@ void AuthFactorConfig::OnGetAuthFactorsConfiguration(
     base::OnceCallback<void(mojom::ConfigureResult)> callback,
     const std::string& auth_token,
     std::unique_ptr<UserContext> context,
-    absl::optional<AuthenticationError> error) {
+    std::optional<AuthenticationError> error) {
   bool has_knowledge_factor =
       context->GetAuthFactorsConfiguration().HasConfiguredFactor(
           cryptohome::AuthFactorType::kPassword) ||
@@ -398,6 +395,11 @@ void AuthFactorConfig::OnGetAuthFactorsConfiguration(
       observer->OnFactorChanged(changed_factor);
     }
   }
+}
+
+void AuthFactorConfig::SetAddKnowledgeFactorCallbackForTesting(
+    base::OnceClosure callback) {
+  add_knowledge_factor_callback_ = std::move(callback);
 }
 
 }  // namespace ash::auth

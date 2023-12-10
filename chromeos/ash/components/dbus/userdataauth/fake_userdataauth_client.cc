@@ -40,13 +40,13 @@ namespace {
 // factor structs.
 
 struct PasswordFactor {
-  // This will be `absl::nullopt` if auth checking hasn't been activated.
-  absl::optional<std::string> password;
+  // This will be `std::nullopt` if auth checking hasn't been activated.
+  std::optional<std::string> password;
 };
 
 struct PinFactor {
-  // This will be `absl::nullopt` if auth checking hasn't been activated.
-  absl::optional<std::string> pin = absl::nullopt;
+  // This will be `std::nullopt` if auth checking hasn't been activated.
+  std::optional<std::string> pin = std::nullopt;
   bool locked = false;
 };
 
@@ -162,11 +162,11 @@ FunctorWithReturnType<ReturnType, OverloadedFunctor<Functors...>> Overload(
   return {{std::move(functors)...}};
 }
 
-absl::optional<cryptohome::KeyData> FakeAuthFactorToKeyData(
+std::optional<cryptohome::KeyData> FakeAuthFactorToKeyData(
     std::string label,
     const FakeAuthFactor& factor) {
   return absl::visit(
-      Overload<absl::optional<cryptohome::KeyData>>(
+      Overload<std::optional<cryptohome::KeyData>>(
           [&](const PasswordFactor& password) {
             cryptohome::KeyData data;
             data.set_type(cryptohome::KeyData::KEY_TYPE_PASSWORD);
@@ -181,7 +181,7 @@ absl::optional<cryptohome::KeyData> FakeAuthFactorToKeyData(
             data.mutable_policy()->set_auth_locked(pin.locked);
             return data;
           },
-          [&](const RecoveryFactor&) { return absl::nullopt; },
+          [&](const RecoveryFactor&) { return std::nullopt; },
           [&](const SmartCardFactor& smart_card) {
             cryptohome::KeyData data;
             data.set_type(cryptohome::KeyData::KEY_TYPE_CHALLENGE_RESPONSE);
@@ -200,11 +200,11 @@ absl::optional<cryptohome::KeyData> FakeAuthFactorToKeyData(
       factor);
 }
 
-absl::optional<user_data_auth::AuthFactor> FakeAuthFactorToAuthFactor(
+std::optional<user_data_auth::AuthFactor> FakeAuthFactorToAuthFactor(
     std::string label,
     const FakeAuthFactor& factor) {
   return absl::visit(
-      Overload<absl::optional<user_data_auth::AuthFactor>>(
+      Overload<std::optional<user_data_auth::AuthFactor>>(
           [&](const PasswordFactor& password) {
             user_data_auth::AuthFactor result;
             result.set_label(std::move(label));
@@ -252,7 +252,7 @@ std::pair<std::string, FakeAuthFactor> KeyToFakeAuthFactor(
   const cryptohome::KeyData& data = key.data();
   const std::string& label = data.label();
   CHECK_NE(label, "") << "Key label must not be empty string";
-  absl::optional<std::string> secret = absl::nullopt;
+  std::optional<std::string> secret = std::nullopt;
   if (save_secret && key.has_secret()) {
     secret = key.secret();
   }
@@ -284,7 +284,7 @@ std::pair<std::string, FakeAuthFactor> AuthFactorWithInputToFakeAuthFactor(
   const std::string& label = factor.label();
   CHECK_NE(label, "") << "Key label must not be empty string";
 
-  absl::optional<std::string> secret = absl::nullopt;
+  std::optional<std::string> secret = std::nullopt;
   if (save_secret) {
     if (factor.type() == user_data_auth::AUTH_FACTOR_TYPE_PASSWORD) {
       secret = input.password_input().secret();
@@ -498,7 +498,7 @@ void FakeUserDataAuthClient::TestApi::AddExistingUser(
     return;
   }
 
-  const absl::optional<base::FilePath> profile_dir =
+  const std::optional<base::FilePath> profile_dir =
       FakeUserDataAuthClient::Get()->GetUserProfileDir(user_it->first);
   if (!profile_dir) {
     LOG(WARNING) << "User data directory has not been set, will not create "
@@ -510,7 +510,7 @@ void FakeUserDataAuthClient::TestApi::AddExistingUser(
   CHECK(base::CreateDirectory(*profile_dir));
 }
 
-absl::optional<base::FilePath>
+std::optional<base::FilePath>
 FakeUserDataAuthClient::TestApi::GetUserProfileDir(
     const cryptohome::AccountIdentifier& account_id) const {
   return FakeUserDataAuthClient::Get()->GetUserProfileDir(account_id);
@@ -522,7 +522,7 @@ void FakeUserDataAuthClient::TestApi::CreatePostponedDirectories() {
     if (!user_it.second.postponed_directory_creation) {
       continue;
     }
-    const absl::optional<base::FilePath> profile_dir =
+    const std::optional<base::FilePath> profile_dir =
         FakeUserDataAuthClient::Get()->GetUserProfileDir(user_it.first);
     CHECK(profile_dir) << "User data directory has not been set";
     CHECK(base::CreateDirectory(*profile_dir));
@@ -535,8 +535,7 @@ void FakeUserDataAuthClient::TestApi::AddKey(
   UserCryptohomeState& user_state = GetUserState(account_id);
 
   const auto [factor_it, was_inserted] =
-      user_state.auth_factors.insert(KeyToFakeAuthFactor(
-          key, FakeUserDataAuthClient::Get()->enable_auth_check_));
+      user_state.auth_factors.insert(KeyToFakeAuthFactor(key, true));
   CHECK(was_inserted) << "Factor already exists";
 }
 
@@ -699,7 +698,7 @@ void FakeUserDataAuthClient::Remove(
     return;
   }
 
-  const absl::optional<base::FilePath> profile_dir =
+  const std::optional<base::FilePath> profile_dir =
       GetUserProfileDir(account_id);
   if (profile_dir) {
     base::ScopedAllowBlockingForTesting allow_blocking;
@@ -834,9 +833,9 @@ void FakeUserDataAuthClient::StartAuthSession(
     }
 
     for (const auto& [label, factor] : user_state.auth_factors) {
-      absl::optional<cryptohome::KeyData> key_data =
+      std::optional<cryptohome::KeyData> key_data =
           FakeAuthFactorToKeyData(label, factor);
-      absl::optional<user_data_auth::AuthFactor> auth_factor =
+      std::optional<user_data_auth::AuthFactor> auth_factor =
           FakeAuthFactorToAuthFactor(label, factor);
       if (key_data) {
         *reply.add_auth_factors() = *auth_factor;
@@ -871,7 +870,7 @@ void FakeUserDataAuthClient::ListAuthFactors(
 
   const UserCryptohomeState& user_state = user_it->second;
   for (const auto& [label, factor] : user_state.auth_factors) {
-    absl::optional<user_data_auth::AuthFactor> auth_factor =
+    std::optional<user_data_auth::AuthFactor> auth_factor =
         FakeAuthFactorToAuthFactor(label, factor);
     if (auth_factor) {
       *reply.add_configured_auth_factors() = *auth_factor;
@@ -1039,6 +1038,48 @@ void FakeUserDataAuthClient::CreatePersistentUser(
       auth_session.requested_auth_session_intent);
   reply.mutable_auth_properties()->set_seconds_left(
       cryptohome::kAuthsessionInitialLifetime.InSeconds());
+}
+
+void FakeUserDataAuthClient::RestoreDeviceKey(
+    const ::user_data_auth::RestoreDeviceKeyRequest& request,
+    RestoreDeviceKeyCallback callback) {
+  ::user_data_auth::RestoreDeviceKeyReply reply;
+  ReplyOnReturn auto_reply(&reply, std::move(callback));
+  RememberRequest<Operation::kRestoreDeviceKey>(request);
+
+  if (auto error = TakeOperationError(Operation::kRestoreDeviceKey);
+      error != CryptohomeErrorCode::CRYPTOHOME_ERROR_NOT_SET) {
+    reply.set_error(error);
+    return;
+  }
+
+  auto error = CryptohomeErrorCode::CRYPTOHOME_ERROR_NOT_SET;
+  auto* authenticated_auth_session =
+      GetAuthenticatedAuthSession(request.auth_session_id(), &error);
+
+  if (authenticated_auth_session == nullptr) {
+    reply.set_error(error);
+    return;
+  }
+
+  if (authenticated_auth_session->ephemeral) {
+    LOG(ERROR) << "Ephemeral AuthSession used with RestoreDeviceKey";
+    reply.set_error(CryptohomeErrorCode::CRYPTOHOME_ERROR_INVALID_ARGUMENT);
+    return;
+  }
+
+  const auto user_it = users_.find(authenticated_auth_session->account);
+  if (user_it == std::end(users_)) {
+    reply.set_error(CryptohomeErrorCode::CRYPTOHOME_ERROR_ACCOUNT_NOT_FOUND);
+    return;
+  }
+
+  if (!authenticated_auth_session->authorized_auth_session_intent.Has(
+          user_data_auth::AUTH_INTENT_DECRYPT)) {
+    reply.set_error(
+        CryptohomeErrorCode::CRYPTOHOME_ERROR_UNAUTHENTICATED_AUTH_SESSION);
+    return;
+  }
 }
 
 void FakeUserDataAuthClient::PreparePersistentVault(
@@ -1593,10 +1634,10 @@ void FakeUserDataAuthClient::NotifyDircryptoMigrationProgress(
   }
 }
 
-absl::optional<base::FilePath> FakeUserDataAuthClient::GetUserProfileDir(
+std::optional<base::FilePath> FakeUserDataAuthClient::GetUserProfileDir(
     const cryptohome::AccountIdentifier& account_id) const {
   if (!user_data_dir_.has_value()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   std::string user_dir_base_name =

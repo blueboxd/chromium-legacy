@@ -21,11 +21,13 @@ ci.defaults.set(
     sheriff_rotations = sheriff_rotations.CHROMIUM,
     tree_closing = True,
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
-    health_spec = health_spec.modified_default(
-        build_time = struct(
-            p50_mins = 60,
+    health_spec = health_spec.modified_default({
+        "Unhealthy": struct(
+            build_time = struct(
+                p50_mins = 60,
+            ),
         ),
-    ),
+    }),
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = reclient.jobs.DEFAULT,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
@@ -60,6 +62,14 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-chromiumos-archive",
     ),
+    gn_args = gn_args.config(
+        configs = [
+            "chromeos_with_codecs",
+            "release_builder",
+            "reclient",
+            "use_cups",
+        ],
+    ),
     sheriff_rotations = args.ignore_default(None),
     tree_closing = False,
     console_view_entry = consoles.console_view_entry(
@@ -69,14 +79,6 @@ ci.builder(
     # This builder gets triggered against multiple branches, so it shouldn't be
     # bootstrapped
     bootstrap = False,
-    gn_args = gn_args.config(
-        configs = [
-            "chromeos_with_codecs",
-            "release_builder",
-            "reclient",
-            "use_cups",
-        ],
-    ),
     notifies = ["chrome-lacros-engprod-alerts"],
     properties = {
         # The format of these properties is defined at archive/properties.proto
@@ -124,12 +126,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-chromiumos-archive",
     ),
-    console_view_entry = consoles.console_view_entry(
-        category = "simple|release|x64",
-        short_name = "asn",
-    ),
-    main_console_view = "main",
-    contact_team_email = "chrome-sanitizer-builder-owners@google.com",
     gn_args = gn_args.config(
         configs = [
             "chromeos_device",
@@ -140,6 +136,12 @@ ci.builder(
             "asan",
         ],
     ),
+    console_view_entry = consoles.console_view_entry(
+        category = "simple|release|x64",
+        short_name = "asn",
+    ),
+    main_console_view = "main",
+    contact_team_email = "chrome-sanitizer-builder-owners@google.com",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
@@ -168,12 +170,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-chromiumos-archive",
     ),
-    console_view_entry = consoles.console_view_entry(
-        category = "simple|release|x64",
-        short_name = "cfi",
-    ),
-    main_console_view = "main",
-    contact_team_email = "chromeos-sw-engprod@google.com",
     gn_args = gn_args.config(
         configs = [
             "chromeos_device",
@@ -186,11 +182,19 @@ ci.builder(
             "also_build_lacros_chrome_for_architecture_amd64",
         ],
     ),
-    health_spec = health_spec.modified_default(
-        build_time = struct(
-            p50_mins = 100,
-        ),
+    console_view_entry = consoles.console_view_entry(
+        category = "simple|release|x64",
+        short_name = "cfi",
     ),
+    main_console_view = "main",
+    contact_team_email = "chromeos-sw-engprod@google.com",
+    health_spec = health_spec.modified_default({
+        "Unhealthy": struct(
+            build_time = struct(
+                p50_mins = 100,
+            ),
+        ),
+    }),
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
@@ -219,13 +223,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-chromiumos-archive",
     ),
-    console_view_entry = consoles.console_view_entry(
-        category = "simple|debug|x64",
-        short_name = "dbg",
-    ),
-    main_console_view = "main",
-    cq_mirrors_console_view = "mirrors",
-    contact_team_email = "chromeos-sw-engprod@google.com",
     gn_args = gn_args.config(
         configs = [
             "chromeos_device",
@@ -236,6 +233,13 @@ ci.builder(
             "debug",
         ],
     ),
+    console_view_entry = consoles.console_view_entry(
+        category = "simple|debug|x64",
+        short_name = "dbg",
+    ),
+    main_console_view = "main",
+    cq_mirrors_console_view = "mirrors",
+    contact_team_email = "chromeos-sw-engprod@google.com",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
@@ -265,13 +269,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-chromiumos-archive",
     ),
-    console_view_entry = consoles.console_view_entry(
-        category = "lacros|x64",
-        short_name = "dbg",
-    ),
-    main_console_view = "main",
-    cq_mirrors_console_view = "mirrors",
-    contact_team_email = "chrome-desktop-engprod@google.com",
     gn_args = gn_args.config(
         configs = [
             "chromeos_device",
@@ -284,6 +281,13 @@ ci.builder(
             "static",
         ],
     ),
+    console_view_entry = consoles.console_view_entry(
+        category = "lacros|x64",
+        short_name = "dbg",
+    ),
+    main_console_view = "main",
+    cq_mirrors_console_view = "mirrors",
+    contact_team_email = "chrome-desktop-engprod@google.com",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
@@ -310,13 +314,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-chromiumos-archive",
     ),
-    console_view_entry = consoles.console_view_entry(
-        category = "simple|release|x64",
-        short_name = "rel",
-    ),
-    main_console_view = "main",
-    cq_mirrors_console_view = "mirrors",
-    contact_team_email = "chromeos-sw-engprod@google.com",
     gn_args = gn_args.config(
         configs = [
             "chromeos_device",
@@ -328,6 +325,13 @@ ci.builder(
             "also_build_lacros_chrome_for_architecture_amd64",
         ],
     ),
+    console_view_entry = consoles.console_view_entry(
+        category = "simple|release|x64",
+        short_name = "rel",
+    ),
+    main_console_view = "main",
+    cq_mirrors_console_view = "mirrors",
+    contact_team_email = "chromeos-sw-engprod@google.com",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
@@ -355,13 +359,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-chromiumos-archive",
     ),
-    console_view_entry = consoles.console_view_entry(
-        category = "simple|release|x64",
-        short_name = "compile",
-    ),
-    main_console_view = "main",
-    cq_mirrors_console_view = "mirrors",
-    contact_team_email = "chromeos-sw-engprod@google.com",
     gn_args = gn_args.config(
         configs = [
             "chromeos_device",
@@ -373,6 +370,13 @@ ci.builder(
             "also_build_lacros_chrome_for_architecture_amd64",
         ],
     ),
+    console_view_entry = consoles.console_view_entry(
+        category = "simple|release|x64",
+        short_name = "compile",
+    ),
+    main_console_view = "main",
+    cq_mirrors_console_view = "mirrors",
+    contact_team_email = "chromeos-sw-engprod@google.com",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
@@ -475,12 +479,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-chromiumos-archive",
     ),
-    console_view_entry = consoles.console_view_entry(
-        category = "simple|debug",
-        short_name = "arm",
-    ),
-    main_console_view = "main",
-    contact_team_email = "chromeos-sw-engprod@google.com",
     gn_args = gn_args.config(
         configs = [
             "chromeos_device",
@@ -491,6 +489,12 @@ ci.builder(
             "ozone_headless",
         ],
     ),
+    console_view_entry = consoles.console_view_entry(
+        category = "simple|debug",
+        short_name = "arm",
+    ),
+    main_console_view = "main",
+    contact_team_email = "chromeos-sw-engprod@google.com",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
@@ -512,13 +516,6 @@ ci.builder(
             target_cros_boards = ["arm-generic"],
         ),
     ),
-    console_view_entry = consoles.console_view_entry(
-        category = "simple|release",
-        short_name = "arm",
-    ),
-    main_console_view = "main",
-    cq_mirrors_console_view = "mirrors",
-    contact_team_email = "chromeos-sw-engprod@google.com",
     gn_args = gn_args.config(
         configs = [
             "chromeos_device",
@@ -528,6 +525,13 @@ ci.builder(
             "ozone_headless",
         ],
     ),
+    console_view_entry = consoles.console_view_entry(
+        category = "simple|release",
+        short_name = "arm",
+    ),
+    main_console_view = "main",
+    cq_mirrors_console_view = "mirrors",
+    contact_team_email = "chromeos-sw-engprod@google.com",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
@@ -549,12 +553,6 @@ ci.builder(
             target_cros_boards = ["arm64-generic"],
         ),
     ),
-    console_view_entry = consoles.console_view_entry(
-        category = "simple|release",
-        short_name = "a64",
-    ),
-    main_console_view = "main",
-    contact_team_email = "chromeos-sw-engprod@google.com",
     gn_args = gn_args.config(
         configs = [
             "chromeos_device",
@@ -564,6 +562,12 @@ ci.builder(
             "ozone_headless",
         ],
     ),
+    console_view_entry = consoles.console_view_entry(
+        category = "simple|release",
+        short_name = "a64",
+    ),
+    main_console_view = "main",
+    contact_team_email = "chromeos-sw-engprod@google.com",
 )
 
 ci.builder(
@@ -592,14 +596,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-chromiumos-archive",
     ),
-    # TODO(crbug.com/1342987): Add to the sheriff rotation if/when the builder
-    # is stable.
-    sheriff_rotations = args.ignore_default(None),
-    console_view_entry = consoles.console_view_entry(
-        category = "simple|release",
-        short_name = "jcz",
-    ),
-    main_console_view = "main",
     gn_args = gn_args.config(
         configs = [
             "chromeos_device",
@@ -609,6 +605,14 @@ ci.builder(
             "dcheck_always_on",
         ],
     ),
+    # TODO(crbug.com/1342987): Add to the sheriff rotation if/when the builder
+    # is stable.
+    sheriff_rotations = args.ignore_default(None),
+    console_view_entry = consoles.console_view_entry(
+        category = "simple|release",
+        short_name = "jcz",
+    ),
+    main_console_view = "main",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
@@ -637,14 +641,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-chromiumos-archive",
     ),
-    # TODO(crbug.com/1342987): Add to the sheriff rotation if/when the builder
-    # is stable.
-    sheriff_rotations = args.ignore_default(None),
-    console_view_entry = consoles.console_view_entry(
-        category = "simple|release",
-        short_name = "oct",
-    ),
-    main_console_view = "main",
     gn_args = gn_args.config(
         configs = [
             "chromeos_device",
@@ -654,6 +650,14 @@ ci.builder(
             "dcheck_always_on",
         ],
     ),
+    # TODO(crbug.com/1342987): Add to the sheriff rotation if/when the builder
+    # is stable.
+    sheriff_rotations = args.ignore_default(None),
+    console_view_entry = consoles.console_view_entry(
+        category = "simple|release",
+        short_name = "oct",
+    ),
+    main_console_view = "main",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
@@ -686,13 +690,6 @@ ci.builder(
             gs_bucket = "chromium-ci-skylab",
         ),
     ),
-    console_view_entry = consoles.console_view_entry(
-        category = "lacros|x64",
-        short_name = "skylab",
-    ),
-    main_console_view = "main",
-    cq_mirrors_console_view = "mirrors",
-    contact_team_email = "chrome-desktop-engprod@google.com",
     gn_args = gn_args.config(
         configs = [
             "chromeos_device",
@@ -705,6 +702,13 @@ ci.builder(
             "is_skylab",
         ],
     ),
+    console_view_entry = consoles.console_view_entry(
+        category = "lacros|x64",
+        short_name = "skylab",
+    ),
+    main_console_view = "main",
+    cq_mirrors_console_view = "mirrors",
+    contact_team_email = "chrome-desktop-engprod@google.com",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
@@ -737,13 +741,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-chromiumos-archive",
     ),
-    console_view_entry = consoles.console_view_entry(
-        category = "lacros|x64",
-        short_name = "rel",
-    ),
-    main_console_view = "main",
-    cq_mirrors_console_view = "mirrors",
-    contact_team_email = "chrome-desktop-engprod@google.com",
     gn_args = gn_args.config(
         configs = [
             "chromeos_device",
@@ -755,6 +752,13 @@ ci.builder(
             "release",
         ],
     ),
+    console_view_entry = consoles.console_view_entry(
+        category = "lacros|x64",
+        short_name = "rel",
+    ),
+    main_console_view = "main",
+    cq_mirrors_console_view = "mirrors",
+    contact_team_email = "chrome-desktop-engprod@google.com",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
@@ -783,14 +787,6 @@ ci.builder(
             gs_bucket = "chromium-ci-skylab",
         ),
     ),
-    os = os.LINUX_DEFAULT,
-    console_view_entry = consoles.console_view_entry(
-        category = "lacros|arm",
-        short_name = "sky",
-    ),
-    main_console_view = "main",
-    cq_mirrors_console_view = "mirrors",
-    contact_team_email = "chrome-desktop-engprod@google.com",
     gn_args = gn_args.config(
         configs = [
             "chromeos_device",
@@ -803,6 +799,14 @@ ci.builder(
             "is_skylab",
         ],
     ),
+    os = os.LINUX_DEFAULT,
+    console_view_entry = consoles.console_view_entry(
+        category = "lacros|arm",
+        short_name = "sky",
+    ),
+    main_console_view = "main",
+    cq_mirrors_console_view = "mirrors",
+    contact_team_email = "chrome-desktop-engprod@google.com",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
@@ -831,14 +835,6 @@ ci.builder(
             gs_bucket = "chromium-ci-skylab",
         ),
     ),
-    os = os.LINUX_DEFAULT,
-    console_view_entry = consoles.console_view_entry(
-        category = "lacros|arm64",
-        short_name = "sky",
-    ),
-    main_console_view = "main",
-    cq_mirrors_console_view = "mirrors",
-    contact_team_email = "chrome-desktop-engprod@google.com",
     gn_args = gn_args.config(
         configs = [
             "chromeos_device",
@@ -851,6 +847,14 @@ ci.builder(
             "is_skylab",
         ],
     ),
+    os = os.LINUX_DEFAULT,
+    console_view_entry = consoles.console_view_entry(
+        category = "lacros|arm64",
+        short_name = "sky",
+    ),
+    main_console_view = "main",
+    cq_mirrors_console_view = "mirrors",
+    contact_team_email = "chrome-desktop-engprod@google.com",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
@@ -880,15 +884,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-chromiumos-archive",
     ),
-    # TODO(crbug.com/1202631) Enable tree closing when stable.
-    tree_closing = False,
-    console_view_entry = consoles.console_view_entry(
-        category = "lacros|arm",
-        short_name = "arm",
-    ),
-    main_console_view = "main",
-    cq_mirrors_console_view = "mirrors",
-    contact_team_email = "chrome-desktop-engprod@google.com",
     gn_args = gn_args.config(
         configs = [
             "chromeos_device",
@@ -900,6 +895,15 @@ ci.builder(
             "release",
         ],
     ),
+    # TODO(crbug.com/1202631) Enable tree closing when stable.
+    tree_closing = False,
+    console_view_entry = consoles.console_view_entry(
+        category = "lacros|arm",
+        short_name = "arm",
+    ),
+    main_console_view = "main",
+    cq_mirrors_console_view = "mirrors",
+    contact_team_email = "chrome-desktop-engprod@google.com",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
@@ -929,16 +933,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-chromiumos-archive",
     ),
-    # TODO(https://crbug.com/1342761): enable sheriff rotation and tree_closing
-    # when the builder is stable.
-    sheriff_rotations = args.ignore_default(None),
-    tree_closing = False,
-    console_view_entry = consoles.console_view_entry(
-        category = "lacros|arm64",
-        short_name = "arm64",
-    ),
-    main_console_view = "main",
-    cq_mirrors_console_view = "mirrors",
     gn_args = gn_args.config(
         configs = [
             "chromeos_device",
@@ -950,6 +944,16 @@ ci.builder(
             "release",
         ],
     ),
+    # TODO(https://crbug.com/1342761): enable sheriff rotation and tree_closing
+    # when the builder is stable.
+    sheriff_rotations = args.ignore_default(None),
+    tree_closing = False,
+    console_view_entry = consoles.console_view_entry(
+        category = "lacros|arm64",
+        short_name = "arm64",
+    ),
+    main_console_view = "main",
+    cq_mirrors_console_view = "mirrors",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
@@ -974,13 +978,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-chromiumos-archive",
     ),
-    console_view_entry = consoles.console_view_entry(
-        category = "default",
-        short_name = "dbg",
-    ),
-    main_console_view = "main",
-    cq_mirrors_console_view = "mirrors",
-    contact_team_email = "chromeos-sw-engprod@google.com",
     gn_args = gn_args.config(
         configs = [
             "chromeos_with_codecs",
@@ -989,11 +986,20 @@ ci.builder(
             "use_cups",
         ],
     ),
-    health_spec = health_spec.modified_default(
-        build_time = struct(
-            p50_mins = 150,
-        ),
+    console_view_entry = consoles.console_view_entry(
+        category = "default",
+        short_name = "dbg",
     ),
+    main_console_view = "main",
+    cq_mirrors_console_view = "mirrors",
+    contact_team_email = "chromeos-sw-engprod@google.com",
+    health_spec = health_spec.modified_default({
+        "Unhealthy": struct(
+            build_time = struct(
+                p50_mins = 150,
+            ),
+        ),
+    }),
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
@@ -1019,15 +1025,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-chromiumos-archive",
     ),
-    # See crbug.com/1345687. This builder need higher memory.
-    builderless = False,
-    console_view_entry = consoles.console_view_entry(
-        category = "default",
-        short_name = "rel",
-    ),
-    main_console_view = "main",
-    cq_mirrors_console_view = "mirrors",
-    contact_team_email = "chromeos-sw-engprod@google.com",
     gn_args = gn_args.config(
         configs = [
             "chromeos_with_codecs",
@@ -1037,6 +1034,15 @@ ci.builder(
             "also_build_lacros_chrome",
         ],
     ),
+    # See crbug.com/1345687. This builder need higher memory.
+    builderless = False,
+    console_view_entry = consoles.console_view_entry(
+        category = "default",
+        short_name = "rel",
+    ),
+    main_console_view = "main",
+    cq_mirrors_console_view = "mirrors",
+    contact_team_email = "chromeos-sw-engprod@google.com",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
@@ -1061,15 +1067,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-chromiumos-archive",
     ),
-    # See crbug.com/1345687. This builder need higher memory.
-    builderless = False,
-    console_view_entry = consoles.console_view_entry(
-        category = "default",
-        short_name = "lcr",
-    ),
-    main_console_view = "main",
-    cq_mirrors_console_view = "mirrors",
-    contact_team_email = "chrome-desktop-engprod@google.com",
     gn_args = gn_args.config(
         configs = [
             "lacros_on_linux",
@@ -1079,6 +1076,15 @@ ci.builder(
             "use_cups",
         ],
     ),
+    # See crbug.com/1345687. This builder need higher memory.
+    builderless = False,
+    console_view_entry = consoles.console_view_entry(
+        category = "default",
+        short_name = "lcr",
+    ),
+    main_console_view = "main",
+    cq_mirrors_console_view = "mirrors",
+    contact_team_email = "chrome-desktop-engprod@google.com",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
@@ -1137,15 +1143,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-chromiumos-archive",
     ),
-    # See crbug.com/1345687. This builder need higher memory.
-    builderless = False,
-    console_view_entry = consoles.console_view_entry(
-        category = "debug",
-        short_name = "lcr",
-    ),
-    main_console_view = "main",
-    cq_mirrors_console_view = "mirrors",
-    contact_team_email = "chrome-desktop-engprod@google.com",
     gn_args = gn_args.config(
         configs = [
             "lacros_on_linux",
@@ -1155,6 +1152,15 @@ ci.builder(
             "use_cups",
         ],
     ),
+    # See crbug.com/1345687. This builder need higher memory.
+    builderless = False,
+    console_view_entry = consoles.console_view_entry(
+        category = "debug",
+        short_name = "lcr",
+    ),
+    main_console_view = "main",
+    cq_mirrors_console_view = "mirrors",
+    contact_team_email = "chrome-desktop-engprod@google.com",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
@@ -1179,12 +1185,6 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-chromiumos-archive",
     ),
-    console_view_entry = consoles.console_view_entry(
-        category = "default|cfm",
-        short_name = "cfm",
-    ),
-    main_console_view = "main",
-    contact_team_email = "core-devices-eng@google.com",
     gn_args = gn_args.config(
         configs = [
             "cfm",
@@ -1193,5 +1193,11 @@ ci.builder(
             "chromeos",
         ],
     ),
+    console_view_entry = consoles.console_view_entry(
+        category = "default|cfm",
+        short_name = "cfm",
+    ),
+    main_console_view = "main",
+    contact_team_email = "core-devices-eng@google.com",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )

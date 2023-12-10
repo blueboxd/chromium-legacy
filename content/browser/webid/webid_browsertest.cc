@@ -577,7 +577,7 @@ IN_PROC_BROWSER_TEST_F(WebIdIdPRegistryBrowserTest, UseRegistry) {
           var {token} = await navigator.credentials.get({
             identity: {
               providers: [{
-                configURL: "",
+                nonce: "1234",
                 clientId: "https://rp.example",
                 registered: true,
               }]
@@ -847,6 +847,47 @@ IN_PROC_BROWSER_TEST_F(WebIdDigitalCredentialsBrowserTest,
                 },
               }],
             },
+          });
+          return token;
+        }) ()
+    )";
+
+  EXPECT_EQ("test-mdoc", EvalJs(shell(), script));
+}
+
+// Test that a Verifiable Credential can be requested via the alternative JS
+// API.
+IN_PROC_BROWSER_TEST_F(WebIdDigitalCredentialsBrowserTest, AlternativeJSAPI) {
+  idp_server()->SetConfigResponseDetails(BuildValidConfigDetails());
+  MockDigitalCredentialProvider* digital_credential_provider =
+      static_cast<MockDigitalCredentialProvider*>(
+          test_browser_client_->GetDigitalCredentialProviderForTests());
+
+  const char request[] = R"(
+  {
+   "providers": [ {
+     "protocol": "OpenID4VP",
+     "request": "{canBeAnything: true}",
+     "publicKey": "anything really? yeah."
+   } ]
+  }
+  )";
+
+  EXPECT_CALL(*digital_credential_provider,
+              RequestDigitalCredential(_, _, IsJson(request), _))
+      .WillOnce(WithArg<3>(
+          [](DigitalCredentialProvider::DigitalCredentialCallback callback) {
+            std::move(callback).Run("test-mdoc");
+          }));
+
+  std::string script = R"(
+        (async () => {
+          const {token} = await navigator.credentials.requestIdentity({
+            providers: [{
+              protocol: "OpenID4VP",
+              request: "{canBeAnything: true}",
+              publicKey: "anything really? yeah.",
+            }],
           });
           return token;
         }) ()

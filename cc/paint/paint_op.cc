@@ -855,7 +855,8 @@ bool DeserializeSkottieMap(
 
 SkottieFrameData DeserializeSkottieFrameData(PaintOpReader& reader) {
   SkottieFrameData frame_data;
-  reader.Read(&frame_data.image, PaintFlags::DynamicRangeLimit::kHigh);
+  reader.Read(&frame_data.image, PaintFlags::DynamicRangeLimitMixture(
+                                     PaintFlags::DynamicRangeLimit::kHigh));
   reader.Read(&frame_data.quality);
   return frame_data;
 }
@@ -917,10 +918,12 @@ PaintOp* DrawSlugOp::Deserialize(PaintOpReader& reader, void* output) {
   reader.Read(&op->flags);
   unsigned int count = 0;
   reader.Read(&count);
-  reader.Read(&op->slug);
-  op->extra_slugs.resize(count - 1);
-  for (auto& extra_slug : op->extra_slugs) {
-    reader.Read(&extra_slug);
+  if (count > 0) {
+    reader.Read(&op->slug);
+    op->extra_slugs.resize(count - 1);
+    for (auto& extra_slug : op->extra_slugs) {
+      reader.Read(&extra_slug);
+    }
   }
   return op;
 }

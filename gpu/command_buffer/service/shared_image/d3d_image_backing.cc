@@ -181,7 +181,7 @@ D3DImageBacking::GLTextureHolder::~GLTextureHolder() = default;
 // static
 scoped_refptr<D3DImageBacking::GLTextureHolder>
 D3DImageBacking::CreateGLTexture(
-    viz::SharedImageFormat format,
+    const GLFormatDesc& gl_format_desc,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture,
@@ -204,20 +204,6 @@ D3DImageBacking::CreateGLTexture(
   // texture support is disabled.
   api->glTexParameteriFn(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   api->glTexParameteriFn(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-  // The GL internal format can differ from the underlying swap chain or texture
-  // format e.g. RGBA or RGB instead of BGRA or RED/RG for NV12 texture planes.
-  // See EGL_ANGLE_d3d_texture_client_buffer spec for format restrictions.
-  GLFormatDesc gl_format_desc;
-  if (format.is_multi_plane()) {
-    gl_format_desc =
-        ToGLFormatDesc(format, plane_index, /*use_angle_rgbx_format=*/false);
-  } else {
-    // For legacy multiplanar formats, `format` is already plane format (eg.
-    // RED, RG), so we pass plane_index=0.
-    gl_format_desc = ToGLFormatDesc(format, /*plane_index=*/0,
-                                    /*use_angle_rgbx_format=*/false);
-  }
 
   const EGLint egl_attrib_list[] = {
       EGL_TEXTURE_INTERNAL_FORMAT_ANGLE,
@@ -265,12 +251,13 @@ std::unique_ptr<D3DImageBacking> D3DImageBacking::CreateFromSwapChainBuffer(
     uint32_t usage,
     Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture,
     Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain,
+    const GLFormatCaps& gl_format_caps,
     bool is_back_buffer) {
   DCHECK(format.is_single_plane());
   return base::WrapUnique(new D3DImageBacking(
       mailbox, format, size, color_space, surface_origin, alpha_type, usage,
       std::move(d3d11_texture), /*dxgi_shared_handle_state=*/nullptr,
-      GL_TEXTURE_2D, /*array_slice=*/0u, /*plane_index=*/0u,
+      gl_format_caps, GL_TEXTURE_2D, /*array_slice=*/0u, /*plane_index=*/0u,
       std::move(swap_chain), is_back_buffer));
 }
 
@@ -285,6 +272,7 @@ std::unique_ptr<D3DImageBacking> D3DImageBacking::Create(
     uint32_t usage,
     Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture,
     scoped_refptr<DXGISharedHandleState> dxgi_shared_handle_state,
+    const GLFormatCaps& gl_format_caps,
     GLenum texture_target,
     size_t array_slice,
     size_t plane_index) {
@@ -294,7 +282,7 @@ std::unique_ptr<D3DImageBacking> D3DImageBacking::Create(
   auto backing = base::WrapUnique(new D3DImageBacking(
       mailbox, format, size, color_space, surface_origin, alpha_type, usage,
       std::move(d3d11_texture), std::move(dxgi_shared_handle_state),
-      texture_target, array_slice, plane_index));
+      gl_format_caps, texture_target, array_slice, plane_index));
   return backing;
 }
 
@@ -305,8 +293,9 @@ D3DImageBacking::CreateFromVideoTexture(
     DXGI_FORMAT dxgi_format,
     const gfx::Size& size,
     uint32_t usage,
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture,
     unsigned array_slice,
+    const GLFormatCaps& gl_format_caps,
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture,
     scoped_refptr<DXGISharedHandleState> dxgi_shared_handle_state) {
   CHECK(d3d11_texture);
   CHECK_EQ(mailboxes.size(), NumPlanes(dxgi_format));
@@ -342,7 +331,8 @@ D3DImageBacking::CreateFromVideoTexture(
     shared_images[plane_index] = base::WrapUnique(new D3DImageBacking(
         mailbox, plane_format, plane_size, kInvalidColorSpace,
         kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage, d3d11_texture,
-        dxgi_shared_handle_state, kTextureTarget, array_slice, plane_index));
+        dxgi_shared_handle_state, gl_format_caps, kTextureTarget, array_slice,
+        plane_index));
     if (!shared_images[plane_index])
       return {};
 
@@ -362,6 +352,7 @@ D3DImageBacking::D3DImageBacking(
     uint32_t usage,
     Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture,
     scoped_refptr<DXGISharedHandleState> dxgi_shared_handle_state,
+    const GLFormatCaps& gl_format_caps,
     GLenum texture_target,
     size_t array_slice,
     size_t plane_index,
@@ -378,6 +369,7 @@ D3DImageBacking::D3DImageBacking(
                                       /*is_thread_safe=*/false),
       d3d11_texture_(std::move(d3d11_texture)),
       dxgi_shared_handle_state_(std::move(dxgi_shared_handle_state)),
+      gl_format_caps_(gl_format_caps),
       texture_target_(texture_target),
       array_slice_(array_slice),
       plane_index_(plane_index),
@@ -997,6 +989,20 @@ D3DImageBacking::ProduceGLTexturePassthrough(SharedImageManager* manager,
       continue;
     }
 
+    // The GL internal format can differ from the underlying swap chain or
+    // texture format e.g. RGBA or RGB instead of BGRA or RED/RG for NV12
+    // texture planes. See EGL_ANGLE_d3d_texture_client_buffer spec for format
+    // restrictions.
+    GLFormatDesc gl_format_desc;
+    if (format().is_multi_plane()) {
+      gl_format_desc = gl_format_caps_.ToGLFormatDesc(format(), plane);
+    } else {
+      // For legacy multiplanar formats, `format` is already plane format (eg.
+      // RED, RG), so we pass plane_index=0.
+      gl_format_desc =
+          gl_format_caps_.ToGLFormatDesc(format(), /*plane_index=*/0);
+    }
+
     gfx::Size plane_size = format().GetPlaneSize(plane, size());
     // For legacy multiplanar formats, format() is plane format (eg. RED, RG)
     // which is_single_plane(), but the real plane is in plane_index_ so we
@@ -1004,9 +1010,9 @@ D3DImageBacking::ProduceGLTexturePassthrough(SharedImageManager* manager,
     unsigned plane_id = format().is_single_plane() ? plane_index_ : plane;
     // Creating the GL texture doesn't require exclusive access to the
     // underlying D3D11 texture.
-    holder =
-        CreateGLTexture(format(), plane_size, color_space(), d3d11_texture,
-                        texture_target_, array_slice_, plane_id, swap_chain_);
+    holder = CreateGLTexture(gl_format_desc, plane_size, color_space(),
+                             d3d11_texture, texture_target_, array_slice_,
+                             plane_id, swap_chain_);
     if (!holder) {
       LOG(ERROR) << "Failed to create GL texture for plane: " << plane;
       return nullptr;
@@ -1049,7 +1055,7 @@ D3DImageBacking::ProduceSkiaGraphite(
   return SkiaGraphiteDawnImageRepresentation::Create(
       std::move(dawn_representation), context_state,
       context_state->gpu_main_graphite_recorder(), manager, this, tracker,
-      is_yuv_plane);
+      is_yuv_plane, plane_index_);
 }
 #endif  // BUILDFLAG(SKIA_USE_DAWN)
 

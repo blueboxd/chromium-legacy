@@ -22,6 +22,7 @@
 #include "base/values.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
+#import "ios/web/public/navigation/form_warning_type.h"
 #import "ios/web/public/navigation/web_state_policy_decider.h"
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_delegate.h"
@@ -224,7 +225,8 @@ class WebStateImpl final : public WebState {
   void SendChangeLoadProgress(double progress);
 
   // Notifies the delegate that a Form Repost dialog needs to be presented.
-  void ShowRepostFormWarningDialog(base::OnceCallback<void(bool)> callback);
+  void ShowRepostFormWarningDialog(FormWarningType warning_type,
+                                   base::OnceCallback<void(bool)> callback);
 
   // Notifies the delegate that a JavaScript alert dialog needs to be presented.
   void RunJavaScriptAlertDialog(const GURL& origin_url,
@@ -357,8 +359,7 @@ class WebStateImpl final : public WebState {
   NSDictionary<NSNumber*, NSNumber*>* GetStatesForAllPermissions() const final;
   void DownloadCurrentPage(NSString* destination_file,
                            id<CRWWebViewDownloadDelegate> delegate,
-                           void (^handler)(id<CRWWebViewDownload>)) final
-      API_AVAILABLE(ios(14.5));
+                           void (^handler)(id<CRWWebViewDownload>)) final;
   bool IsFindInteractionSupported() final;
   bool IsFindInteractionEnabled() final;
   void SetFindInteractionEnabled(bool enabled) final;

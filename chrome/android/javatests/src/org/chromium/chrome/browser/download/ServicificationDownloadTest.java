@@ -18,7 +18,6 @@ import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.OTRProfileID;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ReducedModeNativeTestRule;
@@ -100,10 +99,6 @@ public final class ServicificationDownloadTest {
                 });
     }
 
-    private static boolean useDownloadOfflineContentProvider() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER);
-    }
-
     @Test
     @LargeTest
     @Feature({"Download"})
@@ -129,7 +124,7 @@ public final class ServicificationDownloadTest {
                             url, DOWNLOAD_GUID, tempFile);
                     OfflineContentAggregatorFactory.get().addObserver(mDownloadUpdateObserver);
                     OfflineContentAggregatorFactory.get()
-                            .resumeDownload(new ContentId("LEGACY_DOWNLOAD", DOWNLOAD_GUID), true);
+                            .resumeDownload(new ContentId("LEGACY_DOWNLOAD", DOWNLOAD_GUID));
                 });
         mDownloadUpdateObserver.waitForDownloadCompletion();
     }

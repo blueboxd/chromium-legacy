@@ -217,7 +217,7 @@ public class StatusCoordinator implements View.OnClickListener, LocationBarDataP
         updateSecurityIcon();
     }
 
-    // LocationBarData.Observer implementation
+    // LocationBarData.Observer implementation.
     // Using the default empty onPrimaryColorChanged.
     // Using the default empty onTitleChanged.
     // Using the default empty onUrlChanged.
@@ -246,6 +246,11 @@ public class StatusCoordinator implements View.OnClickListener, LocationBarDataP
     @Override
     public void onPageLoadStopped() {
         mMediator.onPageLoadStopped();
+    }
+
+    @Override
+    public void onTabCrashed() {
+        mMediator.onTabCrashed();
     }
 
     /** Returns the resource identifier of the current security icon drawable. */

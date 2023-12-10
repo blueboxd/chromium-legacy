@@ -24,11 +24,13 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/compose/type_conversions.h"
+#include "chrome/common/pref_names.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/compose/core/browser/compose_manager_impl.h"
 #include "components/compose/core/browser/compose_metrics.h"
 #include "components/optimization_guide/proto/features/compose.pb.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/unified_consent/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/page.h"
@@ -47,21 +49,33 @@ namespace {
 
 const char kComposeURL[] = "chrome://compose/";
 
+bool ShouldResumeSessionFromEntryPoint(
+    ChromeComposeClient::EntryPoint entry_point) {
+  switch (entry_point) {
+    case ChromeComposeClient::EntryPoint::kAutofillPopup:
+      return true;
+    case ChromeComposeClient::EntryPoint::kContextMenu:
+      return false;
+  }
+}
+
 }  // namespace
 
 ChromeComposeClient::ChromeComposeClient(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       content::WebContentsUserData<ChromeComposeClient>(*web_contents),
       translate_language_provider_(new TranslateLanguageProvider()),
-      compose_enabling_(translate_language_provider_.get()),
       manager_(this),
       client_page_receiver_(this) {
   profile_ = Profile::FromBrowserContext(GetWebContents().GetBrowserContext());
   opt_guide_ = OptimizationGuideKeyedServiceFactory::GetForProfile(profile_);
+  pref_service_ = profile_->GetPrefs();
+  compose_enabling_ = std::make_unique<ComposeEnabling>(
+      translate_language_provider_.get(), profile_);
 
   if (GetOptimizationGuide()) {
     std::vector<optimization_guide::proto::OptimizationType> types;
-    if (compose_enabling_.IsEnabledForProfile(profile_).has_value()) {
+    if (compose_enabling_->IsEnabledForProfile(profile_).has_value()) {
       types.push_back(optimization_guide::proto::OptimizationType::COMPOSE);
     }
 
@@ -85,7 +99,8 @@ void ChromeComposeClient::BindComposeDialog(
       GetWebContents().GetPrimaryMainFrame()->GetLastCommittedOrigin();
   if (origin == url::Origin::Create(GURL(kComposeURL))) {
     debug_session_ = std::make_unique<ComposeSession>(
-        &GetWebContents(), GetModelExecutor(), GetModelQualityLogsUploader());
+        &GetWebContents(), GetModelExecutor(), GetModelQualityLogsUploader(),
+        GetSessionId());
     debug_session_->set_skip_inner_text(true);
     debug_session_->Bind(std::move(handler), std::move(dialog));
     return;
@@ -130,6 +145,16 @@ void ChromeComposeClient::ShowUI() {
 
 void ChromeComposeClient::CloseUI(compose::mojom::CloseReason reason) {
   switch (reason) {
+    case compose::mojom::CloseReason::kConsentCloseButton:
+      SetConsentSessionCloseReason(
+          compose::ComposeConsentSessionCloseReason::kCloseButtonPressed);
+      RemoveActiveSession();
+      break;
+    case compose::mojom::CloseReason::kPageContentConsentDeclined:
+      SetConsentSessionCloseReason(compose::ComposeConsentSessionCloseReason::
+                                       kPageContentConsentDeclined);
+      RemoveActiveSession();
+      break;
     case compose::mojom::CloseReason::kCloseButton:
       SetSessionCloseReason(
           compose::ComposeSessionCloseReason::kCloseButtonPressed);
@@ -138,12 +163,52 @@ void ChromeComposeClient::CloseUI(compose::mojom::CloseReason reason) {
     case compose::mojom::CloseReason::kInsertButton:
       SetSessionCloseReason(
           compose::ComposeSessionCloseReason::kAcceptedSuggestion);
+      SetConsentSessionCloseReason(compose::ComposeConsentSessionCloseReason::
+                                       kPageContentConsentGivenWithInsert);
       RemoveActiveSession();
       break;
   }
 
   if (compose_dialog_controller_) {
     compose_dialog_controller_->Close();
+  }
+}
+
+void ChromeComposeClient::ApproveConsent() {
+  pref_service_->SetBoolean(
+      unified_consent::prefs::kPageContentCollectionEnabled, true);
+  pref_service_->SetBoolean(prefs::kPrefHasAcceptedComposeConsent, true);
+  UpdateAllSessionsWithConsentApproved();
+
+  // This marks the end of a "consent session" as the dialog moves to the main
+  // UI state. Log relevant metrics for the consent session.
+  ComposeSession* active_session = GetSessionForActiveComposeField();
+  if (active_session) {
+    active_session->SetConsentCloseReason(
+        compose::ComposeConsentSessionCloseReason::
+            kPageContentConsentAcceptedWithoutInsert);
+    active_session->HandleEndOfConsentSession();
+  }
+}
+
+void ChromeComposeClient::AcknowledgeConsentDisclaimer() {
+  pref_service_->SetBoolean(prefs::kPrefHasAcceptedComposeConsent, true);
+  UpdateAllSessionsWithConsentApproved();
+
+  // This marks the end of a "consent session" as the dialog moves to the main
+  // UI state. Log relevant metrics for the consent session.
+  ComposeSession* active_session = GetSessionForActiveComposeField();
+  if (active_session) {
+    active_session->SetConsentCloseReason(
+        compose::ComposeConsentSessionCloseReason::
+            kPageContentDisclaimerAcknowledgedWithoutInsert);
+    active_session->HandleEndOfConsentSession();
+  }
+}
+
+void ChromeComposeClient::UpdateAllSessionsWithConsentApproved() {
+  for (const auto& session : sessions_) {
+    session.second->set_consent_given_or_acknowledged();
   }
 }
 
@@ -156,17 +221,37 @@ void ChromeComposeClient::CreateOrUpdateSession(
   std::string selected_text = base::UTF16ToUTF8(trigger_field.selected_text);
   ComposeSession* current_session;
 
-  bool should_create_new_session_for_selection =
-      ui_entry_point != EntryPoint::kAutofillPopup && !selected_text.empty();
-  if (!HasSession(active_compose_field_id_.value()) ||
-      should_create_new_session_for_selection) {
-    if (!selected_text.empty()) {
+  // We only want to resume if the popup was clicked or the selection is empty.
+  // If the context menu were clicked with a selection, presume this is intent
+  // to restart using the new selection.
+  bool resume_current_session =
+      ShouldResumeSessionFromEntryPoint(ui_entry_point) ||
+      selected_text.empty();
+
+  bool has_session = HasSession(active_compose_field_id_.value());
+  if (has_session && resume_current_session) {
+    auto it = sessions_.find(active_compose_field_id_.value());
+    current_session = it->second.get();
+    current_session->set_compose_callback(std::move(callback));
+  } else {
+    if (has_session) {
+      // We have a session already, and we are going to close it and create a
+      // new one, which will require a close reason.
       SetSessionCloseReason(
           compose::ComposeSessionCloseReason::kNewSessionWithSelectedText);
+      // Set the equivalent close reason if the existing session was in a
+      // consent state.
+      auto it = sessions_.find(active_compose_field_id_.value());
+      current_session = it->second.get();
+      if (current_session->get_initial_consent_state() !=
+          compose::mojom::ConsentState::kConsented) {
+        SetConsentSessionCloseReason(compose::ComposeConsentSessionCloseReason::
+                                         kNewSessionWithSelectedText);
+      }
     }
     auto new_session = std::make_unique<ComposeSession>(
         &GetWebContents(), GetModelExecutor(), GetModelQualityLogsUploader(),
-        std::move(callback));
+        GetSessionId(), std::move(callback));
     current_session = new_session.get();
     // Insert or replace with a new session.
     sessions_.insert_or_assign(active_compose_field_id_.value(),
@@ -176,14 +261,15 @@ void ChromeComposeClient::CreateOrUpdateSession(
     auto utf8_chars = base::CountUnicodeCharacters(selected_text);
     compose::LogComposeDialogSelectionLength(
         utf8_chars.has_value() ? utf8_chars.value() : 0);
-  } else {
-    auto it = sessions_.find(active_compose_field_id_.value());
-    current_session = it->second.get();
-    current_session->set_compose_callback(std::move(callback));
   }
-  current_session->InitializeWithText(should_create_new_session_for_selection
-                                          ? std::make_optional(selected_text)
-                                          : std::nullopt);
+
+  current_session->set_initial_consent_state(GetConsentStateFromPrefs());
+
+  // If we are resuming then don't send the selected text - we want to keep the
+  // prior selection and not trigger another Compose.
+  current_session->InitializeWithText(resume_current_session
+                                          ? std::nullopt
+                                          : std::make_optional(selected_text));
 }
 
 void ChromeComposeClient::RemoveActiveSession() {
@@ -198,17 +284,27 @@ void ChromeComposeClient::RemoveActiveSession() {
   active_compose_field_id_.reset();
 }
 
+void ChromeComposeClient::SetConsentSessionCloseReason(
+    compose::ComposeConsentSessionCloseReason close_reason) {
+  if (debug_session_) {
+    return;
+  }
+
+  ComposeSession* active_session = GetSessionForActiveComposeField();
+  if (active_session) {
+    active_session->SetConsentCloseReason(close_reason);
+  }
+}
+
 void ChromeComposeClient::SetSessionCloseReason(
     compose::ComposeSessionCloseReason close_reason) {
   if (debug_session_) {
     return;
   }
 
-  if (active_compose_field_id_.has_value()) {
-    auto it = sessions_.find(active_compose_field_id_.value());
-    if (it != sessions_.end()) {
-      it->second->SetCloseReason(close_reason);
-    }
+  ComposeSession* active_session = GetSessionForActiveComposeField();
+  if (active_session) {
+    active_session->SetCloseReason(close_reason);
   }
 }
 
@@ -221,18 +317,44 @@ void ChromeComposeClient::RemoveAllSessions() {
   active_compose_field_id_.reset();
 }
 
+ComposeSession* ChromeComposeClient::GetSessionForActiveComposeField() {
+  if (active_compose_field_id_.has_value()) {
+    auto it = sessions_.find(active_compose_field_id_.value());
+    if (it != sessions_.end()) {
+      return it->second.get();
+    }
+  }
+  return nullptr;
+}
+
+compose::mojom::ConsentState ChromeComposeClient::GetConsentStateFromPrefs() {
+  auto consent_state = compose::mojom::ConsentState::kUnset;
+  bool page_content_collection_enabled = pref_service_->GetBoolean(
+      unified_consent::prefs::kPageContentCollectionEnabled);
+  bool consent_acknowledged_through_compose = false;
+  consent_acknowledged_through_compose =
+      pref_service_->GetBoolean(prefs::kPrefHasAcceptedComposeConsent);
+  if (page_content_collection_enabled) {
+    // Page content collection can be enabled from the Compose UI or through
+    // other UIs. If the latter, then a specific disclaimer dialog should be
+    // shown for Compose FRE. This is captured by `consent_state`.
+    consent_state = consent_acknowledged_through_compose
+                        ? compose::mojom::ConsentState::kConsented
+                        : compose::mojom::ConsentState::kExternalConsented;
+  }
+  return consent_state;
+}
+
 compose::ComposeManager& ChromeComposeClient::GetManager() {
   return manager_;
 }
 
 ComposeEnabling& ChromeComposeClient::GetComposeEnabling() {
-  return compose_enabling_;
+  return *compose_enabling_;
 }
 
 bool ChromeComposeClient::ShouldTriggerPopup(
     const autofill::FormFieldData& form_field_data) {
-  bool saved_state =
-      sessions_.end() != sessions_.find(form_field_data.global_id());
   translate::TranslateManager* translate_manager =
       ChromeTranslateClient::GetManagerFromWebContents(&GetWebContents());
   content::RenderFrameHost* top_level_frame =
@@ -240,10 +362,10 @@ bool ChromeComposeClient::ShouldTriggerPopup(
 
   GURL url = GetWebContents().GetPrimaryMainFrame()->GetLastCommittedURL();
 
-  return compose_enabling_.ShouldTriggerPopup(
+  return compose_enabling_->ShouldTriggerPopup(
       form_field_data.autocomplete_attribute, profile_, translate_manager,
-      saved_state, top_level_frame->GetLastCommittedOrigin(),
-      form_field_data.origin, url);
+      HasSession(form_field_data.global_id()),
+      top_level_frame->GetLastCommittedOrigin(), form_field_data.origin, url);
 }
 
 bool ChromeComposeClient::ShouldTriggerContextMenu(
@@ -251,8 +373,8 @@ bool ChromeComposeClient::ShouldTriggerContextMenu(
     content::ContextMenuParams& params) {
   translate::TranslateManager* translate_manager =
       ChromeTranslateClient::GetManagerFromWebContents(&GetWebContents());
-  return compose_enabling_.ShouldTriggerContextMenu(profile_, translate_manager,
-                                                    rfh, params);
+  return compose_enabling_->ShouldTriggerContextMenu(
+      profile_, translate_manager, rfh, params);
 }
 
 optimization_guide::ModelQualityLogsUploader*
@@ -267,6 +389,10 @@ ChromeComposeClient::GetModelExecutor() {
   return model_executor_for_test_.value_or(
       OptimizationGuideKeyedServiceFactory::GetForProfile(
           Profile::FromBrowserContext(GetWebContents().GetBrowserContext())));
+}
+
+base::Token ChromeComposeClient::GetSessionId() {
+  return session_id_for_test_.value_or(base::Token::CreateRandom());
 }
 
 optimization_guide::OptimizationGuideDecider*
@@ -284,12 +410,23 @@ void ChromeComposeClient::SetModelQualityLogsUploaderForTest(
   model_quality_uploader_for_test_ = model_quality_uploader;
 }
 
-void ChromeComposeClient::SetSkipShowDialogForTest() {
-  skip_show_dialog_for_test_ = true;
+void ChromeComposeClient::SetSkipShowDialogForTest(bool should_skip) {
+  skip_show_dialog_for_test_ = should_skip;
+}
+
+void ChromeComposeClient::SetSessionIdForTest(base::Token session_id) {
+  session_id_for_test_ = session_id;
 }
 
 int ChromeComposeClient::GetSessionCountForTest() {
   return sessions_.size();
+}
+
+void ChromeComposeClient::OpenFeedbackPageForTest(std::string feedback_id) {
+  ComposeSession* active_session = GetSessionForActiveComposeField();
+  if (active_session) {
+    active_session->OpenFeedbackPage(feedback_id);
+  }
 }
 
 void ChromeComposeClient::PrimaryPageChanged(content::Page& page) {

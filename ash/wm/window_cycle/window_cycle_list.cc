@@ -16,7 +16,6 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/snap_group/snap_group.h"
 #include "ash/wm/snap_group/snap_group_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_cycle/window_cycle_controller.h"
 #include "ash/wm/window_cycle/window_cycle_view.h"
 #include "ash/wm/window_state.h"
@@ -34,6 +33,7 @@
 #include "ui/compositor/layer_type.h"
 #include "ui/compositor/presentation_time_recorder.h"
 #include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -261,12 +261,12 @@ void WindowCycleList::SetFocusTabSlider(bool focus) {
   cycle_view_->SetFocusTabSlider(focus);
 }
 
-bool WindowCycleList::IsTabSliderFocused() {
+bool WindowCycleList::IsTabSliderFocused() const {
   DCHECK(cycle_view_);
   return cycle_view_->IsTabSliderFocused();
 }
 
-bool WindowCycleList::IsEventInCycleView(const ui::LocatedEvent* event) {
+bool WindowCycleList::IsEventInCycleView(const ui::LocatedEvent* event) const {
   return cycle_view_ &&
          cycle_view_->GetBoundsInScreen().Contains(ConvertEventToScreen(event));
 }
@@ -278,12 +278,12 @@ aura::Window* WindowCycleList::GetWindowAtPoint(const ui::LocatedEvent* event) {
 }
 
 bool WindowCycleList::IsEventInTabSliderContainer(
-    const ui::LocatedEvent* event) {
+    const ui::LocatedEvent* event) const {
   return cycle_view_ &&
          cycle_view_->IsEventInTabSliderContainer(ConvertEventToScreen(event));
 }
 
-bool WindowCycleList::ShouldShowUi() {
+bool WindowCycleList::ShouldShowUi() const {
   // Show alt-tab when there are at least two windows to pick from alt-tab, or
   // when there is at least a window to switch to by switching to the different
   // mode.
@@ -435,8 +435,9 @@ void WindowCycleList::InitWindowCycleView() {
         std::make_unique<CustomWindowTargeter>(widget->GetNativeWindow()));
   }
   // Close the app list, if it's open in clamshell mode.
-  if (!Shell::Get()->tablet_mode_controller()->InTabletMode())
+  if (!display::Screen::GetScreen()->InTabletMode()) {
     Shell::Get()->app_list_controller()->DismissAppList();
+  }
 
   Shell::Get()->frame_throttling_controller()->StartThrottling(windows_);
 }

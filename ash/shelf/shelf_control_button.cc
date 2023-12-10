@@ -9,7 +9,6 @@
 #include "ash/shelf/shelf_button_delegate.h"
 #include "ash/shell.h"
 #include "ash/style/style_util.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -38,7 +37,7 @@ class ShelfControlButtonHighlightPathGenerator
       const ShelfControlButtonHighlightPathGenerator&) = delete;
 
   // views::HighlightPathGenerator:
-  absl::optional<gfx::RRectF> GetRoundRect(const gfx::RectF& rect) override {
+  std::optional<gfx::RRectF> GetRoundRect(const gfx::RectF& rect) override {
     auto* shelf_config = ShelfConfig::Get();
     // Some control buttons have a slightly larger size to fill the shelf and
     // maximize the click target, but we still want their "visual" size to be

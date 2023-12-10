@@ -9,6 +9,8 @@ pub mod config;
 pub mod crates;
 pub mod deps;
 pub mod gn;
+pub mod group;
+pub mod inherit;
 pub mod manifest;
 pub mod paths;
 pub mod platforms;

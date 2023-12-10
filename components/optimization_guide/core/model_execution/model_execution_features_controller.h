@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_OPTIMIZATION_GUIDE_CORE_MODEL_EXECUTION_MODEL_EXECUTION_FEATURES_CONTROLLER_H_
 #define COMPONENTS_OPTIMIZATION_GUIDE_CORE_MODEL_EXECUTION_MODEL_EXECUTION_FEATURES_CONTROLLER_H_
 
-#include <unordered_set>
-
+#include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
+#include "base/scoped_observation.h"
 #include "base/threading/thread_checker.h"
 #include "components/optimization_guide/core/model_execution/settings_enabled_observer.h"
 #include "components/optimization_guide/core/optimization_guide_prefs.h"
@@ -48,6 +48,11 @@ class ModelExecutionFeaturesController
   bool ShouldFeatureBeCurrentlyEnabledForUser(
       proto::ModelExecutionFeature feature) const;
 
+  // Returns whether the `feature` should be currently allowed for logging model
+  // quality logs.
+  bool ShouldFeatureBeCurrentlyAllowedForLogging(
+      proto::ModelExecutionFeature feature) const;
+
   // Adds `observer` which can observe the change in feature settings.
   void AddObserver(SettingsEnabledObserver* observer);
 
@@ -57,13 +62,20 @@ class ModelExecutionFeaturesController
   void SimulateBrowserRestartForTesting();
 
  private:
+  // Enumerates the reasons an user is invalid.
+  enum class UserValidityResult {
+    kValid,
+    kInvalidUnsignedUser,
+    kInvalidEnterprisePolicy,
+  };
+
   // Called when the main setting toggle pref is changed.
   void OnMainToggleSettingStatePrefChanged();
 
   // Called when the feature-specific toggle pref is changed.
   void OnFeatureSettingPrefChanged(proto::ModelExecutionFeature feature);
 
-  void StartObservingAccountChanges(signin::IdentityManager* identity_manager);
+  void StartObservingAccountChanges();
 
   void OnPrimaryAccountChanged(
       const signin::PrimaryAccountChangeEvent& event_details) override;
@@ -74,12 +86,16 @@ class ModelExecutionFeaturesController
   prefs::FeatureOptInState GetPrefState(
       proto::ModelExecutionFeature feature) const;
 
-  // Returns true if the user is an eligible user to be shown any of the feature
-  // settings.
-  bool IsCurrentlyAValidUser() const;
+  // Returns the current validity result for user is eligible to be shown
+  // settings for `feature`.
+  UserValidityResult GetCurrentUserValidityResult(
+      proto::ModelExecutionFeature feature) const;
 
-  // Records state of the different features at startup.
-  void RecordFeatureSettingsAtStartup();
+  // Returns whether the `feature` is allowed by enterprise policy.
+  bool IsAllowedByEnterprisePolicy(proto::ModelExecutionFeature feature) const;
+
+  // Initializes the state of the different features at startup.
+  void InitializeFeatureSettings();
 
   // Initializes pref listener to listen to changes to relevant prefs and set up
   // callbacks.
@@ -88,6 +104,10 @@ class ModelExecutionFeaturesController
   // Computed at the time `this` is constructed. Stores the set of features
   // that were enabled at the time when browser started.
   std::unordered_set<int> features_enabled_at_startup_;
+
+  base::ScopedObservation<signin::IdentityManager,
+                          ModelExecutionFeaturesController>
+      identity_manager_observation_{this};
 
   raw_ptr<PrefService> browser_context_profile_service_ = nullptr;
 
@@ -98,6 +118,10 @@ class ModelExecutionFeaturesController
   bool is_signed_in_ = false;
 
   base::ObserverList<SettingsEnabledObserver> observers_;
+
+  // Set of features that are visible to unsigned users.
+  const base::flat_set<proto::ModelExecutionFeature>
+      features_allowed_for_unsigned_user_;
 
   THREAD_CHECKER(thread_checker_);
 };

@@ -74,6 +74,10 @@ class FakePromoCard : public PasswordPromoCardBase {
   // PasswordPromoCardBase implementation.
   std::string GetPromoID() const override { return kId; }
 
+  PromoCardType GetPromoCardType() const override {
+    return PromoCardType::kCheckup;
+  }
+
   bool ShouldShowPromo() const override { return true; }
 
   std::u16string GetTitle() const override { return u"Fake title"; }

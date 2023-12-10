@@ -31,10 +31,24 @@
     min-width: 48px;
     height: 48px;
     border-radius: 12px;
-    background: var(--color-compose-dialog-textarea-readonly-background);
+    background: linear-gradient(
+        136deg,  rgb(211, 227, 253) 1.59%, rgb(231, 248, 237) 100%);
     display: flex;
     justify-content: center;
     align-items: center;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    #consentIconContainer {
+      background: linear-gradient(
+          136deg,  rgb(8, 66, 160) 1.59%, rgb(15, 82, 35) 100%);
+    }
+  }
+
+  :host-context([chrome-refresh-2023]) #consentIconContainer {
+    background: linear-gradient(136deg,
+        var(--color-sys-gradient-primary) 1.59%,
+        var(--color-sys-gradient-tertiary) 100%);
   }
 
   #consentHeading iron-icon {
@@ -110,7 +124,7 @@
 
   @media (prefers-color-scheme: dark) {
     #body {
-      --results-background_: rgb(56, 58, 62);
+      --results-background_: rgb(60, 64, 67);
     }
   }
 
@@ -175,6 +189,11 @@
     line-height: 16px;
   }
 
+  #resultText {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
   #resultOptions {
     display: flex;
     align-items: flex-end;
@@ -184,7 +203,7 @@
 
   #resultOptions .md-select {
     --md-select-bg-color: transparent;
-    width: 82px;
+    width: auto;
   }
 
   :host-context(html:not([chrome-refresh-2023])) #resultOptions .md-select {
@@ -285,14 +304,14 @@
   }
 </style>
 
-<div id="consentDialog" class="dialog" hidden>
+<div id="consentDialog" class="dialog" hidden="[[showMainAppDialog_]]">
   <div id="consentHeading">
     <div id="consentIconContainer">
-      <iron-icon icon="compose:refresh"></iron-icon>
+      <iron-icon icon="compose:compose"></iron-icon>
     </div>
     <h1>$i18n{consentTitle}</h1>
     <cr-icon-button id="closeButtonConsent" iron-icon="cr:close"
-      on-click="onClose_">
+        on-click="onClose_" aria-label="$i18n{close}">
     </cr-icon-button>
   </div>
 
@@ -305,20 +324,30 @@
     </div>
   </div>
 
-  <div id="consentFooter" class="footer">
-    <cr-button id="noThanksButton" class="tonal-button">
+  <div id="consentFooter" class="footer" hidden="[[showDisclaimerFooter_]]">
+    <cr-button id="consentNoThanksButton" class="tonal-button"
+      on-click="onConsentNoThanksButtonClick_">
       $i18n{consentNoButton}
     </cr-button>
-    <cr-button id="yesButton" class="action-button">
+    <cr-button id="consentYesButton" class="action-button"
+      on-click="onConsentYesButtonClick_">
       $i18n{consentYesButton}
+    </cr-button>
+  </div>
+  <div id="disclaimerFooter" class="footer"
+    hidden="[[!showDisclaimerFooter_]]">
+    <cr-button id="disclaimerLetsGoButton" class="action-button"
+      on-click="onDisclaimerLetsGoButtonClick_">
+      $i18n{disclaimerLetsGoButton}
     </cr-button>
   </div>
 </div>
 
-<div id="appDialog" class="dialog">
+<div id="appDialog" class="dialog" hidden="[[!showMainAppDialog_]]">
   <div id="heading">
     <h1>$i18n{dialogTitle}</h1>
-    <cr-icon-button id="closeButton" iron-icon="cr:close" on-click="onClose_">
+    <cr-icon-button id="closeButton" iron-icon="cr:close" on-click="onClose_"
+        aria-label="$i18n{close}">
     </cr-icon-button>
   </div>
 
@@ -342,11 +371,11 @@
       </div>
 
       <div id="resultContainer" hidden="[[!hasSuccessfulResponse_(response_)]]">
-        [[response_.result]]
+        <div id="resultText">[[getTrimmedResult_(response_.result)]]</div>
 
         <div id="resultOptions">
           <select class="md-select" id="lengthMenu" value="[[selectedLength_]]"
-            on-change="onLengthChanged_">
+              aria-label="$i18n{lengthMenuTitle}" on-change="onLengthChanged_">
             <template is="dom-repeat" items="[[lengthOptions_]]">
               <option value="[[item.value]]" hidden$="[[item.hidden]]">
                 [[item.label]]
@@ -354,7 +383,7 @@
             </template>
           </select>
           <select class="md-select" id="toneMenu" value="[[selectedTone_]]"
-            on-change="onToneChanged_">
+              aria-label="$i18n{toneMenuTitle}" on-change="onToneChanged_">
             <template is="dom-repeat" items="[[toneOptions_]]">
               <option value="[[item.value]]" hidden$="[[item.hidden]]">
                 [[item.label]]
@@ -364,11 +393,11 @@
 
           <div class="icon-buttons-row">
             <cr-icon-button id="undoButton" iron-icon="compose:undo"
-              disabled="[[!undoEnabled_]]"
+              title="$i18n{undo}"  disabled="[[!undoEnabled_]]"
               on-click="onUndoClick_">
             </cr-icon-button>
             <cr-icon-button id="refreshButton" iron-icon="compose:refresh"
-              on-click="onRefresh_">
+              title="$i18n{resubmit}" on-click="onSubmit_">
             </cr-icon-button>
           </div>
         </div>
@@ -377,15 +406,13 @@
 
     <div id="submitFooter" class="footer" hidden$="[[submitted_]]">
       <div class="footer-text">
-        <div>
+        <div on-click="onFooterClick_">
           $i18nRaw{inputFooter}
-          <a href="#" role="button" on-click="onFileBugClick_">
-            $i18nRaw{fileBugText}
-          </a>
         </div>
       </div>
       <cr-button id="submitButton" class="action-button" on-click="onSubmit_"
         disabled="[[!isSubmitEnabled_]]">
+        <iron-icon slot="prefix-icon" icon="compose:compose"></iron-icon>
         $i18n{submitButton}
       </cr-button>
     </div>
@@ -393,14 +420,12 @@
     <div id="resultFooter" class="footer"
       hidden="[[!hasSuccessfulResponse_(response_)]]">
       <div class="footer-text">
-        <div>
+        <div on-click="onFooterClick_">
           $i18nRaw{resultFooter}
-          <a href="#" role="button" on-click="onFileBugClick_">
-            $i18nRaw{fileBugText}
-          </a>
         </div>
         <cr-feedback-buttons
-            on-selected-option-changed="onFeedbackSelectedOptionChanged_">
+            on-selected-option-changed="onFeedbackSelectedOptionChanged_"
+            selected-option="[[feedbackState_]]">
         </cr-feedback-buttons>
       </div>
       <cr-button id="insertButton" class="action-button" on-click="onAccept_">

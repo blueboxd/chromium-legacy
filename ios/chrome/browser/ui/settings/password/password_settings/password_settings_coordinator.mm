@@ -218,12 +218,16 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
 }
 
 - (void)stop {
-  // If the parent coordinator is stopping `self` while the UI is still being
-  // presented, dismiss without animation. Dismissals due to user actions (e.g,
-  // swipe or tap on Done) are animated.
-  if (self.baseViewController.presentedViewController ==
-      _settingsNavigationController) {
-    [self.baseViewController dismissViewControllerAnimated:NO completion:nil];
+  [self stopWithUIDismissal:YES];
+}
+
+#pragma mark - PasswordSettingsCoordinator
+
+- (void)stopWithUIDismissal:(BOOL)shouldDismissUI {
+  if (shouldDismissUI) {
+    [_settingsNavigationController.presentingViewController
+        dismissViewControllerAnimated:NO
+                           completion:nil];
   }
 
   [_passwordsInOtherAppsCoordinator stop];
@@ -536,6 +540,12 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
   [self restartReauthCoordinator];
 }
 
+#pragma mark - PasswordManagerReauthenticationDelegate
+
+- (void)dismissPasswordManagerAfterFailedReauthentication {
+  [_delegate dismissPasswordManagerAfterFailedReauthentication];
+}
+
 #pragma mark - SettingsNavigationControllerDelegate
 
 - (void)closeSettings {
@@ -556,6 +566,12 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
 - (void)successfulReauthenticationWithCoordinator:
     (ReauthenticationCoordinator*)coordinator {
   [_visitsRecorder maybeRecordVisitMetric];
+}
+
+- (void)dismissUIAfterFailedReauthenticationWithCoordinator:
+    (ReauthenticationCoordinator*)coordinator {
+  CHECK_EQ(_reauthCoordinator, coordinator);
+  [_delegate dismissPasswordManagerAfterFailedReauthentication];
 }
 
 - (void)willPushReauthenticationViewController {

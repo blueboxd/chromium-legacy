@@ -69,7 +69,7 @@ void RecordAnimationSmoothness(const std::string& histogram_name,
 
 void SetupThroughputTrackerForAnimationSmoothness(
     views::Widget* widget,
-    absl::optional<ui::ThroughputTracker>& tracker,
+    std::optional<ui::ThroughputTracker>& tracker,
     const char* histogram_name) {
   // `widget` may not exist in tests.
   if (!widget) {
@@ -278,7 +278,7 @@ class NotificationListView::MessageViewContainer : public MessageView::Observer,
       return;
     }
 
-    absl::optional<size_t> index = list_view_->GetIndexOf(this);
+    std::optional<size_t> index = list_view_->GetIndexOf(this);
     if (!index.has_value()) {
       return;
     }
@@ -697,18 +697,17 @@ void NotificationListView::OnChildNotificationViewUpdated(
   }
 
   // Update the child notification view with the updated notification.
-  // TODO(b/308814203): clean the static_cast checks by replacing
-  // `AshNotificationView*` with a base class.
   auto* child_view =
       parent_view->FindGroupNotificationView(child_notification_id);
+
+  if (!child_view) {
+    return;
+  }
+
   auto* notification =
       MessageCenter::Get()->FindNotificationById(child_notification_id);
-
-  if (child_view && message_center_utils::IsAshNotification(notification)) {
-    auto* ash_child_view = static_cast<AshNotificationView*>(child_view);
-    ash_child_view->UpdateWithNotification(*notification);
-    ResetBounds();
-  }
+  static_cast<MessageView*>(child_view)->UpdateWithNotification(*notification);
+  ResetBounds();
 }
 
 void NotificationListView::OnNotificationAdded(const std::string& id) {
@@ -835,8 +834,11 @@ void NotificationListView::OnNotificationUpdated(const std::string& id) {
     return;
   }
 
+  int previous_height = found_child->GetPreferredSize().height();
   found_child->UpdateWithNotification(*notification);
-  ResetBounds();
+  if (found_child->GetPreferredSize().height() != previous_height) {
+    ResetBounds();
+  }
 }
 
 void NotificationListView::OnSlideStarted(const std::string& notification_id) {

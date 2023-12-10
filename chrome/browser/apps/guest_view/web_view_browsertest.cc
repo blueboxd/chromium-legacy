@@ -450,7 +450,7 @@ class MockWebContentsDelegate : public content::WebContentsDelegate {
   }
 
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
-                                  const GURL& security_origin,
+                                  const url::Origin& security_origin,
                                   blink::mojom::MediaStreamType type) override {
     checked_ = true;
     if (check_run_loop_)
@@ -4300,8 +4300,7 @@ IN_PROC_BROWSER_TEST_P(
   extensions::RulesRegistryService* registry_service =
       extensions::RulesRegistryService::Get(profile);
   extensions::TestRulesRegistry* rules_registry =
-      new extensions::TestRulesRegistry(content::BrowserThread::UI, "ui",
-                                        rules_registry_id);
+      new extensions::TestRulesRegistry("ui", rules_registry_id);
   registry_service->RegisterRulesRegistry(base::WrapRefCounted(rules_registry));
 
   EXPECT_TRUE(
@@ -6782,25 +6781,6 @@ IN_PROC_BROWSER_TEST_P(WebViewFencedFrameTest,
       guest_rfh, ff_rfh->GetLastCommittedURL());
   EXPECT_NE(ff_rfh_2->GetSiteInstance(), ff_rfh->GetSiteInstance());
   EXPECT_EQ(ff_rfh->GetProcess(), ff_rfh_2->GetProcess());
-}
-
-class WebViewPortalTest : public WebViewTest {
- public:
-  WebViewPortalTest() {
-    scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{blink::features::kPortals,
-                              blink::features::kPortalsCrossOrigin},
-        /*disabled_features=*/{});
-  }
-  ~WebViewPortalTest() override = default;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-// Creates and activates a <portal> element inside a <webview>.
-IN_PROC_BROWSER_TEST_F(WebViewPortalTest, PortalActivationInGuest) {
-  TestHelper("testActivatePortal", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
 class WebViewUsbTest : public WebViewTest {

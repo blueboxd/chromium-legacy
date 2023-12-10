@@ -219,14 +219,21 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   int shortcut_host_badge_icon_dimension() const {
     return shortcut_host_badge_icon_dimension_;
   }
-  int shortcut_host_badge_icon_border_dimension() const {
-    return shortcut_host_badge_icon_border_dimension_;
+  int shortcut_host_badge_icon_border_margin() const {
+    return shortcut_host_badge_icon_border_margin_;
   }
-  int shortcut_background_border_dimension() const {
-    return shortcut_background_border_dimension_;
+  int shortcut_background_border_margin() const {
+    return shortcut_background_border_margin_;
+  }
+  int promise_icon_dimension_installing() const {
+    return promise_icon_dimension_installing_;
+  }
+  int promise_icon_dimension_pending() const {
+    return promise_icon_dimension_pending_;
   }
   int GetShortcutHostBadgeIconContainerDimension() const;
   int GetShortcutBackgroundContainerDimension() const;
+  gfx::Size GetShortcutIconSize() const;
 
   gfx::Size grid_icon_size() const {
     return gfx::Size(grid_icon_dimension_, grid_icon_dimension_);
@@ -318,10 +325,16 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   const int shortcut_host_badge_icon_dimension_;
 
   // The dimension of a host badge icon container border of a shortcut.
-  const int shortcut_host_badge_icon_border_dimension_;
+  const int shortcut_host_badge_icon_border_margin_;
 
   // The dimension of a background container border of a shortcut.
-  const int shortcut_background_border_dimension_;
+  const int shortcut_background_border_margin_;
+
+  // The preferred icon size for the promise apps on installing state.
+  const int promise_icon_dimension_installing_;
+
+  // The preferred icon size for the promise apps on pending state.
+  const int promise_icon_dimension_pending_;
 };
 
 }  // namespace ash

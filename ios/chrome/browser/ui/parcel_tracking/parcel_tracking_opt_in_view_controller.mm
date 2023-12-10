@@ -24,8 +24,6 @@ namespace {
 NSString* const kOptInIcon = @"parcel_tracking_icon_new";
 // Radius size of the table view.
 CGFloat const kTableViewCornerRadius = 10;
-// Horizontal margin for the view.
-CGFloat const kHorizontalMargin = 24;
 // Spacing before the image.
 CGFloat const kSpacingBeforeImage = 23;
 // Size of the radio buttons.
@@ -41,12 +39,12 @@ CGFloat const kRadioButtonSize = 20;
 @implementation ParcelTrackingOptInViewController {
   UITableView* _tableView;
   IOSParcelTrackingOptInStatus _selection;
-  NSLayoutConstraint* _optionsViewHeightConstraint;
+  NSLayoutConstraint* _tableViewHeightConstraint;
 }
 
 - (void)viewDidLoad {
-  UIView* optionsView = [self createOptionsView];
-  self.underTitleView = optionsView;
+  UIView* tableView = [self createTableView];
+  self.underTitleView = tableView;
   self.titleString =
       l10n_util::GetNSString(IDS_IOS_PARCEL_TRACKING_OPT_IN_TITLE);
   self.primaryActionString =
@@ -68,10 +66,9 @@ CGFloat const kRadioButtonSize = 20;
   // Assign table view's width anchor now that it is in the same hierarchy as
   // the top view.
   [NSLayoutConstraint activateConstraints:@[
-    [optionsView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor
-                                              constant:kHorizontalMargin],
-    [optionsView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor
-                                               constant:-kHorizontalMargin],
+    [tableView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
+    [tableView.widthAnchor
+        constraintEqualToAnchor:tableView.superview.widthAnchor],
   ]];
 
   [self setPrimaryButtonConfiguration];
@@ -80,9 +77,7 @@ CGFloat const kRadioButtonSize = 20;
 
 - (void)viewWillLayoutSubviews {
   [super viewWillLayoutSubviews];
-  [self updateOptionsViewHeightConstraint];
-  self.view.directionalLayoutMargins =
-      NSDirectionalEdgeInsetsMake(0, kHorizontalMargin, 0, kHorizontalMargin);
+  [self updateTableViewHeightConstraint];
 }
 
 #pragma mark - ConfirmationAlertViewController
@@ -97,14 +92,16 @@ CGFloat const kRadioButtonSize = 20;
         [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline],
     NSParagraphStyleAttributeName : paragraphStyle,
   };
-  NSDictionary* linkAttributes =
-      @{NSLinkAttributeName : net::NSURLWithGURL(GURL("chrome://settings"))};
+  NSDictionary* linkAttributes = @{
+    NSLinkAttributeName : net::NSURLWithGURL(GURL("chrome://settings")),
+    NSUnderlineStyleAttributeName : @(NSUnderlineStyleSingle)
+  };
   subtitle.attributedText = AttributedStringFromStringWithLink(
       l10n_util::GetNSString(IDS_IOS_PARCEL_TRACKING_OPT_IN_SUBTITLE),
       textAttributes, linkAttributes);
   subtitle.delegate = self;
-  subtitle.editable = YES;
   subtitle.selectable = YES;
+  subtitle.textContainer.lineFragmentPadding = 0;
 }
 
 #pragma mark - ConfirmationAlertActionHandler
@@ -162,7 +159,10 @@ CGFloat const kRadioButtonSize = 20;
   cell.backgroundColor = [UIColor colorNamed:kSecondaryBackgroundColor];
   cell.userInteractionEnabled = YES;
   cell.textLabel.text = title;
-  cell.textLabel.isAccessibilityElement = YES;
+  cell.isAccessibilityElement = YES;
+  cell.accessibilityLabel = cell.textLabel.text;
+  cell.accessibilityTraits =
+      [self accessibilityTraitsForButton:/*selected=*/NO];
 
   cell.accessoryView =
       [[UIImageView alloc] initWithImage:DefaultSymbolTemplateWithPointSize(
@@ -196,6 +196,8 @@ CGFloat const kRadioButtonSize = 20;
   cell.accessoryView = [[UIImageView alloc] initWithImage:icon];
   cell.accessoryView.tintColor = [UIColor colorNamed:kBlueColor];
   self.primaryActionButton.enabled = YES;
+  cell.accessibilityTraits =
+      [self accessibilityTraitsForButton:/*selected=*/YES];
 }
 
 - (void)tableView:(UITableView*)tableView
@@ -205,12 +207,14 @@ CGFloat const kRadioButtonSize = 20;
       initWithImage:DefaultSymbolTemplateWithPointSize(
                         kCircleSymbol, kSymbolAccessoryPointSize)];
   cell.accessoryView.tintColor = [UIColor colorNamed:kGrey500Color];
+  cell.accessibilityTraits =
+      [self accessibilityTraitsForButton:/*selected=*/NO];
 }
 
 #pragma mark - Private
 
 // Creates the view with the "always track" and "ask to track" options.
-- (UITableView*)createOptionsView {
+- (UITableView*)createTableView {
   _tableView = [[UITableView alloc] initWithFrame:CGRectZero
                                             style:UITableViewStylePlain];
   _tableView.layer.cornerRadius = kTableViewCornerRadius;
@@ -224,20 +228,20 @@ CGFloat const kRadioButtonSize = 20;
   _tableView.separatorInset = UIEdgeInsetsZero;
   [_tableView registerClass:TableViewTextCell.class
       forCellReuseIdentifier:@"cell"];
-  _optionsViewHeightConstraint =
+  _tableViewHeightConstraint =
       [_tableView.heightAnchor constraintEqualToConstant:0];
-  _optionsViewHeightConstraint.active = YES;
+  _tableViewHeightConstraint.active = YES;
 
   return _tableView;
 }
 
-// Updates the optionsView's height constraint.
-- (void)updateOptionsViewHeightConstraint {
+// Updates the tableView's height constraint.
+- (void)updateTableViewHeightConstraint {
   CGFloat totalCellHeight = 0;
   for (UITableViewCell* cell in _tableView.visibleCells) {
     totalCellHeight += cell.frame.size.height;
   }
-  _optionsViewHeightConstraint.constant = totalCellHeight;
+  _tableViewHeightConstraint.constant = totalCellHeight;
 }
 
 // Sets the configurationUpdateHandler for the primaryActionButton to handle the
@@ -267,6 +271,16 @@ CGFloat const kRadioButtonSize = 20;
     }
     incomingButton.configuration = updatedConfig;
   };
+}
+
+// Returns the accessibility traits for the radio button options. `selected`
+// should be true if the radio button is selected.
+- (UIAccessibilityTraits)accessibilityTraitsForButton:(BOOL)selected {
+  UIAccessibilityTraits accessibilityTraits = UIAccessibilityTraitButton;
+  if (selected) {
+    accessibilityTraits |= UIAccessibilityTraitSelected;
+  }
+  return accessibilityTraits;
 }
 
 @end

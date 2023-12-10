@@ -77,7 +77,13 @@ void SidePanelUtil::PopulateGlobalEntries(Browser* browser,
 
   // Add read anything.
   if (features::IsReadAnythingEnabled()) {
-    ReadAnythingCoordinator::GetOrCreateForBrowser(browser);
+    auto* read_anything_coordinator =
+        ReadAnythingCoordinator::GetOrCreateForBrowser(browser);
+    // If the local side panel is not enabled, create and register a global side
+    // panel entry for Reading Anything.
+    if (!features::IsReadAnythingLocalSidePanelEnabled()) {
+      read_anything_coordinator->CreateAndRegisterEntry(global_registry);
+    }
   }
 
   // Create Search Companion coordinator.
@@ -137,7 +143,7 @@ SidePanelCoordinator* SidePanelUtil::GetSidePanelCoordinatorForBrowser(
 }
 
 void SidePanelUtil::RecordSidePanelOpen(
-    absl::optional<SidePanelUtil::SidePanelOpenTrigger> trigger) {
+    std::optional<SidePanelUtil::SidePanelOpenTrigger> trigger) {
   base::RecordAction(base::UserMetricsAction("SidePanel.Show"));
 
   if (trigger.has_value()) {
@@ -146,7 +152,7 @@ void SidePanelUtil::RecordSidePanelOpen(
 }
 
 void SidePanelUtil::RecordSidePanelShowOrChangeEntryTrigger(
-    absl::optional<SidePanelUtil::SidePanelOpenTrigger> trigger) {
+    std::optional<SidePanelUtil::SidePanelOpenTrigger> trigger) {
   if (trigger.has_value()) {
     base::UmaHistogramEnumeration("SidePanel.OpenOrChangeEntryTrigger",
                                   trigger.value());
@@ -212,7 +218,7 @@ void SidePanelUtil::RecordEntryHiddenMetrics(SidePanelEntry::Id id,
 void SidePanelUtil::RecordEntryShowTriggeredMetrics(
     Browser* browser,
     SidePanelEntry::Id id,
-    absl::optional<SidePanelUtil::SidePanelOpenTrigger> trigger) {
+    std::optional<SidePanelUtil::SidePanelOpenTrigger> trigger) {
   if (trigger.has_value()) {
     base::UmaHistogramEnumeration(
         base::StrCat({"SidePanel.", SidePanelEntryIdToHistogramName(id),
@@ -237,4 +243,21 @@ void SidePanelUtil::RecordPinnedButtonClicked(SidePanelEntry::Id id,
   base::RecordComputedAction(base::StrCat(
       {"SidePanel.", SidePanelEntryIdToHistogramName(id), ".",
        is_pinned ? "Pinned" : "Unpinned", ".BySidePanelHeaderButton"}));
+}
+
+actions::ActionItem::InvokeActionCallback
+SidePanelUtil::CreateToggleSidePanelActionCallback(SidePanelEntryKey key,
+                                                   Browser* browser) {
+  return base::BindRepeating(
+      [](SidePanelEntryKey key, Browser* browser, actions::ActionItem* item,
+         actions::ActionInvocationContext context) {
+        const SidePanelOpenTrigger open_trigger =
+            static_cast<SidePanelOpenTrigger>(
+                context.GetProperty(kSidePanelOpenTriggerKey));
+        CHECK_GE(open_trigger, SidePanelOpenTrigger::kMinValue);
+        CHECK_LE(open_trigger, SidePanelOpenTrigger::kMaxValue);
+        SidePanelUI::GetSidePanelUIForBrowser(browser)->Toggle(key,
+                                                               open_trigger);
+      },
+      key, browser);
 }

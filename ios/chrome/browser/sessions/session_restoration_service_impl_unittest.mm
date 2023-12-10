@@ -16,7 +16,6 @@
 #import "base/run_loop.h"
 #import "base/scoped_multi_source_observation.h"
 #import "base/test/metrics/histogram_tester.h"
-#import "base/test/scoped_feature_list.h"
 #import "base/time/time.h"
 #import "ios/chrome/browser/sessions/proto/storage.pb.h"
 #import "ios/chrome/browser/sessions/session_constants.h"
@@ -27,7 +26,7 @@
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
-#import "ios/chrome/browser/web/chrome_web_client.h"
+#import "ios/chrome/browser/web/model/chrome_web_client.h"
 #import "ios/web/common/user_agent.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/navigation/navigation_util.h"
@@ -40,10 +39,6 @@
 #import "ui/base/page_transition_types.h"
 #import "ui/base/window_open_disposition.h"
 #import "url/gurl.h"
-
-// To get access to web::features::kEnableSessionSerializationOptimizations.
-// TODO(crbug.com/1383087): remove once the feature is fully launched.
-#import "ios/web/common/features.h"
 
 namespace {
 
@@ -188,7 +183,6 @@ FilePathSet ExpectedStorageFilesForWebStates(
         session_dir, reference.web_state->GetUniqueIdentifier());
 
     result.insert(web_state_dir.Append(kWebStateStorageFilename));
-    result.insert(web_state_dir.Append(kWebStateMetadataStorageFilename));
     if (reference.is_native_session_available) {
       result.insert(web_state_dir.Append(kWebStateSessionFilename));
     }
@@ -207,7 +201,8 @@ FilePathSet ExpectedStorageFilesForBrowser(const base::FilePath& session_dir,
         .is_native_session_available = true,
     });
   }
-  return ExpectedStorageFilesForWebStates(session_dir, true, references);
+  return ExpectedStorageFilesForWebStates(
+      session_dir, /*expect_session_metadata_storage=*/true, references);
 }
 
 // Set union.
@@ -239,10 +234,6 @@ base::RepeatingClosure ExpectNCall(base::RepeatingClosure closure, size_t n) {
 class SessionRestorationServiceImplTest : public PlatformTest {
  public:
   SessionRestorationServiceImplTest() {
-    // Enable the feature. Needs to happen before the threads are created.
-    scoped_feature_list_.InitAndEnableFeature(
-        web::features::kEnableSessionSerializationOptimizations);
-
     // Use the ChromeWebClient as the test tries to load chrome:// URLs.
     scoped_web_client_ = std::make_unique<web::ScopedTestingWebClient>(
         std::make_unique<ChromeWebClient>());
@@ -344,7 +335,6 @@ class SessionRestorationServiceImplTest : public PlatformTest {
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   FileModificationTracker file_tracker_;
 
   std::unique_ptr<web::ScopedTestingWebClient> scoped_web_client_;
@@ -748,7 +738,7 @@ TEST_F(SessionRestorationServiceImplTest, DeleteObsoleteFilesOnLoadSession) {
     EXPECT_EQ(ModifiedFiles(),
               ExpectedStorageFilesForWebStates(
                   SessionPathFromIdentifier(kIdentifier0),
-                  /*expect_session_metatadat_storage=*/true, {}));
+                  /*expect_session_metadata_storage=*/true, {}));
 
     // Record the files used to represent the state of the detached WebState.
     // Those files will be deleted when the session is loaded.
@@ -1029,4 +1019,28 @@ TEST_F(SessionRestorationServiceImplTest, DeleteDataForDiscardedSessions) {
 
   // Verify that the files for Browser have been deleted.
   EXPECT_EQ(DeletedFiles(), browser_storage);
+}
+
+// Tests that PurgeUnassociatedData() can be called at any point as the
+// SessionRestorationServiceImpl version is a no-op.
+TEST_F(SessionRestorationServiceImplTest, PurgeUnassociatedData) {
+  // Test that the method can be called before any Browser has been
+  // registered.
+  {
+    base::RunLoop run_loop;
+    service()->PurgeUnassociatedData(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  // Test that the method can be called after a Browser has been
+  // registered.
+  TestBrowser browser = TestBrowser(browser_state());
+  service()->SetSessionID(&browser, kIdentifier0);
+  {
+    base::RunLoop run_loop;
+    service()->PurgeUnassociatedData(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  service()->Disconnect(&browser);
 }

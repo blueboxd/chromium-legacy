@@ -98,7 +98,7 @@ source_set("unit_tests") {
     "//ios/chrome/app/application_delegate:tab_opening",
     "//ios/chrome/app/application_delegate:test_support",
     "//ios/chrome/app/application_delegate:url_opener_params",
-    "//ios/chrome/browser/metrics:metrics",
+    "//ios/chrome/browser/metrics/model",
     "//ios/chrome/browser/promos_manager:constants",
     "//ios/chrome/browser/promos_manager:promos_manager",
     "//ios/chrome/browser/promos_manager:test_support",
@@ -229,7 +229,7 @@ source_set("app_metrics_app_state_agent") {
     "//base",
     "//ios/chrome/app/application_delegate:application_delegate_internal",
     "//ios/chrome/app/application_delegate:observing_app_state_agent",
-    "//ios/chrome/browser/metrics",
+    "//ios/chrome/browser/metrics/model",
     "//ios/chrome/browser/shared/coordinator/scene:scene_state_header",
     "//ios/public/provider/chrome/browser/primes:primes_api",
   ]
@@ -365,6 +365,29 @@ source_set("post_restore_app_agent") {
   ]
 }
 
+source_set("search_engine_choice_app_agent") {
+  sources = [
+    "search_engine_choice_app_agent.h",
+    "search_engine_choice_app_agent.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/search_engines",
+    "//ios/chrome/app/application_delegate:app_state_header",
+    "//ios/chrome/app/application_delegate:application_delegate_internal",
+    "//ios/chrome/app/application_delegate:observing_app_state_agent",
+    "//ios/chrome/browser/policy",
+    "//ios/chrome/browser/promos_manager:constants",
+    "//ios/chrome/browser/promos_manager:factory",
+    "//ios/chrome/browser/promos_manager:promos_manager",
+    "//ios/chrome/browser/search_engines/model:template_url_service_factory",
+    "//ios/chrome/browser/shared/model/application_context",
+    "//ios/chrome/browser/shared/model/browser_state",
+    "//ios/chrome/browser/ui/search_engine_choice",
+    "//ios/public/provider/chrome/browser/signin:choice_api",
+  ]
+}
+
 source_set("feed_app_agent") {
   sources = [
     "feed_app_agent.h",
@@ -375,8 +398,8 @@ source_set("feed_app_agent") {
     "//components/metrics",
     "//ios/chrome/app/application_delegate:app_state_header",
     "//ios/chrome/app/application_delegate:observing_app_state_agent",
-    "//ios/chrome/browser/discover_feed:discover_feed",
-    "//ios/chrome/browser/discover_feed:discover_feed_factory",
+    "//ios/chrome/browser/discover_feed/model:model",
+    "//ios/chrome/browser/discover_feed/model:discover_feed_factory",
     "//ios/chrome/browser/shared/model/application_context",
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/shared/public/features",
@@ -427,6 +450,7 @@ source_set("app_internal") {
     ":mode",
     ":post_restore_app_agent",
     ":safe_mode_app_state_agent",
+    ":search_engine_choice_app_agent",
     ":tests_hook",
     ":variations_app_state_agent",
     "//base",
@@ -486,13 +510,13 @@ source_set("app_internal") {
     "//ios/chrome/browser/feature_engagement/model",
     "//ios/chrome/browser/first_run/model",
     "//ios/chrome/browser/geolocation/model",
-    "//ios/chrome/browser/history",
+    "//ios/chrome/browser/history/model",
     "//ios/chrome/browser/mailto_handler/model",
     "//ios/chrome/browser/mailto_handler/model:mailto_handler_factory",
-    "//ios/chrome/browser/main",
+    "//ios/chrome/browser/main/model",
     "//ios/chrome/browser/memory/model",
-    "//ios/chrome/browser/metrics",
-    "//ios/chrome/browser/metrics:metrics_internal",
+    "//ios/chrome/browser/metrics/model",
+    "//ios/chrome/browser/metrics/model:metrics_internal",
     "//ios/chrome/browser/omaha/model",
     "//ios/chrome/browser/passwords/model",
     "//ios/chrome/browser/promos_manager:factory",
@@ -504,6 +528,7 @@ source_set("app_internal") {
     "//ios/chrome/browser/search_engines/model:search_engines_util",
     "//ios/chrome/browser/sessions:session_restoration_service",
     "//ios/chrome/browser/sessions:session_restoration_service_factory",
+    "//ios/chrome/browser/sessions:session_util",
     "//ios/chrome/browser/share_extension/model",
     "//ios/chrome/browser/shared/coordinator/scene",
     "//ios/chrome/browser/shared/coordinator/scene:scene_state_header",
@@ -535,10 +560,7 @@ source_set("app_internal") {
     "//ios/chrome/browser/url_loading/model",
     "//ios/chrome/browser/variations/model:ios_chrome_ui_string_overrider_factory",
     "//ios/chrome/browser/voice/model",
-    "//ios/chrome/browser/web",
-    "//ios/chrome/browser/web:feature_flags",
-    "//ios/chrome/browser/web:web_internal",
-    "//ios/chrome/browser/web/session_state",
+    "//ios/chrome/browser/web/model",
     "//ios/chrome/common/app_group",
     "//ios/chrome/common/app_group:main_app",
     "//ios/chrome/common/intents",
@@ -546,6 +568,7 @@ source_set("app_internal") {
     "//ios/net",
     "//ios/public/provider/chrome/browser/app_distribution:app_distribution_api",
     "//ios/public/provider/chrome/browser/overrides:overrides_api",
+    "//ios/public/provider/chrome/browser/signin:choice_api",
     "//ios/public/provider/chrome/browser/ui_utils:ui_utils_api",
     "//ios/public/provider/chrome/browser/user_feedback:user_feedback_api",
     "//ios/third_party/material_components_ios",

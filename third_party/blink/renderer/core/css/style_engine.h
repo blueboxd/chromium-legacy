@@ -140,7 +140,10 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
    public:
     explicit DetachLayoutTreeScope(StyleEngine& engine)
         : engine_(engine), in_detach_scope_(&engine.in_detach_scope_, true) {}
-    ~DetachLayoutTreeScope() { engine_.MarkForLayoutTreeChangesAfterDetach(); }
+    ~DetachLayoutTreeScope() {
+      engine_.MarkForLayoutTreeChangesAfterDetach();
+      engine_.InvalidateSVGResourcesAfterDetach();
+    }
 
    private:
     StyleEngine& engine_;
@@ -608,12 +611,11 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   // recalcs when we found out the container is eligible for size containment
   // after all.
   void UpdateStyleForNonEligibleContainer(Element& container);
+  // Updates the style of `element`, and descendants if needed.
+  // The provided `try_set` represents the declaration block from a @try rule.
   void UpdateStyleForPositionFallback(Element& element,
-                                      const ScopedCSSName* position_fallback,
-                                      unsigned position_fallback_index);
-  bool HasTryRule(Element& element,
-                  const ScopedCSSName* position_fallback,
-                  unsigned position_fallback_index);
+                                      const CSSPropertyValueSet* try_set);
+  StyleRulePositionFallback* GetPositionFallbackRule(const ScopedCSSName&);
   void RecalcStyle();
 
   void ClearEnsuredDescendantStyles(Element& element);
@@ -843,6 +845,10 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   // removal which caused a layout subtree to be detached.
   void MarkForLayoutTreeChangesAfterDetach();
 
+  // SVG resource may have had their layout object detached and need to notify
+  // any clients about this.
+  void InvalidateSVGResourcesAfterDetach();
+
   void RebuildLayoutTreeForTraversalRootAncestors(Element* parent,
                                                   Element* container_parent);
 
@@ -1032,7 +1038,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   friend class WhitespaceAttacherTest;
   friend class StyleCascadeTest;
   friend class StyleImageCacheTest;
-  FRIEND_TEST_ALL_PREFIXES(NGBlockChildIteratorTest, DeleteNodeWhileIteration);
+  FRIEND_TEST_ALL_PREFIXES(BlockChildIteratorTest, DeleteNodeWhileIteration);
 
   HeapHashSet<Member<TextTrack>> text_tracks_;
   Member<Element> vtt_originating_element_;

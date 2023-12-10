@@ -41,6 +41,7 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
 
     @GuardedBy("mLock")
     private final Set<AccountHolder> mAccounts = new LinkedHashSet<>();
+
     private AccountsChangeObserver mObserver;
 
     public FakeAccountManagerDelegate() {
@@ -81,9 +82,7 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
         return result.toArray(new Account[0]);
     }
 
-    /**
-     * Adds an AccountHolder.
-     */
+    /** Adds an AccountHolder. */
     public void addAccount(AccountHolder accountHolder) {
         synchronized (mLock) {
             boolean added = mAccounts.add(accountHolder);
@@ -92,9 +91,7 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
         ThreadUtils.runOnUiThreadBlocking(mObserver::onCoreAccountInfosChanged);
     }
 
-    /**
-     * Removes an AccountHolder.
-     */
+    /** Removes an AccountHolder. */
     public void removeAccount(AccountHolder accountHolder) {
         synchronized (mLock) {
             boolean removed = mAccounts.remove(accountHolder);
@@ -103,11 +100,16 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
         ThreadUtils.runOnUiThreadBlocking(mObserver::onCoreAccountInfosChanged);
     }
 
+    public void callOnCoreAccountInfoChanged() {
+        ThreadUtils.runOnUiThreadBlocking(mObserver::onCoreAccountInfosChanged);
+    }
+
     @Override
     public AccessTokenData getAuthToken(Account account, String scope) throws AuthException {
         AccountHolder accountHolder = tryGetAccountHolder(account);
         if (accountHolder == null) {
-            throw new AuthException(AuthException.NONTRANSIENT,
+            throw new AuthException(
+                    AuthException.NONTRANSIENT,
                     "Cannot get auth token for unknown account '" + account + "'");
         }
         synchronized (mLock) {

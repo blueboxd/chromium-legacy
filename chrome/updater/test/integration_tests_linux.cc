@@ -21,6 +21,7 @@
 #include "base/test/bind.h"
 #include "base/test/test_timeouts.h"
 #include "build/branding_buildflags.h"
+#include "chrome/updater/activity.h"
 #include "chrome/updater/activity_impl_util_posix.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/external_constants_builder.h"
@@ -74,7 +75,7 @@ bool WaitForUpdaterExit(UpdaterScope /*scope*/) {
   const std::set<base::FilePath::StringType> process_names =
       GetTestProcessNames();
   return WaitFor(
-      [&process_names]() {
+      [&process_names] {
         return base::ranges::none_of(process_names, IsProcessRunning);
       },
       [] { VLOG(0) << "Still waiting for updater to exit..."; });
@@ -225,7 +226,7 @@ void UninstallApp(UpdaterScope scope, const std::string& app_id) {
   // This can probably be combined with mac into integration_tests_posix.cc.
   const base::FilePath& install_path =
       base::MakeRefCounted<PersistedData>(
-          scope, CreateGlobalPrefs(scope)->GetPrefService())
+          scope, CreateGlobalPrefs(scope)->GetPrefService(), nullptr)
           ->GetExistenceCheckerPath(app_id);
   VLOG(1) << "Deleting app install path: " << install_path;
   base::DeletePathRecursively(install_path);
@@ -240,6 +241,17 @@ base::CommandLine MakeElevated(base::CommandLine command_line) {
 
 void SetPlatformPolicies(const base::Value::Dict& values) {
   // TODO(crbug.com/1464354): implement.
+}
+
+void ExpectAppVersion(UpdaterScope scope,
+                      const std::string& app_id,
+                      const base::Version& version) {
+  const base::Version app_version =
+      base::MakeRefCounted<PersistedData>(
+          scope, CreateGlobalPrefs(scope)->GetPrefService(), nullptr)
+          ->GetProductVersion(app_id);
+  EXPECT_TRUE(app_version.IsValid());
+  EXPECT_EQ(version, app_version);
 }
 
 }  // namespace updater::test

@@ -25,9 +25,9 @@
 #import "ios/chrome/browser/drag_and_drop/model/drag_item_util.h"
 #import "ios/chrome/browser/drag_and_drop/model/url_drag_drop_handler.h"
 #import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
-#import "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
-#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
-#import "ios/chrome/browser/ntp/new_tab_page_util.h"
+#import "ios/chrome/browser/infobars/model/infobar_metrics_recorder.h"
+#import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper.h"
+#import "ios/chrome/browser/ntp/model/new_tab_page_util.h"
 #import "ios/chrome/browser/overlays/model/public/overlay_presenter.h"
 #import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
 #import "ios/chrome/browser/shared/coordinator/default_browser_promo/default_browser_promo_scene_agent_utils.h"
@@ -507,6 +507,11 @@ const size_t kMaxURLDisplayChars = 32 * 1024;
 #pragma mark - URLDragDataSource
 
 - (URLInfo*)URLInfoForView:(UIView*)view {
+  // Disable drag and drop when the omnibox is focused, as it interferes with
+  // text interactions like moving the cursor (crbug.com/1502538).
+  if ([self isOmniboxFirstResponder]) {
+    return nil;
+  }
   return [[URLInfo alloc]
       initWithURL:self.webState->GetVisibleURL()
             title:base::SysUTF16ToNSString(self.webState->GetTitle())];

@@ -65,6 +65,7 @@ public class LocationBarLayout extends FrameLayout {
     private final boolean mIsSurfacePolishEnabled;
     private int mStatusIconAndUrlBarOffsetForSurfacePolish;
     private int mUrlActionContainerEndMargin;
+    private boolean mIsUrlFocusChangeInProgress;
 
     public LocationBarLayout(Context context, AttributeSet attrs) {
         this(context, attrs, R.layout.location_bar);
@@ -231,15 +232,30 @@ public class LocationBarLayout extends FrameLayout {
             if (childView.getVisibility() != GONE) {
                 LayoutParams childLayoutParams = (LayoutParams) childView.getLayoutParams();
                 if (childView == mUrlBar) {
-                    if (OmniboxFeatures.shouldAvoidRelayoutDuringFocusAnimation()
-                            && (mUrlFocusPercentage > 0.0f || mUrlBar.hasFocus())) {
+                    boolean urlBarLaidOutAtFocusedWidth;
+                    if (mUrlFocusPercentage > 0.0f || mUrlBar.hasFocus()) {
                         // Set a margin that places the url bar in its final, focused position.
                         // During animation this will be compensated against using translation of
                         // decreasing magnitude to avoid a jump.
                         startMargin += getFocusedStatusViewSpacingDelta();
-                        mUrlBarLaidOutAtFocusedWidth = true;
+                        urlBarLaidOutAtFocusedWidth = true;
                     } else {
-                        mUrlBarLaidOutAtFocusedWidth = false;
+                        urlBarLaidOutAtFocusedWidth = false;
+                    }
+
+                    // The behavior of setUrlFocusChangePercent() depends on the value of
+                    // mUrlBarLaidOutAtFocusedWidth. We don't control the timing of external calls
+                    // to setUrlFocusChangePercent() since it's driven by an animation. To avoid
+                    // getting into a stale state, we call setUrlFocusChangePercent() again whenever
+                    // the value of mUrlBarLaidOutAtFocusedWidth changes.
+                    if (mNativeInitialized
+                            && urlBarLaidOutAtFocusedWidth != mUrlBarLaidOutAtFocusedWidth) {
+                        mUrlBarLaidOutAtFocusedWidth = urlBarLaidOutAtFocusedWidth;
+                        setUrlFocusChangePercent(
+                                mUrlFocusPercentage,
+                                mUrlFocusPercentage,
+                                mUrlFocusPercentage,
+                                mIsUrlFocusChangeInProgress);
                     }
 
                     MarginLayoutParamsCompat.setMarginStart(childLayoutParams, startMargin);
@@ -395,6 +411,7 @@ public class LocationBarLayout extends FrameLayout {
             float startSurfaceScrollFraction,
             float urlFocusChangeFraction,
             boolean isUrlFocusChangeInProgress) {
+        mIsUrlFocusChangeInProgress = isUrlFocusChangeInProgress;
         mUrlFocusPercentage =
                 getMaxValue(
                         ntpSearchBoxScrollFraction,
@@ -441,35 +458,24 @@ public class LocationBarLayout extends FrameLayout {
                         urlFocusChangeFraction);
         boolean isOnTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext());
         // The tablet UI doesn't have status view spacer elements so must use translation.
-        if (OmniboxFeatures.shouldAvoidRelayoutDuringFocusAnimation()
-                || mStatusViewLeftSpace == null) {
-            float translationX;
-            if (mIsSurfacePolishEnabled
-                    && !isOnTablet
-                    && isUrlFocusChangeInProgress
-                    && (ntpSearchBoxScrollFraction == 1 || startSurfaceScrollFraction == 1)) {
-                // Ignore the case that the new modernize visual UI update is not shown for
-                // surface polish.
-                translationX =
-                        OmniboxResourceProvider.getFocusedStatusViewLeftSpacing(getContext())
-                                + mStatusIconAndUrlBarOffsetForSurfacePolish
-                                        * (1 - urlFocusChangeFraction);
-            } else {
-                translationX =
-                        OmniboxResourceProvider.getFocusedStatusViewLeftSpacing(getContext())
-                                * maxPercent;
-            }
-            mStatusCoordinator.setTranslationX(
-                    MathUtils.flipSignIf(
-                            translationX, getLayoutDirection() == LAYOUT_DIRECTION_RTL));
+        float translationX;
+        if (mIsSurfacePolishEnabled
+                && !isOnTablet
+                && isUrlFocusChangeInProgress
+                && (ntpSearchBoxScrollFraction == 1 || startSurfaceScrollFraction == 1)) {
+            // Ignore the case that the new modernize visual UI update is not shown for
+            // surface polish.
+            translationX =
+                    OmniboxResourceProvider.getFocusedStatusViewLeftSpacing(getContext())
+                            + mStatusIconAndUrlBarOffsetForSurfacePolish
+                                    * (1 - urlFocusChangeFraction);
         } else {
-            // Set the left space expansion width.
-            ViewGroup.LayoutParams leftSpacingParams = mStatusViewLeftSpace.getLayoutParams();
-            int fullSpacing = OmniboxResourceProvider.getFocusedStatusViewLeftSpacing(getContext());
-
-            leftSpacingParams.width = (int) (fullSpacing * maxPercent);
-            mStatusViewLeftSpace.setLayoutParams(leftSpacingParams);
+            translationX =
+                    OmniboxResourceProvider.getFocusedStatusViewLeftSpacing(getContext())
+                            * maxPercent;
         }
+        mStatusCoordinator.setTranslationX(
+                MathUtils.flipSignIf(translationX, getLayoutDirection() == LAYOUT_DIRECTION_RTL));
     }
 
     /**
@@ -491,36 +497,22 @@ public class LocationBarLayout extends FrameLayout {
             float urlFocusChangeFraction,
             boolean isUrlFocusChangeInProgress) {
         // The tablet UI doesn't have status view spacer elements so must use translation.
-        if (OmniboxFeatures.shouldAvoidRelayoutDuringFocusAnimation()
-                || mStatusViewRightSpace == null) {
-            float translationX;
-            if (mUrlBarLaidOutAtFocusedWidth) {
-                translationX =
-                        getUrlbarTranslationXForFocusAndScrollAnimationOnStartSurfaceAndNtp(
-                                ntpSearchBoxScrollFraction,
-                                startSurfaceScrollFraction,
-                                urlFocusChangeFraction,
-                                isUrlFocusChangeInProgress,
-                                DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext()));
-            } else {
-                // No compensation is needed at 0% because the margin is reset to normal.
-                translationX = 0.0f;
-            }
-
-            mUrlBar.setTranslationX(
-                    MathUtils.flipSignIf(
-                            translationX, getLayoutDirection() == LAYOUT_DIRECTION_RTL));
-        } else {
-            // Set the right space expansion width.
-            float percent =
-                    getMaxValue(
+        float translationX;
+        if (mUrlBarLaidOutAtFocusedWidth) {
+            translationX =
+                    getUrlbarTranslationXForFocusAndScrollAnimationOnStartSurfaceAndNtp(
                             ntpSearchBoxScrollFraction,
                             startSurfaceScrollFraction,
-                            urlFocusChangeFraction);
-            ViewGroup.LayoutParams rightSpacingParams = mStatusViewRightSpace.getLayoutParams();
-            rightSpacingParams.width = (int) (getEndPaddingPixelSizeOnFocusDelta() * percent);
-            mStatusViewRightSpace.setLayoutParams(rightSpacingParams);
+                            urlFocusChangeFraction,
+                            isUrlFocusChangeInProgress,
+                            DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext()));
+        } else {
+            // No compensation is needed at 0% because the margin is reset to normal.
+            translationX = 0.0f;
         }
+
+        mUrlBar.setTranslationX(
+                MathUtils.flipSignIf(translationX, getLayoutDirection() == LAYOUT_DIRECTION_RTL));
     }
 
     /**
@@ -555,7 +547,7 @@ public class LocationBarLayout extends FrameLayout {
 
         boolean isNtpOnPhone =
                 mStatusCoordinator.isSearchEngineStatusIconVisible()
-                        && UrlUtilities.isNTPUrl(mLocationBarDataProvider.getCurrentGurl())
+                        && UrlUtilities.isNtpUrl(mLocationBarDataProvider.getCurrentGurl())
                         && !isOnTablet;
         boolean isScrollingOnNtpOnPhone = !mUrlBar.hasFocus() && isNtpOnPhone;
 

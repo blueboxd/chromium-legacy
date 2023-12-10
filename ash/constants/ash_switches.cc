@@ -79,6 +79,9 @@ const char kArcDataCleanupOnStart[] = "arc-data-cleanup-on-start";
 // in autotests to resolve racy conditions.
 const char kArcDisableAppSync[] = "arc-disable-app-sync";
 
+// Used in tests to disable DexOpt cache which is on by default.
+const char kArcDisableDexOptCache[] = "arc-disable-dexopt-cache";
+
 // Flag that disables ARC download provider that prevents extra content to be
 // downloaded and installed in context of Play Store and GMS Core.
 const char kArcDisableDownloadProvider[] = "arc-disable-download-provider";
@@ -531,6 +534,10 @@ const char kEnterpriseEnableUnifiedStateDetermination[] =
 const char kEnterpriseEnableForcedReEnrollment[] =
     "enterprise-enable-forced-re-enrollment";
 
+// Whether to enable forced enterprise re-enrollment on Flex.
+const char kEnterpriseEnableForcedReEnrollmentOnFlex[] =
+    "enterprise-enable-forced-re-enrollment-on-flex";
+
 // Whether to enable initial enterprise enrollment.
 const char kEnterpriseEnableInitialEnrollment[] =
     "enterprise-enable-initial-enrollment";
@@ -594,6 +601,10 @@ const char kFakeDriveFsLauncherChrootPath[] =
 const char kFakeDriveFsLauncherSocketPath[] =
     "fake-drivefs-launcher-socket-path";
 
+// Indicates that the cryptohome keys are evicted and lock screen should message
+// cryptohomed to run full authentication and restore filesystem keys.
+const char kRestoreKeyOnLockScreen[] = "restore-key-on-lock-screen";
+
 // Fingerprint sensor location indicates the physical sensor's location. The
 // value is a string with possible values: "power-button-top-left",
 // "keyboard-bottom-left", keyboard-bottom-right", "keyboard-top-right".
@@ -618,6 +629,11 @@ const char kForceHWIDCheckResultForTest[] = "force-hwid-check-result-for-test";
 // user profile check and time limits and shows the notification every time
 // for any type of user. Should be used only for testing.
 const char kForceHappinessTrackingSystem[] = "force-happiness-tracking-system";
+
+// Forces prelaunching Lacros at login screen regardless
+// of whether there are or aren't users with Lacros enabled.
+const char kForceLacrosLaunchAtLoginScreenForTesting[] =
+    "force-lacros-launch-at-login-screen-for-testing";
 
 // Forces FullRestoreService to launch browser for telemetry tests.
 const char kForceLaunchBrowser[] = "force-launch-browser";
@@ -973,6 +989,9 @@ const char kSamlPasswordChangeUrl[] = "saml-password-change-url";
 // smaller shelf in clamshell mode.
 const char kShelfHotseat[] = "shelf-hotseat";
 
+// Supply secret key for Seal feature.
+const char kSealKey[] = "seal-key";
+
 // Testing grace period for DeviceScheduledReboot policy. Useful for tast tests.
 // See `ShouldSkipRebootDueToGracePeriod` in scheduled_task_util.h.
 const char kScheduledRebootGracePeriodInSecondsForTesting[] =
@@ -1106,6 +1125,11 @@ bool IsAuthSessionCryptohomeEnabled() {
       kCryptohomeUseAuthSession);
 }
 
+bool ShouldRestoreKeyOnLockScreen() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kRestoreKeyOnLockScreen);
+}
+
 bool IsCellularFirstDevice() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kCellularFirst);
 }
@@ -1211,7 +1235,7 @@ bool IsOsInstallAllowed() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kAllowOsInstall);
 }
 
-absl::optional<base::TimeDelta> ContextualNudgesInterval() {
+std::optional<base::TimeDelta> ContextualNudgesInterval() {
   int numeric_cooldown_time;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           kAshContextualNudgesInterval) &&
@@ -1222,9 +1246,9 @@ absl::optional<base::TimeDelta> ContextualNudgesInterval() {
     base::TimeDelta cooldown_time = base::Seconds(numeric_cooldown_time);
     cooldown_time = std::clamp(cooldown_time, kAshContextualNudgesMinInterval,
                                kAshContextualNudgesMaxInterval);
-    return absl::optional<base::TimeDelta>(cooldown_time);
+    return std::optional<base::TimeDelta>(cooldown_time);
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 bool ContextualNudgesResetShownCount() {

@@ -217,6 +217,7 @@ if (current_toolchain == default_toolchain) {
       "//components/browser_ui/strings/android:browser_ui_strings_grd",
       "//components/browser_ui/styles/android:java_resources",
       "//components/browser_ui/theme/android:java_resources",
+      "//components/browser_ui/util/android:java_resources",
       "//components/browser_ui/widget/android:java_resources",
       "//components/find_in_page/android:java_resources",
       "//components/javascript_dialogs/android:java_resources",
@@ -366,7 +367,6 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/language/android:java",
       "//chrome/browser/lens:java",
       "//chrome/browser/locale:java",
-      "//chrome/browser/metrics_settings/android:java",
       "//chrome/browser/notifications/chime/android:java",
       "//chrome/browser/omaha/android:java",
       "//chrome/browser/optimization_guide/android:java",
@@ -1019,6 +1019,7 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/preferences:preferences_junit_tests",
       "//chrome/browser/privacy_guide/android:java",
       "//chrome/browser/privacy_guide/android:junit",
+      "//chrome/browser/privacy_sandbox/android:java",
       "//chrome/browser/profiles/android:java",
       "//chrome/browser/profiles/android:junit",
       "//chrome/browser/quick_delete:java",
@@ -1103,6 +1104,7 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/util:java",
       "//chrome/browser/util:junit_tests",
       "//chrome/browser/version:java",
+      "//chrome/browser/wallet/android:junit",
       "//chrome/browser/webapps/android:java",
       "//chrome/browser/xsurface:java",
       "//chrome/browser/xsurface_provider:junit",
@@ -1292,6 +1294,7 @@ if (current_toolchain == default_toolchain) {
     testonly = true
     sources = [
       "javatests/src/org/chromium/chrome/browser/FederatedIdentityTestUtils.java",
+      "javatests/src/org/chromium/chrome/browser/PwaRestoreBottomSheetTestUtils.java",
       "javatests/src/org/chromium/chrome/browser/customtabs/CustomTabsTestUtils.java",
     ]
   }
@@ -1304,6 +1307,7 @@ if (current_toolchain == default_toolchain) {
     srcjar_deps = [ ":chrome_test_util_jni" ]
     sources = [
       "javatests/src/org/chromium/chrome/browser/FederatedIdentityTestUtils.java",
+      "javatests/src/org/chromium/chrome/browser/PwaRestoreBottomSheetTestUtils.java",
       "javatests/src/org/chromium/chrome/browser/customtabs/CustomTabActivityTestRule.java",
       "javatests/src/org/chromium/chrome/browser/customtabs/CustomTabsTestUtils.java",
       "javatests/src/org/chromium/chrome/browser/modaldialog/ChromeModalDialogTestUtils.java",
@@ -1647,6 +1651,7 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/privacy_guide/android:java",
       "//chrome/browser/privacy_guide/android:javatests",
       "//chrome/browser/privacy_sandbox/android:java",
+      "//chrome/browser/privacy_sandbox/android:java_resources",
       "//chrome/browser/privacy_sandbox/android:javatests",
       "//chrome/browser/profiles/android:java",
       "//chrome/browser/quick_delete:java",
@@ -3145,15 +3150,6 @@ if (current_toolchain == default_toolchain) {
     ]
   }
 
-  script_test("monochrome_webview_finch_smoke_tests") {
-    script = "//testing/scripts/run_finch_smoke_tests_android.py"
-    data_deps = [
-      "//android_webview/tools/system_webview_shell:system_webview_shell_apk",
-      "//chrome/android:monochrome_public_apk",
-      "//third_party/blink/tools:wpt_tests_android_isolate",
-    ]
-  }
-
   script_test("chrome_public_wpt") {
     script = "//third_party/blink/tools/run_wpt_tests.py"
     args = [
@@ -3713,6 +3709,7 @@ source_set("chrome_test_util") {
   sources = [
     "javatests/src/custom_tabs_test_utils.cc",
     "javatests/src/federated_identity_test_utils.cc",
+    "javatests/src/pwa_restore_bottom_sheet_test_utils.cc",
   ]
   deps = [
     ":chrome_test_util_jni",

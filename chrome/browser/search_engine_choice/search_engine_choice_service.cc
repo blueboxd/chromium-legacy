@@ -15,7 +15,9 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/profiles/profile_customization_bubble_sync_controller.h"
+#include "chrome/browser/ui/search_engine_choice/search_engine_choice_tab_helper.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#include "components/country_codes/country_codes.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/search_engine_choice_utils.h"
 #include "components/search_engines/search_engines_pref_names.h"
@@ -51,7 +53,6 @@ bool IsBrowserTypeSupported(const Browser& browser) {
       return false;
   }
 }
-
 }  // namespace
 
 SearchEngineChoiceService::BrowserObserver::BrowserObserver(
@@ -92,7 +93,9 @@ void SearchEngineChoiceService::NotifyChoiceMade(int prepopulate_id,
         TemplateURLPrepopulateData::GetPrepopulatedEngine(pref_service,
                                                           prepopulate_id);
     CHECK(search_engine);
-    SetDefaultSearchProviderPrefValue(*pref_service, search_engine->sync_guid);
+    TemplateURL search_engine_template_url = TemplateURL(*search_engine);
+    template_url_service_->SetUserSelectedDefaultSearchProvider(
+        &search_engine_template_url);
   } else {
     // Make sure that the default search engine is a custom search engine.
     const TemplateURL* default_search_provider =
@@ -170,6 +173,61 @@ void SearchEngineChoiceService::RegisterLocalStatePrefs(
                                  base::FilePath());
 }
 
+// static
+search_engines::ChoiceData SearchEngineChoiceService::GetChoiceDataFromProfile(
+    Profile& profile) {
+  if (!search_engines::IsChoiceScreenFlagEnabled(
+          search_engines::ChoicePromo::kAny)) {
+    return {};
+  }
+
+  PrefService* pref_service = profile.GetPrefs();
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(&profile);
+  CHECK(template_url_service);
+  const TemplateURLData& default_search_engine =
+      template_url_service->GetDefaultSearchProvider()->data();
+
+  return {.timestamp = pref_service->GetInt64(
+              prefs::kDefaultSearchProviderChoiceScreenCompletionTimestamp),
+          .chrome_version = pref_service->GetString(
+              prefs::kDefaultSearchProviderChoiceScreenCompletionVersion),
+          .default_search_engine = default_search_engine};
+}
+
+// static
+void SearchEngineChoiceService::UpdateProfileFromChoiceData(
+    Profile& profile,
+    search_engines::ChoiceData& choice_data) {
+  if (!search_engines::IsChoiceScreenFlagEnabled(
+          search_engines::ChoicePromo::kAny)) {
+    return;
+  }
+
+  PrefService* pref_service = profile.GetPrefs();
+  if (choice_data.timestamp != 0) {
+    pref_service->SetInt64(
+        prefs::kDefaultSearchProviderChoiceScreenCompletionTimestamp,
+        choice_data.timestamp);
+  }
+
+  if (!choice_data.chrome_version.empty()) {
+    pref_service->SetString(
+        prefs::kDefaultSearchProviderChoiceScreenCompletionVersion,
+        choice_data.chrome_version);
+  }
+
+  TemplateURLData& default_search_engine = choice_data.default_search_engine;
+  if (!default_search_engine.keyword().empty() &&
+      !default_search_engine.url().empty()) {
+    TemplateURLService* template_url_service =
+        TemplateURLServiceFactory::GetForProfile(&profile);
+    CHECK(template_url_service);
+    TemplateURL template_url(default_search_engine);
+    template_url_service->SetUserSelectedDefaultSearchProvider(&template_url);
+  }
+}
+
 bool SearchEngineChoiceService::IsShowingDialog(Browser* browser) {
   return base::Contains(browsers_with_open_dialogs_, browser);
 }
@@ -200,6 +258,11 @@ SearchEngineChoiceService::ComputeDialogConditions(Browser& browser) {
   if (!IsBrowserTypeSupported(browser)) {
     return search_engines::SearchEngineChoiceScreenConditions::
         kUnsupportedBrowserType;
+  }
+
+  if (!CanWindowHeightFitSearchEngineChoiceDialog(browser)) {
+    return search_engines::SearchEngineChoiceScreenConditions::
+        kBrowserWindowTooSmall;
   }
 
   // To avoid conflict, the dialog should not be shown if a sign-in dialog is
@@ -249,16 +312,6 @@ bool SearchEngineChoiceService::CanShowDialog(Browser& browser) {
 
   return conditions ==
          search_engines::SearchEngineChoiceScreenConditions::kEligible;
-}
-
-bool SearchEngineChoiceService::HasUserMadeChoice() const {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceSearchEngineChoiceScreen)) {
-    return false;
-  }
-  PrefService* pref_service = profile_->GetPrefs();
-  return pref_service->GetInt64(
-      prefs::kDefaultSearchProviderChoiceScreenCompletionTimestamp);
 }
 
 bool SearchEngineChoiceService::CanSuppressPrivacySandboxPromo() const {

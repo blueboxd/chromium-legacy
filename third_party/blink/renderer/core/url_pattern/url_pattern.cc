@@ -4,9 +4,11 @@
 
 #include "third_party/blink/renderer/core/url_pattern/url_pattern.h"
 
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_regexp.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_urlpattern_urlpatterninit_usvstring.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_urlpatterninit_usvstring.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_url_pattern_component_result.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_url_pattern_init.h"
@@ -294,7 +296,60 @@ URLPatternComponentResult* MakeURLPatternComponentResult(
 
 }  // namespace
 
-URLPattern* URLPattern::Create(const V8URLPatternInput* input,
+URLPattern* URLPattern::From(v8::Isolate* isolate,
+                             const V8URLPatternCompatible* compatible,
+                             const KURL& base_url,
+                             ExceptionState& exception_state) {
+  switch (compatible->GetContentType()) {
+    case V8URLPatternCompatible::ContentType::kURLPattern:
+      return compatible->GetAsURLPattern();
+    case V8URLPatternCompatible::ContentType::kURLPatternInit: {
+      URLPatternInit* original_init = compatible->GetAsURLPatternInit();
+      URLPatternInit* init;
+      if (original_init->hasBaseURL()) {
+        init = original_init;
+      } else {
+        init = URLPatternInit::Create();
+        if (original_init->hasProtocol()) {
+          init->setProtocol(original_init->protocol());
+        }
+        if (original_init->hasUsername()) {
+          init->setUsername(original_init->username());
+        }
+        if (original_init->hasPassword()) {
+          init->setPassword(original_init->password());
+        }
+        if (original_init->hasHostname()) {
+          init->setHostname(original_init->hostname());
+        }
+        if (original_init->hasPort()) {
+          init->setPort(original_init->port());
+        }
+        if (original_init->hasPathname()) {
+          init->setPathname(original_init->pathname());
+        }
+        if (original_init->hasSearch()) {
+          init->setSearch(original_init->search());
+        }
+        if (original_init->hasHash()) {
+          init->setHash(original_init->hash());
+        }
+        init->setBaseURL(base_url.GetString());
+      }
+      return Create(isolate, init, /*precomputed_protocol_component=*/nullptr,
+                    MakeGarbageCollected<URLPatternOptions>(), exception_state);
+    }
+    case V8URLPatternCompatible::ContentType::kUSVString:
+      return Create(
+          isolate,
+          MakeGarbageCollected<V8URLPatternInput>(compatible->GetAsUSVString()),
+          base_url.GetString(), MakeGarbageCollected<URLPatternOptions>(),
+          exception_state);
+  }
+}
+
+URLPattern* URLPattern::Create(v8::Isolate* isolate,
+                               const V8URLPatternInput* input,
                                const String& base_url,
                                const URLPatternOptions* options,
                                ExceptionState& exception_state) {
@@ -310,7 +365,7 @@ URLPattern* URLPattern::Create(const V8URLPatternInput* input,
   const auto& input_string = input->GetAsUSVString();
 
   url_pattern::Parser parser(input_string, *options);
-  parser.Parse(exception_state);
+  parser.Parse(isolate, exception_state);
   if (exception_state.HadException())
     return nullptr;
 
@@ -325,8 +380,8 @@ URLPattern* URLPattern::Create(const V8URLPatternInput* input,
   if (base_url)
     init->setBaseURL(base_url);
 
-  URLPattern* result =
-      Create(init, parser.GetProtocolComponent(), options, exception_state);
+  URLPattern* result = Create(isolate, init, parser.GetProtocolComponent(),
+                              options, exception_state);
   if (result) {
     URLPattern::ComponentSet present = parser.GetPresentComponents();
     URLPattern::ComponentSet wildcard_with_string_format_change =
@@ -374,37 +429,42 @@ URLPattern* URLPattern::Create(const V8URLPatternInput* input,
   return result;
 }
 
-URLPattern* URLPattern::Create(const V8URLPatternInput* input,
+URLPattern* URLPattern::Create(v8::Isolate* isolate,
+                               const V8URLPatternInput* input,
                                const String& base_url,
                                ExceptionState& exception_state) {
-  return Create(input, base_url, MakeGarbageCollected<URLPatternOptions>(),
-                exception_state);
+  return Create(isolate, input, base_url,
+                MakeGarbageCollected<URLPatternOptions>(), exception_state);
 }
 
-URLPattern* URLPattern::Create(const V8URLPatternInput* input,
+URLPattern* URLPattern::Create(v8::Isolate* isolate,
+                               const V8URLPatternInput* input,
                                const URLPatternOptions* options,
                                ExceptionState& exception_state) {
   if (input->IsURLPatternInit()) {
-    return URLPattern::Create(input->GetAsURLPatternInit(),
+    return URLPattern::Create(isolate, input->GetAsURLPatternInit(),
                               /*precomputed_protocol_component=*/nullptr,
                               options, exception_state);
   }
-  return Create(input, /*base_url=*/String(), options, exception_state);
+  return Create(isolate, input, /*base_url=*/String(), options,
+                exception_state);
 }
 
-URLPattern* URLPattern::Create(const V8URLPatternInput* input,
+URLPattern* URLPattern::Create(v8::Isolate* isolate,
+                               const V8URLPatternInput* input,
                                ExceptionState& exception_state) {
   if (input->IsURLPatternInit()) {
-    return URLPattern::Create(input->GetAsURLPatternInit(),
+    return URLPattern::Create(isolate, input->GetAsURLPatternInit(),
                               /*precomputed_protocol_component=*/nullptr,
                               MakeGarbageCollected<URLPatternOptions>(),
                               exception_state);
   }
 
-  return Create(input, /*base_url=*/String(), exception_state);
+  return Create(isolate, input, /*base_url=*/String(), exception_state);
 }
 
-URLPattern* URLPattern::Create(const URLPatternInit* init,
+URLPattern* URLPattern::Create(v8::Isolate* isolate,
+                               const URLPatternInit* init,
                                Component* precomputed_protocol_component,
                                const URLPatternOptions* options,
                                ExceptionState& exception_state) {
@@ -439,58 +499,61 @@ URLPattern* URLPattern::Create(const URLPatternInit* init,
   auto* protocol_component = precomputed_protocol_component;
   if (!protocol_component) {
     protocol_component = Component::Compile(
-        protocol, Component::Type::kProtocol,
+        isolate, protocol, Component::Type::kProtocol,
         /*protocol_component=*/nullptr, *options, exception_state);
   }
   if (exception_state.HadException())
     return nullptr;
 
   auto* username_component =
-      Component::Compile(username, Component::Type::kUsername,
+      Component::Compile(isolate, username, Component::Type::kUsername,
                          protocol_component, *options, exception_state);
   if (exception_state.HadException())
     return nullptr;
 
   auto* password_component =
-      Component::Compile(password, Component::Type::kPassword,
+      Component::Compile(isolate, password, Component::Type::kPassword,
                          protocol_component, *options, exception_state);
   if (exception_state.HadException())
     return nullptr;
 
   auto* hostname_component =
-      Component::Compile(hostname, Component::Type::kHostname,
+      Component::Compile(isolate, hostname, Component::Type::kHostname,
                          protocol_component, *options, exception_state);
   if (exception_state.HadException())
     return nullptr;
 
   auto* port_component =
-      Component::Compile(port, Component::Type::kPort, protocol_component,
-                         *options, exception_state);
+      Component::Compile(isolate, port, Component::Type::kPort,
+                         protocol_component, *options, exception_state);
   if (exception_state.HadException())
     return nullptr;
 
   auto* pathname_component =
-      Component::Compile(pathname, Component::Type::kPathname,
+      Component::Compile(isolate, pathname, Component::Type::kPathname,
                          protocol_component, *options, exception_state);
   if (exception_state.HadException())
     return nullptr;
 
   auto* search_component =
-      Component::Compile(search, Component::Type::kSearch, protocol_component,
-                         *options, exception_state);
+      Component::Compile(isolate, search, Component::Type::kSearch,
+                         protocol_component, *options, exception_state);
   if (exception_state.HadException())
     return nullptr;
 
   auto* hash_component =
-      Component::Compile(hash, Component::Type::kHash, protocol_component,
-                         *options, exception_state);
+      Component::Compile(isolate, hash, Component::Type::kHash,
+                         protocol_component, *options, exception_state);
   if (exception_state.HadException())
     return nullptr;
+
+  Options urlpattern_options;
+  urlpattern_options.ignore_case = options->ignoreCase();
 
   URLPattern* result = MakeGarbageCollected<URLPattern>(
       protocol_component, username_component, password_component,
       hostname_component, port_component, pathname_component, search_component,
-      hash_component, base::PassKey<URLPattern>());
+      hash_component, urlpattern_options, base::PassKey<URLPattern>());
   if (init->hasBaseURL()) {
     auto& would_be_wildcard = result->wildcard_with_base_url_change_;
     if (!init->hasUsername() &&
@@ -532,6 +595,7 @@ URLPattern::URLPattern(Component* protocol,
                        Component* pathname,
                        Component* search,
                        Component* hash,
+                       Options options,
                        base::PassKey<URLPattern> key)
     : protocol_(protocol),
       username_(username),
@@ -540,7 +604,8 @@ URLPattern::URLPattern(Component* protocol,
       port_(port),
       pathname_(pathname),
       search_(search),
-      hash_(hash) {}
+      hash_(hash),
+      options_(options) {}
 
 bool URLPattern::test(ScriptState* script_state,
                       const V8URLPatternInput* input,
@@ -602,6 +667,14 @@ String URLPattern::search() const {
 
 String URLPattern::hash() const {
   return hash_->GeneratePatternString();
+}
+
+bool URLPattern::hasRegExpGroups() const {
+  const url_pattern::Component* components[] = {protocol_, username_, password_,
+                                                hostname_, port_,     pathname_,
+                                                search_,   hash_};
+  return base::ranges::any_of(components,
+                              &url_pattern::Component::HasRegexpGroups);
 }
 
 // static

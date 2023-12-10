@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/accelerators/shortcut_input_handler.h"
 #include "ash/components/arc/arc_features.h"
 #include "ash/components/arc/arc_util.h"
 #include "ash/constants/ash_features.h"
@@ -83,7 +84,6 @@
 #include "chrome/browser/ash/dbus/metrics_event_service_provider.h"
 #include "chrome/browser/ash/dbus/mojo_connection_service_provider.h"
 #include "chrome/browser/ash/dbus/printers_service_provider.h"
-#include "chrome/browser/ash/dbus/profiler_status_service_provider.h"
 #include "chrome/browser/ash/dbus/proxy_resolution_service_provider.h"
 #include "chrome/browser/ash/dbus/screen_lock_service_provider.h"
 #include "chrome/browser/ash/dbus/smb_fs_service_provider.h"
@@ -249,6 +249,7 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/ownership/owner_key_util.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/quirks/quirks_manager.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -302,6 +303,29 @@ namespace {
 void ChromeOSVersionCallback(const absl::optional<std::string>& version) {
   base::SetLinuxDistro("CrOS " + version.value_or("0.0.0.0"));
 }
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
+// Returns the device mode. For Chrome OS this function will return the mode
+// stored in the lockbox, or DEVICE_MODE_CONSUMER if the lockbox has been
+// locked empty, or DEVICE_MODE_UNKNOWN if the device has not been owned yet.
+// For other OSes the function will always return DEVICE_MODE_CONSUMER.
+policy::DeviceMode GetDeviceMode() {
+  return g_browser_process->platform_part()
+      ->browser_policy_connector_ash()
+      ->GetDeviceMode();
+}
+
+// Returns device's market segment if enterprise enrolled, as delivered by the
+// device management server. If the device is not enterprise-enrolled,
+// it will return UNKNOWN.
+policy::MarketSegment GetEnterpriseMarketSegment() {
+  return g_browser_process->platform_part()
+      ->browser_policy_connector_ash()
+      ->GetEnterpriseMarketSegment();
+}
+
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 // Creates an instance of the NetworkPortalDetector implementation or a stub.
 void InitializeNetworkPortalDetector() {
@@ -437,12 +461,6 @@ class DBusServices {
         dbus::ObjectPath(chromeos::kPrintersServicePath),
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<PrintersServiceProvider>()));
-
-    profiler_status_service_ = CrosDBusService::Create(
-        system_bus, ProfilerStatusServiceProvider::kServiceName,
-        dbus::ObjectPath(ProfilerStatusServiceProvider::kServicePath),
-        CrosDBusService::CreateServiceProviderList(
-            std::make_unique<ProfilerStatusServiceProvider>()));
 
     vm_applications_service_ = CrosDBusService::Create(
         system_bus, vm_tools::apps::kVmApplicationsServiceName,
@@ -581,7 +599,6 @@ class DBusServices {
     metrics_event_service_.reset();
     plugin_vm_service_.reset();
     printers_service_.reset();
-    profiler_status_service_.reset();
     virtual_file_request_service_.reset();
     component_updater_service_.reset();
     chrome_features_service_.reset();
@@ -612,7 +629,6 @@ class DBusServices {
   std::unique_ptr<CrosDBusService> metrics_event_service_;
   std::unique_ptr<CrosDBusService> plugin_vm_service_;
   std::unique_ptr<CrosDBusService> printers_service_;
-  std::unique_ptr<CrosDBusService> profiler_status_service_;
   std::unique_ptr<CrosDBusService> screen_lock_service_;
   std::unique_ptr<CrosDBusService> virtual_file_request_service_;
   std::unique_ptr<CrosDBusService> component_updater_service_;
@@ -1362,6 +1378,9 @@ void ChromeBrowserMainPartsAsh::PostBrowserStart() {
   event_rewriter_controller->Initialize(
       event_rewriter_delegate_.get(),
       accessibility_event_rewriter_delegate_.get());
+  // `ShortcutInputHandler` is dependent on `EventRewriterController`'s
+  // initialization.
+  Shell::Get()->shortcut_input_handler()->Initialize();
 
   // Enable the KeyboardDrivenEventRewriter if the OEM manifest flag is on.
   if (system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation()) {
@@ -1497,6 +1516,7 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
   SystemProxyManager::Shutdown();
   report_controller_.reset();
   crostini_unsupported_action_notifier_.reset();
+  carrier_lock_manager_.reset();
 
   BootTimesRecorder::Get()->AddLogoutTimeMarker("UIMessageLoopEnded", true);
 
@@ -1799,8 +1819,7 @@ void ChromeBrowserMainPartsAsh::StartReportController() {
     // When status is PERMANENTLY_UNTRUSTED, client assumes this status is final
     // until browser restarts. Client does not proceed without signature
     // verification, so retry is not attempted. This status may be caused
-    // if device is running pre-OOBE, or if the policy proto blob fails the
-    // signature check.
+    // if the policy proto blob fails the signature check.
     return;
   }
 
@@ -1809,28 +1828,30 @@ void ChromeBrowserMainPartsAsh::StartReportController() {
   base::RepeatingCallback<base::TimeDelta()> check_oobe_completed_callback =
       base::BindRepeating(&StartupUtils::GetTimeSinceOobeFlagFileCreation);
 
+  // Create callbacks to retrieve the policy device mode and market segment.
+  // These callbacks are executed after oobe is completed to get correct values.
+  base::RepeatingCallback<policy::DeviceMode()> check_device_mode_callback =
+      base::BindRepeating(&GetDeviceMode);
+  base::RepeatingCallback<policy::MarketSegment()>
+      check_market_segment_callback =
+          base::BindRepeating(&GetEnterpriseMarketSegment);
+
   // CrosSettingsProvider::TRUSTED: device policies are loaded and trusted.
   report_controller_ = std::make_unique<report::ReportController>(
       ash::report::device_metrics::ChromeDeviceMetadataParameters{
-          chrome::GetChannel() /* chromeos_channel */,
-          report::ReportController::GetMarketSegment(
-              g_browser_process->platform_part()
-                  ->browser_policy_connector_ash()
-                  ->GetDeviceMode(),
-              g_browser_process->platform_part()
-                  ->browser_policy_connector_ash()
-                  ->GetEnterpriseMarketSegment()) /* market_segment */,
-      },
+          chrome::GetChannel() /* chromeos_channel */},
       g_browser_process->local_state(),
       g_browser_process->system_network_context_manager()
           ->GetSharedURLLoaderFactory(),
       first_run::GetFirstRunSentinelCreationTime(),
       std::move(check_oobe_completed_callback),
+      std::move(check_device_mode_callback),
+      std::move(check_market_segment_callback),
       std::make_unique<ash::report::device_metrics::PsmClientManager>(
           std::make_unique<
               report::device_metrics::RealPsmClientManagerDelegate>()));
 
-#endif
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 }  //  namespace ash

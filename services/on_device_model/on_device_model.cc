@@ -43,7 +43,7 @@ class SessionImpl : public OnDeviceModel::Session {
       }
     }
     remote->OnResponse("Input: " + input->text + "\n");
-    remote->OnComplete();
+    remote->OnComplete(mojom::ResponseStatus::kOk);
   }
 
  private:
@@ -74,7 +74,7 @@ OnDeviceModelService::CreateModel(mojom::LoadModelParamsPtr params) {
 
 // static
 mojom::PerformanceClass OnDeviceModelService::GetEstimatedPerformanceClass() {
-  return mojom::PerformanceClass::kError;
+  return mojom::PerformanceClass::kFailedToLoadLibrary;
 }
 
 }  // namespace on_device_model

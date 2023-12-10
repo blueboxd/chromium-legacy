@@ -20,11 +20,11 @@
 #include "components/password_manager/core/browser/affiliation/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/affiliation/mock_affiliated_match_helper.h"
 #include "components/password_manager/core/browser/features/password_features.h"
-#include "components/password_manager/core/browser/mock_password_store_interface.h"
-#include "components/password_manager/core/browser/mock_smart_bubble_stats_store.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store/interactions_stats.h"
+#include "components/password_manager/core/browser/password_store/mock_password_store_interface.h"
+#include "components/password_manager/core/browser/password_store/mock_smart_bubble_stats_store.h"
 #include "components/password_manager/core/browser/password_store/password_store_interface.h"
 #include "components/password_manager/core/browser/password_store/password_store_util.h"
 #include "components/password_manager/core/browser/stub_credentials_filter.h"
@@ -1250,8 +1250,8 @@ TEST_F(MultiStoreFormFetcherTest, InsecureCredentials) {
                                     Pointee(account_form_insecure_credential)));
 }
 
-TEST_P(FormFetcherImplTest, BackendErrorResetsOnNewFetch) {
-  ASSERT_EQ(form_fetcher_->GetProfileStoreBackendError(), absl::nullopt);
+TEST_P(FormFetcherImplTest, ProfileBackendErrorResetsOnNewFetch) {
+  ASSERT_EQ(form_fetcher_->GetProfileStoreBackendError(), std::nullopt);
 
   Fetch();
 
@@ -1276,7 +1276,37 @@ TEST_P(FormFetcherImplTest, BackendErrorResetsOnNewFetch) {
   DeliverPasswordStoreResults(/*profile_store_results=*/std::move(form_results),
                               /*account_store_results=*/{});
 
-  EXPECT_EQ(form_fetcher_->GetProfileStoreBackendError(), absl::nullopt);
+  EXPECT_EQ(form_fetcher_->GetProfileStoreBackendError(), std::nullopt);
+}
+
+TEST_F(MultiStoreFormFetcherTest, AccountBackendErrorResetsOnNewFetch) {
+  ASSERT_EQ(form_fetcher_->GetProfileStoreBackendError(), std::nullopt);
+
+  Fetch();
+
+  PasswordStoreBackendError error_results = PasswordStoreBackendError(
+      PasswordStoreBackendErrorType::kAuthErrorResolvable,
+      PasswordStoreBackendErrorRecoveryType::kRecoverable);
+  DeliverPasswordStoreResults(
+      /*profile_store_results=*/{},
+      /*account_store_results=*/std::move(error_results));
+
+  EXPECT_EQ(form_fetcher_->GetAccountStoreBackendError().value(),
+            PasswordStoreBackendError(
+                PasswordStoreBackendErrorType::kAuthErrorResolvable,
+                PasswordStoreBackendErrorRecoveryType::kRecoverable));
+
+  Fetch();
+
+  PasswordForm form = CreateNonFederated();
+  std::vector<PasswordForm> form_results;
+  form_results.push_back(form);
+
+  DeliverPasswordStoreResults(
+      /*profile_store_results=*/{},
+      /*account_store_results=*/std::move(form_results));
+
+  EXPECT_EQ(form_fetcher_->GetProfileStoreBackendError(), std::nullopt);
 }
 
 }  // namespace password_manager

@@ -33,14 +33,6 @@
           },
         },
       },
-      'linux-exp-asan-lsan-fyi-rel': {
-        'swarming': {
-          'dimensions': {
-            # TODO(crbug.com/1442303): Move to Jammy when it's compatible.
-            'os': 'Ubuntu-18.04',
-          },
-        },
-      },
     },
   },
   'android_browsertests': {
@@ -135,6 +127,7 @@
           'dimensions': {
             'cores': '8', # crbug.com/1292221
           },
+          'shards': 3,
         },
       },
       # Keep this same as android-oreo-x86-rel above
@@ -348,6 +341,10 @@
         },
       },
       'Mac12 Tests': {
+        # TODO(crbug.com/1479108): Remove this once the bug is fixed.
+        'args': [
+          '--driver-logging',
+        ],
         'swarming': {
           'dimensions': {
             'gpu': None,
@@ -597,6 +594,11 @@
           'hard_timeout': 2400,
         },
       },
+      'mac12-arm64-rel-tests': {
+        'args': [
+          '--driver-logging',
+        ],
+      },
       'mac12.0-blink-rel': {
         'swarming': {
           'hard_timeout': 2400,
@@ -695,6 +697,9 @@
         },
       },
       'Mac12 Tests': {
+        'args': [
+          '--driver-logging',
+        ],
         'swarming': {
           'dimensions': {
             'gpu': None,
@@ -915,6 +920,11 @@
           'hard_timeout': 2400,
         },
       },
+      'mac12-arm64-rel-tests': {
+        'args': [
+          '--driver-logging',
+        ],
+      },
       'mac12.0-blink-rel': {
         'swarming': {
           'hard_timeout': 2400,
@@ -1068,8 +1078,9 @@
       'Linux Tests (dbg)(1)': {
         # crbug.com/1066161
         # crbug.com/1459645
+        # crbug.com/1508286
         'swarming': {
-          'shards': 27,
+          'shards': 32,
         },
       },
       'Mac ASan 64 Tests (1)': {
@@ -1204,14 +1215,6 @@
         ],
         'swarming': {
           'shards': 50,
-        },
-      },
-      'linux-exp-asan-lsan-fyi-rel': {
-        'ci_only': True,
-        # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/1257927
-        'swarming': {
-          'shards': 40,
         },
       },
       'linux-exp-msan-fyi-rel': {
@@ -1417,6 +1420,9 @@
         'swarming': {
           'shards': 15,
         },
+        'args': [
+          '--tast-shard-method=hash',
+        ],
       },
       'chromeos-eve-chrome': {
         'swarming': {
@@ -1670,14 +1676,6 @@
       },
     },
   },
-  # TODO(weizhong): Remove this once experiment completes
-  'chrome_wpt_tests': {
-    'modifications': {
-      'Linux Tests': {
-        'experiment_percentage': 10,
-      },
-    },
-  },
   'chromedriver_py_tests': {
     'modifications': {
       'Win10 Tests x64': {
@@ -1775,13 +1773,6 @@
           # TODO(crbug.com/1192348): Fix the test failure
           '--gtest_filter=-FieldFormatterTest.DifferentLocales',
         ],
-      },
-      'linux-exp-asan-lsan-fyi-rel': {
-        # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/1257927
-        'swarming': {
-          'shards': 5,
-        },
       },
       'linux-exp-tsan-fyi-rel': {
         'swarming': {
@@ -2129,11 +2120,6 @@
           'shards': 12,
         },
       },
-      'linux-exp-asan-lsan-fyi-rel': {
-        'swarming': {
-          'shards': 24,
-        },
-      },
       'linux-exp-tsan-fyi-rel': {
         'swarming': {
           'shards': 30,
@@ -2307,13 +2293,6 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.lsan.content_unittests.filter',
         ],
-      },
-      'linux-exp-asan-lsan-fyi-rel': {
-        # These are slow on the ASAN trybot for some reason.
-        # crbug.com/1257927
-        'swarming': {
-          'shards': 2,
-        },
       },
       'linux-rel-dev': {
         'swarming': {
@@ -2573,6 +2552,17 @@
       },
     },
   },
+  'expected_color_pixel_passthrough_test VOLTEER_PUBLIC_RELEASE_LKGM': {
+    'modifications': {
+      'ChromeOS FYI Release Skylab (volteer)': {
+        'args': [
+          # Skylab currently doesn't support use of LUCI_CONTEXT, so Gold cannot
+          # automatically get the service account to authenticate with.
+          '--service-account=/creds/service_accounts/skylab-drone.json',
+        ],
+      },
+    },
+  },
   'expected_color_pixel_validating_test': {
     'modifications': {
       'Android FYI Release (Pixel 4)': {
@@ -2712,7 +2702,6 @@
       'ToTLinuxASan',  # https://crbug.com/831667
       'Linux ASan LSan Tests (1)',  # https://crbug.com/831667
       'Linux Chromium OS ASan LSan Tests (1)',  # https://crbug.com/831667
-      'linux-exp-asan-lsan-fyi-rel',  # https://crbug.com/831667
     ],
     'modifications': {
       'android-arm64-proguard-rel': {
@@ -2780,20 +2769,6 @@
         },
       },
       'Linux TSan Tests': {
-        'args': [
-          '--use-gpu-in-tests',
-          '--no-xvfb',
-        ],
-        'swarming': {
-          # This must be kept in sync with linux_nvidia_gtx_1660_stable mixin
-          'dimensions': {
-            'gpu': '10de:2184-440.100',
-            'os': 'Ubuntu-18.04.5|Ubuntu-18.04.6',
-            'pool': 'chromium.tests.gpu',
-          },
-        },
-      },
-      'linux-exp-asan-lsan-fyi-rel': {
         'args': [
           '--use-gpu-in-tests',
           '--no-xvfb',
@@ -3011,6 +2986,7 @@
         'args': [
           # Swarming does not report a GPU since tests are run in a VM, but
           # the VM does report that a GPU is present.
+          '--expected-vendor-id', '1af4',
           '--expected-device-id', '1050',
         ],
       },
@@ -3018,36 +2994,10 @@
     'replacements': {
       'ChromeOS FYI Release (amd64-generic)': {
         'args': {
-          # Swarming does not report a GPU since tests are run in a VM, but
-          # the VM does report that a GPU is present.
-          '--expected-vendor-id': '1af4',
           # Magic substitution happens after regular replacement, so remove it
           # now since we are manually applying the expected device ID above.
+          '$$MAGIC_SUBSTITUTION_GPUExpectedVendorId': None,
           '$$MAGIC_SUBSTITUTION_GPUExpectedDeviceId': None,
-        },
-      },
-      'Mac FYI Experimental Release (Apple M1)': {
-        'args': {
-          # Apple silicon does not show up normally as a PCI-e device, but
-          # Chrome is able to find a vendor ID that matches other (non-GPU)
-          # Apple PCI-e devices.
-          '--expected-vendor-id': '106b',
-        },
-      },
-      'Mac FYI Release (Apple M1)': {
-        'args': {
-          # Apple silicon does not show up normally as a PCI-e device, but
-          # Chrome is able to find a vendor ID that matches other (non-GPU)
-          # Apple PCI-e devices.
-          '--expected-vendor-id': '106b',
-        },
-      },
-      'Mac FYI Retina Release (Apple M2)': {
-        'args': {
-          # Apple silicon does not show up normally as a PCI-e device, but
-          # Chrome is able to find a vendor ID that matches other (non-GPU)
-          # Apple PCI-e devices.
-          '--expected-vendor-id': '106b',
         },
       },
     },
@@ -3086,7 +3036,7 @@
       },
       'Linux MSan Tests': {
         'swarming': {
-          'shards': 4,
+          'shards': 8,
         },
       },
       'Linux TSan Tests': {
@@ -3171,12 +3121,6 @@
       'linux-code-coverage': {
         'swarming': {
           'shards': 10,
-        },
-      },
-      'linux-exp-asan-lsan-fyi-rel': {
-        # These are slow on the ASan trybot for some reason, crbug.com/1257927
-        'swarming': {
-          'shards': 12,
         },
       },
       'linux-exp-msan-fyi-rel': {
@@ -3450,6 +3394,15 @@
       'fuchsia-x64-rel',
     ],
   },
+  'model_validation_tests MODEL_VALIDATION_BASE': {
+    'modifications': {
+      'optimization_guide-win32': {
+        'args': [
+          '--target-platform=win32',
+        ],
+      },
+    },
+  },
   'mojo_test_apk': {
     'remove_from': [
       'android-code-coverage-native', # Does not generate profraw data.
@@ -3573,13 +3526,6 @@
       'linux-chromeos-dbg': {
         'swarming': {
           'shards': 2,
-        },
-      },
-      'linux-exp-asan-lsan-fyi-rel': {
-        # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/1257927
-        'swarming': {
-          'shards': 16,
         },
       },
       'linux-exp-tsan-fyi-rel': {
@@ -3830,6 +3776,17 @@
   'pixel_skia_gold_passthrough_test JACUZZI_RELEASE_LKGM': {
     'modifications': {
       'ChromeOS FYI Release Skylab (jacuzzi)': {
+        'args': [
+          # Skylab currently doesn't support use of LUCI_CONTEXT, so Gold cannot
+          # automatically get the service account to authenticate with.
+          '--service-account=/creds/service_accounts/skylab-drone.json',
+        ],
+      },
+    },
+  },
+  'pixel_skia_gold_passthrough_test VOLTEER_PUBLIC_RELEASE_LKGM': {
+    'modifications': {
+      'ChromeOS FYI Release Skylab (volteer)': {
         'args': [
           # Skylab currently doesn't support use of LUCI_CONTEXT, so Gold cannot
           # automatically get the service account to authenticate with.
@@ -4121,11 +4078,6 @@
           'shards': 4,
         },
       },
-      'linux-exp-asan-lsan-fyi-rel': {
-        'swarming': {
-          'shards': 4,
-        },
-      },
       'linux-exp-tsan-fyi-rel': {
         'swarming': {
           'shards': 6,
@@ -4402,6 +4354,11 @@
         # shards.
         'retry_only_failed_tests': True,
       },
+      'Mac ASan 64 Tests (1)': {
+        'swarming': {
+          'shards': 2,
+        },
+      },
       'Mac13 Tests': {
         'swarming': {
           'shards': 2,
@@ -4443,13 +4400,6 @@
         'retry_only_failed_tests': True,
         'swarming': {
           'shards': 2,
-        },
-      },
-      'linux-exp-asan-lsan-fyi-rel': {
-        # These are slow on the ASAN trybot for some reason.
-        # crbug.com/1257927
-        'swarming': {
-          'shards': 4,
         },
       },
       'linux-exp-tsan-fyi-rel': {
@@ -4638,7 +4588,13 @@
       },
     },
   },
-  'webcodecs_tests': {
+  'webcodecs_metal_passthrough_ganesh_tests': {
+    'remove_from': [
+      # crbug.com/1458020 for Mac Retina ASAN removal
+      'Mac FYI Retina ASAN (AMD)',
+    ],
+  },
+  'webcodecs_metal_passthrough_graphite_tests': {
     'remove_from': [
       # crbug.com/1458020 for Mac Retina ASAN removal
       'Mac FYI Retina ASAN (AMD)',
@@ -4664,13 +4620,17 @@
       'Win V8 FYI Release (NVIDIA)',
     ],
   },
+  'webgl2_conformance_gl_passthrough_ganesh_tests': {
+    'remove_from': [
+      'Mac V8 FYI Release (Intel)',
+    ],
+  },
   'webgl2_conformance_gl_passthrough_tests': {
     'remove_from': [
       # Removed from V8 builders since WebGL 1 should provide reasonable
       # upstream test coverage without the capacity hit from WebGL 2.
       'Linux V8 FYI Release (NVIDIA)',
       'Linux V8 FYI Release - pointer compression (NVIDIA)',
-      'Mac V8 FYI Release (Intel)',
     ],
   },
   'webgl2_conformance_gles_passthrough_tests': {
@@ -4711,7 +4671,7 @@
       },
     },
   },
-  'webgl2_conformance_metal_passthrough_tests': {
+  'webgl2_conformance_metal_passthrough_graphite_tests': {
     'remove_from': [
       # crbug.com/1270755
       'Mac FYI ASAN (Intel)',
@@ -4767,7 +4727,7 @@
       },
     },
   },
-  'webgl_conformance_gl_passthrough_tests 1002:67ef': {
+  'webgl_conformance_gl_passthrough_ganesh_tests 1002:67ef': {
     'modifications': {
       'mac_optional_gpu_tests_rel': {
         'args': [
@@ -4793,7 +4753,14 @@
       },
     },
   },
-  'webgl_conformance_metal_passthrough_tests': {
+  'webgl_conformance_metal_passthrough_ganesh_tests': {
+    'remove_from': [
+      # crbug.com/1270755
+      'Mac FYI ASAN (Intel)',
+      'Mac FYI Retina ASAN (AMD)',
+    ],
+  },
+  'webgl_conformance_metal_passthrough_graphite_tests': {
     'remove_from': [
       # crbug.com/1270755
       'Mac FYI ASAN (Intel)',
@@ -4905,9 +4872,11 @@
       # sufficient capacity.
       'Dawn Linux x64 DEPS Release (Intel UHD 630)': {
         'ci_only': True,
+        'experiment_percentage': 100,
       },
       'Dawn Linux x64 Release (Intel UHD 630)': {
         'ci_only': True,
+        'experiment_percentage': 100,
       },
     },
   },
@@ -5033,13 +5002,6 @@
       'Linux TSan Tests': {
         'swarming': {
           'shards': 2,
-        },
-      },
-      'linux-exp-asan-lsan-fyi-rel': {
-        # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/1257927
-        'swarming': {
-          'shards': 5,
         },
       },
       'linux-exp-tsan-fyi-rel': {

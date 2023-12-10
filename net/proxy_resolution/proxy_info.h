@@ -45,10 +45,6 @@ class NET_EXPORT ProxyInfo {
   // It is OK to have LWS between entries.
   void UseNamedProxy(const std::string& proxy_uri_list);
 
-  // Sets the proxy list to a single entry, |proxy_server|.
-  // TODO(crbug.com/1491092): Remove this method, as it is only used in a test.
-  void UseProxyServer(const ProxyServer& proxy_server);
-
   // Sets the proxy list to a single entry, |proxy_chain|.
   void UseProxyChain(const ProxyChain& proxy_chain);
 
@@ -62,10 +58,11 @@ class NET_EXPORT ProxyInfo {
   // proxy configuration.
   void OverrideProxyList(const ProxyList& proxy_list);
 
-  // Indicates that this is a proxy for IP Protection.
-  void set_is_for_ip_protection(bool is_for_ip_protection) {
-    is_for_ip_protection_ = is_for_ip_protection;
-  }
+  // Indicates that the request that uses this proxy config caused a match with
+  // the masked domain list.
+  // This is a temporary workaround to gather initial metrics for IP Protection.
+  // TODO(1507085): Remove once the experiment is concluded.
+  void set_is_mdl_match(bool is_mdl_match) { is_mdl_match_ = is_mdl_match; }
 
   // Returns true if this proxy info specifies a direct connection.
   bool is_direct() const {
@@ -80,92 +77,45 @@ class NET_EXPORT ProxyInfo {
     return is_direct() && proxy_list_.size() == 1 && proxy_retry_info_.empty();
   }
 
+  // Returns true if any of the contained ProxyChains are multi-proxy.
+  bool ContainsMultiProxyChain() const;
+
   // Returns true if the first valid proxy server is an https proxy.
   // TODO(https://crbug.com/1491092): Remove this method in favor of checking
   // the corresponding property of the relevant proxy server from the next
   // proxy chain in the proxy list.
-  bool is_https() const {
-    if (is_empty() || is_direct()) {
-      return false;
-    }
-    if (proxy_chain().is_multi_proxy()) {
-      return true;
-    }
-    return proxy_chain().GetProxyServer(/*chain_index=*/0).is_https();
-  }
+  bool is_https() const;
 
   // Returns true if the first proxy server is an HTTP compatible proxy.
   // TODO(https://crbug.com/1491092): Remove this method in favor of checking
   // the corresponding property of the relevant proxy server from the next
   // proxy chain in the proxy list.
-  bool is_http_like() const {
-    if (is_empty() || is_direct()) {
-      return false;
-    }
-    if (proxy_chain().is_multi_proxy()) {
-      return true;
-    }
-    return proxy_chain().GetProxyServer(/*chain_index=*/0).is_http_like();
-  }
+  bool is_http_like() const;
 
   // Returns true if the first proxy server is an HTTP compatible proxy over a
   // secure connection.
   // TODO(https://crbug.com/1491092): Remove this method in favor of checking
   // the corresponding property of the relevant proxy server from the next
   // proxy chain in the proxy list.
-  bool is_secure_http_like() const {
-    if (is_empty() || is_direct()) {
-      return false;
-    }
-    if (proxy_chain().is_multi_proxy()) {
-      return true;
-    }
-    return proxy_chain()
-        .GetProxyServer(/*chain_index=*/0)
-        .is_secure_http_like();
-  }
+  bool is_secure_http_like() const;
 
   // Returns true if the first valid proxy server is an http proxy.
   // TODO(https://crbug.com/1491092): Remove this method in favor of checking
   // the corresponding property of the relevant proxy server from the next
   // proxy chain in the proxy list.
-  bool is_http() const {
-    if (is_empty() || is_direct()) {
-      return false;
-    }
-    if (proxy_chain().is_multi_proxy()) {
-      return false;
-    }
-    return proxy_chain().GetProxyServer(/*chain_index=*/0).is_http();
-  }
+  bool is_http() const;
 
   // Returns true if the first valid proxy server is a quic proxy.
   // TODO(https://crbug.com/1491092): Remove this method in favor of checking
   // the corresponding property of the relevant proxy server from the next
   // proxy chain in the proxy list.
-  bool is_quic() const {
-    if (is_empty() || is_direct()) {
-      return false;
-    }
-    if (proxy_chain().is_multi_proxy()) {
-      return false;
-    }
-    return proxy_chain().GetProxyServer(/*chain_index=*/0).is_quic();
-  }
+  bool is_quic() const;
 
   // Returns true if the first valid proxy server is a socks server.
   // TODO(https://crbug.com/1491092): Remove this method in favor of checking
   // the corresponding property of the relevant proxy server from the next
   // proxy chain in the proxy list.
-  bool is_socks() const {
-    if (is_empty() || is_direct()) {
-      return false;
-    }
-    if (proxy_chain().is_multi_proxy()) {
-      return false;
-    }
-    return proxy_chain().GetProxyServer(/*chain_index=*/0).is_socks();
-  }
+  bool is_socks() const;
 
   // Returns true if this proxy info has no proxies left to try.
   bool is_empty() const {
@@ -178,8 +128,15 @@ class NET_EXPORT ProxyInfo {
     return did_bypass_proxy_;
   }
 
-  // Returns true if this proxy info is for IP Protection.
-  bool is_for_ip_protection() const { return is_for_ip_protection_; }
+  // Returns true if the first proxy chain corresponds to one used for IP
+  // Protection.
+  bool is_for_ip_protection() const;
+
+  // Returns true if the request that uses this proxy config caused a match with
+  // the masked domain list.
+  // This is a temporary workaround to gather initial metrics for IP Protection.
+  // TODO(1507085): Remove once the experiment is concluded.
+  bool is_mdl_match() const { return is_mdl_match_; }
 
   // Returns the first valid proxy chain. is_empty() must be false to be able
   // to call this function.
@@ -190,6 +147,9 @@ class NET_EXPORT ProxyInfo {
 
   // See description in ProxyList::ToPacString().
   std::string ToPacString() const;
+
+  // See description in ProxyList::ToDebugString().
+  std::string ToDebugString() const;
 
   // Marks the current proxy as bad. |net_error| should contain the network
   // error encountered when this proxy was tried, if any. If this fallback
@@ -240,6 +200,11 @@ class NET_EXPORT ProxyInfo {
   // Reset proxy and config settings.
   void Reset();
 
+  // Verify that all proxies in the first chain have `SCHEME_HTTPS`. This is
+  // currently enforced by `ProxyChain::IsValid`, and assumed by various `is_..`
+  // methods in this class.
+  bool AllChainProxiesAreHttps() const;
+
   // The ordered list of proxy servers (including DIRECT attempts) remaining to
   // try. If proxy_list_ is empty, then there is nothing left to fall back to.
   ProxyList proxy_list_;
@@ -253,8 +218,11 @@ class NET_EXPORT ProxyInfo {
   // Whether the proxy result represent a proxy bypass.
   bool did_bypass_proxy_ = false;
 
-  // Whether this proxy is for IP Protection.
-  bool is_for_ip_protection_ = false;
+  // Whether the request that uses this proxy config caused a match with the
+  // masked domain list.
+  // This is a temporary workaround to gather initial metrics for IP Protection.
+  // TODO(1507085): Remove once the experiment is concluded.
+  bool is_mdl_match_ = false;
 
   // How long it took to resolve the proxy.  Times are both null if proxy was
   // determined synchronously without running a PAC.

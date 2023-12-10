@@ -27,6 +27,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
+#include "base/scoped_observation.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
@@ -230,7 +231,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_mode_observer.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/accessibility/platform/ax_platform_node.h"
+#include "ui/accessibility/platform/ax_platform.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/hit_test.h"
@@ -824,10 +825,7 @@ class BrowserView::AccessibilityModeObserver : public ui::AXModeObserver {
  public:
   explicit AccessibilityModeObserver(BrowserView* browser_view)
       : browser_view_(browser_view) {
-    ui::AXPlatformNode::AddAXModeObserver(this);
-  }
-  ~AccessibilityModeObserver() override {
-    ui::AXPlatformNode::RemoveAXModeObserver(this);
+    ax_mode_observation_.Observe(&ui::AXPlatform::GetInstance());
   }
 
  private:
@@ -856,6 +854,8 @@ class BrowserView::AccessibilityModeObserver : public ui::AXModeObserver {
   }
 
   const raw_ptr<BrowserView> browser_view_;
+  base::ScopedObservation<ui::AXPlatform, ui::AXModeObserver>
+      ax_mode_observation_{this};
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1285,19 +1285,19 @@ bool BrowserView::GetIsPictureInPictureType() const {
 }
 
 float BrowserView::GetInitialAspectRatio() const {
-  const absl::optional<blink::mojom::PictureInPictureWindowOptions>
-      pip_options = browser_->create_params().pip_options;
+  const std::optional<blink::mojom::PictureInPictureWindowOptions> pip_options =
+      browser_->create_params().pip_options;
   return pip_options.has_value() ? pip_options->initial_aspect_ratio : 1.0;
 }
 
-absl::optional<blink::mojom::PictureInPictureWindowOptions>
+std::optional<blink::mojom::PictureInPictureWindowOptions>
 BrowserView::GetDocumentPictureInPictureOptions() const {
   return browser_->create_params().pip_options;
 }
 
 bool BrowserView::GetLockAspectRatio() const {
-  const absl::optional<blink::mojom::PictureInPictureWindowOptions>
-      pip_options = browser_->create_params().pip_options;
+  const std::optional<blink::mojom::PictureInPictureWindowOptions> pip_options =
+      browser_->create_params().pip_options;
   return pip_options.has_value() ? pip_options->lock_aspect_ratio : false;
 }
 
@@ -1436,7 +1436,7 @@ bool BrowserView::IsOnCurrentWorkspace() const {
   return chromeos::DesksHelper::Get(native_win)
       ->BelongsToActiveDesk(native_win);
 #elif BUILDFLAG(IS_WIN)
-  absl::optional<bool> on_current_workspace =
+  std::optional<bool> on_current_workspace =
       native_win->GetHost()->on_current_workspace();
   if (on_current_workspace.has_value())
     return on_current_workspace.value();
@@ -2459,20 +2459,23 @@ bool BrowserView::ActivateFirstInactiveBubbleForAccessibility() {
   // TODO: this fixes crbug.com/1042010 and crbug.com/1052676, but a more
   // general solution should be desirable to find any bubbles anchored in the
   // views hierarchy.
-  if (toolbar_ && toolbar_->app_menu_button()) {
-    views::DialogDelegate* bubble =
-        toolbar_->app_menu_button()->GetProperty(views::kAnchoredDialogKey);
-    if ((!bubble || user_education::HelpBubbleView::IsHelpBubble(bubble)) &&
-        GetLocationBarView())
-      bubble = GetLocationBarView()->GetProperty(views::kAnchoredDialogKey);
-    if ((!bubble || user_education::HelpBubbleView::IsHelpBubble(bubble)) &&
-        toolbar_button_provider_ &&
-        toolbar_button_provider_->GetAvatarToolbarButton()) {
-      bubble = toolbar_button_provider_->GetAvatarToolbarButton()->GetProperty(
-          views::kAnchoredDialogKey);
+  if (toolbar_) {
+    views::DialogDelegate* bubble = nullptr;
+    for (auto* view : std::initializer_list<views::View*>{
+             toolbar_->app_menu_button(), GetLocationBarView(),
+             toolbar_button_provider_->GetAvatarToolbarButton(),
+             toolbar_button_provider_->GetDownloadButton()}) {
+      if (view) {
+        if (auto* dialog = view->GetProperty(views::kAnchoredDialogKey);
+            dialog && !user_education::HelpBubbleView::IsHelpBubble(dialog)) {
+          bubble = dialog;
+          break;
+        }
+      }
     }
 
-    if (bubble && !user_education::HelpBubbleView::IsHelpBubble(bubble)) {
+    if (bubble) {
+      CHECK(!user_education::HelpBubbleView::IsHelpBubble(bubble));
       View* focusable = bubble->GetInitiallyFocusedView();
 
       // A PermissionPromptBubbleView will explicitly return nullptr due to
@@ -2524,10 +2527,10 @@ void BrowserView::OnWidgetVisibilityChanged(views::Widget* widget,
   }
 }
 
-absl::optional<bool> BrowserView::GetCanResizeFromWebAPI() const {
+std::optional<bool> BrowserView::GetCanResizeFromWebAPI() const {
   // TODO(laurila, crbug.com/1493617): Support multi-tab apps.
   if (browser()->tab_strip_model()->count() > 1) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   // The value can only be set in web apps, where there currently can only be 1
@@ -2535,7 +2538,7 @@ absl::optional<bool> BrowserView::GetCanResizeFromWebAPI() const {
   // value set by the active WebContents' primary page.
   content::WebContents* web_contents = GetActiveWebContents();
   if (!web_contents || !web_contents->GetPrimaryMainFrame()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   return web_contents->GetPrimaryPage().GetResizable();
@@ -2574,7 +2577,7 @@ void BrowserView::OnCanResizeFromWebAPIChanged() {
     return;
   }
 
-  // Setting it to absl::nullopt should never be blocked.
+  // Setting it to std::nullopt should never be blocked.
   if (can_resize.has_value() && browser()->tab_strip_model()->count() > 1) {
     // This adds a warning to the active tab, even when another tab makes the
     // call, which also needs to be fixed as part of the multi-apps support.
@@ -2723,7 +2726,7 @@ void BrowserView::ShowIntentPickerBubble(
     bool show_stay_in_chrome,
     bool show_remember_selection,
     apps::IntentPickerBubbleType bubble_type,
-    const absl::optional<url::Origin>& initiating_origin,
+    const std::optional<url::Origin>& initiating_origin,
     IntentPickerResponse callback) {
   toolbar_->ShowIntentPickerBubble(std::move(app_info), show_stay_in_chrome,
                                    show_remember_selection, bubble_type,
@@ -2737,11 +2740,6 @@ void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 void BrowserView::VerifyUserEligibilityIOSPasswordPromoBubble() {
   if (!browser_) {
-    return;
-  }
-
-  if (promos_utils::IsActivationCriteriaOverriddenIOSPasswordPromo()) {
-    ShowIOSPasswordPromoBubble();
     return;
   }
 
@@ -2802,20 +2800,11 @@ void BrowserView::ShowIOSPasswordPromoBubble() {
       BrowserView::GetBrowserViewForBrowser(browser_.get())
           ->toolbar_button_provider();
 
-  IOSPromoPasswordBubble::PromoVariant variant;
-  if (promos_utils::IsDirectVariantIOSPasswordPromo()) {
-    variant = IOSPromoPasswordBubble::PromoVariant::QR_CODE_VARIANT;
-  } else if (promos_utils::IsIndirectVariantIOSPasswordPromo()) {
-    variant = IOSPromoPasswordBubble::PromoVariant::GET_STARTED_BUTTON_VARIANT;
-  } else {
-    NOTREACHED_NORETURN();
-  }
-
   IOSPromoPasswordBubble::ShowBubble(
       button_provider->GetAnchorView(PageActionIconType::kManagePasswords),
       button_provider->GetPageActionIconView(
           PageActionIconType::kManagePasswords),
-      variant, browser_.get());
+      browser_.get());
 }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
@@ -3045,8 +3034,7 @@ DownloadShelf* BrowserView::GetDownloadShelf() {
   // Don't show download shelf if download bubble is enabled, except that the
   // shelf is already showing (this can happen if prefs were changed at
   // runtime).
-  if (download::IsDownloadBubbleEnabled(browser_->profile()) &&
-      !download_shelf_) {
+  if (download::IsDownloadBubbleEnabled() && !download_shelf_) {
     return nullptr;
   }
   if (!download_shelf_) {
@@ -3471,7 +3459,7 @@ std::u16string BrowserView::GetAccessibleTabLabel(int index,
                                                   bool is_for_tab) const {
   std::u16string title = browser_->GetWindowTitleForTab(index);
 
-  absl::optional<tab_groups::TabGroupId> group =
+  std::optional<tab_groups::TabGroupId> group =
       tabstrip_->tab_at(index)->group();
   if (group.has_value()) {
     std::u16string group_title = tabstrip_->GetGroupTitle(group.value());
@@ -3509,7 +3497,7 @@ std::u16string BrowserView::GetAccessibleTabLabel(int index,
   }
 
   // Alert tab states.
-  absl::optional<TabAlertState> alert = tabstrip_->GetTabAlertState(index);
+  std::optional<TabAlertState> alert = tabstrip_->GetTabAlertState(index);
   if (alert.has_value()) {
     switch (alert.value()) {
       case TabAlertState::AUDIO_PLAYING:
@@ -3539,6 +3527,14 @@ std::u16string BrowserView::GetAccessibleTabLabel(int index,
       case TabAlertState::MEDIA_RECORDING:
         title = l10n_util::GetStringFUTF16(
             IDS_TAB_AX_LABEL_MEDIA_RECORDING_FORMAT, title);
+        break;
+      case TabAlertState::AUDIO_RECORDING:
+        title = l10n_util::GetStringFUTF16(
+            IDS_TAB_AX_LABEL_AUDIO_RECORDING_FORMAT, title);
+        break;
+      case TabAlertState::VIDEO_RECORDING:
+        title = l10n_util::GetStringFUTF16(
+            IDS_TAB_AX_LABEL_VIDEO_RECORDING_FORMAT, title);
         break;
       case TabAlertState::AUDIO_MUTING:
         title = l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_AUDIO_MUTING_FORMAT,
@@ -4878,6 +4874,15 @@ void BrowserView::UpdateAcceleratorMetrics(const ui::Accelerator& accelerator,
 
   if (command_id == IDC_NEW_INCOGNITO_WINDOW) {
     base::RecordAction(base::UserMetricsAction("Accel_NewIncognitoWindow"));
+  }
+
+  if (command_id == IDC_FULLSCREEN) {
+    if (browser_->window()->IsFullscreen()) {
+      base::RecordAction(base::UserMetricsAction("ExitFullscreen_Accelerator"));
+    } else {
+      base::RecordAction(
+          base::UserMetricsAction("EnterFullscreen_Accelerator"));
+    }
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

@@ -53,8 +53,7 @@ import java.util.regex.Pattern;
 @RunWith(Parameterized.class)
 @UseParametersRunnerFactory(AwJUnit4ClassRunnerWithParameters.Factory.class)
 public class ClientHintsTest extends AwParameterizedTest {
-    @Rule
-    public AwActivityTestRule mActivityTestRule;
+    @Rule public AwActivityTestRule mActivityTestRule;
 
     private static final String[] USER_AGENT_CLIENT_HINTS = {
         "sec-ch-ua",
@@ -341,11 +340,13 @@ public class ClientHintsTest extends AwParameterizedTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
-    @CommandLineFlags.Add({"enable-features=UserAgentClientHint,ClientHintsFormFactor",
-            ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1"})
+    @CommandLineFlags.Add({
+        "enable-features=UserAgentClientHint,ClientHintsFormFactor",
+        ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1"
+    })
     @SkipMutations(reason = "This test depends on AwSettings.setUserAgentString()")
     public void testEnableUserAgentClientHintsJavaScript() throws Throwable {
-        verifyClientHintsJavaScript(/*useCustomUserAgent=*/false);
+        verifyClientHintsJavaScript(/* useCustomUserAgent= */ false);
     }
 
     @Test
@@ -1396,7 +1397,9 @@ public class ClientHintsTest extends AwParameterizedTest {
         String[] hintPairs = text.split(",\"");
         int userAgentClientHintsCount = 0;
         for (String hintPair : hintPairs) {
-            String[] hints = hintPair.split(":");
+            // Make sure we only split into two parts at the first occurrence for `:` in order to
+            // handle correctly for cases when the brand value can contains special char `:`.
+            String[] hints = hintPair.split(":", 2);
             if (hints.length < 2) {
                 continue;
             }

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ASH_SYSTEM_WEB_APPS_APPS_PERSONALIZATION_APP_PERSONALIZATION_APP_SEA_PEN_PROVIDER_IMPL_H_
 #define CHROME_BROWSER_ASH_SYSTEM_WEB_APPS_APPS_PERSONALIZATION_APP_PERSONALIZATION_APP_SEA_PEN_PROVIDER_IMPL_H_
 
+#include "ash/webui/personalization_app/mojom/sea_pen.mojom-forward.h"
+#include "ash/webui/personalization_app/mojom/sea_pen.mojom.h"
 #include "ash/webui/personalization_app/personalization_app_sea_pen_provider.h"
 
 #include <map>
@@ -12,9 +14,11 @@
 #include <string>
 
 #include "ash/public/cpp/wallpaper/sea_pen_image.h"
+#include "base/files/file.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace content {
 class WebUI;
@@ -47,20 +51,37 @@ class PersonalizationAppSeaPenProviderImpl
   void BindInterface(
       mojo::PendingReceiver<mojom::SeaPenProvider> receiver) override;
 
-  void SearchWallpaper(const std::string& text,
+  void SearchWallpaper(mojom::SeaPenQueryPtr query,
                        SearchWallpaperCallback callback) override;
 
   void SelectSeaPenThumbnail(uint32_t id,
                              SelectSeaPenThumbnailCallback callback) override;
 
+  void SelectRecentSeaPenImage(
+      const base::FilePath& path,
+      SelectRecentSeaPenImageCallback callback) override;
+
+  void GetRecentSeaPenImages(GetRecentSeaPenImagesCallback callback) override;
+
+  void GetRecentSeaPenImageThumbnail(
+      const base::FilePath& path,
+      GetRecentSeaPenImageThumbnailCallback callback) override;
+
  private:
   wallpaper_handlers::SeaPenFetcher* GetOrCreateSeaPenFetcher();
 
   void OnFetchThumbnailsDone(SearchWallpaperCallback callback,
-                             absl::optional<std::vector<SeaPenImage>> images);
+                             std::optional<std::vector<SeaPenImage>> images);
 
   void OnFetchWallpaperDone(SelectSeaPenThumbnailCallback callback,
-                            absl::optional<SeaPenImage> image);
+                            std::optional<SeaPenImage> image);
+
+  void OnGetRecentSeaPenImages(GetRecentSeaPenImagesCallback callback,
+                               const std::vector<base::FilePath>& images);
+
+  void OnGetRecentSeaPenImageThumbnail(
+      GetRecentSeaPenImageThumbnailCallback callback,
+      const gfx::ImageSkia& image);
 
   // Pointer to profile of user that opened personalization SWA. Not owned.
   const raw_ptr<Profile> profile_;
@@ -70,6 +91,15 @@ class PersonalizationAppSeaPenProviderImpl
 
   // A map of image id to image.
   std::map<uint32_t, const SeaPenImage> sea_pen_images_;
+
+  // When recent sea pen images are fetched, store the valid file paths in the
+  // set. This is checked when the SWA requests thumbnail data or sets an image
+  // as the user's background.
+  std::set<base::FilePath> recent_sea_pen_images_;
+
+  // The last query made to the sea pen provider. This can be null when
+  // SearchWallpaper() is never called.
+  mojom::SeaPenQueryPtr last_query_;
 
   // Perform a network request to search/upscale available wallpapers.
   // Constructed lazily at the time of the first request and then persists for

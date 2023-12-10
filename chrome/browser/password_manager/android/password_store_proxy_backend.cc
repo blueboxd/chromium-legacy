@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/password_manager/android/password_store_proxy_backend.h"
+
+#include <functional>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -12,7 +14,6 @@
 #include "base/functional/callback.h"
 #include "base/functional/callback_forward.h"
 #include "base/functional/callback_helpers.h"
-#include "base/functional/identity.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
@@ -50,7 +51,7 @@ using MethodName = base::StrongAlias<struct MethodNameTag, std::string>;
 
 void InvokeCallbackWithCombinedStatus(base::OnceCallback<void(bool)> completion,
                                       std::vector<bool> statuses) {
-  std::move(completion).Run(base::ranges::all_of(statuses, base::identity()));
+  std::move(completion).Run(base::ranges::all_of(statuses, std::identity()));
 }
 
 std::string GetFallbackMetricNameForMethod(const MethodName& method_name) {
@@ -128,7 +129,7 @@ void PasswordStoreProxyBackend::GetAutofillableLoginsAsync(
 }
 
 void PasswordStoreProxyBackend::GetAllLoginsForAccountAsync(
-    absl::optional<std::string> account,
+    std::string account,
     LoginsOrErrorReply callback) {
   NOTREACHED();
 }
@@ -336,7 +337,7 @@ PasswordStoreBackend* PasswordStoreProxyBackend::shadow_backend() {
 void PasswordStoreProxyBackend::OnRemoteFormChangesReceived(
     CallbackOriginatesFromAndroidBackend originates_from_android,
     RemoteChangesReceived remote_form_changes_received,
-    absl::optional<PasswordStoreChangeList> changes) {
+    std::optional<PasswordStoreChangeList> changes) {
   // `remote_form_changes_received` is used to inform observers about changes in
   // the backend. This check guarantees observers are informed only about
   // changes in the main backend.

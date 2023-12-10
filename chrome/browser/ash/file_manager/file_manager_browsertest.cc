@@ -367,21 +367,26 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("fileDisplayUnmountLastPartition").NewDirectoryTree(),
         // Section end - browser tests for new directory tree
         TestCase("fileDisplayDownloads")
-            .FeatureIds({"screenplay-ade01078-3b79-41d2-953e-e22a544a28b3"}),
+            .FeatureIds({"screenplay-ade01078-3b79-41d2-953e-e22a544a28b3",
+                         "screenplay-4c745151-7307-4658-aa58-1bb97592b4a6"}),
         TestCase("fileDisplayDownloads")
             .InGuestMode()
-            .FeatureIds({"screenplay-ade01078-3b79-41d2-953e-e22a544a28b3"}),
+            .FeatureIds({"screenplay-ade01078-3b79-41d2-953e-e22a544a28b3",
+                         "screenplay-4c745151-7307-4658-aa58-1bb97592b4a6"}),
         TestCase("fileDisplayDownloads")
             .TabletMode()
-            .FeatureIds({"screenplay-ade01078-3b79-41d2-953e-e22a544a28b3"}),
+            .FeatureIds({"screenplay-ade01078-3b79-41d2-953e-e22a544a28b3",
+                         "screenplay-4c745151-7307-4658-aa58-1bb97592b4a6"}),
         TestCase("fileDisplayLaunchOnDrive").DontObserveFileTasks(),
         TestCase("fileDisplayLaunchOnLocalFolder").DontObserveFileTasks(),
         TestCase("fileDisplayLaunchOnLocalFile").DontObserveFileTasks(),
         TestCase("fileDisplayDrive")
             .TabletMode()
-            .FeatureIds({"screenplay-ade01078-3b79-41d2-953e-e22a544a28b3"}),
+            .FeatureIds({"screenplay-ade01078-3b79-41d2-953e-e22a544a28b3",
+                         "screenplay-4c745151-7307-4658-aa58-1bb97592b4a6"}),
         TestCase("fileDisplayDrive")
-            .FeatureIds({"screenplay-ade01078-3b79-41d2-953e-e22a544a28b3"}),
+            .FeatureIds({"screenplay-ade01078-3b79-41d2-953e-e22a544a28b3",
+                         "screenplay-4c745151-7307-4658-aa58-1bb97592b4a6"}),
         TestCase("fileDisplayDriveOffline").Offline(),
         TestCase("fileDisplayDriveOnline"),
         TestCase("fileDisplayDriveOnlineNewWindow").DontObserveFileTasks(),
@@ -854,6 +859,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .NewDirectoryTree(),
         TestCase("directoryTreeExpandFolderOnDelayExpansionVolume")
             .NewDirectoryTree(),
+        TestCase("directoryTreeExpandAndSelectedOnDragMove").NewDirectoryTree(),
+        TestCase("directoryTreeClickDriveRootWhenMyDriveIsActive")
+            .NewDirectoryTree(),
         // Section end - browser tests for new directory tree
         TestCase("directoryTreeActiveDirectory"),
         TestCase("directoryTreeSelectedDirectory"),
@@ -866,7 +874,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             "directoryTreeExpandFolderWithHiddenFileAndShowHiddenFilesOff"),
         TestCase("directoryTreeExpandFolderWithHiddenFileAndShowHiddenFilesOn"),
         TestCase("directoryTreeExpandFolderOnNonDelayExpansionVolume"),
-        TestCase("directoryTreeExpandFolderOnDelayExpansionVolume")));
+        TestCase("directoryTreeExpandFolderOnDelayExpansionVolume"),
+        TestCase("directoryTreeExpandAndSelectedOnDragMove"),
+        TestCase("directoryTreeClickDriveRootWhenMyDriveIsActive")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DirectoryTreeContextMenu, /* directory_tree_context_menu.js */
@@ -929,8 +939,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("dirContextMenuSharedDrive").NewDirectoryTree(),
         TestCase("dirContextMenuSharedWithMe").NewDirectoryTree(),
         TestCase("dirContextMenuOffline").NewDirectoryTree(),
-        // TODO(b/301340154): should Computers allow rename?
-        // TestCase("dirContextMenuComputers").NewDirectoryTree(),
+        TestCase("dirContextMenuComputers").NewDirectoryTree(),
         TestCase("dirContextMenuTrash").NewDirectoryTree(),
         TestCase("dirContextMenuShortcut").NewDirectoryTree(),
         TestCase("dirContextMenuFocus").NewDirectoryTree(),
@@ -1084,7 +1093,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("driveDirtyItemsShouldBeDisplayedAsQueued"),
         TestCase("openDriveDocWhenOffline").EnableBulkPinning(),
         TestCase("completedSyncStatusDismissesAfter300Ms"),
-        TestCase("driveOutOfOrganizationSpaceBanner")
+        TestCase("driveOutOfOrganizationSpaceBanner"),
+        TestCase("copyDirectoryWithEncryptedFile")
         // TODO(b/189173190): Enable
         // TestCase("driveEnableDocsOfflineDialog"),
         // TODO(b/189173190): Enable
@@ -1285,43 +1295,64 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DriveSpecific, /* drive_specific.js */
     LoggedInUserFilesAppBrowserTest,
     ::testing::Values(
-        // Google One offer banner checks device state. Device state is NOT set
-        // to `policy::DeviceMode::DEVICE_MODE_CONSUMER` in
-        // `FilesAppBrowserTest`.
+        // Google One offer banner checks device state, locale, and country.
         TestCase("driveGoogleOneOfferBannerEnabled")
             .SetDeviceMode(DeviceMode::kConsumerOwned)
             .SetTestAccountType(TestAccountType::kNonManaged)
-            .EnableGoogleOneOfferFilesBanner(),
-        // Google One offer banner is disabled by default.
+            .SetLocale("en-US")
+            .SetCountry("us"),
+        // Disabled by the flag case.
         TestCase("driveGoogleOneOfferBannerDisabled")
             .SetDeviceMode(DeviceMode::kConsumerOwned)
-            .SetTestAccountType(TestAccountType::kNonManaged),
+            .SetTestAccountType(TestAccountType::kNonManaged)
+            .SetLocale("en-US")
+            .SetCountry("us")
+            .DisableGoogleOneOfferFilesBanner(),
+        // A country is not in supported countries set case.
+        TestCase("driveGoogleOneOfferBannerDisabled")
+            .SetDeviceMode(DeviceMode::kConsumerOwned)
+            .SetTestAccountType(TestAccountType::kNonManaged)
+            .SetLocale("en-US")
+            .SetCountry("jp"),
+        // A locale is not in a supported locales set case.
+        TestCase("driveGoogleOneOfferBannerDisabled")
+            .SetDeviceMode(DeviceMode::kConsumerOwned)
+            .SetTestAccountType(TestAccountType::kNonManaged)
+            .SetLocale("ja")
+            .SetCountry("us"),
         TestCase("driveGoogleOneOfferBannerDismiss")
             .SetDeviceMode(DeviceMode::kConsumerOwned)
             .SetTestAccountType(TestAccountType::kNonManaged)
-            .EnableGoogleOneOfferFilesBanner(),
+            .SetLocale("en-US")
+            .SetCountry("us"),
         TestCase("driveGoogleOneOfferBannerDismiss")
             .SetDeviceMode(DeviceMode::kConsumerOwned)
             .SetTestAccountType(TestAccountType::kNonManaged)
-            .EnableGoogleOneOfferFilesBanner()
+            .SetLocale("en-US")
+            .SetCountry("us")
             .EnableCrosComponents(),
         TestCase("driveGoogleOneOfferBannerDisabled")
-            .EnableGoogleOneOfferFilesBanner()
+            .SetLocale("en-US")
+            .SetCountry("us")
             .SetDeviceMode(DeviceMode::kConsumerOwned)
             .SetTestAccountType(TestAccountType::kEnterprise),
         TestCase("driveGoogleOneOfferBannerDisabled")
-            .EnableGoogleOneOfferFilesBanner()
+            .SetLocale("en-US")
+            .SetCountry("us")
             .SetDeviceMode(DeviceMode::kConsumerOwned)
             .SetTestAccountType(TestAccountType::kChild),
         // Google One offer is for a device. The banner will not
         // be shown for an enrolled device.
         TestCase("driveGoogleOneOfferBannerDisabled")
-            .EnableGoogleOneOfferFilesBanner()
+            .SetLocale("en-US")
+            .SetCountry("us")
             .SetDeviceMode(DeviceMode::kEnrolled)
             .SetTestAccountType(TestAccountType::kNonManaged),
         // We do not show a banner if a profile is not an owner profile.
         TestCase("driveGoogleOneOfferBannerDisabled")
             .EnableGoogleOneOfferFilesBanner()
+            .SetLocale("en-US")
+            .SetCountry("us")
             .SetDeviceMode(kConsumerOwned)
             .SetTestAccountType(kNonManagedNonOwner),
         TestCase("driveBulkPinningBannerEnabled")
@@ -1817,12 +1848,15 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("fileListAriaAttributes")
             .FeatureIds({"screenplay-af443ca0-6d9f-4cb3-af8f-0939c37833db"}),
         TestCase("fileListFocusFirstItem"),
-        TestCase("fileListSelectLastFocusedItem"),
+        TestCase("fileListSelectLastFocusedItem")
+            .FeatureIds({"screenplay-2bf9ed18-db1b-4587-9aae-195121f2acae"}),
         TestCase("fileListSortWithKeyboard"),
         TestCase("fileListKeyboardSelectionA11y")
-            .FeatureIds({"screenplay-af443ca0-6d9f-4cb3-af8f-0939c37833db"}),
+            .FeatureIds({"screenplay-af443ca0-6d9f-4cb3-af8f-0939c37833db",
+                         "screenplay-2bf9ed18-db1b-4587-9aae-195121f2acae"}),
         TestCase("fileListMouseSelectionA11y")
-            .FeatureIds({"screenplay-af443ca0-6d9f-4cb3-af8f-0939c37833db"}),
+            .FeatureIds({"screenplay-af443ca0-6d9f-4cb3-af8f-0939c37833db",
+                         "screenplay-2bf9ed18-db1b-4587-9aae-195121f2acae"}),
         TestCase("fileListDeleteMultipleFiles"),
         TestCase("fileListRenameSelectedItem"),
         TestCase("fileListRenameFromSelectAll")));
@@ -1891,17 +1925,18 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Recents, /* recents.js */
     FilesAppBrowserTest,
     ::testing::Values(
-        // TODO(b/307657164): enable the test
-        // TestCase("recentsNested").NewDirectoryTree(),
+#if !defined(ADDRESS_SANITIZER) && !defined(LEAK_SANITIZER)
+        TestCase("recentsNested").NewDirectoryTree(),
+#endif
         TestCase("recentsFilterResetToAll").NewDirectoryTree(),
         TestCase("recentsA11yMessages")
             .NewDirectoryTree()
             .FeatureIds({"screenplay-af443ca0-6d9f-4cb3-af8f-0939c37833db"}),
         TestCase("recentsReadOnlyHidden").NewDirectoryTree(),
-        // TestCase("recentsAllowDeletion").EnableArc().NewDirectoryTree(),
-        // TestCase("recentsAllowMultipleFilesDeletion")
-        //     .EnableArc()
-        //     .NewDirectoryTree(),
+        TestCase("recentsAllowDeletion").EnableArc().NewDirectoryTree(),
+        TestCase("recentsAllowMultipleFilesDeletion")
+            .EnableArc()
+            .NewDirectoryTree(),
         TestCase("recentsAllowRename")
             .EnableArc()
             .NewDirectoryTree()
@@ -1909,7 +1944,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("recentsNoRenameForPlayFiles").EnableArc().NewDirectoryTree(),
         TestCase("recentsAllowCutForDownloads").NewDirectoryTree(),
         TestCase("recentsAllowCutForDrive").NewDirectoryTree(),
-        // TestCase("recentsAllowCutForPlayFiles").EnableArc().NewDirectoryTree(),
+        TestCase("recentsAllowCutForPlayFiles").EnableArc().NewDirectoryTree(),
         TestCase("recentsTimePeriodHeadings").NewDirectoryTree(),
         TestCase("recentsEmptyFolderMessage").NewDirectoryTree(),
         TestCase("recentsEmptyFolderMessageAfterDeletion").NewDirectoryTree(),
@@ -1938,6 +1973,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("recentsEmptyFolderMessageAfterDeletion"),
         TestCase("recentsDownloads"),
         TestCase("recentsDrive"),
+        TestCase("recentsMyFiles"),
         TestCase("recentsCrostiniNotMounted"),
         TestCase("recentsCrostiniMounted"),
         TestCase("recentsDownloadsAndDrive"),
@@ -2012,6 +2048,11 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .NewDirectoryTree(),
         TestCase("searchFileSystemProvider").NewDirectoryTree(),
         TestCase("changingDirectoryClosesSearch").NewDirectoryTree(),
+        TestCase("verifyDriveLocationOption").NewDirectoryTree(),
+        TestCase("unselectCurrentDirectoryInTreeOnSearchInDownloads")
+            .NewDirectoryTree(),
+        TestCase("unselectCurrentDirectoryInTreeOnSearchInDrive")
+            .NewDirectoryTree(),
         // Section end - browser tests for new directory tree
         TestCase("searchDownloadsWithResults"),
         TestCase("searchDownloadsWithNoResults"),
@@ -2049,7 +2090,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("searchFileSystemProvider"),
         TestCase("searchImageByContent").EnableLocalImageSearch(),
         TestCase("changingDirectoryClosesSearch"),
-        TestCase("searchQueryLaunchParam")));
+        TestCase("searchQueryLaunchParam"),
+        TestCase("verifyDriveLocationOption"),
+        TestCase("unselectCurrentDirectoryInTreeOnSearchInDownloads"),
+        TestCase("unselectCurrentDirectoryInTreeOnSearchInDrive")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Metrics, /* metrics.js */
@@ -2206,6 +2250,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .NewDirectoryTree(),
         // Section end - browser tests for new directory tree
         TestCase("trashMoveToTrash")
+            .FeatureIds({"screenplay-a06f961a-17f5-4fbd-8285-49abb000dee1"}),
+        TestCase("trashMultipleEntries")
+            .FeatureIds({"screenplay-a06f961a-17f5-4fbd-8285-49abb000dee1"}),
+        TestCase("trashNonEmptyFolder")
             .FeatureIds({"screenplay-a06f961a-17f5-4fbd-8285-49abb000dee1"}),
         TestCase("trashPermanentlyDelete"),
         TestCase("trashRestoreFromToast"),

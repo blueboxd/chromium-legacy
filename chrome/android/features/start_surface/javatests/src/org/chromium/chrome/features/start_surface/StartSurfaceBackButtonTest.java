@@ -80,7 +80,6 @@ import java.util.concurrent.ExecutionException;
 })
 @EnableFeatures({
     ChromeFeatureList.START_SURFACE_ANDROID + "<Study",
-    ChromeFeatureList.EMPTY_STATES
 })
 @DisableFeatures({ChromeFeatureList.SHOW_NTP_AT_STARTUP_ANDROID})
 @DoNotBatch(reason = "StartSurface*Test tests startup behaviours and thus can't be batched.")
@@ -217,10 +216,9 @@ public class StartSurfaceBackButtonTest {
         StartSurfaceTestUtils.launchFirstMVTile(cta, /* currentTabCount= */ 1);
         StartSurfaceTestUtils.pressHomePageButton(cta);
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
-        onView(allOf(withId(R.id.tab_list_recycler_view), isDisplayed()));
 
-        // Launches the new tab from the carousel tab switcher, and press back button.
-        StartSurfaceTestUtils.clickTabInCarousel(/* position= */ 1);
+        // Launches the new tab from the single tab card, and press back button.
+        onViewWaiting(withId(R.id.single_tab_view)).perform(click());
         Assert.assertEquals(
                 TabLaunchType.FROM_START_SURFACE,
                 cta.getTabModelSelector().getCurrentTab().getLaunchType());
@@ -431,7 +429,7 @@ public class StartSurfaceBackButtonTest {
         openMvTileInAnIncognitoTab(cta, tileView, 1);
 
         // Go back to Start homepage.
-        TestThreadUtils.runOnUiThreadBlocking(() -> cta.getTabCreator(false).launchNTP());
+        TestThreadUtils.runOnUiThreadBlocking(() -> cta.getTabCreator(false).launchNtp());
         StartSurfaceTestUtils.waitForStartSurfaceVisible(
                 mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
 

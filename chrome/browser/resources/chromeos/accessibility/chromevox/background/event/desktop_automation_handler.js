@@ -111,12 +111,11 @@ export class DesktopAutomationHandler extends DesktopAutomationInterface {
 
     this.addListener_(
         EventType.LOAD_COMPLETE, event => this.onLoadComplete_(event));
-    this.addListener_(EventType.FOCUS_AFTER_MENU_CLOSE, this.onMenuEnd);
-    this.addListener_(EventType.MENU_START, event => {
-      Output.forceModeForNextSpeechUtterance(QueueMode.CATEGORY_FLUSH);
-      this.onEventDefault(event);
-    });
-    this.addListener_(EventType.RANGE_VALUE_CHANGED, this.onValueChanged);
+    this.addListener_(
+        EventType.FOCUS_AFTER_MENU_CLOSE, event => this.onMenuEnd_(event));
+    this.addListener_(EventType.MENU_START, event => this.onMenuStart_(event));
+    this.addListener_(
+        EventType.RANGE_VALUE_CHANGED, event => this.onValueChanged_(event));
     this.addListener_(
         EventType.SCROLL_POSITION_CHANGED, this.onScrollPositionChanged);
     this.addListener_(
@@ -132,7 +131,8 @@ export class DesktopAutomationHandler extends DesktopAutomationInterface {
         EventType.TEXT_SELECTION_CHANGED, this.onEditableChanged_);
     this.addListener_(
         EventType.VALUE_IN_TEXT_FIELD_CHANGED, this.onEditableChanged_);
-    this.addListener_(EventType.VALUE_CHANGED, this.onValueChanged);
+    this.addListener_(
+        EventType.VALUE_CHANGED, event => this.onValueChanged_(event));
     this.addListener_(
         EventType.AUTOFILL_AVAILABILITY_CHANGED,
         this.onAutofillAvailabilityChanged);
@@ -538,8 +538,9 @@ export class DesktopAutomationHandler extends DesktopAutomationInterface {
    * Provides all feedback once a rangeValueChanged or a valueInTextFieldChanged
    * event fires.
    * @param {!ChromeVoxEvent} evt
+   * @private
    */
-  onValueChanged(evt) {
+  onValueChanged_(evt) {
     // Skip root web areas.
     if (evt.target.role === RoleType.ROOT_WEB_AREA) {
       return;
@@ -734,8 +735,9 @@ export class DesktopAutomationHandler extends DesktopAutomationInterface {
   /**
    * Provides all feedback once a menu end event fires.
    * @param {!ChromeVoxEvent} evt
+   * @private
    */
-  onMenuEnd(evt) {
+  onMenuEnd_(evt) {
     // This is a work around for Chrome context menus not firing a focus event
     // after you close them.
     chrome.automation.getFocus(focus => {
@@ -750,6 +752,15 @@ export class DesktopAutomationHandler extends DesktopAutomationInterface {
         ChromeVoxRange.set(range);
       }
     });
+  }
+
+  /**
+   * @param {!ChromeVoxEvent} event
+   * @private
+   */
+  onMenuStart_(event) {
+    Output.forceModeForNextSpeechUtterance(QueueMode.CATEGORY_FLUSH);
+    this.onEventDefault(event);
   }
 
   /**

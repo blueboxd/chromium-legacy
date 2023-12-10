@@ -5,6 +5,7 @@
 #include "ash/style/combobox.h"
 
 #include <memory>
+#include <utility>
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/style/color_provider.h"
@@ -85,7 +86,7 @@ class ComboboxMenuOption : public RadioButton {
                      PressedCallback callback,
                      const std::u16string& label)
       : RadioButton(button_width,
-                    callback,
+                    std::move(callback),
                     label,
                     RadioButton::IconDirection::kLeading,
                     RadioButton::IconType::kCheck,
@@ -135,7 +136,8 @@ class ComboboxMenuOptionGroup : public RadioButtonGroup {
   RadioButton* AddButton(RadioButton::PressedCallback callback,
                          const std::u16string& label) override {
     auto* button = AddChildView(std::make_unique<ComboboxMenuOption>(
-        group_width_ - inside_border_insets_.width(), callback, label));
+        group_width_ - inside_border_insets_.width(), std::move(callback),
+        label));
     button->set_delegate(this);
     buttons_.push_back(button);
     return button;
@@ -175,7 +177,7 @@ class Combobox::ComboboxMenuView : public views::View {
     scroll_view_->layer()->SetFillsBoundsOpaquely(false);
     scroll_view_->ClipHeightTo(0, std::numeric_limits<int>::max());
     scroll_view_->SetDrawOverflowIndicator(false);
-    scroll_view_->SetBackgroundColor(absl::nullopt);
+    scroll_view_->SetBackgroundColor(std::nullopt);
     scroll_view_->SetVerticalScrollBarMode(
         views::ScrollView::ScrollBarMode::kHiddenButEnabled);
 
@@ -388,7 +390,7 @@ void Combobox::SetSelectionChangedCallback(base::RepeatingClosure callback) {
   callback_ = std::move(callback);
 }
 
-void Combobox::SetSelectedIndex(absl::optional<size_t> index) {
+void Combobox::SetSelectedIndex(std::optional<size_t> index) {
   if (selected_index_ == index) {
     return;
   }
@@ -676,7 +678,7 @@ void Combobox::OnComboboxModelChanged(ui::ComboboxModel* model) {
 
 void Combobox::OnComboboxModelDestroying(ui::ComboboxModel* model) {
   // Reset selected index to avoid using the destroying model.
-  SetSelectedIndex(absl::nullopt);
+  SetSelectedIndex(std::nullopt);
   model_ = nullptr;
   observation_.Reset();
   CloseDropDownMenu();
@@ -712,27 +714,27 @@ bool Combobox::OnKeyPressed(const ui::KeyEvent& e) {
   CHECK_LT(selected_index_.value(), model_->GetItemCount());
 
   const auto index_at_or_after = [](ui::ComboboxModel* model,
-                                    size_t index) -> absl::optional<size_t> {
+                                    size_t index) -> std::optional<size_t> {
     for (; index < model->GetItemCount(); ++index) {
       if (!model->IsItemSeparatorAt(index) && model->IsItemEnabledAt(index)) {
         return index;
       }
     }
-    return absl::nullopt;
+    return std::nullopt;
   };
 
   const auto index_before = [](ui::ComboboxModel* model,
-                               size_t index) -> absl::optional<size_t> {
+                               size_t index) -> std::optional<size_t> {
     for (; index > 0; --index) {
       const auto prev = index - 1;
       if (!model->IsItemSeparatorAt(prev) && model->IsItemEnabledAt(prev)) {
         return prev;
       }
     }
-    return absl::nullopt;
+    return std::nullopt;
   };
 
-  absl::optional<size_t> new_index;
+  std::optional<size_t> new_index;
   switch (e.key_code()) {
     // Show the menu on F4 without modifiers.
     case ui::VKEY_F4:

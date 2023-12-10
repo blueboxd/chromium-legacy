@@ -230,13 +230,16 @@ void RetroactivePairingDetectorImpl::AttemptRetroactivePairing(
 
   CD_LOG(VERBOSE, Feature::FP) << __func__ << ": device = " << classic_address;
 
-  // For BLE devices, since we cannot connect to a message stream to retrieve
-  // the model ID and the BLE address is already known, the only remaining
-  // parameter needed is the model ID, which we retrieve via GATT characteristic
+  // For BLE devices, check it supports Fast Pair. Then, since the message
+  // stream is optional for BLE HIDs, and the BLE address is already known, the
+  // only remaining parameter needed is the model ID, which we retrieve via GATT
+  // characteristic.
   if (ash::features::IsFastPairHIDEnabled() &&
-      device->GetType() == device::BLUETOOTH_TRANSPORT_LE) {
+      device->GetType() == device::BLUETOOTH_TRANSPORT_LE &&
+      base::Contains(device->GetUUIDs(), kFastPairBluetoothUuid)) {
     CD_LOG(VERBOSE, Feature::FP)
-        << __func__ << ": BLE device detected, creating GATT connection";
+        << __func__
+        << ": BLE fast pair device detected, creating GATT connection";
     CreateGattConnection(device);
     return;
   }
@@ -286,7 +289,7 @@ void RetroactivePairingDetectorImpl::CreateGattConnection(
 
 void RetroactivePairingDetectorImpl::OnGattClientInitializedCallback(
     device::BluetoothDevice* device,
-    absl::optional<PairFailure> failure) {
+    std::optional<PairFailure> failure) {
   if (failure) {
     CD_LOG(WARNING, Feature::FP)
         << __func__
@@ -320,7 +323,7 @@ void RetroactivePairingDetectorImpl::OnGattClientInitializedCallback(
 
 void RetroactivePairingDetectorImpl::OnReadModelId(
     const std::string& address,
-    absl::optional<device::BluetoothGattService::GattErrorCode> error_code,
+    std::optional<device::BluetoothGattService::GattErrorCode> error_code,
     const std::vector<uint8_t>& value) {
   if (error_code) {
     CD_LOG(WARNING, Feature::FP)
@@ -648,7 +651,7 @@ void RetroactivePairingDetectorImpl::OnPairFailure(scoped_refptr<Device> device,
 
 void RetroactivePairingDetectorImpl::OnAccountKeyWrite(
     scoped_refptr<Device> device,
-    absl::optional<AccountKeyFailure> error) {}
+    std::optional<AccountKeyFailure> error) {}
 
 }  // namespace quick_pair
 }  // namespace ash

@@ -22,6 +22,9 @@ extern const char kComposeSessionCloseReason[];
 extern const char kComposeSessionDialogShownCount[];
 extern const char kComposeSessionUndoCount[];
 extern const char kComposeShowStatus[];
+extern const char kComposeConsentSessionCloseReason[];
+extern const char kComposeConsentSessionDialogShownCount[];
+extern const char kComposeSessionConsentGivenInSession[];
 
 // Enum for calculating the CTR of the Compose context menu item.
 // These values are persisted to logs. Entries should not be renumbered and
@@ -33,8 +36,22 @@ enum class ComposeContextMenuCtrEvent {
   kComposeOpened = 1,
   kMaxValue = kComposeOpened,
 };
-// Keep in sync with ComposeContextMenuCtrEvent in
-// src/tools/metrics/histograms/enums.xml.
+
+// Keep in sync with ComposeConsentSessionCloseReasonType in
+// src/tools/metrics/histograms/metadata/compose/enums.xml.
+enum class ComposeConsentSessionCloseReason {
+  kEndedImplicitly = 0,
+  kCloseButtonPressed = 1,
+  kPageContentConsentAcceptedWithoutInsert = 2,
+  kPageContentDisclaimerAcknowledgedWithoutInsert = 3,
+  kPageContentConsentDeclined = 4,
+  kPageContentConsentGivenWithInsert = 5,
+  kNewSessionWithSelectedText = 6,
+  kMaxValue = kNewSessionWithSelectedText,
+};
+
+// Keep in sync with ComposeSessionCloseReasonType in
+// src/tools/metrics/histograms/metadata/compose/enums.xml.
 enum class ComposeSessionCloseReason {
   kAcceptedSuggestion = 0,
   kCloseButtonPressed = 1,
@@ -57,7 +74,8 @@ enum class ComposeShowStatus {
   kUnsupportedLanguage = 5,
   kFormFieldInCrossOriginFrame = 6,
   kPerUrlChecksFailed = 7,
-  kMaxValue = kPerUrlChecksFailed,
+  kUserNotAllowedByOptimizationGuide = 8,
+  kMaxValue = kUserNotAllowedByOptimizationGuide,
 };
 
 void LogComposeContextMenuCtr(ComposeContextMenuCtrEvent event);
@@ -68,11 +86,28 @@ void LogComposeContextMenuShowStatus(ComposeShowStatus status);
 // the request.
 void LogComposeRequestDuration(base::TimeDelta duration, bool is_ok);
 
-// Log session based meterics at when a session ends.
+void LogComposeConsentSessionCloseReason(
+    ComposeConsentSessionCloseReason reason);
+
+// Log session based metrics when a consent session ends.
+void LogComposeConsentSessionDialogShownCount(
+    ComposeConsentSessionCloseReason reason,
+    int dialog_shown_count);
+
+// Log session based metrics when a session ends.
 void LogComposeSessionCloseMetrics(ComposeSessionCloseReason reason,
                                    int compose_count,
                                    int dialog_shown_count,
-                                   int undo_count);
+                                   int undo_count,
+                                   bool consent_given_in_session);
+
+// Log the amount trimmed from the inner text from the page (in bytes) when the
+// dialog is opened.
+void LogComposeDialogInnerTextShortenedBy(int shortened_by);
+
+// Log the size (in bytes) of the untrimmed inner text from the page when the
+// dialog is opened.
+void LogComposeDialogInnerTextSize(int size);
 
 // Log the time taken for the dialog to be fully shown and interactable.
 void LogComposeDialogOpenLatency(base::TimeDelta duration);

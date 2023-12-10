@@ -82,7 +82,6 @@
 #include "chrome/browser/language/url_language_histogram_factory.h"
 #include "chrome/browser/login_detection/login_detection_keyed_service_factory.h"
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
-#include "chrome/browser/media/history/media_history_keyed_service_factory.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/media/media_engagement_service_factory.h"
 #include "chrome/browser/media/router/chrome_media_router_factory.h"
@@ -187,6 +186,7 @@
 #include "chrome/browser/translate/translate_ranker_factory.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service_factory.h"
 #include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
+#include "chrome/browser/ui/hats/hats_service_factory.h"
 #include "chrome/browser/ui/media_router/cast_notification_controller_lacros_factory.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/tabs/pinned_tab_service_factory.h"
@@ -456,6 +456,7 @@
 #include "chrome/browser/privacy_sandbox/tracking_protection_notice_factory.h"
 #include "chrome/browser/search/background/ntp_background_service_factory.h"
 #include "chrome/browser/search/background/ntp_custom_background_service_factory.h"
+#include "chrome/browser/search/background/wallpaper_search/wallpaper_search_service_factory.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
 #include "chrome/browser/sessions/closed_tab_cache_service_factory.h"
 #include "chrome/browser/speech/speech_recognition_service_factory.h"
@@ -469,6 +470,7 @@
 #include "chrome/browser/usb/usb_connection_tracker_factory.h"
 #include "chrome/browser/user_notes/user_note_service_factory.h"
 #include "components/manta/features.h"
+#include "components/optimization_guide/core/model_execution/model_execution_features.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
@@ -485,6 +487,20 @@
 #include "chrome/browser/offline_pages/android/offline_page_auto_fetcher_service_factory.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
 #endif
+
+#if BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_CHROMEOS_DEVICE)
+// A ChromeOS build for a dev linux machine.
+#include "chrome/browser/smart_card/fake_smart_card_device_service_factory.h"
+#endif
+
+#if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
+#include "chrome/browser/signin/bound_session_credentials/bound_session_cookie_refresh_service_factory.h"
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#include "chrome/browser/signin/bound_session_credentials/dice_bound_session_cookie_service_factory.h"
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+#endif  // BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
 
 namespace chrome {
 
@@ -622,6 +638,12 @@ void ChromeBrowserMainExtraPartsProfiles::
           g_browser_process ? g_browser_process->local_state() : nullptr)) {
     BreadcrumbManagerKeyedServiceFactory::GetInstance();
   }
+#if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
+  BoundSessionCookieRefreshServiceFactory::GetInstance();
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  DiceBoundSessionCookieServiceFactory::GetInstance();
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+#endif  // BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
   browser_switcher::BrowserSwitcherServiceFactory::GetInstance();
 #endif
@@ -699,7 +721,7 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if !BUILDFLAG(IS_ANDROID)
   ClosedTabCacheServiceFactory::GetInstance();
-  companion::visual_search::VisualQuerySuggestionsServiceFactory::GetInstance();
+  companion::visual_query::VisualQuerySuggestionsServiceFactory::GetInstance();
 #endif
   commerce::ShoppingServiceFactory::GetInstance();
   ConsentAuditorFactory::GetInstance();
@@ -769,6 +791,11 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
   ExitTypeServiceFactory::GetInstance();
+#endif
+#if BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_CHROMEOS_DEVICE)
+  // A ChromeOS build for a dev linux machine.
+  // Makes manual testing possible.
+  FakeSmartCardDeviceServiceFactory::GetInstance();
 #endif
 #if BUILDFLAG(IS_ANDROID)
   FastCheckoutCapabilitiesFetcherFactory::GetInstance();
@@ -842,9 +869,6 @@ void ChromeBrowserMainExtraPartsProfiles::
   }
 #endif
   MediaDeviceSaltServiceFactory::GetInstance();
-  if (base::FeatureList::IsEnabled(media::kUseMediaHistoryStore)) {
-    media_history::MediaHistoryKeyedServiceFactory::GetInstance();
-  }
 #if !BUILDFLAG(IS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kAccessCodeCastUI)) {
     media_router::AccessCodeCastSinkServiceFactory::GetInstance();
@@ -862,7 +886,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   MediaDrmOriginIdManagerFactory::GetInstance();
 #endif
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_FUCHSIA)
   if (base::FeatureList::IsEnabled(media::kCameraMicEffects)) {
     MediaEffectsServiceFactory::GetInstance();
   }
@@ -946,6 +970,7 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
   ProfilePasswordStoreFactory::GetInstance();
   payments::CanMakePaymentQueryFactory::GetInstance();
+  HatsServiceFactory::GetInstance();
 #if !BUILDFLAG(IS_ANDROID)
   payments::PaymentRequestDisplayManagerFactory::GetInstance();
   performance_manager::SiteDataCacheFacadeFactory::GetInstance();
@@ -1158,7 +1183,7 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
   SyncServiceFactory::GetInstance();
 #if !BUILDFLAG(IS_ANDROID)
-  if (features::IsTabOrganization()) {
+  if (base::FeatureList::IsEnabled(features::kTabOrganization)) {
     TabOrganizationServiceFactory::GetInstance();
   }
 #endif
@@ -1206,6 +1231,12 @@ void ChromeBrowserMainExtraPartsProfiles::
 #if !BUILDFLAG(IS_ANDROID)
   user_notes::UserNoteServiceFactory::EnsureFactoryBuilt();
   UserEducationServiceFactory::GetInstance();
+#endif
+#if !BUILDFLAG(IS_ANDROID)
+  if (base::FeatureList::IsEnabled(optimization_guide::features::internal::
+                                       kWallpaperSearchSettingsVisibility)) {
+    WallpaperSearchServiceFactory::GetInstance();
+  }
 #endif
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   web_app::IsolatedWebAppReaderRegistryFactory::GetInstance();

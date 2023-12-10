@@ -23,6 +23,7 @@
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_data_util.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/version_info/version_info.h"
 
 namespace TemplateURLPrepopulateData {
 
@@ -32,8 +33,11 @@ namespace {
 // NOTE: You should probably not change the data in this file without changing
 // |kCurrentDataVersion| in prepopulated_engines.json. See comments in
 // GetDataVersion() below!
-// Also run tools/search_engine_choice/generate_search_engine_icons.py to update
-// favicons.
+
+// Also see if the config at
+// tools/search_engine_choice/generate_search_engine_icons_config.json needs to
+// be updated, and then run
+// tools/search_engine_choice/generate_search_engine_icons.py to refresh icons.
 
 // Search engine tier per country.
 // SearchEngineTier will be equal to kTopEngines for the top 5 engines,
@@ -1643,11 +1647,18 @@ GetPrepopulatedEnginesForEeaRegionCountries(int country_id,
 
   uint64_t profile_seed = prefs->GetInt64(
       prefs::kDefaultSearchProviderChoiceScreenRandomShuffleSeed);
-  // Ensure that the generated seed is not 0 to avoid accidental re-seeding.
-  while (profile_seed == 0) {
+  int seed_version_number = prefs->GetInteger(
+      prefs::kDefaultSearchProviderChoiceScreenShuffleMilestone);
+  int current_version_number = version_info::GetMajorVersionNumberAsInt();
+  // Ensure that the generated seed is not 0 to avoid accidental re-seeding and
+  // re-shuffle on every chrome update.
+  while (profile_seed == 0 || current_version_number != seed_version_number) {
     profile_seed = base::RandUint64();
     prefs->SetInt64(prefs::kDefaultSearchProviderChoiceScreenRandomShuffleSeed,
                     profile_seed);
+    prefs->SetInteger(prefs::kDefaultSearchProviderChoiceScreenShuffleMilestone,
+                      current_version_number);
+    seed_version_number = current_version_number;
   }
 
   // Randomize all vectors using the generated seed.
@@ -1736,8 +1747,12 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(prefs::kSearchProviderOverridesVersion, -1);
   registry->RegisterInt64Pref(
       prefs::kDefaultSearchProviderChoiceScreenRandomShuffleSeed, 0);
+  registry->RegisterIntegerPref(
+      prefs::kDefaultSearchProviderChoiceScreenShuffleMilestone, 0);
   registry->RegisterBooleanPref(
       prefs::kDefaultSearchProviderKeywordsUseExtendedList, false);
+  registry->RegisterBooleanPref(prefs::kDefaultSearchProviderChoicePending,
+                                false);
 }
 
 int GetDataVersion(PrefService* prefs) {

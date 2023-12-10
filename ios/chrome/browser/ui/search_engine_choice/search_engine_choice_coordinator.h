@@ -8,10 +8,23 @@
 #import "base/ios/block_types.h"
 #import "ios/chrome/browser/shared/coordinator/chrome_coordinator/chrome_coordinator.h"
 
+class PromosManager;
+@class SearchEngineChoiceCoordinator;
 @protocol FirstRunScreenDelegate;
+
+// The delegate for the choice screen coordinator
+@protocol SearchEngineChoiceCoordinatorDelegate <NSObject>
+
+// Called when the UI is dismissed.
+- (void)choiceScreenWillBeDismissed:(SearchEngineChoiceCoordinator*)coordinator;
+
+@end
 
 // Coordinator for the search engine choice screen.
 @interface SearchEngineChoiceCoordinator : ChromeCoordinator
+
+// Delegate for the primary action.
+@property(nonatomic, weak) id<SearchEngineChoiceCoordinatorDelegate> delegate;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser
@@ -24,6 +37,7 @@
                                            firstRunDelegate:
                                                (id<FirstRunScreenDelegate>)
                                                    delegate;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SEARCH_ENGINE_CHOICE_SEARCH_ENGINE_CHOICE_COORDINATOR_H_

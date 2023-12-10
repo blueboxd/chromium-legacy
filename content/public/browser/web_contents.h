@@ -17,6 +17,7 @@
 #include "base/functional/function_ref.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/safety_checks.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/kill.h"
@@ -133,6 +134,10 @@ class PreloadingAttempt;
 // See navigation_controller.h for more details.
 class WebContents : public PageNavigator,
                     public base::SupportsUserData {
+  // Do not remove this macro!
+  // The macro is maintained by the memory safety team.
+  ADVANCED_MEMORY_SAFETY_CHECKS();
+
  public:
   struct CONTENT_EXPORT CreateParams {
     explicit CreateParams(
@@ -585,9 +590,9 @@ class WebContents : public PageNavigator,
   virtual void SetAlwaysSendSubresourceNotifications() = 0;
   virtual bool GetSendSubresourceNotification() = 0;
 
-  // Set the accessibility mode so that accessibility events are forwarded
-  // to each WebContentsObserver.
-  virtual void EnableWebContentsOnlyAccessibilityMode() = 0;
+  // Adds accessibility mode. If accessibility is already enabled, it will be
+  // reset, i.e., the full accessibility tree will be sent to the observers.
+  virtual void EnableAccessibilityMode(ui::AXMode mode) = 0;
 
   // Returns true only if the WebContentsObserver accessibility mode is
   // enabled.
@@ -865,15 +870,6 @@ class WebContents : public PageNavigator,
   // GetOuterWebContents instead.
   virtual bool IsInnerWebContentsForGuest() = 0;
 
-  // Returns whether this WebContents is a portal. This returns true even when
-  // this WebContents is not attached to its portal host's WebContents tree.
-  // This value may change over time due to portal activation and adoption.
-  virtual bool IsPortal() = 0;
-
-  // If |IsPortal()| is true, returns this WebContents' portal host's
-  // WebContents. Otherwise, returns nullptr.
-  virtual WebContents* GetPortalHostWebContents() = 0;
-
   // Returns the outer WebContents frame, the same frame that this WebContents
   // was attached in AttachToOuterWebContentsFrame().
   virtual RenderFrameHost* GetOuterWebContentsFrame() = 0;
@@ -900,6 +896,10 @@ class WebContents : public PageNavigator,
   // it for rendering).
   //
   // Always returns a non-null value.
+  //
+  // TODO(crbug.com/1498410): Consider replacing this with
+  // GuestViewBase::GetTopLevelWebContents, since that is now the only case
+  // where this would return a contents other than |this|.
   virtual WebContents* GetResponsibleWebContents() = 0;
 
   // Invoked when visible security state changes.
@@ -1268,8 +1268,11 @@ class WebContents : public PageNavigator,
   // changed so that it can be recomputed and sent to the renderer.
   virtual void OnWebPreferencesChanged() = 0;
 
-  // Requests the renderer to exit fullscreen and sends a resize message.
-  virtual void ExitFullscreen() = 0;
+  // Requests the renderer to exit fullscreen.
+  // |will_cause_resize| indicates whether the fullscreen change causes a
+  // view resize. e.g. This will be false when going from tab fullscreen to
+  // browser fullscreen.
+  virtual void ExitFullscreen(bool will_cause_resize) = 0;
 
   // The WebContents is trying to take some action that would cause user
   // confusion if taken while in fullscreen. If this WebContents or any outer

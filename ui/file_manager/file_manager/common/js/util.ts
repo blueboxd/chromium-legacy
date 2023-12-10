@@ -171,21 +171,6 @@ export function timeoutPromise<T>(
 }
 
 /**
- * Executes a functions only when the context is not the incognito one in a
- * regular session. Returns a promise that when fulfilled informs us whether or
- * not the callback was invoked.
- */
-export async function doIfPrimaryContext(callback: VoidCallback):
-    Promise<boolean> {
-  const guestMode = await isInGuestMode();
-  if (guestMode) {
-    callback();
-    return true;
-  }
-  return false;
-}
-
-/**
  * Returns the Files app modal dialog used to embed any files app dialog
  * that derives from cr.ui.dialogs.
  */
@@ -273,3 +258,14 @@ export function canBulkPinningCloudPanelShow(
 
   return false;
 }
+
+type Builtin = Date|Function|Uint8Array|string|number|boolean|undefined;
+
+/**
+ * The native Partial only marks the immediate properties as optional,
+ * DeepPartial is basically a recursive version of Partial: if the immediate
+ * property value is an Object, it allows using partial values for that object.
+ */
+export type DeepPartial<T> = T extends Builtin ? T : T extends {} ?
+    {[K in keyof T]?: DeepPartial<T[K]>} :
+    Partial<T>;

@@ -63,6 +63,8 @@ const base::FeatureParam<std::string> kDevToolsConsoleInsightsAidaEndpoint{
     &kDevToolsConsoleInsights, "aida_endpoint", /*default*/ ""};
 const base::FeatureParam<std::string> kDevToolsConsoleInsightsApiKey{
     &kDevToolsConsoleInsights, "aida_api_key", /*default*/ ""};
+const base::FeatureParam<double> kDevToolsConsoleInsightsTemperature{
+    &kDevToolsConsoleInsights, "aida_temperature", /*default*/ 0.2};
 
 // Nukes profile directory before creating a new profile using
 // ProfileManager::CreateMultiProfileAsync().
@@ -276,7 +278,7 @@ BASE_FEATURE(kOmniboxTriggerForPrerender2,
 // Enables bookmark trigger prerendering.
 BASE_FEATURE(kBookmarkTriggerForPrerender2,
              "BookmarkTriggerForPrerender2",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables New Tab Page trigger prerendering.
 BASE_FEATURE(kNewTabPageTriggerForPrerender2,
@@ -285,7 +287,12 @@ BASE_FEATURE(kNewTabPageTriggerForPrerender2,
 
 BASE_FEATURE(kSupportSearchSuggestionForPrerender2,
              "SupportSearchSuggestionForPrerender2",
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS) || \
+    BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#else
              base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 const base::FeatureParam<SearchPreloadShareableCacheType>::Option
     search_preload_shareable_cache_types[] = {

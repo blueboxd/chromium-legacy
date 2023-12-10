@@ -5,6 +5,7 @@
 #include "chrome/browser/android/webapk/webapk_sync_bridge.h"
 
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include "base/functional/callback_helpers.h"
@@ -28,7 +29,6 @@
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/protocol/web_app_specifics.pb.h"
 #include "components/webapps/common/web_app_id.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace webapk {
@@ -207,7 +207,7 @@ void WebApkSyncBridge::PrepareSyncUpdateFromInstalledApps(
   }
 }
 
-void WebApkSyncBridge::PrepareRegistryUpdateFromInstalledAndSyncApps(
+bool WebApkSyncBridge::PrepareRegistryUpdateFromInstalledAndSyncApps(
     const std::vector<const sync_pb::WebApkSpecifics*>&
         sync_update_from_installed,
     const syncer::EntityChangeList& sync_changes,
@@ -222,6 +222,7 @@ void WebApkSyncBridge::PrepareRegistryUpdateFromInstalledAndSyncApps(
         WebApkProtoFromSpecifics(sync_update, true /* installed */));
   }
 
+  bool not_installed_apps_in_sync = false;
   for (const auto& sync_change : sync_changes) {
     if (sync_update_from_installed_set.count(sync_change->storage_key()) != 0) {
       continue;
@@ -237,11 +238,16 @@ void WebApkSyncBridge::PrepareRegistryUpdateFromInstalledAndSyncApps(
       continue;
     }
 
+    // There are changes from sync that aren't installed on the device.
+    not_installed_apps_in_sync = true;
+
     CHECK(sync_change->data().specifics.has_web_apk());
     registry_update_from_installed_and_sync->apps_to_create.push_back(
         WebApkProtoFromSpecifics(&sync_change->data().specifics.web_apk(),
                                  false /* installed */));
   }
+
+  return not_installed_apps_in_sync;
 }
 
 void WebApkSyncBridge::SendInstalledAndRegistryAppsToSync(
@@ -316,7 +322,7 @@ void WebApkSyncBridge::ApplyIncrementalSyncChangesToRegistry(
   }
 }
 
-absl::optional<syncer::ModelError> WebApkSyncBridge::MergeFullSyncData(
+std::optional<syncer::ModelError> WebApkSyncBridge::MergeFullSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_changes) {
   CHECK(change_processor()->IsTrackingMetadata());
@@ -330,9 +336,19 @@ absl::optional<syncer::ModelError> WebApkSyncBridge::MergeFullSyncData(
 
   std::unique_ptr<RegistryUpdateData> registry_update_from_installed_and_sync =
       std::make_unique<RegistryUpdateData>();
-  PrepareRegistryUpdateFromInstalledAndSyncApps(
-      sync_update_from_installed, entity_changes,
-      registry_update_from_installed_and_sync.get());
+  bool not_installed_apps_in_sync =
+      PrepareRegistryUpdateFromInstalledAndSyncApps(
+          sync_update_from_installed, entity_changes,
+          registry_update_from_installed_and_sync.get());
+
+  if (not_installed_apps_in_sync) {
+    // There are apps stored in Sync that aren't currently installed on the
+    // device.
+    WebappRegistry
+        webapp_registry;  // TODO(crbug.com/1497527): WebappRegistry is supposed
+                          // to be owned by ChromeBrowsingDataRemoverDelegate.
+    webapp_registry.SetNeedsPwaRestore();
+  }
 
   SendInstalledAndRegistryAppsToSync(sync_update_from_installed,
                                      registry_update_from_installed_and_sync,
@@ -346,7 +362,7 @@ absl::optional<syncer::ModelError> WebApkSyncBridge::MergeFullSyncData(
   ApplyIncrementalSyncChangesToRegistry(
       std::move(registry_update_from_installed_and_sync));
 
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 void WebApkSyncBridge::PrepareRegistryUpdateFromSyncApps(
@@ -357,8 +373,7 @@ void WebApkSyncBridge::PrepareRegistryUpdateFromSyncApps(
       sync_update_from_installed, sync_changes, registry_update_from_sync);
 }
 
-absl::optional<syncer::ModelError>
-WebApkSyncBridge::ApplyIncrementalSyncChanges(
+std::optional<syncer::ModelError> WebApkSyncBridge::ApplyIncrementalSyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_changes) {
   std::unique_ptr<RegistryUpdateData> registry_update_from_sync =
@@ -373,7 +388,7 @@ WebApkSyncBridge::ApplyIncrementalSyncChanges(
 
   ApplyIncrementalSyncChangesToRegistry(std::move(registry_update_from_sync));
 
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 void WebApkSyncBridge::OnWebApkUsed(

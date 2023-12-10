@@ -66,7 +66,6 @@
 <translation id="1225748608451425081">알려진 문제로 인해 Chromebook이 잠겼습니다. <ph name="TIME_LEFT" /> 후에 다시 로그인할 수 있습니다.</translation>
 <translation id="1226877728704622336">비활성 데스크</translation>
 <translation id="1229194443904279055">선택 중지</translation>
-<translation id="1233979878541157665">파일 이름 대신 '일몰' 또는 '나무'를 검색해 보세요. 검색창에서 이미지 검색을 사용 중지할 수 있습니다.</translation>
 <translation id="1235458158152011030">알려진 네트워크</translation>
 <translation id="1239161794459865856"><ph name="FEATURE_NAME" />이 연결되었습니다.</translation>
 <translation id="1240638468526743569">앱</translation>
@@ -294,6 +293,7 @@
 <translation id="2224075387478458881">보호된 콘텐츠가 보일 때는 화면 녹화를 할 수 없습니다.</translation>
 <translation id="2227179592712503583">추천 삭제</translation>
 <translation id="2248634276911611268">새 탭에서 링크를 열고 이 새 탭으로 전환</translation>
+<translation id="2253808149208613283">기기를 맞춤설정하려면 앱을 설치하세요.</translation>
 <translation id="225680501294068881">기기 검색 중...</translation>
 <translation id="2257486738914982088"><ph name="FILENAME" /> 파일을 다운로드하는 중에 문제가 발생했습니다.</translation>
 <translation id="2258734398699965611">추천 파일</translation>
@@ -447,6 +447,7 @@
 <translation id="2914580577416829331">화면 캡처</translation>
 <translation id="2924416280450782352">항목을 표시할 수 없습니다. 이 패널을 다시 열어 보세요.</translation>
 <translation id="2931572158271115754">이 할 일 목록이 비어 있습니다.</translation>
+<translation id="2935225303485967257">프로필 관리</translation>
 <translation id="2941112035454246133">낮음</translation>
 <translation id="2942350706960889382">고정 돋보기</translation>
 <translation id="2942516765047364088">앱 표시줄 위치</translation>
@@ -650,6 +651,7 @@
 <translation id="3659667652322717492">나중에 언제든지 마이크 동작을 변경할 수 있습니다.</translation>
 <translation id="3659814201068740063">약 <ph name="TIME_LEFT" /> 남았습니다(<ph name="PERCENTAGE" />%).
 기기를 전원에 연결하세요.</translation>
+<translation id="3660860940251915011"><ph name="FEATURE_NAME" /> 높은 공개 상태 전환</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> 관리 사용자</translation>
 <translation id="3666266999138159418">스와이프하여 플로팅 창 숨기기</translation>
 <translation id="367531336287639526">주소 표시줄 왼쪽에 있는 첫 번째 아이콘 선택</translation>
@@ -658,6 +660,7 @@
 <translation id="36813544980941320">Wi-Fi 네트워크가 휴대전화와 <ph name="DEVICE_NAME" /> 간에 공유됩니다.</translation>
 <translation id="3682279812299376603"><ph name="MODIFIER_ONE" /><ph name="MODIFIER_TWO" /><ph name="KEY_ONE" /> 키를 누른 후 <ph name="KEY_TWO" /></translation>
 <translation id="3694122362646626770">웹사이트</translation>
+<translation id="3697991387880191195">스크린샷 단축키 누르기</translation>
 <translation id="3702809606464356667">현재 데스크의 창을 표시합니다. 모든 데스크의 창을 표시하려면 위쪽 화살표 키를 누르세요</translation>
 <translation id="3702846122927433391">나이지리아의 인구</translation>
 <translation id="3705722231355495246">-</translation>
@@ -833,6 +836,7 @@
 <translation id="4389184120735010762">고정 돋보기 단축키를 누르셨습니다. 사용 설정할까요?</translation>
 <translation id="439598569299422042">일시중지됨, <ph name="SIZE_INFO" /></translation>
 <translation id="440113666232554208">스크린캐스트를 저장할 수 없음</translation>
+<translation id="4403371424034411727"><ph name="PERIPHERAL_NAME" /> 주변기기가 연결되었으며 사용할 수 있습니다. 설정에서 마우스를 맞춤설정할 수 있습니다.</translation>
 <translation id="4405151984121254935">지원되지 않는 유형의 주변기기가 연결되었습니다.</translation>
 <translation id="4406883609789734330">실시간 자막</translation>
 <translation id="4412944820643904175"><ph name="FEATURE_NAME" /> 기능이 꺼져 있습니다.</translation>
@@ -980,6 +984,7 @@
         <ph name="NOTIFICATION_1" />,
         <ph name="NOTIFICATION_2" />,
         <ph name="NUM_OTHER_NOTIFICATION" /></translation>
+<translation id="4981175556418720939"><ph name="DATE_AND_TIME" />에 수정됨</translation>
 <translation id="4987738733603015246">데스크 16</translation>
 <translation id="4989163558385430922">모두 보기</translation>
 <translation id="5003993274120026347">다음 문장</translation>
@@ -1141,6 +1146,7 @@
 <translation id="5620979661744857819">카메라 및 마이크 액세스 권한이 있는 <ph name="APP_NAME" /> 등 모든 앱과 웹사이트에서 액세스할 수 있게 됩니다. 웹페이지를 새로고침하거나 앱을 다시 시작해야 할 수도 있습니다.</translation>
 <translation id="5625955975703555628">LTE+</translation>
 <translation id="5627392655516693966">비밀번호를 확인할 수 없습니다. 다시 시도하세요.</translation>
+<translation id="5632485077360054581">방법 보기</translation>
 <translation id="5648021990716966815">마이크 잭</translation>
 <translation id="5652575806481723716"><ph name="FOCUSED_APP_NAME" /> 알림이 있습니다.</translation>
 <translation id="5662075790140998213">데스크 10</translation>
@@ -1290,6 +1296,7 @@
 <translation id="6199775032047436064">현재 페이지 새로고침</translation>
 <translation id="6200515304866777730">앱에서 지원되지 않음</translation>
 <translation id="6210042900243040400">이전에 <ph name="EMAIL" />에 저장된 <ph name="NAME" /> 연결</translation>
+<translation id="6212097153736801627"><ph name="PERIPHERAL_NAME" /> 주변기기를 맞춤설정하세요</translation>
 <translation id="6213808132343683860">부분 스크린샷 찍기 또는 화면 녹화</translation>
 <translation id="6220928844947387476">이제 내 모습과 화면을 동시에 녹화할 수 있습니다.</translation>
 <translation id="622484624075952240">아래</translation>
@@ -1334,7 +1341,6 @@
 <translation id="643593192654616063">총 <ph name="STORAGE_TOTAL_SIZE" /> 저장용량 중 <ph name="STORAGE_IN_USE_SIZE" /> 사용 중</translation>
 <translation id="6445835306623867477"><ph name="RECEIVER_NAME" />에 <ph name="ROUTE_TITLE" /> 전송 중</translation>
 <translation id="6445915701151710649">CPU</translation>
-<translation id="6446225358675593408">콘텐츠로 이미지 찾기</translation>
 <translation id="6447111710783417522"><ph name="DATE" />, 일정 <ph name="NUMBER" />개</translation>
 <translation id="6449483711453944360">Linux 앱 및 시크릿 창은 현재 지원되지 않습니다.</translation>
 <translation id="6450245544201845082">현재 마우스 오른쪽 버튼 클릭 단축키가 사용 중지되어 있습니다.</translation>
@@ -1440,6 +1446,7 @@
 <translation id="6827049576281411231">일정 창 닫기</translation>
 <translation id="6831561626108366035"><ph name="ACTIVE_STATE" /> <ph name="DESK_NAME" /> 버튼으로 이동합니다.</translation>
 <translation id="6836499262298959512">위험한 파일</translation>
+<translation id="6837621009301897464">스크린샷을 찍으려면 다음 버튼을 누르세요</translation>
 <translation id="6852052252232534364">클릭하여 활성화</translation>
 <translation id="6855029042976311970">방금 수정됨</translation>
 <translation id="6856708615407876657">검색 결과 카테고리 전환</translation>
@@ -1517,6 +1524,7 @@
 <translation id="7167913274352523149"><ph name="HOTSPOT" />,
         <ph name="NETWORK" /></translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />초 후 기존 해상도로 돌아갑니다.</translation>
+<translation id="7173114856073700355">설정 열기</translation>
 <translation id="7180611975245234373">새로고침</translation>
 <translation id="7188494361780961876">메뉴가 화면 왼쪽 상단으로 이동했습니다.</translation>
 <translation id="7189412385142492784">금성까지의 거리</translation>
@@ -1530,13 +1538,13 @@
 <translation id="726276584504105859">화면 분할을 사용하려면 여기를 드래그하세요.</translation>
 <translation id="7262906531272962081">알림 만들기</translation>
 <translation id="7278787617901301220"><ph name="LAUNCHER_KEY_NAME" /> + 백스페이스</translation>
+<translation id="7285232777292757180">빠른 설정의 화면 캡처 도구를 사용하여 스크린샷 찍기</translation>
 <translation id="7302889331339392448">실시간 자막이 꺼져 있습니다.</translation>
 <translation id="7303365578352795231">다른 기기에서 응답 중입니다.</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7312210124139670355">관리자가 eSIM을 재설정하는 중입니다. 몇 분 정도 소요될 수 있습니다.</translation>
 <translation id="7313193732017069507">카메라 펼치기</translation>
 <translation id="7316261577130609484">새 할 일 추가</translation>
-<translation id="7321889295239318128">자세히 알아보려면 Shift + Tab 키를 누르세요.</translation>
 <translation id="7330397557116570022">음성기록을 사용하려면 텍스트 필드로 이동하세요.</translation>
 <translation id="7331646370422660166">Alt + 아래쪽 화살표</translation>
 <translation id="7340731148882810149">자동 클릭 메뉴</translation>
@@ -1683,6 +1691,13 @@
 <translation id="7893503627044934815">파일을 표시하지 않음</translation>
 <translation id="7895348134893321514">Tote</translation>
 <translation id="7897375687985782769">화면 회전 단축키를 누르셨습니다. 화면을 회전하시겠습니까?</translation>
+<translation id="7897626842031123113">상태 표시줄, 시간 <ph name="TIME" />,
+        <ph name="BATTERY" />
+        <ph name="CHANNEL" />
+        <ph name="NETWORK" />,
+        <ph name="MANAGED" />
+        <ph name="IME" />
+        <ph name="LOCALE" /></translation>
 <translation id="7901190436359881020">창 교체</translation>
 <translation id="7901405293566323524">휴대전화 허브</translation>
 <translation id="7902625623987030061">지문 센서를 터치하세요.</translation>
@@ -1907,6 +1922,7 @@
 <translation id="888982883502837004">이용할 수 있는 기기 펌웨어 업데이트가 있습니다. 클릭하여 확인한 후 업데이트하세요.</translation>
 <translation id="8896630965521842259"><ph name="DESK_TEMPLATE_NAME" /> 템플릿이 완전히 삭제됩니다.</translation>
 <translation id="889790758758811533">배터리가 <ph name="PERCENTAGE" />% 남았습니다(약 <ph name="TIME_LEFT" />). 기기를 전원에 연결합니다.</translation>
+<translation id="8897940060812808966"><ph name="PERIPHERAL_NAME" /> 주변기기가 연결되었으며 사용할 수 있습니다. 설정에서 그래픽 태블릿을 맞춤설정할 수 있습니다.</translation>
 <translation id="88986195241502842">페이지 아래로</translation>
 <translation id="8905919797434099235">(제목 없음)</translation>
 <translation id="890616557918890486">소스 변경</translation>

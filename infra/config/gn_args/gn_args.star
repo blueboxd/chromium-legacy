@@ -28,6 +28,13 @@ gn_args.config(
 )
 
 gn_args.config(
+    "also_build_lacros_chrome_for_architecture_arm64",
+    args = {
+        "also_build_lacros_chrome_for_architecture": "arm64",
+    },
+)
+
+gn_args.config(
     "amd64-generic",
     args_file = "//build/args/chromeos/amd64-generic.gni",
 )
@@ -92,6 +99,18 @@ gn_args.config(
     },
 )
 
+# TODO(https://crbug.com/1020714): This is temporary. We'd like to run a
+# smoke test on android_binary_sizes to ensure coverage of proguard, at
+# which point we can merge this into android_fastbuild. Until then, only
+# disable proguard on a few bots to gather metrics on the effect on build
+# times.
+gn_args.config(
+    "android_no_proguard",
+    args = {
+        "is_java_debug": True,
+    },
+)
+
 gn_args.config(
     "angle_deqp_tests",
     args = {
@@ -138,6 +157,9 @@ gn_args.config(
     args = {
         "test_host_cpu": "arm64",
     },
+    configs = [
+        "arm64",
+    ],
 )
 
 gn_args.config(
@@ -154,6 +176,13 @@ gn_args.config(
     "asan",
     args = {
         "is_asan": True,
+    },
+)
+
+gn_args.config(
+    "blink_symbol",
+    args = {
+        "blink_symbol_level": 1,
     },
 )
 
@@ -182,6 +211,18 @@ gn_args.config(
     "cast_receiver",
     args = {
         "enable_cast_receiver": True,
+    },
+)
+
+gn_args.config(
+    "cast_receiver_size_optimized",
+    args_file = "//build/config/fuchsia/size_optimized_cast_receiver_args.gn",
+)
+
+gn_args.config(
+    "centipede",
+    args = {
+        "use_centipede": True,
     },
 )
 
@@ -227,6 +268,13 @@ gn_args.config(
     "cfm",
     args = {
         "is_cfm": True,
+    },
+)
+
+gn_args.config(
+    "chrome_for_testing",
+    args = {
+        "is_chrome_for_testing": True,
     },
 )
 
@@ -312,6 +360,7 @@ gn_args.config(
         "enable_resource_allowlist_generation": False,
     },
     configs = [
+        "android",
         "cronet_common",
     ],
 )
@@ -384,6 +433,13 @@ gn_args.config(
 )
 
 gn_args.config(
+    "debug_try_builder",
+    configs = [
+        "debug_builder",
+    ],
+)
+
+gn_args.config(
     "debug_static_builder",
     configs = [
         "debug",
@@ -416,6 +472,28 @@ gn_args.config(
     },
 )
 
+gn_args.config(
+    "disable_seed_corpus",
+    args = {
+        "archive_seed_corpus": False,
+    },
+)
+
+gn_args.config(
+    "enable_all_rust_features",
+    args = {
+        "enable_all_rust_features": True,
+    },
+)
+
+# TODO(https://crbug.com/1010584): Explicitly enable DirectX 12.
+gn_args.config(
+    "dx12vk",
+    configs = [
+        "enable_vulkan",
+    ],
+)
+
 # Enables backup ref ptr by changing the default value of the feature flag.
 # This sets the default value of PartitionAllocBackupRefPtr to enabled, with
 # enabled-processes = non-renderer:
@@ -424,6 +502,20 @@ gn_args.config(
     "enable_backup_ref_ptr_feature_flag",
     args = {
         "enable_backup_ref_ptr_feature_flag": True,
+    },
+)
+
+gn_args.config(
+    "enable_blink_animation_use_time_delta",
+    args = {
+        "blink_animation_use_time_delta": True,
+    },
+)
+
+gn_args.config(
+    "enable_blink_heap_verification",
+    args = {
+        "cppgc_enable_verify_heap": True,
     },
 )
 
@@ -450,6 +542,13 @@ gn_args.config(
 )
 
 gn_args.config(
+    "enable_vulkan",
+    args = {
+        "enable_vulkan": True,
+    },
+)
+
+gn_args.config(
     "extended_tracing",
     args = {
         "extended_tracing_enabled": True,
@@ -460,6 +559,13 @@ gn_args.config(
     "fail_on_android_expectations",
     args = {
         "fail_on_android_expectations": True,
+    },
+)
+
+gn_args.config(
+    "fail_on_san_warnings",
+    args = {
+        "fail_on_san_warnings": True,
     },
 )
 
@@ -485,6 +591,24 @@ gn_args.config(
 )
 
 gn_args.config(
+    "fuchsia_code_coverage",
+    args = {
+        "fuchsia_code_coverage": True,
+    },
+)
+
+gn_args.config(
+    "fuchsia_smart_display",
+    args = {
+        "enable_cast_receiver": True,
+        "cast_streaming_enable_remoting": True,
+    },
+    configs = [
+        "fuchsia",
+    ],
+)
+
+gn_args.config(
     "full_symbols",
     args = {
         "symbol_level": 2,
@@ -506,10 +630,37 @@ gn_args.config(
 )
 
 gn_args.config(
+    "gpu_fyi_tests",
+    configs = [
+        "gpu_tests",
+    ],
+)
+
+gn_args.config(
     "gpu_tests",
     configs = [
         "chrome_with_codecs",
     ],
+)
+
+gn_args.config(
+    "headless",
+    args_file = "//build/args/headless.gn",
+)
+
+gn_args.config(
+    "headless_shell",
+    configs = [
+        "headless",
+        "no_codecs",
+    ],
+)
+
+gn_args.config(
+    "include_unwind_tables",
+    args = {
+        "exclude_unwind_tables": False,
+    },
 )
 
 gn_args.config(
@@ -618,6 +769,13 @@ gn_args.config(
 )
 
 gn_args.config(
+    "mac_strip",
+    args = {
+        "enable_stripping": True,
+    },
+)
+
+gn_args.config(
     "minimal_symbols",
     args = {
         "symbol_level": 1,
@@ -640,9 +798,27 @@ gn_args.config(
 )
 
 gn_args.config(
+    "msan_no_origins",
+    args = {
+        "is_msan": True,
+        "msan_track_origins": 0,
+    },
+)
+
+gn_args.config(
     "no_clang",
     args = {
         "is_clang": False,
+    },
+)
+
+gn_args.config(
+    "no_codecs",
+    args = {
+        "media_use_libvpx": False,
+        "media_use_ffmpeg": False,
+        "proprietary_codecs": False,
+        "enable_ffmpeg_video_decoders": False,
     },
 )
 
@@ -657,6 +833,13 @@ gn_args.config(
     "no_goma",
     args = {
         "use_goma": False,
+    },
+)
+
+gn_args.config(
+    "no_lld",
+    args = {
+        "use_lld": False,
     },
 )
 
@@ -715,9 +898,36 @@ gn_args.config(
 )
 
 gn_args.config(
+    "optimize_webui_off",
+    args = {
+        "optimize_webui": False,
+    },
+)
+
+gn_args.config(
     "ozone_headless",
     args = {
         "ozone_platform_headless": True,
+    },
+)
+
+gn_args.config(
+    "ozone_linux",
+    args = {
+        "use_ozone": True,
+        "ozone_platform": "headless",
+        "use_bundled_weston": True,
+    },
+)
+
+# TODO(anglebug.com/4977): Make angle understand what platform it should
+# use. Otherwise, the ozone_platform_x11 && use_ozone config breaks Linux Ozone FYI (Intel) bot
+# that exercises angle + ozone (though, it is ozone/drm in reality. We don't support
+# angle on Linux Ozone/X11/Wayland yet).
+gn_args.config(
+    "ozone_linux_non_x11",
+    args = {
+        "ozone_platform_x11": False,
     },
 )
 
@@ -739,6 +949,20 @@ gn_args.config(
     "pdf_xfa",
     args = {
         "pdf_enable_xfa": True,
+    },
+)
+
+gn_args.config(
+    "perfetto",
+    args = {
+        "use_perfetto_client_library": True,
+    },
+)
+
+gn_args.config(
+    "perfetto_zlib",
+    args = {
+        "enable_perfetto_zlib": True,
     },
 )
 
@@ -853,8 +1077,7 @@ gn_args.config(
 gn_args.config(
     "siso",
     args = {
-        # TODO: b/311110622 - Switch to use_siso=true.
-        "enable_precompiled_headers": False,
+        "use_siso": True,
     },
 )
 
@@ -877,7 +1100,6 @@ gn_args.config(
     configs = [
         "dcheck_always_on",
         "minimal_symbols",
-        "use_dummy_lastchange",
     ],
 )
 
@@ -885,6 +1107,31 @@ gn_args.config(
     "tsan",
     args = {
         "is_tsan": True,
+    },
+)
+
+gn_args.config(
+    "ubsan",
+    args = {
+        "is_ubsan": True,
+    },
+)
+
+gn_args.config(
+    "ubsan_no_recover",
+    args = {
+        "is_ubsan_no_recover": True,
+    },
+    configs = [
+        "ubsan",
+    ],
+)
+
+gn_args.config(
+    "ubsan_security_non_vptr",
+    args = {
+        "is_ubsan_security": True,
+        "is_ubsan_vptr": False,
     },
 )
 
@@ -915,6 +1162,13 @@ gn_args.config(
 )
 
 gn_args.config(
+    "use_blink",
+    args = {
+        "use_blink": True,
+    },
+)
+
+gn_args.config(
     "use_clang_coverage",
     args = {
         "use_clang_coverage": True,
@@ -929,13 +1183,6 @@ gn_args.config(
 )
 
 gn_args.config(
-    "use_dummy_lastchange",
-    args = {
-        "use_dummy_lastchange": True,
-    },
-)
-
-gn_args.config(
     "use_fake_dbus_clients",
     args = {
         "use_real_dbus_clients": False,
@@ -946,6 +1193,13 @@ gn_args.config(
     "use_java_coverage",
     args = {
         "use_jacoco_coverage": True,
+    },
+)
+
+gn_args.config(
+    "use_javascript_coverage",
+    args = {
+        "use_javascript_coverage": True,
     },
 )
 
@@ -966,12 +1220,48 @@ gn_args.config(
     },
 )
 
+gn_args.config(
+    "v8_hybrid",
+    args = {
+        "v8_target_cpu": "arm",
+    },
+    configs = [
+        "x86",
+        "disable_nacl",
+    ],
+)
+
 # V8 flag that disables v8_enable_runtime_call_stats on release branches.
 gn_args.config(
     "v8_release_branch",
     args = {
         "is_on_release_branch": True,
     },
+)
+
+gn_args.config(
+    "v8_simulate_arm",
+    args = {
+        "v8_target_cpu": "arm",
+    },
+    configs = [
+        "x86",
+    ],
+)
+
+gn_args.config(
+    "v8_simulate_arm64",
+    args = {
+        "v8_target_cpu": "arm64",
+    },
+    configs = [
+        "x64",
+    ],
+)
+
+gn_args.config(
+    "volteer",
+    args_file = "//build/args/chromeos/volteer.gni",
 )
 
 gn_args.config(

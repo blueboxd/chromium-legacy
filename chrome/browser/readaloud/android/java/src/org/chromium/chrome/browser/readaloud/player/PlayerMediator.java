@@ -62,8 +62,21 @@ class PlayerMediator implements InteractionHandler {
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {}
             };
+    private final PlaybackListener mPreviewPlaybackListener =
+            new PlaybackListener() {
+                @Override
+                public void onPlaybackDataChanged(PlaybackData data) {
+                    @PlaybackListener.State int state = data.state();
+                    mModel.set(PlayerProperties.VOICE_PREVIEW_PLAYBACK_STATE, state);
+                    if (state == PlaybackListener.State.STOPPED
+                            || state == PlaybackListener.State.ERROR) {
+                        cleanUpVoicePreview();
+                    }
+                }
+            };
 
     private Playback mPlayback;
+    @Nullable Playback mVoicePreviewPlayback;
 
     PlayerMediator(
             PlayerCoordinator coordinator,
@@ -99,7 +112,7 @@ class PlayerMediator implements InteractionHandler {
             onSpeedChange(ReadAloudPrefs.getSpeed(mDelegate.getPrefService()));
             mModel.set(
                     PlayerProperties.HIGHLIGHTING_ENABLED,
-                    ReadAloudPrefs.isHighlightingEnabled(mDelegate.getPrefService()));
+                    mDelegate.getHighlightingEnabledSupplier().get());
             mModel.set(
                     PlayerProperties.HIGHLIGHTING_SUPPORTED, mDelegate.isHighlightingSupported());
         }
@@ -114,23 +127,9 @@ class PlayerMediator implements InteractionHandler {
     public void onPlayPauseClick() {
         assert mPlayback != null;
 
-        @PlaybackListener.State int state = mModel.get(PlayerProperties.PLAYBACK_STATE);
-
         // Call playback control methods and rely on updates through mPlaybackListener
         // to update UI with new playback state.
-        switch (state) {
-            case PLAYING:
-                mPlayback.pause();
-                return;
-
-            case PAUSED:
-            case STOPPED:
-                mPlayback.play();
-                return;
-
-            default:
-                return;
-        }
+        handlePlayButtonClick(mPlayback, mModel.get(PlayerProperties.PLAYBACK_STATE));
     }
 
     @Override
@@ -157,11 +156,44 @@ class PlayerMediator implements InteractionHandler {
     }
 
     @Override
-    public void onPreviewVoiceClick(PlaybackVoice voice) {}
+    public void onPreviewVoiceClick(PlaybackVoice voice) {
+        if (mVoicePreviewPlayback != null) {
+            // If the already playing voice had its play button clicked, handle it here.
+            if (voice.getVoiceId().equals(mModel.get(PlayerProperties.PREVIEWING_VOICE_ID))) {
+                handlePlayButtonClick(
+                        mVoicePreviewPlayback,
+                        mModel.get(PlayerProperties.VOICE_PREVIEW_PLAYBACK_STATE));
+                return;
+            }
+            // Otherwise prepare for the new preview.
+            cleanUpVoicePreview();
+        }
+
+        mModel.set(PlayerProperties.PREVIEWING_VOICE_ID, voice.getVoiceId());
+        mModel.set(PlayerProperties.VOICE_PREVIEW_PLAYBACK_STATE, PlaybackListener.State.BUFFERING);
+
+        mDelegate
+                .previewVoice(voice)
+                .then(
+                        playback -> {
+                            mVoicePreviewPlayback = playback;
+                            playback.addListener(mPreviewPlaybackListener);
+                        },
+                        exception -> {
+                            mModel.set(
+                                    PlayerProperties.VOICE_PREVIEW_PLAYBACK_STATE,
+                                    PlaybackListener.State.ERROR);
+                        });
+    }
+
+    @Override
+    public void onVoiceMenuClosed() {
+        cleanUpVoicePreview();
+        mCoordinator.voiceMenuClosed();
+    }
 
     @Override
     public void onHighlightingChange(boolean enabled) {
-        ReadAloudPrefs.setHighlightingEnabled(mDelegate.getPrefService(), enabled);
         mDelegate.getHighlightingEnabledSupplier().set(enabled);
     }
 
@@ -189,6 +221,11 @@ class PlayerMediator implements InteractionHandler {
     @Override
     public void onMiniPlayerExpandClick() {
         mCoordinator.expand();
+    }
+
+    @Override
+    public void onExpandedPlayerClose() {
+        mCoordinator.restoreMiniPlayer();
     }
 
     private void maybeSeekRelative(long nanos) {
@@ -227,5 +264,37 @@ class PlayerMediator implements InteractionHandler {
         assert voiceId != null;
 
         mModel.set(PlayerProperties.SELECTED_VOICE_ID, voiceId);
+    }
+
+    private static void handlePlayButtonClick(
+            Playback playback, @PlaybackListener.State int state) {
+        switch (state) {
+            case PLAYING:
+                playback.pause();
+                return;
+
+            case STOPPED:
+                playback.seek(0L);
+                // fall through
+            case PAUSED:
+                playback.play();
+                return;
+
+            default:
+                return;
+        }
+    }
+
+    private void cleanUpVoicePreview() {
+        if (mVoicePreviewPlayback != null) {
+            mVoicePreviewPlayback.removeListener(mPreviewPlaybackListener);
+            mVoicePreviewPlayback = null;
+        }
+
+        if (mModel.get(PlayerProperties.PREVIEWING_VOICE_ID) != null) {
+            mModel.set(
+                    PlayerProperties.VOICE_PREVIEW_PLAYBACK_STATE, PlaybackListener.State.STOPPED);
+            mModel.set(PlayerProperties.PREVIEWING_VOICE_ID, null);
+        }
     }
 }

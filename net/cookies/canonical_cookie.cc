@@ -1002,6 +1002,16 @@ CanonicalCookie::UniqueCookieKey CanonicalCookie::UniqueKey() const {
                          source_port);
 }
 
+CanonicalCookie::UniqueDomainCookieKey CanonicalCookie::UniqueDomainKey()
+    const {
+  absl::optional<CookieSourceScheme> source_scheme =
+      cookie_util::IsSchemeBoundCookiesEnabled()
+          ? absl::make_optional(source_scheme_)
+          : absl::nullopt;
+
+  return std::make_tuple(partition_key_, name_, domain_, path_, source_scheme);
+}
+
 bool CanonicalCookie::IsEquivalentForSecureCookieMatching(
     const CanonicalCookie& secure_cookie) const {
   // Partition keys must both be equivalent.
@@ -1207,7 +1217,6 @@ CookieAccessResult CanonicalCookie::IncludeForRequestURL(
         CookieInclusionStatus::EXCLUDE_SAMESITE_NONE_INSECURE);
   }
 
-  // Only apply SameSite-related warnings if SameParty is not in effect.
   ApplySameSiteCookieWarningToStatus(SameSite(), effective_same_site,
                                      IsSecure(),
                                      options.same_site_cookie_context(),
@@ -1381,7 +1390,6 @@ CookieAccessResult CanonicalCookie::IsSetPermittedInContext(
       break;
   }
 
-  // Only apply SameSite-related warnings if SameParty is not in effect.
   ApplySameSiteCookieWarningToStatus(
       SameSite(), access_result.effective_same_site, IsSecure(),
       options.same_site_cookie_context(), &access_result.status,

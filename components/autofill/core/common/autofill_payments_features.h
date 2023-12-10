@@ -44,6 +44,7 @@ BASE_DECLARE_FEATURE(kAutofillEnableStickyManualFallbackForCards);
 BASE_DECLARE_FEATURE(kAutofillEnableUpdateVirtualCardEnrollment);
 BASE_DECLARE_FEATURE(kAutofillEnableUserAvatarInSaveCardFooter);
 BASE_DECLARE_FEATURE(kAutofillEnableVcnEnrollLoadingAndConfirmation);
+BASE_DECLARE_FEATURE(kAutofillEnableVirtualCardEnrollMetricsLogger);
 BASE_DECLARE_FEATURE(kAutofillEnableVirtualCardMetadata);
 BASE_DECLARE_FEATURE(kAutofillMoveLegalTermsAndIconForNewCardEnrollment);
 BASE_DECLARE_FEATURE(kAutofillParseVcnCardOnFileStandaloneCvcFields);
@@ -57,6 +58,7 @@ BASE_DECLARE_FEATURE(kAutofillEnableVirtualCards);
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
+BASE_DECLARE_FEATURE(kEnablePixDetection);
 BASE_DECLARE_FEATURE(kEnablePixPayments);
 #endif
 

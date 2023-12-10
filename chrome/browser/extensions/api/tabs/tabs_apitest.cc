@@ -189,6 +189,10 @@ IN_PROC_BROWSER_TEST_P(ExtensionApiTabTestWithContextType, DISABLED_Highlight) {
 }
 #endif
 
+IN_PROC_BROWSER_TEST_P(ExtensionApiTabTestWithContextType, LastAccessed) {
+  ASSERT_TRUE(RunExtensionTest("tabs/basics/last_accessed")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_P(ExtensionApiTabTestWithContextType, CrashBrowser) {
   ASSERT_TRUE(RunExtensionTest("tabs/basics/crash")) << message_;
 }
@@ -540,8 +544,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTabPrerenderingTest, DISABLED_Prerendering) {
   ASSERT_TRUE(RunExtensionTest("tabs/prerendering")) << message_;
 }
 
+// TODO(crbug.com/1501760): Flaky on multiple platforms.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTabPrerenderingTest,
-                       PrerenderingIntoANewTab) {
+                       DISABLED_PrerenderingIntoANewTab) {
   ASSERT_TRUE(RunExtensionTest("tabs/prerendering_into_new_tab")) << message_;
 }
 

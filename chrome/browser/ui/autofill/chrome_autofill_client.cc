@@ -43,6 +43,7 @@
 #include "chrome/browser/ui/autofill/payments/autofill_snackbar_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/card_unmask_authentication_selection_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/card_unmask_otp_input_dialog_controller_impl.h"
+#include "chrome/browser/ui/autofill/payments/chrome_payments_autofill_client.h"
 #include "chrome/browser/ui/autofill/payments/create_card_unmask_prompt_view.h"
 #include "chrome/browser/ui/autofill/payments/credit_card_scanner_controller.h"
 #include "chrome/browser/ui/autofill/payments/iban_bubble_controller_impl.h"
@@ -216,13 +217,13 @@ ChromeAutofillClient::GetURLLoaderFactory() {
       ->GetURLLoaderFactoryForBrowserProcess();
 }
 
-AutofillDownloadManager* ChromeAutofillClient::GetDownloadManager() {
-  if (!download_manager_) {
+AutofillCrowdsourcingManager* ChromeAutofillClient::GetCrowdsourcingManager() {
+  if (!crowdsourcing_manager_) {
     // Lazy initialization to avoid virtual function calls in the constructor.
-    download_manager_ = std::make_unique<AutofillDownloadManager>(
+    crowdsourcing_manager_ = std::make_unique<AutofillCrowdsourcingManager>(
         this, GetChannel(), GetLogManager());
   }
-  return download_manager_.get();
+  return crowdsourcing_manager_.get();
 }
 
 AutofillOptimizationGuide* ChromeAutofillClient::GetAutofillOptimizationGuide()
@@ -350,6 +351,15 @@ FormDataImporter* ChromeAutofillClient::GetFormDataImporter() {
         GetPersonalDataManager()->app_locale());
   }
   return form_data_importer_.get();
+}
+
+payments::PaymentsAutofillClient*
+ChromeAutofillClient::GetPaymentsAutofillClient() {
+  if (!payments_autofill_client_) {
+    payments_autofill_client_ =
+        std::make_unique<payments::ChromePaymentsAutofillClient>();
+  }
+  return payments_autofill_client_.get();
 }
 
 payments::PaymentsNetworkInterface*
@@ -480,32 +490,34 @@ void ChromeAutofillClient::ShowAutofillSettings(PopupType popup_type) {
   DCHECK(popup_type != PopupType::kPasswords);
 #if BUILDFLAG(IS_ANDROID)
   switch (popup_type) {
+    case PopupType::kAddresses:
+    case PopupType::kPersonalInformation:
+      ShowAutofillProfileSettings(web_contents());
+      return;
     case PopupType::kCreditCards:
       ShowAutofillCreditCardSettings(web_contents());
       return;
-    case PopupType::kPersonalInformation:
-    case PopupType::kAddresses:
-      ShowAutofillProfileSettings(web_contents());
-      return;
-    case PopupType::kUnspecified:
-    case PopupType::kPasswords:
+    case PopupType::kAutocomplete:
     case PopupType::kIbans:
+    case PopupType::kPasswords:
+    case PopupType::kUnspecified:
       NOTREACHED();
   }
 #else
   Browser* browser = chrome::FindBrowserWithTab(web_contents());
   if (browser) {
     switch (popup_type) {
+      case PopupType::kAddresses:
+      case PopupType::kPersonalInformation:
+        chrome::ShowSettingsSubPage(browser, chrome::kAddressesSubPage);
+        return;
       case PopupType::kCreditCards:
       case PopupType::kIbans:
         chrome::ShowSettingsSubPage(browser, chrome::kPaymentsSubPage);
         return;
-      case PopupType::kPersonalInformation:
-      case PopupType::kAddresses:
-        chrome::ShowSettingsSubPage(browser, chrome::kAddressesSubPage);
-        return;
-      case PopupType::kUnspecified:
+      case PopupType::kAutocomplete:
       case PopupType::kPasswords:
+      case PopupType::kUnspecified:
         NOTREACHED();
     }
   }
@@ -870,15 +882,15 @@ void ChromeAutofillClient::ConfirmSaveIbanLocally(
 
 void ChromeAutofillClient::ConfirmUploadIbanToCloud(
     const Iban& iban,
-    const LegalMessageLines& legal_message_lines,
+    LegalMessageLines legal_message_lines,
     bool should_show_prompt,
     SaveIbanPromptCallback callback) {
 #if !BUILDFLAG(IS_ANDROID)
   // Do lazy initialization of IbanBubbleControllerImpl.
   IbanBubbleControllerImpl::CreateForWebContents(web_contents());
   IbanBubbleControllerImpl::FromWebContents(web_contents())
-      ->OfferUploadSave(iban, legal_message_lines, should_show_prompt,
-                        std::move(callback));
+      ->OfferUploadSave(iban, std::move(legal_message_lines),
+                        should_show_prompt, std::move(callback));
 #endif
 }
 
@@ -909,7 +921,7 @@ void ChromeAutofillClient::ShowEditAddressProfileDialog(
       EditAddressProfileDialogControllerImpl::FromWebContents(web_contents());
   CHECK(controller);
 
-  absl::optional<AccountInfo> account = GetPrimaryAccountInfoFromBrowserContext(
+  std::optional<AccountInfo> account = GetPrimaryAccountInfoFromBrowserContext(
       web_contents()->GetBrowserContext());
   CHECK(account);
   controller->OfferEdit(
@@ -1167,8 +1179,6 @@ void ChromeAutofillClient::DismissOfferNotification() {
 
 void ChromeAutofillClient::OnVirtualCardDataAvailable(
     const VirtualCardManualFallbackBubbleOptions& options) {
-  GetFormDataImporter()->CacheFetchedVirtualCard(
-      options.virtual_card.LastFourDigits());
 #if BUILDFLAG(IS_ANDROID)
   // Show the virtual card snackbar only if the ManualFillingComponent component
   // is enabled for credit cards.

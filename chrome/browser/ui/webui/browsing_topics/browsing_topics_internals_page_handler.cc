@@ -28,7 +28,6 @@ void BrowsingTopicsInternalsPageHandler::GetBrowsingTopicsConfiguration(
   auto config = browsing_topics::mojom::WebUIBrowsingTopicsConfiguration::New(
       base::FeatureList::IsEnabled(blink::features::kBrowsingTopics),
       base::FeatureList::IsEnabled(features::kPrivacySandboxAdsAPIsOverride),
-      base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings3),
       base::FeatureList::IsEnabled(
           privacy_sandbox::kOverridePrivacySandboxSettingsLocalTesting),
       base::FeatureList::IsEnabled(
@@ -127,7 +126,7 @@ void BrowsingTopicsInternalsPageHandler::OnGetModelInfoCompleted(
       browsing_topics::BrowsingTopicsServiceFactory::GetForProfile(profile_);
   DCHECK(browsing_topics_service);
 
-  absl::optional<optimization_guide::ModelInfo> model_info =
+  std::optional<optimization_guide::ModelInfo> model_info =
       browsing_topics_service->GetAnnotator()->GetBrowsingTopicsModelInfo();
 
   if (!model_info) {

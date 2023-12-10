@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <optional>
 #include <string>
 
 #include "base/gtest_prod_util.h"
@@ -30,7 +31,6 @@
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/cryptohome/dbus-constants.h"
 #include "ui/base/user_activity/user_activity_observer.h"
 #include "url/gurl.h"
@@ -115,7 +115,7 @@ class ExistingUserController : public content::NotificationObserver,
   void SetDisplayEmail(const std::string& email);
   bool IsUserAllowlisted(
       const AccountId& account_id,
-      const absl::optional<user_manager::UserType>& user_type);
+      const std::optional<user_manager::UserType>& user_type);
 
   // This is virtual to be mocked in unit tests.
   virtual bool IsSigninInProgress() const;
@@ -181,16 +181,18 @@ class ExistingUserController : public content::NotificationObserver,
   void OnAuthFailure(const AuthFailure& error) override;
   void OnAuthSuccess(const UserContext& user_context) override;
   void OnOffTheRecordAuthSuccess() override;
-  void OnPasswordChangeDetectedLegacy(const UserContext& user_context) override;
-  void OnPasswordChangeDetected(std::unique_ptr<UserContext>) override;
+  void OnOnlinePasswordUnusable(std::unique_ptr<UserContext>,
+                                bool online_password_mismatch) override;
   void OnLocalAuthenticationRequired(
       std::unique_ptr<UserContext> user_context) override;
   void OnOldEncryptionDetected(std::unique_ptr<UserContext>,
                                bool has_incomplete_migration) override;
   void AllowlistCheckFailed(const std::string& email) override;
   void PolicyLoadFailed() override;
+  void ReportOnAuthSuccessMetrics() override;
 
-  void OnPasswordChangeDetectedImpl(std::unique_ptr<UserContext>);
+  void OnOnlinePasswordUnusableImpl(std::unique_ptr<UserContext>,
+                                    bool online_password_mismatch);
 
   // Handles the continuation of successful login after an attempt has been made
   // to divert to a hibernate resume flow. The execution of this method means
@@ -228,9 +230,6 @@ class ExistingUserController : public content::NotificationObserver,
 
   // Shows "critical TPM error" screen.
   void ShowTPMError();
-
-  // Shows "password changed" dialog.
-  void ShowPasswordChangedDialogLegacy(const UserContext& user_context);
 
   // Creates `login_performer_` if necessary and calls login() on it.
   void PerformLogin(const UserContext& user_context,

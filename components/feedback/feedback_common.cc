@@ -7,8 +7,10 @@
 #include <utility>
 
 #include "base/files/file_path.h"
+#include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/ranges/algorithm.h"
+#include "base/values.h"
 #include "build/chromeos_buildflags.h"
 #include "components/feedback/feedback_report.h"
 #include "components/feedback/feedback_util.h"
@@ -26,9 +28,8 @@ namespace {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 constexpr int kChromeOSProductId = 208;
-#else
-constexpr int kChromeBrowserProductId = 237;
 #endif
+constexpr int kChromeBrowserProductId = 237;
 
 // The below thresholds were chosen arbitrarily to conveniently show small data
 // as part of the report itself without having to look into the system_logs.zip
@@ -219,6 +220,15 @@ void FeedbackCommon::PrepareReport(
     AddFeedbackData(feedback_data, kIsOffensiveOrUnsafeKey,
                     is_offensive_or_unsafe_.value() ? "true" : "false");
   }
+  if (!ai_metadata_.empty()) {
+    // Add feedback data for each key/value pair.
+    absl::optional<base::Value::Dict> dict =
+        base::JSONReader::ReadDict(ai_metadata_);
+    CHECK(dict);
+    for (auto pair : dict.value()) {
+      AddFeedbackData(feedback_data, pair.first, pair.second.GetString());
+    }
+  }
 }
 
 void FeedbackCommon::RedactDescription(redaction::RedactionTool& redactor) {
@@ -230,6 +240,11 @@ bool FeedbackCommon::IncludeInSystemLogs(const std::string& key,
                                          bool is_google_email) {
   return is_google_email ||
          key != feedback::FeedbackReport::kAllCrashReportIdsKey;
+}
+
+// static
+int FeedbackCommon::GetChromeBrowserProductId() {
+  return kChromeBrowserProductId;
 }
 
 FeedbackCommon::~FeedbackCommon() = default;

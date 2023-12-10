@@ -21,7 +21,10 @@ enum class PasswordStoreBackendErrorType {
   // passwords, for which no resolution intent has been received. Used on
   // Android.
   kAuthErrorUnresolvable = 2,
-  kMaxValue = kAuthErrorUnresolvable,
+  // A Keychain error that prevents the password store from decrypting the
+  // passwords. Used on Mac.
+  kKeychainError = 3,
+  kMaxValue = kKeychainError,
 };
 
 enum class PasswordStoreBackendErrorRecoveryType {
@@ -43,6 +46,9 @@ struct PasswordStoreBackendError {
       PasswordStoreBackendErrorType error_type,
       PasswordStoreBackendErrorRecoveryType recovery_type);
 
+  friend bool operator==(const PasswordStoreBackendError&,
+                         const PasswordStoreBackendError&) = default;
+
   // The type of the error.
   PasswordStoreBackendErrorType type;
 
@@ -50,8 +56,6 @@ struct PasswordStoreBackendError {
   PasswordStoreBackendErrorRecoveryType recovery_type;
 };
 
-bool operator==(const PasswordStoreBackendError& lhs,
-                const PasswordStoreBackendError& rhs);
 
 }  // namespace password_manager
 

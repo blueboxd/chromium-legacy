@@ -849,13 +849,13 @@ class IsClipboardPasteContentAllowedTest : public InProcessBrowserTest {
  protected:
   ChromeContentBrowserClient* client() const { return client_; }
 
-  std::string CreateTestFile(const base::FilePath::StringType& filename,
-                             const std::string& content) {
+  base::FilePath CreateTestFile(const base::FilePath::StringType& filename,
+                                const std::string& content) {
     base::ScopedAllowBlockingForTesting allow_blocking;
     base::FilePath path = temp_dir_.GetPath().Append(filename);
     base::File file(path, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
     file.WriteAtCurrentPos(content.data(), content.size());
-    return path.AsUTF8Unsafe();
+    return path;
   }
 
  private:
@@ -893,6 +893,48 @@ class IsClipboardPasteContentAllowedTest : public InProcessBrowserTest {
   enterprise_connectors::FakeContentAnalysisSdkManager sdk_manager_;
 #endif
 };
+
+IN_PROC_BROWSER_TEST_F(IsClipboardPasteContentAllowedTest, BitmapAllowed) {
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  ChromeContentBrowserClient::ClipboardPasteData clipboard_paste_data =
+      ChromeContentBrowserClient::ClipboardPasteData(std::string(), "allowed",
+                                                     {});
+
+  client()->IsClipboardPasteContentAllowed(
+      contents, GURL("google.com"), ui::ClipboardFormatType::BitmapType(),
+      clipboard_paste_data,
+      base::BindOnce(
+          [](absl::optional<ChromeContentBrowserClient::ClipboardPasteData>
+                 clipboard_paste_data) {
+            EXPECT_TRUE(clipboard_paste_data.has_value());
+            EXPECT_EQ(clipboard_paste_data->image, "allowed");
+          }));
+}
+
+IN_PROC_BROWSER_TEST_F(IsClipboardPasteContentAllowedTest, BitmapBlocked) {
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  ChromeContentBrowserClient::ClipboardPasteData clipboard_paste_data =
+      ChromeContentBrowserClient::ClipboardPasteData(std::string(), "blocked",
+                                                     {});
+
+  client()->IsClipboardPasteContentAllowed(
+      contents, GURL("google.com"), ui::ClipboardFormatType::BitmapType(),
+      clipboard_paste_data,
+      base::BindOnce(
+          [](absl::optional<ChromeContentBrowserClient::ClipboardPasteData>
+                 clipboard_paste_data) {
+#if BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
+            EXPECT_FALSE(clipboard_paste_data.has_value());
+#else
+            // Platforms that don't support local content analysis shouldn't
+            // block anything, even when the policy is set to a local service
+            // provider value.
+            EXPECT_TRUE(clipboard_paste_data.has_value());
+#endif
+          }));
+}
 
 IN_PROC_BROWSER_TEST_F(IsClipboardPasteContentAllowedTest, TextAllowed) {
   content::WebContents* contents =
@@ -936,7 +978,7 @@ IN_PROC_BROWSER_TEST_F(IsClipboardPasteContentAllowedTest, TextBlocked) {
 }
 
 IN_PROC_BROWSER_TEST_F(IsClipboardPasteContentAllowedTest, AllFilesAllowed) {
-  std::vector<std::string> paths;
+  std::vector<base::FilePath> paths;
   paths.push_back(CreateTestFile(FILE_PATH_LITERAL("allow0"), "data"));
   paths.push_back(CreateTestFile(FILE_PATH_LITERAL("allow1"), "data"));
   ChromeContentBrowserClient::ClipboardPasteData clipboard_paste_data =
@@ -958,7 +1000,7 @@ IN_PROC_BROWSER_TEST_F(IsClipboardPasteContentAllowedTest, AllFilesAllowed) {
 }
 
 IN_PROC_BROWSER_TEST_F(IsClipboardPasteContentAllowedTest, AllFilesBlocked) {
-  std::vector<std::string> paths;
+  std::vector<base::FilePath> paths;
   paths.push_back(CreateTestFile(FILE_PATH_LITERAL("block0"), "data"));
   paths.push_back(CreateTestFile(FILE_PATH_LITERAL("block1"), "data"));
 
@@ -988,7 +1030,7 @@ IN_PROC_BROWSER_TEST_F(IsClipboardPasteContentAllowedTest, AllFilesBlocked) {
 }
 
 IN_PROC_BROWSER_TEST_F(IsClipboardPasteContentAllowedTest, SomeFilesBlocked) {
-  std::vector<std::string> paths;
+  std::vector<base::FilePath> paths;
   paths.push_back(CreateTestFile(FILE_PATH_LITERAL("allow0"), "data"));
   paths.push_back(CreateTestFile(FILE_PATH_LITERAL("block1"), "data"));
   ChromeContentBrowserClient::ClipboardPasteData clipboard_paste_data =

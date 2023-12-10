@@ -60,6 +60,21 @@ bool IsBackground(Visibility visibility) {
   }
 }
 
+// Returns true when it is allowed to activate a prerendered page in a
+// background tab.
+bool IsAllowedToActivateInBackgroundForTesting() {
+  // Now it is allowed to activate a prerendered page in a background only on
+  // macOS for running web platform tests. See comments on the flag definition
+  // for more details.
+#if BUILDFLAG(IS_MAC)
+  if (base::FeatureList::IsEnabled(
+          features::kPrerender2AllowActivationInBackground)) {
+    return true;
+  }
+#endif
+  return false;
+}
+
 bool DeviceHasEnoughMemoryForPrerender() {
   // This method disallows prerendering on low-end devices if the
   // kPrerender2MemoryControls feature is enabled.
@@ -899,44 +914,16 @@ std::set<int> PrerenderHostRegistry::CancelHosts(
   std::set<int> cancelled_ids;
 
   for (int host_id : frame_tree_node_ids) {
-    // Look up the id in the non-reserved host map.
-    if (auto iter = prerender_host_by_frame_tree_node_id_.find(host_id);
-        iter != prerender_host_by_frame_tree_node_id_.end()) {
-      if (running_prerender_host_id_ == host_id)
-        running_prerender_host_id_ = RenderFrameHost::kNoFrameTreeNodeId;
-
-      // Remove the prerender host from the host map so that it's not used for
-      // activation during asynchronous deletion.
-      std::unique_ptr<PrerenderHost> prerender_host = std::move(iter->second);
-      prerender_host_by_frame_tree_node_id_.erase(iter);
-
-      reason.ReportMetrics(prerender_host->trigger_type(),
-                           prerender_host->embedder_histogram_suffix());
-
-      NotifyCancel(prerender_host->frame_tree_node_id(), reason);
-
-      // Asynchronously delete the prerender host.
-      ScheduleToDeleteAbandonedHost(std::move(prerender_host), reason);
-      cancelled_ids.insert(host_id);
-    }
-
     if (base::FeatureList::IsEnabled(blink::features::kPrerender2InNewTab)) {
-      // Look up the id in the prerender-in-new-tab handle map.
-      if (auto iter =
-              prerender_new_tab_handle_by_frame_tree_node_id_.find(host_id);
-          iter != prerender_new_tab_handle_by_frame_tree_node_id_.end()) {
-        // The host should be driven by PrerenderHostRegistry associated with
-        // the new tab.
-        CHECK_NE(running_prerender_host_id_, host_id);
-
-        std::unique_ptr<PrerenderNewTabHandle> handle = std::move(iter->second);
-        prerender_new_tab_handle_by_frame_tree_node_id_.erase(iter);
-        NotifyCancel(host_id, reason);
-        handle->CancelPrerendering(reason);
+      if (CancelHostInternal(host_id, reason) ||
+          CancelNewTabHostInternal(host_id, reason)) {
         cancelled_ids.insert(host_id);
       }
     } else {
       CHECK(prerender_new_tab_handle_by_frame_tree_node_id_.empty());
+      if (CancelHostInternal(host_id, reason)) {
+        cancelled_ids.insert(host_id);
+      }
     }
   }
 
@@ -998,22 +985,96 @@ void PrerenderHostRegistry::CancelAllHosts(PrerenderFinalStatus final_status) {
 
   PrerenderCancellationReason reason(final_status);
 
-  auto prerender_host_map = std::move(prerender_host_by_frame_tree_node_id_);
-  for (auto& iter : prerender_host_map) {
-    std::unique_ptr<PrerenderHost> prerender_host = std::move(iter.second);
-    ScheduleToDeleteAbandonedHost(std::move(prerender_host), reason);
+  while (!prerender_host_by_frame_tree_node_id_.empty()) {
+    CancelHostInternal(prerender_host_by_frame_tree_node_id_.begin()->first,
+                       reason);
   }
 
   if (base::FeatureList::IsEnabled(blink::features::kPrerender2InNewTab)) {
-    auto prerender_new_tab_handle_map =
-        std::move(prerender_new_tab_handle_by_frame_tree_node_id_);
-    for (auto& iter : prerender_new_tab_handle_map)
-      iter.second->CancelPrerendering(reason);
+    while (!prerender_new_tab_handle_by_frame_tree_node_id_.empty()) {
+      CancelNewTabHostInternal(
+          prerender_new_tab_handle_by_frame_tree_node_id_.begin()->first,
+          reason);
+    }
   } else {
     CHECK(prerender_new_tab_handle_by_frame_tree_node_id_.empty());
   }
 
   pending_prerenders_.clear();
+}
+
+bool PrerenderHostRegistry::CancelHostInternal(
+    int frame_tree_node_id,
+    const PrerenderCancellationReason& reason) {
+  // Look up the id in the non-reserved host map.
+  auto iter = prerender_host_by_frame_tree_node_id_.find(frame_tree_node_id);
+  if (iter == prerender_host_by_frame_tree_node_id_.end()) {
+    return false;
+  }
+
+  if (running_prerender_host_id_ == frame_tree_node_id) {
+    running_prerender_host_id_ = RenderFrameHost::kNoFrameTreeNodeId;
+  }
+
+  // Remove the prerender host from the host map so that it's not used for
+  // activation during asynchronous deletion.
+  std::unique_ptr<PrerenderHost> prerender_host = std::move(iter->second);
+  prerender_host_by_frame_tree_node_id_.erase(iter);
+
+  reason.ReportMetrics(prerender_host->trigger_type(),
+                       prerender_host->embedder_histogram_suffix());
+
+  NotifyCancel(prerender_host->frame_tree_node_id(), reason);
+
+  // Under kPrerender2InNewTab, if the host we are attempting to cancel is the
+  // new-tab host and initiator WebContents's PrerenderHostRegistry for this
+  // host is still alive, invoke the initiator WebContents's
+  // CancelNewTabHostInternal to destroy PrerenderNewTabHandle and WebContents
+  // that this new-tab host belongs to. This will eventually destroy `this`, so
+  // it should be performed asynchronously.
+  if (base::FeatureList::IsEnabled(blink::features::kPrerender2InNewTab)) {
+    CHECK(prerender_host->initiator_web_contents());
+    WebContentsImpl* initiator_web_contents = static_cast<WebContentsImpl*>(
+        prerender_host->initiator_web_contents().get());
+    if (web_contents() != initiator_web_contents &&
+        !initiator_web_contents->IsBeingDestroyed()) {
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              base::IgnoreResult(
+                  &PrerenderHostRegistry::CancelNewTabHostInternal),
+              initiator_web_contents->GetPrerenderHostRegistry()->GetWeakPtr(),
+              frame_tree_node_id,
+              PrerenderCancellationReason(reason.final_status())));
+    }
+  }
+
+  // Asynchronously delete the prerender host.
+  ScheduleToDeleteAbandonedHost(std::move(prerender_host), reason);
+  return true;
+}
+
+bool PrerenderHostRegistry::CancelNewTabHostInternal(
+    int frame_tree_node_id,
+    const PrerenderCancellationReason& reason) {
+  CHECK(base::FeatureList::IsEnabled(blink::features::kPrerender2InNewTab));
+
+  // Look up the id in the prerender-in-new-tab handle map.
+  auto iter =
+      prerender_new_tab_handle_by_frame_tree_node_id_.find(frame_tree_node_id);
+  if (iter == prerender_new_tab_handle_by_frame_tree_node_id_.end()) {
+    return false;
+  }
+
+  // The host should be driven by PrerenderHostRegistry associated with
+  // the new tab.
+  CHECK_NE(running_prerender_host_id_, frame_tree_node_id);
+
+  std::unique_ptr<PrerenderNewTabHandle> handle = std::move(iter->second);
+  prerender_new_tab_handle_by_frame_tree_node_id_.erase(iter);
+  NotifyCancel(frame_tree_node_id, reason);
+  handle->CancelPrerendering(reason);
+  return true;
 }
 
 int PrerenderHostRegistry::FindPotentialHostToActivate(
@@ -1179,6 +1240,12 @@ PrerenderHost* PrerenderHostRegistry::FindHostByUrlForTesting(
     }
   }
   return nullptr;
+}
+
+bool PrerenderHostRegistry::HasNewTabHandleByIdForTesting(
+    int frame_tree_node_id) {
+  return prerender_new_tab_handle_by_frame_tree_node_id_.contains(
+      frame_tree_node_id);
 }
 
 void PrerenderHostRegistry::CancelAllHostsForTesting() {
@@ -1511,7 +1578,8 @@ int PrerenderHostRegistry::FindHostToActivateInternal(
   // TODO(crbug.com/1399709): Remove the restriction after further investigation
   // and discussion.
   // Disallow activation when the navigation happens in the hidden tab.
-  if (web_contents()->GetVisibility() == Visibility::HIDDEN) {
+  if (web_contents()->GetVisibility() == Visibility::HIDDEN &&
+      !IsAllowedToActivateInBackgroundForTesting()) {
     CancelHost(host->frame_tree_node_id(),
                PrerenderFinalStatus::kActivatedInBackground);
     return RenderFrameHost::kNoFrameTreeNodeId;

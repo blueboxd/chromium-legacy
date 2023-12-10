@@ -46,10 +46,12 @@ namespace {
 // The default icon size used in the suggestion drop down.
 constexpr int kIconSize = 16;
 
-// Max width for address profile suggestion text.
-constexpr int kAutofillPopupAddressProfileMaxWidth = 192;
-// Max width for address credit card suggestion text.
-constexpr int kAutofillPopupCreditCardMaxWidth = 192;
+// Max width for the Autofill suggestion text.
+constexpr int kAutofillSuggestionMaxWidth = 192;
+
+// Max width for address profile suggestion text when granular filling is
+// enabled.
+constexpr int kAutofillPopupAddressProfileGranularFillingEnabledMaxWidth = 320;
 
 // The additional height of the row in case it has two lines of text.
 constexpr int kAutofillPopupAdditionalDoubleRowHeight = 22;
@@ -132,7 +134,7 @@ std::unique_ptr<views::ImageView> ImageViewFromImageSkia(
     return nullptr;
   }
   auto image_view = std::make_unique<views::ImageView>();
-  image_view->SetImage(image_skia);
+  image_view->SetImage(ui::ImageModel::FromImageSkia(image_skia));
   return image_view;
 }
 
@@ -186,7 +188,7 @@ std::unique_ptr<views::ImageView> GetIconImageViewFromIcon(
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
       return ImageViewFromVectorIcon(vector_icons::kPenSparkIcon, kIconSize);
 #else
-      return nullptr;
+      return ImageViewFromVectorIcon(vector_icons::kEditIcon, kIconSize);
 #endif
     case Suggestion::Icon::kGooglePasswordManager:
       return ImageViewFromVectorIcon(GooglePasswordManagerVectorIcon(),
@@ -471,18 +473,29 @@ void AddSuggestionContentToView(
 
 void FormatLabel(views::Label& label,
                  const Suggestion::Text& text,
-                 PopupType popup_type) {
-  if (popup_type == PopupType::kAddresses) {
-    label.SetMaximumWidthSingleLine(kAutofillPopupAddressProfileMaxWidth);
-  } else if (popup_type == PopupType::kCreditCards &&
-             text.should_truncate.value()) {
-    // should_truncate should only be set to true iff the experiments are
-    // enabled.
-    DCHECK(base::FeatureList::IsEnabled(
-        autofill::features::kAutofillEnableVirtualCardMetadata));
-    DCHECK(base::FeatureList::IsEnabled(
-        autofill::features::kAutofillEnableCardProductName));
-    label.SetMaximumWidthSingleLine(kAutofillPopupCreditCardMaxWidth);
+                 PopupType popup_type,
+                 int maximum_width_single_line) {
+  switch (popup_type) {
+    case PopupType::kAddresses:
+    case PopupType::kAutocomplete:
+      label.SetMaximumWidthSingleLine(maximum_width_single_line);
+      break;
+    case PopupType::kCreditCards:
+      if (text.should_truncate.value()) {
+        // should_truncate should only be set to true iff the experiments are
+        // enabled.
+        DCHECK(base::FeatureList::IsEnabled(
+            autofill::features::kAutofillEnableVirtualCardMetadata));
+        DCHECK(base::FeatureList::IsEnabled(
+            autofill::features::kAutofillEnableCardProductName));
+        label.SetMaximumWidthSingleLine(maximum_width_single_line);
+      }
+      break;
+    case PopupType::kIbans:
+    case PopupType::kPasswords:
+    case PopupType::kPersonalInformation:
+    case PopupType::kUnspecified:
+      break;
   }
 }
 
@@ -503,6 +516,14 @@ std::unique_ptr<views::Label> CreateMinorTextLabel(
              : std::make_unique<views::Label>(
                    minor_text.value, views::style::CONTEXT_DIALOG_BODY_TEXT,
                    views::style::STYLE_SECONDARY);
+}
+
+int GetMaxPopupAddressProfileWidth() {
+  // TODO(crbug.com/1459990): Remove feature check as part of the clean up.
+  return base::FeatureList::IsEnabled(
+             features::kAutofillGranularFillingAvailable)
+             ? kAutofillPopupAddressProfileGranularFillingEnabledMaxWidth
+             : kAutofillSuggestionMaxWidth;
 }
 
 std::vector<std::unique_ptr<views::View>> CreateAndTrackSubtextViews(
@@ -536,7 +557,17 @@ std::vector<std::unique_ptr<views::View>> CreateAndTrackSubtextViews(
               label_text.value,
               ChromeTextContext::CONTEXT_DIALOG_BODY_TEXT_SMALL, text_style));
       content_view.TrackLabel(label);
-      FormatLabel(*label, label_text, popup_type);
+      // TODO(crbug.com/1459990): Remove feature check as part of the clean up.
+      if (!base::FeatureList::IsEnabled(
+              features::kAutofillGranularFillingAvailable)) {
+        FormatLabel(*label, label_text, popup_type,
+                    GetMaxPopupAddressProfileWidth());
+      } else {
+        // To make sure the popup width will not exceed its maximum value,
+        // divide the maximum label width by the number of labels.
+        FormatLabel(*label, label_text, popup_type,
+                    GetMaxPopupAddressProfileWidth() / label_row.size());
+      }
     }
     result.push_back(std::move(label_row_container_view));
   }
@@ -550,7 +581,8 @@ void AddSuggestionStrategyContentCellChildren(PopupRowContentView* view,
   // Add the label views.
   std::unique_ptr<views::Label> main_text_label = CreateMainTextLabel(
       suggestion.main_text, views::style::TextStyle::STYLE_PRIMARY);
-  FormatLabel(*main_text_label, suggestion.main_text, popup_type);
+  FormatLabel(*main_text_label, suggestion.main_text, popup_type,
+              GetMaxPopupAddressProfileWidth());
   AddSuggestionContentToView(
       suggestion, std::move(main_text_label),
       CreateMinorTextLabel(suggestion.minor_text),

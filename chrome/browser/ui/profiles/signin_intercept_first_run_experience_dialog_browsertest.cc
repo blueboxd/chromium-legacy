@@ -39,6 +39,7 @@
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
 #include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/sync/test/test_sync_service.h"
 #include "components/user_education/common/feature_promo_controller.h"
 #include "components/user_education/test/feature_promo_test_util.h"
@@ -119,7 +120,9 @@ class SigninInterceptFirstRunExperienceDialogBrowserTest
   SigninInterceptFirstRunExperienceDialogBrowserTest()
       : SigninBrowserTestBase(/*use_main_profile=*/true) {
     feature_list_.InitAndEnableFeatures(
-        {feature_engagement::kIPHProfileSwitchFeature});
+        /*allow_and_enable_features=*/{feature_engagement::
+                                           kIPHProfileSwitchFeature},
+        /*disable_features=*/{switches::kUnoDesktop});
   }
 
   ~SigninInterceptFirstRunExperienceDialogBrowserTest() override = default;
@@ -168,8 +171,15 @@ class SigninInterceptFirstRunExperienceDialogBrowserTest
     policy_provider_.UpdateChromePolicy(policy);
   }
 
+  void SetAccountCookieAndToken(const std::string& email) {
+    account_id_ = SetAccountsCookiesAndTokens({email})[0].account_id;
+  }
+
   void SignIn(const std::string& email) {
-    account_id_ = SetAccounts({email})[0].account_id;
+    account_id_ =
+        identity_test_env()
+            ->MakePrimaryAccountAvailable(email, signin::ConsentLevel::kSignin)
+            .account_id;
     EXPECT_EQ(
         identity_manager()->GetPrimaryAccountId(signin::ConsentLevel::kSignin),
         account_id());
@@ -471,6 +481,58 @@ IN_PROC_BROWSER_TEST_F(SigninInterceptFirstRunExperienceDialogBrowserTest,
 
   SimulateSyncConfirmationUIClosing(LoginUIService::ABORT_SYNC);
   ExpectPrimaryAccountWithExactConsentLevel(signin::ConsentLevel::kSignin);
+  EXPECT_TRUE(controller()->ShowsModalDialog());
+  profile_customization_observer.Wait();
+  EXPECT_EQ(
+      dialog()->GetModalDialogWebContentsForTesting()->GetLastCommittedURL(),
+      kProfileCustomizationUrl);
+
+  SimulateProfileCustomizationDoneButtonClicked();
+  EXPECT_FALSE(controller()->ShowsModalDialog());
+  EXPECT_TRUE(ProfileSwitchPromoHasBeenShown());
+  ExpectRecordedEvents({DialogEvent::kStart, DialogEvent::kShowSyncConfirmation,
+                        DialogEvent::kSyncConfirmationClickCancel,
+                        DialogEvent::kShowProfileCustomization,
+                        DialogEvent::kProfileCustomizationClickDone});
+  ExpectSigninHistogramsRecorded();
+}
+
+class SigninInterceptFirstRunExperienceDialogWithUnoEnabledBrowserTest
+    : public SigninInterceptFirstRunExperienceDialogBrowserTest {
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_{switches::kUnoDesktop};
+};
+
+// Goes through all steps of the fre dialog. The user declines sync and should
+// be signed out of Chrome as part of Uno.
+IN_PROC_BROWSER_TEST_F(
+    SigninInterceptFirstRunExperienceDialogWithUnoEnabledBrowserTest,
+    DeclineSync) {
+  SetAccountCookieAndToken(kConsumerEmail);
+  content::TestNavigationObserver sync_confirmation_observer(
+      kSyncConfirmationUrl);
+  content::TestNavigationObserver profile_customization_observer(
+      kProfileCustomizationUrl);
+  sync_confirmation_observer.StartWatchingNewWebContents();
+  profile_customization_observer.StartWatchingNewWebContents();
+
+  controller()->ShowModalInterceptFirstRunExperienceDialog(
+      account_id(), /* is_forced_intercept = */ false);
+  EXPECT_TRUE(controller()->ShowsModalDialog());
+  sync_confirmation_observer.Wait();
+  EXPECT_EQ(
+      dialog()->GetModalDialogWebContentsForTesting()->GetLastCommittedURL(),
+      kSyncConfirmationUrl);
+
+  SimulateSyncConfirmationUIClosing(LoginUIService::ABORT_SYNC);
+
+  // Chrome is signed out after declining Sync.
+  EXPECT_EQ(
+      identity_manager()->GetPrimaryAccountId(signin::ConsentLevel::kSignin),
+      CoreAccountId());
+  EXPECT_EQ(std::nullopt,
+            signin::GetPrimaryAccountConsentLevel(identity_manager()));
+
   EXPECT_TRUE(controller()->ShowsModalDialog());
   profile_customization_observer.Wait();
   EXPECT_EQ(

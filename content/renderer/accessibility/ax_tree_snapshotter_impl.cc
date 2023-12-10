@@ -4,6 +4,7 @@
 
 #include "content/renderer/accessibility/ax_tree_snapshotter_impl.h"
 
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
@@ -106,9 +107,7 @@ void AXTreeSnapshotterImpl::Snapshot(size_t max_node_count,
   }
 #endif
 
-  base::UmaHistogramEnumeration(
-      kAXTreeSnapshotterErrorHistogramName,
-      AXTreeSnapshotErrorReason::kGenericSerializationError);
+  RECORD_ERROR(GenericSerializationError);
   // It failed again. Clear the response object because it might have errors.
   *response = ui::AXTreeUpdate();
   LOG(WARNING) << "Unable to serialize accessibility tree.";
@@ -149,21 +148,33 @@ bool AXTreeSnapshotterImpl::SerializeTreeWithLimits(
 }
 
 bool AXTreeSnapshotterImpl::SerializeTree(ui::AXTreeUpdate* response) {
+#if !BUILDFLAG(IS_ANDROID)
+  int max_nodes_count = 0;
+#else
+  // Experiment with different max values for end-to-end timing. An arbitrarily
+  // large value will simulate there being no max nodes count.
+  int max_nodes_count = base::GetFieldTrialParamByFeatureAsInt(
+      features::kAccessibilitySnapshotStressTests,
+      "AccessibilitySnapshotStressTestsMaxNodes", 100000);
+#endif
+
   base::ElapsedTimer timer = base::ElapsedTimer();
   timer.start_time();
-  if (!context_->SerializeEntireTree(0, {}, response)) {
+  if (!context_->SerializeEntireTree(max_nodes_count, {}, response)) {
     return false;
   }
 
   base::TimeDelta snapshotDuration = timer.Elapsed();
   base::LinearHistogram::FactoryGet(
       "Accessibility.AXTreeSnapshotter.Snapshot.NoRestrictions.Nodes", 0,
-      kMaxNodesHistogramLimit, 100, base::HistogramBase::kNoFlags)
+      kMaxNodesHistogramLimit, 100,
+      base::HistogramBase::kUmaTargetedHistogramFlag)
       ->Add(response->nodes.size());
 
   base::LinearHistogram::FactoryGet(
       "Accessibility.AXTreeSnapshotter.Snapshot.NoRestrictions.Time", 0,
-      kTimeoutInMillisecondsHistogramLimit, 100, base::HistogramBase::kNoFlags)
+      kTimeoutInMillisecondsHistogramLimit, 100,
+      base::HistogramBase::kUmaTargetedHistogramFlag)
       ->Add(snapshotDuration.InMilliseconds());
 
   return true;

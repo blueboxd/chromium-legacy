@@ -55,9 +55,11 @@ Aspetos a considerar:
 <translation id="2574249610672786438">Para ver os seus separadores onde quer que esteja a utilizar o Chrome, inicie sessão em todos os seus dispositivos.</translation>
 <translation id="2576431527583832481">O Chrome ficou ainda melhor! Está disponível uma nova versão.</translation>
 <translation id="257708665678654955">Quer que o Google Chrome se ofereça para traduzir as páginas em <ph name="LANGUAGE_NAME" /> deste site da próxima vez?</translation>
+<translation id="2650286135394207535">Permita que o Chrome ajude a acompanhar as suas embalagens</translation>
 <translation id="2671426118752779020">Pode utilizar as palavras-passe que guardou no Gestor de palavras-passe da Google noutras apps no seu iPhone.</translation>
 <translation id="2689064829982324496">Para terminar sessão na sua Conta Google em todos os Websites, <ph name="BEGIN_LINK" />termine sessão no Chrome<ph name="END_LINK" />.</translation>
 <translation id="2695886661449553974">O Chrome não conseguiu verificar se existem atualizações. Tente mais tarde.</translation>
+<translation id="2702250627063295552">Adicione o item da Lista de leitura ao Chrome</translation>
 <translation id="2736805085127235148">As notificações do Chrome estão atualmente desativadas nas Definições do dispositivo.</translation>
 <translation id="2767464022270041271">Não existem palavras-passe guardadas. O Gestor de Palavras-passe da Google pode verificar as suas palavras-passe quando as guardar.</translation>
 <translation id="2868822340714096138">Limpar dados de navegação no Chrome</translation>
@@ -83,6 +85,7 @@ Aspetos a considerar:
 <translation id="3744018071945602754">Faça a gestão das palavras-passe no Chrome</translation>
 <translation id="3827545470516145620">Vai obter a proteção de segurança padrão neste dispositivo</translation>
 <translation id="384394811301901750">O Google Chrome não pode utilizar a câmara neste momento</translation>
+<translation id="3863841106411295595">Adiciona os URLs introduzidos à sua Lista de leitura no Chrome.</translation>
 <translation id="3901001113120561395">Tire o máximo partido do Chrome.</translation>
 <translation id="3967382818307165056">Faça a gestão dos métodos de pagamento no Chrome</translation>
 <translation id="3980220367029651214">Está a mudar as contas de sincronização de <ph name="USER_EMAIL1" /> para <ph name="USER_EMAIL2" />. Os seus dados do Chrome existentes são geridos por <ph name="DOMAIN" />. Esta ação elimina os seus dados deste dispositivo, embora permaneçam em <ph name="USER_EMAIL1" />.</translation>
@@ -96,7 +99,6 @@ Aspetos a considerar:
 <translation id="424864128008805179">Quer terminar sessão no Chrome?</translation>
 <translation id="4251174643044751591">Abre a página Definição dos métodos de pagamento no Chrome.</translation>
 <translation id="4453284704333523777">Faça a gestão das definições do Chrome</translation>
-<translation id="4471662743048412085">Acompanhe pacotes detetados no Chrome</translation>
 <translation id="4508370294876102450">Abra o Chrome a partir de qualquer app</translation>
 <translation id="4523886039239821078">Alguns suplementos provocam falhas no sistema do Chrome. Desinstale:</translation>
 <translation id="4633328489441962921">O Chrome não consegue verificar se existem atualizações.</translation>

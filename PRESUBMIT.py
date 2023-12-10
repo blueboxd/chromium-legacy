@@ -1090,6 +1090,11 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
           'fuchsia_web/webengine/browser/context_impl_browsertest\.cc',
           'fuchsia_web/webengine/browser/cookie_manager_impl_unittest\.cc',
           'fuchsia_web/webengine/browser/media_player_impl_unittest\.cc',
+          # Required to interop with interfaces from the third-party ChromeML
+          # library API.
+          'services/on_device_model/ml/chrome_ml_api\.h',
+          'services/on_device_model/ml/on_device_model_executor\.cc',
+          'services/on_device_model/ml/on_device_model_executor\.h',
           # Required to interop with interfaces from the third-party perfetto
           # library.
           'services/tracing/public/cpp/perfetto/custom_event_recorder\.cc',
@@ -1574,7 +1579,8 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       ),
       True,
       [
-        _THIRD_PARTY_EXCEPT_BLINK,
+          # Implements BASE_DECLARE_FEATURE().
+          r'^base/feature_list\.h',
       ],
     ),
     BanRule(
@@ -1893,6 +1899,8 @@ _GENERIC_PYDEPS_FILES = [
     'chrome/test/chromedriver/log_replay/client_replay_unittest.pydeps',
     'chrome/test/chromedriver/test/run_py_tests.pydeps',
     'chromecast/resource_sizes/chromecast_resource_sizes.pydeps',
+    'components/cronet/tools/check_combined_proguard_file.pydeps',
+    'components/cronet/tools/generate_proguard_file.pydeps',
     'components/cronet/tools/generate_javadoc.pydeps',
     'components/cronet/tools/jar_src.pydeps',
     'components/module_installer/android/module_desc_java.pydeps',

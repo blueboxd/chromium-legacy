@@ -72,7 +72,7 @@
 #include "third_party/icu/source/i18n/unicode/ulocdata.h"
 
 #if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
-#include "chrome/browser/enterprise/connectors/analysis/print_content_analysis_utils.h"
+#include "chrome/browser/enterprise/data_protection/print_utils.h"
 #if BUILDFLAG(IS_MAC)
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -205,7 +205,7 @@ const char kPrintPdfAsImage[] = "printPdfAsImage";
 // Gets the print job settings dictionary from |json_str|. Assumes the Print
 // Preview WebUI does not send over invalid data.
 base::Value::Dict GetSettingsDictionary(const std::string& json_str) {
-  absl::optional<base::Value> settings = base::JSONReader::Read(json_str);
+  std::optional<base::Value> settings = base::JSONReader::Read(json_str);
   base::Value::Dict dict = std::move(*settings).TakeDict();
   CHECK(!dict.empty());
   return dict;
@@ -272,7 +272,7 @@ base::Value::Dict PoliciesToValue(crosapi::mojom::PoliciesPtr ptr) {
     policies.Set(kCssBackground, std::move(background_graphics_policy));
 
   base::Value::Dict paper_size_policy;
-  const absl::optional<gfx::Size>& default_paper_size = ptr->paper_size_default;
+  const std::optional<gfx::Size>& default_paper_size = ptr->paper_size_default;
   if (default_paper_size.has_value()) {
     base::Value::Dict default_paper_size_value;
     default_paper_size_value.Set(kPaperSizeWidth,
@@ -363,7 +363,7 @@ base::Value::Dict GetPolicies(const PrefService& prefs) {
     policies.Set(kCssBackground, std::move(background_graphics_policy));
 
   base::Value::Dict paper_size_policy;
-  absl::optional<gfx::Size> default_paper_size = ParsePaperSizeDefault(prefs);
+  std::optional<gfx::Size> default_paper_size = ParsePaperSizeDefault(prefs);
   if (default_paper_size.has_value()) {
     base::Value::Dict default_paper_size_value;
     default_paper_size_value.Set(kPaperSizeWidth,
@@ -619,7 +619,7 @@ void PrintPreviewHandler::HandleGetPrinterCapabilities(
     return;
   }
   const std::string* printer_name = args[1].GetIfString();
-  absl::optional<int> type = args[2].GetIfInt();
+  std::optional<int> type = args[2].GetIfInt();
   if (!printer_name || printer_name->empty() || !type.has_value()) {
     RejectJavascriptCallback(base::Value(callback_id), base::Value());
     return;
@@ -675,7 +675,7 @@ void PrintPreviewHandler::HandleGetPreview(const base::Value::List& args) {
 
   // Retrieve the page title and url and send it to the renderer process if
   // headers and footers are to be displayed.
-  absl::optional<bool> display_header_footer_opt =
+  std::optional<bool> display_header_footer_opt =
       settings.FindBool(kSettingHeaderFooterEnabled);
   DCHECK(display_header_footer_opt);
   if (display_header_footer_opt.value_or(false)) {
@@ -748,7 +748,7 @@ void PrintPreviewHandler::HandleDoPrint(const base::Value::List& args) {
 #if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
   std::string device_name = *settings.FindString(kSettingDeviceName);
 
-  using enterprise_connectors::PrintScanningContext;
+  using enterprise_data_protection::PrintScanningContext;
   auto scan_context =
       settings.FindBool(kSettingShowSystemDialog).value_or(false)
           ? PrintScanningContext::kSystemPrintAfterPreview
@@ -773,7 +773,7 @@ void PrintPreviewHandler::HandleDoPrint(const base::Value::List& args) {
   auto hide_preview = base::BindOnce(&PrintPreviewHandler::OnHidePreviewDialog,
                                      weak_factory_.GetWeakPtr());
 
-  enterprise_connectors::PrintIfAllowedByPolicy(
+  enterprise_data_protection::PrintIfAllowedByPolicy(
       data, GetInitiator(), std::move(device_name), scan_context,
       std::move(on_verdict), std::move(hide_preview));
 

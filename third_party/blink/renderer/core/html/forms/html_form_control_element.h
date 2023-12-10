@@ -59,6 +59,9 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
 
   void Reset();
 
+  void AttachLayoutTree(AttachContext& context) override;
+  void DetachLayoutTree(bool performing_reattach) override;
+
   HTMLFormElement* formOwner() const final;
 
   bool IsDisabledFormControl() const override;
@@ -112,6 +115,8 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
   // The IDL reflections:
   AtomicString popoverTargetAction() const;
   void setPopoverTargetAction(const AtomicString& value);
+
+  HTMLElement* invokeTargetElement();
 
   AtomicString invokeAction() const;
   void setInvokeAction(const AtomicString& value);

@@ -42,6 +42,8 @@ namespace {
 // Animation time for the shift up/down animations to focus/defocus omnibox.
 const CGFloat kShiftTilesDownAnimationDuration = 0.2;
 const CGFloat kShiftTilesUpAnimationDuration = 0.1;
+// The minimum height of the feed container.
+const CGFloat kFeedContainerMinimumHeight = 1000;
 }  // namespace
 
 @interface NewTabPageViewController () <UICollectionViewDelegate,
@@ -66,6 +68,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 // view.
 @property(nonatomic, strong)
     NSArray<NSLayoutConstraint*>* fakeOmniboxConstraints;
+
 // Constraint that pins the fake Omnibox to the top of the view. A subset of
 // `fakeOmniboxConstraints`.
 @property(nonatomic, strong) NSLayoutConstraint* headerTopAnchor;
@@ -75,6 +78,9 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 // TODO(crbug.com/1277504): Modify this comment when Web Channels is released.
 @property(nonatomic, strong)
     NSArray<NSLayoutConstraint*>* feedHeaderConstraints;
+
+// Constraint for the height of the container view surrounding the feed.
+@property(nonatomic, strong) NSLayoutConstraint* feedContainerHeightConstraint;
 
 // `YES` if the NTP starting content offset should be set to a previous scroll
 // state (when navigating away and back), and `NO` if it should be the top of
@@ -149,6 +155,9 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   GradientView* _backgroundGradientView;
   // Container view surrounding the feed.
   UIView* _feedContainer;
+  // YES if the view is in the process of appearing, but viewDidAppear hasn't
+  // finished yet.
+  BOOL _appearing;
 }
 
 - (instancetype)init {
@@ -165,6 +174,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
     _focusAccessibilityOmniboxWhenViewAppears = YES;
     _inhibitScrollPositionUpdates = NO;
     _shiftTileStartTime = -1;
+    _appearing = YES;
   }
   return self;
 }
@@ -216,6 +226,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
+  _appearing = YES;
 
   if (IsIOSLargeFakeboxEnabled()) {
     self.headerViewController.view.alpha = 1;
@@ -261,11 +272,6 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   // back to the NTP.
   [self updateFakeOmniboxForScrollPosition];
 
-  if (self.shouldFocusFakebox) {
-    [self shiftTilesUpToFocusOmnibox];
-    self.shouldFocusFakebox = NO;
-  }
-
   if (self.isFeedVisible) {
     [self updateFeedInsetsForMinimumHeight];
   } else {
@@ -287,7 +293,20 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   // whenever an NTP reappears.
   [self handleStickyElementsForScrollPosition:[self scrollPosition] force:YES];
 
+  if (self.shouldFocusFakebox) {
+    self.shouldFocusFakebox = NO;
+    __weak __typeof(self) weakSelf = self;
+    // Since a focus was requested before the view appeared, the shift up to
+    // focus should be performed without animation so that the NTP appears and
+    // is immediately ready to focus the omnibox. The actual focus animation
+    // will still happen.
+    [UIView performWithoutAnimation:^{
+      [weakSelf shiftTilesUpToFocusOmnibox];
+    }];
+  }
+
   self.viewDidAppear = YES;
+  _appearing = NO;
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
@@ -341,6 +360,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
                         if (self.isFeedVisible) {
                           [self updateFeedInsetsForMinimumHeight];
                         }
+                        [self updateFeedContainerHeight];
                       }];
 }
 
@@ -407,7 +427,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   // action) needs to wait until it is ready. viewDidAppear: currently serves as
   // this proxy as there is no specific signal given from the feed that its
   // contents have loaded.
-  if (self.isFeedVisible && !self.viewDidAppear) {
+  if (self.isFeedVisible && _appearing) {
     self.shouldFocusFakebox = YES;
   } else {
     [self shiftTilesUpToFocusOmnibox];
@@ -430,7 +450,6 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
     // Reduce the zPosition so that the container appears behind the feed
     // content.
     _feedContainer.layer.zPosition = -1;
-    _feedContainer.userInteractionEnabled = NO;
 
     // Add corner radius to the top border.
     _feedContainer.clipsToBounds = YES;
@@ -657,6 +676,8 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   if (self.hasSavedOffsetFromPreviousScrollState) {
     [self setContentOffset:self.savedScrollOffset];
   }
+
+  [self updateFeedContainerHeight];
 }
 
 - (void)invalidate {
@@ -906,10 +927,10 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
             [weakSelf resetFakeOmniboxConstraints];
           }];
     }
-    [self.NTPContentDelegate focusOmnibox];
     [self.headerViewController
         completeHeaderFakeOmniboxFocusAnimationWithFinalPosition:
             UIViewAnimatingPositionEnd];
+    [self.NTPContentDelegate focusOmnibox];
     return;
   }
 
@@ -938,6 +959,9 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
                 self.disableScrollAnimation = YES;
                 [strongSelf.headerViewController expandHeaderForFocus];
                 shiftOmniboxToTop();
+                [strongSelf.headerViewController
+                    completeHeaderFakeOmniboxFocusAnimationWithFinalPosition:
+                        UIViewAnimatingPositionEnd];
                 [strongSelf.NTPContentDelegate focusOmnibox];
               }
             }];
@@ -1480,9 +1504,8 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
           constraintEqualToAnchor:self.collectionView.centerXAnchor],
       [_feedContainer.topAnchor
           constraintEqualToAnchor:self.feedHeaderViewController.view.topAnchor],
-      [_feedContainer.bottomAnchor
-          constraintEqualToAnchor:self.view.bottomAnchor],
     ]];
+    [self updateFeedContainerHeight];
   }
 
   [NSLayoutConstraint activateConstraints:@[
@@ -1601,6 +1624,25 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   self.mutator.scrollPositionToSave = scrollPositionToSave;
 }
 
+// Updates the feed container's height constraint.
+- (void)updateFeedContainerHeight {
+  if (!_feedContainer) {
+    return;
+  }
+  CHECK(IsFeedContainmentEnabled());
+  self.feedContainerHeightConstraint.active = NO;
+  // Container either takes the actual height of all feed components, or a
+  // minimum value of `kFeedContainerMinimumHeight` if the content hasn't
+  // loaded.
+  CGFloat containerHeight =
+      std::max((self.collectionView.contentSize.height +
+                [self feedHeaderHeight] + [self feedTopSectionHeight]),
+               kFeedContainerMinimumHeight);
+  self.feedContainerHeightConstraint =
+      [_feedContainer.heightAnchor constraintEqualToConstant:containerHeight];
+  self.feedContainerHeightConstraint.active = YES;
+}
+
 #pragma mark - Helpers
 
 - (UIViewController*)contentSuggestionsViewController {
@@ -1627,11 +1669,6 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   }
 
   return minimumHeight;
-}
-
-// Returns the current height of the content suggestions content.
-- (CGFloat)contentSuggestionsContentHeight {
-  return [self.contentSuggestionsViewController contentSuggestionsHeight];
 }
 
 // Height of the feed header, returns 0 if it is not visible.

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_PINNED_TOOLBAR_ACTIONS_CONTAINER_H_
 
 #include <memory>
+#include <optional>
 #include <set>
 #include <vector>
 
@@ -13,7 +14,6 @@
 #include "chrome/browser/ui/toolbar/pinned_toolbar_actions_model.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_icon_container_view.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/actions/action_id.h"
 #include "ui/actions/actions.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -47,12 +47,14 @@ class PinnedToolbarActionsContainer
     void AddHighlight();
     void ResetHighlight();
     void SetIconVisibility(bool visible);
+    void SetPinned(bool pinned);
 
     bool IsActive();
     bool IsInvokingAction();
 
     // Button:
     gfx::Size CalculatePreferredSize() const override;
+    void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
     void UpdatePinnedStateForContextMenu();
 
@@ -70,7 +72,8 @@ class PinnedToolbarActionsContainer
     raw_ptr<actions::ActionItem> action_item_ = nullptr;
     base::CallbackListSubscription action_changed_subscription_;
     // Used to ensure the button remains highlighted while active.
-    absl::optional<Button::ScopedAnchorHighlight> anchor_higlight_;
+    std::optional<Button::ScopedAnchorHighlight> anchor_higlight_;
+    bool pinned_ = false;
     bool invoking_action_ = false;
     raw_ptr<PinnedToolbarActionsContainer> container_;
   };
@@ -82,6 +85,7 @@ class PinnedToolbarActionsContainer
   ~PinnedToolbarActionsContainer() override;
 
   void UpdateActionState(actions::ActionId id, bool is_active);
+  void UpdateDividerFlexSpecification();
 
   // ToolbarIconContainerView:
   void UpdateAllIcons() override;
@@ -102,7 +106,7 @@ class PinnedToolbarActionsContainer
   void OnActionMoved(const actions::ActionId& id,
                      int from_index,
                      int to_index) override;
-  void OnActionsChanged() override {}
+  void OnActionsChanged() override;
 
   // views::DragController:
   void WriteDragDataForView(View* sender,
@@ -132,6 +136,9 @@ class PinnedToolbarActionsContainer
 
   // Sorts child views to display them in the correct order.
   void ReorderViews();
+
+  // Updates the container view to match the current state of the model.
+  void UpdateViews();
 
   void RemoveButton(PinnedActionToolbarButton* button);
 

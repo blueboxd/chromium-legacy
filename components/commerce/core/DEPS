@@ -1,6 +1,5 @@
 include_rules = [
   "+components/bookmarks",
-  "+components/country_codes",
   "+components/endpoint_fetcher",
   "+components/flags_ui",
   "+components/grit/components_resources.h",
@@ -13,7 +12,7 @@ include_rules = [
   "+components/prefs",
   "+components/search",
   "+components/session_proto_db/session_proto_storage.h",
-  "+components/signin/public/identity_manager",
+  "+components/signin/public",
   "+components/strings",
   "+components/sync",
   "+components/ukm",

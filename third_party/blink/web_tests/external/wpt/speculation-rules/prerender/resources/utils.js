@@ -29,6 +29,9 @@ class PrerenderChannel extends EventTarget {
       while (this.#active) {
         // Add the "keepalive" option to avoid fetch() results in unhandled
         // rejection with fetch abortion due to window.close().
+        // TODO(crbug.com/1356128): After this migration, "keepalive" will not
+        // be able to extend the lifetime of a Document, such that it cannot be
+        // used here to guarantee the promise resolution.
         const messages = await (await fetch(this.#url, {keepalive: true})).json();
         for (const {data, id} of messages) {
           if (!this.#ids.has(id))
@@ -102,7 +105,10 @@ async function writeValueToServer(key, value) {
 
 // Loads the initiator page, and navigates to the prerendered page after it
 // receives the 'readyToActivate' message.
-function loadInitiatorPage() {
+//
+// `rule_extras` provides additional parameters for the speculation rule used
+// to trigger prerendering.
+function loadInitiatorPage(rule_extras = {}) {
   // Used to communicate with the prerendering page.
   const prerenderChannel = new PrerenderChannel('prerender-channel');
   window.addEventListener('unload', () => {
@@ -125,11 +131,15 @@ function loadInitiatorPage() {
   url.searchParams.append('prerendering', '');
   // Prerender a page that notifies the initiator page of the page's ready to be
   // activated via the 'readyToActivate'.
-  startPrerendering(url.toString());
+  startPrerendering(url.toString(), rule_extras);
 
   // Navigate to the prerendered page after being informed.
   readyToActivate.then(() => {
-    window.location = url.toString();
+    if (rule_extras['target_hint'] === '_blank') {
+      window.open(url.toString(), '_blank', 'noopener');
+    } else {
+      window.location = url.toString();
+    }
   }).catch(e => {
     const testChannel = new PrerenderChannel('test-channel');
     testChannel.postMessage(
@@ -426,4 +436,16 @@ function failTest(reason, uid) {
   const bc = new PrerenderChannel('test-channel', uid);
   bc.postMessage({result: 'FAILED', reason});
   bc.close();
+}
+
+// Retrieves a target hint from URLSearchParams of the current window and
+// returns it. Throw an Error if it doesn't have the valid target hint param.
+function getTargetHint() {
+  const params = new URLSearchParams(window.location.search);
+  const target_hint = params.get('target_hint');
+  if (target_hint === null)
+    throw new Error('window.location does not have a target hint param');
+  if (target_hint !== '_self' && target_hint !== '_blank')
+    throw new Error('window.location does not have a valid target hint param');
+  return target_hint;
 }

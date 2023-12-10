@@ -5,6 +5,7 @@
 #include "ash/user_education/holding_space_wallpaper_nudge/holding_space_wallpaper_nudge_controller.h"
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -16,6 +17,7 @@
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
 #include "ash/public/cpp/holding_space/holding_space_controller_observer.h"
 #include "ash/public/cpp/holding_space/holding_space_model.h"
+#include "ash/public/cpp/holding_space/holding_space_prefs.h"
 #include "ash/public/cpp/holding_space/holding_space_util.h"
 #include "ash/public/cpp/wallpaper/wallpaper_controller.h"
 #include "ash/root_window_controller.h"
@@ -35,7 +37,6 @@
 #include "base/containers/cxx20_erase_vector.h"
 #include "base/files/file_path.h"
 #include "base/scoped_observation.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/clipboard/custom_data_helper.h"
@@ -131,9 +132,10 @@ WallpaperView* GetWallpaperViewNearestPoint(
       ->wallpaper_view();
 }
 
-// Indicates whether the nudge should be shown based on when it was last shown
-// and how many times total it's been shown. It should be no more than once
-// in a 24 hour period, and no more than 3 times total.
+// Indicates whether the nudge should be shown based on when it was last shown,
+// how many times total it's been shown, and whether the user has pinned a file
+// before. It should be no more than once in a 24 hour period, no more than 3
+// times total, and never if the user has pinned a file before.
 bool NudgeShouldBeShown() {
   if (!features::IsHoldingSpaceWallpaperNudgeRateLimitingEnabled()) {
     return true;
@@ -141,16 +143,22 @@ bool NudgeShouldBeShown() {
 
   PrefService* const prefs =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+
+  // If the user has ever pinned a file, don't show the nudge.
+  if (holding_space_prefs::GetTimeOfFirstPin(prefs).has_value()) {
+    return false;
+  }
+
+  // If the user has seen the nudge 3 times, don't show it again.
+  if (holding_space_wallpaper_nudge_prefs::GetNudgeShownCount(prefs) >= 3u) {
+    return false;
+  }
+
+  // Show the nudge if the user has not seen the nudge in the last 24 hours.
   const auto time_of_last_nudge =
       holding_space_wallpaper_nudge_prefs::GetLastTimeNudgeWasShown(prefs);
-  const auto nudge_shown_count =
-      holding_space_wallpaper_nudge_prefs::GetNudgeShownCount(prefs);
-
-  bool nudge_shown_recently =
-      time_of_last_nudge.has_value() &&
-      base::Time::Now() - time_of_last_nudge.value() < base::Hours(24);
-
-  return nudge_shown_count < 3u && !nudge_shown_recently;
+  return !time_of_last_nudge.has_value() ||
+         base::Time::Now() - time_of_last_nudge.value() >= base::Hours(24);
 }
 
 // Highlight -------------------------------------------------------------------
@@ -359,7 +367,7 @@ class DragDropDelegate : public WallpaperDragDropDelegate,
     // wallpaper.
     CHECK(drag_drop_observer_);
 
-    absl::optional<gfx::Point> location_in_screen;
+    std::optional<gfx::Point> location_in_screen;
 
     if (event_type == ScopedDragDropObserver::EventType::kDragUpdated) {
       location_in_screen = event->root_location();
@@ -371,7 +379,7 @@ class DragDropDelegate : public WallpaperDragDropDelegate,
     OnDragOrDropEvent(std::move(location_in_screen));
   }
 
-  void OnDragOrDropEvent(absl::optional<gfx::Point> location_in_screen) {
+  void OnDragOrDropEvent(std::optional<gfx::Point> location_in_screen) {
     // This code should only be reached if we are observing a drag-and-drop
     // sequence due to the user dragging a file from the Files app over the
     // wallpaper.
@@ -405,22 +413,35 @@ class DragDropDelegate : public WallpaperDragDropDelegate,
           std::make_unique<Shelf::ScopedDisableAutoHide>(shelf);
     }
 
+    const bool nudge_should_be_shown = NudgeShouldBeShown();
+
+    // The user should be directed to the tray during drag operations iff the
+    // nudge will be shown or drop-to-pin is disabled. This is because we want
+    // to direct users to drag to the holding space when drop-to-pin is
+    // disabled, but encourage dropping on the desktop when it's enabled.
+    const bool should_direct_users_to_tray =
+        nudge_should_be_shown ||
+        !features::IsHoldingSpaceWallpaperNudgeDropToPinEnabled();
+
     // Ensure that holding space is visible in the shelf on all displays while
-    // the observed drag-and-drop sequence is in progress.
-    if (!force_holding_space_show_in_shelf_for_drag_) {
+    // the observed drag-and-drop sequence is in progress when we're trying to
+    // encourage users to drag files there.
+    if (!force_holding_space_show_in_shelf_for_drag_ &&
+        should_direct_users_to_tray) {
       force_holding_space_show_in_shelf_for_drag_ =
           std::make_unique<HoldingSpaceController::ScopedForceShowInShelf>();
     }
 
-    if (!NudgeShouldBeShown() || help_bubble_anchor_) {
-      return;
-    }
-
     // Ensure the shelf is visible on the active display while the observed
-    // drag-and-drop sequence is in progress.
-    if (!disable_shelf_auto_hide_) {
+    // drag-and-drop sequence is in progress when we're trying to encourage
+    // users to drag files there.
+    if (!disable_shelf_auto_hide_ && should_direct_users_to_tray) {
       disable_shelf_auto_hide_ =
           std::make_unique<Shelf::ScopedDisableAutoHide>(shelf);
+    }
+
+    if (!nudge_should_be_shown || help_bubble_anchor_) {
+      return;
     }
 
     // Cache the `holding_space_tray` nearest the `location_in_screen` so that

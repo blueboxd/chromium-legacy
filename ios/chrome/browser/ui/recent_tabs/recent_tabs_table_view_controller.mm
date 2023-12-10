@@ -31,7 +31,7 @@
 #import "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/drag_and_drop/model/drag_item_util.h"
 #import "ios/chrome/browser/drag_and_drop/model/table_view_url_drag_drop_handler.h"
-#import "ios/chrome/browser/metrics/new_tab_page_uma.h"
+#import "ios/chrome/browser/metrics/model/new_tab_page_uma.h"
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
 #import "ios/chrome/browser/sessions/live_tab_context_browser_agent.h"
@@ -295,6 +295,14 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
   // Return NO is sign-in is disabled by the BrowserSignin policy.
   return authService->GetServiceStatus() ==
          AuthenticationService::ServiceStatus::SigninDisabledByPolicy;
+}
+
+- (BOOL)isScrolledToTop {
+  return IsScrollViewScrolledToTop(self.tableView);
+}
+
+- (BOOL)isScrolledToBottom {
+  return IsScrollViewScrolledToBottom(self.tableView);
 }
 
 #pragma mark - SyncObserverModelBridge
@@ -732,16 +740,12 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
                           syncService:self.syncService
                           accessPoint:signin_metrics::AccessPoint::
                                           ACCESS_POINT_RECENT_TABS
-                            presenter:self];
+                      signinPresenter:self
+             accountSettingsPresenter:nil];
     if (base::FeatureList::IsEnabled(
             syncer::kReplaceSyncPromosWithSignInPromos)) {
-      ChromeAccountManagerService* accountManagerService =
-          ChromeAccountManagerServiceFactory::GetForBrowserState(
-              self.browserState);
       self.signinPromoViewMediator.signinPromoAction =
-          accountManagerService->HasIdentities()
-              ? SigninPromoAction::kSigninSheet
-              : SigninPromoAction::kInstantSignin;
+          SigninPromoAction::kSigninWithNoDefaultIdentity;
     }
     self.signinPromoViewMediator.consumer = self;
   }
@@ -1793,16 +1797,23 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
 
 - (void)showTrustedVaultReauthForFetchKeysWithTrigger:
     (syncer::TrustedVaultUserActionTriggerForUMA)trigger {
-  [self.handler showTrustedVaultReauthForFetchKeysFromViewController:self
-                                                             trigger:trigger];
+  [self.handler
+      showTrustedVaultReauthForFetchKeysFromViewController:self
+                                                   trigger:trigger
+                                               accessPoint:
+                                                   signin_metrics::AccessPoint::
+                                                       ACCESS_POINT_RECENT_TABS];
 }
 
 - (void)showTrustedVaultReauthForDegradedRecoverabilityWithTrigger:
     (syncer::TrustedVaultUserActionTriggerForUMA)trigger {
   [self.handler
       showTrustedVaultReauthForDegradedRecoverabilityFromViewController:self
-                                                                trigger:
-                                                                    trigger];
+                                                                trigger:trigger
+                                                            accessPoint:
+                                                                signin_metrics::
+                                                                    AccessPoint::
+                                                                        ACCESS_POINT_RECENT_TABS];
 }
 
 #pragma mark - SigninPresenter

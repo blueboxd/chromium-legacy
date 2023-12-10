@@ -12,6 +12,9 @@
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web/model/session_state/web_session_state_cache.h"
+#import "ios/chrome/browser/web/model/session_state/web_session_state_tab_helper.h"
 #import "ios/web/public/session/crw_session_storage.h"
 #import "ios/web/public/session/proto/storage.pb.h"
 #import "ios/web/public/web_state.h"
@@ -20,12 +23,15 @@ LegacySessionRestorationService::LegacySessionRestorationService(
     bool is_pinned_tabs_enabled,
     const base::FilePath& storage_path,
     SessionServiceIOS* session_service_ios,
+    WebSessionStateCache* web_session_state_cache,
     sessions::TabRestoreService* tab_restore_service)
     : is_pinned_tabs_enabled_(is_pinned_tabs_enabled),
       storage_path_(storage_path),
       session_service_ios_(session_service_ios),
+      web_session_state_cache_(web_session_state_cache),
       tab_restore_service_(tab_restore_service) {
   DCHECK(session_service_ios_);
+  DCHECK(web_session_state_cache_);
 }
 
 LegacySessionRestorationService::~LegacySessionRestorationService() {}
@@ -34,6 +40,11 @@ void LegacySessionRestorationService::Shutdown() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(browsers_.empty()) << "Disconnect() must be called for all Browser";
   tab_restore_service_ = nullptr;
+
+  [session_service_ios_ shutdown];
+  session_service_ios_ = nil;
+
+  web_session_state_cache_ = nil;
 }
 
 void LegacySessionRestorationService::AddObserver(
@@ -71,6 +82,8 @@ void LegacySessionRestorationService::SetSessionID(
   DCHECK(!base::Contains(browsers_, browser));
   browsers_.insert(browser);
 
+  browser->GetWebStateList()->AddObserver(this);
+
   // Migrate the storage to legacy format before trying to load.
   ios::sessions::MigrateNamedSessionToLegacy(
       browser->GetBrowserState()->GetStatePath(), identifier,
@@ -106,6 +119,8 @@ void LegacySessionRestorationService::Disconnect(Browser* browser) {
 
   // Destroy the SessionRestorationBrowserAgent for browser.
   SessionRestorationBrowserAgent::RemoveFromBrowser(browser);
+
+  browser->GetWebStateList()->RemoveObserver(this);
 }
 
 std::unique_ptr<web::WebState>
@@ -139,6 +154,13 @@ void LegacySessionRestorationService::InvokeClosureWhenBackgroundProcessingDone(
   [session_service_ios_ shutdownWithClosure:std::move(closure)];
 }
 
+void LegacySessionRestorationService::PurgeUnassociatedData(
+    base::OnceClosure closure) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  [web_session_state_cache_
+      purgeUnassociatedDataWithCompletion:std::move(closure)];
+}
+
 void LegacySessionRestorationService::WillStartSessionRestoration(
     Browser* browser) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -153,5 +175,30 @@ void LegacySessionRestorationService::SessionRestorationFinished(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (SessionRestorationObserver& observer : observers_) {
     observer.SessionRestorationFinished(browser, restored_web_states);
+  }
+}
+
+void LegacySessionRestorationService::WebStateListDidChange(
+    WebStateList* web_state_list,
+    const WebStateListChange& change,
+    const WebStateListStatus& status) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  switch (change.type()) {
+    case WebStateListChange::Type::kInsert: {
+      const auto& typed_change = change.As<WebStateListChangeInsert>();
+      WebSessionStateTabHelper::CreateForWebState(
+          typed_change.inserted_web_state());
+      break;
+    }
+
+    case WebStateListChange::Type::kReplace: {
+      const auto& typed_change = change.As<WebStateListChangeReplace>();
+      WebSessionStateTabHelper::CreateForWebState(
+          typed_change.inserted_web_state());
+      break;
+    }
+
+    default:
+      break;
   }
 }

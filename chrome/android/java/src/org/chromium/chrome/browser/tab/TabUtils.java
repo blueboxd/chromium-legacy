@@ -26,11 +26,11 @@ import org.jni_zero.CalledByNative;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.automotive.AutomotiveUtils;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiThemeProvider;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
+import org.chromium.components.browser_ui.util.AutomotiveUtils;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.content_public.browser.WebContents;
@@ -42,19 +42,19 @@ import org.chromium.url.GURL;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-/**
- * Collection of utility methods that operates on Tab.
- */
+/** Collection of utility methods that operates on Tab. */
 public class TabUtils {
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     public static final float PORTRAIT_THUMBNAIL_ASPECT_RATIO = 0.85f;
 
-    /**
-     * Define the callers of NavigationControllerImpl#setUseDesktopUserAgent.
-     */
-    @IntDef({UseDesktopUserAgentCaller.ON_MENU_OR_KEYBOARD_ACTION,
-            UseDesktopUserAgentCaller.LOAD_IF_NEEDED, UseDesktopUserAgentCaller.RELOAD,
-            UseDesktopUserAgentCaller.RELOAD_IGNORING_CACHE, UseDesktopUserAgentCaller.OTHER})
+    /** Define the callers of NavigationControllerImpl#setUseDesktopUserAgent. */
+    @IntDef({
+        UseDesktopUserAgentCaller.ON_MENU_OR_KEYBOARD_ACTION,
+        UseDesktopUserAgentCaller.LOAD_IF_NEEDED,
+        UseDesktopUserAgentCaller.RELOAD,
+        UseDesktopUserAgentCaller.RELOAD_IGNORING_CACHE,
+        UseDesktopUserAgentCaller.OTHER
+    })
     @Retention(RetentionPolicy.SOURCE)
     public @interface UseDesktopUserAgentCaller {
         int ON_MENU_OR_KEYBOARD_ACTION = 0;
@@ -62,26 +62,6 @@ public class TabUtils {
         int RELOAD = 200;
         int RELOAD_IGNORING_CACHE = 300;
         int OTHER = 400;
-    }
-
-    /**
-     * Define the callers of TabImpl#loadIfNeeded.
-     */
-    @IntDef({LoadIfNeededCaller.SET_TAB, LoadIfNeededCaller.ON_ACTIVITY_SHOWN,
-            LoadIfNeededCaller.ON_ACTIVITY_SHOWN_THEN_SHOW, LoadIfNeededCaller.REQUEST_TO_SHOW_TAB,
-            LoadIfNeededCaller.REQUEST_TO_SHOW_TAB_THEN_SHOW,
-            LoadIfNeededCaller.ON_FINISH_NATIVE_INITIALIZATION,
-            LoadIfNeededCaller.MAYBE_SHOW_GLOBAL_SETTING_OPT_IN_MESSAGE, LoadIfNeededCaller.OTHER})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface LoadIfNeededCaller {
-        int SET_TAB = 0;
-        int ON_ACTIVITY_SHOWN = 1;
-        int ON_ACTIVITY_SHOWN_THEN_SHOW = 2;
-        int REQUEST_TO_SHOW_TAB = 3;
-        int REQUEST_TO_SHOW_TAB_THEN_SHOW = 4;
-        int ON_FINISH_NATIVE_INITIALIZATION = 5;
-        int MAYBE_SHOW_GLOBAL_SETTING_OPT_IN_MESSAGE = 6;
-        int OTHER = 7;
     }
 
     // Do not instantiate this class.
@@ -124,9 +104,11 @@ public class TabUtils {
         } catch (Resources.NotFoundException e) {
             // Nothing, this is just a best effort estimate.
         }
-        screenBounds.set(0,
+        screenBounds.set(
+                0,
                 resources.getDimensionPixelSize(R.dimen.custom_tabs_control_container_height),
-                screenSize.x, screenSize.y);
+                screenSize.x,
+                screenSize.y);
         return screenBounds;
     }
 
@@ -145,8 +127,9 @@ public class TabUtils {
     public static void switchUserAgent(
             Tab tab, boolean switchToDesktop, boolean forcedByUser, int caller) {
         final boolean reloadOnChange = !tab.isNativePage();
-        tab.getWebContents().getNavigationController().setUseDesktopUserAgent(
-                switchToDesktop, reloadOnChange, caller);
+        tab.getWebContents()
+                .getNavigationController()
+                .setUseDesktopUserAgent(switchToDesktop, reloadOnChange, caller);
         if (forcedByUser) {
             @TabUserAgent
             int tabUserAgent = switchToDesktop ? TabUserAgent.DESKTOP : TabUserAgent.MOBILE;
@@ -173,8 +156,7 @@ public class TabUtils {
      * @return The tab level RDS setting.
      */
     public static @TabUserAgent int getTabUserAgent(Tab tab) {
-        @TabUserAgent
-        int tabUserAgent = tab.getUserAgent();
+        @TabUserAgent int tabUserAgent = tab.getUserAgent();
         WebContents webContents = tab.getWebContents();
         boolean currentRequestDesktopSite = isUsingDesktopUserAgent(webContents);
         // TabUserAgent.UNSET means this is a pre-existing tab from an earlier build. In this case
@@ -240,7 +222,7 @@ public class TabUtils {
      */
     public static boolean isDesktopSiteEnabled(Profile profile, GURL url) {
         return WebsitePreferenceBridge.getContentSetting(
-                       profile, ContentSettingsType.REQUEST_DESKTOP_SITE, url, url)
+                        profile, ContentSettingsType.REQUEST_DESKTOP_SITE, url, url)
                 == ContentSettingValues.ALLOW;
     }
 
@@ -274,12 +256,16 @@ public class TabUtils {
                             : Math.round(
                                     (float) browserControlsStateProvider.getTopControlsHeight()
                                             / context.getResources().getDisplayMetrics().density);
-            int automotiveToolbarHeightDp = AutomotiveUtils.getAutomotiveToolbarHeightDp(context);
+            int horizontalAutomotiveToolbarHeightDp =
+                    AutomotiveUtils.getHorizontalAutomotiveToolbarHeightDp(context);
+            int verticalAutomotiveToolbarWidthDp =
+                    AutomotiveUtils.getVerticalAutomotiveToolbarWidthDp(context);
             // This should match the aspect ratio of a Tab's content area.
-            return (context.getResources().getConfiguration().screenWidthDp * 1.f)
+            return (context.getResources().getConfiguration().screenWidthDp * 1.f
+                            - verticalAutomotiveToolbarWidthDp)
                     / (context.getResources().getConfiguration().screenHeightDp * 1.f
                             - browserControlsHeightDp
-                            - automotiveToolbarHeightDp);
+                            - horizontalAutomotiveToolbarHeightDp);
         }
         // This is an experimentally determined value.
         return PORTRAIT_THUMBNAIL_ASPECT_RATIO;
@@ -292,10 +278,15 @@ public class TabUtils {
      * @param browserControlsStateProvider - For getting browser controls height.
      * @return computed card height.
      */
-    public static int deriveGridCardHeight(int cardWidthPx, Context context,
+    public static int deriveGridCardHeight(
+            int cardWidthPx,
+            Context context,
             BrowserControlsStateProvider browserControlsStateProvider) {
-        int tabThumbnailHeight = (int) ((cardWidthPx - getThumbnailWidthDiff(context))
-                / getTabThumbnailAspectRatio(context, browserControlsStateProvider));
+        int tabThumbnailHeight =
+                (int)
+                        ((cardWidthPx - getThumbnailWidthDiff(context))
+                                / getTabThumbnailAspectRatio(
+                                        context, browserControlsStateProvider));
         int cardHeightPx = tabThumbnailHeight + getThumbnailHeightDiff(context);
         return cardHeightPx;
     }
@@ -328,15 +319,18 @@ public class TabUtils {
         view.setImageBitmap(bitmap);
         int newWidth = destinationSize == null ? 0 : destinationSize.getWidth();
         int newHeight = destinationSize == null ? 0 : destinationSize.getHeight();
-        if (newWidth <= 0 || newHeight <= 0
+        if (newWidth <= 0
+                || newHeight <= 0
                 || (newWidth == bitmap.getWidth() && newHeight == bitmap.getHeight())) {
             view.setScaleType(ScaleType.FIT_CENTER);
             return;
         }
 
         final Matrix m = new Matrix();
-        final float scale = Math.max(
-                (float) newWidth / bitmap.getWidth(), (float) newHeight / bitmap.getHeight());
+        final float scale =
+                Math.max(
+                        (float) newWidth / bitmap.getWidth(),
+                        (float) newHeight / bitmap.getHeight());
         m.setScale(scale, scale);
 
         /**

@@ -14,7 +14,7 @@ export const SELECTOR_MAP = {
   backVideoResolutionOptions: `#view-video-resolution-settings ` +
       `.menu-item>input[data-facing="environment"]`,
   barcodeChipText: '.barcode-chip-text',
-  barcodeChipURL: '.barcode-chip-url a',
+  barcodeChipURL: '#barcode-chip-url',
   barcodeCopyTextButton: '#barcode-chip-text-container .barcode-copy-button',
   barcodeCopyURLButton: '#barcode-chip-url-container .barcode-copy-button',
   bitrateMultiplierRangeInput: '#bitrate-slider input[type=range]',
@@ -69,7 +69,7 @@ export const SELECTOR_MAP = {
   lowStorageWarning: '#nudge',
   mirrorOptionOff: 'span[i18n-aria=aria_mirror_off]',
   mirrorOptionOn: 'span[i18n-aria=aria_mirror_on]',
-  modeSelector: '#modes-group',
+  modeSelector: 'mode-selector',
   openGridPanelButton: '#open-grid-panel',
   openMirrorPanelButton: '#open-mirror-panel',
   openPTZPanelButton: '#open-ptz-panel',
@@ -91,7 +91,7 @@ export const SELECTOR_MAP = {
   settingsButtonContainer: 'div:has(> #open-settings)',
   settingsHeader: '#settings-header',
   shutter: '.shutter',
-  switchDeviceButton: '#switch-device',
+  switchDeviceButton: 'switch-device-button',
   tiltDownButton: '#tilt-down',
   tiltUpButton: '#tilt-up',
   timeLapseRecordingOption:

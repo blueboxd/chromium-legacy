@@ -164,7 +164,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   void AddOutlineRects(OutlineRectCollector&,
                        OutlineInfo*,
                        const PhysicalOffset& additional_offset,
-                       NGOutlineType) const override;
+                       OutlineType) const override;
 
   bool AlwaysCreateLineBoxes() const {
     NOT_DESTROYED();
@@ -177,7 +177,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
     SetAlwaysCreateLineBoxesForLayoutInline(always_create_line_boxes);
   }
 
-  // True if this inline box should force creation of NGPhysicalBoxFragment.
+  // True if this inline box should force creation of PhysicalBoxFragment.
   bool ShouldCreateBoxFragment() const {
     NOT_DESTROYED();
     return AlwaysCreateLineBoxesForLayoutInline() &&

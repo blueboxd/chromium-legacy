@@ -47,14 +47,11 @@
 #include "services/viz/privileged/mojom/compositing/display_private.mojom.h"
 #include "services/viz/privileged/mojom/compositing/external_begin_frame_controller.mojom.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
+#include "ui/base/ozone_buildflags.h"
 #include "ui/base/ui_base_features.h"
 
 #if BUILDFLAG(IS_WIN)
 #include "ui/gfx/win/rendering_window_manager.h"
-#endif
-
-#if BUILDFLAG(IS_LINUX)
-#include "ui/ozone/buildflags.h"
 #endif
 
 namespace content {
@@ -121,13 +118,11 @@ class HostDisplayClient : public viz::HostDisplayClient {
   HostDisplayClient& operator=(const HostDisplayClient&) = delete;
 
   // viz::HostDisplayClient:
-#if BUILDFLAG(IS_LINUX)
-#if BUILDFLAG(OZONE_PLATFORM_X11)
+#if BUILDFLAG(IS_LINUX) && BUILDFLAG(IS_OZONE_X11)
   void DidCompleteSwapWithNewSize(const gfx::Size& size) override {
     compositor_->OnCompleteSwapWithNewSize(size);
   }
-#endif  // BUILDFLAG(OZONE_PLATFORM_X11)
-#endif  // BUILDFLAG(IS_LINUX)
+#endif  // BUILDFLAG(IS_LINUX) && BUILDFLAG(IS_OZONE_X11)
 
 #if BUILDFLAG(IS_WIN)
   void AddChildWindowToBrowser(gpu::SurfaceHandle child_window) override {
@@ -533,15 +528,20 @@ VizProcessTransportFactory::TryCreateContextsForGpuCompositing(
     return gpu::ContextResult::kFatalFailure;
 
   if (worker_context_provider_wrapper_ &&
-      IsWorkerContextLost(worker_context_provider_wrapper_->GetContext().get()))
+      IsWorkerContextLost(
+          worker_context_provider_wrapper_->GetContext().get())) {
     worker_context_provider_wrapper_.reset();
-
-  bool enable_gpu_rasterization =
-      features::IsUiGpuRasterizationEnabled() &&
-      gpu_feature_info.status_values[gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION] ==
-          gpu::kGpuFeatureStatusEnabled;
+  }
 
   if (!worker_context_provider_wrapper_) {
+    // If the worker context supports GPU rasterization then UI tiles will be
+    // rasterized on the GPU.
+    bool enable_gpu_rasterization =
+        features::IsUiGpuRasterizationEnabled() &&
+        gpu_feature_info
+                .status_values[gpu::GPU_FEATURE_TYPE_GPU_TILE_RASTERIZATION] ==
+            gpu::kGpuFeatureStatusEnabled;
+
     auto worker_context_provider = CreateContextProvider(
         gpu_channel_host, /*supports_locking=*/true,
         /*supports_gles2_interface=*/false, enable_gpu_rasterization,

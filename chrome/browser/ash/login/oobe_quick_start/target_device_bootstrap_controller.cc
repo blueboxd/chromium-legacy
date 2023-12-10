@@ -4,14 +4,18 @@
 
 #include "chrome/browser/ash/login/oobe_quick_start/target_device_bootstrap_controller.h"
 
+#include <optional>
+
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/functional/overloaded.h"
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/ash/login/oobe_quick_start/connectivity/account_transfer_client_data.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/fido_assertion_info.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/qr_code.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/session_context.h"
@@ -23,12 +27,13 @@
 #include "chrome/browser/browser_process.h"
 #include "chromeos/ash/components/quick_start/logging.h"
 #include "chromeos/ash/components/quick_start/quick_start_metrics.h"
+#include "chromeos/ash/components/quick_start/types.h"
 #include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder_types.mojom.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/prefs/pref_service.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "ui/chromeos/devicetype_utils.h"
+#include "url/origin.h"
 
 namespace ash::quick_start {
 
@@ -61,7 +66,8 @@ TargetDeviceBootstrapController::TargetDeviceBootstrapController(
 
 TargetDeviceBootstrapController::~TargetDeviceBootstrapController() {
   StopAdvertising();
-  CloseOpenConnections();
+  CloseOpenConnections(
+      ConnectionClosedReason::kConnectionLifecycleListenerDestroyed);
   quick_start_connectivity_service_->Cleanup();
 }
 
@@ -123,11 +129,11 @@ void TargetDeviceBootstrapController::StopAdvertising() {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void TargetDeviceBootstrapController::CloseOpenConnections() {
+void TargetDeviceBootstrapController::CloseOpenConnections(
+    ConnectionClosedReason reason) {
   // Close any existing open connection.
   if (authenticated_connection_.MaybeValid()) {
-    authenticated_connection_->Close(
-        TargetDeviceConnectionBroker::ConnectionClosedReason::kUserAborted);
+    authenticated_connection_->Close(reason);
     authenticated_connection_.reset();
   }
 
@@ -222,7 +228,15 @@ void TargetDeviceBootstrapController::OnStartAdvertisingResult(bool success) {
 }
 
 void TargetDeviceBootstrapController::OnStopAdvertising() {
-  UpdateStatus(/*step=*/Step::NONE, /*payload=*/absl::monostate());
+  // If we are just in the advertising stage, set status back to NONE to
+  // indicate we are no longer performing any work. By contrast, if we are
+  // connected or we got here due to an error, we don't want to update the
+  // status.
+  if (status_.step == Step::ADVERTISING_WITH_QR_CODE ||
+      status_.step == Step::ADVERTISING_WITHOUT_QR_CODE) {
+    UpdateStatus(/*step=*/Step::NONE, /*payload=*/absl::monostate());
+  }
+
   CleanupIfNeeded();
 }
 
@@ -260,8 +274,7 @@ void TargetDeviceBootstrapController::WaitForUserVerification() {
 }
 
 void TargetDeviceBootstrapController::OnUserVerificationResult(
-    absl::optional<mojom::UserVerificationResponse>
-        user_verification_response) {
+    std::optional<mojom::UserVerificationResponse> user_verification_response) {
   if (!user_verification_response.has_value() ||
       user_verification_response->result ==
           mojom::UserVerificationResult::kUserNotVerified) {
@@ -283,7 +296,7 @@ void TargetDeviceBootstrapController::AttemptWifiCredentialTransfer() {
 }
 
 void TargetDeviceBootstrapController::OnWifiCredentialsReceived(
-    absl::optional<mojom::WifiCredentials> credentials) {
+    std::optional<mojom::WifiCredentials> credentials) {
   CHECK_EQ(status_.step, Step::REQUESTING_WIFI_CREDENTIALS);
 
   if (credentials.has_value()) {
@@ -297,7 +310,7 @@ void TargetDeviceBootstrapController::OnWifiCredentialsReceived(
   // Record successful wifi credentials transfer. Failures will be
   // logged from the QuickStartDecoder class.
   QuickStartMetrics::RecordWifiTransferResult(
-      /*succeeded=*/true, /*failure_reason=*/absl::nullopt);
+      /*succeeded=*/true, /*failure_reason=*/std::nullopt);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           kQuickStartTestForcedUpdateSwitch)) {
@@ -316,9 +329,10 @@ void TargetDeviceBootstrapController::RequestGoogleAccountInfo() {
       weak_ptr_factory_.GetWeakPtr()));
 }
 
-void TargetDeviceBootstrapController::OnGoogleAccountInfoReceived() {
+void TargetDeviceBootstrapController::OnGoogleAccountInfoReceived(
+    std::string account_email) {
   UpdateStatus(/*step=*/Step::GOOGLE_ACCOUNT_INFO_RECEIVED,
-               /*payload=*/absl::monostate());
+               /*payload=*/account_email);
 }
 
 void TargetDeviceBootstrapController::AttemptGoogleAccountTransfer() {
@@ -369,21 +383,92 @@ void TargetDeviceBootstrapController::OnChallengeBytesReceived(
 }
 
 void TargetDeviceBootstrapController::OnFidoAssertionReceived(
-    absl::optional<FidoAssertionInfo> assertion) {
+    std::optional<FidoAssertionInfo> assertion) {
   if (!assertion.has_value()) {
     UpdateStatus(/*step=*/Step::ERROR,
                  /*payload=*/ErrorCode::GAIA_ASSERTION_NOT_RECEIVED);
     return;
   }
 
-  UpdateStatus(/*step=*/Step::TRANSFERRED_GOOGLE_ACCOUNT_DETAILS,
-               /*payload=*/assertion.value());
+  quick_start::QS_LOG(INFO) << "Received FIDO assertion.";
+  fido_assertion_ = assertion.value();
+
+  auth_broker_->FetchAttestationCertificate(
+      fido_assertion_.credential_id,
+      base::BindOnce(
+          &TargetDeviceBootstrapController::OnAttestationCertificateReceived,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void TargetDeviceBootstrapController::CleanupIfNeeded() {
   constexpr Step kPossibleSteps[] = {Step::NONE, Step::ERROR};
   if (base::Contains(kPossibleSteps, status_.step)) {
     quick_start_connectivity_service_->Cleanup();
+  }
+}
+
+void TargetDeviceBootstrapController::OnAttestationCertificateReceived(
+    quick_start::SecondDeviceAuthBroker::AttestationCertificateOrError
+        attestation_certificate) {
+  if (!attestation_certificate.has_value()) {
+    // TODO(b/287006890) - Implement retry logic.
+    quick_start::QS_LOG(ERROR) << "Error fetching attestation certificate. "
+                               << "Reason: " << attestation_certificate.error();
+    UpdateStatus(
+        /*step=*/Step::ERROR,
+        /*payload=*/ErrorCode::FETCHING_ATTESTATION_CERTIFICATE_FAILED);
+    return;
+  }
+
+  quick_start::QS_LOG(INFO) << "Successfully retrieved attestation certificate";
+  auth_broker_->FetchAuthCode(
+      fido_assertion_, *attestation_certificate,
+      base::BindOnce(&TargetDeviceBootstrapController::OnAuthCodeReceived,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void TargetDeviceBootstrapController::OnAuthCodeReceived(
+    const quick_start::SecondDeviceAuthBroker::AuthCodeResponse& response) {
+  bool is_error = true;
+
+  absl::visit(
+      base::Overloaded{
+          [&](SecondDeviceAuthBroker::AuthCodeSuccessResponse res) {
+            quick_start::QS_LOG(INFO) << "Successfully fetched refresh token ";
+            // TODO(b/287006890) Replace with auth code.
+            UpdateStatus(/*step=*/Step::TRANSFERRED_GOOGLE_ACCOUNT_DETAILS,
+                         /*payload=*/fido_assertion_);
+            is_error = false;
+          },
+          [](SecondDeviceAuthBroker::
+                 AuthCodeAdditionalChallengesOnTargetResponse res) {
+            // TODO(b/310937296) - Implement fallback logic.
+            quick_start::QS_LOG(ERROR)
+                << "Failed to fetch refresh token! "
+                   "Additional challenges needed on target device.";
+          },
+          [](SecondDeviceAuthBroker::
+                 AuthCodeAdditionalChallengesOnSourceResponse res) {
+            quick_start::QS_LOG(ERROR)
+                << "Failed to fetch refresh token! "
+                   "Additional challenges needed on source device.";
+          },
+          [](SecondDeviceAuthBroker::AuthCodeRejectionResponse res) {
+            quick_start::QS_LOG(ERROR)
+                << "Failed to fetch refresh token! Rejected: " << res.reason;
+          },
+          [](SecondDeviceAuthBroker::AuthCodeParsingErrorResponse res) {
+            quick_start::QS_LOG(ERROR)
+                << "Failed to fetch refresh token! Parsing error";
+          },
+          [](SecondDeviceAuthBroker::AuthCodeUnknownErrorResponse res) {
+            quick_start::QS_LOG(ERROR)
+                << "Failed to fetch refresh token! Unknown error";
+          }},
+      response);
+  if (is_error) {
+    UpdateStatus(/*step=*/Step::ERROR,
+                 /*payload=*/ErrorCode::FETCHING_REFRESH_TOKEN_FAILED);
   }
 }
 
@@ -459,6 +544,14 @@ std::ostream& operator<<(
     case TargetDeviceBootstrapController::ErrorCode::
         FETCHING_CHALLENGE_BYTES_FAILED:
       stream << "[fetching Challenge Bytes failed]";
+      break;
+    case TargetDeviceBootstrapController::ErrorCode::
+        FETCHING_ATTESTATION_CERTIFICATE_FAILED:
+      stream << "[fetching attestation certificate failed]";
+      break;
+    case TargetDeviceBootstrapController::ErrorCode::
+        FETCHING_REFRESH_TOKEN_FAILED:
+      stream << "[fetching refresh token failed]";
       break;
   }
 

@@ -13,7 +13,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/login/startup_utils.h"
-#include "chrome/browser/browser_process.h"  // nogncheck
+#include "chrome/browser/browser_process.h"                       // nogncheck
 #include "chrome/browser/metrics/structured/ash_event_storage.h"  // nogncheck
 #include "chrome/browser/metrics/structured/ash_structured_metrics_delegate.h"  // nogncheck
 #include "chrome/browser/metrics/structured/cros_events_processor.h"  // nogncheck
@@ -31,6 +31,7 @@
 namespace metrics::structured {
 namespace {
 
+#if BUILDFLAG(IS_CHROMEOS)
 // Platforms for which the StructuredMetricsClient will be initialized for.
 enum class StructuredMetricsPlatform {
   kUninitialized = 0,
@@ -44,6 +45,7 @@ void LogInitializationInStructuredMetrics(StructuredMetricsPlatform platform) {
       .SetPlatform(static_cast<int64_t>(platform))
       .Record();
 }
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 }  // namespace
 
@@ -95,12 +97,6 @@ void ChromeStructuredMetricsRecorder::Initialize() {
               service, GetOobeEventUploadCount()));
     }
   }
-
-  // Initialize the key data provider and event storage.
-  service->recorder()->InitializeKeyDataProvider(
-      std::make_unique<KeyDataProviderAsh>());
-  service->recorder()->InitializeEventStorage(
-      std::make_unique<AshEventStorage>(AshEventStorage::kSaveDelay));
 
   Recorder::GetInstance()->AddEventsProcessor(
       std::make_unique<MetadataProcessorAsh>());

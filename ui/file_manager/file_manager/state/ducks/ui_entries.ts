@@ -4,7 +4,7 @@
 
 import {isSameEntry, isVolumeEntry, sortEntries} from '../../common/js/entry_utils.js';
 import {EntryList} from '../../common/js/files_app_entry_types.js';
-import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {RootType} from '../../common/js/volume_manager_types.js';
 import {FakeEntry} from '../../externs/files_app_entry_interfaces.js';
 import {FileKey, State} from '../../externs/ts/state.js';
 import {Slice} from '../../lib/base_store.js';
@@ -13,7 +13,6 @@ import {getEntry, getFileData} from '../store.js';
 
 /**
  * @fileoverview UI entries slice of the store.
- * @suppress {checkTypes}
  *
  * UI entries represents entries shown on UI only (aka FakeEntry, e.g.
  * Recents/Trash/Google Drive wrapper), they don't have a real entry backup in
@@ -25,9 +24,9 @@ const slice = new Slice<State, State['uiEntries']>('uiEntries');
 export {slice as uiEntriesSlice};
 
 const uiEntryRootTypesInMyFiles = new Set([
-  VolumeManagerCommon.RootType.ANDROID_FILES,
-  VolumeManagerCommon.RootType.CROSTINI,
-  VolumeManagerCommon.RootType.GUEST_OS,
+  RootType.ANDROID_FILES,
+  RootType.CROSTINI,
+  RootType.GUEST_OS,
 ]);
 
 
@@ -44,9 +43,9 @@ export function addUiEntryReducer(currentState: State, payload: {
   const key = entry.toURL();
 
   let isVolumeEntryExistedInMyFiles = false;
-  if (uiEntryRootTypesInMyFiles.has(entry.rootType)) {
+  if (entry.rootType && uiEntryRootTypesInMyFiles.has(entry.rootType)) {
     const {myFilesEntry} = getMyFiles(currentState);
-    const children = myFilesEntry.getUIChildren();
+    const children = myFilesEntry.getUiChildren();
     // Check if the the ui entry already has a corresponding volume entry.
     isVolumeEntryExistedInMyFiles = !!children.find(
         childEntry =>
@@ -105,9 +104,9 @@ export function removeUiEntryReducer(currentState: State, payload: {
 
   // We also need to remove it from the children of MyFiles if it's existed
   // there.
-  if (entry && uiEntryRootTypesInMyFiles.has(entry.rootType)) {
+  if (entry?.rootType && uiEntryRootTypesInMyFiles.has(entry.rootType)) {
     const {myFilesEntry} = getMyFiles(currentState);
-    const children = myFilesEntry.getUIChildren();
+    const children = myFilesEntry.getUiChildren();
     const isUiEntryExistedInMyFiles =
         !!children.find(childEntry => isSameEntry(childEntry, entry));
     if (isUiEntryExistedInMyFiles) {

@@ -71,16 +71,23 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
   // Updates the icon image to display for this entry.
   void UpdateIconImage();
 
+  // Updates the badge icon image to display for this entry.
+  void UpdateBadgeIconImage();
+
   // Retrieve the image to show proxy operations.
   gfx::ImageSkia GetImage() const;
 
   // Gets the resized icon image represented by `icon_image_model_` without the
-  // shadow.
-  gfx::ImageSkia GetIconImage() const;
+  // shadow, assuming the provided `icon_scale`.
+  gfx::ImageSkia GetIconImage(float icon_scale) const;
 
   const ui::ImageModel& icon_image_model() const { return icon_image_model_; }
 
   views::ImageView* icon_view() { return icon_view_; }
+
+  // Returns the badge icon image for the app assuming the provided
+  // `icon_scale`. Returns an empty image if the app does not have a badge icon.
+  gfx::ImageSkia GetBadgeIconImage(float icon_scale) const;
 
   // Sets the `icon_image_model_` for this entry. If |is_placeholder_icon| is
   // true, the |main_image| will be ignored and this entry will be assigned a
@@ -107,9 +114,12 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
   gfx::Rect GetIdealIconBounds(const gfx::Size& button_size,
                                float icon_scale) const;
 
-  // Returns the ideal host badge icon bounds within the button view of the
-  // provided size.
-  gfx::Rect GetIdealHostBadgeContainerBounds();
+  // Returns the ideal host badge icon bounds within the shelf button cntents
+  // view. The badge icon bounds are calculated for assuming the provided
+  // `main_app_icon_bounds`, and `icon_scale`.
+  gfx::Rect GetIdealHostBadgeContainerBounds(
+      const gfx::Rect& main_app_icon_bounds,
+      float icon_scale);
 
   views::InkDrop* GetInkDropForTesting();
 
@@ -205,8 +215,9 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
   // Invoked when |ripple_activation_timer_| fires to activate the ink drop.
   void OnRippleTimer();
 
-  // Calculates the preferred size of the icon.
-  gfx::Size GetPreferredIconSize(const ui::ImageModel& image_model) const;
+  // Calculates the preferred size of the icon for the provided `icon_scale`.
+  gfx::Size GetPreferredIconSize(const ui::ImageModel& image_model,
+                                 float icon_scale) const;
 
   // Scales up app icon if |scale_up| is true, otherwise scales it back to
   // normal size.
@@ -243,26 +254,19 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
   // Sets the host badge image to display for this entry
   void SetHostBadgeImage(const gfx::ImageSkia& host_badge_image);
 
-  // Returns the icon scale adjusted to fit for the `progress_indicator_` if any
-  // is currently active.
-  float GetAdjustedIconScaleForProgressRing() const;
+  // Returns the preferred icon size for promise icons depending on this
+  // button's `app_state_`.
+  float GetIconDimensionByAppState() const;
 
   // Called when the app button completes animating in from a promise app state.
   void OnAnimatedInFromPromiseApp(base::RepeatingClosure callback);
 
-  // The container for the icon, which looks like a halo around the icon.
-  raw_ptr<views::View, ExperimentalAsh> icon_container_view_ = nullptr;
-
   // The icon part of a button can be animated independently of the rest.
-  const raw_ptr<views::ImageView, ExperimentalAsh> icon_view_;
-
-  // The container for the host badge icon, which looks like a halo around the
-  // host badge icon.
-  raw_ptr<views::View, ExperimentalAsh> host_badge_container_view_ = nullptr;
+  raw_ptr<views::ImageView, ExperimentalAsh> icon_view_ = nullptr;
 
   // The host badge icon part of a button, can be animated independently of the
   // rest.
-  raw_ptr<views::ImageView, ExperimentalAsh> host_badge_icon_view_ = nullptr;
+  raw_ptr<views::ImageView> host_badge_icon_view_ = nullptr;
 
   // The ShelfView showing this ShelfAppButton. Owned by RootWindowController.
   const raw_ptr<ShelfView, ExperimentalAsh> shelf_view_;
@@ -337,7 +341,7 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
   // state to prevent app icon changes mid animation.
   bool force_fallback_icon_ = false;
 
-  absl::optional<float> forced_progress_indicator_value_;
+  std::optional<float> forced_progress_indicator_value_;
 
   // Whether the non-placeholder app icon has been loaded for the app.
   bool has_icon_image_ = false;

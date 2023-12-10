@@ -425,7 +425,8 @@ void StyleCascade::AnalyzeInterpolations() {
       auto name = active_interpolation.key.GetCSSPropertyName();
       uint32_t position = EncodeInterpolationPosition(
           name.Id(), i, active_interpolation.key.IsPresentationAttribute());
-      CascadePriority priority(entries[i].origin, false, 0, false, 0, position);
+      CascadePriority priority(entries[i].origin, false, 0, false, false, 0,
+                               position);
 
       CSSPropertyRef ref(name, GetDocument());
       DCHECK(ref.IsValid());
@@ -626,7 +627,7 @@ void StyleCascade::ApplyInterpolationMap(const ActiveInterpolationsMap& map,
     auto name = entry.key.GetCSSPropertyName();
     uint32_t position = EncodeInterpolationPosition(
         name.Id(), index, entry.key.IsPresentationAttribute());
-    CascadePriority priority(origin, false, 0, false, 0, position);
+    CascadePriority priority(origin, false, 0, false, false, 0, position);
     priority = CascadePriority(priority, resolver.generation_);
 
     CSSPropertyRef ref(name, GetDocument());
@@ -896,7 +897,7 @@ const CSSValue* StyleCascade::Resolve(const CSSProperty& property,
   if (result->IsRevertValue()) {
     return ResolveRevert(property, *result, origin, resolver);
   }
-  if (result->IsRevertLayerValue()) {
+  if (result->IsRevertLayerValue() || TreatAsRevertLayer(priority)) {
     return ResolveRevertLayer(property, *result, priority, origin, resolver);
   }
 
@@ -942,8 +943,6 @@ const CSSValue* StyleCascade::ResolveCustomProperty(
   if (HasLineHeightDependency(To<CustomProperty>(property), data.get())) {
     resolver.DetectCycle(GetCSSPropertyLineHeight());
   }
-
-  state_.StyleBuilder().SetHasVariableDeclaration();
 
   if (resolver.InCycle()) {
     return CSSCyclicVariableValue::Create();
@@ -1091,8 +1090,7 @@ const CSSValue* StyleCascade::ResolvePendingSubstitution(
   builder.Append(value.CustomCSSText());
   builder.Append(")");
 
-  LOG(DFATAL) << builder.ToString();
-  NOTREACHED();
+  DUMP_WILL_BE_NOTREACHED_NORETURN() << builder.ToString();
   return cssvalue::CSSUnsetValue::Create();
 }
 
@@ -1388,6 +1386,11 @@ void StyleCascade::MarkHasVariableReference(const CSSProperty& property) {
     state_.StyleBuilder().SetHasVariableReferenceFromNonInheritedProperty();
   }
   state_.StyleBuilder().SetHasVariableReference();
+}
+
+bool StyleCascade::TreatAsRevertLayer(CascadePriority priority) const {
+  return priority.IsFallbackStyle() && !ComputedStyle::HasOutOfFlowPosition(
+                                           state_.StyleBuilder().GetPosition());
 }
 
 const Document& StyleCascade::GetDocument() const {

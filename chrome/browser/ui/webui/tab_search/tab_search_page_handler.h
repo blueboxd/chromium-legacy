@@ -79,12 +79,21 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
       tab_search::mojom::SwitchToTabInfoPtr switch_to_tab_info) override;
   void OpenRecentlyClosedEntry(int32_t session_id) override;
   void RequestTabOrganization() override;
+  void RemoveTabFromOrganization(int32_t session_id,
+                                 int32_t organization_id,
+                                 tab_search::mojom::TabPtr tab) override;
+  void ResetSession() override;
   void SaveRecentlyClosedExpandedPref(bool expanded) override;
   void SetTabIndex(int32_t index) override;
   void StartTabGroupTutorial() override;
+  void TriggerFeedback(int32_t session_id) override;
   void TriggerSync() override;
   void TriggerSignIn() override;
+  void OpenHelpPage() override;
   void OpenSyncSettings() override;
+  void SetUserFeedback(int32_t session_id,
+                       int32_t organization_id,
+                       tab_search::mojom::UserFeedback feedback) override;
   void ShowUI() override;
 
   // TabStripModelObserver:
@@ -128,7 +137,7 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
   // results of GetProfileData. Tab url/group combinations that have been
   // previously added to the ProfileData will not be added more than once by
   // leveraging DedupKey comparisons.
-  typedef std::tuple<GURL, absl::optional<base::Token>> DedupKey;
+  typedef std::tuple<GURL, std::optional<base::Token>> DedupKey;
 
   // Encapsulates tab details to facilitate performing an action on a tab.
   struct TabDetails {
@@ -175,7 +184,7 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
       const base::Time& close_time);
 
   // Returns tab details required to perform an action on the tab.
-  absl::optional<TabDetails> GetTabDetails(int32_t tab_id);
+  std::optional<TabDetails> GetTabDetails(int32_t tab_id);
 
   // Schedule a timer to call TabsChanged() when it times out
   // in order to reduce numbers of RPC.

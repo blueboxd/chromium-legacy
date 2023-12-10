@@ -48,7 +48,6 @@
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/features.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -97,10 +96,12 @@ std::u16string GetUsernameFromSuggestion(const std::u16string& suggestion) {
 
 // Returns a string representing the icon of either the account store or the
 // local password store.
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 autofill::Suggestion::Icon CreateStoreIcon(bool for_account_store) {
   return for_account_store ? autofill::Suggestion::Icon::kGoogle
                            : autofill::Suggestion::Icon::kNoIcon;
 }
+#endif
 
 // If |field_suggestion| matches |field_content|, creates a Suggestion out of it
 // and appends to |suggestions|.
@@ -150,7 +151,12 @@ void AppendSuggestionIfMatching(
     suggestion.custom_icon = custom_icon;
     // The UI code will pick up an icon from the resources based on the string.
     suggestion.icon = autofill::Suggestion::Icon::kGlobe;
-    suggestion.trailing_icon = CreateStoreIcon(from_account_store);
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+    if (!base::FeatureList::IsEnabled(
+            password_manager::features::kButterOnDesktopFollowup)) {
+      suggestion.trailing_icon = CreateStoreIcon(from_account_store);
+    }
+#endif
     suggestions->push_back(suggestion);
   }
 }
@@ -378,8 +384,7 @@ void PasswordAutofillManager::OnPopupShown() {}
 void PasswordAutofillManager::OnPopupHidden() {}
 
 void PasswordAutofillManager::DidSelectSuggestion(
-    const autofill::Suggestion& suggestion,
-    autofill::AutofillSuggestionTriggerSource trigger_source) {
+    const autofill::Suggestion& suggestion) {
   ClearPreviewedForm();
   if (suggestion.popup_item_id ==
           autofill::PopupItemId::kAllSavedPasswordsEntry ||
@@ -426,8 +431,7 @@ void PasswordAutofillManager::OnUnlockItemAccepted(
 
 void PasswordAutofillManager::DidAcceptSuggestion(
     const autofill::Suggestion& suggestion,
-    const SuggestionPosition& position,
-    autofill::AutofillSuggestionTriggerSource trigger_source) {
+    const SuggestionPosition& position) {
   using metrics_util::PasswordDropdownSelectedOption;
   switch (suggestion.popup_item_id) {
     case autofill::PopupItemId::kGeneratePasswordEntry:
@@ -537,15 +541,6 @@ void PasswordAutofillManager::DidPerformButtonActionForSuggestion(
     const autofill::Suggestion&) {
   // Button actions do currently not exist for password entries.
   NOTREACHED();
-}
-
-bool PasswordAutofillManager::GetDeletionConfirmationText(
-    const std::u16string& value,
-    autofill::PopupItemId popup_item_id,
-    autofill::Suggestion::BackendId backend_id,
-    std::u16string* title,
-    std::u16string* body) {
-  return false;
 }
 
 bool PasswordAutofillManager::RemoveSuggestion(

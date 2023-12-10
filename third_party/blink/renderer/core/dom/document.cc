@@ -202,6 +202,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/page_dismissal_scope.h"
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
+#include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
@@ -230,6 +231,7 @@
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
+#include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/html/html_meta_element.h"
 #include "third_party/blink/renderer/core/html/html_object_element.h"
@@ -244,8 +246,6 @@
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder_builder.h"
 #include "third_party/blink/renderer/core/html/plugin_document.h"
-#include "third_party/blink/renderer/core/html/portal/document_portals.h"
-#include "third_party/blink/renderer/core/html/portal/portal_contents.h"
 #include "third_party/blink/renderer/core/html/window_name_collection.h"
 #include "third_party/blink/renderer/core/html_element_factory.h"
 #include "third_party/blink/renderer/core/html_element_type_helpers.h"
@@ -401,7 +401,8 @@ enum class RequestStorageResult {
   REJECTED_CREDENTIALLESS_IFRAME = 11,
   APPROVED_NEW_OR_EXISTING_GRANT = 12,
   REJECTED_FENCED_FRAME = 13,
-  kMaxValue = REJECTED_FENCED_FRAME,
+  REJECTED_INVALID_ORIGIN = 14,
+  kMaxValue = REJECTED_INVALID_ORIGIN,
 };
 void FireRequestStorageAccessHistogram(RequestStorageResult result) {
   base::UmaHistogramEnumeration("API.StorageAccess.RequestStorageAccess2",
@@ -2272,6 +2273,10 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
   // states not allowing tree mutations.
   CHECK(Lifecycle().StateAllowsTreeMutations());
 
+  // No SVG resources should be scheduled for invalidation outside of
+  // style-recalc and layout tree detach (Node::DetachLayoutTree).
+  DCHECK(svg_resources_needing_invalidation_.empty());
+
   TRACE_EVENT_BEGIN1("blink,devtools.timeline", "UpdateLayoutTree", "beginData",
                      [&](perfetto::TracedValue context) {
                        inspector_recalculate_styles_event::Data(
@@ -2295,6 +2300,7 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
   UpdateStyleInvalidationIfNeeded();
   UpdateStyle();
   GetStyleResolver().ClearResizedForViewportUnits();
+  InvalidatePendingSVGResources();
 
   rendering_had_begun_for_last_style_update_ = RenderingHasBegun();
 
@@ -2352,7 +2358,7 @@ void Document::UpdateStyle() {
 
   LayoutView* layout_view = GetLayoutView();
   layout_view->UpdateMarkersAndCountersAfterStyleChange();
-  layout_view->RecalcLayoutOverflow();
+  layout_view->RecalcScrollableOverflow();
 
 #if DCHECK_IS_ON()
   AssertNodeClean(*this);
@@ -2864,6 +2870,19 @@ void Document::UpdateUseShadowTreesIfNeeded() {
   }
 }
 
+void Document::ScheduleSVGResourceInvalidation(LocalSVGResource& resource) {
+  svg_resources_needing_invalidation_.insert(&resource);
+}
+
+void Document::InvalidatePendingSVGResources() {
+  HeapHashSet<Member<LocalSVGResource>> pending_resources;
+  svg_resources_needing_invalidation_.swap(pending_resources);
+  for (LocalSVGResource* resource : pending_resources) {
+    resource->NotifyContentChanged();
+  }
+  DCHECK(svg_resources_needing_invalidation_.empty());
+}
+
 StyleResolver& Document::GetStyleResolver() const {
   return style_engine_->GetStyleResolver();
 }
@@ -2944,7 +2963,9 @@ void Document::Shutdown() {
     }
   }
 
-  GetFontMatchingMetrics()->PublishAllMetrics();
+  if (font_matching_metrics_) {
+    font_matching_metrics_->PublishAllMetrics();
+  }
 
   GetViewportData().Shutdown();
 
@@ -3875,13 +3896,6 @@ static bool AllDescendantsAreComplete(Document* document) {
       return false;
   }
 
-  if (auto* portals = DocumentPortals::Get(*document)) {
-    for (PortalContents* portal : portals->GetPortals()) {
-      auto* portal_frame = portal->GetFrame();
-      if (portal_frame && portal_frame->IsLoading())
-        return false;
-    }
-  }
   return true;
 }
 
@@ -4736,6 +4750,10 @@ bool Document::IsHttpRefreshScheduledWithin(base::TimeDelta interval) {
   return http_refresh_scheduler_->IsScheduledWithin(interval);
 }
 
+bool Document::HasDocumentPictureInPictureWindow() const {
+  return PictureInPictureController::HasDocumentPictureInPictureWindow(*this);
+}
+
 network::mojom::ReferrerPolicy Document::GetReferrerPolicy() const {
   return GetExecutionContext() ? GetExecutionContext()->GetReferrerPolicy()
                                : network::mojom::ReferrerPolicy::kDefault;
@@ -4985,6 +5003,42 @@ void Document::ObserveForIntrinsicSize(Element* element) {
 void Document::UnobserveForIntrinsicSize(Element* element) {
   if (intrinsic_size_observer_)
     intrinsic_size_observer_->unobserve(element);
+}
+
+class LazyLoadedAutoSizedImgResizeObserverDelegate final
+    : public ResizeObserver::Delegate {
+  void OnResize(const HeapVector<Member<ResizeObserverEntry>>& entries) final {
+    for (const auto& entry : entries) {
+      DCHECK(entry->contentRect());
+      if (auto* img = DynamicTo<HTMLImageElement>(entry->target())) {
+        img->OnResize();
+      }
+    }
+  }
+
+  ResizeObserver::DeliveryTime Delivery() const final {
+    return ResizeObserver::DeliveryTime::kBeforeOthers;
+  }
+};
+
+ResizeObserver& Document::GetLazyLoadedAutoSizedImgObserver() {
+  if (!lazy_loaded_auto_sized_img_observer_) {
+    lazy_loaded_auto_sized_img_observer_ = ResizeObserver::Create(
+        domWindow(),
+        MakeGarbageCollected<LazyLoadedAutoSizedImgResizeObserverDelegate>());
+  }
+
+  return *lazy_loaded_auto_sized_img_observer_;
+}
+
+void Document::ObserveForLazyLoadedAutoSizedImg(HTMLImageElement* img) {
+  GetLazyLoadedAutoSizedImgObserver().observe(img);
+}
+
+void Document::UnobserveForLazyLoadedAutoSizedImg(HTMLImageElement* img) {
+  if (lazy_loaded_auto_sized_img_observer_) {
+    lazy_loaded_auto_sized_img_observer_->unobserve(img);
+  }
 }
 
 Document* Document::CloneDocumentWithoutChildren() const {
@@ -5799,6 +5853,15 @@ void Document::EnqueueSnapChangedEvent(Node* target,
   scripted_animation_controller_->EnqueuePerFrameEvent(snapchanged_event);
 }
 
+void Document::EnqueueSnapChangingEvent(
+    Node* target,
+    HeapVector<Member<Node>>& snap_targets) {
+  Event* snapchanging_event =
+      SnapEvent::Create(event_type_names::kSnapchanging, snap_targets);
+  snapchanging_event->SetTarget(target);
+  scripted_animation_controller_->EnqueuePerFrameEvent(snapchanging_event);
+}
+
 void Document::EnqueueResizeEvent() {
   Event* event = Event::Create(event_type_names::kResize);
   event->SetTarget(domWindow());
@@ -6406,6 +6469,17 @@ ScriptPromise Document::requestStorageAccessFor(ScriptState* script_state,
   }
 
   KURL origin_as_kurl{origin};
+  if (!origin_as_kurl.IsValid()) {
+    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        ConsoleMessage::Source::kSecurity, ConsoleMessage::Level::kError,
+        "requestStorageAccessFor: Invalid origin."));
+    FireRequestStorageAccessForHistogram(
+        RequestStorageResult::REJECTED_INVALID_ORIGIN);
+    resolver->Reject(V8ThrowException::CreateTypeError(
+        script_state->GetIsolate(), "Invalid origin"));
+    return promise;
+  }
+
   scoped_refptr<SecurityOrigin> supplied_origin =
       SecurityOrigin::Create(origin_as_kurl);
   if (supplied_origin->IsOpaque()) {
@@ -7899,8 +7973,10 @@ Document::EnsureDocumentExplicitRootIntersectionObserverData() {
 }
 
 const ScriptRegexp& Document::EnsureEmailRegexp() const {
-  if (!data_->email_regexp_)
-    data_->email_regexp_ = EmailInputType::CreateEmailRegexp();
+  if (!data_->email_regexp_) {
+    data_->email_regexp_ =
+        EmailInputType::CreateEmailRegexp(GetAgent().isolate());
+  }
   return *data_->email_regexp_;
 }
 
@@ -8392,8 +8468,10 @@ Document& Document::EnsureTemplateDocument() {
 void Document::DidChangeFormRelatedElementDynamically(
     HTMLElement* element,
     WebFormRelatedChangeType form_related_change) {
-  if (!GetFrame() || !GetFrame()->GetPage() || !HasFinishedParsing())
+  if (!GetFrame() || !GetFrame()->GetPage() || !HasFinishedParsing() ||
+      !GetFrame()->IsAttached()) {
     return;
+  }
 
   GetFrame()
       ->GetPage()
@@ -8817,6 +8895,7 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(element_data_cache_clear_timer_);
   visitor->Trace(element_data_cache_);
   visitor->Trace(use_elements_needing_update_);
+  visitor->Trace(svg_resources_needing_invalidation_);
   visitor->Trace(node_move_scope_items_);
   visitor->Trace(template_document_);
   visitor->Trace(template_document_host_);
@@ -8849,6 +8928,7 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(meta_theme_color_elements_);
   visitor->Trace(unassociated_listed_elements_);
   visitor->Trace(intrinsic_size_observer_);
+  visitor->Trace(lazy_loaded_auto_sized_img_observer_);
   visitor->Trace(anchor_element_interaction_tracker_);
   visitor->Trace(focused_element_change_observers_);
   visitor->Trace(pending_link_header_preloads_);
@@ -9111,8 +9191,6 @@ void Document::ActivateForPrerendering(
     const mojom::blink::PrerenderPageActivationParams& params) {
   TRACE_EVENT0("navigation", "Document::ActivateForPrerendering");
 
-  // TODO(bokan): Portals will change this assumption since they mean an active
-  // document can be "adopted" into a portal.
   DCHECK(is_prerendering_);
   is_prerendering_ = false;
 
@@ -9276,10 +9354,7 @@ void Document::EnqueuePageRevealEvent() {
   CHECK(RuntimeEnabledFeatures::PageRevealEventEnabled());
   CHECK(dom_window_);
 
-  DOMViewTransition* dom_view_transition =
-      ViewTransitionUtils::GetTransitionScriptDelegate(*this);
-  auto* page_reveal_event =
-      MakeGarbageCollected<PageRevealEvent>(dom_view_transition);
+  auto* page_reveal_event = MakeGarbageCollected<PageRevealEvent>();
   page_reveal_event->SetTarget(dom_window_);
   page_reveal_event->SetCurrentTarget(dom_window_);
   EnqueueAnimationFrameEvent(page_reveal_event);

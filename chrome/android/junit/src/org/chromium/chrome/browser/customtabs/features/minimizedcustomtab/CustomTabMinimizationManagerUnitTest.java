@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.customtabs.features.minimizedcustomtab;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -13,8 +15,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import static org.chromium.chrome.browser.tab.TabLoadIfNeededCaller.ON_ACTIVITY_SHOWN_THEN_SHOW;
 import static org.chromium.chrome.browser.tab.TabSelectionType.FROM_USER;
-import static org.chromium.chrome.browser.tab.TabUtils.LoadIfNeededCaller.ON_ACTIVITY_SHOWN_THEN_SHOW;
 
 import android.app.PictureInPictureParams;
 import android.os.Build;
@@ -84,6 +86,7 @@ public class CustomTabMinimizationManagerUnitTest {
     @Mock private CustomTabsConnection mConnection;
     @Mock private Runnable mCloseTabRunnable;
     @Mock private DomDistillerUrlUtilsJni mDomDistillerUrlUtilsJni;
+    @Mock private CustomTabMinimizeDelegate.Observer mMinimizationObserver;
 
     private CustomTabMinimizationManager mManager;
 
@@ -107,6 +110,7 @@ public class CustomTabMinimizationManagerUnitTest {
                         mFeatureEngagementDelegate,
                         mCloseTabRunnable,
                         mIntentData);
+        mManager.addObserver(mMinimizationObserver);
     }
 
     @Test
@@ -118,6 +122,7 @@ public class CustomTabMinimizationManagerUnitTest {
         mManager.minimize();
         verify(mActivity).enterPictureInPictureMode(any(PictureInPictureParams.class));
         verify(mFeatureEngagementDelegate).notifyUserEngaged();
+        verify(mMinimizationObserver).onMinimizationChanged(true);
 
         // Simulate Activity entering PiP.
         mManager.accept(new PictureInPictureModeChangedInfo(true));
@@ -153,6 +158,7 @@ public class CustomTabMinimizationManagerUnitTest {
         verify(mTab).show(eq(FROM_USER), eq(ON_ACTIVITY_SHOWN_THEN_SHOW));
         verify(mWebContents).setAudioMuted(false);
         verify(mConnection).onUnminimized(any());
+        verify(mMinimizationObserver).onMinimizationChanged(false);
         minimizationEventsWatcher.assertExpected(
                 "CustomTabs.MinimizedEvents.MAXIMIZE should be recorded once");
         timeElapsedWatcher.assertExpected(
@@ -160,11 +166,11 @@ public class CustomTabMinimizationManagerUnitTest {
     }
 
     @Test
-    public void testDismiss() {
+    public void testDismissByUser() {
         mManager.minimize();
         // Simulate Activity entering PiP.
         mManager.accept(new PictureInPictureModeChangedInfo(true));
-        // Now, simulate PiP being dismissed.
+        // Now, simulate PiP being dismissed by the user.
         var minimizationEventsWatcher =
                 HistogramWatcher.newSingleRecordWatcher(
                         "CustomTabs.MinimizedEvents",
@@ -196,5 +202,28 @@ public class CustomTabMinimizationManagerUnitTest {
         mManager.accept(new PictureInPictureModeChangedInfo(true));
 
         assertEquals(HOST, ((TextView) mActivity.findViewById(R.id.url)).getText());
+    }
+
+    @Test
+    public void testDismissByCode() {
+        mManager.minimize();
+        // Simulate Activity entering PiP.
+        mManager.accept(new PictureInPictureModeChangedInfo(true));
+        // Dismiss using #dismiss().
+        mManager.dismiss();
+        verify(mTab, never()).show(anyInt(), anyInt());
+        verify(mCloseTabRunnable).run();
+    }
+
+    @Test
+    public void testIsMinimized() {
+        // Initially, #isMinimized() should be false.
+        assertFalse(mManager.isMinimized());
+        mManager.minimize();
+        // Now, it should be minimized.
+        assertTrue(mManager.isMinimized());
+        mManager.accept(new PictureInPictureModeChangedInfo(true));
+        // It should still be minimized once we actually go in PiP.
+        assertTrue(mManager.isMinimized());
     }
 }

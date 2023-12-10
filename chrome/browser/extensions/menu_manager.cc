@@ -12,7 +12,6 @@
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/json/json_writer.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
@@ -26,7 +25,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/chrome_web_view_internal.h"
 #include "chrome/common/extensions/api/context_menus.h"
-#include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "components/guest_view/common/guest_view_constants.h"
 #include "content/public/browser/child_process_host.h"
 #include "content/public/browser/context_menu_params.h"
@@ -38,6 +36,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/mojom/event_dispatcher.mojom.h"
+#include "ipc/ipc_message.h"
 #include "third_party/blink/public/mojom/context_menu/context_menu.mojom.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/text_elider.h"
@@ -364,7 +363,7 @@ std::set<MenuItem::ExtensionKey> MenuManager::ExtensionIds() {
 }
 
 const MenuItem::OwnedList* MenuManager::MenuItems(
-    const MenuItem::ExtensionKey& key) {
+    const MenuItem::ExtensionKey& key) const {
   auto i = context_items_.find(key);
   if (i != context_items_.end()) {
     return &i->second;
@@ -889,8 +888,13 @@ void MenuManager::ReadFromStorage(const std::string& extension_id,
     return;
 
   MenuItem::OwnedList items = MenuItemsFromValue(extension_id, value);
-  base::UmaHistogramCounts1000("Extensions.MenuManager.MenuItemsCount",
-                               items.size());
+  // If the extension created items before we imposed a limit, those
+  // extra items may have been stored. If so, remove them. This works
+  // fine with regard to the parent/child relationship, since parent
+  // items are stored first.
+  if (items.size() > kMaxItemsPerExtension) {
+    items.resize(kMaxItemsPerExtension);
+  }
   for (auto& item : items) {
     if (item->parent_id()) {
       // Parent IDs are stored in the parent_id field for convenience, but
@@ -987,15 +991,18 @@ MenuItem::ExtensionKey::ExtensionKey()
 MenuItem::ExtensionKey::ExtensionKey(const std::string& extension_id)
     : extension_id(extension_id),
       webview_embedder_process_id(ChildProcessHost::kInvalidUniqueID),
+      webview_embedder_frame_id(MSG_ROUTING_NONE),
       webview_instance_id(kInstanceIDNone) {
   DCHECK(!extension_id.empty());
 }
 
 MenuItem::ExtensionKey::ExtensionKey(const std::string& extension_id,
                                      int webview_embedder_process_id,
+                                     int webview_embedder_frame_id,
                                      int webview_instance_id)
     : extension_id(extension_id),
       webview_embedder_process_id(webview_embedder_process_id),
+      webview_embedder_frame_id(webview_embedder_frame_id),
       webview_instance_id(webview_instance_id) {
   DCHECK(webview_embedder_process_id != ChildProcessHost::kInvalidUniqueID &&
          webview_instance_id != kInstanceIDNone);

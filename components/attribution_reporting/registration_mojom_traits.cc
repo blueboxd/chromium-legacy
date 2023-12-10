@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -13,10 +14,12 @@
 #include "base/time/time.h"
 #include "base/uuid.h"
 #include "components/attribution_reporting/aggregatable_dedup_key.h"
+#include "components/attribution_reporting/aggregatable_trigger_config.h"
 #include "components/attribution_reporting/aggregatable_trigger_data.h"
 #include "components/attribution_reporting/aggregatable_values.h"
 #include "components/attribution_reporting/aggregation_keys.h"
 #include "components/attribution_reporting/destination_set.h"
+#include "components/attribution_reporting/event_level_epsilon.h"
 #include "components/attribution_reporting/event_report_windows.h"
 #include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/filters.h"
@@ -240,6 +243,10 @@ bool StructTraits<attribution_reporting::mojom::SourceRegistrationDataView,
     return false;
   }
 
+  if (!out->event_level_epsilon.SetIfValid(data.event_level_epsilon())) {
+    return false;
+  }
+
   out->source_event_id = data.source_event_id();
   out->priority = data.priority();
   out->debug_key = data.debug_key();
@@ -354,9 +361,23 @@ bool StructTraits<attribution_reporting::mojom::TriggerRegistrationDataView,
     return false;
   }
 
+  absl::optional<std::string> trigger_context_id;
+  if (!data.ReadTriggerContextId(&trigger_context_id)) {
+    return false;
+  }
+
+  absl::optional<attribution_reporting::AggregatableTriggerConfig>
+      aggregatable_trigger_config =
+          attribution_reporting::AggregatableTriggerConfig::Create(
+              data.source_registration_time_config(),
+              std::move(trigger_context_id));
+  if (!aggregatable_trigger_config.has_value()) {
+    return false;
+  }
+  out->aggregatable_trigger_config = std::move(*aggregatable_trigger_config);
+
   out->debug_key = data.debug_key();
   out->debug_reporting = data.debug_reporting();
-  out->source_registration_time_config = data.source_registration_time_config();
   return true;
 }
 

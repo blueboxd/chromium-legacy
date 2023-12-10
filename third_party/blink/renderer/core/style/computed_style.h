@@ -46,7 +46,7 @@
 #include "third_party/blink/renderer/core/layout/geometry/box_strut.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_outline_type.h"
+#include "third_party/blink/renderer/core/layout/outline_type.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/style/computed_style_base.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
@@ -649,12 +649,11 @@ class ComputedStyle final : public ComputedStyleBase {
 
   // For history and compatibility reasons, we draw outline:auto (for focus
   // rings) and normal style outline differently.
-  // Focus rings enclose block visual overflows (of line boxes and descendants),
+  // Focus rings enclose block ink overflows (of line boxes and descendants),
   // while normal outlines don't.
-  NGOutlineType OutlineRectsShouldIncludeBlockVisualOverflow() const {
-    return OutlineStyleIsAuto()
-               ? NGOutlineType::kIncludeBlockVisualOverflow
-               : NGOutlineType::kDontIncludeBlockVisualOverflow;
+  OutlineType OutlineRectsShouldIncludeBlockInkOverflow() const {
+    return OutlineStyleIsAuto() ? OutlineType::kIncludeBlockInkOverflow
+                                : OutlineType::kDontIncludeBlockInkOverflow;
   }
 
   // position-fallback
@@ -1516,24 +1515,18 @@ class ComputedStyle final : public ComputedStyleBase {
   const Length& LogicalBottom() const {
     return PhysicalBoundsToLogical().BlockEnd();
   }
-  bool OffsetEqual(const ComputedStyle& other) const {
+  bool InsetsEqual(const ComputedStyle& other) const {
     return UsedLeft() == other.UsedLeft() && UsedRight() == other.UsedRight() &&
            UsedTop() == other.UsedTop() && UsedBottom() == other.UsedBottom();
   }
 
   // Whether or not a positioned element requires normal flow x/y to be computed
   // to determine its position.
-  bool HasAutoLeftAndRight() const {
+  bool HasAutoLeftAndRightIgnoringInsetArea() const {
     return UsedLeft().IsAuto() && UsedRight().IsAuto();
   }
-  bool HasAutoTopAndBottom() const {
+  bool HasAutoTopAndBottomIgnoringInsetArea() const {
     return UsedTop().IsAuto() && UsedBottom().IsAuto();
-  }
-  bool HasStaticInlinePosition(bool horizontal) const {
-    return horizontal ? HasAutoLeftAndRight() : HasAutoTopAndBottom();
-  }
-  bool HasStaticBlockPosition(bool horizontal) const {
-    return horizontal ? HasAutoTopAndBottom() : HasAutoLeftAndRight();
   }
 
   // Content utility functions.
@@ -1613,15 +1606,15 @@ class ComputedStyle final : public ComputedStyleBase {
 
   // Return true if an element can match size container queries. In addition to
   // checking if it has a size container-type, we check if we are never able to
-  // reach NGBlockNode::Layout() for legacy layout objects or SVG elements.
+  // reach BlockNode::Layout() for legacy layout objects or SVG elements.
   bool CanMatchSizeContainerQueries(const Element& element) const;
 
   bool IsContainerForSizeContainerQueries() const {
     return IsInlineOrBlockSizeContainer() && StyleType() == kPseudoIdNone;
   }
 
-  bool IsContainerForStickyContainerQueries() const {
-    return IsStickyContainer() && StyleType() == kPseudoIdNone;
+  bool IsContainerForScrollStateContainerQueries() const {
+    return IsScrollStateContainer() && StyleType() == kPseudoIdNone;
   }
 
   bool DependsOnContainerQueries() const {
@@ -2428,10 +2421,9 @@ class ComputedStyle final : public ComputedStyleBase {
   bool IsSizeContainer() const {
     return (ContainerType() & kContainerTypeSize) == kContainerTypeSize;
   }
-  bool IsStickyContainer() const {
-    return ContainerType() & kContainerTypeSticky;
+  bool IsScrollStateContainer() const {
+    return ContainerType() & kContainerTypeScrollState;
   }
-  bool IsSnapContainer() const { return ContainerType() & kContainerTypeSnap; }
 
   static bool IsDisplayBlockContainer(EDisplay display) {
     return display == EDisplay::kBlock || display == EDisplay::kListItem ||

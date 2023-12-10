@@ -85,7 +85,7 @@ enum class CardUploadEnabled {
   kSyncServiceNull = 0,
   kSyncServicePaused = 1,
   kSyncServiceMissingAutofillWalletDataActiveType = 2,
-  kSyncServiceMissingAutofillProfileActiveType = 3,
+  kSyncServiceMissingAutofillSelectedType = 3,
   // Deprecated: kAccountWalletStorageUploadDisabled = 4,
   kUsingExplicitSyncPassphrase = 5,
   kLocalSyncEnabled = 6,
@@ -110,7 +110,10 @@ enum class SaveCardPromptOffer {
   // The prompt is not shown because the prompt has been declined by the user
   // too many times.
   kNotShownMaxStrikesReached = 1,
-  kMaxValue = kNotShownMaxStrikesReached,
+  // The prompt is not shown because the required delay since last strike has
+  // not passed.
+  kNotShownRequiredDelay = 2,
+  kMaxValue = kNotShownRequiredDelay,
 };
 
 enum class SaveCardPromptResult {

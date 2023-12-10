@@ -6,6 +6,7 @@ package org.chromium.chrome.modules.readaloud;
 
 import android.app.Activity;
 
+import org.chromium.base.Promise;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsSizer;
@@ -23,6 +24,7 @@ public interface Player {
     interface Delegate {
         /** Returns the BottomSheetController that will manage the bottom sheets. */
         BottomSheetController getBottomSheetController();
+
         /** Returns true if highlighting is supported. */
         boolean isHighlightingSupported();
 
@@ -31,8 +33,10 @@ public interface Player {
 
         /** Returns the supplier for the "highlighting enabled" setting. */
         ObservableSupplierImpl<Boolean> getHighlightingEnabledSupplier();
+
         /** Returns the supplier for the list of voices to show in the voice menu. */
         ObservableSupplier<List<PlaybackVoice>> getCurrentLanguageVoicesSupplier();
+
         /** Returns the supplier for the current language's selected voice. */
         ObservableSupplier<String> getVoiceIdSupplier();
 
@@ -42,10 +46,17 @@ public interface Player {
          */
         void setVoiceOverrideAndApplyToPlayback(PlaybackVoice voice);
 
-        /** Play a short example of the specified voice. */
-        void previewVoice(PlaybackVoice voice);
+        /**
+         * Play a short example of the specified voice.
+         *
+         * @param voice Voice to preview.
+         * @return Promise that resolves to the preview's playback.
+         */
+        Promise<Playback> previewVoice(PlaybackVoice voice);
+
         /** Navigate to the tab associated with the current playback */
         void navigateToPlayingTab();
+
         /** Returns the Activity in which the player UI should live. */
         Activity getActivity();
 
@@ -70,6 +81,9 @@ public interface Player {
          * then calling dismissPlayers().
          */
         void onRequestClosePlayers();
+
+        /** Called when the user closes the voice menu. */
+        void onVoiceMenuClosed();
     }
 
     /**
@@ -89,9 +103,7 @@ public interface Player {
     /** Stop playback and stop tracking players. */
     default void destroy() {}
 
-    /**
-     * Show the mini player, called when playback is requested.
-     */
+    /** Show the mini player, called when playback is requested. */
     default void playTabRequested() {}
 
     /**

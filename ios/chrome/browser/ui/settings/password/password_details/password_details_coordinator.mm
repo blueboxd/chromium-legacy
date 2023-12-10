@@ -37,7 +37,6 @@
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_consumer.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_handler.h"
-#import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator+private.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_controller.h"
@@ -448,12 +447,20 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
   [_visitsRecorder maybeRecordVisitMetric];
 }
 
+- (void)dismissUIAfterFailedReauthenticationWithCoordinator:
+    (ReauthenticationCoordinator*)coordinator {
+  CHECK_EQ(_reauthCoordinator, coordinator);
+
+  [_delegate dismissPasswordManagerAfterFailedReauthentication];
+}
+
 - (void)willPushReauthenticationViewController {
   // Dismiss modal ui before reauth view controller is pushed in front of
   // password details.
   [self dismissAlertCoordinator];
   [self dismissActionSheetCoordinator];
   [self dismissPasswordSharingCoordinator];
+  [self stopPasswordSharingFirstRunCoordinatorWithCompletion:nil];
 }
 
 #pragma mark - PasswordSharingCoordinatorDelegate

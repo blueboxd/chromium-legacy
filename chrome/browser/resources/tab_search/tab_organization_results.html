@@ -5,11 +5,8 @@
     width: fit-content;
   }
 
-  cr-icon-button {
-    --cr-icon-button-fill-color: var(--color-sys-on-surface-subtle);
-    --cr-icon-button-icon-size: 16px;
-    --cr-icon-button-size: 24px;
-    margin: 0;
+  cr-feedback-buttons {
+    color: var(--color-icon);
   }
 
   cr-input {
@@ -32,12 +29,20 @@
   .feedback {
     align-items: center;
     display: flex;
-    gap: 4px;
+    justify-content: space-between;
+  }
+
+  iron-selector > .mwb-list-item:focus {
+    background-color: var(--mwb-list-item-selected-background-color);
   }
 
   .mwb-list-item {
     background-color: transparent;
     min-height: var(--mwb-item-height);
+  }
+
+  .mwb-list-item.selected {
+    background-color: transparent;
   }
 
   .results {
@@ -51,10 +56,6 @@
     overflow-y: auto;
     padding: 16px 0;
   }
-
-  .tab-organization-link {
-    flex: 1;
-  }
 </style>
 
 <div class="tab-organization-container">
@@ -65,23 +66,32 @@
           on-focus="onInputFocus_"
           on-keydown="onInputKeyDown_">
       </cr-input>
-      <template is="dom-repeat" items="[[tabDatas_]]">
-        <tab-search-item class="mwb-list-item" data="[[item]]"
-            on-close="onTabRemove_" hide-timestamp>
-        </tab-search-item>
-      </template>
+      <iron-selector id="selector" on-keydown="onListKeyDown_"
+          selected-class="selected"
+          on-iron-select="onSelectedChanged_">
+        <template is="dom-repeat" items="[[tabDatas_]]">
+          <tab-search-item class="mwb-list-item" data="[[item]]"
+              tabindex$="[[getTabIndex_(index, lastFocusedIndex_)]]"
+              on-close="onTabRemove_"
+              on-focus="onTabFocus_"
+              hide-timestamp>
+          </tab-search-item>
+        </template>
+      </iron-selector>
       <cr-button class="action-button" on-click="onCreateGroupClick_">
         $i18n{createGroup}
       </cr-button>
     </div>
   </div>
   <div class="feedback">
-    <div class="tab-organization-link" on-click="onLearnMoreClick_">
+    <div class="tab-organization-link"
+        on-click="onLearnMoreClick_"
+        role="link"
+        tabindex="0">
       $i18n{learnMore}
     </div>
-    <cr-icon-button iron-icon="cr:thumbs-up" on-click="onThumbsUpClick_">
-    </cr-icon-button>
-    <cr-icon-button iron-icon="cr:thumbs-down" on-click="onThumbsDownClick_">
-    </cr-icon-button>
+    <cr-feedback-buttons
+        on-selected-option-changed="onFeedbackSelectedOptionChanged_">
+    </cr-feedback-buttons>
   </div>
 </div>

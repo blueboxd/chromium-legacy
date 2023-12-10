@@ -10,6 +10,8 @@
 #include <utility>
 #include <vector>
 
+#include <poll.h>
+
 #include "base/files/scoped_file.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -33,7 +35,8 @@ class Buffer {
   Buffer(BufferType buffer_type,
          MemoryType memory_type,
          uint32_t index,
-         uint32_t plane_count);
+         uint32_t plane_count,
+         struct timeval time_val);
   ~Buffer();
   Buffer(const Buffer&);
 
@@ -55,6 +58,10 @@ class Buffer {
   BufferType GetBufferType() const { return buffer_type_; }
   MemoryType GetMemoryType() const { return memory_type_; }
 
+  void SetTimeAsFrameID(uint64_t usec);
+  struct timeval GetTimeval() const;
+  uint64_t GetTimeAsFrameID() const;
+
   // Method for copying compressed input data into a Buffer's backing store. It
   // is limited to destination buffers that have a single plane and are memory
   // mapped.
@@ -73,6 +80,7 @@ class Buffer {
   const MemoryType memory_type_;
   const uint32_t index_;
   std::vector<Plane> planes_;
+  struct timeval time_val_;
 };
 
 class PlaneFormat {
@@ -142,13 +150,26 @@ class MEDIA_GPU_EXPORT Device : public base::RefCountedThreadSafe<Device> {
   // number does not need to be the same as |count|.
   absl::optional<uint32_t> RequestBuffers(BufferType type,
                                           MemoryType memory,
-                                          size_t count);
+                                          uint32_t count);
 
   // Uses the VIDIOC_QUERYBUF ioctl to fill out and return a |Buffer|.
   absl::optional<Buffer> QueryBuffer(BufferType type,
                                      MemoryType memory,
                                      uint32_t index,
                                      uint32_t num_planes);
+
+  // Wrap the buffer that was allocated from the driver so that it can be
+  // passed on to other consumers.
+  std::vector<base::ScopedFD> ExportAsDMABUF(int index, uint32_t num_planes);
+
+  // Enqueue a buffer allocated through |RequestBuffers| with the driver for
+  // processing.
+  bool QueueBuffer(const Buffer& buffer, const base::ScopedFD& request_fd);
+
+  // Used during frame processing on a per frame basis.
+  absl::optional<Buffer> DequeueBuffer(BufferType buffer_type,
+                                       MemoryType memory_type,
+                                       uint32_t num_planes);
 
   // Query the driver for the smallest and largest uncompressed frame sizes that
   // are supported using the VIDIOC_ENUM_FRAMESIZES ioctl.
@@ -163,6 +184,9 @@ class MEDIA_GPU_EXPORT Device : public base::RefCountedThreadSafe<Device> {
 
   // unmmap the |buffer| when read/write access is no longer needed.
   void MunmapBuffer(Buffer& buffer);
+
+  // Return the structure of events that should be waited on
+  struct pollfd GetPollEvent();
 
   // Capabilities are queried using VIDIOC_QUERYCAP. Stateless and
   // stateful drivers need different capabilities.
@@ -192,6 +216,6 @@ class MEDIA_GPU_EXPORT Device : public base::RefCountedThreadSafe<Device> {
   bool OpenDevice();
 };
 
-}  //  namespace media
+}  // namespace media
 
 #endif  // MEDIA_GPU_V4L2_STATELESS_DEVICE_H_

@@ -77,7 +77,7 @@ class SubgriddedItemData {
 
 constexpr SubgriddedItemData kNoSubgriddedItemData;
 
-// This class represents a grid tree (see `ng_grid_subtree.h`) and contains the
+// This class represents a grid tree (see `grid_subtree.h`) and contains the
 // necessary data to perform the track sizing algorithm of its nested subgrids.
 class CORE_EXPORT GridSizingTree {
   DISALLOW_NEW();
@@ -198,6 +198,8 @@ class GridSizingSubtree
     return grid_tree_->At(subtree_root_);
   }
 };
+
+constexpr GridSizingSubtree kNoGridSizingSubtree;
 
 }  // namespace blink
 

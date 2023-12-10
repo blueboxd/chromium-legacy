@@ -95,11 +95,17 @@ class GPU_GLES2_EXPORT SharedImageInterfaceInProcess
       base::StringPiece debug_label,
       SurfaceHandle surface_handle,
       gfx::BufferUsage buffer_usage) override;
-  std::unique_ptr<SharedImageInterface::ScopedMapping> MapSharedImage(
-      const Mailbox& mailbox) override;
-  std::unique_ptr<gpu::SharedImageInterface::ScopedMapping> MapSharedImage(
-      const scoped_refptr<gpu::ClientSharedImage>& client_shared_image)
-      override;
+  scoped_refptr<ClientSharedImage> CreateSharedImage(
+      viz::SharedImageFormat format,
+      const gfx::Size& size,
+      const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
+      uint32_t usage,
+      base::StringPiece debug_label,
+      gpu::SurfaceHandle surface_handle,
+      gfx::BufferUsage buffer_usage,
+      gfx::GpuMemoryBufferHandle buffer_handle) override;
   scoped_refptr<ClientSharedImage> CreateSharedImage(
       viz::SharedImageFormat format,
       const gfx::Size& size,
@@ -250,7 +256,8 @@ class GPU_GLES2_EXPORT SharedImageInterfaceInProcess
   void GetCapabilitiesOnGpu(base::WaitableEvent* completion,
                             SharedImageCapabilities* out_capabilities);
 
-  gfx::GpuMemoryBuffer* GetGpuMemoryBuffer(const Mailbox& mailbox);
+  GpuMemoryBufferHandleInfo GetGpuMemoryBufferHandleInfo(
+      const Mailbox& mailbox);
 
   // Used to schedule work on the gpu thread. This is a raw pointer for now
   // since the ownership of SingleTaskSequence would be the same as the
@@ -266,8 +273,6 @@ class GPU_GLES2_EXPORT SharedImageInterfaceInProcess
   // Accessed on any thread.
   base::Lock lock_;
   uint64_t next_fence_sync_release_ GUARDED_BY(lock_) = 1;
-  base::flat_map<Mailbox, std::unique_ptr<gfx::GpuMemoryBuffer>>
-      gpu_memory_buffers_ GUARDED_BY(lock_);
 
   // Accessed on compositor thread.
   // This is used to get NativePixmap, and is only used when SharedImageManager

@@ -12,15 +12,12 @@ import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterFactory;
-import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate;
-import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegateProvider;
+import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
-/**
- * Glue code that decides which concrete {@link TabModelFilterFactory} should be used.
- */
+/** Glue code that decides which concrete {@link TabModelFilterFactory} should be used. */
 @ActivityScope
 public class ChromeTabModelFilterFactory implements TabModelFilterFactory {
     private Context mContext;
@@ -41,7 +38,6 @@ public class ChromeTabModelFilterFactory implements TabModelFilterFactory {
      */
     @Override
     public TabModelFilter createTabModelFilter(TabModel model) {
-        TabManagementDelegate tabManagementDelegate = TabManagementDelegateProvider.getDelegate();
-        return tabManagementDelegate.createTabGroupModelFilter(model);
+        return new TabGroupModelFilter(model);
     }
 }

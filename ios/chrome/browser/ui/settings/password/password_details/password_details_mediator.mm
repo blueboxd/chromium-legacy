@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator.h"
+#import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator+Testing.h"
 
 #import <memory>
 #import <utility>
@@ -32,7 +33,6 @@
 #import "ios/chrome/browser/ui/settings/password/account_storage_utils.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_consumer.h"
-#import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator+private.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_metrics_utils.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_controller_delegate.h"
@@ -148,6 +148,9 @@ bool ShouldDisplayCredentialAsMuted(
 
 // Display name to use for the Password Details view.
 @property(nonatomic, strong) NSString* displayName;
+
+// The context in which the password details are accessed.
+@property(nonatomic, assign) DetailsContext context;
 
 @end
 
@@ -502,7 +505,7 @@ bool ShouldDisplayCredentialAsMuted(
     password.shouldOfferToMoveToAccount =
         self.context == DetailsContext::kPasswordSettings &&
         password_manager::features_util::IsOptedInForAccountStorage(
-            _prefService, _syncService) &&
+            _syncService) &&
         ShouldShowLocalOnlyIcon(credential, _syncService);
     [passwords addObject:password];
   }
@@ -555,8 +558,7 @@ bool ShouldDisplayCredentialAsMuted(
 // * Password sending feature is enabled.
 // * Password sharing pref is enabled.
 - (BOOL)isUserEligibleForSendingPasswords {
-  return password_manager::sync_util::GetAccountForSaving(_prefService,
-                                                          _syncService) &&
+  return password_manager::sync_util::GetAccountForSaving(_syncService) &&
          _prefService->GetBoolean(
              password_manager::prefs::kPasswordSharingEnabled) &&
          base::FeatureList::IsEnabled(

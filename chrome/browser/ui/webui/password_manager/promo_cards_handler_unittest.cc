@@ -10,6 +10,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate_factory.h"
 #include "chrome/browser/password_manager/password_manager_test_util.h"
@@ -25,7 +26,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::IsEmpty;
+using testing::Matcher;
 using ::testing::Return;
+using testing::Truly;
+using testing::UnorderedElementsAre;
 using testing::Value;
 
 namespace password_manager {
@@ -34,40 +38,29 @@ namespace {
 
 const char kTestCallbackId[] = "test-callback-id";
 
-struct PrefInfo {
-  std::string id;
-  int number_of_times_shown = 0;
-  base::Time last_time_shown;
-  bool was_dismissed = false;
-};
-
-MATCHER_P(PromoCardPrefInfo, expected, "") {
-  return Value(expected.id, *arg.GetDict().FindString("id")) &&
-         Value(expected.number_of_times_shown,
-               *arg.GetDict().FindInt("number_of_times_shown")) &&
-         Value(expected.last_time_shown,
-               base::ValueToTime(arg.GetDict().Find("last_time_shown"))
-                   .value()) &&
-         Value(expected.was_dismissed,
-               *arg.GetDict().FindBool("was_dismissed"));
+auto HasSamePromoCards(const std::vector<std::string>& promo_cards) {
+  std::vector<Matcher<const base::Value&>> matchers;
+  for (const auto& p : promo_cards) {
+    matchers.push_back(Truly([p](const base::Value& a) {
+      return p == *a.GetDict().FindString("id");
+    }));
+  }
+  return UnorderedElementsAreArray(matchers);
 }
 
 class MockPromoCard : public PasswordPromoCardBase {
  public:
   MockPromoCard(const std::string& id, PrefService* prefs)
-      : PasswordPromoCardBase(id, prefs), id_(id) {}
+      : PasswordPromoCardBase(id, prefs) {}
 
-  std::string GetPromoID() const override { return id_; }
-
+  MOCK_METHOD(std::string, GetPromoID, (), (const, override));
+  MOCK_METHOD(PromoCardType, GetPromoCardType, (), (const, override));
   MOCK_METHOD(std::u16string, GetTitle, (), (const, override));
   MOCK_METHOD(bool, ShouldShowPromo, (), (const, override));
   MOCK_METHOD(std::u16string, GetDescription, (), (const, override));
 
   int number_of_times_shown() const { return number_of_times_shown_; }
   bool was_dismissed() const { return was_dismissed_; }
-
- private:
-  const std::string id_;
 };
 
 }  // namespace
@@ -88,9 +81,13 @@ class PromoCardsHandlerTest : public ChromeRenderViewHostTestHarness {
     cards.emplace_back(
         std::make_unique<MockPromoCard>("password_checkup_promo", &prefs_));
     card1_ = static_cast<MockPromoCard*>(cards.back().get());
+    ON_CALL(*card1_, GetPromoID)
+        .WillByDefault(Return("password_checkup_promo"));
     cards.emplace_back(
         std::make_unique<MockPromoCard>("password_shortcut_promo", &prefs_));
     card2_ = static_cast<MockPromoCard*>(cards.back().get());
+    ON_CALL(*card2_, GetPromoID)
+        .WillByDefault(Return("password_shortcut_promo"));
 
     auto handler = std::make_unique<PromoCardsHandler>(
         base::PassKey<PromoCardsHandlerTest>(), profile(), std::move(cards));
@@ -154,12 +151,19 @@ TEST_F(PromoCardsHandlerTest, GetAllPromoCards) {
 
   const base::Value::List& list =
       profile()->GetPrefs()->GetList(prefs::kPasswordManagerPromoCardsList);
-  EXPECT_THAT(list,
-              testing::UnorderedElementsAre(
-                  PromoCardPrefInfo(PrefInfo{"password_checkup_promo"}),
-                  PromoCardPrefInfo(PrefInfo{"passwords_on_web_promo"}),
-                  PromoCardPrefInfo(PrefInfo{"password_shortcut_promo"}),
-                  PromoCardPrefInfo(PrefInfo{"access_on_any_device_promo"})));
+
+  std::vector<std::string> promo_cards = {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+      "password_checkup_promo", "passwords_on_web_promo",
+      "password_shortcut_promo", "access_on_any_device_promo"
+#endif
+  };
+
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+  promo_cards.emplace_back("relaunch_chrome_promo");
+#endif
+
+  EXPECT_THAT(list, HasSamePromoCards(promo_cards));
 }
 
 TEST_F(PromoCardsHandlerTest, GetAvailablePromoCard) {
@@ -247,6 +251,30 @@ TEST_F(PromoCardsHandlerTest, RecordPromoDismissed) {
 
   EXPECT_TRUE(first_card()->was_dismissed());
   EXPECT_FALSE(second_card()->was_dismissed());
+}
+
+TEST_F(PromoCardsHandlerTest, RelaunchChromePromoHasTheHighestPriority) {
+  MockPromoCard* some_card = first_card();
+  MockPromoCard* relaunch_chrome_card = second_card();
+
+  ASSERT_EQ(0, some_card->number_of_times_shown());
+  ASSERT_EQ(0, relaunch_chrome_card->number_of_times_shown());
+
+  base::Value::List args;
+  args.Append(kTestCallbackId);
+
+  EXPECT_CALL(*some_card, ShouldShowPromo).WillRepeatedly(Return(true));
+  EXPECT_CALL(*relaunch_chrome_card, ShouldShowPromo)
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*relaunch_chrome_card, GetPromoCardType)
+      .WillRepeatedly(Return(PromoCardType::kRelauchChrome));
+
+  web_ui()->ProcessWebUIMessage(GURL(), "getAvailablePromoCard",
+                                std::move(args));
+
+  // Verify that promo was shown.
+  EXPECT_EQ(0, some_card->number_of_times_shown());
+  EXPECT_EQ(1, relaunch_chrome_card->number_of_times_shown());
 }
 
 }  // namespace password_manager

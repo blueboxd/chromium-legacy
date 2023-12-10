@@ -71,11 +71,14 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   void Encode(scoped_refptr<VideoFrame> frame,
               const EncodeOptions& options) override;
   void UseOutputBitstreamBuffer(BitstreamBuffer buffer) override;
-  void RequestEncodingParametersChange(const Bitrate& bitrate,
-                                       uint32_t framerate) override;
+  void RequestEncodingParametersChange(
+      const Bitrate& bitrate,
+      uint32_t framerate,
+      const absl::optional<gfx::Size>& size) override;
   void RequestEncodingParametersChange(
       const VideoBitrateAllocation& bitrate_allocation,
-      uint32_t framerate) override;
+      uint32_t framerate,
+      const absl::optional<gfx::Size>& size) override;
   void Destroy() override;
   void Flush(FlushCallback flush_callback) override;
   bool IsFlushSupported() override;
@@ -141,10 +144,6 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   void EncodeInternal(scoped_refptr<VideoFrame> frame,
                       const EncodeOptions& options,
                       bool discard_output);
-
-  // Get supported profiles for specific codec.
-  VideoEncodeAccelerator::SupportedProfiles GetSupportedProfilesForCodec(
-      VideoCodec codec);
 
   // Activates the asynchronous encoder instance |encoder_| according to codec
   // merit.

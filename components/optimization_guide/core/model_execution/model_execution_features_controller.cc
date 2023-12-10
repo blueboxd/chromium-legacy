@@ -4,10 +4,12 @@
 
 #include "components/optimization_guide/core/model_execution/model_execution_features_controller.h"
 
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "components/optimization_guide/core/model_execution/model_execution_features.h"
+#include "components/optimization_guide/core/model_execution/model_execution_prefs.h"
 #include "components/optimization_guide/core/optimization_guide_prefs.h"
 #include "components/optimization_guide/core/optimization_guide_util.h"
 #include "components/prefs/pref_service.h"
@@ -18,17 +20,19 @@ namespace {
 
 enum class SettingsVisibilityResult {
   kUnknown = 0,
-  // Not visible because user is invalid.
-  kNotVisibleInvalidUser = 1,
+  // Not visible because user is not signed-in.
+  kNotVisibleUnsignedUser = 1,
   // Visible because feature is already enabled.
   kVisibleFeatureAlreadyEnabled = 2,
   // Not visible because field trial is disabled.
   kNotVisibleFieldTrialDisabled = 3,
   // Visible because field trial is enabled.
   kVisibleFieldTrialEnabled = 4,
+  // Not visible because feature was disabled by enterprise policy.
+  kNotVisibleEnterprisePolicy = 5,
   // Updates should match with FeaturesSettingsVisibilityResult enum in
   // enums.xml.
-  kMaxValue = kVisibleFieldTrialEnabled
+  kMaxValue = kNotVisibleEnterprisePolicy
 };
 
 // Util class for recording the construction and validation of Settings
@@ -63,14 +67,17 @@ class ScopedSettingsVisibilityResultHistogramRecorder {
 
 enum class FeatureCurrentlyEnabledResult {
   kUnknown = 0,
-  // Not enabled because user is invalid.
-  kNotEnabledInvalidUser = 1,
+  // Not enabled because user is not signed-in.
+  kNotEnabledUnsignedUser = 1,
   // Returned result as enabled because feature was enabled at startup.
   kEnabledAtStartup = 2,
   // Returned result as not enabled because feature was not enabled at startup.
   kNotEnabledAtStartup = 3,
+  // Returned result as not enabled because feature was disabled by enterprise
+  // policy.
+  kNotEnabledEnterprisePolicy = 4,
   // Updates should match with FeatureCurrentlyEnabledResult enum in enums.xml.
-  kMaxValue = kNotEnabledAtStartup
+  kMaxValue = kNotEnabledEnterprisePolicy
 };
 
 // Util class for recording the construction and validation of Settings
@@ -107,18 +114,20 @@ ModelExecutionFeaturesController::ModelExecutionFeaturesController(
     PrefService* browser_context_profile_service,
     signin::IdentityManager* identity_manager)
     : browser_context_profile_service_(browser_context_profile_service),
-      identity_manager_(identity_manager) {
+      identity_manager_(identity_manager),
+      features_allowed_for_unsigned_user_(
+          features::internal::GetAllowedFeaturesForUnsignedUser()) {
   CHECK(browser_context_profile_service_);
 
   pref_change_registrar_.Init(browser_context_profile_service_);
 
-  RecordFeatureSettingsAtStartup();
+  InitializeFeatureSettings();
   InitializePrefListener();
 
   is_signed_in_ = identity_manager && identity_manager->HasPrimaryAccount(
                                           signin::ConsentLevel::kSignin);
 
-  StartObservingAccountChanges(identity_manager);
+  StartObservingAccountChanges();
 }
 
 ModelExecutionFeaturesController::~ModelExecutionFeaturesController() = default;
@@ -129,10 +138,19 @@ bool ModelExecutionFeaturesController::ShouldFeatureBeCurrentlyEnabledForUser(
 
   ScopedFeatureCurrentlyEnabledHistogramRecorder metrics_recorder;
 
-  if (!IsCurrentlyAValidUser()) {
-    metrics_recorder.SetResult(
-        feature, FeatureCurrentlyEnabledResult::kNotEnabledInvalidUser);
-    return false;
+  switch (GetCurrentUserValidityResult(feature)) {
+    case ModelExecutionFeaturesController::UserValidityResult::
+        kInvalidUnsignedUser:
+      metrics_recorder.SetResult(
+          feature, FeatureCurrentlyEnabledResult::kNotEnabledUnsignedUser);
+      return false;
+    case ModelExecutionFeaturesController::UserValidityResult::
+        kInvalidEnterprisePolicy:
+      metrics_recorder.SetResult(
+          feature, FeatureCurrentlyEnabledResult::kNotEnabledEnterprisePolicy);
+      return false;
+    case ModelExecutionFeaturesController::UserValidityResult::kValid:
+      break;
   }
 
   bool result = features_enabled_at_startup_.find(static_cast<int>(feature)) !=
@@ -143,6 +161,25 @@ bool ModelExecutionFeaturesController::ShouldFeatureBeCurrentlyEnabledForUser(
                       : FeatureCurrentlyEnabledResult::kNotEnabledAtStartup);
 
   return result;
+}
+
+bool ModelExecutionFeaturesController::
+    ShouldFeatureBeCurrentlyAllowedForLogging(
+        proto::ModelExecutionFeature feature) const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (!ShouldFeatureBeCurrentlyEnabledForUser(feature)) {
+    return false;
+  }
+  const char* enterprise_policy_pref =
+      model_execution::prefs::GetEnterprisePolicyPrefName(feature);
+  if (!enterprise_policy_pref) {
+    return true;
+  }
+  auto enterprise_policy_value =
+      static_cast<model_execution::prefs::ModelExecutionEnterprisePolicyValue>(
+          browser_context_profile_service_->GetInteger(enterprise_policy_pref));
+  return enterprise_policy_value ==
+         model_execution::prefs::ModelExecutionEnterprisePolicyValue::kAllow;
 }
 
 prefs::FeatureOptInState ModelExecutionFeaturesController::GetPrefState(
@@ -162,10 +199,26 @@ prefs::FeatureOptInState ModelExecutionFeaturesController::GetPrefState(
   return prefs::FeatureOptInState::kNotInitialized;
 }
 
-bool ModelExecutionFeaturesController::IsCurrentlyAValidUser() const {
+ModelExecutionFeaturesController::UserValidityResult
+ModelExecutionFeaturesController::GetCurrentUserValidityResult(
+    proto::ModelExecutionFeature feature) const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  CHECK_NE(proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_UNSPECIFIED,
+           feature);
 
-  return is_signed_in_;
+  // Sign-in check.
+  if (!is_signed_in_ &&
+      !base::Contains(features_allowed_for_unsigned_user_, feature)) {
+    return ModelExecutionFeaturesController::UserValidityResult::
+        kInvalidUnsignedUser;
+  }
+
+  if (!IsAllowedByEnterprisePolicy(feature)) {
+    return ModelExecutionFeaturesController::UserValidityResult::
+        kInvalidEnterprisePolicy;
+  }
+
+  return ModelExecutionFeaturesController::UserValidityResult::kValid;
 }
 
 bool ModelExecutionFeaturesController::IsSettingVisible(
@@ -174,10 +227,19 @@ bool ModelExecutionFeaturesController::IsSettingVisible(
 
   ScopedSettingsVisibilityResultHistogramRecorder metrics_recorder;
 
-  if (!IsCurrentlyAValidUser()) {
-    metrics_recorder.SetResult(
-        feature, SettingsVisibilityResult::kNotVisibleInvalidUser);
-    return false;
+  switch (GetCurrentUserValidityResult(feature)) {
+    case ModelExecutionFeaturesController::UserValidityResult::
+        kInvalidUnsignedUser:
+      metrics_recorder.SetResult(
+          feature, SettingsVisibilityResult::kNotVisibleUnsignedUser);
+      return false;
+    case ModelExecutionFeaturesController::UserValidityResult::
+        kInvalidEnterprisePolicy:
+      metrics_recorder.SetResult(
+          feature, SettingsVisibilityResult::kNotVisibleEnterprisePolicy);
+      return false;
+    case ModelExecutionFeaturesController::UserValidityResult::kValid:
+      break;
   }
 
   // If the setting is currently enabled by user, then we should show the
@@ -202,6 +264,22 @@ bool ModelExecutionFeaturesController::IsSettingVisible(
       metrics_recorder.SetResult(feature, visibility_result);
       return result;
   }
+}
+
+bool ModelExecutionFeaturesController::IsAllowedByEnterprisePolicy(
+    proto::ModelExecutionFeature feature) const {
+  const char* enterprise_policy_pref =
+      model_execution::prefs::GetEnterprisePolicyPrefName(feature);
+  if (!enterprise_policy_pref) {
+    return true;
+  }
+  if (static_cast<model_execution::prefs::ModelExecutionEnterprisePolicyValue>(
+          browser_context_profile_service_->GetInteger(
+              enterprise_policy_pref)) ==
+      model_execution::prefs::ModelExecutionEnterprisePolicyValue::kDisable) {
+    return false;
+  }
+  return true;
 }
 
 void ModelExecutionFeaturesController::AddObserver(
@@ -232,7 +310,17 @@ void ModelExecutionFeaturesController::OnFeatureSettingPrefChanged(
     proto::ModelExecutionFeature feature) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (!IsCurrentlyAValidUser()) {
+  auto pref_value = GetPrefState(feature);
+  if (pref_value != prefs::FeatureOptInState::kNotInitialized) {
+    base::UmaHistogramBoolean(
+        base::StrCat(
+            {"OptimizationGuide.ModelExecution.FeatureEnabledAtSettingsChange.",
+             GetStringNameForModelExecutionFeature(feature)}),
+        pref_value == prefs::FeatureOptInState::kEnabled);
+  }
+
+  if (GetCurrentUserValidityResult(feature) !=
+      ModelExecutionFeaturesController::UserValidityResult::kValid) {
     return;
   }
 
@@ -240,38 +328,36 @@ void ModelExecutionFeaturesController::OnFeatureSettingPrefChanged(
     if (obs.feature() != feature) {
       continue;
     }
-
-    if (GetPrefState(feature) == prefs::FeatureOptInState::kEnabled) {
+    if (pref_value == prefs::FeatureOptInState::kEnabled) {
       obs.PrepareToEnableOnRestart();
     }
   }
 }
 
-void ModelExecutionFeaturesController::RecordFeatureSettingsAtStartup() {
+void ModelExecutionFeaturesController::InitializeFeatureSettings() {
   features_enabled_at_startup_.clear();
   for (int i = 0; i < proto::ModelExecutionFeature_ARRAYSIZE; ++i) {
     proto::ModelExecutionFeature feature = proto::ModelExecutionFeature(i);
-    switch (feature) {
-      case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_UNSPECIFIED:
-        continue;
-      default:
-        if (GetPrefState(feature) == prefs::FeatureOptInState::kEnabled) {
-          features_enabled_at_startup_.insert(static_cast<int>(feature));
-        }
-        continue;
+    if (feature ==
+        proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_UNSPECIFIED) {
+      continue;
+    }
+    bool is_enabled =
+        GetPrefState(feature) == prefs::FeatureOptInState::kEnabled;
+    base::UmaHistogramBoolean(
+        base::StrCat(
+            {"OptimizationGuide.ModelExecution.FeatureEnabledAtStartup.",
+             GetStringNameForModelExecutionFeature(feature)}),
+        is_enabled);
+    if (is_enabled) {
+      features_enabled_at_startup_.insert(static_cast<int>(feature));
     }
   }
 }
 
-void ModelExecutionFeaturesController::StartObservingAccountChanges(
-    signin::IdentityManager* identity_manager) {
+void ModelExecutionFeaturesController::StartObservingAccountChanges() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  if (!identity_manager) {
-    return;
-  }
-
-  identity_manager->AddObserver(this);
+  identity_manager_observation_.Observe(identity_manager_);
 }
 
 void ModelExecutionFeaturesController::OnPrimaryAccountChanged(
@@ -292,9 +378,6 @@ void ModelExecutionFeaturesController::OnPrimaryAccountChanged(
   }
 
   // Reset prefs to `kNotInitialized`.
-  browser_context_profile_service_->SetInteger(
-      optimization_guide::prefs::kModelExecutionMainToggleSettingState,
-      static_cast<int>(prefs::FeatureOptInState::kNotInitialized));
   for (int i = proto::ModelExecutionFeature_MIN;
        i <= proto::ModelExecutionFeature_MAX; ++i) {
     proto::ModelExecutionFeature feature =
@@ -303,19 +386,18 @@ void ModelExecutionFeaturesController::OnPrimaryAccountChanged(
       case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_UNSPECIFIED:
         continue;
       default:
-        browser_context_profile_service_->SetInteger(
-            optimization_guide::prefs::GetSettingEnabledPrefName(feature),
-            static_cast<int>(prefs::FeatureOptInState::kNotInitialized));
+        if (GetCurrentUserValidityResult(feature) !=
+            ModelExecutionFeaturesController::UserValidityResult::kValid) {
+          browser_context_profile_service_->SetInteger(
+              optimization_guide::prefs::GetSettingEnabledPrefName(feature),
+              static_cast<int>(prefs::FeatureOptInState::kNotInitialized));
+        }
     }
   }
 }
 
 void ModelExecutionFeaturesController::OnMainToggleSettingStatePrefChanged() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  if (!IsCurrentlyAValidUser()) {
-    return;
-  }
 
   bool is_now_enabled = (browser_context_profile_service_->GetInteger(
                              prefs::kModelExecutionMainToggleSettingState) ==
@@ -378,7 +460,7 @@ void ModelExecutionFeaturesController::InitializePrefListener() {
 }
 
 void ModelExecutionFeaturesController::SimulateBrowserRestartForTesting() {
-  RecordFeatureSettingsAtStartup();
+  InitializeFeatureSettings();
 }
 
 }  // namespace optimization_guide

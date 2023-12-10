@@ -217,6 +217,13 @@ class PageInfoBubbleViewTestApi {
     return GetPermissionToggleRowAt(index)->state_label_;
   }
 
+  std::u16string GetTrackingProtectionSubpageTitle() {
+    navigation_handler()->OpenCookiesPage();
+    auto* title_label = bubble_delegate_->GetViewByID(
+        PageInfoViewFactory::VIEW_ID_PAGE_INFO_SUBPAGE_TITLE);
+    return static_cast<views::Label*>(title_label)->GetText();
+  }
+
   // Returns the text shown on the view.
   std::u16string GetTextOnView(views::View* view) {
     EXPECT_TRUE(view);
@@ -351,8 +358,8 @@ class PageInfoBubbleViewTestApi {
   gfx::NativeWindow parent_;
   raw_ptr<content::WebContents> web_contents_;
   base::RunLoop run_loop_;
-  absl::optional<bool> reload_prompt_;
-  absl::optional<views::Widget::ClosedReason> closed_reason_;
+  std::optional<bool> reload_prompt_;
+  std::optional<views::Widget::ClosedReason> closed_reason_;
 };
 
 }  // namespace test
@@ -1153,10 +1160,8 @@ class PageInfoBubbleViewCookies3pcdButtonTest
       public testing::WithParamInterface<bool> {
  public:
   PageInfoBubbleViewCookies3pcdButtonTest() {
-    feature_list_.InitWithFeatures(
-        {content_settings::features::kTrackingProtection3pcd,
-         content_settings::features::kUserBypassUI},
-        {});
+    feature_list_.InitAndEnableFeature(
+        content_settings::features::kTrackingProtection3pcd);
     web_contents_helper_ =
         std::make_unique<ScopedWebContentsTestHelper>(GetParam());
   }
@@ -1238,126 +1243,40 @@ INSTANTIATE_TEST_SUITE_P(All,
                          PageInfoBubbleViewCookies3pcdButtonTest,
                          /*is_otr*/ testing::Bool());
 
-namespace {
-class PageInfoBubbleViewCookiesSubpageTest : public PageInfoBubbleViewTest {
+class PageInfoBubbleViewTrackingProtectionSubpageTitleTest
+    : public PageInfoBubbleViewTest,
+      public testing::WithParamInterface<
+          testing::tuple<CookieControlsStatus,
+                         CookieBlocking3pcdStatus,
+                         /*is_otr*/ bool>> {
  public:
-  PageInfoBubbleViewCookiesSubpageTest() {
+  PageInfoBubbleViewTrackingProtectionSubpageTitleTest() {
     feature_list_.InitWithFeatures(
-        {privacy_sandbox::kPrivacySandboxFirstPartySetsUI},
-        {content_settings::features::kUserBypassUI});
-    web_contents_helper_ = std::make_unique<ScopedWebContentsTestHelper>(false);
-    mock_privacy_sandbox_service_ = static_cast<MockPrivacySandboxService*>(
-        PrivacySandboxServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-            web_contents_helper_->profile(),
-            base::BindRepeating(&BuildMockPrivacySandboxService)));
-  }
-  void ExpectViewContainsText(views::View* view, const std::u16string& text) {
-    EXPECT_TRUE(view);
-    EXPECT_THAT(base::UTF16ToUTF8(api_->GetTextOnView(view)),
-                ::testing::HasSubstr(base::UTF16ToUTF8(text)));
-  }
-
-  MockPrivacySandboxService* mock_privacy_sandbox_service() {
-    return mock_privacy_sandbox_service_.get();
+        {content_settings::features::kTrackingProtection3pcd}, {});
+    web_contents_helper_ = std::make_unique<ScopedWebContentsTestHelper>(
+        testing::get<2>(GetParam()));
   }
 
  private:
   base::test::ScopedFeatureList feature_list_;
-  raw_ptr<MockPrivacySandboxService> mock_privacy_sandbox_service_;
 };
 
-}  // namespace
-
-// Test that texts on buttons are correct and there is no more views than
-// necessary.
-TEST_F(PageInfoBubbleViewCookiesSubpageTest, TextsOnButtonsAreCorrect) {
-  base::HistogramTester histogram_tester;
-  // Create fake cookie information.
+TEST_P(PageInfoBubbleViewTrackingProtectionSubpageTitleTest,
+       DisplaysTrackingProtectionTitle) {
   PageInfoUI::CookiesNewInfo cookie_info;
-  cookie_info.blocked_third_party_sites_count = 10;
-  cookie_info.allowed_third_party_sites_count = 1;
-  cookie_info.allowed_sites_count = 3;
-  cookie_info.status = CookieControlsStatus::kEnabled;
-  cookie_info.enforcement = CookieControlsEnforcement::kNoEnforcement;
-  cookie_info.blocking_status = CookieBlocking3pcdStatus::kNotIn3pcd;
-  size_t kExpectedChildren = 3;
-  const std::u16string owner_name = u"example_owner";
-  cookie_info.fps_info = {PageInfoMainView::CookiesFpsInfo(owner_name)};
-
-  if (base::FeatureList::IsEnabled(
-          browsing_data::features::kMigrateStorageToBDM)) {
-    // The initial `SetCookieInfo` call coming from `OpenCookiesPage` through
-    // the `PageInfo` constructor synchronously has an empty
-    // `cookie_info.fps_info` which causes a persistent false state for FPS info
-    // and consequently persisting incorrect histogram reports in this test.
-    // Mocking the call into `GetFirstPartySetOwnerForDisplay` resolves this by
-    // overriding the `owner_name` for synchronous init call to `SetCookieInfo`.
-    EXPECT_CALL(*mock_privacy_sandbox_service(),
-                GetFirstPartySetOwnerForDisplay(_))
-        .Times(1)
-        .WillOnce(Return(owner_name));
-  }
-
-  // Open cookies subpage to get the buttons.
-  api_->navigation_handler()->OpenCookiesPage();
-
-  // Update the number of blocked and allowed sites and fps information.
+  cookie_info.status = testing::get<0>(GetParam());
+  cookie_info.blocking_status = testing::get<1>(GetParam());
   api_->SetCookieInfo(cookie_info);
-
-  auto* cookies_buttons_container = api_->cookies_buttons_container_view();
-  // The button that gets hidden and reappears should be the same one.
-  auto* fps_button = api_->fps_button();
-  auto* blocking_third_party_cookies_row =
-      api_->blocking_third_party_cookies_row();
-
-  EXPECT_TRUE(cookies_buttons_container);
-  EXPECT_EQ(kExpectedChildren, cookies_buttons_container->children().size());
-
-  ExpectViewContainsText(api_->cookies_dialog_button(),
-                         l10n_util::GetPluralStringFUTF16(
-                             IDS_PAGE_INFO_COOKIES_ALLOWED_SITES_COUNT,
-                             cookie_info.allowed_sites_count));
-  ExpectViewContainsText(
-      fps_button, l10n_util::GetStringFUTF16(IDS_PAGE_INFO_FPS_BUTTON_SUBTITLE,
-                                             owner_name));
-  ExpectViewContainsText(
-      fps_button, l10n_util::GetStringUTF16(IDS_PAGE_INFO_FPS_BUTTON_TITLE));
-  ExpectViewContainsText(api_->blocking_third_party_cookies_subtitle(),
-                         l10n_util::GetPluralStringFUTF16(
-                             IDS_PAGE_INFO_COOKIES_BLOCKED_SITES_COUNT,
-                             cookie_info.blocked_third_party_sites_count));
-
-  EXPECT_TRUE(blocking_third_party_cookies_row->GetVisible());
-  EXPECT_TRUE(fps_button->GetVisible());
-  EXPECT_TRUE(api_->cookies_dialog_button()->GetVisible());
-  histogram_tester.ExpectBucketCount("Security.PageInfo.Cookies.HasFPSInfo",
-                                     false, 0);
-  histogram_tester.ExpectBucketCount("Security.PageInfo.Cookies.HasFPSInfo",
-                                     true, 1);
-
-  // Check if buttons get hidden when permission changes.
-  cookie_info.status = CookieControlsStatus::kDisabled;
-  cookie_info.fps_info = {};
-  api_->SetCookieInfo(cookie_info);
-  EXPECT_FALSE(blocking_third_party_cookies_row->GetVisible());
-  EXPECT_FALSE(fps_button->GetVisible());
-  EXPECT_EQ(kExpectedChildren, cookies_buttons_container->children().size());
-  // Check the histogram count is not increased on permission changes
-  histogram_tester.ExpectBucketCount("Security.PageInfo.Cookies.HasFPSInfo",
-                                     false, 0);
-  histogram_tester.ExpectBucketCount("Security.PageInfo.Cookies.HasFPSInfo",
-                                     true, 1);
-
-  // Check if buttons reappear when permission changes.
-  cookie_info.status = CookieControlsStatus::kDisabledForSite;
-  cookie_info.fps_info = {PageInfoMainView::CookiesFpsInfo(owner_name)};
-  api_->SetCookieInfo(cookie_info);
-  EXPECT_TRUE(blocking_third_party_cookies_row->GetVisible());
-  EXPECT_TRUE(fps_button->GetVisible());
-  EXPECT_EQ(kExpectedChildren, cookies_buttons_container->children().size());
-  // Check the histogram count is not increased on permission changes
-  histogram_tester.ExpectBucketCount("Security.PageInfo.Cookies.HasFPSInfo",
-                                     false, 0);
-  histogram_tester.ExpectBucketCount("Security.PageInfo.Cookies.HasFPSInfo",
-                                     true, 1);
+  EXPECT_EQ(api_->GetTrackingProtectionSubpageTitle(),
+            l10n_util::GetStringUTF16(
+                IDS_PAGE_INFO_SUB_PAGE_VIEW_TRACKING_PROTECTION_HEADER));
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    PageInfoBubbleViewTrackingProtectionSubpageTitleTest,
+    testing::Combine(testing::Values(CookieControlsStatus::kEnabled,
+                                     CookieControlsStatus::kDisabledForSite),
+                     testing::Values(CookieBlocking3pcdStatus::kNotIn3pcd,
+                                     CookieBlocking3pcdStatus::kAll),
+                     /*is_otr*/ testing::Bool()));

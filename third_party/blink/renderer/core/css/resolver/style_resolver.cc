@@ -59,6 +59,7 @@
 #include "third_party/blink/renderer/core/css/font_face.h"
 #include "third_party/blink/renderer/core/css/page_rule_collector.h"
 #include "third_party/blink/renderer/core/css/part_names.h"
+#include "third_party/blink/renderer/core/css/position_fallback_data.h"
 #include "third_party/blink/renderer/core/css/post_style_update_scope.h"
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
@@ -146,12 +147,12 @@ bool ShouldStoreOldStyle(const StyleRecalcContext& style_recalc_context,
   // position-fallback, we can fall back to the default behavior (in
   // CSSAnimations) of using the current style on Element as the old style.
   //
-  // TODO(futhark): We also need to check whether we are a descendant of an
-  // element with position-fallback to cover the case where the descendant
-  // explicitly inherits insets or other valid @try properties from the
-  // element with position-fallback.
+  // TODO(crbug.com/1502666): We also need to check whether we are a descendant
+  // of an element with position-fallback to cover the case where the descendant
+  // explicitly inherits insets or other valid @try properties from the element
+  // with position-fallback.
   return (style_recalc_context.container ||
-          style_recalc_context.position_fallback ||
+          style_recalc_context.is_position_fallback ||
           (RuntimeEnabledFeatures::
                CSSAnchorPositioningCascadeFallbackEnabled() &&
            state.StyleBuilder().PositionFallback())) &&
@@ -825,29 +826,23 @@ void StyleResolver::MatchPseudoPartRules(const Element& part_matching_element,
 // Declarations within @try rules match when ResolveStyle is invoked
 // with that rule explicitly specified to match
 // (see StyleRecalcContext.position_fallback/index).
-void StyleResolver::MatchTryRules(ElementRuleCollector& collector) {
-  const ScopedCSSName* position_fallback = collector.PositionFallback();
-  if (!position_fallback) {
-    return;
+void StyleResolver::MatchTryRules(const Element& element,
+                                  ElementRuleCollector& collector) {
+  // If StyleEngine::UpdateStyleForPositionFallback was called with
+  // a PseudoElement, the CSSPropertyValueSet we need is stored on the
+  // PositionFallbackData of that pseudo element. However, when resolving
+  // the style of that pseudo element, `element` is the _originating element_,
+  // not the pseudo element itself.
+  PseudoId pseudo_id = collector.GetPseudoId();
+  const Element* try_element =
+      pseudo_id == kPseudoIdNone
+          ? &element
+          : element.GetPseudoElement(pseudo_id, collector.GetPseudoArgument());
+  if (try_element) {
+    if (PositionFallbackData* data = try_element->GetPositionFallbackData()) {
+      collector.AddTryStyleProperties(data->GetTryPropertyValueSet());
+    }
   }
-  unsigned index = collector.PositionFallbackIndex();
-  const TreeScope* tree_scope = position_fallback->GetTreeScope();
-  if (!tree_scope) {
-    tree_scope = &GetDocument();
-  }
-  StyleRulePositionFallback* position_fallback_rule =
-      ResolvePositionFallbackRule(tree_scope, position_fallback->GetName());
-
-  if (!position_fallback_rule ||
-      index >= position_fallback_rule->ChildRules().size()) {
-    return;
-  }
-
-  StyleRuleTry* try_rule =
-      To<StyleRuleTry>(position_fallback_rule->ChildRules()[index].Get());
-  const CSSPropertyValueSet& properties = try_rule->Properties();
-
-  collector.AddTryStyleProperties(&properties);
 }
 
 void StyleResolver::MatchAuthorRules(const Element& element,
@@ -856,7 +851,7 @@ void StyleResolver::MatchAuthorRules(const Element& element,
   MatchSlottedRules(element, collector, tracker_);
   MatchElementScopeRules(element, collector, tracker_);
   MatchPseudoPartRules(element, collector);
-  MatchTryRules(collector);
+  MatchTryRules(element, collector);
 }
 
 void StyleResolver::MatchUserRules(ElementRuleCollector& collector) {
@@ -1597,9 +1592,7 @@ void StyleResolver::ApplyBaseStyleNoCache(
   ApplyCallbackSelectors(state);
   if (element->IsLink() && (element->HasTagName(html_names::kATag) ||
                             element->HasTagName(html_names::kAreaTag))) {
-    // TODO(crbug.com/1371522): Revisit scoping root used after
-    // https://github.com/WICG/nav-speculation/issues/240 is resolved.
-    ApplyDocumentRulesSelectors(state, &GetDocument());
+    ApplyDocumentRulesSelectors(state, To<ContainerNode>(&element->TreeRoot()));
   }
 
   // Cache our if our original display is inline.
@@ -2150,9 +2143,14 @@ bool StyleResolver::CacheSuccess::InheritedVariablesChanged(
   if (!cached_matched_properties) {
     return false;
   }
-  return !base::ValuesEquivalent(
-      cached_matched_properties->computed_style->InheritedVariables(),
-      builder.InheritedVariables());
+  if (RuntimeEnabledFeatures::CSSMPCImprovementsEnabled()) {
+    return !base::ValuesEquivalent(
+        cached_matched_properties->computed_style->InheritedVariables(),
+        builder.InheritedVariables());
+  } else {
+    return cached_matched_properties->computed_style->InheritedVariables() !=
+           builder.InheritedVariables();
+  }
 }
 
 bool StyleResolver::CacheSuccess::LineHeightChanged(
@@ -2289,7 +2287,8 @@ void StyleResolver::MaybeAddToMatchedPropertiesCache(
     const MatchResult& match_result) {
   state.LoadPendingResources();
 
-  // NOTE: We replace everything that isn't a full cache hit. There are cases
+  // NOTE: We replace everything that isn't a full cache hit (unless the
+  // CSSMPCImprovements runtime flag has been disabled). There are cases
   // where this would be bad (e.g., every other element we style with the same
   // key has a different parent computed style), but it seems a much more common
   // case, if we don't replace elements giving partial hits, is that a
@@ -2297,7 +2296,9 @@ void StyleResolver::MaybeAddToMatchedPropertiesCache(
   // from there because it's never replaced. (Or, similarly, a partial
   // hit where we have to reapply the inherited properties, or where we trash
   // the “partner cache” in StyleInheritedVariables.)
-  if (cache_success.key.IsValid() &&
+  if ((RuntimeEnabledFeatures::CSSMPCImprovementsEnabled() ||
+       !cache_success.cached_matched_properties) &&
+      cache_success.key.IsValid() &&
       MatchedPropertiesCache::IsCacheable(state)) {
     INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
                                   matched_property_cache_added, 1);
@@ -2394,6 +2395,19 @@ const CSSValue* StyleResolver::ComputeValue(
   const ComputedStyle* style = state.TakeStyle();
   return ComputedStyleUtils::ComputedPropertyValue(property_ref.GetProperty(),
                                                    *style);
+}
+
+const CSSValue* StyleResolver::ResolveValue(
+    Element& element,
+    const CSSPropertyName& property_name,
+    const CSSValue& value) {
+  const ComputedStyle* style = element.GetComputedStyle();
+  if (!style) {
+    return nullptr;
+  }
+  StyleResolverState state(element.GetDocument(), element);
+  state.SetStyle(*style);
+  return StyleCascade::Resolve(state, property_name, value);
 }
 
 FilterOperations StyleResolver::ComputeFilterOperations(

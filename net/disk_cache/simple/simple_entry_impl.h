@@ -20,12 +20,13 @@
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
 #include "net/disk_cache/disk_cache.h"
-#include "net/disk_cache/simple/post_doom_waiter.h"
+#include "net/disk_cache/simple/post_operation_waiter.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_entry_operation.h"
 #include "net/disk_cache/simple/simple_synchronous_entry.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_with_source.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class TaskRunner;
@@ -95,7 +96,7 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   // CompletionOnceCallback.
   net::Error DoomEntry(CompletionOnceCallback callback);
 
-  const std::string& key() const { return key_; }
+  const absl::optional<std::string>& key() const { return key_; }
   uint64_t entry_hash() const { return entry_hash_; }
 
   // The key is not a constructor parameter to the SimpleEntryImpl, because
@@ -113,6 +114,7 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   // From Entry:
   void Doom() override;
   void Close() override;
+  // This is only used as a public API, not internally.
   std::string GetKey() const override;
   // GetLastUsed() should not be called in net::APP_CACHE mode since the times
   // are not updated.
@@ -373,7 +375,7 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   const base::FilePath path_;
   const uint64_t entry_hash_;
   const bool use_optimistic_operations_;
-  std::string key_;
+  absl::optional<std::string> key_;
 
   // |last_used_|, |last_modified_| and |data_size_| are copied from the
   // synchronous entry at the completion of each item of asynchronous IO.
@@ -449,7 +451,7 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   scoped_refptr<net::GrowableIOBuffer> stream_1_prefetch_data_;
 
   // This is used only while a doom is pending.
-  scoped_refptr<SimplePostDoomWaiterTable> post_doom_waiting_;
+  scoped_refptr<SimplePostOperationWaiterTable> post_doom_waiting_;
 
   // Choosing uint32_t over uint64_t for space savings. Pages have in the
   // hundres to possibly thousands of resources. Wrapping every 4 billion

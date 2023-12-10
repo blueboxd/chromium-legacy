@@ -129,26 +129,11 @@ class PageNodeImpl
                                       const GURL& url,
                                       const std::string& contents_mime_type);
 
-  // Returns the current main frame node (if there is one), otherwise returns
-  // any of the potentially multiple main frames that currently exist. If there
-  // are no main frames at the moment, returns nullptr.
-  FrameNodeImpl* GetMainFrameNodeImpl() const;
-
   // Accessors.
   FrameNodeImpl* opener_frame_node() const;
   FrameNodeImpl* embedder_frame_node() const;
-  LoadingState loading_state() const;
-  ukm::SourceId ukm_source_id() const;
-  LifecycleState lifecycle_state() const;
-  bool is_holding_weblock() const;
-  bool is_holding_indexeddb_lock() const;
+  FrameNodeImpl* main_frame_node() const;
   const base::flat_set<FrameNodeImpl*>& main_frame_nodes() const;
-  const GURL& main_frame_url() const;
-  int64_t navigation_id() const;
-  const std::string& contents_mime_type() const;
-  bool had_form_interaction() const;
-  bool had_user_edits() const;
-  PageState page_state() const;
 
   // Invoked to set/clear the opener of this page.
   void SetOpenerFrameNode(FrameNodeImpl* opener);

@@ -2,14 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @fileoverview
- * This file is checked via TS, so we suppress Closure checks.
- * @suppress {checkTypes}
- */
 import {assertInstanceof, assertNotReached} from 'chrome://resources/ash/common/assert.js';
 
 import {getMimeType, startIOTask} from '../../common/js/api.js';
+import {unwrapEntry} from '../../common/js/entry_utils.js';
 import {type AnnotatedTask, getDefaultTask} from '../../common/js/file_tasks.js';
 import {recordDirectoryListLoadWithTolerance, startInterval} from '../../common/js/metrics.js';
 import {str, strf} from '../../common/js/translations.js';
@@ -18,7 +14,7 @@ import {Crostini} from '../../externs/background/crostini.js';
 import {ProgressCenter} from '../../externs/background/progress_center.js';
 import {FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
 import {FileData, FileKey, FileTasks as StoreFileTasks, PropStatus, State} from '../../externs/ts/state.js';
-import {VolumeManager} from '../../externs/volume_manager.js';
+import type {VolumeManager} from '../../externs/volume_manager.js';
 import {fetchFileTasks} from '../../state/ducks/current_directory.js';
 import {getFilesData, getStore, type Store, waitForState} from '../../state/store.js';
 import {XfPasswordDialog} from '../../widgets/xf_password_dialog.js';
@@ -203,7 +199,8 @@ export class TaskController {
    */
   private async changeDefaultTask_(
       selection: FileSelection, task: chrome.fileManagerPrivate.FileTask) {
-    const entries = selection.entries;
+    const entries =
+        selection.entries.map(entry => unwrapEntry(entry)) as Entry[];
 
     const mimeTypes =
         await Promise.all(entries.map(entry => this.getMimeType_(entry)));
@@ -372,7 +369,7 @@ export class TaskController {
    * from its content or name.
    * @param entry An entry to obtain its mime type.
    */
-  private async getMimeType_(entry: Entry): Promise<string> {
+  private async getMimeType_(entry: Entry|FilesAppEntry): Promise<string> {
     const properties =
         await this.metadataModel_.get([entry], ['contentMimeType']);
     if (properties && properties[0]!.contentMimeType) {
@@ -542,7 +539,7 @@ export class TaskController {
    * Return the tasks for the `entry`.
    * @param entry
    */
-  async getEntryFileTasks(entry: Entry): Promise<FileTasks> {
+  async getEntryFileTasks(entry: Entry|FilesAppEntry): Promise<FileTasks> {
     return FileTasks.create(
         this.volumeManager_, this.metadataModel_, this.directoryModel_,
         this.ui_, this.fileTransferController_!, [entry], this.taskHistory_,

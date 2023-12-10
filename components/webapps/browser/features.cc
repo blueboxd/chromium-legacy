@@ -22,11 +22,6 @@ extern const base::FeatureParam<base::TimeDelta>
     kAmbientBadgeSuppressFirstVisit_Period{&kAmbientBadgeSuppressFirstVisit,
                                            "period", base::Days(30)};
 
-// Enables or disables the installable ambient badge infobar.
-BASE_FEATURE(kInstallableAmbientBadgeInfoBar,
-             "InstallableAmbientBadgeInfoBar",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables or disables the installable ambient badge message.
 BASE_FEATURE(kInstallableAmbientBadgeMessage,
              "InstallableAmbientBadgeMessage",
@@ -125,6 +120,12 @@ extern const base::FeatureParam<int> kMaxDaysForMLPromotionGuardrailStorage(
 // Allows installing a web app with fallback manifest values.
 BASE_FEATURE(kUniversalInstallManifest,
              "UniversalInstallManifest",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Allows installing a web app with fallback manifest values on root scope pages
+// without manifest.
+BASE_FEATURE(kUniversalInstallRootScopeNoManifest,
+             "UniversalInstallRootScopeNoManifest",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Allows installing a web app when no icon provided by the manifest.

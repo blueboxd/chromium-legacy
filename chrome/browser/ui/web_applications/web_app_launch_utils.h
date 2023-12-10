@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 #include <memory>
+#include <optional>
 #include <string>
 
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/webapps/common/web_app_id.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect.h"
 
 class Profile;
@@ -32,9 +32,9 @@ class WebContents;
 namespace web_app {
 
 class AppBrowserController;
-class AppLock;
+class WithAppResources;
 
-absl::optional<webapps::AppId> GetWebAppForActiveTab(const Browser* browser);
+std::optional<webapps::AppId> GetWebAppForActiveTab(const Browser* browser);
 
 // Clears navigation history prior to user entering app scope.
 void PrunePreScopeNavigationHistory(const GURL& scope,
@@ -110,10 +110,12 @@ void UpdateLaunchStats(content::WebContents* web_contents,
                        const webapps::AppId& app_id,
                        const GURL& launch_url);
 
+// Locks that lock apps all have the WithAppResources mixin, allowing any
+// app-locking lock to call this method.
 void LaunchWebApp(apps::AppLaunchParams params,
                   LaunchWebAppWindowSetting launch_setting,
                   Profile& profile,
-                  AppLock& lock,
+                  WithAppResources& app_resources,
                   LaunchWebAppDebugValueCallback callback);
 
 }  // namespace web_app

@@ -48,8 +48,20 @@ enum ComposeStatus {
   kPermissionDenied = 6,
 };
 
-// Configuration parameters used in compose requests.
-struct StyleModifiers {
+// Whether the user has consented to page content sharing and acknowledged this
+// consent in compose.
+enum ConsentState {
+  // Consent has not been given
+  kUnset,
+  // Consent has been given but not acknowledged in compose
+  kExternalConsented,
+  // Consent has been given and acknowledged in compose
+  kConsented,
+};
+
+// Configuration parameters used in rewrite requests, specifying how the
+// response should be changed.
+union StyleModifiers {
   Tone tone;
   Length length;
 };
@@ -71,8 +83,6 @@ struct ComposeState {
   // State for the WebUI session. This should be considered opaque and is
   // unsafe to parse in the browser process.
   string webui_state;
-  // Modifiers used in the response captured in this state.
-  StyleModifiers style;
   // Response from compose service. This is not present if the request
   // has not been completed. The response is present if the request has
   // completed, even if the response status is an error.
@@ -80,6 +90,8 @@ struct ComposeState {
   // Whether a request is pending. False can also mean that the
   // request was not made.
   bool has_pending_request;
+  // Whether the user has pressed the thumbs up/down feedback buttons.
+  UserFeedback feedback;
 };
 
 // Parameters used to configure the WebUI. These params are passed from the
@@ -95,6 +107,7 @@ struct ConfigurableParams {
 // Information needed by the WebUI to show a new or restored
 // compose dialog.
 struct OpenMetadata {
+  ConsentState consent_state;
   // Renderer provided text selection.
   string initial_input;
   ComposeState compose_state;
@@ -103,7 +116,11 @@ struct OpenMetadata {
 
 // The trigger for dismissing the compose dialog.
 enum CloseReason {
-  // The X button on the upper-right of the dialog.
+  // The X button on the upper-right of the consent/disclaimer dialog.
+  kConsentCloseButton,
+  // The page content consent was declined.
+  kPageContentConsentDeclined,
+  // The X button on the upper-right of the main app dialog.
   kCloseButton,
   // The Insert button of the dialog.
   kInsertButton,
@@ -112,19 +129,24 @@ enum CloseReason {
 //TODO(b/311697865) move this to a common location.
 enum UserFeedback {
   // Unspecified.
-  kUserFeedBackUnspecified,
+  kUserFeedbackUnspecified,
   // A thumbs up.
-  kUserFeedBackPositive,
+  kUserFeedbackPositive,
   // A thumbs down.
-  kUserFeedBackNegative,
+  kUserFeedbackNegative,
 };
 
 // Interface for calls from Compose dialog JS into the Browser process.
 interface ComposeSessionPageHandler {
-  // Asks the Browser to compose `input` with `stye` applied. Response contains
-  // the modified output. `rewrite` indicates that the user clicked on a tone,
-  // length, or the refresh button.
-  Compose(StyleModifiers style, string input, bool rewrite);
+  // Asks the Browser to compose `input`, informing the Browser if the compose
+  // call was based on the user input being 'edited' in the dialog after the
+  // initial compose response.
+  Compose(string input, bool edited);
+
+  // Asks the Browser to rewrite the last response. `style` specifies how the
+  // response should be changed. A null `style` requests a rewrite without
+  // changes to the tone or length.
+  Rewrite(StyleModifiers? style);
 
   // Asks the native handler to store `webui_state` for the last field the user
   // selected compose on.
@@ -156,6 +178,9 @@ interface ComposeSessionPageHandler {
   // Buganizer.
   OpenBugReportingLink();
 
+  // Asks the Browser to open a new tab navigated to the Dogfood feedback
+  // survey.
+  OpenFeedbackSurveyLink();
 
   // Asks the Browser to open a new tab navigated to the Compose-related Chrome
   // settings page.
@@ -172,6 +197,10 @@ interface ComposeClientPageHandler {
   // Asks the receiver to close the compose dialog. `reason` describes
   // the user action that triggered the close.
   CloseUI(CloseReason reason);
+  // Notifies the browser that the page content consent was approved.
+  ApproveConsent();
+  // Notifies the browser that the page content disclaimer was acknowledged.
+  AcknowledgeConsentDisclaimer();
 };
 
 // Interface for calls from the Browser process into Compose dialog JS.

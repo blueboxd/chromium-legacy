@@ -83,12 +83,15 @@
         tabs="[[tabs_]]"
         available-height="[[availableHeight_]]"
         on-create-group-click="onCreateGroupClick_"
-        on-remove-tab="updateContentsHeightAfterNextRender">
+        on-remove-tab="onRemoveTab_"
+        on-learn-more-click="onLearnMoreClick_"
+        on-feedback="onFeedback_">
     </tab-organization-results>
     <tab-organization-failure id="failure"
         shown$="[[isState_(tabOrganizationStateEnum_.kFailure, state_)]]"
         show-fre="[[showFRE_]]"
         error="[[error_]]"
+        on-check-now="onCheckNow_"
         on-tip-click="onTipClick_">
     </tab-organization-failure>
   </div>

@@ -45,9 +45,10 @@ void WaitUntilTabResumptionTileVisibleOrTimeout(bool should_show) {
       conditionWithName:@"Tile shown"
                   block:^BOOL {
                     NSError* error;
-                    [[EarlGrey selectElementWithMatcher:
-                                   grey_accessibilityID(l10n_util::GetNSString(
-                                       IDS_IOS_TAB_RESUMPTION_TITLE))]
+                    [[EarlGrey
+                        selectElementWithMatcher:
+                            grey_accessibilityID(
+                                kMagicStackContentSuggestionsModuleTabResumptionAccessibilityIdentifier)]
                         assertWithMatcher:grey_notNil()
                                     error:&error];
                     return error == nil;
@@ -215,7 +216,13 @@ NSString* HostnameFromGURL(GURL URL) {
 
 // Tests that interacting with the Shortcuts tile works when the tab resumption
 // tile is displayed.
-- (void)testInteractWithAnotherTile {
+// TODO(crbug.com/1504149): Test is failing on device.
+#if TARGET_OS_SIMULATOR
+#define MAYBE_testInteractWithAnotherTile testInteractWithAnotherTile
+#else
+#define MAYBE_testInteractWithAnotherTile DISABLED_testInteractWithAnotherTile
+#endif
+- (void)MAYBE_testInteractWithAnotherTile {
   // Check that the tile is not displayed when there is no distant tab.
   WaitUntilTabResumptionTileVisibleOrTimeout(false);
 

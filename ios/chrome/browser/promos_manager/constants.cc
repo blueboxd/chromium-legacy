@@ -41,16 +41,16 @@ std::optional<Promo> PromoForName(base::StringPiece promo) {
   if (promo == "promos_manager::Promo::WhatsNew")
     return promos_manager::Promo::WhatsNew;
 
-  if (promo == "promos_manager::Promo::Choice") {
-    return promos_manager::Promo::Choice;
-  }
-
   if (promo == "promos_manager::Promo::PostRestoreDefaultBrowserAlert") {
     return promos_manager::Promo::PostRestoreDefaultBrowserAlert;
   }
 
   if (promo == "promos_manager::Promo::DefaultBrowserRemindMeLater") {
     return promos_manager::Promo::DefaultBrowserRemindMeLater;
+  }
+
+  if (promo == "promos_manager::Promo::OmniboxPosition") {
+    return promos_manager::Promo::OmniboxPosition;
   }
 
   return std::nullopt;
@@ -76,12 +76,12 @@ base::StringPiece ShortNameForPromo(Promo promo) {
       return "PostRestoreSignInAlert";
     case promos_manager::Promo::WhatsNew:
       return "WhatsNew";
-    case promos_manager::Promo::Choice:
-      return "Choice";
     case promos_manager::Promo::PostRestoreDefaultBrowserAlert:
       return "PostRestoreDefaultBrowserAlert";
     case promos_manager::Promo::DefaultBrowserRemindMeLater:
       return "DefaultBrowserRemindMeLater";
+    case promos_manager::Promo::OmniboxPosition:
+      return "OmniboxPosition";
   }
 }
 

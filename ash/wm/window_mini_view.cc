@@ -43,7 +43,7 @@ gfx::RoundedCornersF GetRoundedCornersForPreviewView(
     const gfx::Rect& preview_bounds_in_screen,
     float scale,
     bool show,
-    absl::optional<gfx::RoundedCornersF> preview_view_rounded_corners) {
+    std::optional<gfx::RoundedCornersF> preview_view_rounded_corners) {
   if (!show) {
     return gfx::RoundedCornersF();
   }
@@ -145,7 +145,6 @@ void WindowMiniView::RefreshPreviewRoundedCorners(bool show) {
   layer->SetRoundedCornerRadius(GetRoundedCornersForPreviewView(
       source_window_, backdrop_view_, preview_view_->GetBoundsInScreen(),
       layer->transform().To2dScale().x(), show, preview_view_rounded_corners_));
-  layer->SetIsFastRoundedCorner(true);
 }
 
 void WindowMiniView::RefreshHeaderViewRoundedCorners() {

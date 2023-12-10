@@ -17,8 +17,8 @@
 namespace blink {
 
 namespace {
+using mojom::blink::DisconnectStatus;
 using mojom::blink::RequestTokenStatus;
-using mojom::blink::RevokeStatus;
 
 constexpr char kIdentityCredentialType[] = "identity";
 
@@ -31,10 +31,10 @@ enum class FedCmCspStatus {
   kMaxValue = kFailedOrigin
 };
 
-void OnRevoke(ScriptPromiseResolver* resolver, RevokeStatus status) {
-  if (status != RevokeStatus::kSuccess) {
+void OnDisconnect(ScriptPromiseResolver* resolver, DisconnectStatus status) {
+  if (status != DisconnectStatus::kSuccess) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNetworkError, "Error revoking account."));
+        DOMExceptionCode::kNetworkError, "Error disconnecting account."));
     return;
   }
   resolver->Resolve();
@@ -96,22 +96,31 @@ bool IdentityCredential::IsIdentityCredential() const {
 }
 
 // static
-ScriptPromise IdentityCredential::revoke(
+ScriptPromise IdentityCredential::disconnect(
     ScriptState* script_state,
-    const blink::IdentityCredentialRevokeOptions* options,
+    const blink::IdentityCredentialDisconnectOptions* options,
     ExceptionState& exception_state) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (!options->hasConfigURL()) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kInvalidStateError, "configURL is required"));
+    resolver->Reject(V8ThrowException::CreateTypeError(
+        script_state->GetIsolate(), "configURL is required"));
     return promise;
   }
 
-  if (!options->hasAccountHint()) {
+  if (!options->hasClientId()) {
+    resolver->Reject(V8ThrowException::CreateTypeError(
+        script_state->GetIsolate(), "clientId is required"));
+    return promise;
+  }
+
+  if (!resolver->GetExecutionContext()->IsFeatureEnabled(
+          mojom::blink::PermissionsPolicyFeature::kIdentityCredentialsGet)) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kInvalidStateError, "accountHint is required"));
+        DOMExceptionCode::kNotAllowedError,
+        "The 'identity-credentials-get` feature is not enabled in this "
+        "document."));
     return promise;
   }
 
@@ -132,10 +141,11 @@ ScriptPromise IdentityCredential::revoke(
     return promise;
   }
 
-  mojom::blink::IdentityCredentialRevokeOptionsPtr revoke_options =
-      blink::mojom::blink::IdentityCredentialRevokeOptions::From(*options);
-  auth_request->Revoke(std::move(revoke_options),
-                       WTF::BindOnce(&OnRevoke, WrapPersistent(resolver)));
+  mojom::blink::IdentityCredentialDisconnectOptionsPtr disconnect_options =
+      blink::mojom::blink::IdentityCredentialDisconnectOptions::From(*options);
+  auth_request->Disconnect(
+      std::move(disconnect_options),
+      WTF::BindOnce(&OnDisconnect, WrapPersistent(resolver)));
   return promise;
 }
 

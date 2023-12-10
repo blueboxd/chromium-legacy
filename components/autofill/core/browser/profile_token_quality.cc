@@ -24,6 +24,7 @@
 #include "components/autofill/core/browser/field_type_utils.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/metrics/profile_token_quality_metrics.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_l10n_util.h"
@@ -178,6 +179,9 @@ void ProfileTokenQuality::SaveObservationsForFilledFormForAllSubmittedProfiles(
     return;
   }
 
+  autofill_metrics::LogObservationCountBeforeSubmissionMetric(form_structure,
+                                                              pdm);
+
   std::set<std::string> guids_seen;
   for (const std::unique_ptr<AutofillField>& field : form_structure) {
     if (!field->autofill_source_profile_guid() ||
@@ -270,7 +274,6 @@ ObservationType ProfileTokenQuality::GetObservationTypeFromField(
 
   // Since the `autofill_source_profile_guid()` is set and the field is not
   // autofilled anymore, it must have been previously autofilled.
-  CHECK(field.previously_autofilled());
   return GetObservationTypeForEditedField(type, current_field_value, *profile_,
                                           other_profiles, app_locale);
 }
@@ -333,16 +336,6 @@ void ProfileTokenQuality::ResetObservationsForDifferingTokens(
       ResetObservationsForStoredType(type);
     }
   }
-}
-
-bool ProfileTokenQuality::Observation::operator==(
-    const ProfileTokenQuality::Observation& other) const {
-  return type == other.type && form_hash == other.form_hash;
-}
-
-bool ProfileTokenQuality::Observation::operator!=(
-    const ProfileTokenQuality::Observation& other) const {
-  return !operator==(other);
 }
 
 ProfileTokenQuality::FormSignatureHash

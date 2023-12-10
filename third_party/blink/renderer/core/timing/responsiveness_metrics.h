@@ -123,11 +123,14 @@ class ResponsivenessMetrics : public GarbageCollected<ResponsivenessMetrics> {
                                 absl::optional<int> key_code,
                                 EventTimestamps event_timestamps);
 
-  // Clears some entries in |key_codes_to_remove| if we have stored them for a
+  // Clear keydowns in |key_codes_to_remove| if we have stored them for a
   // while.
-  void MaybeFlushKeyboardEntries(DOMHighResTimeStamp current_time);
+  void FlushExpiredKeydown(DOMHighResTimeStamp end_time);
+  // Clears all keydowns in |key_codes_to_remove| no matter how long we have
+  // stored them.
+  void FlushKeydown();
 
-  uint64_t GetInteractionCount() const;
+  uint32_t GetInteractionCount() const;
 
   void Trace(Visitor*) const;
 
@@ -144,12 +147,14 @@ class ResponsivenessMetrics : public GarbageCollected<ResponsivenessMetrics> {
   void RecordUserInteractionUKM(
       LocalDOMWindow* window,
       UserInteractionType interaction_type,
-      const WTF::Vector<ResponsivenessMetrics::EventTimestamps>& timestamps);
+      const WTF::Vector<ResponsivenessMetrics::EventTimestamps>& timestamps,
+      uint32_t interaction_offset);
 
   void RecordDragTapOrClickUKM(LocalDOMWindow*, PointerEntryAndInfo&);
 
   void RecordKeyboardUKM(LocalDOMWindow* window,
-                         const WTF::Vector<EventTimestamps>& event_timestamps);
+                         const WTF::Vector<EventTimestamps>& event_timestamps,
+                         uint32_t interaction_offset);
 
   // Updates the interactionId counter which is used by Event Timing.
   void UpdateInteractionId();
@@ -161,11 +166,18 @@ class ResponsivenessMetrics : public GarbageCollected<ResponsivenessMetrics> {
   // a click.
   void FlushPointerTimerFired(TimerBase*);
 
+  // Method called when |contextmenu_flush_timer_| fires. Ensures that the last
+  // pointerdown or keydown is reported, even if it does not receive a pointerup
+  // nor keyup.
+  void ContextmenuFlushTimerFired(TimerBase*);
+
   // Used to flush any entries in |pointer_id_entry_map_| which already have
   // pointerup. We either know there is no click happening or waited long enough
   // for a click to occur.
-  void FlushPointerMap();
-  void StopTimerAndFlush();
+  void FlushPointerup();
+
+  // Used to flush all entries in |pointer_id_entry_map_|.
+  void FlushPointerdownAndPointerup();
 
   void NotifyPointerdown(PerformanceEventTiming* entry) const;
 
@@ -188,6 +200,7 @@ class ResponsivenessMetrics : public GarbageCollected<ResponsivenessMetrics> {
               IntWithZeroKeyHashTraits<PointerId>>
       pointer_id_entry_map_;
   HeapTaskRunnerTimer<ResponsivenessMetrics> pointer_flush_timer_;
+  HeapTaskRunnerTimer<ResponsivenessMetrics> contextmenu_flush_timer_;
   // The PointerId of the last pointerdown or pointerup event processed. Used to
   // know which interactionId to use for click events. If pointecancel or
   // keyboard events are seen, the value is reset. TODO(crbug.com/1264930):
@@ -196,7 +209,7 @@ class ResponsivenessMetrics : public GarbageCollected<ResponsivenessMetrics> {
   absl::optional<PointerId> last_pointer_id_;
 
   uint32_t current_interaction_id_for_event_timing_;
-  uint64_t interaction_count_ = 0;
+  uint32_t interaction_count_ = 0;
 
   // Whether to perform UKM sampling.
   bool sampling_ = true;

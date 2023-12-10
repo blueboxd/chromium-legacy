@@ -69,6 +69,7 @@
 #include "third_party/blink/renderer/core/layout/geometry/box_strut.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/inline/inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
@@ -76,7 +77,6 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
@@ -87,9 +87,9 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
-#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
-#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
 #include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
+#include "third_party/blink/renderer/core/layout/table/layout_table.h"
+#include "third_party/blink/renderer/core/layout/table/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/text_utils.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
@@ -120,6 +120,8 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace blink {
+
+using mojom::blink::FormControlType;
 
 // Used by flexible boxes when flexing this element and by table cells.
 typedef WTF::HashMap<const LayoutBox*, LayoutUnit> OverrideSizeMap;
@@ -364,8 +366,9 @@ void CheckDidAddFragment(const LayoutBox& box,
   wtf_size_t index = 0;
   for (const NGPhysicalBoxFragment& fragment : box.PhysicalFragments()) {
     DCHECK_EQ(fragment.IsFirstForNode(), index == 0);
-    if (const NGFragmentItems* fragment_items = fragment.Items())
+    if (const FragmentItems* fragment_items = fragment.Items()) {
       fragment_items->CheckAllItemsAreValid();
+    }
     // Don't check past the fragment just added. Those entries may be invalid at
     // this point.
     if (index == new_fragment_index)
@@ -509,7 +512,7 @@ void LayoutBox::WillBeDestroyed() {
 
 void LayoutBox::DisassociatePhysicalFragments() {
   if (FirstInlineFragmentItemIndex()) {
-    NGFragmentItems::LayoutObjectWillBeDestroyed(*this);
+    FragmentItems::LayoutObjectWillBeDestroyed(*this);
     ClearFirstInlineFragmentItemIndex();
   }
   if (measure_result_)
@@ -573,10 +576,11 @@ void LayoutBox::StyleWillChange(StyleDifference diff,
           // converse (going from out of flow to in flow) is handled in
           // LayoutBox::UpdateGridPositionAfterStyleChange.
           LayoutBlock* containing_block = ContainingBlock();
-          if (containing_block && containing_block->IsLayoutNGGrid())
+          if (containing_block && containing_block->IsLayoutGrid()) {
             containing_block->SetGridPlacementDirty(true);
+          }
 
-          // Out of flow are not part of |NGFragmentItems|, and that further
+          // Out of flow are not part of |FragmentItems|, and that further
           // changes including destruction cannot be tracked. We need to mark it
           // is moved out from this IFC.
           will_move_out_of_ifc = true;
@@ -600,7 +604,7 @@ void LayoutBox::StyleWillChange(StyleDifference diff,
       }
 
       if (will_move_out_of_ifc && FirstInlineFragmentItemIndex()) {
-        NGFragmentItems::LayoutObjectWillBeMoved(*this);
+        FragmentItems::LayoutObjectWillBeMoved(*this);
         ClearFirstInlineFragmentItemIndex();
       }
       if (will_become_inflow)
@@ -802,7 +806,7 @@ void LayoutBox::UpdateGridPositionAfterStyleChange(
   const bool is_out_of_flow = StyleRef().HasOutOfFlowPosition();
 
   LayoutBlock* containing_block = ContainingBlock();
-  if ((containing_block && containing_block->IsLayoutNGGrid()) &&
+  if ((containing_block && containing_block->IsLayoutGrid()) &&
       GridStyleChanged(old_style, StyleRef())) {
     // Out-of-flow items do not impact grid placement.
     // TODO(kschmi): Scope this so that it only dirties the grid when track
@@ -824,10 +828,11 @@ void LayoutBox::UpdateGridPositionAfterStyleChange(
   // schedule a layout.
   if (is_out_of_flow && AlignmentChanged(old_style, StyleRef())) {
     LayoutObject* grid_ng_ancestor = nullptr;
-    if (containing_block && containing_block->IsLayoutNGGrid())
+    if (containing_block && containing_block->IsLayoutGrid()) {
       grid_ng_ancestor = containing_block;
-    else if (parent && parent->IsLayoutNGGrid())
+    } else if (parent && parent->IsLayoutGrid()) {
       grid_ng_ancestor = parent;
+    }
 
     if (grid_ng_ancestor) {
       grid_ng_ancestor->SetNeedsLayout(layout_invalidation_reason::kGridChanged,
@@ -1342,12 +1347,13 @@ LayoutUnit LayoutBox::DefaultIntrinsicContentInlineSize() const {
     if (input->IsTextField() && apply_fixed_size) {
       return TextFieldIntrinsicInlineSize(*input, *this);
     }
-    const AtomicString& type = input->type();
-    if (type == input_type_names::kFile && apply_fixed_size) {
+    FormControlType type = input->FormControlType();
+    if (type == FormControlType::kInputFile && apply_fixed_size) {
       return FileUploadControlIntrinsicInlineSize(*input, *this);
     }
-    if (type == input_type_names::kRange)
+    if (type == FormControlType::kInputRange) {
       return SliderIntrinsicInlineSize(*this);
+    }
     auto effective_appearance = StyleRef().EffectiveAppearance();
     if (effective_appearance == kCheckboxPart) {
       return ThemePartIntrinsicSize(*this, WebThemeEngine::kPartCheckbox)
@@ -1453,10 +1459,10 @@ PhysicalRect LayoutBox::PhysicalBackgroundRect(
       bool layer_known_opaque = false;
       // Check if the image is opaque and fills the clip.
       if (const StyleImage* image = cur->GetImage()) {
-        if ((cur->RepeatX() == EFillRepeat::kRepeatFill ||
-             cur->RepeatX() == EFillRepeat::kRoundFill) &&
-            (cur->RepeatY() == EFillRepeat::kRepeatFill ||
-             cur->RepeatY() == EFillRepeat::kRoundFill) &&
+        if ((cur->Repeat().x == EFillRepeat::kRepeatFill ||
+             cur->Repeat().x == EFillRepeat::kRoundFill) &&
+            (cur->Repeat().y == EFillRepeat::kRepeatFill ||
+             cur->Repeat().y == EFillRepeat::kRoundFill) &&
             image->KnownToBeOpaque(GetDocument(), StyleRef())) {
           layer_known_opaque = true;
         }
@@ -2648,7 +2654,7 @@ void LayoutBox::SetCachedLayoutResult(const NGLayoutResult* result,
     if (measure_result_)
       InvalidateItems(*measure_result_);
     if (IsTableCell()) {
-      To<LayoutNGTableCell>(this)->InvalidateLayoutResultCacheAfterMeasure();
+      To<LayoutTableCell>(this)->InvalidateLayoutResultCacheAfterMeasure();
     }
     measure_result_ = result;
   } else {
@@ -2705,7 +2711,7 @@ void LayoutBox::SetLayoutResult(const NGLayoutResult* result,
         // Before forgetting any old fragments and their items, we need to clear
         // associations.
         if (box_fragment.IsInlineFormattingContext())
-          NGFragmentItems::ClearAssociatedFragments(this);
+          FragmentItems::ClearAssociatedFragments(this);
         ShrinkLayoutResults(index + 1);
       }
     }
@@ -2746,7 +2752,7 @@ void LayoutBox::ReplaceLayoutResult(const NGLayoutResult* result,
     if (HasFragmentItems()) {
       if (!index)
         InvalidateItems(*old_result);
-      NGFragmentItems::ClearAssociatedFragments(this);
+      FragmentItems::ClearAssociatedFragments(this);
     }
     if (layout_results_.size() > 1) {
       if (fragment.Size() != old_fragment.Size())
@@ -2775,8 +2781,10 @@ void LayoutBox::FinalizeLayoutResults() {
 #endif
   // If we've added all the results we were going to, and the node establishes
   // an inline formatting context, we have some finalization to do.
-  if (HasFragmentItems())
-    NGFragmentItems::FinalizeAfterLayout(layout_results_);
+  if (HasFragmentItems()) {
+    FragmentItems::FinalizeAfterLayout(layout_results_,
+                                       *To<LayoutBlockFlow>(this));
+  }
 }
 
 void LayoutBox::RebuildFragmentTreeSpine() {
@@ -2898,7 +2906,7 @@ const NGLayoutResult* LayoutBox::GetCachedMeasureResult() const {
            .IsOnlyForNode())
     return nullptr;
 
-  return measure_result_;
+  return measure_result_.Get();
 }
 
 const NGLayoutResult* LayoutBox::GetSingleCachedLayoutResult() const {
@@ -2908,7 +2916,7 @@ const NGLayoutResult* LayoutBox::GetSingleCachedLayoutResult() const {
 
 const NGLayoutResult* LayoutBox::GetLayoutResult(wtf_size_t i) const {
   NOT_DESTROYED();
-  return layout_results_[i];
+  return layout_results_[i].Get();
 }
 
 const NGPhysicalBoxFragment&
@@ -2927,15 +2935,7 @@ const NGPhysicalBoxFragment& LayoutBox::NGPhysicalFragmentList::back() const {
 const FragmentData* LayoutBox::FragmentDataFromPhysicalFragment(
     const NGPhysicalBoxFragment& physical_fragment) const {
   NOT_DESTROYED();
-  const FragmentData* fragment_data = &FirstFragment();
-  for (const auto& result : layout_results_) {
-    if (&result->PhysicalFragment() == &physical_fragment)
-      return fragment_data;
-    DCHECK(fragment_data->NextFragment());
-    fragment_data = fragment_data->NextFragment();
-  }
-  NOTREACHED();
-  return fragment_data;
+  return &FragmentList().at(BoxFragmentIndex(physical_fragment));
 }
 
 void LayoutBox::SetSpannerPlaceholder(
@@ -2990,10 +2990,13 @@ bool LayoutBox::MapToVisualRectInAncestorSpaceInternal(
     TransformState& transform_state,
     VisualRectFlags visual_rect_flags) const {
   NOT_DESTROYED();
-  InflateVisualRectForFilter(transform_state);
 
   if (ancestor == this)
     return true;
+
+  if (!(visual_rect_flags & kIgnoreFilters)) {
+    InflateVisualRectForFilter(transform_state);
+  }
 
   AncestorSkipInfo skip_info(ancestor, true);
   LayoutObject* container = Container(&skip_info);
@@ -3013,7 +3016,7 @@ bool LayoutBox::MapToVisualRectInAncestorSpaceInternal(
     container_offset += AnchorPositionScrollTranslationOffset();
   }
 
-  if (skip_info.FilterSkipped()) {
+  if (skip_info.FilterSkipped() && !(visual_rect_flags & kIgnoreFilters)) {
     InflateVisualRectForFilterUnderContainer(transform_state, *container,
                                              ancestor);
   }
@@ -3097,15 +3100,16 @@ bool LayoutBox::SkipContainingBlockForPercentHeightCalculation(
       // In web_tests/fast/forms/range/range-thumb-height-percentage.html, a
       // percent height for the slider thumb element should refer to the height
       // of the INPUT box.
-      if (input->type() == input_type_names::kRange)
+      if (input->FormControlType() == FormControlType::kInputRange) {
         return true;
+      }
     }
   }
 
   return !containing_block->IsTableCell() &&
          !containing_block->IsOutOfFlowPositioned() &&
-         !containing_block->IsLayoutNGGrid() &&
-         !containing_block->IsFlexibleBoxIncludingNG() &&
+         !containing_block->IsLayoutGrid() &&
+         !containing_block->IsFlexibleBox() &&
          !containing_block->IsLayoutCustom();
 }
 
@@ -3146,8 +3150,8 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPositioned(
     height_result = bounding_box_size.height;
   else
     height_result = bounding_box_size.width;
-  height_result -=
-      (containing_block->BorderBefore() + containing_block->BorderAfter());
+  height_result -= (containing_block->BorderBlockStart() +
+                    containing_block->BorderBlockEnd());
   return height_result;
 }
 
@@ -3711,7 +3715,7 @@ bool LayoutBox::HasUnsplittableScrollingOverflow() const {
 bool LayoutBox::IsMonolithic() const {
   NOT_DESTROYED();
   // TODO(almaher): Don't consider a writing mode root monolitic if
-  // IsLayoutNGFlexibleBox(). The breakability should be handled at the item
+  // IsFlexibleBox(). The breakability should be handled at the item
   // level. (Likely same for Table and Grid).
   if (ShouldBeConsideredAsReplaced() || HasUnsplittableScrollingOverflow() ||
       (Parent() && IsWritingModeRoot()) ||
@@ -4131,16 +4135,18 @@ static bool HasInsetBoxShadow(const ComputedStyle& style) {
 // If all borders and scrollbars are opaque, then background-clip: border-box
 // is equivalent to background-clip: padding-box.
 bool LayoutBox::BackgroundClipBorderBoxIsEquivalentToPaddingBox() const {
-  // Custom scrollbars may be translucent.
-  // TODO(flackr): Detect opaque custom scrollbars which would cover up a
-  // border-box background.
   const auto* scrollable_area = GetScrollableArea();
-  if (scrollable_area &&
-      ((scrollable_area->HorizontalScrollbar() &&
-        scrollable_area->HorizontalScrollbar()->IsCustomScrollbar()) ||
-       (scrollable_area->VerticalScrollbar() &&
-        scrollable_area->VerticalScrollbar()->IsCustomScrollbar()))) {
-    return false;
+  if (scrollable_area) {
+    if (auto* scrollbar = scrollable_area->HorizontalScrollbar()) {
+      if (!scrollbar->IsOverlayScrollbar() && !scrollbar->IsOpaque()) {
+        return false;
+      }
+    }
+    if (auto* scrollbar = scrollable_area->VerticalScrollbar()) {
+      if (!scrollbar->IsOverlayScrollbar() && !scrollbar->IsOpaque()) {
+        return false;
+      }
+    }
   }
 
   if (StyleRef().BorderTopWidth() &&
@@ -4161,6 +4167,10 @@ bool LayoutBox::BackgroundClipBorderBoxIsEquivalentToPaddingBox() const {
   if (StyleRef().BorderLeftWidth() &&
       (!ResolveColor(GetCSSPropertyBorderLeftColor()).IsOpaque() ||
        StyleRef().BorderLeftStyle() != EBorderStyle::kSolid)) {
+    return false;
+  }
+
+  if (!StyleRef().IsScrollbarGutterAuto()) {
     return false;
   }
 

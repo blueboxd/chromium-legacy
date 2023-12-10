@@ -456,9 +456,6 @@ NET_EXPORT BASE_DECLARE_FEATURE(kEnableWebTransportDraft07);
 // Enables Zstandard Content-Encoding support.
 NET_EXPORT BASE_DECLARE_FEATURE(kZstdContentEncoding);
 
-// Enables SHA-256 and username hashing support for HTTP Digest auth.
-NET_EXPORT BASE_DECLARE_FEATURE(kDigestAuthEnableSecureAlgorithms);
-
 NET_EXPORT BASE_DECLARE_FEATURE(kThirdPartyPartitionedStorageAllowedByDefault);
 
 // Enables the HTTP extensible priorities "priority" header.
@@ -467,13 +464,6 @@ NET_EXPORT BASE_DECLARE_FEATURE(kPriorityHeader);
 
 // Enables a more efficient implementation of SpdyHeadersToHttpResponse().
 NET_EXPORT BASE_DECLARE_FEATURE(kSpdyHeadersToHttpResponseUseBuilder);
-
-// Enables comparison of old and new implementations of
-// SpdyHeadersToHttpResponse at runtime and calls DumpWithoutCrashing() if they
-// differ. This is slow, so should never be enabled in Beta or Stable channels.
-// TODO(https://crbug.com/1485670): Remove this once we have run an experiment
-// for two weeks on Dev.
-NET_EXPORT BASE_DECLARE_FEATURE(kSpdyHeadersToHttpResponseVerifyCorrectness);
 
 // Enables receiving ECN bit by sockets in Chrome.
 NET_EXPORT BASE_DECLARE_FEATURE(kReceiveEcn);

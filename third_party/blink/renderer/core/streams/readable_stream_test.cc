@@ -129,7 +129,7 @@ class TestTransferringOptimizer final
     explicit Source(ScriptState* script_state)
         : UnderlyingSourceBase(script_state) {}
 
-    ScriptPromise Start(ScriptState* script_state) override {
+    ScriptPromise Start(ScriptState* script_state, ExceptionState&) override {
       Controller()->Enqueue("foo");
       Controller()->Enqueue(", bar");
       Controller()->Close();
@@ -622,7 +622,7 @@ class TestUnderlyingByteSource : public UnderlyingByteSourceBase {
   ScriptPromise Pull(ReadableByteStreamController* controller,
                      ExceptionState& exception_state) override {
     PullVoid(controller, exception_state);
-    return ScriptPromise::CastUndefined(script_state_);
+    return ScriptPromise::CastUndefined(script_state_.Get());
   }
 
   virtual void CancelVoid(v8::Local<v8::Value>, ExceptionState&) {}
@@ -634,7 +634,7 @@ class TestUnderlyingByteSource : public UnderlyingByteSourceBase {
   ScriptPromise Cancel(v8::Local<v8::Value> reason,
                        ExceptionState& exception_state) override {
     CancelVoid(reason, exception_state);
-    return ScriptPromise::CastUndefined(script_state_);
+    return ScriptPromise::CastUndefined(script_state_.Get());
   }
 
   ScriptState* GetScriptState() override { return script_state_.Get(); }

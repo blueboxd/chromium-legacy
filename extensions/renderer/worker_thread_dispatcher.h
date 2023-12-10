@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "content/public/renderer/worker_thread.h"
+#include "extensions/buildflags/buildflags.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/mojom/automation_registry.mojom.h"
@@ -24,7 +25,9 @@
 #include "ipc/ipc_sync_message_filter.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/shared_associated_remote.h"
 #include "services/accessibility/public/mojom/automation.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -88,7 +91,7 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
   void AddWorkerData(
       blink::WebServiceWorkerContextProxy* proxy,
       int64_t service_worker_version_id,
-      base::UnguessableToken activation_sequence,
+      const absl::optional<base::UnguessableToken>& activation_sequence,
       ScriptContext* script_context,
       std::unique_ptr<NativeExtensionBindingsSystem> bindings_system);
   void RemoveWorkerData(int64_t service_worker_version_id);
@@ -106,16 +109,20 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
 
   void RequestWorker(mojom::RequestParamsPtr params);
   void SendResponseAck(const base::Uuid& request_uuid);
-#endif
 
   // content::RenderThreadObserver:
   bool OnControlMessageReceived(const IPC::Message& message) override;
+#endif
 
   // Updates bindings of all Service Workers for |extension_id|, after extension
   // permission update.
   // Returns whether or not the update request was successfully issued to
   // each Service Workers.
   bool UpdateBindingsForWorkers(const ExtensionId& extension_id);
+
+  // Updates bindings for every extension service worker context, assuming
+  // changes that can affect API availability.
+  void UpdateAllServiceWorkerBindings();
 
 #if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
   // Posts mojom::EventRouter::AddListenerForServiceWorker to the IO thread to
@@ -178,27 +185,29 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
 
   // Mojo interface implementation, called from the main thread.
   void DispatchEvent(mojom::DispatchEventParamsPtr params,
-                     base::Value::List event_args) override;
+                     base::Value::List event_args,
+                     DispatchEventCallback callback) override;
 #endif
 
   // NativeExtensionBindingsSystem::Delegate implementation.
   ScriptContextSetIterable* GetScriptContextSet() override;
 
  private:
+  static void UpdateBindingsOnWorkerThread(
+      const absl::optional<ExtensionId>& extension_id);
+#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
   static bool HandlesMessageOnWorkerThread(const IPC::Message& message);
   static void ForwardIPC(int worker_thread_id, const IPC::Message& message);
-  static void UpdateBindingsOnWorkerThread(const ExtensionId& extension_id);
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
   static void DispatchEventOnWorkerThread(mojom::DispatchEventParamsPtr params,
                                           base::Value::List event_args);
-#endif
-
   void OnMessageReceivedOnWorkerThread(int worker_thread_id,
                                        const IPC::Message& message);
+#endif
 
   bool PostTaskToWorkerThread(int worker_thread_id, base::OnceClosure task);
   void PostTaskToIOThread(base::OnceClosure task);
 
+#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
   // IPC handlers.
   void OnValidateMessagePort(int worker_thread_id, const PortId& id);
   void OnDispatchOnConnect(int worker_thread_id,
@@ -209,13 +218,16 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
   void OnDispatchOnDisconnect(int worker_thread_id,
                               const PortId& port_id,
                               const std::string& error_message);
-
-#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
   void DispatchEventHelper(mojom::DispatchEventParamsPtr params,
                            base::Value::List event_args);
 
   void PostTaskToMainThread(base::OnceClosure task);
 #endif
+
+  // Helper method to update bindings. If `extension_id` is non-null, updates
+  // only bindings for that extension; otherwise, updates all bindings.
+  // Returns true if the task to each worker thread posts correctly.
+  bool UpdateBindingsHelper(const absl::optional<ExtensionId>& extension_id);
 
   // IPC sender. Belongs to the render thread, but thread safe.
   scoped_refptr<IPC::SyncMessageFilter> message_filter_;

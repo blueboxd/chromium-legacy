@@ -32,12 +32,12 @@
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/inline/fragment_item.h"
+#include "third_party/blink/renderer/core/layout/inline/inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -45,7 +45,6 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_inline_box_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/outline_painter.h"
@@ -111,7 +110,7 @@ void LayoutInline::WillBeDestroyed() {
       Parent()->DirtyLinesFromChangedChild(this);
     }
     if (FirstInlineFragmentItemIndex()) {
-      NGFragmentItems::LayoutObjectWillBeDestroyed(*this);
+      FragmentItems::LayoutObjectWillBeDestroyed(*this);
       ClearFirstInlineFragmentItemIndex();
     }
   }
@@ -406,8 +405,7 @@ LayoutBox* LayoutInline::CreateAnonymousBoxToSplit(
 
 void LayoutInline::Paint(const PaintInfo& paint_info) const {
   NOT_DESTROYED();
-  DCHECK(IsInLayoutNGInlineFormattingContext());
-  NGInlineBoxFragmentPainter::PaintAllFragments(*this, paint_info);
+  NOTREACHED();
 }
 
 template <typename PhysicalRectCollector>
@@ -624,7 +622,7 @@ bool LayoutInline::NodeAtPoint(HitTestResult& result,
           wtf_size_t(target_fragment_idx) != cursor.ContainerFragmentIndex())
         continue;
       DCHECK(cursor.Current().Item());
-      const NGFragmentItem& item = *cursor.Current().Item();
+      const FragmentItem& item = *cursor.Current().Item();
       const NGPhysicalBoxFragment* box_fragment = item.BoxFragment();
       DCHECK(box_fragment);
       // NGBoxFragmentPainter::NodeAtPoint() takes an offset that is accumulated
@@ -740,7 +738,7 @@ PhysicalRect LayoutInline::VisualRectInDocument(VisualRectFlags flags) const {
 PhysicalRect LayoutInline::LocalVisualRectIgnoringVisibility() const {
   NOT_DESTROYED();
   if (IsInLayoutNGInlineFormattingContext()) {
-    return NGFragmentItem::LocalVisualRectFor(*this);
+    return FragmentItem::LocalVisualRectFor(*this);
   }
   return PhysicalRect();
 }
@@ -868,7 +866,7 @@ void LayoutInline::DirtyLinesFromChangedChild(LayoutObject* child) {
   NOT_DESTROYED();
   if (IsInLayoutNGInlineFormattingContext()) {
     if (const LayoutBlockFlow* container = FragmentItemsContainer())
-      NGFragmentItems::DirtyLinesFromChangedChild(*child, *container);
+      FragmentItems::DirtyLinesFromChangedChild(*child, *container);
   }
 }
 

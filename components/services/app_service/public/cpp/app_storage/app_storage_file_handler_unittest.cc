@@ -16,7 +16,10 @@
 #include "base/task/task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
+#include "base/time/time.h"
 #include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/icon_effects.h"
+#include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace apps {
@@ -87,7 +90,10 @@ class AppStorageFileHandlerTest : public testing::Test {
 
   std::vector<AppPtr> CreateOneApp() {
     std::vector<AppPtr> apps;
-    apps.push_back(std::make_unique<App>(kAppType1, kAppId1));
+    AppPtr app = std::make_unique<App>(kAppType1, kAppId1);
+    app->has_badge = false;
+    app->paused = false;
+    apps.push_back(std::move(app));
     return apps;
   }
 
@@ -97,17 +103,47 @@ class AppStorageFileHandlerTest : public testing::Test {
     AppPtr app1 = std::make_unique<App>(kAppType1, kAppId1);
     app1->readiness = Readiness::kReady;
     app1->name = kAppName1;
+    app1->has_badge = false;
+    app1->paused = false;
     apps.push_back(std::move(app1));
 
     AppPtr app2 = std::make_unique<App>(kAppType2, kAppId2);
     app2->readiness = Readiness::kDisabledByUser;
     app2->name = kAppName2;
     app2->short_name = kAppShortName;
+    app2->description = "description";
+    app2->version = "version";
+    app2->additional_search_terms = {"item1", "item2"};
+    app2->icon_key =
+        apps::IconKey(apps::IconKey::kDoesNotChangeOverTime,
+                      /*resource_id=*/65535, apps::IconEffects::kNone);
+    app2->last_launch_time = base::Time() + base::Days(2);
+    app2->install_time = base::Time() + base::Days(1);
+
+    app2->permissions.push_back(std::make_unique<Permission>(
+        PermissionType::kLocation, /*PermissionValue=*/false,
+        /*is_managed=*/true, "details"));
+    app2->permissions.push_back(std::make_unique<Permission>(
+        PermissionType::kPrinting, /*PermissionValue=*/TriState::kBlock,
+        /*is_managed=*/false));
+
     app2->install_reason = InstallReason::kUser;
     app2->install_source = InstallSource::kBrowser;
+    app2->policy_ids = {"plicy1", "policy2"};
     app2->is_platform_app = false;
     app2->recommendable = true;
     app2->searchable = true;
+    app2->show_in_launcher = true;
+    app2->show_in_shelf = true;
+    app2->show_in_search = true;
+    app2->show_in_management = true;
+    app2->handles_intents = false;
+    app2->allow_uninstall = false;
+    app2->has_badge = false;
+    app2->paused = false;
+    app2->intent_filters.push_back(apps_util::MakeIntentFilterForUrlScope(
+        GURL("https://www.google.com/abc")));
+    app2->window_mode = WindowMode::kBrowser;
     apps.push_back(std::move(app2));
 
     // TODO(crbug.com/1385932): Add other files in the App structure.

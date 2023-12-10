@@ -85,7 +85,7 @@ class ContentItemAccessibilityDelegate
   ~ContentItemAccessibilityDelegate() override = default;
 
   void GetAccessibleNodeData(bool is_selected,
-                             bool is_permanently_highlighted,
+                             bool is_checked,
                              ui::AXNodeData* node_data) const override;
 
  private:
@@ -121,7 +121,7 @@ ContentItemAccessibilityDelegate::ContentItemAccessibilityDelegate(
 
 void ContentItemAccessibilityDelegate::GetAccessibleNodeData(
     bool is_selected,
-    bool is_permanently_highlighted,
+    bool is_checked,
     ui::AXNodeData* node_data) const {
   DCHECK(node_data);
   // Options are selectable.
@@ -141,23 +141,22 @@ class ExpandableControlCellAccessibilityDelegate
   ~ExpandableControlCellAccessibilityDelegate() override = default;
 
   void GetAccessibleNodeData(bool is_selected,
-                             bool is_permanently_highlighted,
+                             bool is_checked,
                              ui::AXNodeData* node_data) const override;
 };
 
-// Sets the checked state according to `is_permanently_highlighted`,
+// Sets the checked state according to `is_checked`,
 // `is_selected` is ignored as the first one is more important and updating
 // two states within hundreds of milliseconds can be confusing.
 void ExpandableControlCellAccessibilityDelegate::GetAccessibleNodeData(
     bool is_selected,
-    bool is_permanently_highlighted,
+    bool is_checked,
     ui::AXNodeData* node_data) const {
   node_data->role = ax::mojom::Role::kToggleButton;
   node_data->SetNameChecked(l10n_util::GetStringUTF16(
       IDS_AUTOFILL_EXPANDABLE_SUGGESTION_CONTROLL_A11Y_NAME));
-  node_data->SetCheckedState(is_permanently_highlighted
-                                 ? ax::mojom::CheckedState::kTrue
-                                 : ax::mojom::CheckedState::kFalse);
+  node_data->SetCheckedState(is_checked ? ax::mojom::CheckedState::kTrue
+                                        : ax::mojom::CheckedState::kFalse);
 }
 
 }  // namespace
@@ -225,7 +224,8 @@ std::unique_ptr<PopupCellView> PopupSuggestionStrategy::CreateControl() {
 
 std::unique_ptr<PopupCellView>
 PopupSuggestionStrategy::CreateAutocompleteWithDeleteButtonCell() {
-  auto view = std::make_unique<PopupCellWithButtonView>();
+  auto view = std::make_unique<PopupCellWithButtonView>(GetController(),
+                                                        GetLineNumber());
   AddContentLabelsAndCallbacks(*view);
 
   // Add a delete button for Autocomplete entries.
@@ -284,11 +284,10 @@ void PopupSuggestionStrategy::AddContentLabelsAndCallbacks(
   // Add the actual views.
   const Suggestion& kSuggestion =
       GetController()->GetSuggestionAt(GetLineNumber());
-  const int kTextStyle = IsGroupFillingPopupItemId(kSuggestion.popup_item_id)
-                             ? views::style::TextStyle::STYLE_SECONDARY
-                             : views::style::TextStyle::STYLE_PRIMARY;
   std::unique_ptr<views::Label> main_text_label =
-      popup_cell_utils::CreateMainTextLabel(kSuggestion.main_text, kTextStyle);
+      popup_cell_utils::CreateMainTextLabel(
+          kSuggestion.main_text,
+          GetMainTextStyleForPopupItemId(kSuggestion.popup_item_id));
   popup_cell_utils::FormatLabel(*main_text_label, kSuggestion.main_text,
                                 GetController());
   popup_cell_utils::AddSuggestionContentToView(
@@ -298,10 +297,6 @@ void PopupSuggestionStrategy::AddContentLabelsAndCallbacks(
       popup_cell_utils::CreateAndTrackSubtextViews(view, GetController(),
                                                    GetLineNumber()),
       view);
-
-  // Prepare the callbacks to the controller.
-  popup_cell_utils::AddCallbacksToContentView(GetController(), GetLineNumber(),
-                                              view);
 }
 
 /************************ PopupComposeSuggestionStrategy ********************/
@@ -340,10 +335,6 @@ std::unique_ptr<PopupCellView> PopupComposeSuggestionStrategy::CreateContent() {
       popup_cell_utils::CreateAndTrackSubtextViews(
           *view, GetController(), GetLineNumber(), views::style::STYLE_BODY_4),
       *view);
-
-  // Prepare the callbacks to the controller.
-  popup_cell_utils::AddCallbacksToContentView(GetController(), GetLineNumber(),
-                                              *view);
 
   return view;
 }
@@ -386,10 +377,6 @@ PopupPasswordSuggestionStrategy::CreateContent() {
       kSuggestion, std::move(main_text_label),
       popup_cell_utils::CreateMinorTextLabel(kSuggestion.minor_text),
       CreateDescriptionLabel(), CreateAndTrackSubtextViews(*view), *view);
-
-  // Prepare the callbacks to the controller.
-  popup_cell_utils::AddCallbacksToContentView(GetController(), GetLineNumber(),
-                                              *view);
 
   return view;
 }
@@ -512,9 +499,6 @@ std::unique_ptr<PopupCellView> PopupFooterStrategy::CreateContent() {
 
   // Force a refresh to ensure all the labels'styles are correct.
   view->RefreshStyle();
-
-  popup_cell_utils::AddCallbacksToContentView(GetController(), GetLineNumber(),
-                                              *view);
 
   return view;
 }

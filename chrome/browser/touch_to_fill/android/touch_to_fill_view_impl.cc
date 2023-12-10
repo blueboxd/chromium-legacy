@@ -49,7 +49,7 @@ UiCredential ConvertJavaCredential(JNIEnv* env,
           env, Java_Credential_getOriginUrl(env, credential)))),
       static_cast<password_manager_util::GetLoginMatchType>(
           Java_Credential_getMatchType(env, credential)),
-      base::Time::FromJavaTime(
+      base::Time::FromMillisecondsSinceUnixEpoch(
           Java_Credential_lastUsedMsSinceEpoch(env, credential)));
 }
 
@@ -88,7 +88,7 @@ TouchToFillViewImpl::~TouchToFillViewImpl() {
   }
 }
 
-void TouchToFillViewImpl::Show(
+bool TouchToFillViewImpl::Show(
     const GURL& url,
     IsOriginSecure is_origin_secure,
     base::span<const password_manager::UiCredential> credentials,
@@ -100,7 +100,7 @@ void TouchToFillViewImpl::Show(
     // state so report that TouchToFill is dismissed in order to show the normal
     // Android keyboard (plus keyboard accessory) instead.
     controller_->OnDismiss();
-    return;
+    return false;
   }
   // Serialize the |credentials| span into a Java array and instruct the bridge
   // to show it together with |url| to the user.
@@ -117,7 +117,7 @@ void TouchToFillViewImpl::Show(
         ConvertUTF8ToJavaString(env, credential.origin().Serialize()),
         ConvertUTF8ToJavaString(env, credential.display_name()),
         static_cast<int>(credential.match_type()),
-        credential.last_used().ToJavaTime());
+        credential.last_used().InMillisecondsSinceUnixEpoch());
   }
 
   base::android::ScopedJavaLocalRef<jobjectArray> passkey_array =
@@ -140,6 +140,7 @@ void TouchToFillViewImpl::Show(
       !(flags & TouchToFillView::kCanManagePasswordsWhenPasskeysPresent),
       !!(flags & TouchToFillView::kShouldShowHybridOption),
       !!(flags & TouchToFillView::kShouldShowCredManEntry));
+  return true;
 }
 
 void TouchToFillViewImpl::OnCredentialSelected(const UiCredential& credential) {

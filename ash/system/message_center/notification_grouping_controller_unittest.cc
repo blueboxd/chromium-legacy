@@ -4,6 +4,8 @@
 
 #include "ash/system/message_center/notification_grouping_controller.h"
 
+#include <memory>
+
 #include "ash/constants/ash_constants.h"
 #include "ash/constants/ash_features.h"
 #include "ash/system/message_center/ash_message_popup_collection.h"
@@ -24,9 +26,11 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/layer_animation_stopped_waiter.h"
 #include "ui/gfx/vector_icon_types.h"
+#include "ui/message_center/notification_view_controller.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 #include "ui/message_center/views/message_popup_view.h"
+#include "ui/message_center/views/message_view.h"
 #include "ui/views/animation/slide_out_controller.h"
 
 using message_center::MessageCenter;
@@ -36,6 +40,77 @@ namespace ash {
 
 namespace {
 const char kIdFormat[] = "id%ld";
+
+class TestNotificationViewController
+    : public message_center::NotificationViewController {
+ public:
+  TestNotificationViewController() = default;
+
+  TestNotificationViewController(const TestNotificationViewController& other) =
+      delete;
+  TestNotificationViewController& operator=(
+      const TestNotificationViewController& other) = delete;
+
+  ~TestNotificationViewController() override = default;
+
+  // message_center::NotificationViewController:
+  message_center::MessageView* GetMessageViewForNotificationId(
+      const std::string& notification_id) override {
+    return nullptr;
+  }
+  void AnimateResize() override {}
+  void ConvertNotificationViewToGroupedNotificationView(
+      const std::string& ungrouped_notification_id,
+      const std::string& new_grouped_notification_id) override {}
+  void ConvertGroupedNotificationViewToNotificationView(
+      const std::string& grouped_notification_id,
+      const std::string& new_single_notification_id) override {}
+  void OnChildNotificationViewUpdated(
+      const std::string& parent_notification_id,
+      const std::string& child_notification_id) override {
+    on_child_updated_called_ = true;
+    on_child_updated_parent_id_ = parent_notification_id;
+    on_child_updated_child_id_ = child_notification_id;
+  }
+
+  bool on_child_updated_called() { return on_child_updated_called_; }
+  std::string on_child_updated_parent_id() {
+    return on_child_updated_parent_id_;
+  }
+  std::string on_child_updated_child_id() { return on_child_updated_child_id_; }
+
+ private:
+  bool on_child_updated_called_ = false;
+  std::string on_child_updated_parent_id_;
+  std::string on_child_updated_child_id_;
+};
+
+class TestNotificationGroupingController
+    : public NotificationGroupingController {
+ public:
+  TestNotificationGroupingController(UnifiedSystemTray* system_tray,
+                                     NotificationCenterTray* notification_tray)
+      : NotificationGroupingController(system_tray, notification_tray) {
+    test_view_controller_ = std::make_unique<TestNotificationViewController>();
+  }
+
+  TestNotificationGroupingController(
+      const TestNotificationGroupingController& other) = delete;
+  TestNotificationGroupingController& operator=(
+      const TestNotificationGroupingController& other) = delete;
+
+  ~TestNotificationGroupingController() override = default;
+
+  // NotificationGroupingController:
+  message_center::NotificationViewController*
+  GetActiveNotificationViewController() override {
+    return test_view_controller_.get();
+  }
+
+ private:
+  std::unique_ptr<TestNotificationViewController> test_view_controller_;
+};
+
 }  // namespace
 
 class NotificationGroupingControllerTest
@@ -148,7 +223,8 @@ class NotificationGroupingControllerTest
                                                ->IsAnimating();
   }
 
-  bool IsQsRevampEnabled() const { return GetParam(); }
+  // TODO(b/305075031) clean up after the flag is removed.
+  bool IsQsRevampEnabled() const { return true; }
 
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -331,11 +407,15 @@ TEST_P(NotificationGroupingControllerTest, ParentNotificationMetadata) {
   std::string id0, id1, id2;
   const GURL url(u"http://test-url.com/");
   const auto icon = gfx::VectorIcon();
+  const auto small_image = gfx::Image();
+  const std::u16string display_source0 = u"test_display_source0";
 
   auto notification = MakeNotification(id0, url);
   notification->set_accent_color_id(ui::kColorAshSystemUIMenuIcon);
   notification->set_accent_color(SK_ColorRED);
   notification->set_parent_vector_small_image(icon);
+  notification->set_small_image(small_image);
+  notification->set_display_source(display_source0);
   message_center->AddNotification(std::move(notification));
 
   id1 = AddNotificationWithOriginUrl(url);
@@ -351,6 +431,8 @@ TEST_P(NotificationGroupingControllerTest, ParentNotificationMetadata) {
             parent_notification->accent_color_id());
   EXPECT_EQ(SK_ColorRED, parent_notification->accent_color());
   EXPECT_EQ(&icon, &parent_notification->vector_small_image());
+  EXPECT_EQ(small_image, parent_notification->small_image());
+  EXPECT_EQ(display_source0, parent_notification->display_source());
 }
 
 // Parent notification's priority should always match the priority of the last
@@ -598,6 +680,39 @@ TEST_P(NotificationGroupingControllerTest, ChildNotificationUpdate) {
 
   // Make sure the updated notification is still a group child.
   EXPECT_TRUE(message_center->FindNotificationById(id0)->group_child());
+}
+
+TEST_P(NotificationGroupingControllerTest, ChildNotificationViewUpdate) {
+  TestNotificationGroupingController test_controller(
+      GetPrimaryUnifiedSystemTray(), GetPrimaryNotificationCenterTray());
+
+  auto* message_center = MessageCenter::Get();
+  std::string id0, id1, id2;
+  const GURL url(u"http://test-url.com/");
+  id0 = AddNotificationWithOriginUrl(url);
+  id1 = AddNotificationWithOriginUrl(url);
+  std::string parent_id =
+      id0 + message_center_utils::GenerateGroupParentNotificationIdSuffix(
+                message_center->FindNotificationById(id0)->notifier_id());
+
+  EXPECT_TRUE(message_center->FindNotificationById(id0)->group_child());
+
+  // Update the notification.
+  auto notification = MakeNotification(id2, url);
+  auto updated_notification =
+      std::make_unique<Notification>(id0, *notification.get());
+  message_center->UpdateNotification(id0, std::move(updated_notification));
+
+  auto* notification_view_controller =
+      static_cast<TestNotificationViewController*>(
+          test_controller.GetActiveNotificationViewController());
+
+  // When a child notification is updated, `OnChildNotificationViewUpdated()`
+  // should be called with the correct parent and child ids.
+  EXPECT_TRUE(notification_view_controller->on_child_updated_called());
+  EXPECT_EQ(parent_id,
+            notification_view_controller->on_child_updated_parent_id());
+  EXPECT_EQ(id0, notification_view_controller->on_child_updated_child_id());
 }
 
 // When the last child of the group notification is removed, its parent

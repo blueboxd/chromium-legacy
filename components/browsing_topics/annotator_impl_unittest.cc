@@ -111,7 +111,7 @@ class BrowsingTopicsAnnotatorImplTest : public testing::Test {
   void SendModelToAnnotatorSkipWaiting(
       const absl::optional<optimization_guide::proto::Any>& model_metadata) {
     base::FilePath source_root_dir;
-    base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root_dir);
+    base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &source_root_dir);
     base::FilePath model_file_path =
         source_root_dir.AppendASCII("components")
             .AppendASCII("test")
@@ -460,56 +460,6 @@ TEST_F(BrowsingTopicsAnnotatorImplTest,
 }
 
 TEST_F(BrowsingTopicsAnnotatorImplTest,
-       DifferentTaxonomyVersions_ModelUpdateSkipped) {
-  scoped_feature_list_.Reset();
-  scoped_feature_list_.InitWithFeaturesAndParameters(
-      /*enabled_features=*/
-      {{blink::features::kBrowsingTopicsParameters,
-        {{"taxonomy_version", "2"}}}},
-      /*disabled_features=*/{
-          optimization_guide::features::kPreventLongRunningPredictionModels});
-
-  optimization_guide::proto::PageTopicsModelMetadata model_metadata;
-  model_metadata.set_taxonomy_version(1);
-
-  optimization_guide::proto::Any any_metadata;
-  any_metadata.set_type_url(
-      "type.googleapis.com/com.foo.PageTopicsModelMetadata");
-  model_metadata.SerializeToString(any_metadata.mutable_value());
-
-  SendModelToAnnotatorSkipWaiting(any_metadata);
-
-  absl::optional<optimization_guide::ModelInfo> model_info =
-      annotator()->GetBrowsingTopicsModelInfo();
-  EXPECT_FALSE(model_info);
-}
-
-TEST_F(BrowsingTopicsAnnotatorImplTest,
-       TaxonomyConfiguredVersion1ServerVersion1_ModelUpdateSkipped) {
-  scoped_feature_list_.Reset();
-  scoped_feature_list_.InitWithFeaturesAndParameters(
-      /*enabled_features=*/
-      {{blink::features::kBrowsingTopicsParameters,
-        {{"taxonomy_version", "1"}}}},
-      /*disabled_features=*/{
-          optimization_guide::features::kPreventLongRunningPredictionModels});
-
-  optimization_guide::proto::PageTopicsModelMetadata model_metadata;
-  model_metadata.set_taxonomy_version(1);
-
-  optimization_guide::proto::Any any_metadata;
-  any_metadata.set_type_url(
-      "type.googleapis.com/com.foo.PageTopicsModelMetadata");
-  model_metadata.SerializeToString(any_metadata.mutable_value());
-
-  SendModelToAnnotatorSkipWaiting(any_metadata);
-
-  absl::optional<optimization_guide::ModelInfo> model_info =
-      annotator()->GetBrowsingTopicsModelInfo();
-  EXPECT_FALSE(model_info);
-}
-
-TEST_F(BrowsingTopicsAnnotatorImplTest,
        TaxonomyConfiguredVersion1ServerVersionEmpty_ModelUpdateSuccess) {
   scoped_feature_list_.Reset();
   scoped_feature_list_.InitWithFeaturesAndParameters(
@@ -531,30 +481,6 @@ TEST_F(BrowsingTopicsAnnotatorImplTest,
   absl::optional<optimization_guide::ModelInfo> model_info =
       annotator()->GetBrowsingTopicsModelInfo();
   EXPECT_TRUE(model_info);
-}
-
-TEST_F(BrowsingTopicsAnnotatorImplTest,
-       TaxonomyConfiguredVersion2ServerVersionEmpty_ModelUpdateSkipped) {
-  scoped_feature_list_.Reset();
-  scoped_feature_list_.InitWithFeaturesAndParameters(
-      /*enabled_features=*/
-      {{blink::features::kBrowsingTopicsParameters,
-        {{"taxonomy_version", "2"}}}},
-      /*disabled_features=*/{
-          optimization_guide::features::kPreventLongRunningPredictionModels});
-
-  optimization_guide::proto::PageTopicsModelMetadata model_metadata;
-
-  optimization_guide::proto::Any any_metadata;
-  any_metadata.set_type_url(
-      "type.googleapis.com/com.foo.PageTopicsModelMetadata");
-  model_metadata.SerializeToString(any_metadata.mutable_value());
-
-  SendModelToAnnotatorSkipWaiting(any_metadata);
-
-  absl::optional<optimization_guide::ModelInfo> model_info =
-      annotator()->GetBrowsingTopicsModelInfo();
-  EXPECT_FALSE(model_info);
 }
 
 class BrowsingTopicsAnnotatorOverrideListTest
@@ -592,7 +518,7 @@ class BrowsingTopicsAnnotatorOverrideListTest
     model_metadata.SerializeToString(any_metadata.mutable_value());
 
     base::FilePath source_root_dir;
-    base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root_dir);
+    base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &source_root_dir);
     base::FilePath model_file_path =
         source_root_dir.AppendASCII("components")
             .AppendASCII("test")

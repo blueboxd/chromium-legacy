@@ -16,6 +16,7 @@
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_state.h"
 #include "chromeos/components/quick_answers/quick_answers_client.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/context_menu_params.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/mojom/context_menu/context_menu.mojom-shared.h"
@@ -39,17 +40,18 @@ ReadWriteCardsManagerImpl::ReadWriteCardsManagerImpl()
 ReadWriteCardsManagerImpl::~ReadWriteCardsManagerImpl() = default;
 
 ReadWriteCardController* ReadWriteCardsManagerImpl::GetController(
-    const content::ContextMenuParams& params) {
+    const content::ContextMenuParams& params,
+    content::BrowserContext* context) {
   // Skip password input field.
   const bool is_password_field =
-      params.input_field_type ==
-      blink::mojom::ContextMenuDataInputFieldType::kPassword;
+      params.form_control_type == blink::mojom::FormControlType::kInputPassword;
   if (is_password_field) {
     return nullptr;
   }
 
   if (chromeos::features::IsOrcaEnabled()) {
     if (params.is_editable) {
+      editor_menu_controller_->SetBrowserContext(context);
       return editor_menu_controller_.get();
     }
   }

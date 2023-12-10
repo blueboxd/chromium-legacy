@@ -39,7 +39,7 @@
 #include "components/performance_manager/public/decorators/process_metrics_decorator.h"
 #include "components/performance_manager/public/features.h"
 #include "components/performance_manager/public/graph/graph.h"
-#include "components/performance_manager/public/metrics/tab_revisit_tracker.h"
+#include "components/performance_manager/public/user_tuning/tab_revisit_tracker.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -222,9 +222,13 @@ ChromeBrowserMainExtraPartsPerformanceManager::GetFeatureObserverClient() {
 }
 
 void ChromeBrowserMainExtraPartsPerformanceManager::PostCreateThreads() {
+  auto graph_features = performance_manager::GraphFeatures::WithDefault();
+  if (performance_manager::features::kUseResourceAttributionCPUMonitor.Get()) {
+    graph_features.EnableResourceAttributionScheduler();
+  }
   performance_manager_lifetime_ =
       std::make_unique<performance_manager::PerformanceManagerLifetime>(
-          performance_manager::GraphFeatures::WithDefault(),
+          graph_features,
           base::BindOnce(&ChromeBrowserMainExtraPartsPerformanceManager::
                              CreatePoliciesAndDecorators));
 

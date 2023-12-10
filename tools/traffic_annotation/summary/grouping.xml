@@ -285,7 +285,6 @@ after discussions on the right group.
       <annotation id="ip_protection_service_get_token"/>
       <annotation id="supervised_user_request_blocked_site_permission"/>
       <annotation id="password_sharing_recipients"/>
-      <annotation id="page_insights"/>
       <annotation id="ntp_image_url_verification"/>
       <annotation id="passkey_enclave_client"/>
       <annotation id="iwa_update_discovery_update_manifest"/>
@@ -294,6 +293,11 @@ after discussions on the right group.
       <annotation id="ip_protection_service_get_proxy_config"/>
       <annotation id="customize_chrome_page_handler"/>
       <annotation id="almanac_icon_cache"/>
+      <annotation id="blink_fetch_later_manager"/>
+      <annotation id="carrier_lock_manager_fetch_configuration"/>
+      <annotation id="carrier_lock_manager_check_membership"/>
+      <annotation id="carrier_lock_manager_fcm_topic"/>
+      <annotation id="almanac_app_install"/>
     </sender>
   </group>
   <group name="Admin Features" hidden="true">

@@ -76,10 +76,6 @@ BASE_FEATURE(kPasswordChangeWellKnown,
              "PasswordChangeWellKnown",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kPasswordsImportM2,
-             "PasswordsImportM2",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables password reuse detection.
 BASE_FEATURE(kPasswordReuseDetectionEnabled,
              "PasswordReuseDetectionEnabled",
@@ -129,10 +125,6 @@ BASE_FEATURE(kUnifiedPasswordManagerLocalPasswordsMigrationWarning,
 // backend will be used to achieve similar behavior.
 BASE_FEATURE(kUnifiedPasswordManagerSyncUsingAndroidBackendOnly,
              "UnifiedPasswordManagerSyncUsingAndroidBackendOnly",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kPasswordsInCredMan,
-             "PasswordsInCredMan",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 

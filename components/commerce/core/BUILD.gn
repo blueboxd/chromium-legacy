@@ -420,7 +420,10 @@ source_set("commerce_constants") {
 }
 
 source_set("commerce_types") {
-  sources = [ "commerce_types.h" ]
+  sources = [
+    "commerce_types.cc",
+    "commerce_types.h",
+  ]
 
   deps = [
     ":proto",
@@ -436,6 +439,8 @@ source_set("utils") {
   ]
   deps = [
     ":commerce_constants",
+    ":commerce_types",
+    ":feature_list",
     "//net:net",
   ]
 }

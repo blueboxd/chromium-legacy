@@ -39,7 +39,6 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/content/browser/password_change_success_tracker_factory.h"
 #include "components/password_manager/core/browser/affiliation/affiliation_utils.h"
-#include "components/password_manager/core/browser/bulk_leak_check_service.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
 #include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
 #include "components/password_manager/core/browser/password_change_success_tracker.h"
@@ -207,7 +206,8 @@ api::passwords_private::CompromisedInfo CreateCompromiseInfo(
   // Weak credentials don't have compromise time, they also can't be muted.
   if (IsCompromised(credential)) {
     compromise_info.compromise_time =
-        credential.GetLastLeakedOrPhishedTime().ToJsTimeIgnoringNull();
+        credential.GetLastLeakedOrPhishedTime()
+            .InMillisecondsFSinceUnixEpochIgnoringNull();
     compromise_info.elapsed_time_since_compromise =
         FormatElapsedTime(credential.GetLastLeakedOrPhishedTime());
     compromise_info.is_muted = credential.IsMuted();
@@ -401,6 +401,13 @@ PasswordCheckDelegate::GetInsecureCredentialsManager() {
   return &insecure_credentials_manager_;
 }
 
+void PasswordCheckDelegate::OnBulkCheckServiceShutDown() {
+  // Stop observing BulkLeakCheckService when the service shuts down.
+  CHECK(observed_bulk_leak_check_service_.IsObservingSource(
+      BulkLeakCheckServiceFactory::GetForProfile(profile_)));
+  observed_bulk_leak_check_service_.Reset();
+}
+
 void PasswordCheckDelegate::OnSavedPasswordsChanged(
     const password_manager::PasswordStoreChangeList& changes) {
   // Getting the first notification about a change in saved passwords implies
@@ -460,7 +467,7 @@ void PasswordCheckDelegate::
     RecordAndNotifyAboutCompletedCompromisedPasswordCheck() {
   profile_->GetPrefs()->SetDouble(
       password_manager::prefs::kLastTimePasswordCheckCompleted,
-      base::Time::Now().ToDoubleT());
+      base::Time::Now().InSecondsFSinceUnixEpoch());
   profile_->GetPrefs()->SetTime(
       password_manager::prefs::kSyncedLastTimePasswordCheckCompleted,
       base::Time::Now());

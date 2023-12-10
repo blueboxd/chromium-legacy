@@ -279,6 +279,7 @@ FillDataType GetEventTypeFromSingleFieldSuggestionPopupItemId(
     case PopupItemId::kFillFullAddress:
     case PopupItemId::kFillFullName:
     case PopupItemId::kFillFullPhoneNumber:
+    case PopupItemId::kFillFullEmail:
     case PopupItemId::kGeneratePasswordEntry:
     case PopupItemId::kInsecureContextPaymentDisabledMessage:
     case PopupItemId::kMixedFormMessage:
@@ -296,6 +297,8 @@ FillDataType GetEventTypeFromSingleFieldSuggestionPopupItemId(
     case PopupItemId::kVirtualCreditCardEntry:
     case PopupItemId::kWebauthnCredential:
     case PopupItemId::kWebauthnSignInWithAnotherDevice:
+    case PopupItemId::kDevtoolsTestAddresses:
+    case PopupItemId::kDevtoolsTestAddressEntry:
       NOTREACHED();
   }
   NOTREACHED();
@@ -521,8 +524,8 @@ bool ShouldShowSuggestionsForAutocompleteUnrecognizedFields(
   return base::FeatureList::IsEnabled(
       features::kAutofillSuggestionsForAutocompleteUnrecognizedFieldsOnMobile);
 #else
-  return trigger_source == AutofillSuggestionTriggerSource::
-                               kManualFallbackForAutocompleteUnrecognized;
+  return trigger_source ==
+         AutofillSuggestionTriggerSource::kManualFallbackAddress;
 #endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 }
 
@@ -1063,8 +1066,7 @@ bool BrowserAutofillManager::WasSuggestionPreviouslyHidden(
                 /*optional_type_groups_originally_filled=*/nullptr,
                 /*skip_unrecognized_autocomplete_fields=*/
                 trigger_source !=
-                    AutofillSuggestionTriggerSource::
-                        kManualFallbackForAutocompleteUnrecognized,
+                    AutofillSuggestionTriggerSource::kManualFallbackAddress,
                 /*is_refill=*/false)
           : std::vector<FieldFillingSkipReason>(
                 form_structure->field_count(),
@@ -1157,7 +1159,7 @@ void BrowserAutofillManager::OnAskForValuesToFillImpl(
     return;
   }
 
-  SetDataList(field.datalist_values, field.datalist_labels);
+  external_delegate_->SetCurrentDataListValues(field.datalist_options);
   external_delegate_->OnQuery(form, field, transformed_box);
 
   std::vector<Suggestion> suggestions;
@@ -1466,34 +1468,7 @@ void BrowserAutofillManager::UndoAutofill(
   }
 }
 
-void BrowserAutofillManager::FillOrPreviewForm(
-    mojom::ActionPersistence action_persistence,
-    const FormData& form,
-    const FormFieldData& field,
-    Suggestion::BackendId backend_id,
-    const AutofillTriggerDetails& trigger_details) {
-  if (!IsValidFormData(form) || !IsValidFormFieldData(field))
-    return;
-
-  // NOTE: RefreshDataModels may invalidate |data_model|. Thus it must come
-  // before GetProfile or GetCreditCard.
-  if (!RefreshDataModels() || !driver().RendererIsAvailable()) {
-    return;
-  }
-
-  const AutofillProfile* profile = GetProfile(backend_id);
-  const CreditCard* credit_card = GetCreditCard(backend_id);
-
-  if (credit_card) {
-    FillOrPreviewCreditCardForm(action_persistence, form, field, credit_card,
-                                trigger_details);
-  } else if (profile) {
-    FillOrPreviewProfileForm(action_persistence, form, field, *profile,
-                             trigger_details);
-  }
-}
-
-void BrowserAutofillManager::FillCreditCardFormImpl(
+void BrowserAutofillManager::FillCreditCardForm(
     const FormData& form,
     const FormFieldData& field,
     const CreditCard& credit_card,
@@ -1513,15 +1488,6 @@ void BrowserAutofillManager::FillCreditCardFormImpl(
                              &credit_card, &cvc, form_structure, autofill_field,
                              trigger_details,
                              /*is_refill=*/false);
-}
-
-void BrowserAutofillManager::FillProfileFormImpl(
-    const FormData& form,
-    const FormFieldData& field,
-    const AutofillProfile& profile,
-    const AutofillTriggerDetails& trigger_details) {
-  FillOrPreviewProfileForm(mojom::ActionPersistence::kFill, form, field,
-                           profile, trigger_details);
 }
 
 void BrowserAutofillManager::FillOrPreviewVirtualCardInformation(
@@ -1813,16 +1779,6 @@ bool BrowserAutofillManager::ShouldClearPreviewedForm() {
   return credit_card_access_manager_->ShouldClearPreviewedForm();
 }
 
-void BrowserAutofillManager::SetDataList(
-    const std::vector<std::u16string>& values,
-    const std::vector<std::u16string>& labels) {
-  if (!IsValidString16Vector(values) || !IsValidString16Vector(labels) ||
-      values.size() != labels.size())
-    return;
-
-  external_delegate_->SetCurrentDataListValues(values, labels);
-}
-
 void BrowserAutofillManager::OnSelectOrSelectListFieldOptionsDidChangeImpl(
     const FormData& form) {
   FormStructure* form_structure = FindCachedFormById(form.global_id());
@@ -2017,7 +1973,7 @@ void BrowserAutofillManager::OnCreditCardFetched(
   client().GetFormDataImporter()->SetFetchedCardInstrumentId(
       credit_card->instrument_id());
 
-  FillCreditCardFormImpl(
+  FillCreditCardForm(
       credit_card_form_, credit_card_field_, *credit_card, cvc,
       {.trigger_source = fetched_credit_card_trigger_source_.value_or(
            AutofillTriggerSource::kCreditCardCvcPopup)});
@@ -2538,8 +2494,7 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
       filling_context ? &filling_context->type_groups_originally_filled
                       : nullptr,
       /*skip_unrecognized_autocomplete_fields=*/
-      trigger_details.trigger_source !=
-          AutofillTriggerSource::kManualFallbackForAutocompleteUnrecognized,
+      trigger_details.trigger_source != AutofillTriggerSource::kManualFallback,
       is_refill);
 
   constexpr DenseSet<FieldFillingSkipReason> pre_ukm_logging_skips{
@@ -2868,8 +2823,7 @@ std::vector<Suggestion> BrowserAutofillManager::GetProfileSuggestions(
                     : kAllServerFieldTypes,
                 /*optional_type_groups_originally_filled=*/nullptr,
                 /*skip_unrecognized_autocomplete_fields=*/trigger_source !=
-                    AutofillSuggestionTriggerSource::
-                        kManualFallbackForAutocompleteUnrecognized,
+                    AutofillSuggestionTriggerSource::kManualFallbackAddress,
                 /*is_refill=*/false)
           : std::vector<FieldFillingSkipReason>(
                 form_structure.field_count(),
@@ -3856,15 +3810,25 @@ BrowserAutofillManager::MaybeGetPlusAddressSuggestion() {
 absl::optional<Suggestion> BrowserAutofillManager::MaybeGetComposeSuggestion(
     const FormFieldData& field) {
   AutofillComposeDelegate* compose_delegate = client().GetComposeDelegate();
-  if (!compose_delegate ||
-      !compose_delegate->ShouldOfferCompose(
-          AutofillComposeDelegate::UiEntryPoint::kAutofillPopup, field)) {
+  if (!compose_delegate || !compose_delegate->ShouldOfferComposePopup(field)) {
     return absl::nullopt;
   }
-  Suggestion suggestion(
-      l10n_util::GetStringUTF16(IDS_COMPOSE_SUGGESTION_MAIN_TEXT));
-  suggestion.labels = {{Suggestion::Text(
-      l10n_util::GetStringUTF16(IDS_COMPOSE_SUGGESTION_LABEL))}};
+  std::u16string suggestion_text;
+  std::u16string label_text;
+  if (compose_delegate->HasSavedState(field.global_id())) {
+    // The nudge text indicates that the user can resume where they left off in
+    // the Compose dialog.
+    suggestion_text =
+        l10n_util::GetStringUTF16(IDS_COMPOSE_SUGGESTION_SAVED_TEXT);
+    label_text = l10n_util::GetStringUTF16(IDS_COMPOSE_SUGGESTION_SAVED_LABEL);
+  } else {
+    // Text for a new Compose session.
+    suggestion_text =
+        l10n_util::GetStringUTF16(IDS_COMPOSE_SUGGESTION_MAIN_TEXT);
+    label_text = l10n_util::GetStringUTF16(IDS_COMPOSE_SUGGESTION_LABEL);
+  }
+  Suggestion suggestion(std::move(suggestion_text));
+  suggestion.labels = {{Suggestion::Text(std::move(label_text))}};
   suggestion.popup_item_id = PopupItemId::kCompose;
   suggestion.icon = "keyIcon";
   return suggestion;

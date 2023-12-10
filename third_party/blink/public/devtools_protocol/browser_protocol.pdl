@@ -827,6 +827,8 @@ experimental domain Audits
       IdTokenHttpNotFound
       IdTokenNoResponse
       IdTokenInvalidResponse
+      IdTokenIdpErrorResponse
+      IdTokenCrossSiteIdpErrorResponse
       IdTokenInvalidRequest
       IdTokenInvalidContentType
       ErrorIdToken
@@ -9927,6 +9929,11 @@ experimental domain Storage
       # duration in seconds
       array of integer ends
 
+  experimental type AttributionReportingTriggerDataMatching extends string
+    enum
+      exact
+      modulus
+
   experimental type AttributionReportingSourceRegistration extends object
     properties
       Network.TimeSinceEpoch time
@@ -9944,6 +9951,7 @@ experimental domain Storage
       array of AttributionReportingFilterDataEntry filterData
       array of AttributionReportingAggregationKeysEntry aggregationKeys
       optional UnsignedInt64AsBase10 debugKey
+      AttributionReportingTriggerDataMatching triggerDataMatching
 
   experimental type AttributionReportingSourceRegistrationResult extends string
     enum

@@ -1728,6 +1728,7 @@ void NetworkContext::CreateWebSocket(
     const GURL& url,
     const std::vector<std::string>& requested_protocols,
     const net::SiteForCookies& site_for_cookies,
+    bool has_storage_access,
     const net::IsolationInfo& isolation_info,
     std::vector<mojom::HttpHeaderPtr> additional_headers,
     int32_t process_id,
@@ -1747,8 +1748,9 @@ void NetworkContext::CreateWebSocket(
   DCHECK_GE(process_id, 0);
 
   websocket_factory_->CreateWebSocket(
-      url, requested_protocols, site_for_cookies, isolation_info,
-      std::move(additional_headers), process_id, origin, options,
+      url, requested_protocols, site_for_cookies, has_storage_access,
+      isolation_info, std::move(additional_headers), process_id, origin,
+      options,
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
       std::move(handshake_client), std::move(url_loader_network_observer),
       std::move(auth_handler), std::move(header_client), throttling_profile_id);
@@ -1931,13 +1933,15 @@ void NetworkContext::GetHSTSState(const std::string& domain,
         result.Set("static_sts_include_subdomains",
                    static_sts_state.include_subdomains);
         result.Set("static_sts_observed",
-                   static_sts_state.last_observed.ToDoubleT());
-        result.Set("static_sts_expiry", static_sts_state.expiry.ToDoubleT());
+                   static_sts_state.last_observed.InSecondsFSinceUnixEpoch());
+        result.Set("static_sts_expiry",
+                   static_sts_state.expiry.InSecondsFSinceUnixEpoch());
         result.Set("static_pkp_include_subdomains",
                    static_pkp_state.include_subdomains);
         result.Set("static_pkp_observed",
-                   static_pkp_state.last_observed.ToDoubleT());
-        result.Set("static_pkp_expiry", static_pkp_state.expiry.ToDoubleT());
+                   static_pkp_state.last_observed.InSecondsFSinceUnixEpoch());
+        result.Set("static_pkp_expiry",
+                   static_pkp_state.expiry.InSecondsFSinceUnixEpoch());
         result.Set("static_spki_hashes",
                    HashesToBase64String(static_pkp_state.spki_hashes));
         result.Set("static_sts_domain", static_sts_state.domain);
@@ -1957,8 +1961,9 @@ void NetworkContext::GetHSTSState(const std::string& domain,
         result.Set("dynamic_sts_include_subdomains",
                    dynamic_sts_state.include_subdomains);
         result.Set("dynamic_sts_observed",
-                   dynamic_sts_state.last_observed.ToDoubleT());
-        result.Set("dynamic_sts_expiry", dynamic_sts_state.expiry.ToDoubleT());
+                   dynamic_sts_state.last_observed.InSecondsFSinceUnixEpoch());
+        result.Set("dynamic_sts_expiry",
+                   dynamic_sts_state.expiry.InSecondsFSinceUnixEpoch());
         result.Set("dynamic_sts_domain", dynamic_sts_state.domain);
       }
 
@@ -1966,8 +1971,9 @@ void NetworkContext::GetHSTSState(const std::string& domain,
         result.Set("dynamic_pkp_include_subdomains",
                    dynamic_pkp_state.include_subdomains);
         result.Set("dynamic_pkp_observed",
-                   dynamic_pkp_state.last_observed.ToDoubleT());
-        result.Set("dynamic_pkp_expiry", dynamic_pkp_state.expiry.ToDoubleT());
+                   dynamic_pkp_state.last_observed.InSecondsFSinceUnixEpoch());
+        result.Set("dynamic_pkp_expiry",
+                   dynamic_pkp_state.expiry.InSecondsFSinceUnixEpoch());
         result.Set("dynamic_spki_hashes",
                    HashesToBase64String(dynamic_pkp_state.spki_hashes));
         result.Set("dynamic_pkp_domain", dynamic_pkp_state.domain);

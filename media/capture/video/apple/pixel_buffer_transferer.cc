@@ -25,7 +25,7 @@ bool PixelBufferTransferer::TransferImage(CVPixelBufferRef source,
   DCHECK(source);
   DCHECK(destination);
   if (__builtin_available(macOS 10.8, *)) {
-    OSStatus error = VTPixelTransferSessionTransferImage(transfer_session_,
+    OSStatus error = VTPixelTransferSessionTransferImage(transfer_session_.get(),
                                                          source, destination);
     if (error == kVTPixelTransferNotSupportedErr) {
       // This source/destination transfer operation is not supported.
@@ -40,7 +40,7 @@ bool PixelBufferTransferer::TransferImage(CVPixelBufferRef source,
 
 PixelBufferTransferer::~PixelBufferTransferer() {
   if (__builtin_available(macOS 10.8, *)) {
-    VTPixelTransferSessionInvalidate(transfer_session_);
+    VTPixelTransferSessionInvalidate(transfer_session_.get());
   }
 }
 

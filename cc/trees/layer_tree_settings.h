@@ -54,8 +54,8 @@ class CC_EXPORT LayerTreeSettings {
   base::TimeDelta scrollbar_fade_delay;
   base::TimeDelta scrollbar_fade_duration;
   base::TimeDelta scrollbar_thinning_duration;
+  float idle_thickness_scale = 0.4f;
   bool scrollbar_flash_after_any_scroll_update = false;
-  SkColor4f solid_color_scrollbar_color = SkColors::kWhite;
   base::TimeDelta scroll_animation_duration_for_testing;
   bool layers_always_allowed_lcd_text = false;
   float low_res_contents_scale_factor = 0.25f;

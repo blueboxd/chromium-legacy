@@ -494,7 +494,7 @@ ServerFieldType GetActualFieldType(const ServerFieldTypeSet& possible_types,
   if (collapsed_field_types.size() == 1)
     actual_type = *collapsed_field_types.begin();
 
-  DVLOG(2) << "Inferred Type: " << FieldTypeToStringPiece(actual_type);
+  DVLOG(2) << "Inferred Type: " << FieldTypeToStringView(actual_type);
   return actual_type;
 }
 
@@ -700,8 +700,8 @@ void LogPredictionQualityMetrics(
   ServerFieldType actual_type =
       GetActualFieldType(possible_types, predicted_type);
 
-  DVLOG(2) << "Predicted: " << FieldTypeToStringPiece(predicted_type) << "; "
-           << "Actual: " << FieldTypeToStringPiece(actual_type);
+  DVLOG(2) << "Predicted: " << FieldTypeToStringView(predicted_type) << "; "
+           << "Actual: " << FieldTypeToStringView(actual_type);
 
   DCHECK_LE(predicted_type, UINT16_MAX);
   DCHECK_LE(actual_type, UINT16_MAX);
@@ -2530,6 +2530,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::
           AutofillMetrics::FieldGlobalIdToHash64Bit(field.global_id()))
       .SetFieldSignature(HashFieldSignature(field.GetFieldSignature()))
       .SetFormControlType(base::to_underlying(field.FormControlType()))
+      .SetFormControlType2(base::to_underlying(field.form_control_type))
       .SetAutocompleteState(base::to_underlying(autocomplete_state));
 
   SetStatusVector(AutofillStatus::kIsFocusable, field.IsFocusable());

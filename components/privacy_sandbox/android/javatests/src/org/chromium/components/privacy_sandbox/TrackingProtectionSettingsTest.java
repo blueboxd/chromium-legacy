@@ -59,6 +59,11 @@ public class TrackingProtectionSettingsTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mJniMocker.mock(WebsitePreferenceBridgeJni.TEST_HOOKS, mBridgeMock);
+
+        when(mDelegate.getBrowserContext()).thenReturn(mContextHandleMock);
+    }
+
+    private void launchTrackingProtectionSettings() {
         mSettingsRule.launchPreference(
                 TrackingProtectionSettings.class,
                 null,
@@ -67,8 +72,6 @@ public class TrackingProtectionSettingsTest {
                             .setTrackingProtectionDelegate(mDelegate);
                 });
         mFragment = (TrackingProtectionSettings) mSettingsRule.getPreferenceFragment();
-
-        when(mDelegate.getBrowserContext()).thenReturn(mContextHandleMock);
     }
 
     @Test
@@ -76,6 +79,9 @@ public class TrackingProtectionSettingsTest {
     public void testShowTrackingProtectionUi() {
         when(mDelegate.isBlockAll3PCDEnabled()).thenReturn(true);
         when(mDelegate.isDoNotTrackEnabled()).thenReturn(true);
+
+        launchTrackingProtectionSettings();
+
         onView(withText(R.string.privacy_sandbox_tracking_protection_description))
                 .check(matches(isDisplayed()));
     }

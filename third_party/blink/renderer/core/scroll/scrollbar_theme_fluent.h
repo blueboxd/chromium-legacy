@@ -26,6 +26,12 @@ class CORE_EXPORT ScrollbarThemeFluent : public ScrollbarThemeAura {
   int ScrollbarThickness(float scale_from_dip,
                          EScrollbarWidth scrollbar_width) override;
   bool UsesOverlayScrollbars() const override;
+  bool UsesFluentOverlayScrollbars() const override;
+  // When scrollbars are main threaded the thumb size returned by ThumbRect()
+  // is the expanded thumb size. This function shrinks the thumb and displaces
+  // it to be near the correct Edge of the scrollable area.
+  gfx::Rect ShrinkMainThreadedMinimalModeThumbRect(Scrollbar&, gfx::Rect& rect)
+      const override;
 
  protected:
   ScrollbarThemeFluent();

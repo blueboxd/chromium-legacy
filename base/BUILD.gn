@@ -100,7 +100,7 @@ if (is_android || is_robolectric) {
 }
 
 if (is_fuchsia) {
-  import("//third_party/fuchsia-sdk/sdk/build/fidl_library.gni")
+  import("//third_party/fuchsia-gn-sdk/src/fidl_library.gni")
 }
 
 # The Rust implementation of base::JSONReader. NaCl depends on base and doesn't
@@ -796,6 +796,7 @@ component("base") {
     "task/thread_pool/pooled_task_runner_delegate.h",
     "task/thread_pool/priority_queue.cc",
     "task/thread_pool/priority_queue.h",
+    "task/thread_pool/semaphore.h",
     "task/thread_pool/sequence.cc",
     "task/thread_pool/sequence.h",
     "task/thread_pool/service_thread.cc",
@@ -1340,7 +1341,6 @@ component("base") {
     deps += [
       ":base_jni",
       ":process_launcher_jni",
-      "//third_party/jni_zero:jni_helpers",
     ]
   }  # is_android || is_robolectric
 
@@ -1527,6 +1527,7 @@ component("base") {
       "rand_util_nacl.cc",
       "sync_socket_nacl.cc",
       "system/sys_info_nacl.cc",
+      "task/thread_pool/semaphore/semaphore_default.cc",
       "threading/platform_thread_linux_base.cc",
       "threading/platform_thread_nacl.cc",
     ]
@@ -1604,6 +1605,10 @@ component("base") {
         "base_paths_android.cc",
         "base_paths_android.h",
       ]
+    }
+
+    if (is_linux || is_chromeos || is_android || is_fuchsia) {
+      sources += [ "task/thread_pool/semaphore/semaphore_posix.cc" ]
     }
 
     if (is_posix) {
@@ -1779,6 +1784,7 @@ component("base") {
       "synchronization/waitable_event_watcher_win.cc",
       "synchronization/waitable_event_win.cc",
       "system/sys_info_win.cc",
+      "task/thread_pool/semaphore/semaphore_win.cc",
       "threading/platform_thread_win.cc",
       "threading/platform_thread_win.h",
       "threading/thread_local_storage_win.cc",
@@ -1991,6 +1997,7 @@ component("base") {
       "synchronization/waitable_event_apple.cc",
       "system/sys_info_apple.mm",
       "threading/atomic.c",
+      "task/thread_pool/semaphore/semaphore_apple.cc",
       "threading/platform_thread_apple.mm",
       "time/time_apple.mm",
     ]
@@ -3357,6 +3364,7 @@ test("base_unittests") {
     "task/thread_pool/job_task_source_unittest.cc",
     "task/thread_pool/pooled_single_thread_task_runner_manager_unittest.cc",
     "task/thread_pool/priority_queue_unittest.cc",
+    "task/thread_pool/semaphore/semaphore_unittest.cc",
     "task/thread_pool/sequence_unittest.cc",
     "task/thread_pool/service_thread_unittest.cc",
     "task/thread_pool/task_source_sort_key_unittest.cc",
@@ -3722,6 +3730,7 @@ test("base_unittests") {
     deps += [
       ":base_java_unittest_support",
       "//base/test:test_support_java",
+      "//third_party/jni_zero",
     ]
   }
 
@@ -3751,6 +3760,7 @@ test("base_unittests") {
       "allocator/partition_allocator/src/partition_alloc/shim/allocator_interception_apple_unittest.mm",
       "allocator/partition_allocator/src/partition_alloc/shim/malloc_zone_functions_apple_unittest.cc",
       "apple/call_with_eh_frame_unittest.mm",
+      "apple/scoped_cftyperef_unittest.cc",
       "apple/scoped_mach_vm_unittest.cc",
       "apple/scoped_nsautorelease_pool_unittest.mm",
       "apple/scoped_objc_class_swizzler_unittest.mm",
@@ -4116,6 +4126,7 @@ if (enable_nocompile_tests_new) {
       "callback_list_nocompile.nc",
       "memory/weak_ptr_nocompile.nc",
       "no_destructor_nocompile.nc",
+      "strings/stringprintf_nocompile.nc",
       "values_nocompile.nc",
     ]
     deps = [ ":base" ]
@@ -4448,6 +4459,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/supplier/Supplier.java",
       "android/java/src/org/chromium/base/supplier/SyncOneshotSupplier.java",
       "android/java/src/org/chromium/base/supplier/SyncOneshotSupplierImpl.java",
+      "android/java/src/org/chromium/base/supplier/TransitiveObservableSupplier.java",
       "android/java/src/org/chromium/base/supplier/UnownedUserDataSupplier.java",
       "android/java/src/org/chromium/base/task/AsyncTask.java",
       "android/java/src/org/chromium/base/task/BackgroundOnlyAsyncTask.java",
@@ -4808,6 +4820,7 @@ if (is_android) {
       "android/junit/src/org/chromium/base/supplier/OneShotCallbackTest.java",
       "android/junit/src/org/chromium/base/supplier/OneshotSupplierImplTest.java",
       "android/junit/src/org/chromium/base/supplier/SyncOneshotSupplierImplTest.java",
+      "android/junit/src/org/chromium/base/supplier/TransitiveObservableSupplierTest.java",
       "android/junit/src/org/chromium/base/supplier/UnownedUserDataSupplierTest.java",
       "android/junit/src/org/chromium/base/task/AsyncTaskThreadTest.java",
       "android/junit/src/org/chromium/base/task/SequencedTaskRunnerTaskMigrationTest.java",
@@ -4969,6 +4982,13 @@ fuzzer_test("escape_fuzzer") {
 fuzzer_test("file_path_fuzzer") {
   sources = [ "files/file_path_fuzzer.cc" ]
   deps = [ "//base" ]
+}
+
+if (is_linux || is_chromeos) {
+  fuzzer_test("mime_util_xdg_fuzzer") {
+    sources = [ "nix/mime_util_xdg_fuzzer.cc" ]
+    deps = [ "//base" ]
+  }
 }
 
 fuzzer_test("string_number_conversions_fuzzer") {

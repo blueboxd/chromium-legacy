@@ -26,6 +26,7 @@
 <translation id="1448064542941920355">Bawasan ang pag-zoom</translation>
 <translation id="1510341833810331442">Hindi pinapayagan ang mga site na mag-save ng data sa iyong device</translation>
 <translation id="1547123415014299762">Pinapayagan ang third-party na cookies</translation>
+<translation id="1568470248891039841">Puwedeng mag-embed ng content mula sa iba pang site ang mga site na binibisita mo, halimbawa, mga larawan, ad, at text. Puwedeng humingi ang iba pang site na ito ng pahintulot na gamitin ang impormasyong na-save ng mga ito tungkol sa iyo habang nagba-browse ka sa site. <ph name="BEGIN_LINK" />Matuto pa tungkol sa naka-embed na content<ph name="END_LINK" /></translation>
 <translation id="1593426485665524382">Available ang mga bagong pagkilos malapit sa itaas ng screen</translation>
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1633720957382884102">Mga kaugnay na site</translation>
@@ -80,6 +81,7 @@
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{Pinapayagan ang <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" />, at <ph name="NUM_MORE" /> pa}one{Pinapayagan ang <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" />, at <ph name="NUM_MORE" /> pa}other{Pinapayagan ang <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" />, at <ph name="NUM_MORE" /> pa}}</translation>
 <translation id="2410940059315936967">Puwedeng mag-embed ng content mula sa iba pang site ang site na binibisita mo, halimbawa, mga larawan, ad, at text. Ang cookies na itinatakda ng iba pang site na ito ay tinatawag na mga third-party na cookie.</translation>
 <translation id="2434158240863470628">Tapos nang mag-download <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
+<translation id="2438120137003069591">Pansamantala mong pinayagan ang site na ito na gumamit ng third-party na cookies, na nangangahulugang mas mahina ang proteksyon sa pag-browse pero mas malamang na gumana ang mga feature ng site na gaya ng inaasahan. <ph name="BEGIN_LINK" />Magpadala ng feedback<ph name="END_LINK" /></translation>
 <translation id="244264527810019436">Posibleng hindi gumana sa Incognito mode ang mga feature sa ilang site</translation>
 <translation id="2442870161001914531">Palaging hilingin ang pang-desktop na site</translation>
 <translation id="2469312991797799607">Ide-delete ng pagkilos na ito ang lahat ng data at cookies para sa <ph name="ORIGIN" /> at lahat ng site sa ilalim nito</translation>
@@ -114,6 +116,7 @@
 <translation id="2910701580606108292">Magtanong bago payagan ang mga site na mag-play ng pinoprotektahang content</translation>
 <translation id="2932883381142163287">I-ulat ang pang-aabuso</translation>
 <translation id="2968755619301702150">Viewer ng certificate</translation>
+<translation id="2979365474350987274">Limitado ang third-party na cookies</translation>
 <translation id="3008272652534848354">I-reset ang mga pahintulot</translation>
 <translation id="301521992641321250">Awtomatikong na-block</translation>
 <translation id="3069226013421428034">Payagan ang third-party na pag-sign in para sa partikular na site.</translation>
@@ -169,6 +172,7 @@
 <translation id="3918378745482005425">Posibleng hindi gumana ang ilang feature. Puwede pa ring gumamit ng third-party na cookie ang mga nauugnay na site.</translation>
 <translation id="3955193568934677022">Pahintulutan ang mga site na mag-play ng pinoprotektahang content (inirerekomenda)</translation>
 <translation id="3967822245660637423">Tapos na ang pag-download</translation>
+<translation id="3974105241379491420">Puwedeng humiling ang mga site na gumamit ng impormasyong na-save ng mga ito tungkol sa iyo</translation>
 <translation id="3987993985790029246">Kopyahin ang link</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="3992684624889376114">Tungkol sa page na ito</translation>
@@ -188,6 +192,7 @@
 <translation id="4278390842282768270">Pinapayagan</translation>
 <translation id="429312253194641664">May site na nagpe-play ng media</translation>
 <translation id="42981349822642051">Palawakin</translation>
+<translation id="4336566011000459927">Maglilimita ulit ang Chrome ng cookies ngayong araw</translation>
 <translation id="4338831206024587507">Lahat ng site sa ilalim ng <ph name="DOMAIN" /></translation>
 <translation id="4402755511846832236">Pigilan ang mga site na malaman kung kailan mo aktibong ginagamit ang device na ito</translation>
 <translation id="4412992751769744546">Payagan ang third-party na cookies</translation>
@@ -243,6 +248,7 @@
 <translation id="5335288049665977812">Payagan ang mga site na magpatakbo ng JavaScript (inirerekomenda)</translation>
 <translation id="534295439873310000">Mga NFC device</translation>
 <translation id="5344522958567249764">Pamahalaan ang privacy sa mga ad</translation>
+<translation id="5389626883706033615">Naka-block ang mga site para hindi mahiling ng mga ito sa iyo na gumamit ng impormasyong na-save ng mga ito tungkol sa iyo</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 pa)}one{(+ # pa)}other{(+ # pa)}}</translation>
 <translation id="5403592356182871684">Mga Pangalan</translation>
 <translation id="5438097262470833822">Ire-reset ng opsyong ito ang mga pahintulot para sa <ph name="WEBSITE" /></translation>
@@ -289,6 +295,8 @@
 <translation id="6177128806592000436">Hindi ligtas ang iyong koneksyon sa site na ito</translation>
 <translation id="6181444274883918285">Magdagdag ng pagbubukod ng site</translation>
 <translation id="6192792657125177640">Mga Pagbubukod</translation>
+<translation id="6194967801833346599">{DAYS,plural, =1{Magba-block ulit ang Chrome ng cookies bukas}one{# araw bago mag-block ulit ng cookies}other{# na araw bago mag-block ulit ng cookies}}</translation>
+<translation id="6195163219142236913">Limitado ang third-party na cookies</translation>
 <translation id="6196640612572343990">I-block ang mga third-party na cookie</translation>
 <translation id="6205314730813004066">Privacy sa mga ad</translation>
 <translation id="6207207788774442484">I-delete ang data at i-reset ang mga pahintulot</translation>
@@ -299,6 +307,7 @@
 <translation id="6270391203985052864">Puwedeng humiling ang mga site na magpadala ng mga notification</translation>
 <translation id="6295158916970320988">Lahat ng site</translation>
 <translation id="6320088164292336938">Mag-vibrate</translation>
+<translation id="6344622098450209924">Proteksyon sa Pag-track</translation>
 <translation id="6367753977865761591">I-block ang third-party na pag-sign in para sa partikular na site.</translation>
 <translation id="6398765197997659313">Lumabas sa buong screen</translation>
 <translation id="640163077447496506">Mag-e-expire ngayong araw</translation>
@@ -329,6 +338,7 @@
 <translation id="6864395892908308021">Hindi nababasa ng device na ito ang NFC</translation>
 <translation id="6912998170423641340">I-block ang mga site sa pag-read ng text at mga larawan mula sa clipboard</translation>
 <translation id="6945221475159498467">Pumili</translation>
+<translation id="6950072572526089586">Puwedeng mag-save ang site na binibisita mo ng impormasyon tungkol sa kung ano ang ginagawa mo para gumana ito na gaya ng inaasahan — halimbawa, para panatilihin kang naka-sign in sa isang site o para mag-save ng mga item sa iyong shopping cart. Kadalasang pansamantalang sine-save ng mga site ang impormasyong ito sa iyong device.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6981982820502123353">Accessibility</translation>
 <translation id="6992289844737586249">Magtanong muna bago payagan ang mga site na gamitin ang iyong mikropono (inirerekomenda)</translation>
@@ -349,6 +359,7 @@
 <translation id="7243308994586599757">May mga opsyon malapit sa ibaba ng screen</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ang napili</translation>
 <translation id="7260727271532453612">Pinapayagan ang <ph name="PERMISSION_1" /> at <ph name="PERMISSION_2" /></translation>
+<translation id="7284451015630589124">Na-block mo ang mga site sa paggamit ng mga third-party na cookies para ma-track ka habang nagba-browse ka. Tingnan ang mga setting para <ph name="BEGIN_LINK" />pamahalaan ang iyong mga proteksyon sa pag-track<ph name="END_LINK" />.</translation>
 <translation id="7302486331832100261">Kadalasan mong bina-block ang mga notification. Para payagan, i-tap ang Mga Detalye.</translation>
 <translation id="7366415735885268578">Magdagdag ng site</translation>
 <translation id="7368695150573390554">Made-delete ang anumang offline data</translation>
@@ -357,6 +368,7 @@
 <translation id="7423098979219808738">Magtanong muna</translation>
 <translation id="7423538860840206698">Na-block sa pag-read ng clipboard</translation>
 <translation id="7425915948813553151">Madilim na tema para sa mga site</translation>
+<translation id="7474522811371247902">Nililimitahan ng Chrome ang karamihan ng mga site sa paggamit ng third-party na cookies. Pero pinapayagan ang third-party na cookies sa site na ito dahil umaasa ito sa mga ito para makapagbigay ng mga pangunahing serbisyo.\n\nBisitahin ang mga setting para <ph name="BEGIN_LINK" />pamahalaan ang iyong mga proteksyon sa pag-track<ph name="END_LINK" />.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">Gingamit ng isang site ang iyong mikropono</translation>
 <translation id="7561196759112975576">Palagi</translation>
@@ -373,6 +385,7 @@
 <translation id="780301667611848630">Hindi salamat</translation>
 <translation id="7804248752222191302">Ginagamit ng isang site ang iyong camera</translation>
 <translation id="7807060072011926525">Ibinibigay ng Google</translation>
+<translation id="7822573154188733812">Bina-block ng Chrome ang mga site sa paggamit ng third-party na cookies para ma-track ka habang nagba-browse ka. Bisitahin ang mga setting para <ph name="BEGIN_LINK" />pamahalaan ang iyong mga proteksyon sa pag-track<ph name="END_LINK" />.</translation>
 <translation id="7835852323729233924">Nagpe-play ng media</translation>
 <translation id="783819812427904514">I-unmute ang video</translation>
 <translation id="7846076177841592234">Kanselahin ang pinili</translation>
@@ -389,6 +402,7 @@
 <translation id="8077120325605624147">Puwedeng magpakita ng anumang ad sa iyo ang anumang site na bibisitahin mo</translation>
 <translation id="8087000398470557479">Ang content na ito ay mula sa <ph name="DOMAIN_NAME" />, na ipinadala ng Google.</translation>
 <translation id="8088603949666785339">Higit pang opsyon sa <ph name="BANNER_TITLE" /></translation>
+<translation id="8113501330600751161">{DAYS,plural, =1{Maglilimita ulit ang Chrome ng cookies bukas}one{# araw bago maglimita ulit ang Chrome ng cookies}other{# na araw bago maglimita ulit ang Chrome ng cookies}}</translation>
 <translation id="8116925261070264013">Naka-mute</translation>
 <translation id="813082847718468539">Tingnan ang impormasyon ng site</translation>
 <translation id="8131740175452115882">Kumpirmahin</translation>
@@ -427,6 +441,7 @@
 <translation id="8564613706851221529">{COUNT,plural, =1{Pinapahintulutan ang cookies para sa <ph name="FPS_MEMBERS_COUNT" /> site ng<ph name="FPS_OWNER" />}one{Pinapahintulutan ang cookies para sa <ph name="FPS_MEMBERS_COUNT" /> site ng <ph name="FPS_OWNER" />}other{Pinapahintulutan ang cookies para sa <ph name="FPS_MEMBERS_COUNT" /> na site ng <ph name="FPS_OWNER" />}}</translation>
 <translation id="857943718398505171">Pinapayagan (inirerekomenda)</translation>
 <translation id="8609465669617005112">Ilipat sa itaas</translation>
+<translation id="8649036394979866943">Nililimitahan ng Chrome ang karamihan sa mga site sa paggamit ng mga third-party na cookies para ma-track ka habang nagba-browse ka. Tingnan ang mga setting para <ph name="BEGIN_LINK" />pamahalaan ang iyong mga proteksyon sa pag-track<ph name="END_LINK" /></translation>
 <translation id="8676374126336081632">I-clear ang input</translation>
 <translation id="8681886425883659911">Bina-block ang mga ad sa mga site na kilalang nagpapakita ng mga nakakasagabal o nakakapanlinlang na ad</translation>
 <translation id="868929229000858085">Maghanap sa iyong mga contact</translation>
@@ -443,12 +458,14 @@
 <translation id="8816026460808729765">I-block ang mga site sa pag-access sa mga sensor</translation>
 <translation id="8823559166155093873">I-block ang cookies</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8874790741333031443">Subukang payagan nang pansamantala ang third-party na cookies, na nangangahulugang mas mahina ang proteksyon sa pag-browse pero mas malamang na gumana ang mga feature ng site gaya ng inaasahan.</translation>
 <translation id="8889294078294184559">Habang patuloy kang nagba-browse, puwedeng sumangguni ang mga site sa Chrome at i-verify sa naunang site na binisita mo kung malamang na totoong tao ka.</translation>
 <translation id="8899807382908246773">Mga nakakasagabal na ad</translation>
 <translation id="8903921497873541725">Mag-zoom in</translation>
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">Naka-off ang NFC para sa device na ito. I-on ito sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
 <translation id="8928445016601307354">I-block ang mga site sa pagtingin at pagbago ng impormasyon sa mga NFC device</translation>
+<translation id="8944485226638699751">Limitado</translation>
 <translation id="8958424370300090006">Mag-block ng cookies para sa isang partikular na site.</translation>
 <translation id="8959122750345127698">Hindi gumagana ang navigation: <ph name="URL" /></translation>
 <translation id="8986362086234534611">Kalimutan</translation>

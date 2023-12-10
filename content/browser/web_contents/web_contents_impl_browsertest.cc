@@ -5963,7 +5963,7 @@ class MediaWatchTimeChangedDelegate : public WebContentsDelegate {
 IN_PROC_BROWSER_TEST_F(WebContentsFencedFrameBrowserTest,
                        MediaWatchTimeCallback) {
   using UkmEntry = ukm::builders::Media_WebMediaPlayerState;
-  ukm::TestAutoSetUkmRecorder test_recorder_;
+  ukm::TestAutoSetUkmRecorder test_recorder;
 
   MediaWatchTimeChangedDelegate delegate(web_contents());
   net::test_server::EmbeddedTestServerHandle test_server_handle;
@@ -5995,18 +5995,20 @@ IN_PROC_BROWSER_TEST_F(WebContentsFencedFrameBrowserTest,
   // Check if the URL is from the top level frame.
   DCHECK_EQ(top_url, delegate.watch_time().url);
 
+  base::RunLoop run_loop;
+  test_recorder.SetOnAddEntryCallback(UkmEntry::kEntryName,
+                                      run_loop.QuitClosure());
   // Leave the current page to check the UKM records.
-  RenderFrameDeletedObserver delete_observer(fenced_frame);
   fenced_frame_test_helper().NavigateFrameInFencedFrameTree(
       fenced_frame,
       embedded_test_server()->GetURL("a.com", "/fenced_frames/title1.html"));
   ASSERT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
-  delete_observer.WaitUntilDeleted();
+  run_loop.Run();
 
-  const auto& entries = test_recorder_.GetEntriesByName(UkmEntry::kEntryName);
+  const auto& entries = test_recorder.GetEntriesByName(UkmEntry::kEntryName);
   EXPECT_EQ(1u, entries.size());
   for (const auto* entry : entries)
-    test_recorder_.ExpectEntryMetric(entry, UkmEntry::kIsTopFrameName, false);
+    test_recorder.ExpectEntryMetric(entry, UkmEntry::kIsTopFrameName, false);
 }
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(USE_STARSCAN)

@@ -2316,6 +2316,8 @@ void WebFrameWidgetImpl::InitializeCompositingInternal(
                             ->widget_base_.get()
                       : nullptr);
 
+  probe::DidInitializeFrameWidget(local_root_->GetFrame());
+
   // TODO(bokan): This seems wrong. Page may host multiple FrameWidgets so this
   // will call DidInitializeCompositing once per FrameWidget. It probably makes
   // sense to move LinkHighlight from Page to WidgetBase so initialization is
@@ -4118,7 +4120,8 @@ void WebFrameWidgetImpl::CollapseSelection() {
 
   focused_frame->SelectRange(blink::WebRange(range.EndOffset(), 0),
                              blink::WebLocalFrame::kHideSelectionHandle,
-                             mojom::blink::SelectionMenuBehavior::kHide);
+                             mojom::blink::SelectionMenuBehavior::kHide,
+                             blink::WebLocalFrame::kSelectionDoNotSetFocus);
 }
 
 void WebFrameWidgetImpl::Replace(const String& word) {
@@ -4178,7 +4181,8 @@ void WebFrameWidgetImpl::AdjustSelectionByCharacterOffset(
   focused_frame->SelectRange(blink::WebRange(range.StartOffset() + start,
                                              range.length() + end - start),
                              blink::WebLocalFrame::kPreserveHandleVisibility,
-                             selection_menu_behavior);
+                             selection_menu_behavior,
+                             blink::WebLocalFrame::kSelectionSetFocus);
 }
 
 void WebFrameWidgetImpl::MoveRangeSelectionExtent(

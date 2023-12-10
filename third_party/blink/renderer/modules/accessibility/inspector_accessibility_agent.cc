@@ -767,7 +767,8 @@ InspectorAccessibilityAgent::BuildProtocolAXNodeForUnignoredAXObject(
 LocalFrame* InspectorAccessibilityAgent::FrameFromIdOrRoot(
     const protocol::Maybe<String>& frame_id) {
   if (frame_id.has_value()) {
-    return IdentifiersFactory::FrameById(inspected_frames_, frame_id.value());
+    return IdentifiersFactory::FrameById(inspected_frames_.Get(),
+                                         frame_id.value());
   }
   return inspected_frames_->Root();
 }
@@ -1135,6 +1136,19 @@ void InspectorAccessibilityAgent::CompleteQuery(AXQuery& query) {
 void InspectorAccessibilityAgent::AXReadyCallback(Document& document) {
   ProcessPendingQueries(document);
   ProcessPendingDirtyNodes(document);
+  if (load_complete_needs_processing_.Contains(&document) &&
+      document.IsLoadCompleted()) {
+    load_complete_needs_processing_.erase(&document);
+    AXObjectCache* cache = document.ExistingAXObjectCache();
+    CHECK(cache);
+    AXObject* root = cache->Root();
+    CHECK(root);
+    dirty_nodes_.clear();
+    nodes_requested_.clear();
+    nodes_requested_.insert(root->AXObjectID());
+    ScopedFreezeAXCache freeze(*cache);
+    GetFrontend()->loadComplete(BuildProtocolAXNodeForAXObject(*root));
+  }
 }
 
 void InspectorAccessibilityAgent::ProcessPendingQueries(Document& document) {
@@ -1211,11 +1225,8 @@ void InspectorAccessibilityAgent::AXEventFired(AXObject* ax_object,
 
   switch (event) {
     case ax::mojom::blink::Event::kLoadComplete: {
-      dirty_nodes_.clear();
-      nodes_requested_.clear();
-      nodes_requested_.insert(ax_object->AXObjectID());
-      ScopedFreezeAXCache freeze(ax_object->AXObjectCache());
-      GetFrontend()->loadComplete(BuildProtocolAXNodeForAXObject(*ax_object));
+      // Will be handled in AXReadyCallback().
+      load_complete_needs_processing_.insert(ax_object->GetDocument());
     } break;
     case ax::mojom::blink::Event::kLocationChanged:
       // Since we do not serialize location data we can ignore changes to this.
@@ -1340,6 +1351,7 @@ void InspectorAccessibilityAgent::Trace(Visitor* visitor) const {
   visitor->Trace(timers_);
   visitor->Trace(queries_);
   visitor->Trace(last_sync_times_);
+  visitor->Trace(load_complete_needs_processing_);
   InspectorBaseAgent::Trace(visitor);
 }
 

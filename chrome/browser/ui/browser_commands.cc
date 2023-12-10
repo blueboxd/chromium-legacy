@@ -26,7 +26,6 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
-#include "chrome/browser/apps/intent_helper/intent_picker_helpers.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
@@ -1515,14 +1514,7 @@ void ShowVirtualCardEnrollBubble(Browser* browser) {
 void StartTabOrganizationRequest(Browser* browser) {
   TabOrganizationService* service =
       TabOrganizationServiceFactory::GetForProfile(browser->profile());
-  TabOrganizationSession* session = service->GetSessionForBrowser(browser);
-  if (session == nullptr) {
-    session = service->CreateSessionForBrowser(browser);
-  }
-  if (session->request()->state() ==
-      TabOrganizationRequest::State::NOT_STARTED) {
-    session->StartRequest();
-  }
+  service->StartRequest(browser);
 }
 
 void ShowTranslateBubble(Browser* browser) {
@@ -2215,7 +2207,7 @@ void ExecLensRegionSearch(Browser* browser) {
     auto lens_region_search_controller_data =
         std::make_unique<lens::LensRegionSearchControllerData>();
     lens_region_search_controller_data->lens_region_search_controller =
-        std::make_unique<lens::LensRegionSearchController>(browser);
+        std::make_unique<lens::LensRegionSearchController>();
     lens_region_search_controller_data->lens_region_search_controller->Start(
         contents, lens::features::IsLensFullscreenSearchEnabled(),
         is_google_dsp, entry_point);

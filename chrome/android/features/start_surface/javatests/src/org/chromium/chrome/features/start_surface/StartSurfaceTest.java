@@ -126,7 +126,9 @@ import java.util.List;
 })
 @CommandLineFlags.Add({
     ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-    "force-fieldtrials=Study/Group"
+    "force-fieldtrials=Study/Group",
+    // TODO(crbug.com/1491942): This fails with the field trial testing config.
+    "disable-field-trial-config"
 })
 @DoNotBatch(reason = "This test suite tests startup behaviors.")
 public class StartSurfaceTest {
@@ -382,7 +384,7 @@ public class StartSurfaceTest {
         TabUiTestHelper.verifyTabModelTabCount(cta, 0, 0);
         assertTrue(cta.getLayoutManager().isLayoutVisible(getStartSurfaceLayoutType()));
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> cta.getTabCreator(true /*incognito*/).launchNTP());
+                () -> cta.getTabCreator(/* incognito= */ true).launchNTP());
         TabUiTestHelper.verifyTabModelTabCount(cta, 0, 1);
 
         // Simulates pressing the Android's home button and bringing Chrome to the background.
@@ -848,7 +850,7 @@ public class StartSurfaceTest {
                 cta.getLayoutManager()
                         .isLayoutVisible(StartSurfaceTestUtils.getStartSurfaceLayoutType()));
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> cta.getTabCreator(true /*incognito*/).launchNTP());
+                () -> cta.getTabCreator(/* incognito= */ true).launchNTP());
         TabUiTestHelper.verifyTabModelTabCount(cta, 0, 1);
 
         // Simulates pressing the home button. Incognito tab should stay and homepage shouldn't

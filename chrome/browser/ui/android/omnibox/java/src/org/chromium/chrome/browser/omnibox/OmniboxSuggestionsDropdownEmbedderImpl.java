@@ -194,8 +194,9 @@ class OmniboxSuggestionsDropdownEmbedderImpl
      */
     void recalculateOmniboxAlignment() {
         View contentView = mAnchorView.getRootView().findViewById(android.R.id.content);
+        int contentViewTopPadding = contentView == null ? 0 : contentView.getPaddingTop();
         ViewUtils.getRelativeLayoutPosition(contentView, mAnchorView, mPositionArray);
-        int top = mPositionArray[1] + mAnchorView.getMeasuredHeight();
+        int top = mPositionArray[1] + mAnchorView.getMeasuredHeight() - contentViewTopPadding;
         int left;
         int width;
         int paddingLeft;
@@ -205,7 +206,11 @@ class OmniboxSuggestionsDropdownEmbedderImpl
                     mAnchorView, mHorizontalAlignmentView, mPositionArray);
             if (OmniboxFeatures.shouldShowModernizeVisualUpdate(mContext)) {
                 // Case 1: tablets with revamp enabled. Width equal to alignment view and left
-                // equivalent to left of alignment view.
+                // equivalent to left of alignment view. Top minus a small overlap.
+                top -=
+                        mContext.getResources()
+                                .getDimensionPixelSize(
+                                        R.dimen.omnibox_suggestion_list_toolbar_overlap);
                 int sideSpacing = OmniboxResourceProvider.getSideSpacing(mContext);
                 width = mHorizontalAlignmentView.getMeasuredWidth() + 2 * sideSpacing;
 
@@ -245,11 +250,17 @@ class OmniboxSuggestionsDropdownEmbedderImpl
                 mDeferredIMEWindowInsetApplicationCallback != null
                         ? mDeferredIMEWindowInsetApplicationCallback.getCurrentKeyboardHeight()
                         : 0;
+        int windowHeight = DisplayUtil.dpToPx(mWindowAndroid.getDisplay(), mWindowHeightDp);
+        int minSpaceAboveWindowBottom =
+                mContext.getResources()
+                        .getDimensionPixelSize(R.dimen.omnibox_min_space_above_window_bottom);
         int windowSpace =
-                DisplayUtil.dpToPx(mWindowAndroid.getDisplay(), mWindowHeightDp) - keyboardHeight;
+                Math.min(windowHeight - keyboardHeight, windowHeight - minSpaceAboveWindowBottom);
         // If content view is null, then omnibox might not be in the activity content.
         int contentSpace =
-                contentView == null ? Integer.MAX_VALUE : contentView.getMeasuredHeight();
+                contentView == null
+                        ? Integer.MAX_VALUE
+                        : contentView.getMeasuredHeight() - keyboardHeight;
         int height = Math.min(windowSpace, contentSpace) - top;
 
         // TODO(pnoland@, https://crbug.com/1416985): avoid pushing changes that are identical to

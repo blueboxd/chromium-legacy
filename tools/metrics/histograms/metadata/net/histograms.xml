@@ -2180,6 +2180,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Net.HttpRequestStsState" enum="HttpRequestStsState"
+    expires_after="2024-11-09">
+  <owner>jdeblasio@chromium.org</owner>
+  <owner>trusty-transport@chromium.org</owner>
+  <summary>
+    The HSTS status of top-frame HTTP/WS requests made by UrlRequestHttpJob.
+    Requests with kProtectedHttp are immediately internally redirected to a
+    secure request.
+  </summary>
+</histogram>
+
 <histogram name="Net.HttpResponseCode" enum="HttpResponseCode"
     expires_after="never">
 <!-- expires-never: Core network stack health metric -->
@@ -4926,7 +4937,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.SharedDictionaryManagerOnDisk.DictionarySizeKB" units="KB"
-    expires_after="2023-12-01">
+    expires_after="2024-03-03">
   <owner>horo@chromium.org</owner>
   <owner>src/net/extras/shared_dictionary/OWNERS</owner>
   <summary>
@@ -5041,7 +5052,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.SharedDictionaryStore.DictionaryCountPerSiteWhenAdded"
-    units="count" expires_after="2023-12-01">
+    units="count" expires_after="2024-03-03">
   <owner>horo@chromium.org</owner>
   <owner>src/net/extras/shared_dictionary/OWNERS</owner>
   <summary>
@@ -5088,6 +5099,20 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
+    name="Net.SharedDictionaryTransaction.AbortedWhileReadingDictionary.{SuccessOrFailure}"
+    units="ms" expires_after="2024-02-14">
+  <owner>horo@chromium.org</owner>
+  <owner>src/net/extras/shared_dictionary/OWNERS</owner>
+  <summary>
+    The delay to read a shared dictionary from a SharedDictionaryTransaction
+    which is already aborted. Recorded when the dictionary is read, but the
+    SharedDictionaryTransaction was aborted before the read operation was
+    completed.
+  </summary>
+  <token key="SuccessOrFailure" variants="SuccessOrFailure"/>
+</histogram>
+
+<histogram
     name="Net.SharedDictionaryTransaction.DictionaryReadLatency.{SuccessOrFailure}"
     units="ms" expires_after="2024-03-03">
   <owner>horo@chromium.org</owner>
@@ -5101,7 +5126,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.SharedDictionaryWriterInMemory.DictionarySize"
-    units="bytes" expires_after="2023-12-01">
+    units="bytes" expires_after="2024-03-03">
   <owner>horo@chromium.org</owner>
   <owner>src/net/extras/shared_dictionary/OWNERS</owner>
   <summary>
@@ -5266,6 +5291,22 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Net.SpdySession.OnSettings.{StreamState}StreamCount"
+    units="count" expires_after="2024-01-24">
+  <owner>bashi@chromium.org</owner>
+  <owner>chrome-network-stack@google.com</owner>
+  <summary>
+    Records the number of {StreamState} streams when a SpdySession receives an
+    HTTP/2 SETTINGS frame.
+  </summary>
+  <token key="StreamState">
+    <variant name="Active" summary="active"/>
+    <variant name="Created" summary="created"/>
+    <variant name="CreatedAndActive" summary="created and active"/>
+    <variant name="Pending" summary="pending"/>
+  </token>
+</histogram>
+
 <histogram name="Net.SpdySession.PushedAndUnclaimedBytes" units="count"
     expires_after="2024-04-03">
   <obsolete>
@@ -5309,7 +5350,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.SpdySessionErrorDetails2" enum="SpdyProtocolErrorDetails2"
-    expires_after="2023-12-06">
+    expires_after="2024-10-24">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>The type of SPDY Protocol error encountered.</summary>
@@ -5699,7 +5740,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.TcpConnectAttempt.Latency.Error" units="ms"
-    expires_after="2023-12-06">
+    expires_after="2024-10-24">
   <owner>bashi@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>

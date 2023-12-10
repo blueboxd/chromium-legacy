@@ -325,7 +325,10 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->has_storage_access =
       request_info.begin_params->has_storage_access;
 
-  new_request->attribution_reporting_support = AttributionManager::GetSupport();
+  new_request->attribution_reporting_support =
+      AttributionManager::GetAttributionSupport(
+          WebContents::FromFrameTreeNodeId(
+              frame_tree_node->frame_tree_node_id()));
 
   new_request->attribution_reporting_eligibility =
       request_info.begin_params->impression.has_value()
@@ -337,7 +340,9 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
         request_info.begin_params->impression->runtime_features;
   }
 
-  new_request->shared_storage_writable = request_info.shared_storage_writable;
+  new_request->shared_storage_writable_eligible =
+      request_info.shared_storage_writable_eligible;
+  new_request->is_ad_tagged = request_info.is_ad_tagged;
 
   return new_request;
 }
@@ -660,10 +665,10 @@ void NavigationURLLoaderImpl::MaybeStartLoader(
     next_interceptor->MaybeCreateLoader(
         *resource_request_, browser_context_,
         base::BindOnce(&NavigationURLLoaderImpl::MaybeStartLoader,
-                       base::Unretained(this), next_interceptor),
+                       weak_factory_.GetWeakPtr(), next_interceptor),
         base::BindOnce(
             &NavigationURLLoaderImpl::FallbackToNonInterceptedRequest,
-            base::Unretained(this)));
+            weak_factory_.GetWeakPtr()));
     return;
   }
 

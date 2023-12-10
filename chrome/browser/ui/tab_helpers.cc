@@ -43,7 +43,6 @@
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_observer.h"
 #include "chrome/browser/metrics/metrics_services_web_contents_observer.h"
-#include "chrome/browser/metrics/oom/out_of_memory_reporter.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_preconnect_client.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
@@ -84,6 +83,7 @@
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router_factory.h"
 #include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
 #include "chrome/browser/tpcd/heuristics/opener_heuristic_tab_helper.h"
+#include "chrome/browser/tpcd/http_error_observer/http_error_tab_helper.h"
 #include "chrome/browser/tpcd/metadata/devtools_observer.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/trusted_vault/trusted_vault_encryption_keys_tab_helper.h"
@@ -443,7 +443,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     }
 #endif  // BUILDFLAG(IS_ANDROID)
   }
-  OutOfMemoryReporter::CreateForWebContents(web_contents);
   chrome::InitializePageLoadMetricsForWebContents(web_contents);
   if (auto* pm_registry =
           performance_manager::PerformanceManagerRegistry::GetInstance()) {
@@ -501,6 +500,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   StorageAccessAPITabHelper::CreateForWebContents(
       web_contents, StorageAccessAPIServiceFactory::GetForBrowserContext(
                         web_contents->GetBrowserContext()));
+  HttpErrorTabHelper::CreateForWebContents(web_contents);
   sync_sessions::SyncSessionsRouterTabHelper::CreateForWebContents(
       web_contents,
       sync_sessions::SyncSessionsWebContentsRouterFactory::GetForProfile(
@@ -686,13 +686,15 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     user_notes::UserNotesTabHelper::CreateForWebContents(web_contents);
   }
 
-  // TODO(1360846): Consider using the in-memory cache instead.
-  commerce::ShoppingListUiTabHelper::CreateForWebContents(
-      web_contents,
-      commerce::ShoppingServiceFactory::GetForBrowserContext(profile),
-      BookmarkModelFactory::GetForBrowserContext(profile),
-      ImageFetcherServiceFactory::GetForKey(profile->GetProfileKey())
-          ->GetImageFetcher(image_fetcher::ImageFetcherConfig::kNetworkOnly));
+  if (!profile->IsIncognitoProfile()) {
+    // TODO(1360846): Consider using the in-memory cache instead.
+    commerce::ShoppingListUiTabHelper::CreateForWebContents(
+        web_contents,
+        commerce::ShoppingServiceFactory::GetForBrowserContext(profile),
+        BookmarkModelFactory::GetForBrowserContext(profile),
+        ImageFetcherServiceFactory::GetForKey(profile->GetProfileKey())
+            ->GetImageFetcher(image_fetcher::ImageFetcherConfig::kNetworkOnly));
+  }
 #endif
 
 #if BUILDFLAG(IS_WIN)

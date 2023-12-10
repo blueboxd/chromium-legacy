@@ -350,6 +350,7 @@ void SubAppsServiceImpl::FinishAddCallOrShowInstallDialog(int add_call_id) {
       add_call_info.install_infos,
       /*parent_app_name=*/registrar.GetAppShortName(*parent_app_id),
       /*parent_app_scope=*/registrar.GetAppScope(*parent_app_id).spec(),
+      *parent_app_id, GetProfile(render_frame_host()),
       /*window=*/
       content::WebContents::FromRenderFrameHost(&render_frame_host())
           ->GetTopLevelNativeWindow());
@@ -553,7 +554,7 @@ void SubAppsServiceImpl::NotifyUninstall(
         GetWebAppProvider(render_frame_host())->registrar_unsafe();
     const webapps::AppId* parent_app_id = GetAppId(render_frame_host());
     const std::u16string parent_app_name =
-        base::ASCIIToUTF16(registrar.GetAppShortName(*parent_app_id));
+        base::UTF8ToUTF16(registrar.GetAppShortName(*parent_app_id));
     const GURL start_url = registrar.GetAppStartUrl(*parent_app_id);
     const std::u16string title =
         base::i18n::MessageFormatter::FormatWithNamedArgs(

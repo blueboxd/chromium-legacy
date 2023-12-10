@@ -42,6 +42,7 @@
 #include "base/time/time.h"
 #include "chromeos/ash/components/phonehub/fake_phone_hub_manager.h"
 #include "chromeos/ash/components/phonehub/feature_status.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/events/test/event_generator.h"
@@ -157,7 +158,8 @@ class AshMessagePopupCollectionTest
     }
   }
 
-  bool IsQsRevampEnabled() const { return std::get<0>(GetParam()); }
+  // TODO(b/305075031) clean up after the flag is removed.
+  bool IsQsRevampEnabled() const { return true; }
   bool IsNotifierCollisionEnabled() const { return std::get<1>(GetParam()); }
 
  protected:
@@ -192,10 +194,11 @@ class AshMessagePopupCollectionTest
       return OUTSIDE;
     }
 
-    if (center_point.x() < point.x())
+    if (center_point.x() < point.x()) {
       return (center_point.y() < point.y()) ? BOTTOM_RIGHT : TOP_RIGHT;
-    else
+    } else {
       return (center_point.y() < point.y()) ? BOTTOM_LEFT : TOP_LEFT;
+    }
   }
 
   gfx::Rect GetWorkArea() { return GetPrimaryPopupCollection()->work_area_; }
@@ -1697,6 +1700,10 @@ class AshMessagePopupCollectionMockTimeTest : public ash::AshTestBase {
 };
 
 TEST_F(AshMessagePopupCollectionMockTimeTest, PopupTimeouts) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      ::features::kNotificationsIgnoreRequireInteraction);
+
   auto* popup_collection =
       GetPrimaryUnifiedSystemTray()->GetMessagePopupCollection();
   auto* message_center = message_center::MessageCenter::Get();

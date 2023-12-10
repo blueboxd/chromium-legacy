@@ -74,6 +74,7 @@ void InitializeScrollbarFadeAndDelay(cc::LayerTreeSettings& settings) {
   if (ui::IsOverlayScrollbarEnabled()) {
     settings.scrollbar_fade_delay = ui::kOverlayScrollbarFadeDelay;
     settings.scrollbar_fade_duration = ui::kOverlayScrollbarFadeDuration;
+    settings.idle_thickness_scale = ui::kOverlayScrollbarIdleThicknessScale;
   }
 #endif  // !BUILDFLAG(IS_ANDROID)
 
@@ -537,10 +538,7 @@ cc::LayerTreeSettings GenerateLayerTreeSettings(
         &settings.initial_debug_state.slow_down_raster_scale_factor);
   }
 
-  // This is default overlay scrollbar settings for Android and DevTools mobile
-  // emulator. Aura Overlay Scrollbar will override below.
   settings.scrollbar_animator = cc::LayerTreeSettings::ANDROID_OVERLAY;
-  settings.solid_color_scrollbar_color = {0.5f, 0.5f, 0.5f, 0.5f};
 
   InitializeScrollbarFadeAndDelay(settings);
 
@@ -574,7 +572,7 @@ cc::LayerTreeSettings GenerateLayerTreeSettings(
     // hide_scrollbars setting because supporting -webkit custom scrollbars is
     // still desired on sublayers.
     settings.scrollbar_animator = cc::LayerTreeSettings::NO_ANIMATOR;
-    settings.solid_color_scrollbar_color = SkColors::kTransparent;
+    // Rendering of scrollbars will be disabled in cc::SolidColorScrollbarLayer.
 
     // Early damage check works in combination with synchronous compositor.
     settings.enable_early_damage_check =
@@ -690,7 +688,7 @@ cc::LayerTreeSettings GenerateLayerTreeSettings(
       cmd.HasSwitch(::switches::kDisableFrameRateLimit);
 
   settings.enable_variable_refresh_rate =
-      ::features::IsVariableRefreshRateEnabled();
+      ::features::IsVariableRefreshRateAlwaysOn();
 
   std::tie(settings.tiling_interest_area_padding,
            settings.skewport_extrapolation_limit_in_screen_pixels) =

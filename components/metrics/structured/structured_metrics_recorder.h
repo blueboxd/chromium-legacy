@@ -136,7 +136,6 @@ class StructuredMetricsRecorder : public Recorder::RecorderImpl {
   void OnEventRecord(const Event& event) override;
   void OnReportingStateChanged(bool enabled) override;
   void OnSystemProfileInitialized() override;
-  absl::optional<int> LastKeyRotation(uint64_t project_name_hash) override;
 
   void WriteNowForTest();
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -179,6 +178,16 @@ class StructuredMetricsRecorder : public Recorder::RecorderImpl {
 
   // Increments |init_count_| and checks if the recorder is ready.
   void UpdateAndCheckInitState();
+
+  // Returns whether the |event| can be recorded event if metrics is opted-out.
+  // Note that uploading is still guarded by metrics opt-in state and that these
+  // events will never be uploaded. In the event that a user opts-in, these
+  // events will be purged.
+  bool CanForceRecord(const Event& event) const;
+
+  // Helper function to get the validators for |event|.
+  absl::optional<std::pair<const ProjectValidator*, const EventValidator*>>
+  GetEventValidators(const Event& event) const;
 
   // Beyond this number of logging events between successive calls to
   // ProvideCurrentSessionData, we stop recording events.

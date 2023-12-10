@@ -94,6 +94,11 @@ BASE_FEATURE(kV8Turbofan, "V8Turbofan", base::FEATURE_ENABLED_BY_DEFAULT);
 // Enables Turbofan's new compiler IR Turboshaft.
 BASE_FEATURE(kV8Turboshaft, "V8Turboshaft", base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enable running instruction selection on Turboshaft IR directly.
+BASE_FEATURE(kV8TurboshaftInstructionSelection,
+             "V8TurboshaftInstructionSelection",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables Maglev compiler. Note that this only sets the V8 flag when
 // manually overridden; otherwise it defers to whatever the V8 default is.
 BASE_FEATURE(kV8Maglev, "V8Maglev", base::FEATURE_ENABLED_BY_DEFAULT);
@@ -255,4 +260,16 @@ BASE_FEATURE(kWebAssemblyInlining,
 BASE_FEATURE(kWebAssemblyGenericWrapper,
              "WebAssemblyGenericWrapper",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enable support for multiple memories according to the multi-memory proposal:
+// https://github.com/WebAssembly/multi-memory. See
+// https://chromestatus.com/feature/5106389887746048.
+BASE_FEATURE(kWebAssemblyMultipleMemories,
+             "WebAssemblyMultipleMemories",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kWebAssemblyTurboshaft,
+             "WebAssemblyTurboshaft",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 }  // namespace features

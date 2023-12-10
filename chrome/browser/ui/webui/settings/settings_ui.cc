@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/plural_string_handler.h"
+#include "chrome/browser/ui/webui/search_engine_choice/icon_utils.h"
 #include "chrome/browser/ui/webui/settings/about_handler.h"
 #include "chrome/browser/ui/webui/settings/accessibility_main_handler.h"
 #include "chrome/browser/ui/webui/settings/appearance_handler.h"
@@ -95,7 +96,9 @@
 #include "components/privacy_sandbox/tracking_protection_settings.h"
 #include "components/safe_browsing/core/browser/hashprefix_realtime/hash_realtime_utils.h"
 #include "components/safe_browsing/core/common/features.h"
+#include "components/search_engines/search_engine_choice_utils.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/sync/base/features.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
@@ -313,6 +316,16 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
         ->FetchPriceEmailPref();
   }
 
+  const bool is_search_engine_choice_settings_ui =
+      base::FeatureList::IsEnabled(switches::kSearchEngineChoiceSettingsUi) &&
+      search_engines::IsChoiceScreenFlagEnabled(
+          search_engines::ChoicePromo::kAny);
+  html_source->AddBoolean("searchEngineChoiceSettingsUi",
+                          is_search_engine_choice_settings_ui);
+  if (is_search_engine_choice_settings_ui) {
+    AddGeneratedIconResources(html_source, /*directory=*/"images/");
+  }
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   html_source->AddBoolean(
       "userCannotManuallyEnterPassword",
@@ -430,6 +443,12 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   plural_string_handler->AddLocalizedString(
       "safetyCheckUnusedSitePermissionsToastBulkLabel",
       IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_TOAST_BULK_LABEL);
+  plural_string_handler->AddLocalizedString(
+      "safetyHubNotificationPermissionsPrimaryLabel",
+      IDS_SETTINGS_SAFETY_HUB_NOTIFICATION_PERMISSIONS_PRIMARY_LABEL);
+  plural_string_handler->AddLocalizedString(
+      "safetyHubNotificationPermissionsSecondaryLabel",
+      IDS_SETTINGS_SAFETY_HUB_NOTIFICATION_PERMISSIONS_SECONDARY_LABEL);
   web_ui->AddMessageHandler(std::move(plural_string_handler));
 
   // Add the metrics handler to write uma stats.

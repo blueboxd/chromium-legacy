@@ -8,6 +8,7 @@
 #import "base/feature_list.h"
 #import "components/commerce/core/proto/parcel.pb.h"
 #import "components/prefs/pref_service.h"
+#import "ios/chrome/browser/parcel_tracking/tracking_source.h"
 #import "ios/web/public/annotations/custom_text_checking_result.h"
 
 namespace commerce {
@@ -15,9 +16,6 @@ class ShoppingService;
 }  // namespace commerce
 
 @protocol ParcelTrackingOptInCommands;
-
-// Feature flag to enable the parcel tracking feature.
-BASE_DECLARE_FEATURE(kIOSParcelTracking);
 
 // Enum for the different values of the parcel tracking opt-in status.
 enum class IOSParcelTrackingOptInStatus {
@@ -41,13 +39,14 @@ std::vector<std::pair<commerce::ParcelIdentifier::Carrier, std::string>>
 ConvertCustomTextCheckingResult(NSArray<CustomTextCheckingResult*>* result);
 
 // Tracks the list of parcels. If successful and `display_infobar` is true,
-// triggers an infobar display.
+// triggers an infobar display to confirm that the package has been tracked.
 void TrackParcels(
     commerce::ShoppingService* shopping_service,
     NSArray<CustomTextCheckingResult*>* parcels,
     std::string domain,
     id<ParcelTrackingOptInCommands> parcel_tracking_commands_handler,
-    bool display_infobar);
+    bool display_infobar,
+    TrackingSource source);
 
 // Displays the parcel tracking opt-in UI for the new parcels from parcel list
 // `parcels`. "New parcels" are parcels that are not already being tracked.

@@ -7,6 +7,7 @@
 <translation id="1073417869336441572">Поясніть, чому ви дозволили сторонні файли cookie, щоб допомогти нам покращити Chrome. <ph name="BEGIN_LINK" />Надіслати відгук<ph name="END_LINK" /></translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1181037720776840403">Видалити</translation>
+<translation id="1192844206376121885">Усі дані й файли cookie сайту <ph name="ORIGIN" /> буде видалено.</translation>
 <translation id="1201402288615127009">Далі</translation>
 <translation id="1242008676835033345">Вбудовано на сайті <ph name="WEBSITE_URL" /></translation>
 <translation id="1272079795634619415">Зупинити</translation>
@@ -25,6 +26,7 @@
 <translation id="1448064542941920355">Зменшити масштаб</translation>
 <translation id="1510341833810331442">Сайтам заборонено зберігати дані на вашому пристрої</translation>
 <translation id="1547123415014299762">Сторонні файли cookie дозволено</translation>
+<translation id="1568470248891039841">Сайти, які ви відвідуєте, можуть включати контент з інших сайтів, наприклад зображення, оголошення й текст. Ці інші сайти можуть запитувати дозвіл на використання збереженої про вас інформації, коли ви переглядаєте сайт. <ph name="BEGIN_LINK" />Докладніше про вбудований контент<ph name="END_LINK" /></translation>
 <translation id="1593426485665524382">У меню вгорі екрана доступні нові дії</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1633720957382884102">Пов’язані сайти</translation>
@@ -58,6 +60,7 @@
 <translation id="216989819110952009">Навіть попри захист зелених окулярів Дороті та її друзі були приголомшені сяйвом</translation>
 <translation id="2176704795966505152">Показувати опцію масштабування в головному меню</translation>
 <translation id="2182457891543959921">Запитувати, перш ніж дозволяти сайтам створювати 3D-карту вашого оточення або відстежувати положення камери (рекомендовано)</translation>
+<translation id="2185965788978862351">Буде видалено <ph name="DATASIZE" /> даних і файлів cookie сайтів або додатків на головному екрані.</translation>
 <translation id="2194856509914051091">Що варто врахувати</translation>
 <translation id="2212565012507486665">Дозволити файли cookie</translation>
 <translation id="2228071138934252756">Щоб надати додатку <ph name="APP_NAME" /> доступ до камери, також увімкніть її в <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
@@ -78,15 +81,17 @@
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{Дозволено: "<ph name="PERMISSION_1" />", "<ph name="PERMISSION_2" />" і ще <ph name="NUM_MORE" />}one{Дозволено: "<ph name="PERMISSION_1" />", "<ph name="PERMISSION_2" />" і ще <ph name="NUM_MORE" />}few{Дозволено: "<ph name="PERMISSION_1" />", "<ph name="PERMISSION_2" />" і ще <ph name="NUM_MORE" />}many{Дозволено: "<ph name="PERMISSION_1" />", "<ph name="PERMISSION_2" />" і ще <ph name="NUM_MORE" />}other{Дозволено: "<ph name="PERMISSION_1" />", "<ph name="PERMISSION_2" />" і ще <ph name="NUM_MORE" />}}</translation>
 <translation id="2410940059315936967">Сайт, який ви відвідали, може включати контент з інших сайтів, наприклад зображення, оголошення й текст. Файли cookie, створені іншими сайтами, називаються сторонніми.</translation>
 <translation id="2434158240863470628">Завантажено <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
+<translation id="2438120137003069591">Ви тимчасово дозволили цьому сайту використовувати сторонні файли cookie. Це зменшить рівень захисту під час перегляду, але функції сайту з більшою імовірністю працюватимуть належним чином. <ph name="BEGIN_LINK" />Надіслати відгук<ph name="END_LINK" /></translation>
 <translation id="244264527810019436">Функції на деяких сайтах можуть не працювати в режимі анонімного перегляду</translation>
 <translation id="2442870161001914531">Завжди запитувати версію сайту для комп’ютера</translation>
+<translation id="2469312991797799607">У результаті буде видалено всі дані й файли cookie для сайту <ph name="ORIGIN" /> і всіх сайтів його групи</translation>
 <translation id="2479148705183875116">Перейти в налаштування</translation>
 <translation id="2482878487686419369">Сповіщення</translation>
 <translation id="2485422356828889247">Видалити</translation>
 <translation id="2490684707762498678">Адміністратор сімейної групи: <ph name="APP_NAME" /></translation>
 <translation id="2498359688066513246">Довідка й відгуки</translation>
 <translation id="2501278716633472235">Назад</translation>
-<translation id="2546283357679194313">Файли cookie й дані із сайтів</translation>
+<translation id="2546283357679194313">Файли cookie й дані сайтів</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 файл cookie заблоковано}one{# файл cookie заблоковано}few{# файли cookie заблоковано}many{# файлів cookie заблоковано}other{# файлу cookie заблоковано}}</translation>
 <translation id="2570922361219980984">На цьому пристрої також вимкнено доступ до геоданих. Увімкніть його в <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="257931822824936280">Розгорнуто – натисніть, щоб згорнути.</translation>
@@ -111,6 +116,7 @@
 <translation id="2910701580606108292">Запитувати, перш ніж дозволяти сайтам відтворювати захищений вміст</translation>
 <translation id="2932883381142163287">Повідомити про порушення</translation>
 <translation id="2968755619301702150">Перегляд сертифікатів</translation>
+<translation id="2979365474350987274">Сторонні файли cookie обмежено</translation>
 <translation id="3008272652534848354">Скинути дозволи</translation>
 <translation id="301521992641321250">Блокується автоматично</translation>
 <translation id="3069226013421428034">Дозволити вхід через сторонні сервіси для певного сайту.</translation>
@@ -166,6 +172,7 @@
 <translation id="3918378745482005425">Деякі функції можуть не працювати. При цьому пов’язані сайти все одно можуть використовувати сторонні файли cookie.</translation>
 <translation id="3955193568934677022">Дозволити сайтам відтворювати захищений вміст (рекомендується)</translation>
 <translation id="3967822245660637423">Завантажено</translation>
+<translation id="3974105241379491420">Сайти можуть запитувати дозвіл на використання збереженої про вас інформації</translation>
 <translation id="3987993985790029246">Копіювати</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="3992684624889376114">Про цю сторінку</translation>
@@ -185,6 +192,7 @@
 <translation id="4278390842282768270">Дозволено</translation>
 <translation id="429312253194641664">Сайт відтворює медіа-вміст</translation>
 <translation id="42981349822642051">Розгорнути</translation>
+<translation id="4336566011000459927">Сьогодні Chrome знов обмежить використання файлів cookie</translation>
 <translation id="4338831206024587507">Усі сайти домену <ph name="DOMAIN" /></translation>
 <translation id="4402755511846832236">Блокувати сайтам інформацію про те, чи ви активно використовуєте цей пристрій</translation>
 <translation id="4412992751769744546">Дозволити сторонні файли cookie</translation>
@@ -223,6 +231,7 @@
 <translation id="5063480226653192405">Використання</translation>
 <translation id="5091013926750941408">Мобільний сайт</translation>
 <translation id="509133520954049755">Запит на версію для ПК</translation>
+<translation id="5099358668261120049">Буде видалено всі дані й файли cookie сайту <ph name="ORIGIN" /> або його додатка на головному екрані.</translation>
 <translation id="5100237604440890931">Згорнуто – натисніть, щоб розгорнути.</translation>
 <translation id="5123685120097942451">Анонімна вкладка</translation>
 <translation id="5186036860380548585">Для цього натисніть відповідну кнопку вгорі екрана</translation>
@@ -239,6 +248,7 @@
 <translation id="5335288049665977812">Дозволити сайтам запускати JavaScript (рекомендується)</translation>
 <translation id="534295439873310000">Пристрої NFC</translation>
 <translation id="5344522958567249764">Керувати конфіденційністю в рекламі</translation>
+<translation id="5389626883706033615">Сайтам заборонено запитувати дозвіл на використання збереженої про вас інформації</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ ще 1)}one{(+ ще #)}few{(+ ще #)}many{(+ ще #)}other{(+ ще #)}}</translation>
 <translation id="5403592356182871684">Імена</translation>
 <translation id="5438097262470833822">Буде скинуто дозволи для веб-сайту <ph name="WEBSITE" /></translation>
@@ -269,6 +279,7 @@
 <translation id="5916664084637901428">Увімкнено</translation>
 <translation id="5922853908706496913">Доступ до вашого екрана</translation>
 <translation id="5922967540311291836">Блокувати сторонні файли cookie:</translation>
+<translation id="5923512600150154850">Буде видалено <ph name="DATASIZE" /> даних і файлів cookie сайтів.</translation>
 <translation id="5939518447894949180">Скинути</translation>
 <translation id="5964247741333118902">Вбудований контент</translation>
 <translation id="5968921426641056619">Введіть веб-адресу</translation>
@@ -284,6 +295,8 @@
 <translation id="6177128806592000436">Ваше з’єднання з цим сайтом не захищене</translation>
 <translation id="6181444274883918285">Додати сайт у список винятків</translation>
 <translation id="6192792657125177640">Винятки</translation>
+<translation id="6194967801833346599">{DAYS,plural, =1{Завтра Chrome знову заблокує файли cookie}one{Через # день файли cookie буде знову заблоковано}few{Через # дні файли cookie буде знову заблоковано}many{Через # днів файли cookie буде знову заблоковано}other{Через # дня файли cookie буде знову заблоковано}}</translation>
+<translation id="6195163219142236913">Сторонні файли cookie обмежено</translation>
 <translation id="6196640612572343990">Блокувати сторонні файли cookie</translation>
 <translation id="6205314730813004066">Конфіденційність у рекламі</translation>
 <translation id="6207207788774442484">Видалити дані й скинути дозволи</translation>
@@ -294,6 +307,7 @@
 <translation id="6270391203985052864">Сайти можуть просити дозвіл надсилати сповіщення</translation>
 <translation id="6295158916970320988">Усі сайти</translation>
 <translation id="6320088164292336938">Вібросигнал</translation>
+<translation id="6344622098450209924">Захист від відстеження</translation>
 <translation id="6367753977865761591">Заблокувати вхід через сторонні сервіси для певного сайту.</translation>
 <translation id="6398765197997659313">Вийти з повноекранного режиму</translation>
 <translation id="640163077447496506">Строк дії закінчується сьогодні</translation>
@@ -324,6 +338,7 @@
 <translation id="6864395892908308021">Цей пристрій не підтримує NFC</translation>
 <translation id="6912998170423641340">Не дозволяти сайтам переглядати тексти й зображення в буфері обміну</translation>
 <translation id="6945221475159498467">Вибрати</translation>
+<translation id="6950072572526089586">Сайт, який ви відвідуєте, може зберігати інформацію про ваші дії, щоб вам було зручніше взаємодіяти з ним, наприклад не виходити з облікового запису чи запам’ятовувати товари в кошику для покупок. Часто сайти тимчасово зберігають таку інформацію на вашому пристрої.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6981982820502123353">Доступність</translation>
 <translation id="6992289844737586249">Запитувати, перш ніж дозволити сайтам використовувати мікрофон (рекомендується)</translation>
@@ -337,12 +352,14 @@
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> КБ</translation>
 <translation id="7180611975245234373">Оновити</translation>
 <translation id="7188508872042490670">Дані сайтів на пристрої</translation>
+<translation id="7201549776650881587">У результаті буде видалено всі дані й файли cookie, збережені сайтами в групі сайту <ph name="ORIGIN" /> або додатками на головному екрані</translation>
 <translation id="7203150201908454328">Розгорнуто</translation>
 <translation id="7219254577985949841">Видалити дані сайту?</translation>
 <translation id="723171743924126238">Вибрати зображення</translation>
 <translation id="7243308994586599757">Опції можна знайти внизу екрана</translation>
 <translation id="7250468141469952378">Вибрано <ph name="ITEM_COUNT" /></translation>
 <translation id="7260727271532453612">Дозволено: "<ph name="PERMISSION_1" />" і "<ph name="PERMISSION_2" />"</translation>
+<translation id="7284451015630589124">Ви заборонили сайтам використовувати сторонні файли cookie, щоб відстежувати ваші дії під час перегляду веб-сторінок. Перейдіть у налаштування, щоб <ph name="BEGIN_LINK" />керувати захистом від відстеження<ph name="END_LINK" />.</translation>
 <translation id="7302486331832100261">Зазвичай ви блокуєте сповіщення. Щоб дозволити, натисніть "Деталі".</translation>
 <translation id="7366415735885268578">Додати сайт</translation>
 <translation id="7368695150573390554">Усі офлайн-дані буде видалено</translation>
@@ -351,6 +368,7 @@
 <translation id="7423098979219808738">Спершу запитувати</translation>
 <translation id="7423538860840206698">Заборонено переглядати буфер обміну</translation>
 <translation id="7425915948813553151">Темна тема для сайтів</translation>
+<translation id="7474522811371247902">Chrome забороняє більшості сайтів використовувати сторонні файли cookie. Однак на цьому сайті такі файли дозволені, оскільки вони потрібні для роботи його основних функцій.\n\nПерейдіть у налаштування, щоб <ph name="BEGIN_LINK" />керувати захистом від відстеження<ph name="END_LINK" />.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">Сайт використовує мікрофон</translation>
 <translation id="7561196759112975576">Завжди</translation>
@@ -367,6 +385,7 @@
 <translation id="780301667611848630">Ні, дякую</translation>
 <translation id="7804248752222191302">Сайт використовує камеру</translation>
 <translation id="7807060072011926525">Надано компанією Google</translation>
+<translation id="7822573154188733812">Chrome забороняє сайтам використовувати сторонні файли cookie, щоб відстежувати ваші дії в Інтернеті. Перейдіть у налаштування, щоб <ph name="BEGIN_LINK" />керувати захистом від відстеження<ph name="END_LINK" />.</translation>
 <translation id="7835852323729233924">Відтворення медіафайлу</translation>
 <translation id="783819812427904514">Увімкнути звук у відео</translation>
 <translation id="7846076177841592234">Скасувати вибір</translation>
@@ -383,6 +402,7 @@
 <translation id="8077120325605624147">Усі сайти, які ви відвідуєте, можуть показувати вам будь-які оголошення</translation>
 <translation id="8087000398470557479">Це вміст із сайту <ph name="DOMAIN_NAME" />, який доставляє Google.</translation>
 <translation id="8088603949666785339">Інші опції для параметра "<ph name="BANNER_TITLE" />"</translation>
+<translation id="8113501330600751161">{DAYS,plural, =1{Завтра Chrome знов обмежить використання файлів cookie}one{Через # день Chrome знов обмежить використання файлів cookie}few{Через # дні Chrome знов обмежить використання файлів cookie}many{Через # днів Chrome знов обмежить використання файлів cookie}other{Через # дня Chrome знов обмежить використання файлів cookie}}</translation>
 <translation id="8116925261070264013">Звук вимкнено</translation>
 <translation id="813082847718468539">Перегляд інформації про сайт</translation>
 <translation id="8131740175452115882">Підтвердити</translation>
@@ -421,6 +441,7 @@
 <translation id="8564613706851221529">{COUNT,plural, =1{Файли cookie дозволено для <ph name="FPS_MEMBERS_COUNT" /> сайту в групі сайту-власника <ph name="FPS_OWNER" />}one{Файли cookie дозволено для <ph name="FPS_MEMBERS_COUNT" /> сайту в групі сайту-власника <ph name="FPS_OWNER" />}few{Файли cookie дозволено для <ph name="FPS_MEMBERS_COUNT" /> сайтів у групі сайту-власника <ph name="FPS_OWNER" />}many{Файли cookie дозволено для <ph name="FPS_MEMBERS_COUNT" /> сайтів у групі сайту-власника <ph name="FPS_OWNER" />}other{Файли cookie дозволено для <ph name="FPS_MEMBERS_COUNT" /> сайту в групі сайту-власника <ph name="FPS_OWNER" />}}</translation>
 <translation id="857943718398505171">Дозволено (рекомендується)</translation>
 <translation id="8609465669617005112">Угору</translation>
+<translation id="8649036394979866943">Chrome забороняє більшості сайтів використовувати сторонні файли cookie, щоб відстежувати ваші дії в Інтернеті. Перейдіть у налаштування, щоб <ph name="BEGIN_LINK" />керувати захистом від відстеження<ph name="END_LINK" />.</translation>
 <translation id="8676374126336081632">Видалити введений текст</translation>
 <translation id="8681886425883659911">Реклама блокується на сайтах, які показують нав’язливі або оманливі оголошення</translation>
 <translation id="868929229000858085">Пошук у контактах</translation>
@@ -437,12 +458,14 @@
 <translation id="8816026460808729765">Заборонити сайтам доступ до датчиків</translation>
 <translation id="8823559166155093873">Блокувати файли cookie</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8874790741333031443">Спробуйте тимчасово дозволити сторонні файли cookie. Це зменшить рівень захисту під час перегляду, але функції сайту з більшою імовірністю працюватимуть належним чином.</translation>
 <translation id="8889294078294184559">Завдяки цьому інші відвідувані вами сайти зможуть перевіряти в Chrome, що ви, імовірно, реальна людина</translation>
 <translation id="8899807382908246773">Нав’язливі оголошення</translation>
 <translation id="8903921497873541725">Збільшити масштаб</translation>
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">NFC вимкнено на цьому пристрої. Увімкніть цю функцію в <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="8928445016601307354">Заборонити сайтам переглядати й змінювати інформацію на пристроях NFC</translation>
+<translation id="8944485226638699751">Обмежено</translation>
 <translation id="8958424370300090006">Блокувати файли cookie з конкретного сайту.</translation>
 <translation id="8959122750345127698">Веб-сторінка <ph name="URL" /> недоступна</translation>
 <translation id="8986362086234534611">Забути</translation>

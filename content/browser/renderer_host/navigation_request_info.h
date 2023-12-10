@@ -53,7 +53,8 @@ struct CONTENT_EXPORT NavigationRequestInfo {
       const GlobalRenderFrameHostId& previous_render_frame_host_id,
       bool allow_cookies_from_browser,
       int64_t navigation_id,
-      bool shared_storage_writable);
+      bool shared_storage_writable,
+      bool is_ad_tagged);
   NavigationRequestInfo(const NavigationRequestInfo& other) = delete;
   ~NavigationRequestInfo();
 
@@ -153,7 +154,11 @@ struct CONTENT_EXPORT NavigationRequestInfo {
   // Whether or not the request is eligible to write to shared storage from
   // response headers. See
   // https://github.com/WICG/shared-storage#from-response-headers.
-  bool shared_storage_writable;
+  bool shared_storage_writable_eligible;
+
+  // Whether the embedder indicated this navigation is being used for
+  // advertising purposes.
+  bool is_ad_tagged;
 };
 
 }  // namespace content

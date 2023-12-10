@@ -117,6 +117,8 @@ BASE_DECLARE_FEATURE(kAutofillEnableSupportForPhoneNumberTrunkTypes);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillFeedback);
 COMPONENT_EXPORT(AUTOFILL)
+BASE_DECLARE_FEATURE(kAutofillReplaceCachedWebElementsByRendererIds);
+COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillUseAddressRewriterInProfileSubsetComparison);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillUseI18nAddressModel);
@@ -163,6 +165,9 @@ COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillOverridePredictions);
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::FeatureParam<std::string>
     kAutofillOverridePredictionsSpecification;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::FeatureParam<std::string>
+    kAutofillOverridePredictionsForAlternativeFormSignaturesSpecification;
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillPageLanguageDetection);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillParseAsync);
 COMPONENT_EXPORT(AUTOFILL)
@@ -202,6 +207,8 @@ COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillShowAutocompleteDeleteButton);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillGranularFillingAvailable);
+COMPONENT_EXPORT(AUTOFILL)
+BASE_DECLARE_FEATURE(kAutofillForUnclassifiedFieldsAvailable);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillTestFormWithDevtools);
 COMPONENT_EXPORT(AUTOFILL)

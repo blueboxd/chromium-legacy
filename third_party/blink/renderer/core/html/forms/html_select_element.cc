@@ -59,10 +59,10 @@
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/layout/flex/layout_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
-#include "third_party/blink/renderer/core/layout/ng/flex/layout_ng_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -413,7 +413,7 @@ bool HTMLSelectElement::CanSelectAll() const {
 LayoutObject* HTMLSelectElement::CreateLayoutObject(
     const ComputedStyle& style) {
   if (UsesMenuList()) {
-    return MakeGarbageCollected<LayoutNGFlexibleBox>(this);
+    return MakeGarbageCollected<LayoutFlexibleBox>(this);
   }
   return MakeGarbageCollected<LayoutNGBlockFlow>(this);
 }
@@ -1461,7 +1461,8 @@ const ComputedStyle* HTMLSelectElement::OptionStyle() const {
 // Show the option list for this select element.
 // https://github.com/whatwg/html/pull/9754
 void HTMLSelectElement::showPicker(ExceptionState& exception_state) {
-  LocalFrame* frame = GetDocument().GetFrame();
+  Document& document = GetDocument();
+  LocalFrame* frame = document.GetFrame();
   // In cross-origin iframes it should throw a "SecurityError" DOMException
   if (frame) {
     if (!frame->IsSameOrigin()) {
@@ -1484,9 +1485,7 @@ void HTMLSelectElement::showPicker(ExceptionState& exception_state) {
     return;
   }
 
-  if (UsesMenuList()) {
-    ShowPopup();
-  }
+  select_type_->ShowPicker();
 }
 
 }  // namespace blink

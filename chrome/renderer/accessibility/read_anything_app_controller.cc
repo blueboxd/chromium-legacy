@@ -290,7 +290,7 @@ ui::AXTreeUpdate GetSnapshotFromV8SnapshotLite(
 
   v8::Local<v8::Value> v8_nodes;
   v8_snapshot_dict.Get("nodes", &v8_nodes);
-  std::vector<v8::Local<v8::Value>> v8_nodes_vector;
+  v8::LocalVector<v8::Value> v8_nodes_vector(isolate);
   if (!gin::ConvertFromV8(isolate, v8_nodes, &v8_nodes_vector)) {
     return snapshot;
   }
@@ -378,9 +378,9 @@ ReadAnythingAppController* ReadAnythingAppController::Install(
 
 ReadAnythingAppController::ReadAnythingAppController(
     content::RenderFrame* render_frame)
-    : render_frame_(render_frame) {
+    : render_frame_id_(render_frame->GetRoutingID()) {
   distiller_ = std::make_unique<AXTreeDistiller>(
-      render_frame_,
+      render_frame,
       base::BindRepeating(&ReadAnythingAppController::OnAXTreeDistilled,
                           weak_ptr_factory_.GetWeakPtr()));
 }
@@ -428,12 +428,14 @@ void ReadAnythingAppController::AccessibilityEventReceived(
 }
 
 void ReadAnythingAppController::ExecuteJavaScript(std::string script) {
-  if (!render_frame_) {
+  content::RenderFrame* render_frame =
+      content::RenderFrame::FromRoutingID(render_frame_id_);
+  if (!render_frame) {
     return;
   }
   // TODO(b/1266555): Use v8::Function rather than javascript. If possible,
   // replace this function call with firing an event.
-  render_frame_->ExecuteJavaScript(base::ASCIIToUTF16(script));
+  render_frame->ExecuteJavaScript(base::ASCIIToUTF16(script));
 }
 
 void ReadAnythingAppController::OnActiveAXTreeIDChanged(
@@ -597,9 +599,10 @@ void ReadAnythingAppController::OnSettingsRestoredFromPrefs(
     double font_size,
     read_anything::mojom::Colors color,
     double speech_rate,
+    base::Value::Dict voices,
     read_anything::mojom::HighlightGranularity granularity) {
   model_.OnSettingsRestoredFromPrefs(line_spacing, letter_spacing, font,
-                                     font_size, color, speech_rate,
+                                     font_size, color, speech_rate, &voices,
                                      granularity);
   ExecuteJavaScript("chrome.readingMode.restoreSettingsFromPrefs();");
 }
@@ -692,6 +695,8 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
       .SetMethod("onFontChange", &ReadAnythingAppController::OnFontChange)
       .SetMethod("onSpeechRateChange",
                  &ReadAnythingAppController::OnSpeechRateChange)
+      .SetMethod("getStoredVoice", &ReadAnythingAppController::GetStoredVoice)
+      .SetMethod("onVoiceChange", &ReadAnythingAppController::OnVoiceChange)
       .SetMethod("turnedHighlightOn",
                  &ReadAnythingAppController::TurnedHighlightOn)
       .SetMethod("turnedHighlightOff",
@@ -768,6 +773,15 @@ int ReadAnythingAppController::ColorTheme() const {
 
 float ReadAnythingAppController::SpeechRate() const {
   return model_.speech_rate();
+}
+
+std::string ReadAnythingAppController::GetStoredVoice(
+    const std::string& lang) const {
+  if (model_.voices().contains(lang)) {
+    return *model_.voices().FindString(lang);
+  }
+
+  return string_constants::kReadAnythingPlaceholderVoiceName;
 }
 
 int ReadAnythingAppController::HighlightGranularity() const {
@@ -961,10 +975,12 @@ void ReadAnythingAppController::OnConnected() {
   page_handler_factory_->CreateUntrustedPageHandler(
       receiver_.BindNewPipeAndPassRemote(),
       page_handler_.BindNewPipeAndPassReceiver());
-  if (!render_frame_) {
+  content::RenderFrame* render_frame =
+      content::RenderFrame::FromRoutingID(render_frame_id_);
+  if (!render_frame) {
     return;
   }
-  render_frame_->GetBrowserInterfaceBroker()->GetInterface(
+  render_frame->GetBrowserInterfaceBroker()->GetInterface(
       std::move(page_handler_factory_receiver));
 }
 
@@ -1058,6 +1074,11 @@ void ReadAnythingAppController::OnFontChange(const std::string& font) {
 
 void ReadAnythingAppController::OnSpeechRateChange(double rate) {
   page_handler_->OnSpeechRateChange(rate);
+}
+
+void ReadAnythingAppController::OnVoiceChange(const std::string& voice,
+                                              const std::string& lang) {
+  page_handler_->OnVoiceChange(voice, lang);
 }
 
 void ReadAnythingAppController::TurnedHighlightOn() {
@@ -1221,11 +1242,13 @@ void ReadAnythingAppController::SetDefaultLanguageCode(
 void ReadAnythingAppController::SetContentForTesting(
     v8::Local<v8::Value> v8_snapshot_lite,
     std::vector<ui::AXNodeID> content_node_ids) {
-  if (!render_frame_) {
+  content::RenderFrame* render_frame =
+      content::RenderFrame::FromRoutingID(render_frame_id_);
+  if (!render_frame) {
     return;
   }
   v8::Isolate* isolate =
-      render_frame_->GetWebFrame()->GetAgentGroupScheduler()->Isolate();
+      render_frame->GetWebFrame()->GetAgentGroupScheduler()->Isolate();
   ui::AXTreeUpdate snapshot =
       GetSnapshotFromV8SnapshotLite(isolate, v8_snapshot_lite);
   ui::AXEvent selectionEvent;

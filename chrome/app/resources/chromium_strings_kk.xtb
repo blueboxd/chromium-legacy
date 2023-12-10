@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="kk">
+<translation id="1001716830750249114">Chromium нұсқасының параметрлеріне өту</translation>
 <translation id="1026101648481255140">Орнатуды жалғастыру</translation>
 <translation id="1029669172902658969">&amp;ChromiumOS жүйесін жаңарту үшін қайта іске қосу</translation>
 <translation id="1040916596585577953">Chromium осы кеңейтімді қарап шығуды ұсынады</translation>
@@ -23,6 +24,7 @@
 <translation id="1342274909142618978">Деректерді Chromium-нен (<ph name="URL" />) де жою</translation>
 <translation id="1414495520565016063">Chromium жүйесіне кірдіңіз!</translation>
 <translation id="1478370723027452770">Chrome for Testing бойынша анықтама алу</translation>
+<translation id="1497802159252041924">Орнату қатесі: <ph name="INSTALL_ERROR" /></translation>
 <translation id="1524282610922162960">Chromium қойындысын бөлісу</translation>
 <translation id="1553461853655228091">Chromium браузеріне айналаңыздың 3D картасын жасау үшін камераны пайдалану рұқсаты керек.</translation>
 <translation id="1574377791422810894">Chromium-нің қауіпсіздік құралдары</translation>
@@ -33,6 +35,7 @@
 Веб-сайттар мен қолданбаларға берілген рұқсаттар осы аккаунтқа пайдаланылуы мүмкін. Google аккаунттарын <ph name="SETTINGS_LINK_BEGIN" />Параметрлер<ph name="SETTINGS_LINK_END" /> бөлімінен басқаруға болады.</translation>
 <translation id="1640672724030957280">Жүктеп алынып жатыр…</translation>
 <translation id="1708666629004767631">Chromium жүйесінің жаңа, қауіпсіз нұсқасы қолжетімді.</translation>
+<translation id="1715127912119967311">Бұл функцияларды жақсарту үшін Chromium оларды қолдануыңыз туралы ақпаратты Google-ға жібереді. Бұл деректерді тексерушілер оқуы, өңдеуі және aннотация қосуы мүмкін.</translation>
 <translation id="17264556997921157">Сайттардың жарнама көрсетуге пайдаланған қызық тақырыптарын көре және өшіре аласыз. Chromium браузерді қолданудың соңғы тарихына сүйене отырып, сізге қызық болар деген тақырыптарды болжайды.</translation>
 <translation id="1733725117201708356">Chromium жақын арада браузерді пайдалану деректерін жояды</translation>
 <translation id="1745121272106313518">Chromium <ph name="REMAINING_TIME" /> кейін қайта қосылады</translation>
@@ -157,12 +160,13 @@
 <translation id="390528597099634151"><ph name="EXISTING_USER" /> бұл Chromium профиліне кіріп қойған. Браузерді пайдалану деректерін бөлек сақтау үшін Chromium сізге жеке профиль жасай алады.</translation>
 <translation id="3909353120217047026">Бұл кеңейтім Chrome Web Store саясатына қайшы, сондықтан қауіпті болуы мүмкін. Сіз кірген сайттардағы деректеріңізді, оның ішінде жеке ақпаратыңызды бұдан былай көрмеуі және өзгерте алмауы үшін, оны Chromium-нан жойыңыз.</translation>
 <translation id="391789666908693569">Аккаунтыңызды <ph name="MANAGER_NAME" /> басқарады. Әкімші осы Chromium браузерінің профилі мен оның бетбелгілер, тарих және құпия сөздер сияқты деректерін көре және өзгерте алады.</translation>
+<translation id="3922825997980843979">Сіз терген сайын, Chromium мекенжай жолағының немесе іздеу өрісінің ішіндегі ақпаратты әдепкі іздеу жүйесіне жібереді.</translation>
 <translation id="3945058413678539331">Chromium құпия сөздерді көшіргісі келеді. Бұған рұқсат беру үшін Windows құпия сөзіңізді теріңіз.</translation>
-<translation id="3962623956404948996">Chromium бұл файлды сканерлеуді ұсынады, себебі ол қауіпсіз болуы мүмкін.</translation>
 <translation id="3962647064319009959">Chromium сізді қалай қорғайтыны туралы ақпарат алыңыз</translation>
 <translation id="3975724895399328945">&amp;Google Chrome for Testing туралы</translation>
 <translation id="3997429360543082038">ChromiumOS туралы</translation>
 <translation id="4019629340646866719">ChromiumOS жүйесі де <ph name="BEGIN_LINK_LINUX_OSS" />Linux әзірлеу ортасы<ph name="END_LINK_LINUX_OSS" /> сияқты <ph name="BEGIN_LINK_CROS_OSS" />ашық кодты бағдарламалық құрал<ph name="END_LINK_CROS_OSS" /> арқылы қолжетімді болады.</translation>
+<translation id="4028143804911941282">Өшірулі болса, Chromium жергілікті түрде беретін ұсыныстар көрсетіле береді.</translation>
 <translation id="4036079820698952681"><ph name="BEGIN_LINK" />Ағымдағы параметрлерді<ph name="END_LINK" /> хабарлау арқылы Chromium браузерін жақсартуға көмектесіңіз</translation>
 <translation id="4050175100176540509">Соңғы нұсқасында қауіпсіздік жақсартылып, жаңа мүмкіндіктер берілген.</translation>
 <translation id="4055805654398742145">P&amp;assword Manager</translation>
@@ -206,6 +210,7 @@
 <translation id="4765210420921718862">Таңдауыңызды кез келген уақытта Chromium параметрлерінде өзгертуге болады. Сынақ нұсқалары жарнама көрсетудің ағымдағы әдісімен жұмыс істейді. Сондықтан өзгерістер бірден көрінбейді.</translation>
 <translation id="4788777615168560705">Chromium сіздің құпия сөздеріңізді тексере алмай жатыр. 24 сағаттан кейін қайталап көріңіз немесе <ph name="BEGIN_LINK" />құпия сөздерді Google аккаунтынан тексеріңіз<ph name="END_LINK" />.</translation>
 <translation id="479167709087336770">Google Search қызметіндегі емле тексеру құралы пайдаланылады. Браузерде терілген мәтін Google-ға жіберіледі. Мұны параметрлерде өзгертуіңізге болады.</translation>
+<translation id="4814736265800133385">Chromium-ді аккаунтсыз қолдану</translation>
 <translation id="4888717733111232871">mDNS трафигіне рұқсат беретін Chromium кіріс ережесі.</translation>
 <translation id="4893347770495441059">&amp;Chromium-ді жаңарту үшін қайта іске қосу</translation>
 <translation id="4943838377383847465">Chromium фондық режимде.</translation>
@@ -230,6 +235,7 @@
 <translation id="549669000822060376">Chromium ең соңғы жүйе жаңартуларын орнатуда, күте тұрыңыз.</translation>
 <translation id="5496810170689441661">Chromium құпия сөздерді өзгерткісі келеді. Бұған рұқсат беру үшін Windows құпия сөзіңізді теріңіз.</translation>
 <translation id="5527463683072221100">PDF-терді Chromium-де ашу</translation>
+<translation id="555273495373124701">Chromium элементтерін барлық құрылғыда пайдалану үшін аккаунтқа кіріңіз.</translation>
 <translation id="5614091477838198795">Қосылған кезде, Chromium браузерінен шығарыласыз.</translation>
 <translation id="5623402015214259806">{0,plural, =0{Chromium браузерінің жаңартылған нұсқасы қолжетімді}=1{Chromium браузерінің жаңартылған нұсқасы қолжетімді}other{Chromium браузерінің жаңартылған нұсқасы # күннен бері қолжетімді}}</translation>
 <translation id="5643865575100044307">Chromium браузерін жапқан кезде құрылғыңыздан сайт деректерін үнемі жою</translation>
@@ -252,6 +258,7 @@
 <translation id="6003112304606738118">Жүктеп алынып жатыр… <ph name="HOURS" /> сағат қалды.</translation>
 <translation id="6040143037577758943">Жабу</translation>
 <translation id="6055895534982063517">Жаңа жылдамырақ Chromium нұсқасы қолжетімді.</translation>
+<translation id="6058380562449900225">Деректеріңізді қорғау үшін Chromium-ге сіз соңғы уақытта кірмеген сайттар рұқсаттарын өшіруге рұқсат беріңіз. Хабарландырулар көрсетіле береді.</translation>
 <translation id="6063093106622310249">&amp;Chromium жүйесінде ашу</translation>
 <translation id="6072279588547424923"><ph name="EXTENSION_NAME" /> кеңейтімі Chromium браузеріне енгізілді</translation>
 <translation id="6072463441809498330">Chromium жылдамдығын арттырыңыз</translation>
@@ -367,6 +374,7 @@ Chromium параметрлеріңізді қалпына келтіре алм
 <translation id="7682601070171973634">Chromium жаңа функцияларды зерттеп жатыр. Олардың көмегімен сайттарды аз дерекпен де бұрынғыдай пайдалана беруге болады.</translation>
 <translation id="7686590090926151193">Chromium әдепкі браузеріңіз емес</translation>
 <translation id="7689606757190482937">Chromium браузерін барлық құрылғыларда синхрондап, параметрлерін жекелендіріңіз</translation>
+<translation id="7699779824407626136">Chromium жаңарту</translation>
 <translation id="7745317241717453663">Шолу деректері бұл құрылғыдан жойылады. Деректерді кейінірек алу үшін Chromium жүйесіне <ph name="USER_EMAIL" /> болып кіріңіз.</translation>
 <translation id="7747138024166251722">Орнату құралы уақытша каталогті жасай алмады. Дисктегі бос орынды және бағдарламалық жасақтама рұқсатын тексеріңіз.</translation>
 <translation id="7786760609782648049">Chromium жылдамдығын арттырыңыз</translation>
@@ -380,6 +388,7 @@ Chromium параметрлеріңізді қалпына келтіре алм
 <translation id="7937630085815544518">Chromium жүйесіне <ph name="USER_EMAIL_ADDRESS" /> ретінде кірдіңіз. Қайта кіру үшін бірдей аккаунтты пайдаланыңыз.</translation>
 <translation id="7975919845073681630">Бұл – Chromium браузерінің қайта орнатылған нұсқасы және әдепкі браузер бола алмайды.</translation>
 <translation id="7997934263947464652">Белгісіз дереккөздерден алынған кеңейтім, қолданба, тақырыптар құрылғыңызға зиянын тигізуі мүмкін. Chromium оларды тек <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> дүкенінен орнатуды ұсынады.</translation>
+<translation id="800195749539500647">Chromium мүмкіндіктерін барынша тиімді пайдаланыңыз</translation>
 <translation id="8013436988911883588">Chromium браузерінің кіру рұқсаты болса, веб-сайттар сізден кіру рұқсатын сұрайды.</translation>
 <translation id="80471789339884597">Орнатқаныңыз үшін рақмет. <ph name="BUNDLE_NAME" /> пайдаланбас бұрын барлық браузерді жауып, қайта ашуыңыз керек.</translation>
 <translation id="8105840573057009683">Chromium бұл сайт үшін локацияны пайдалануға рұқсат сұрайды.</translation>

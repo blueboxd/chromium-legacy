@@ -9,20 +9,23 @@
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_utils.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
+#include "third_party/blink/renderer/core/layout/inline/inline_node.h"
 #include "third_party/blink/renderer/core/layout/intrinsic_sizing_info.h"
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/list/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/min_max_sizes.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
-#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
-#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_column.h"
-#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_section.h"
+#include "third_party/blink/renderer/core/layout/table/layout_table_cell.h"
+#include "third_party/blink/renderer/core/layout/table/layout_table_column.h"
+#include "third_party/blink/renderer/core/layout/table/layout_table_section.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
+
+using mojom::blink::FormControlType;
+
 namespace {
 
 #if DCHECK_IS_ON()
@@ -49,9 +52,9 @@ void AppendNodeToString(NGLayoutInputNode node,
     }
   }
 
-  if (auto* inline_node = DynamicTo<NGInlineNode>(node)) {
+  if (auto* inline_node = DynamicTo<InlineNode>(node)) {
     const auto& items = inline_node->ItemsData(false).items;
-    for (const NGInlineItem& inline_item : items) {
+    for (const InlineItem& inline_item : items) {
       string_builder->Append(indent_builder.ToString());
       string_builder->Append(inline_item.ToString());
       string_builder->Append("\n");
@@ -70,7 +73,7 @@ void AppendNodeToString(NGLayoutInputNode node,
 
 bool NGLayoutInputNode::IsSlider() const {
   if (const auto* input = DynamicTo<HTMLInputElement>(box_->GetNode()))
-    return input->type() == input_type_names::kRange;
+    return input->FormControlType() == FormControlType::kInputRange;
   return false;
 }
 
@@ -84,22 +87,22 @@ bool NGLayoutInputNode::IsSvgText() const {
 
 bool NGLayoutInputNode::IsEmptyTableSection() const {
   return box_->IsTableSection() &&
-         To<LayoutNGTableSection>(box_.Get())->IsEmpty();
+         To<LayoutTableSection>(box_.Get())->IsEmpty();
 }
 
 wtf_size_t NGLayoutInputNode::TableColumnSpan() const {
   DCHECK(IsTableCol() || IsTableColgroup());
-  return To<LayoutNGTableColumn>(box_.Get())->Span();
+  return To<LayoutTableColumn>(box_.Get())->Span();
 }
 
 wtf_size_t NGLayoutInputNode::TableCellColspan() const {
   DCHECK(box_->IsTableCell());
-  return To<LayoutNGTableCell>(box_.Get())->ColSpan();
+  return To<LayoutTableCell>(box_.Get())->ColSpan();
 }
 
 wtf_size_t NGLayoutInputNode::TableCellRowspan() const {
   DCHECK(box_->IsTableCell());
-  return To<LayoutNGTableCell>(box_.Get())->ComputedRowSpan();
+  return To<LayoutTableCell>(box_.Get())->ComputedRowSpan();
 }
 
 bool NGLayoutInputNode::IsTextControlPlaceholder() const {
@@ -156,7 +159,7 @@ void NGLayoutInputNode::IntrinsicSize(
 }
 
 NGLayoutInputNode NGLayoutInputNode::NextSibling() const {
-  auto* inline_node = DynamicTo<NGInlineNode>(this);
+  auto* inline_node = DynamicTo<InlineNode>(this);
   return inline_node ? inline_node->NextSibling()
                      : To<NGBlockNode>(*this).NextSibling();
 }
@@ -168,7 +171,7 @@ PhysicalSize NGLayoutInputNode::InitialContainingBlockSize() const {
 }
 
 String NGLayoutInputNode::ToString() const {
-  auto* inline_node = DynamicTo<NGInlineNode>(this);
+  auto* inline_node = DynamicTo<InlineNode>(this);
   return inline_node ? inline_node->ToString()
                      : To<NGBlockNode>(*this).ToString();
 }

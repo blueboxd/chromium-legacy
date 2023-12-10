@@ -677,13 +677,13 @@ void ChromeContentRendererClient::RenderFrameCreated(
 
   if (!render_frame->IsInFencedFrameTree() ||
       base::FeatureList::IsEnabled(blink::features::kFencedFramesAPIChanges)) {
-    PasswordAutofillAgent* password_autofill_agent =
-        new PasswordAutofillAgent(render_frame, associated_interfaces);
-    PasswordGenerationAgent* password_generation_agent =
-        new PasswordGenerationAgent(render_frame, password_autofill_agent,
-                                    associated_interfaces);
-    new AutofillAgent(render_frame, password_autofill_agent,
-                      password_generation_agent, associated_interfaces);
+    auto password_autofill_agent = std::make_unique<PasswordAutofillAgent>(
+        render_frame, associated_interfaces);
+    auto password_generation_agent = std::make_unique<PasswordGenerationAgent>(
+        render_frame, password_autofill_agent.get(), associated_interfaces);
+    new AutofillAgent(render_frame, std::move(password_autofill_agent),
+                      std::move(password_generation_agent),
+                      associated_interfaces);
   }
 
   if (content_capture::features::IsContentCaptureEnabled()) {
@@ -1377,7 +1377,11 @@ void ChromeContentRendererClient::PostCompositorThreadCreated(
       FROM_HERE,
       base::BindOnce(&tracing::TracingSamplerProfiler::
                          CreateOnChildThreadWithCustomUnwinders,
+#if BUILDFLAG(IS_ANDROID)
+                     base::BindRepeating(&CreateCoreUnwindersFactory, false)));
+#else
                      base::BindRepeating(&CreateCoreUnwindersFactory)));
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 bool ChromeContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {

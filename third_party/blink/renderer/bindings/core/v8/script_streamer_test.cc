@@ -98,7 +98,7 @@ class NoopLoaderFactory final : public ResourceFetcher::LoaderFactory {
     void LoadSynchronously(
         std::unique_ptr<network::ResourceRequest> request,
         scoped_refptr<const SecurityOrigin> top_frame_origin,
-        bool pass_response_pipe_to_client,
+        bool download_to_blob,
         bool no_mime_sniffing,
         base::TimeDelta timeout_interval,
         URLLoaderClient*,
@@ -170,9 +170,8 @@ class ScriptStreamingTest : public testing::Test {
     resource_->SetResponse(response);
 
     resource_->Loader()->DidReceiveResponse(WrappedResourceResponse(response),
+                                            std::move(consumer_handle_),
                                             /*cached_metadata=*/absl::nullopt);
-    resource_->Loader()->DidStartLoadingResponseBody(
-        std::move(consumer_handle_));
   }
 
   ClassicScript* CreateClassicScript() const {

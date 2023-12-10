@@ -83,7 +83,7 @@ const char kCard1ClientTag[] = "Y2FyZDHvv74=";
 const char kCustomerDataClientTag[] = "deadbeef";
 const char kCloudTokenDataClientTag[] = "token";
 
-const base::Time kJune2017 = base::Time::FromDoubleT(1497552271);
+const base::Time kJune2017 = base::Time::FromSecondsSinceUnixEpoch(1497552271);
 
 const char kDefaultCacheGuid[] = "CacheGuid";
 
@@ -223,7 +223,7 @@ MATCHER_P(EqualsSpecifics, expected, "") {
 }
 
 MATCHER_P(RemoveChange, key, "") {
-  if (arg.type() != GenericAutofillChange<std::string>::REMOVE) {
+  if (arg.type() != decltype(arg.type())::REMOVE) {
     *result_listener << "type " << arg.type() << " is not REMOVE";
     return false;
   }
@@ -235,8 +235,7 @@ MATCHER_P(RemoveChange, key, "") {
 }
 
 MATCHER_P2(AddChange, key, data, "") {
-  if (arg.type() != GenericAutofillChange<std::string>::ADD) {
-    *result_listener << "type " << arg.type() << " is not ADD";
+  if (arg.type() != decltype(arg.type())::ADD) {
     return false;
   }
   if (arg.key() != key) {

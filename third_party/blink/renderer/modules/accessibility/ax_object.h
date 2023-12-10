@@ -72,12 +72,12 @@ struct AXRelativeBounds;
 
 namespace blink {
 
+class AbstractInlineTextBox;
 class AccessibleNodeList;
 class AXObject;
 class AXObjectCacheImpl;
 class LayoutObject;
 class LocalFrameView;
-class NGAbstractInlineTextBox;
 class Node;
 class ScrollableArea;
 
@@ -328,7 +328,6 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // AXObjectCacheImpl::InvalidateCachedValuesOnSubtree().
   void InvalidateCachedValues();
   bool NeedsToUpdateCachedValues() const { return cached_values_need_update_; }
-  bool CanAccessCachedValues() const;
 
   // The AXObjectCacheImpl that owns this object, and its unique ID within this
   // cache.
@@ -358,7 +357,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   bool HasAOMPropertyOrARIAAttribute(AOMStringProperty,
                                      AtomicString& result) const;
   virtual AccessibleNode* GetAccessibleNode() const;
-  virtual NGAbstractInlineTextBox* GetInlineTextBox() const { return nullptr; }
+  virtual AbstractInlineTextBox* GetInlineTextBox() const { return nullptr; }
 
   static void TokenVectorFromAttribute(Element* element,
                                        Vector<String>&,

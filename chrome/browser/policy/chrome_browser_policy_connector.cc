@@ -105,9 +105,7 @@ void ChromeBrowserPolicyConnector::OnResourceBundleCreated() {
 void ChromeBrowserPolicyConnector::Init(
     PrefService* local_state,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
-  if (PolicyLogger::GetInstance()->IsPolicyLoggingEnabled()) {
     PolicyLogger::GetInstance()->EnableLogDeletion();
-  }
   auto configuration = std::make_unique<DeviceManagementServiceConfiguration>(
       GetDeviceManagementUrl(), GetRealtimeReportingUrl(),
       GetEncryptedReportingUrl());
@@ -187,6 +185,18 @@ void ChromeBrowserPolicyConnector::SetLocalTestPolicyProviderForTesting(
 
 void ChromeBrowserPolicyConnector::MaybeApplyLocalTestPolicies(
     PrefService* local_state) {
+  // Early return if the policy test page is disabled by any policy. This is
+  // done because that policy is a profile level policy and we have not yet
+  // loaded any profile to access its prefs.
+  const auto& chrome_policies =
+      GetPolicyService()->GetPolicies(policy::PolicyNamespace(
+          policy::PolicyDomain::POLICY_DOMAIN_CHROME, std::string()));
+  if (auto* policy_test_page_enabled = chrome_policies.GetValue(
+          policy::key::kPolicyTestPageEnabled, base::Value::Type::BOOLEAN);
+      policy_test_page_enabled && !policy_test_page_enabled->GetBool()) {
+    return;
+  }
+
   std::string policies_to_apply =
       local_state->GetString(policy_prefs::kLocalTestPoliciesForNextStartup);
   if (policies_to_apply.empty()) {
@@ -233,7 +243,9 @@ void ChromeBrowserPolicyConnector::EnableCommandLineSupportForTesting() {
 
 base::flat_set<std::string>
 ChromeBrowserPolicyConnector::device_affiliation_ids() const {
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  return PolicyLoaderLacros::device_affiliation_ids();
+#elif !BUILDFLAG(IS_CHROMEOS_ASH)
   if (!machine_level_user_cloud_policy_manager_ ||
       !machine_level_user_cloud_policy_manager_->IsClientRegistered() ||
       !machine_level_user_cloud_policy_manager_->core() ||
@@ -248,7 +260,7 @@ ChromeBrowserPolicyConnector::device_affiliation_ids() const {
   return {ids.begin(), ids.end()};
 #else
   return {};
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 }
 
 std::vector<std::unique_ptr<policy::ConfigurationPolicyProvider>>

@@ -13,6 +13,7 @@
 #include "chrome/browser/tpcd/experiment/experiment_manager.h"
 #include "chrome/browser/tpcd/experiment/tpcd_experiment_features.h"
 #include "components/privacy_sandbox/privacy_sandbox_settings.h"
+#include "components/privacy_sandbox/tpcd_experiment_eligibility.h"
 #include "content/public/browser/cookie_deprecation_label_manager.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
@@ -56,7 +57,15 @@ EligibilityService::EligibilityService(Profile* profile,
       features::kCookieDeprecationFacilitatedTesting));
   CHECK(experiment_manager_);
 
-  is_profile_eligible_ = IsProfileEligible();
+  if (onboarding_service_) {
+    onboarding_observation_.Observe(onboarding_service_);
+
+    if (experiment_manager_->DidVersionChange()) {
+      onboarding_service_->MaybeResetOnboardingPrefs();
+    }
+  }
+
+  profile_eligibility_ = ProfileEligibility();
   BroadcastProfileEligibility();
 }
 
@@ -72,6 +81,7 @@ void EligibilityService::Shutdown() {
 }
 
 void EligibilityService::BroadcastProfileEligibility() {
+  CHECK(profile_eligibility_.has_value());
   absl::optional<bool> is_client_eligible =
       experiment_manager_->IsClientEligible();
   if (is_client_eligible.has_value()) {
@@ -79,8 +89,13 @@ void EligibilityService::BroadcastProfileEligibility() {
     return;
   }
 
+  base::UmaHistogramEnumeration(
+      "PrivacySandbox.CookieDeprecationFacilitatedTesting."
+      "ReasonForEligibilityStoredInPrefs",
+      profile_eligibility_->reason());
+
   experiment_manager_->SetClientEligibility(
-      is_profile_eligible_,
+      profile_eligibility_->is_eligible(),
       base::BindOnce(&EligibilityService::MarkProfileEligibility,
                      weak_factory_.GetWeakPtr()));
 }
@@ -88,9 +103,39 @@ void EligibilityService::BroadcastProfileEligibility() {
 void EligibilityService::MarkProfileEligibility(bool is_client_eligible) {
   // Record when profile eligiblity and client eligiblity matches and
   // mismatches.
-  UmaHistogramProfileEligibilityMismatch(is_profile_eligible_,
+  UmaHistogramProfileEligibilityMismatch(profile_eligibility_->is_eligible(),
                                          is_client_eligible);
+  base::UmaHistogramEnumeration(
+      "PrivacySandbox.CookieDeprecationFacilitatedTesting."
+      "ReasonForComputedEligibilityForProfile",
+      profile_eligibility_->reason());
 
+  UpdateCookieDeprecationLabel();
+
+  // Update the eligibility for the onboarding UX flow. Check that the user is
+  // in Mode B (kDisable3PCookies is true).
+  if (onboarding_service_ && kDisable3PCookies.Get()) {
+    if (is_client_eligible) {
+      onboarding_service_->MaybeMarkEligible();
+    } else {
+      onboarding_service_->MaybeMarkIneligible();
+    }
+    MaybeNotifyManagerTrackingProtectionOnboarded(
+        onboarding_service_->GetOnboardingStatus());
+  }
+}
+
+privacy_sandbox::TpcdExperimentEligibility
+EligibilityService::ProfileEligibility() {
+  auto* privacy_sandbox_settings =
+      PrivacySandboxSettingsFactory::GetForProfile(profile_);
+  CHECK(privacy_sandbox_settings);
+
+  return privacy_sandbox_settings
+      ->GetCookieDeprecationExperimentCurrentEligibility();
+}
+
+void EligibilityService::UpdateCookieDeprecationLabel() {
   // For each storage partition, update the cookie deprecation label to the
   // updated value from the CookieDeprecationLabelManager.
   profile_->ForEachLoadedStoragePartition(
@@ -101,25 +146,25 @@ void EligibilityService::MarkProfileEligibility(bool is_client_eligible) {
               cookie_deprecation_label_manager->GetValue());
         }
       }));
-
-  // Update the eligibility for the onboarding UX flow. Check that the user is
-  // in Mode B (kDisable3PCookies is true).
-  if (onboarding_service_ && kDisable3PCookies.Get()) {
-    if (is_client_eligible) {
-      onboarding_service_->MaybeMarkEligible();
-    } else {
-      onboarding_service_->MaybeMarkIneligible();
-    }
-  }
 }
 
-bool EligibilityService::IsProfileEligible() {
-  auto* privacy_sandbox_settings =
-      PrivacySandboxSettingsFactory::GetForProfile(profile_);
-  CHECK(privacy_sandbox_settings);
+void EligibilityService::OnTrackingProtectionOnboardingUpdated(
+    privacy_sandbox::TrackingProtectionOnboarding::OnboardingStatus
+        onboarding_status) {
+  if (!kDisable3PCookies.Get()) {
+    return;
+  }
+  MaybeNotifyManagerTrackingProtectionOnboarded(onboarding_status);
+  UpdateCookieDeprecationLabel();
+}
 
-  return privacy_sandbox_settings
-      ->IsCookieDeprecationExperimentCurrentlyEligible();
+void EligibilityService::MaybeNotifyManagerTrackingProtectionOnboarded(
+    privacy_sandbox::TrackingProtectionOnboarding::OnboardingStatus
+        onboarding_status) {
+  if (onboarding_status == privacy_sandbox::TrackingProtectionOnboarding::
+                               OnboardingStatus::kOnboarded) {
+    experiment_manager_->NotifyProfileTrackingProtectionOnboarded();
+  }
 }
 
 }  // namespace tpcd::experiment

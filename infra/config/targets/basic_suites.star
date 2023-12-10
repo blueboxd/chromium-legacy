@@ -16,19 +16,15 @@ targets.legacy_basic_suite(
     tests = {
         "webview_trichrome_64_cts_tests_no_field_trial": targets.legacy_test_config(
             test = "webview_trichrome_64_cts_tests",
+            mixins = [
+                "webview_cts_archive",
+            ],
             args = [
                 "--disable-field-trial-config",
             ],
             ci_only = True,
             swarming = targets.swarming(
                 shards = 2,
-                cipd_packages = [
-                    targets.cipd_package(
-                        package = "chromium/android_webview/tools/cts_archive",
-                        location = "android_webview/tools/cts_archive",
-                        revision = "akIIr4yAFQwo3j5WYo2PQvy6z8XI51UiwiikPYzI4tUC",
-                    ),
-                ],
             ),
         ),
         "webview_ui_test_app_test_apk_no_field_trial": targets.legacy_test_config(
@@ -102,29 +98,9 @@ targets.legacy_basic_suite(
                 "skia_gold_test",
                 "emulator-8-cores",  # Use 8-core to shorten test runtime.
             ],
-            # These tests launch external intent thus require playstore to be
-            # present. See crbug.com/1056330 for more details.
-            # Exclude them here since this test suite will run on emulator
-            # on images that do not have playstore.
-            # They will be ran in chrome_public_test_apk_with_playstore below.
-            args = [
-                "--gtest_filter=-org.chromium.chrome.browser.contextualsearch.ContextualSearchManagerTest.test*ExternalNavigationWithUserGesture*:org.chromium.shape_detection.*",
-            ],
             swarming = targets.swarming(
                 shards = 20,
             ),
-        ),
-        "chrome_public_test_apk_with_playstore": targets.legacy_test_config(
-            test = "chrome_public_test_apk",
-            mixins = [
-                "skia_gold_test",
-            ],
-            # These tests launch external intent thus require playstore to be
-            # present. See crbug.com/1056330 for more details.
-            # They should be ran in emulator on images that have playstore.
-            args = [
-                "--gtest_filter=org.chromium.chrome.browser.contextualsearch.ContextualSearchManagerTest.test*ExternalNavigationWithUserGesture*:org.chromium.shape_detection.*",
-            ],
         ),
         "chrome_public_unit_test_apk": targets.legacy_test_config(
             mixins = [
@@ -2593,11 +2569,7 @@ targets.legacy_basic_suite(
         "courgette_unittests": None,
         "crypto_unittests": None,
         "filesystem_service_unittests": None,
-        "web_engine_integration_tests": targets.legacy_test_config(
-            args = [
-                "--test-arg=--vmodule=test_navigation_listener=1",
-            ],
-        ),
+        "web_engine_integration_tests": None,
         "web_engine_unittests": None,
     },
 )
@@ -4896,7 +4868,7 @@ targets.legacy_basic_suite(
             test = "browser_tests",
             args = [
                 "--test-launcher-filter-file=../../testing/buildbot/filters/linux-chromeos.browser_tests.require_lacros.filter",
-                "--lacros-chrome-path=lacros_clang_x64",
+                "--lacros-chrome-path=lacros_clang_x64/test_lacros_chrome",
             ],
             swarming = targets.swarming(
                 shards = 8,
@@ -4995,6 +4967,15 @@ targets.legacy_basic_suite(
             ],
             swarming = targets.swarming(
                 shards = 8,
+            ),
+        ),
+        "interactive_ui_tests": targets.legacy_test_config(
+            args = [
+                "--force-renderer-accessibility",
+                "--test-launcher-filter-file=../../testing/buildbot/filters/accessibility-linux.interactive_ui_tests.filter",
+            ],
+            swarming = targets.swarming(
+                shards = 6,
             ),
         ),
     },
@@ -5436,22 +5417,6 @@ targets.legacy_basic_suite(
             mixins = [
                 "skia_gold_test",
             ],
-        ),
-    },
-)
-
-targets.legacy_basic_suite(
-    name = "oop_network_service_tests",
-    tests = {
-        "oop_network_service_content_browsertests": targets.legacy_test_config(
-            test = "content_browsertests",
-            args = [
-                "--enable-features=NetworkServiceOutOfProcessMemoryThreshold:network_service_oop_threshold_mb/1077",
-                "--disable-features=NetworkServiceInProcess2",
-            ],
-            swarming = targets.swarming(
-                shards = 25,
-            ),
         ),
     },
 )
@@ -6172,11 +6137,7 @@ targets.legacy_basic_suite(
         "cast_runner_integration_tests": None,
         "cast_runner_unittests": None,
         "web_engine_browsertests": None,
-        "web_engine_integration_tests": targets.legacy_test_config(
-            args = [
-                "--test-arg=--vmodule=test_navigation_listener=1",
-            ],
-        ),
+        "web_engine_integration_tests": None,
         "web_engine_unittests": None,
     },
 )
@@ -6329,15 +6290,11 @@ targets.legacy_basic_suite(
     name = "webview_64_cts_tests_gtest",
     tests = {
         "webview_64_cts_tests": targets.legacy_test_config(
+            mixins = [
+                "webview_cts_archive",
+            ],
             swarming = targets.swarming(
                 shards = 2,
-                cipd_packages = [
-                    targets.cipd_package(
-                        package = "chromium/android_webview/tools/cts_archive",
-                        location = "android_webview/tools/cts_archive",
-                        revision = "akIIr4yAFQwo3j5WYo2PQvy6z8XI51UiwiikPYzI4tUC",
-                    ),
-                ],
             ),
         ),
     },
@@ -6383,15 +6340,11 @@ targets.legacy_basic_suite(
     name = "webview_cts_tests_gtest",
     tests = {
         "webview_cts_tests": targets.legacy_test_config(
+            mixins = [
+                "webview_cts_archive",
+            ],
             swarming = targets.swarming(
                 shards = 2,
-                cipd_packages = [
-                    targets.cipd_package(
-                        package = "chromium/android_webview/tools/cts_archive",
-                        location = "android_webview/tools/cts_archive",
-                        revision = "akIIr4yAFQwo3j5WYo2PQvy6z8XI51UiwiikPYzI4tUC",
-                    ),
-                ],
             ),
         ),
     },
@@ -6402,18 +6355,14 @@ targets.legacy_basic_suite(
     tests = {
         "webview_cts_tests_no_field_trial": targets.legacy_test_config(
             test = "webview_cts_tests",
+            mixins = [
+                "webview_cts_archive",
+            ],
             args = [
                 "--disable-field-trial-config",
             ],
             swarming = targets.swarming(
                 shards = 2,
-                cipd_packages = [
-                    targets.cipd_package(
-                        package = "chromium/android_webview/tools/cts_archive",
-                        location = "android_webview/tools/cts_archive",
-                        revision = "akIIr4yAFQwo3j5WYo2PQvy6z8XI51UiwiikPYzI4tUC",
-                    ),
-                ],
             ),
         ),
     },
@@ -6423,18 +6372,14 @@ targets.legacy_basic_suite(
     name = "webview_trichrome_64_cts_field_trial_tests",
     tests = {
         "webview_trichrome_64_cts_tests": targets.legacy_test_config(
+            mixins = [
+                "webview_cts_archive",
+            ],
             args = [
                 "--store-data-dependencies-in-temp",
             ],
             swarming = targets.swarming(
                 shards = 2,
-                cipd_packages = [
-                    targets.cipd_package(
-                        package = "chromium/android_webview/tools/cts_archive",
-                        location = "android_webview/tools/cts_archive",
-                        revision = "akIIr4yAFQwo3j5WYo2PQvy6z8XI51UiwiikPYzI4tUC",
-                    ),
-                ],
             ),
         ),
     },
@@ -6444,15 +6389,11 @@ targets.legacy_basic_suite(
     name = "webview_trichrome_64_cts_tests",
     tests = {
         "webview_trichrome_64_cts_tests": targets.legacy_test_config(
+            mixins = [
+                "webview_cts_archive",
+            ],
             swarming = targets.swarming(
                 shards = 2,
-                cipd_packages = [
-                    targets.cipd_package(
-                        package = "chromium/android_webview/tools/cts_archive",
-                        location = "android_webview/tools/cts_archive",
-                        revision = "akIIr4yAFQwo3j5WYo2PQvy6z8XI51UiwiikPYzI4tUC",
-                    ),
-                ],
             ),
         ),
     },
@@ -6463,18 +6404,14 @@ targets.legacy_basic_suite(
     tests = {
         "webview_trichrome_64_cts_tests_no_field_trial": targets.legacy_test_config(
             test = "webview_trichrome_64_cts_tests",
+            mixins = [
+                "webview_cts_archive",
+            ],
             args = [
                 "--disable-field-trial-config",
             ],
             swarming = targets.swarming(
                 shards = 2,
-                cipd_packages = [
-                    targets.cipd_package(
-                        package = "chromium/android_webview/tools/cts_archive",
-                        location = "android_webview/tools/cts_archive",
-                        revision = "akIIr4yAFQwo3j5WYo2PQvy6z8XI51UiwiikPYzI4tUC",
-                    ),
-                ],
             ),
         ),
     },
@@ -6484,15 +6421,9 @@ targets.legacy_basic_suite(
     name = "webview_trichrome_cts_tests",
     tests = {
         "webview_trichrome_cts_tests": targets.legacy_test_config(
-            swarming = targets.swarming(
-                cipd_packages = [
-                    targets.cipd_package(
-                        package = "chromium/android_webview/tools/cts_archive",
-                        location = "android_webview/tools/cts_archive",
-                        revision = "akIIr4yAFQwo3j5WYo2PQvy6z8XI51UiwiikPYzI4tUC",
-                    ),
-                ],
-            ),
+            mixins = [
+                "webview_cts_archive",
+            ],
         ),
     },
 )

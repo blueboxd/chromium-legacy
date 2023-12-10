@@ -33,6 +33,7 @@ BASE_DECLARE_FEATURE(kIPHDesktopSharedHighlightingFeature);
 BASE_DECLARE_FEATURE(kIPHDesktopTabGroupsNewGroupFeature);
 BASE_DECLARE_FEATURE(kIPHDesktopCustomizeChromeFeature);
 BASE_DECLARE_FEATURE(kIPHDesktopCustomizeChromeRefreshFeature);
+BASE_DECLARE_FEATURE(kIPHDesktopNewTabPageModulesCustomizeFeature);
 BASE_DECLARE_FEATURE(kIPHDownloadToolbarButtonFeature);
 BASE_DECLARE_FEATURE(kIPHExtensionsMenuFeature);
 BASE_DECLARE_FEATURE(kIPHExtensionsRequestAccessButtonFeature);
@@ -47,6 +48,7 @@ BASE_DECLARE_FEATURE(kIPHPasswordsManagementBubbleAfterSaveFeature);
 BASE_DECLARE_FEATURE(kIPHPasswordsManagementBubbleDuringSigninFeature);
 BASE_DECLARE_FEATURE(kIPHPasswordsWebAppProfileSwitchFeature);
 BASE_DECLARE_FEATURE(kIPHPasswordManagerShortcutFeature);
+BASE_DECLARE_FEATURE(kIPHPasswordSharingFeature);
 BASE_DECLARE_FEATURE(kIPHPowerBookmarksSidePanelFeature);
 BASE_DECLARE_FEATURE(kIPHPriceInsightsPageActionIconLabelFeature);
 BASE_DECLARE_FEATURE(kIPHPriceTrackingChipFeature);
@@ -91,6 +93,7 @@ BASE_DECLARE_FEATURE(kIPHAddToHomescreenMessageFeature);
 BASE_DECLARE_FEATURE(kIPHAutoDarkOptOutFeature);
 BASE_DECLARE_FEATURE(kIPHAutoDarkUserEducationMessageFeature);
 BASE_DECLARE_FEATURE(kIPHAutoDarkUserEducationMessageOptInFeature);
+BASE_DECLARE_FEATURE(kIPHCCTMinimized);
 BASE_DECLARE_FEATURE(kIPHContextualPageActionsQuietVariantFeature);
 BASE_DECLARE_FEATURE(kIPHContextualPageActionsActionChipFeature);
 BASE_DECLARE_FEATURE(kIPHDataSaverDetailFeature);
@@ -216,6 +219,7 @@ BASE_DECLARE_FEATURE(kIPHiOSDefaultBrowserVideoPromoTriggerFeature);
 BASE_DECLARE_FEATURE(kIPHiOSPromoPostRestoreDefaultBrowserFeature);
 BASE_DECLARE_FEATURE(kIPHiOSPromoPasswordManagerWidgetFeature);
 BASE_DECLARE_FEATURE(kIPHiOSChoiceScreenFeature);
+BASE_DECLARE_FEATURE(kIPHiOSParcelTrackingFeature);
 
 // A feature flag to enable and parametrize the sliding window of time for a
 // user's eligibility to be shown a default browser promo. This is not an FET

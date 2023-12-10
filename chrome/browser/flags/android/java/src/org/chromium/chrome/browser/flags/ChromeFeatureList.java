@@ -360,6 +360,7 @@ public abstract class ChromeFeatureList {
     public static final String PARTNER_CUSTOMIZATIONS_UMA = "PartnerCustomizationsUma";
     public static final String PASSKEY_MANAGEMENT_USING_ACCOUNT_SETTINGS_ANDROID =
             "PasskeyManagementUsingAccountSettingsAndroid";
+    public static final String PASSWORD_GENERATION_BOTTOM_SHEET = "PasswordGenerationBottomSheet";
     public static final String PASSWORD_EDIT_DIALOG_WITH_DETAILS = "PasswordEditDialogWithDetails";
     public static final String PORTALS = "Portals";
     public static final String PORTALS_CROSS_ORIGIN = "PortalsCrossOrigin";
@@ -455,6 +456,8 @@ public abstract class ChromeFeatureList {
     public static final String SURFACE_POLISH = "SurfacePolish";
     public static final String SYNC_ANDROID_LIMIT_NTP_PROMO_IMPRESSIONS =
             "SyncAndroidLimitNTPPromoImpressions";
+    public static final String SYNC_DECOUPLE_ADDRESS_PAYMENT_SETTINGS =
+            "SyncDecoupleAddressPaymentSettings";
     public static final String SYNC_ENABLE_CONTACT_INFO_DATA_TYPE_IN_TRANSPORT_MODE =
             "SyncEnableContactInfoDataTypeInTransportMode";
     public static final String TAB_DRAG_DROP_ANDROID = "TabDragDropAndroid";
@@ -464,6 +467,7 @@ public abstract class ChromeFeatureList {
     public static final String TAB_STRIP_STARTUP_REFACTORING = "TabStripStartupRefactoring";
     public static final String TABLET_TOOLBAR_REORDERING = "TabletToolbarReordering";
     public static final String TAB_TO_GTS_ANIMATION = "TabToGTSAnimation";
+    public static final String TAB_STATE_FLATBUFFER = "TabStateFlatBuffer";
     public static final String TANGIBLE_SYNC = "TangibleSync";
     public static final String TEST_DEFAULT_DISABLED = "TestDefaultDisabled";
     public static final String TEST_DEFAULT_ENABLED = "TestDefaultEnabled";
@@ -471,6 +475,8 @@ public abstract class ChromeFeatureList {
     public static final String THUMBNAIL_PLACEHOLDER = "ThumbnailPlaceholder";
     public static final String TOOLBAR_SCROLL_ABLATION_ANDROID = "ToolbarScrollAblationAndroid";
     public static final String TOOLBAR_USE_HARDWARE_BITMAP_DRAW = "ToolbarUseHardwareBitmapDraw";
+    public static final String TRACKING_PROTECTION_SETTINGS_PAGE_ROLLBACK_NOTICE =
+            "TrackingProtectionSettingsPageRollbackNotice";
     public static final String TRACKING_PROTECTION_ONBOARDING_SKIP_SECURE_PAGE_CHECK =
             "TrackingProtectionOnboardingSkipSecurePageCheck";
     public static final String TRACKING_PROTECTION_3PCD = "TrackingProtection3pcd";
@@ -486,7 +492,8 @@ public abstract class ChromeFeatureList {
     public static final String VOICE_BUTTON_IN_TOP_TOOLBAR = "VoiceButtonInTopToolbar";
     public static final String VOICE_SEARCH_AUDIO_CAPTURE_POLICY = "VoiceSearchAudioCapturePolicy";
     public static final String WEBNOTES_STYLIZE = "WebNotesStylize";
-    public static final String WEB_APK_ALLOW_ICON_UPDATA = "WebApkAllowIconUpdate";
+    public static final String WEB_APK_ALLOW_ICON_UPDATE = "WebApkAllowIconUpdate";
+    public static final String WEB_APK_ICON_UPDATE_THRESHOLD = "WebApkIconUpdateThreshold";
     public static final String WEB_APK_INSTALL_SERVICE = "WebApkInstallService";
     public static final String WEB_APP_AMBIENT_BADGE_SUPRESS_FIRST_VISIT =
             "AmbientBadgeSuppressFirstVisit";
@@ -629,7 +636,9 @@ public abstract class ChromeFeatureList {
             new CachedFlag(TAB_DRAG_DROP_ANDROID, false);
     public static final CachedFlag sTabLinkDragDropAndroid =
             new CachedFlag(TAB_LINK_DRAG_DROP_ANDROID, false);
-    public static final CachedFlag sTabStripRedesign = new CachedFlag(TAB_STRIP_REDESIGN, false);
+    public static final CachedFlag sTabStripRedesign = new CachedFlag(TAB_STRIP_REDESIGN, true);
+    public static final CachedFlag sTabStateFlatBuffer =
+            new CachedFlag(TAB_STATE_FLATBUFFER, false);
     public static final CachedFlag sTabStripStartupRefactoring =
             new CachedFlag(TAB_STRIP_STARTUP_REFACTORING, false);
     public static final CachedFlag sTabletToolbarReordering =
@@ -717,6 +726,7 @@ public abstract class ChromeFeatureList {
                     sSurfacePolish,
                     sTabDragDropAsWindowAndroid,
                     sTabLinkDragDropAndroid,
+                    sTabStateFlatBuffer,
                     sTabStripRedesign,
                     sTabStripStartupRefactoring,
                     sTabletToolbarReordering,

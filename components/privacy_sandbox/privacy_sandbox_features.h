@@ -150,6 +150,11 @@ extern const base::FeatureParam<bool> kPrivacySandboxFirstPartySetsUISampleSets;
 COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
 BASE_DECLARE_FEATURE(kEnforcePrivacySandboxAttestations);
 
+// Enable the Privacy Sandbox Attestations to default allow when the
+// attestations map is absent.
+COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
+BASE_DECLARE_FEATURE(kDefaultAllowPrivacySandboxAttestations);
+
 // Gives a list of sites permission to use Privacy Sandbox features without
 // being officially enrolled.
 COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
@@ -165,10 +170,6 @@ BASE_DECLARE_FEATURE(
 COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
 BASE_DECLARE_FEATURE(kPrivacySandboxProactiveTopicsBlocking);
 
-// Forces profile eligibility for Tracking Protection Onboarding.
-COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
-BASE_DECLARE_FEATURE(kTrackingProtectionOnboardingForceEligibility);
-
 // Enables showing the rollback notice for Tracking Protection in settings.
 COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
 BASE_DECLARE_FEATURE(kTrackingProtectionSettingsPageRollbackNotice);
@@ -179,6 +180,15 @@ BASE_DECLARE_FEATURE(kTrackingProtectionSettingsPageRollbackNotice);
 COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
 BASE_DECLARE_FEATURE(kTrackingProtectionOnboardingSkipSecurePageCheck);
 #endif  // BUILDFLAG(IS_ANDROID)
+
+// Enables the Tracking protection Rollback flow.
+COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
+BASE_DECLARE_FEATURE(kTrackingProtectionOnboardingRollback);
+
+// Enables attribution reporting transitional debug reporting for the cookie
+// deprecation experiment.
+COMPONENT_EXPORT(PRIVACY_SANDBOX_FEATURES)
+BASE_DECLARE_FEATURE(kAttributionDebugReportingCookieDeprecationTesting);
 
 }  // namespace privacy_sandbox
 

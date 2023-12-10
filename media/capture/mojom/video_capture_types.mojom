@@ -289,8 +289,9 @@ enum VideoCaptureFrameDropReason {
   kResolutionAdapterHasNoCallbacks,
   kVideoTrackFrameDelivererNotEnabledReplacingWithBlackFrame,
   kRendererSinkFrameDelivererIsNotStarted,
-  [MinVersion=1] kCropVersionNotCurrent,
-  [MinVersion=5] kGpuMemoryBufferMapFailed
+  [MinVersion=1] kCropVersionNotCurrent_DEPRECATED,
+  [MinVersion=5] kGpuMemoryBufferMapFailed,
+  [MinVersion=12] kSubCaptureTargetVersionNotCurrent,
 };
 
 [Stable]
@@ -386,6 +387,11 @@ struct VideoCaptureDeviceDescriptor {
 struct VideoCaptureDeviceInfo {
   VideoCaptureDeviceDescriptor descriptor;
   array<VideoCaptureFormat> supported_formats;
+};
+
+enum SubCaptureTargetType {
+  kCropTarget,
+  kRestrictionTarget
 };
 
 // The result of an attempt by the client to start/stop cropping,

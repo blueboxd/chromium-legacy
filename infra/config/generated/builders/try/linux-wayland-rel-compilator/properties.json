@@ -7,7 +7,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Linux Builder (Wayland)",
-              "project": "chromium"
+              "project": "chromium-m120"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-linux-archive",
@@ -33,7 +33,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Linux Tests (Wayland)",
-              "project": "chromium"
+              "project": "chromium-m120"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-linux-archive",
@@ -56,7 +56,7 @@
               "parent": {
                 "bucket": "ci",
                 "builder": "Linux Builder (Wayland)",
-                "project": "chromium"
+                "project": "chromium-m120"
               }
             }
           }
@@ -66,14 +66,14 @@
         {
           "bucket": "ci",
           "builder": "Linux Builder (Wayland)",
-          "project": "chromium"
+          "project": "chromium-m120"
         }
       ],
       "builder_ids_in_scope_for_testing": [
         {
           "bucket": "ci",
           "builder": "Linux Tests (Wayland)",
-          "project": "chromium"
+          "project": "chromium-m120"
         }
       ]
     }
@@ -94,6 +94,15 @@
     "jobs": 500,
     "metrics_project": "chromium-reclient-metrics",
     "scandeps_server": true
+  },
+  "$build/siso": {
+    "configs": [
+      "builder"
+    ],
+    "enable_cloud_profiler": true,
+    "enable_cloud_trace": true,
+    "experiments": [],
+    "project": "rbe-chromium-untrusted"
   },
   "$recipe_engine/resultdb/test_presentation": {
     "column_keys": [],

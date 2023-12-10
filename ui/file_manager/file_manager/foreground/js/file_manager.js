@@ -24,10 +24,12 @@ import {getKeyModifiers, queryDecoratedElement, queryRequiredElement} from '../.
 import {FakeEntryImpl} from '../../common/js/files_app_entry_types.js';
 import {FilesAppState} from '../../common/js/files_app_state.js';
 import {FilteredVolumeManager} from '../../common/js/filtered_volume_manager.js';
+import {isDlpEnabled, isDriveFsBulkPinningEnabled, isGuestOsEnabled, isInlineSyncStatusEnabled, isJellyEnabled, isNewDirectoryTreeEnabled} from '../../common/js/flags.js';
 import {recordEnum, recordInterval, startInterval} from '../../common/js/metrics.js';
 import {ProgressItemState} from '../../common/js/progress_center_common.js';
+import {str} from '../../common/js/translations.js';
 import {TrashRootEntry} from '../../common/js/trash.js';
-import {str, util} from '../../common/js/util.js';
+import {getLastVisitedURL, isInGuestMode, runningInBrowser} from '../../common/js/util.js';
 import {AllowedPaths, VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {DirectoryTreeContainer} from '../../containers/directory_tree_container.js';
 import {NudgeType} from '../../containers/nudge_container.js';
@@ -609,7 +611,7 @@ export class FileManager extends EventTarget {
    * @return {string}
    */
   getLastVisitedURL() {
-    return util.getLastVisitedURL();
+    return getLastVisitedURL();
   }
 
   /**
@@ -635,13 +637,13 @@ export class FileManager extends EventTarget {
   }
 
   /**
-   * Updates guestMode_ field based on what the result of the util.isInGuestMode
+   * Updates guestMode_ field based on what the result of the isInGuestMode
    * helper function. It errs on the side of not-in-guestmode, if the util
    * function fails. The worse this causes are extra notifications.
    */
   async setGuestMode_() {
     try {
-      const guest = await util.isInGuestMode();
+      const guest = await isInGuestMode();
       if (guest !== null) {
         this.guestMode_ = guest;
       }
@@ -722,7 +724,7 @@ export class FileManager extends EventTarget {
     assert(this.fileOperationManager_);
     assert(this.dialogDom_);
 
-    if (util.isInlineSyncStatusEnabled()) {
+    if (isInlineSyncStatusEnabled()) {
       // @ts-ignore: error TS2322: Type 'MetadataModel | null' is not assignable
       // to type 'Object'.
       this.fileBrowserBackground_.driveSyncHandler.metadataModel =
@@ -845,7 +847,7 @@ export class FileManager extends EventTarget {
    * @private
    */
   async initBulkPinning_() {
-    if (!util.isDriveFsBulkPinningEnabled()) {
+    if (!isDriveFsBulkPinningEnabled()) {
       return;
     }
 
@@ -1033,7 +1035,7 @@ export class FileManager extends EventTarget {
     // Add theme attribute so widgets can render different styles based on
     // this attribute:
     // [theme="legacy"] -> Legacy style, [theme="refresh23"] -> Refresh23 style
-    const theme = util.isJellyEnabled() ? 'refresh23' : 'legacy';
+    const theme = isJellyEnabled() ? 'refresh23' : 'legacy';
     this.document_.documentElement.setAttribute('theme', theme);
     // @ts-ignore: error TS2531: Object is possibly 'null'.
     this.dialogDom_.setAttribute('theme', theme);
@@ -1130,7 +1132,7 @@ export class FileManager extends EventTarget {
     if (!loadTimeData.isInitialized()) {
       loadTimeData.data = this.fileBrowserBackground_.stringData;
     }
-    if (util.runningInBrowser()) {
+    if (runningInBrowser()) {
       this.fileBrowserBackground_.registerDialog(window);
     }
     this.fileOperationManager_ =
@@ -1414,8 +1416,7 @@ export class FileManager extends EventTarget {
    * @return {Promise<!Array<!VolumeManagerCommon.VolumeType>>}
    */
   async getDisabledVolumes_() {
-    if (this.dialogType !== DialogType.SELECT_SAVEAS_FILE ||
-        !util.isDlpEnabled()) {
+    if (this.dialogType !== DialogType.SELECT_SAVEAS_FILE || !isDlpEnabled()) {
       return [];
     }
     const caller = await getDialogCaller();
@@ -1442,7 +1443,7 @@ export class FileManager extends EventTarget {
         // @ts-ignore: error TS2531: Object is possibly 'null'.
         (this.dialogDom_.querySelector('#directory-tree'));
 
-    if (util.isNewDirectoryTreeEnabled()) {
+    if (isNewDirectoryTreeEnabled()) {
       const treeContainer = directoryTree.parentElement;
       directoryTree.remove();
       const directoryTreeContainer = new DirectoryTreeContainer(
@@ -1531,7 +1532,7 @@ export class FileManager extends EventTarget {
         // @ts-ignore: error TS2531: Object is possibly 'null'.
         maybeShowToast, this.ui_.toast);
 
-    if (util.isGuestOsEnabled()) {
+    if (isGuestOsEnabled()) {
       this.guestOsController_ = new GuestOsController(
           // @ts-ignore: error TS2345: Argument of type 'DirectoryModel | null'
           // is not assignable to parameter of type 'DirectoryModel'.
@@ -1756,7 +1757,7 @@ export class FileManager extends EventTarget {
 
     // If the resolved directory to be changed is blocked by DLP, we should
     // fallback to the default display root.
-    if (nextCurrentDirEntry && util.isDlpEnabled()) {
+    if (nextCurrentDirEntry && isDlpEnabled()) {
       const volumeInfo = this.volumeManager_.getVolumeInfo(nextCurrentDirEntry);
       if (volumeInfo && this.volumeManager_.isDisabled(volumeInfo.volumeType)) {
         console.warn('Target directory is DLP blocked, redirecting to MyFiles');
@@ -1817,7 +1818,7 @@ export class FileManager extends EventTarget {
 
     // If there is no target select MyFiles by default.
     if (!nextCurrentDirEntry) {
-      if (util.isNewDirectoryTreeEnabled()) {
+      if (isNewDirectoryTreeEnabled()) {
         const myFiles = getMyFiles(this.store_.getState());
         nextCurrentDirEntry = myFiles.myFilesEntry;
         // @ts-ignore: error TS2339: Property 'dataModel' does not exist on type
@@ -2033,7 +2034,7 @@ export class FileManager extends EventTarget {
 
     this.updateOfficePrefs_(prefs);
 
-    if (redraw && !util.isNewDirectoryTreeEnabled()) {
+    if (redraw && !isNewDirectoryTreeEnabled()) {
       // @ts-ignore: error TS2339: Property 'redraw' does not exist on type
       // 'XfTree | DirectoryTree'.
       this.ui_.directoryTree.redraw(false);
@@ -2114,7 +2115,7 @@ export class FileManager extends EventTarget {
       // properties from type 'FakeEntryImpl': label, disabled,
       // sourceRestriction, fileCategory, and 7 more.
       this.store_.dispatch(addUiEntry({entry: this.fakeTrashItem_.entry}));
-      if (!util.isNewDirectoryTreeEnabled()) {
+      if (!isNewDirectoryTreeEnabled()) {
         // @ts-ignore: error TS2339: Property 'dataModel' does not exist on type
         // 'XfTree | DirectoryTree'.
         this.ui_.directoryTree.dataModel.fakeTrashItem = this.fakeTrashItem_;
@@ -2123,7 +2124,7 @@ export class FileManager extends EventTarget {
     }
 
     this.store_.dispatch(removeUiEntry({key: trashRootKey}));
-    if (!util.isNewDirectoryTreeEnabled()) {
+    if (!isNewDirectoryTreeEnabled()) {
       // @ts-ignore: error TS2339: Property 'dataModel' does not exist on type
       // 'XfTree | DirectoryTree'.
       this.ui_.directoryTree.dataModel.fakeTrashItem = null;
@@ -2148,14 +2149,14 @@ export class FileManager extends EventTarget {
         this.fakeDriveItem_.disabled = this.volumeManager_.isDisabled(
             VolumeManagerCommon.VolumeType.DRIVE);
       }
-      if (!util.isNewDirectoryTreeEnabled()) {
+      if (!isNewDirectoryTreeEnabled()) {
         // @ts-ignore: error TS2339: Property 'dataModel' does not exist on type
         // 'XfTree | DirectoryTree'.
         this.ui_.directoryTree.dataModel.fakeDriveItem = this.fakeDriveItem_;
       }
       return;
     }
-    if (!util.isNewDirectoryTreeEnabled()) {
+    if (!isNewDirectoryTreeEnabled()) {
       // @ts-ignore: error TS2339: Property 'dataModel' does not exist on type
       // 'XfTree | DirectoryTree'.
       this.ui_.directoryTree.dataModel.fakeDriveItem = null;

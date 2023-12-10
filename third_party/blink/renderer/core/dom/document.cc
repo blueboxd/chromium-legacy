@@ -127,7 +127,6 @@
 #include "third_party/blink/renderer/core/dom/beforeunload_event_listener.h"
 #include "third_party/blink/renderer/core/dom/cdata_section.h"
 #include "third_party/blink/renderer/core/dom/comment.h"
-#include "third_party/blink/renderer/core/dom/css_toggle_inference.h"
 #include "third_party/blink/renderer/core/dom/document_data.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
@@ -689,7 +688,7 @@ ExplicitlySetAttrElementsMap* Document::GetExplicitlySetAttrElementsMap(
     add_result.stored_value->value =
         MakeGarbageCollected<ExplicitlySetAttrElementsMap>();
   }
-  return add_result.stored_value->value;
+  return add_result.stored_value->value.Get();
 }
 
 void Document::MoveElementExplicitlySetAttrElementsMapToNewDocument(
@@ -1434,8 +1433,8 @@ Node* Document::adoptNode(Node* source, ExceptionState& exception_state) {
         // The above removeChild() can execute arbitrary JavaScript code.
         if (source->parentNode()) {
           AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-              mojom::ConsoleMessageSource::kJavaScript,
-              mojom::ConsoleMessageLevel::kWarning,
+              ConsoleMessage::Source::kJavaScript,
+              ConsoleMessage::Level::kWarning,
               ExceptionMessages::FailedToExecute("adoptNode", "Document",
                                                  "Unable to remove the "
                                                  "specified node from the "
@@ -2480,42 +2479,6 @@ void Document::UpdateStyleAndLayoutForNode(const Node* node,
   UpdateStyleAndLayout(reason);
 }
 
-void Document::AddToRecalcStyleForToggle(Element* element) {
-  elements_needing_style_recalc_for_toggle_.insert(element);
-}
-
-bool Document::SetNeedsStyleRecalcForToggles() {
-  // TODO(crbug.com/1250716): We currently call this from
-  // LocalFrameView::RunCSSToggleSteps().  This is not ideal, but it produces
-  // behavior that's basically what we want, except for making
-  // getComputedStyle() produce correct results, which is hopefully fixable
-  // with future changes to PostStyleUpdateScope).  The behavior is also not
-  // yet well-defined; see https://github.com/tabatkins/css-toggle/issues/27
-  // for making this better.
-
-  if (elements_needing_style_recalc_for_toggle_.size() == 0)
-    return false;
-
-  HeapHashSet<Member<Element>> elements;
-  std::swap(elements_needing_style_recalc_for_toggle_, elements);
-
-  const auto& reason = StyleChangeReasonForTracing::CreateWithExtraData(
-      style_change_reason::kPseudoClass, style_change_extra_data::g_toggle);
-
-  for (auto element : elements) {
-    element->SetNeedsStyleRecalc(StyleChangeType::kSubtreeStyleChange, reason);
-  }
-
-  return true;
-}
-
-CSSToggleInference& Document::EnsureCSSToggleInference() {
-  if (!css_toggle_inference_) {
-    css_toggle_inference_ = MakeGarbageCollected<CSSToggleInference>(this);
-  }
-  return *css_toggle_inference_;
-}
-
 DocumentPartRoot& Document::getPartRoot() {
   return EnsureDocumentPartRoot();
 }
@@ -2769,8 +2732,6 @@ const ComputedStyle* Document::StyleForPage(uint32_t page_index) {
 
 const ComputedStyle* Document::StyleForPage(uint32_t page_index,
                                             const AtomicString& page_name) {
-  GetStyleEngine().UpdateViewportSize();
-  GetStyleEngine().UpdateActiveStyle();
   return GetStyleEngine().GetStyleResolver().StyleForPage(page_index,
                                                           page_name);
 }
@@ -2783,11 +2744,14 @@ void Document::EnsurePaintLocationDataValidForNode(
 
 void Document::GetPageDescription(uint32_t page_index,
                                   WebPrintPageDescription* description) {
-  GetPageDescription(*StyleForPage(page_index), description);
+  View()->UpdateLifecycleToLayoutClean(DocumentUpdateReason::kUnknown);
+  GetPageDescriptionNoLifecycleUpdate(*StyleForPage(page_index), description);
 }
 
-void Document::GetPageDescription(const ComputedStyle& style,
-                                  WebPrintPageDescription* description) {
+void Document::GetPageDescriptionNoLifecycleUpdate(
+    const ComputedStyle& style,
+    WebPrintPageDescription* description) {
+  DocumentLifecycle::DisallowTransitionScope scope(Lifecycle());
   const WebPrintPageDescription input_description = *description;
 
   switch (style.GetPageSizeType()) {
@@ -3189,6 +3153,14 @@ void Document::AddAXContext(AXContext* context) {
   if (!ax_object_cache_) {
     ax_object_cache_ =
         AXObjectCache::Create(*this, ComputeAXModeFromAXContexts(ax_contexts_));
+    // Invalidate style on the entire document, because accessibility
+    // needs to compute style on all elements, even those in
+    // content-visibility:auto subtrees.
+    if (documentElement()) {
+      documentElement()->SetNeedsStyleRecalc(
+          kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
+                                   style_change_reason::kAccessibility));
+    }
     g_ax_object_cache_count++;
   }
 }
@@ -3619,7 +3591,7 @@ DocumentParser* Document::ImplicitOpen(
     load_event_progress_ = kLoadEventNotRun;
   }
   DispatchHandleLoadStart();
-  return parser_;
+  return parser_.Get();
 }
 
 void Document::DispatchHandleLoadStart() {
@@ -4347,8 +4319,7 @@ void Document::write(const String& text,
   if (!has_insertion_point) {
     if (ignore_destructive_write_count_) {
       AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-          mojom::ConsoleMessageSource::kJavaScript,
-          mojom::ConsoleMessageLevel::kWarning,
+          ConsoleMessage::Source::kJavaScript, ConsoleMessage::Level::kWarning,
           ExceptionMessages::FailedToExecute(
               "write", "Document",
               "It isn't possible to write into a document "
@@ -4549,11 +4520,11 @@ KURL Document::FallbackBaseURL() const {
     }
   }
 
-  // [spec] 2. If document's URL is about:blank, and document's browsing
-  //           context's creator base URL is non-null, then return that creator
-  //           base URL.
+  // [spec] 2. If document's URL matches about:blank and document's about base
+  //           URL is non-null, then return document's about base URL.
   if (urlForBinding().IsAboutBlankURL()) {
-    if (!dom_window_ && execution_context_) {
+    if (!RuntimeEnabledFeatures::DocumentBaseURIFixEnabled() && !dom_window_ &&
+        execution_context_) {
       return execution_context_->BaseURL();
     }
 
@@ -4630,8 +4601,7 @@ void Document::ProcessBaseElement() {
         base_element_url.ProtocolIsJavaScript()) {
       UseCounter::Count(*this, WebFeature::kBaseWithDataHref);
       AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-          mojom::ConsoleMessageSource::kSecurity,
-          mojom::ConsoleMessageLevel::kError,
+          ConsoleMessage::Source::kSecurity, ConsoleMessage::Level::kError,
           "'" + base_element_url.Protocol() +
               "' URLs may not be used as base URLs for a document."));
     }
@@ -4737,8 +4707,8 @@ void Document::MaybeHandleHttpRefresh(const String& content,
     String message =
         "Refused to refresh " + url_.ElidedString() + " to a javascript: URL";
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::ConsoleMessageSource::kSecurity,
-        mojom::ConsoleMessageLevel::kError, message));
+        ConsoleMessage::Source::kSecurity, ConsoleMessage::Level::kError,
+        message));
     return;
   }
 
@@ -4750,8 +4720,8 @@ void Document::MaybeHandleHttpRefresh(const String& content,
         "http-equiv='refresh' content='...'>'. The document is sandboxed, and "
         "the 'allow-scripts' keyword is not set.";
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::ConsoleMessageSource::kSecurity,
-        mojom::ConsoleMessageLevel::kError, message));
+        ConsoleMessage::Source::kSecurity, ConsoleMessage::Level::kError,
+        message));
     return;
   }
 
@@ -5208,11 +5178,12 @@ bool Document::SetFocusedElement(Element* new_focused_element,
   Element* old_focused_element = focused_element_;
   focused_element_ = nullptr;
 
-  Node* ancestor = (old_focused_element && old_focused_element->isConnected() &&
-                    new_focused_element)
-                       ? FlatTreeTraversal::CommonAncestor(*old_focused_element,
-                                                           *new_focused_element)
-                       : nullptr;
+  Element* ancestor =
+      (old_focused_element && old_focused_element->isConnected() &&
+       new_focused_element)
+          ? DynamicTo<Element>(FlatTreeTraversal::CommonAncestor(
+                *old_focused_element, *new_focused_element))
+          : nullptr;
 
   // Remove focus from the existing focus node (if any)
   if (old_focused_element) {
@@ -6128,8 +6099,7 @@ void Document::setDomain(const String& raw_domain,
 
   if (Agent::IsCrossOriginIsolated()) {
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kSecurity,
-        mojom::blink::ConsoleMessageLevel::kWarning,
+        ConsoleMessage::Source::kSecurity, ConsoleMessage::Level::kWarning,
         "document.domain mutation is ignored because the surrounding agent "
         "cluster is cross-origin isolated."));
     return;
@@ -6138,8 +6108,7 @@ void Document::setDomain(const String& raw_domain,
   if (RuntimeEnabledFeatures::OriginIsolationHeaderEnabled(dom_window_) &&
       dom_window_->GetAgent()->IsOriginKeyed()) {
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kSecurity,
-        mojom::blink::ConsoleMessageLevel::kWarning,
+        ConsoleMessage::Source::kSecurity, ConsoleMessage::Level::kWarning,
         "document.domain mutation is ignored because the surrounding agent "
         "cluster is origin-keyed."));
     return;
@@ -6264,8 +6233,19 @@ net::SiteForCookies Document::SiteForCookies() const {
   if (!origin)
     return net::SiteForCookies();
 
-  net::SiteForCookies candidate =
-      net::SiteForCookies::FromOrigin(origin->ToUrlOrigin());
+  // Fake a 1P site for cookies for top-level documents that are rendering media
+  // like images or video. We do so because when third-party cookie blocking is
+  // enabled, access-controlled media cannot be rendered. We only make this
+  // exception in this special case to minimize security/privacy risk.
+  url::Origin url_origin = origin->ToUrlOrigin();
+  if (url_origin.opaque() &&
+      !url_origin.GetTupleOrPrecursorTupleIfOpaque().host().empty() &&
+      override_site_for_cookies_for_csp_media_) {
+    return net::SiteForCookies::FromOrigin(url::Origin::Create(
+        url_origin.GetTupleOrPrecursorTupleIfOpaque().GetURL()));
+  }
+
+  net::SiteForCookies candidate = net::SiteForCookies::FromOrigin(url_origin);
 
   if (SchemeRegistry::ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
           origin->Protocol())) {
@@ -6379,8 +6359,7 @@ ScriptPromise Document::requestStorageAccessFor(ScriptState* script_state,
 
   if (!IsInOutermostMainFrame()) {
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kSecurity,
-        mojom::blink::ConsoleMessageLevel::kError,
+        ConsoleMessage::Source::kSecurity, ConsoleMessage::Level::kError,
         "requestStorageAccessFor: Only supported in primary top-level "
         "browsing contexts."));
     FireRequestStorageAccessForHistogram(
@@ -6393,8 +6372,7 @@ ScriptPromise Document::requestStorageAccessFor(ScriptState* script_state,
 
   if (dom_window_->GetSecurityOrigin()->IsOpaque()) {
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kSecurity,
-        mojom::blink::ConsoleMessageLevel::kError,
+        ConsoleMessage::Source::kSecurity, ConsoleMessage::Level::kError,
         "requestStorageAccessFor: Cannot be used by opaque origins."));
 
     FireRequestStorageAccessForHistogram(
@@ -6411,8 +6389,7 @@ ScriptPromise Document::requestStorageAccessFor(ScriptState* script_state,
 
   if (!dom_window_->isSecureContext()) {
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kSecurity,
-        mojom::blink::ConsoleMessageLevel::kError,
+        ConsoleMessage::Source::kSecurity, ConsoleMessage::Level::kError,
         "requestStorageAccessFor: May not be used in an insecure "
         "context."));
     FireRequestStorageAccessForHistogram(
@@ -6429,8 +6406,7 @@ ScriptPromise Document::requestStorageAccessFor(ScriptState* script_state,
       SecurityOrigin::Create(origin_as_kurl);
   if (supplied_origin->IsOpaque()) {
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kSecurity,
-        mojom::blink::ConsoleMessageLevel::kError,
+        ConsoleMessage::Source::kSecurity, ConsoleMessage::Level::kError,
         "requestStorageAccessFor: Invalid origin parameter."));
     FireRequestStorageAccessForHistogram(
         RequestStorageResult::REJECTED_OPAQUE_ORIGIN);
@@ -6495,8 +6471,7 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
 
   if (!dom_window_->isSecureContext()) {
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kSecurity,
-        mojom::blink::ConsoleMessageLevel::kError,
+        ConsoleMessage::Source::kSecurity, ConsoleMessage::Level::kError,
         "requestStorageAccess: May not be used in an insecure context."));
     FireRequestStorageAccessHistogram(
         RequestStorageResult::REJECTED_INSECURE_CONTEXT);
@@ -6519,8 +6494,7 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
 
   if (dom_window_->GetSecurityOrigin()->IsOpaque()) {
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kSecurity,
-        mojom::blink::ConsoleMessageLevel::kError,
+        ConsoleMessage::Source::kSecurity, ConsoleMessage::Level::kError,
         "requestStorageAccess: Cannot be used by opaque origins."));
     FireRequestStorageAccessHistogram(
         RequestStorageResult::REJECTED_OPAQUE_ORIGIN);
@@ -6533,8 +6507,7 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
 
   if (dom_window_->credentialless()) {
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kSecurity,
-        mojom::blink::ConsoleMessageLevel::kError,
+        ConsoleMessage::Source::kSecurity, ConsoleMessage::Level::kError,
         "requestStorageAccess: May not be used in a credentialless iframe"));
     FireRequestStorageAccessHistogram(
         RequestStorageResult::REJECTED_CREDENTIALLESS_IFRAME);
@@ -6548,8 +6521,7 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
   if (dom_window_->IsSandboxed(network::mojom::blink::WebSandboxFlags::
                                    kStorageAccessByUserActivation)) {
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kSecurity,
-        mojom::blink::ConsoleMessageLevel::kError,
+        ConsoleMessage::Source::kSecurity, ConsoleMessage::Level::kError,
         dom_window_->GetFrame()->IsInFencedFrameTree()
             ? "requestStorageAccess: Refused to execute request. The document "
               "is in a fenced frame tree."
@@ -6603,8 +6575,7 @@ void Document::ProcessStorageAccessPermissionState(
     FireRequestStorageAccessHistogram(
         RequestStorageResult::REJECTED_GRANT_DENIED);
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kSecurity,
-        mojom::blink::ConsoleMessageLevel::kError,
+        ConsoleMessage::Source::kSecurity, ConsoleMessage::Level::kError,
         "requestStorageAccess: Permission denied."));
     resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
         script_state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
@@ -6630,8 +6601,7 @@ void Document::ProcessTopLevelStorageAccessPermissionState(
     FireRequestStorageAccessForHistogram(
         RequestStorageResult::REJECTED_GRANT_DENIED);
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kSecurity,
-        mojom::blink::ConsoleMessageLevel::kError,
+        ConsoleMessage::Source::kSecurity, ConsoleMessage::Level::kError,
         "requestStorageAccessFor: Permission denied."));
     resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
         script_state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
@@ -8825,9 +8795,6 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(popover_pointerdown_target_);
   visitor->Trace(popovers_waiting_to_hide_);
   visitor->Trace(all_open_popovers_);
-  visitor->Trace(elements_with_css_toggles_);
-  visitor->Trace(elements_needing_style_recalc_for_toggle_);
-  visitor->Trace(css_toggle_inference_);
   visitor->Trace(document_part_root_);
   visitor->Trace(load_event_delay_timer_);
   visitor->Trace(plugin_loading_timer_);
@@ -9325,6 +9292,15 @@ Document* Document::parseHTMLUnsafe(ExecutionContext* context,
   doc->SetContent(html);
   doc->SetMimeType(AtomicString(kTextHtml));
   return doc;
+}
+
+void Document::SetOverrideSiteForCookiesForCSPMedia(bool value) {
+  CHECK(IsMediaDocument());
+  // Only top-level documents can use this method.
+  if (!GetFrame() || !GetFrame()->IsMainFrame()) {
+    return;
+  }
+  override_site_for_cookies_for_csp_media_ = value;
 }
 
 template class CORE_TEMPLATE_EXPORT Supplement<Document>;

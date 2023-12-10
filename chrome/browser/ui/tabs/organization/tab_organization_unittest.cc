@@ -196,6 +196,13 @@ TEST_F(TabOrganizationTest, TabDataWebContentsDeletionIsNotValidForOrganizing) {
 
 // TabOrganization tests.
 
+TEST_F(TabOrganizationTest, TabOrganizationIDs) {
+  TabOrganization organization_1({}, {u"default_name"}, 0, absl::nullopt);
+  TabOrganization organization_2({}, {u"default_name"}, 0, absl::nullopt);
+
+  EXPECT_NE(organization_1.organization_id(), organization_2.organization_id());
+}
+
 TEST_F(TabOrganizationTest, TabOrganizationAddingTabData) {
   TabOrganization organization({}, {u"default_name"}, 0, absl::nullopt);
   EXPECT_EQ(static_cast<int>(organization.tab_datas().size()), 0);
@@ -344,6 +351,14 @@ TEST_F(TabOrganizationTest, TabOrganizationRequestOnCancelRequest) {
 
 // TabOrganizationSession Tests.
 
+TEST_F(TabOrganizationTest, TabOrganizationSessionIDs) {
+  std::unique_ptr<TabOrganizationSession> session1 =
+      std::make_unique<TabOrganizationSession>();
+  std::unique_ptr<TabOrganizationSession> session2 =
+      std::make_unique<TabOrganizationSession>();
+  EXPECT_NE(session1->session_id(), session2->session_id());
+}
+
 TEST_F(TabOrganizationTest,
        TabOrganizationSessionDestructionCancelsRequestIfStarted) {
   bool cancel_called = false;
@@ -355,7 +370,7 @@ TEST_F(TabOrganizationTest,
                                  }));
 
   std::unique_ptr<TabOrganizationSession> session =
-      std::make_unique<TabOrganizationSession>(std::move(request));
+      std::make_unique<TabOrganizationSession>(nullptr, std::move(request));
   session->StartRequest();
   session.reset();
 
@@ -365,7 +380,7 @@ TEST_F(TabOrganizationTest,
 TEST_F(TabOrganizationTest, TabOrganizationSessionGetNextTabOrganization) {
   std::unique_ptr<TabOrganizationSession> session =
       std::make_unique<TabOrganizationSession>(
-          std::make_unique<TabOrganizationRequest>());
+          nullptr, std::make_unique<TabOrganizationRequest>());
 
   EXPECT_EQ(session->GetNextTabOrganization(), nullptr);
 
@@ -388,7 +403,7 @@ TEST_F(TabOrganizationTest,
        TabOrganizationSessionGetNextTabOrganizationAfterAccept) {
   std::unique_ptr<TabOrganizationSession> session =
       std::make_unique<TabOrganizationSession>(
-          std::make_unique<TabOrganizationRequest>());
+          nullptr, std::make_unique<TabOrganizationRequest>());
 
   EXPECT_EQ(session->GetNextTabOrganization(), nullptr);
 
@@ -414,7 +429,7 @@ TEST_F(TabOrganizationTest,
        TabOrganizationSessionGetNextTabOrganizationAfterReject) {
   std::unique_ptr<TabOrganizationSession> session =
       std::make_unique<TabOrganizationSession>(
-          std::make_unique<TabOrganizationRequest>());
+          nullptr, std::make_unique<TabOrganizationRequest>());
 
   EXPECT_EQ(session->GetNextTabOrganization(), nullptr);
 
@@ -464,7 +479,7 @@ TEST_F(TabOrganizationTest,
   // Create the session.
   TabOrganizationRequest* request_ptr = request.get();
   std::unique_ptr<TabOrganizationSession> session =
-      std::make_unique<TabOrganizationSession>(std::move(request));
+      std::make_unique<TabOrganizationSession>(nullptr, std::move(request));
 
   // Create the a response that uses the invalid tab.
   std::vector<TabData::TabID> tab_ids{valid_tab_data_id_1, valid_tab_data_id_2,
@@ -526,7 +541,7 @@ TEST_F(TabOrganizationTest,
   // Create the session.
   TabOrganizationRequest* request_ptr = request.get();
   std::unique_ptr<TabOrganizationSession> session =
-      std::make_unique<TabOrganizationSession>(std::move(request));
+      std::make_unique<TabOrganizationSession>(nullptr, std::move(request));
 
   // Create the a response that uses the missing tab.
   std::vector<TabData::TabID> tab_ids{valid_tab_data_id_1, valid_tab_data_id_2,
@@ -577,7 +592,7 @@ TEST_F(TabOrganizationTest, TabOrganizationSessionCreation) {
       std::make_unique<TabData>(tab_strip_model(), tab_to_not_group));
 
   std::unique_ptr<TabOrganizationSession> session =
-      std::make_unique<TabOrganizationSession>(std::move(request));
+      std::make_unique<TabOrganizationSession>(nullptr, std::move(request));
 
   std::vector<TabOrganizationResponse::Organization> response_organizations;
   TabOrganizationResponse::Organization organization(

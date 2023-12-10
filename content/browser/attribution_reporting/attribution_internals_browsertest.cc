@@ -229,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   EXPECT_CALL(browser_client,
               IsAttributionReportingOperationAllowed(
                   _, ContentBrowserClient::AttributionReportingOperation::kAny,
-                  _, IsNull(), IsNull(), IsNull()))
+                  _, IsNull(), IsNull(), IsNull(), IsNull()))
       .WillRepeatedly(Return(false));
 
   ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
@@ -308,6 +308,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
               .SetSourceEventId(std::numeric_limits<uint64_t>::max())
               .SetAttributionLogic(StoredSource::AttributionLogic::kNever)
               .SetDebugKey(19)
+              .SetDebugCookieSet(true)
               .SetDestinationSites({
                   net::SchemefulSite::Deserialize("https://a.test"),
                   net::SchemefulSite::Deserialize("https://b.test"),
@@ -381,16 +382,19 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
           table.children[1].children[12]?.innerText === '{\n "a": [\n  "b",\n  "c"\n ]\n}' &&
           table.children[0].children[13]?.innerText === '{}' &&
           table.children[1].children[13]?.innerText === '{\n "a": "0x1"\n}' &&
-          table.children[0].children[14]?.innerText === '0 / 65536' &&
-          table.children[1].children[14]?.innerText === '1300 / 65536' &&
-          table.children[0].children[15]?.innerText === '19' &&
-          table.children[1].children[15]?.innerText === '' &&
-          table.children[0].children[16]?.innerText === '' &&
-          table.children[1].children[16]?.children[0]?.children[0]?.innerText === '13' &&
-          table.children[1].children[16]?.children[0]?.children[1]?.innerText === '17' &&
-          table.children[0].children[17]?.innerText === '' &&
-          table.children[1].children[17]?.children[0]?.children[0]?.innerText === '14' &&
-          table.children[1].children[17]?.children[0]?.children[1]?.innerText === '18' &&
+          table.children[0].children[14]?.innerText === 'modulus' &&
+          table.children[0].children[15]?.innerText === '0 / 65536' &&
+          table.children[1].children[15]?.innerText === '1300 / 65536' &&
+          table.children[0].children[16]?.innerText === '19' &&
+          table.children[1].children[16]?.innerText === '' &&
+          table.children[0].children[17]?.innerText === 'true' &&
+          table.children[1].children[17]?.innerText === 'false' &&
+          table.children[0].children[18]?.innerText === '' &&
+          table.children[1].children[18]?.children[0]?.children[0]?.innerText === '13' &&
+          table.children[1].children[18]?.children[0]?.children[1]?.innerText === '17' &&
+          table.children[0].children[19]?.innerText === '' &&
+          table.children[1].children[19]?.children[0]?.children[0]?.innerText === '14' &&
+          table.children[1].children[19]?.children[0]?.children[1]?.innerText === '18' &&
           table.children[0].children[1]?.innerText === 'Unattributable: noised with no reports' &&
           table.children[1].children[1]?.innerText === 'Attributable' &&
           table.children[2].children[1]?.innerText === 'Attributable: reached event-level attribution limit' &&

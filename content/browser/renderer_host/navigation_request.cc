@@ -241,7 +241,8 @@ const char kIsolatedAppCSP[] =
     "style-src 'self' 'unsafe-inline';"
     "require-trusted-types-for 'script';";
 
-const char kSharedStorageWritableRequestHeaderKey[] = "Shared-Storage-Writable";
+const char kSecSharedStorageWritableRequestHeaderKey[] =
+    "Sec-Shared-Storage-Writable";
 
 // Denotes the type of user agent string value sent in the User-Agent request
 // header.
@@ -976,8 +977,9 @@ network::mojom::WebSandboxFlags GetSandboxFlagsInitiator(
   return policy_container_host->policies().sandbox_flags;
 }
 
-bool IsSharedStorageWritableForNavigationRequest(FrameTreeNode* frame_tree_node,
-                                                 const GURL& url) {
+bool IsSharedStorageWritableEligibleForNavigationRequest(
+    FrameTreeNode* frame_tree_node,
+    const GURL& url) {
   // False if the <iframe> does not have the "sharedstoragewritable" opt-in
   // attribute.
   if (!frame_tree_node->shared_storage_writable()) {
@@ -1294,7 +1296,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           /*not_restored_reasons=*/nullptr,
           /*load_with_storage_access=*/load_with_storage_access,
           /*browsing_context_group_info=*/absl::nullopt,
-          /*lcpp_hint=*/nullptr, blink::CreateDefaultRendererContentSettings());
+          /*lcpp_hint=*/nullptr, blink::CreateDefaultRendererContentSettings(),
+          /*cookie_deprecation_label=*/absl::nullopt);
 
   commit_params->navigation_timing->system_entropy_at_navigation_start =
       SystemEntropyUtils::ComputeSystemEntropyForFrameTreeNode(
@@ -1438,7 +1441,8 @@ NavigationRequest::CreateForSynchronousRendererCommit(
           /*not_restored_reasons=*/nullptr,
           /*load_with_storage_access=*/false,
           /*browsing_context_group_info=*/absl::nullopt,
-          /*lcpp_hint=*/nullptr, blink::CreateDefaultRendererContentSettings());
+          /*lcpp_hint=*/nullptr, blink::CreateDefaultRendererContentSettings(),
+          /*cookie_deprecation_label=*/absl::nullopt);
   blink::mojom::BeginNavigationParamsPtr begin_params =
       blink::mojom::BeginNavigationParams::New();
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
@@ -1668,8 +1672,11 @@ NavigationRequest::NavigationRequest(
 
   if (base::FeatureList::IsEnabled(blink::features::kSharedStorageAPI) &&
       base::FeatureList::IsEnabled(blink::features::kSharedStorageAPIM118)) {
-    shared_storage_writable_ = IsSharedStorageWritableForNavigationRequest(
-        frame_tree_node_, common_params_->url);
+    shared_storage_writable_opted_in_ =
+        frame_tree_node_->shared_storage_writable();
+    shared_storage_writable_eligible_ =
+        IsSharedStorageWritableEligibleForNavigationRequest(
+            frame_tree_node_, common_params_->url);
   }
 
   if (from_begin_navigation_) {
@@ -2234,6 +2241,11 @@ void NavigationRequest::BeginNavigation() {
     // NavigationRequest.
     return;
   }
+
+  // Send any potential navigation start automatic beacons for this frame.
+  frame_tree_node_->current_frame_host()
+      ->MaybeSendFencedFrameAutomaticReportingBeacon(
+          *this, blink::mojom::AutomaticBeaconType::kTopNavigationStart);
 
   // Log a histogram for a top-level navigation that initiates from a fenced
   // frame or URN iframe.
@@ -3337,6 +3349,15 @@ bool NavigationRequest::ExistingDocumentWasDiscarded() const {
 void NavigationRequest::SetContentSettings(
     blink::mojom::RendererContentSettingsPtr content_settings) {
   commit_params_->content_settings = std::move(content_settings);
+}
+
+blink::mojom::RendererContentSettingsPtr
+NavigationRequest::GetContentSettingsForTesting() {
+  return commit_params_->content_settings->Clone();
+}
+
+void NavigationRequest::SetIsAdTagged() {
+  is_ad_tagged_ = true;
 }
 
 void NavigationRequest::CheckForIsolationOptIn(const GURL& url) {
@@ -4949,7 +4970,7 @@ void NavigationRequest::OnStartChecksComplete(
           devtools_accepted_stream_types, is_pdf_, GetInitiatorProcessId(),
           initiator_document_token_, GetPreviousRenderFrameHostId(),
           allow_cookies_from_browser_, navigation_id_,
-          shared_storage_writable_),
+          shared_storage_writable_eligible_, is_ad_tagged_),
       std::move(navigation_ui_data), service_worker_handle_.get(),
       std::move(prefetched_signed_exchange_cache_), this, loader_type,
       CreateCookieAccessObserver(), CreateTrustTokenAccessObserver(),
@@ -5125,13 +5146,23 @@ void NavigationRequest::OnRedirectChecksComplete(
                                *topics_header_value);
   }
 
-  if (shared_storage_writable_) {
+  if (shared_storage_writable_opted_in_) {
     // On a redirect, the PermissionsPolicy may change the status of this
     // request's Shared Storage eligibility, so we need to re-compute it.
-    shared_storage_writable_ = IsSharedStorageWritableForNavigationRequest(
-        frame_tree_node_, common_params_->url);
-    if (!shared_storage_writable_) {
-      removed_headers.push_back(kSharedStorageWritableRequestHeaderKey);
+    bool previous_shared_storage_writable_eligible =
+        shared_storage_writable_eligible_;
+    shared_storage_writable_eligible_ =
+        IsSharedStorageWritableEligibleForNavigationRequest(
+            frame_tree_node_, common_params_->url);
+
+    if (shared_storage_writable_eligible_ !=
+        previous_shared_storage_writable_eligible) {
+      if (shared_storage_writable_eligible_) {
+        modified_headers.SetHeader(kSecSharedStorageWritableRequestHeaderKey,
+                                   "?1");
+      } else {
+        removed_headers.push_back(kSecSharedStorageWritableRequestHeaderKey);
+      }
     }
   }
 
@@ -6056,10 +6087,21 @@ bool NavigationRequest::IsAllowedByCSPDirective(
   } else {
     url = common_params_->url;
   }
-  return context->IsAllowedByCsp(
+  network::CSPCheckResult result = context->IsAllowedByCsp(
       policies, directive, url, commit_params_->original_url,
       has_followed_redirect, is_response_check, common_params_->source_location,
       disposition, begin_params_->is_form_submission, is_opaque_fenced_frame);
+  if (result.WouldBlockIfWildcardDoesNotMatchWs()) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        GetParentFrame(),
+        blink::mojom::WebFeature::kCspWouldBlockIfWildcardDoesNotMatchWs);
+  }
+  if (result.WouldBlockIfWildcardDoesNotMatchFtp()) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        GetParentFrame(),
+        blink::mojom::WebFeature::kCspWouldBlockIfWildcardDoesNotMatchFtp);
+  }
+  return result.IsAllowed();
 }
 
 net::Error NavigationRequest::CheckCSPDirectives(
@@ -7141,8 +7183,8 @@ void NavigationRequest::UpdatePrivateNetworkRequestPolicy() {
   // as pages served from the back-forward cache or prerendered pages.
   DCHECK(!IsSameDocument());
   DCHECK(!IsPageActivation());
-
-  if (GetSocketAddress().address().IsZero()) {
+  if (GetSocketAddress().address().IsValid() &&
+      GetSocketAddress().address().IsZero()) {
     web_features_to_log_.push_back(
         blink::mojom::WebFeature::kPrivateNetworkAccessNullIpAddress);
   }
@@ -8771,10 +8813,8 @@ void NavigationRequest::OnCookiesAccessed(
     // TODO(721329): We should not send information to the current frame about
     // (potentially unrelated) ongoing navigation, but at the moment we don't
     // have another way to add messages to DevTools console.
-    for (size_t i = 0; i < details->count; ++i) {
-      EmitCookieWarningsAndMetrics(frame_tree_node()->current_frame_host(),
-                                   details);
-    }
+    EmitCookieWarningsAndMetrics(frame_tree_node()->current_frame_host(),
+                                 details);
 
     CookieAccessDetails allowed;
     CookieAccessDetails blocked;

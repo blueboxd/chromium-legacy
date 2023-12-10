@@ -42,6 +42,7 @@
 <translation id="1290331692326790741">کمزور سگنل</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1308754910631152188">اپ ڈیٹ ہو رہا ہے (<ph name="PERCENTAGE_VALUE" />% مکمل)</translation>
+<translation id="1309341072016605398"><ph name="MINUTES" /> منٹ</translation>
 <translation id="1310380015393971138">کوئی <ph name="NETWORK_NAME" /> نیٹ ورک دستیاب نہیں</translation>
 <translation id="131421566576084655">آخری ڈیٹا ری سیٹ کی تاریخ دستیاب نہیں ہے</translation>
 <translation id="1314565355471455267">Android VPN</translation>
@@ -86,6 +87,7 @@
 <translation id="1572585716423026576">بطور وال پیپر سیٹ کریں</translation>
 <translation id="1578784163189013834">اسکرین سیور کا پس منظر منتخب کریں</translation>
 <translation id="160633243685262989">تصویر کا پیش منظر دیکھیں</translation>
+<translation id="1611649489706141841">فارورڈ کریں</translation>
 <translation id="1615335640928990664"><ph name="FRIENDLY_DATE" /> سے ڈیٹا کا استعمال</translation>
 <translation id="1621067168122174824">چارج ٹیسٹ چلائیں</translation>
 <translation id="1639239467298939599">لوڈ ہو رہی ہے</translation>
@@ -187,6 +189,7 @@
 <translation id="2236746079896696523">کی بورڈ بیک لائٹ ٹوگل کریں</translation>
 <translation id="2240366984605217732">لے آؤٹ کو سوئچ کرنے کی کلید</translation>
 <translation id="225692081236532131">فعالیت کی صورتحال</translation>
+<translation id="2267285889943769271">اسکرین شاٹ شامل کریں</translation>
 <translation id="2271469253353559191">تاریک وضع شیڈول</translation>
 <translation id="2276999893457278469">سرفہرست مددگار مواد</translation>
 <translation id="2279051792571591988">ڈیفالٹس کو بحال کریں</translation>
@@ -288,6 +291,7 @@
 <translation id="3226405216343213872">اسکینرز کی تلاش جاری ہے</translation>
 <translation id="3226657629376379887">لے آؤٹ کارروائیوں کا مینیو</translation>
 <translation id="3246869037381808805">1 دن سے پرانی پرنٹ جابز کو ہٹا دیا جائے گا</translation>
+<translation id="324961752321393509">آپ کا منتظم اس ایپ کو بند کرنے کی اجازت نہیں دیتا ہے</translation>
 <translation id="3268178239013324452">ناکام ہو گیا - دروازہ کھلا ہے</translation>
 <translation id="3275729367986477355">اوتار کی تصویر</translation>
 <translation id="3283504360622356314">{0,plural, =1{فائل میں ترمیم کریں}other{فائلز میں ترمیم کریں}}</translation>
@@ -429,6 +433,7 @@
 <translation id="4297501883039923494">رک گیا - نامعلوم خرابی</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> تصاویر</translation>
 <translation id="4333390807948134856"><ph name="KEY_NAME" /> کلید دبائی گئی</translation>
+<translation id="4354430579665871434">کلید</translation>
 <translation id="435692326371619097">‏نیٹ ورک APN کی ترتیبات کا نظم کریں۔ APNs سیلولر نیٹ ورک اور انٹرنیٹ کے درمیان رابطہ قائم کرتے ہیں۔ <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" /></translation>
 <translation id="437294888293595148">تمام شارٹ کٹس کو ری سیٹ کریں</translation>
 <translation id="4378373042927530923">نہیں چلا</translation>
@@ -691,9 +696,11 @@
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">گہری تھیم آن کریں</translation>
 <translation id="628726841779494414">پرنٹر کی ترتیبات میں اپنے پرنٹرز کا نظم کریں</translation>
+<translation id="6292095526077353682">چارج کرتے وقت، اس کیلئے اسکرین سیور دکھائیں</translation>
 <translation id="629550705077076970">مدھم کی بورڈ</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" /> ٹیسٹ منسوخ کر دیا گیا ہے</translation>
 <translation id="631063167932043783">ایکسپلور ایپ</translation>
+<translation id="6318437367327684789">ہمیشہ کے لیے</translation>
 <translation id="6319207335391420837"><ph name="DEVICE_NAME" /> پر فرم ویئر اپ ڈیٹ کریں</translation>
 <translation id="6321407676395378991">اسکرین سیور آن کریں</translation>
 <translation id="6324916366299863871">شارٹ کٹ میں ترمیم کریں</translation>
@@ -943,6 +950,7 @@
 <translation id="8227119283605456246">فائل منسلک کریں</translation>
 <translation id="8230672074305416752">ڈیفالٹ نیٹ ورک گیٹ وے کو پنگ کرنے میں ناکام</translation>
 <translation id="8246209727385807362">نامعلوم کیریئر</translation>
+<translation id="8262870577632766028">1 گھنٹہ</translation>
 <translation id="827422111966801947">گہرا نیلا</translation>
 <translation id="8286154143153872371">براہ کرم کسی نیٹ ورک سے منسلک ہوں اور وال پیپر دیکھنے کے لیے صفحے کو دوبارہ لوڈ کریں۔</translation>
 <translation id="8291967909914612644">گھر فراہم کرنے والے کا ملک</translation>
@@ -1007,6 +1015,7 @@
 <translation id="8747900814994928677">تبدیلی کی توثیق کریں</translation>
 <translation id="8764414543112028321">WireGuard</translation>
 <translation id="87646919272181953">‏Google تصاویر کا البم</translation>
+<translation id="8775713578693478175">‏موڈم APN</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8789196995628578448">"<ph name="CONFLICT_ACCEL_NAME" />" کے لیے شارٹ کٹ استعمال کیا جا رہا ہے۔ ایک نیا شارٹ کٹ دبائیں۔ اصل شارٹ کٹ تبدیل کرنے کے لیے، اس شارٹ کٹ کو دوبارہ دبائیں۔</translation>
 <translation id="879568662008399081">اس نیٹ ورک میں ایک کیپٹو پورٹل ہو سکتا ہے</translation>

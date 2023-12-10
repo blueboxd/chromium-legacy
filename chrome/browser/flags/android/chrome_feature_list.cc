@@ -322,6 +322,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kTabEngagementReportingAndroid,
     &kTabStripRedesign,
     &kTabletToolbarReordering,
+    &kTabStateFlatBuffer,
     &kTabStripStartupRefactoring,
     &kTabToGTSAnimation,
     &kTestDefaultDisabled,
@@ -349,6 +350,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &content_creation::kWebNotesStylizeEnabled,
     &kWebApkAllowIconUpdate,
     &kWebApkBackupAndRestoreBackend,
+    &kWebApkIconUpdateThreshold,
     &kWebApkInstallService,
     &features::kDnsOverHttps,
     &notifications::features::kUseChimeAndroidSdk,
@@ -374,6 +376,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &password_manager::features::kBiometricTouchToFill,
     &password_manager::features::kEnablePasswordsAccountStorage,
     &password_manager::features::kPasskeyManagementUsingAccountSettingsAndroid,
+    &password_manager::features::kPasswordGenerationBottomSheet,
     &password_manager::features::kPasswordEditDialogWithDetails,
     &password_manager::features::kRecoverFromNeverSaveAndroid,
     &password_manager::features::
@@ -383,6 +386,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &privacy_sandbox::kPrivacySandboxSettings3,
     &privacy_sandbox::kPrivacySandboxSettings4,
     &privacy_sandbox::kPrivacySandboxProactiveTopicsBlocking,
+    &privacy_sandbox::kTrackingProtectionSettingsPageRollbackNotice,
     &privacy_sandbox::kTrackingProtectionOnboardingSkipSecurePageCheck,
     &query_tiles::features::kQueryTiles,
     &query_tiles::features::kQueryTilesInNTP,
@@ -406,6 +410,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &switches::kSeedAccountsRevamp,
     &switches::kTangibleSync,
     &syncer::kSyncAndroidLimitNTPPromoImpressions,
+    &syncer::kSyncDecoupleAddressPaymentSettings,
     &syncer::kSyncEnableContactInfoDataTypeInTransportMode,
     &subresource_filter::kSafeBrowsingSubresourceFilter,
     &thumbnail::kThumbnailCacheRefactor,
@@ -1053,9 +1058,13 @@ BASE_FEATURE(kTabEngagementReportingAndroid,
              "TabEngagementReportingAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kTabStateFlatBuffer,
+             "TabStateFlatBuffer",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kTabStripRedesign,
              "TabStripRedesign",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kTabletToolbarReordering,
              "TabletToolbarReordering",
@@ -1189,6 +1198,10 @@ BASE_FEATURE(kWebOtpCrossDeviceSimpleString,
 
 BASE_FEATURE(kWebApkAllowIconUpdate,
              "WebApkAllowIconUpdate",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kWebApkIconUpdateThreshold,
+             "WebApkIconUpdateThreshold",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kWebApkBackupAndRestoreBackend,

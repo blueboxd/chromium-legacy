@@ -453,10 +453,6 @@ BASE_FEATURE(kZstdContentEncoding,
              "ZstdContentEncoding",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kDigestAuthEnableSecureAlgorithms,
-             "DigestAuthEnableSecureAlgorithms",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // When enabled, partitioned storage will be allowed even if third-party cookies
 // are disabled by default. Partitioned storage will not be allowed if
 // third-party cookies are disabled due to a specific rule.
@@ -470,10 +466,6 @@ BASE_FEATURE(kPriorityHeader,
 
 BASE_FEATURE(kSpdyHeadersToHttpResponseUseBuilder,
              "SpdyHeadersToHttpResponseUseBuilder",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kSpdyHeadersToHttpResponseVerifyCorrectness,
-             "SpdyHeadersToHttpResponseVerifyCorrectness",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kReceiveEcn, "ReceiveEcn", base::FEATURE_DISABLED_BY_DEFAULT);

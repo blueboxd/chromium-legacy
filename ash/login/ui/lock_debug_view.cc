@@ -15,6 +15,7 @@
 #include "ash/detachable_base/detachable_base_pairing_status.h"
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/login/login_screen_controller.h"
+#include "ash/login/ui/local_authentication_request_controller_impl.h"
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
@@ -22,6 +23,7 @@
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/kiosk_app_menu.h"
+#include "ash/public/cpp/login/local_authentication_request_controller.h"
 #include "ash/public/cpp/login_types.h"
 #include "ash/public/cpp/smartlock_state.h"
 #include "ash/public/cpp/style/dark_light_mode_controller.h"
@@ -36,10 +38,14 @@
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/ash/components/login/auth/public/user_context.h"
+#include "components/account_id/account_id.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/multi_user/multi_user_sign_in_policy.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ime/ash/ime_keyboard.h"
+#include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
@@ -69,6 +75,8 @@ constexpr const char kDebugEnterpriseInfo[] = "Asset ID: 1111";
 constexpr const char kDebugBluetoothName[] = "Bluetooth adapter";
 
 constexpr const char kDebugKioskAppId[] = "asdf1234";
+const AccountId kDebugKioskAppAccountId =
+    AccountId::FromUserEmail("fake@email.com");
 constexpr const char16_t kDebugKioskAppName[] = u"Test App Name";
 
 constexpr const char kDebugDefaultLocaleCode[] = "en-GB";
@@ -377,6 +385,20 @@ class LockDebugView::DebugDataDispatcherTransformer
         debug_user->account_id, debug_user->enable_tap_to_unlock);
   }
 
+  // Activates authentication request dialog for the user at |user_index|.
+  void AuthRequestForUserIndex(size_t user_index) {
+    DCHECK(user_index >= 0 && user_index < debug_users_.size());
+    UserMetadata* debug_user = &debug_users_[user_index];
+    const AccountId account_id = debug_user->account_id;
+
+    std::unique_ptr<ash::UserContext> user_context =
+        std::make_unique<ash::UserContext>(user_manager::USER_TYPE_REGULAR,
+                                           account_id);
+
+    Shell::Get()->local_authentication_request_controller()->ShowWidget(
+        base::BindOnce([](bool bla) {}), std::move(user_context));
+  }
+
   // Cycles fingerprint state for the user at |user_index|.
   void CycleFingerprintStateForUserIndex(size_t user_index) {
     DCHECK(user_index >= 0 && user_index < debug_users_.size());
@@ -521,10 +543,9 @@ class LockDebugView::DebugDataDispatcherTransformer
   }
 
   void AddKioskApp(ShelfWidget* shelf_widget) {
-    KioskAppMenuEntry menu_item;
-    menu_item.app_id = kDebugKioskAppId;
-    menu_item.name = kDebugKioskAppName;
-    kiosk_apps_.push_back(std::move(menu_item));
+    kiosk_apps_.emplace_back(KioskAppMenuEntry::AppType::kChromeApp,
+                             kDebugKioskAppAccountId, kDebugKioskAppId,
+                             kDebugKioskAppName, gfx::ImageSkia());
     shelf_widget->GetLoginShelfView()->SetKioskApps(kiosk_apps_);
   }
 
@@ -1225,6 +1246,12 @@ void LockDebugView::UpdatePerUserActionContainer() {
                                 CycleDisabledAuthMessageForUserIndex,
                             base::Unretained(debug_data_dispatcher_.get()), i),
         row);
+
+    AddButton("Show local authentication request",
+              base::BindRepeating(
+                  &DebugDataDispatcherTransformer::AuthRequestForUserIndex,
+                  base::Unretained(debug_data_dispatcher_.get()), i),
+              row);
 
     if (debug_detachable_base_model_->debugging_pairing_state() &&
         debug_detachable_base_model_->GetPairingStatus() ==

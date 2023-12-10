@@ -179,6 +179,8 @@ public class SiteSettingsTest {
     private PermissionUpdateWaiter mPermissionUpdateWaiter;
 
     private static final String[] NULL_ARRAY = new String[0];
+    private static final String[] BINARY_TOGGLE_AND_INFO_TEXT =
+            new String[] {"info_text", "binary_toggle"};
     private static final String[] BINARY_TOGGLE = new String[] {"binary_toggle"};
     private static final String[] BINARY_TOGGLE_WITH_EXCEPTION_AND_INFO_TEXT =
             new String[] {"info_text", "binary_toggle", "add_exception"};
@@ -373,7 +375,7 @@ public class SiteSettingsTest {
                                 WebsitePreferenceBridge.areAllLocationSettingsEnabled(
                                         getBrowserContextHandle())));
 
-        initializeUpdateWaiter(true /* expectGranted */);
+        initializeUpdateWaiter(/* expectGranted= */ true);
 
         // Launch a page that uses geolocation and make sure a permission prompt shows up.
         mPermissionRule.runAllowTest(
@@ -406,7 +408,7 @@ public class SiteSettingsTest {
                                         getBrowserContextHandle())));
 
         // Launch a page that uses geolocation. No permission prompt is expected.
-        initializeUpdateWaiter(false /* expectGranted */);
+        initializeUpdateWaiter(/* expectGranted= */ false);
         mPermissionRule.runNoPromptTest(
                 mPermissionUpdateWaiter,
                 "/chrome/test/data/geolocation/geolocation_on_load.html",
@@ -622,8 +624,7 @@ public class SiteSettingsTest {
                         Preference preference = preferenceScreen.getPreference(index);
                         String key = preference.getKey();
                         // Not all Preferences have keys. For example, the list of websites below
-                        // the
-                        // toggles, which are dynamically added. Ignore those.
+                        // the toggles, which are dynamically added. Ignore those.
                         if (key != null) actualKeys.add(key);
                     }
 
@@ -1291,6 +1292,18 @@ public class SiteSettingsTest {
         settingsActivity.finish();
     }
 
+    /** Test that showing the Site Settings menu contains the "Tracking protection" row. */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures(ChromeFeatureList.TRACKING_PROTECTION_3PCD)
+    public void testSiteSettingsMenuWithTrackingProtectionEnabled() {
+        final SettingsActivity settingsActivity = SiteSettingsTestUtils.startSiteSettingsMenu("");
+        SiteSettings websitePreferences = (SiteSettings) settingsActivity.getMainFragment();
+        assertNotNull(websitePreferences.findPreference("tracking_protection"));
+        settingsActivity.finish();
+    }
+
     /** Test that showing the Site Settings menu does not contain the "Anti-abuse" row. */
     @Test
     @SmallTest
@@ -1325,7 +1338,7 @@ public class SiteSettingsTest {
     public void testOnlyExpectedPreferencesShown() {
         // If you add a category in the SiteSettings UI, please update this total AND add a test for
         // it below, named "testOnlyExpectedPreferences<Category>".
-        Assert.assertEquals(31, SiteSettingsCategory.Type.NUM_ENTRIES);
+        Assert.assertEquals(32, SiteSettingsCategory.Type.NUM_ENTRIES);
     }
 
     @Test
@@ -1456,8 +1469,8 @@ public class SiteSettingsTest {
     public void testOnlyExpectedPreferencesThirdPartyCookies() {
         testExpectedPreferences(
                 SiteSettingsCategory.Type.THIRD_PARTY_COOKIES,
-                new String[] {"info_text", "tri_state_cookie_toggle", "add_exception"},
-                new String[] {"info_text", "tri_state_cookie_toggle"});
+                new String[] {"tri_state_cookie_toggle", "add_exception"},
+                new String[] {"tri_state_cookie_toggle"});
     }
 
     @Test
@@ -1499,7 +1512,9 @@ public class SiteSettingsTest {
     @EnableFeatures({PermissionsAndroidFeatureList.PERMISSION_STORAGE_ACCESS})
     public void testOnlyExpectedPreferencesStorageAccess() {
         testExpectedPreferences(
-                SiteSettingsCategory.Type.STORAGE_ACCESS, BINARY_TOGGLE, BINARY_TOGGLE);
+                SiteSettingsCategory.Type.STORAGE_ACCESS,
+                BINARY_TOGGLE_AND_INFO_TEXT,
+                BINARY_TOGGLE_AND_INFO_TEXT);
     }
 
     @Test
@@ -1855,14 +1870,14 @@ public class SiteSettingsTest {
                 .run();
 
         // Test that the camera permission doesn't get requested.
-        initializeUpdateWaiter(false /* expectGranted */);
+        initializeUpdateWaiter(/* expectGranted= */ false);
         mPermissionRule.runNoPromptTest(
                 mPermissionUpdateWaiter,
                 "/content/test/data/media/getusermedia.html",
                 "getUserMediaAndStopLegacy({video: true, audio: false});",
                 0,
-                true /* withGesture */,
-                true /* isDialog */);
+                /* withGesture= */ true,
+                /* isDialog= */ true);
     }
 
     /**
@@ -1882,14 +1897,14 @@ public class SiteSettingsTest {
                         true)
                 .run();
 
-        initializeUpdateWaiter(true /* expectGranted */);
+        initializeUpdateWaiter(/* expectGranted= */ true);
         mPermissionRule.runAllowTest(
                 mPermissionUpdateWaiter,
                 "/content/test/data/media/getusermedia.html",
                 "getUserMediaAndStopLegacy({video: true, audio: false});",
                 0,
-                true /* withGesture */,
-                true /* isDialog */);
+                /* withGesture= */ true,
+                /* isDialog= */ true);
     }
 
     /**
@@ -1910,7 +1925,7 @@ public class SiteSettingsTest {
                 .run();
 
         // Test that the microphone permission doesn't get requested.
-        initializeUpdateWaiter(false /* expectGranted */);
+        initializeUpdateWaiter(/* expectGranted= */ false);
         mPermissionRule.runNoPromptTest(
                 mPermissionUpdateWaiter,
                 "/content/test/data/media/getusermedia.html",
@@ -1938,7 +1953,7 @@ public class SiteSettingsTest {
                 .run();
 
         // Launch a page that uses the microphone and make sure a permission prompt shows up.
-        initializeUpdateWaiter(true /* expectGranted */);
+        initializeUpdateWaiter(/* expectGranted= */ true);
         mPermissionRule.runAllowTest(
                 mPermissionUpdateWaiter,
                 "/content/test/data/media/getusermedia.html",
@@ -2320,8 +2335,7 @@ public class SiteSettingsTest {
                             notificationPreference);
 
                     // Ensure that a proper separate channel has indeed been created to allow the
-                    // user to
-                    // alter the setting.
+                    // user to alter the setting.
                     Assert.assertNotEquals(
                             ChromeChannelDefinitions.ChannelId.SITES,
                             SiteChannelsManager.getInstance()
@@ -2374,16 +2388,14 @@ public class SiteSettingsTest {
 
                     final String blockedGroupKey = "blocked_group";
                     // Click on Blocked group in Category Settings. By default Blocked is closed, to
-                    // be able
-                    // to find any origins inside, Blocked should be opened.
+                    // be able to find any origins inside, Blocked should be opened.
                     SingleCategorySettings websitePreferences =
                             (SingleCategorySettings) settingsActivity.getMainFragment();
                     websitePreferences.findPreference(blockedGroupKey).performClick();
 
                     // After triggering onClick on Blocked group, all UI will be discarded and
-                    // reinitialized
-                    // from scratch. Init all variables again, otherwise it will use stale
-                    // information.
+                    // reinitialized from scratch. Init all variables again, otherwise it will use
+                    // stale information.
                     websitePreferences =
                             (SingleCategorySettings) settingsActivity.getMainFragment();
                     ExpandablePreferenceGroup blockedGroup =
@@ -2456,7 +2468,7 @@ public class SiteSettingsTest {
             sdk_is_greater_than = Build.VERSION_CODES.N_MR1,
             sdk_is_less_than = Build.VERSION_CODES.P)
     public void testProtectedContentDefaultOption() throws Exception {
-        initializeUpdateWaiter(true /* expectGranted */);
+        initializeUpdateWaiter(/* expectGranted= */ true);
         mPermissionRule.runNoPromptTest(
                 mPermissionUpdateWaiter,
                 "/content/test/data/android/eme_permissions.html",
@@ -2477,7 +2489,7 @@ public class SiteSettingsTest {
         setGlobalTriStateToggleForCategory(
                 SiteSettingsCategory.Type.PROTECTED_MEDIA, ContentSettingValues.ASK);
 
-        initializeUpdateWaiter(true /* expectGranted */);
+        initializeUpdateWaiter(/* expectGranted= */ true);
         mPermissionRule.runAllowTest(
                 mPermissionUpdateWaiter,
                 "/content/test/data/android/eme_permissions.html",
@@ -2498,7 +2510,7 @@ public class SiteSettingsTest {
         setGlobalTriStateToggleForCategory(
                 SiteSettingsCategory.Type.PROTECTED_MEDIA, ContentSettingValues.ASK);
 
-        initializeUpdateWaiter(false /* expectGranted */);
+        initializeUpdateWaiter(/* expectGranted= */ false);
         mPermissionRule.runDenyTest(
                 mPermissionUpdateWaiter,
                 "/content/test/data/android/eme_permissions.html",
@@ -2519,7 +2531,7 @@ public class SiteSettingsTest {
         setGlobalTriStateToggleForCategory(
                 SiteSettingsCategory.Type.PROTECTED_MEDIA, ContentSettingValues.BLOCK);
 
-        initializeUpdateWaiter(false /* expectGranted */);
+        initializeUpdateWaiter(/* expectGranted= */ false);
         mPermissionRule.runNoPromptTest(
                 mPermissionUpdateWaiter,
                 "/content/test/data/android/eme_permissions.html",
@@ -2537,7 +2549,7 @@ public class SiteSettingsTest {
             sdk_is_greater_than = Build.VERSION_CODES.N_MR1)
     @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/1234530
     public void testProtectedContentAllowThenBlock() throws Exception {
-        initializeUpdateWaiter(true /* expectGranted */);
+        initializeUpdateWaiter(/* expectGranted= */ true);
         mPermissionRule.runNoPromptTest(
                 mPermissionUpdateWaiter,
                 "/content/test/data/android/eme_permissions.html",
@@ -2549,7 +2561,7 @@ public class SiteSettingsTest {
         setGlobalTriStateToggleForCategory(
                 SiteSettingsCategory.Type.PROTECTED_MEDIA, ContentSettingValues.BLOCK);
 
-        initializeUpdateWaiter(false /* expectGranted */);
+        initializeUpdateWaiter(/* expectGranted= */ false);
         mPermissionRule.runNoPromptTest(
                 mPermissionUpdateWaiter,
                 "/content/test/data/android/eme_permissions.html",
@@ -2638,6 +2650,9 @@ public class SiteSettingsTest {
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
+                    HistogramWatcher histogramExpectation =
+                            HistogramWatcher.newSingleRecordWatcher(
+                                    "Android.RequestDesktopSite.WindowSettingChanged", true);
                     SingleCategorySettings preferences =
                             (SingleCategorySettings) settingsActivity.getMainFragment();
                     // Window setting is only available when the Global Setting is ON.
@@ -2657,6 +2672,7 @@ public class SiteSettingsTest {
                     Assert.assertTrue(
                             "Window setting should be ON.",
                             prefService.getBoolean(DESKTOP_SITE_WINDOW_SETTING_ENABLED));
+                    histogramExpectation.assertExpected();
 
                     preferences.onPreferenceChange(windowSettingPref, false);
                     Assert.assertFalse(

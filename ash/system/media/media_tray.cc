@@ -50,6 +50,7 @@ namespace ash {
 namespace {
 
 constexpr int kNoMediaTextFontSizeIncrease = 2;
+constexpr int kNoMediaTextFontSize = 14;
 constexpr int kTitleFontSizeIncrease = 4;
 constexpr int kTitleViewHeight = 56;
 
@@ -229,8 +230,8 @@ MediaTray::MediaTray(Shelf* shelf)
 }
 
 MediaTray::~MediaTray() {
-  if (bubble_) {
-    bubble_->GetBubbleView()->ResetDelegate();
+  if (GetBubbleView()) {
+    GetBubbleView()->ResetDelegate();
   }
 
   if (MediaNotificationProvider::Get()) {
@@ -245,11 +246,11 @@ void MediaTray::OnNotificationListChanged() {
 }
 
 void MediaTray::OnNotificationListViewSizeChanged() {
-  if (!bubble_) {
+  if (!GetBubbleView()) {
     return;
   }
 
-  bubble_->GetBubbleView()->UpdateBubble();
+  GetBubbleView()->UpdateBubble();
 }
 
 std::u16string MediaTray::GetAccessibleNameForTray() {
@@ -288,13 +289,15 @@ void MediaTray::CloseBubble() {
     MediaNotificationProvider::Get()->OnBubbleClosing();
   }
   SetIsActive(false);
+  pin_button_ = nullptr;
+  content_view_ = nullptr;
   empty_state_view_ = nullptr;
   bubble_.reset();
   shelf()->UpdateAutoHideState();
 }
 
 void MediaTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
-  if (bubble_ && bubble_->bubble_view() == bubble_view) {
+  if (GetBubbleView() && GetBubbleView() == bubble_view) {
     CloseBubble();
   }
 }
@@ -346,12 +349,14 @@ void MediaTray::UpdateDisplayState() {
       MediaNotificationProvider::Get()->HasActiveNotifications() ||
       MediaNotificationProvider::Get()->HasFrozenNotifications();
 
-  if (bubble_ && !has_session) {
-    ShowEmptyState();
-  }
-
-  if (bubble_ && has_session && empty_state_view_) {
-    empty_state_view_->SetVisible(false);
+  // Verify the bubble view still exists before referencing `empty_state_view_`.
+  if (GetBubbleView()) {
+    if (has_session && empty_state_view_) {
+      empty_state_view_->SetVisible(false);
+    }
+    if (!has_session) {
+      ShowEmptyState();
+    }
   }
 
   bool should_show = has_session &&
@@ -421,7 +426,9 @@ void MediaTray::OnGlobalMediaControlsPinPrefChanged() {
 }
 
 void MediaTray::ShowEmptyState() {
-  DCHECK(content_view_);
+  CHECK(content_view_);
+  CHECK(GetBubbleView());
+
   if (empty_state_view_) {
     empty_state_view_->SetVisible(true);
     return;
@@ -443,23 +450,29 @@ void MediaTray::ShowEmptyState() {
       AshColorProvider::ContentLayerType::kTextColorSecondary));
   no_media_label->SetText(
       l10n_util::GetStringUTF16(IDS_ASH_GLOBAL_MEDIA_CONTROLS_NO_MEDIA_TEXT));
-  no_media_label->SetFontList(
-      views::Label::GetDefaultFontList().DeriveWithSizeDelta(
-          kNoMediaTextFontSizeIncrease));
+  if (base::FeatureList::IsEnabled(media::kGlobalMediaControlsCrOSUpdatedUI)) {
+    no_media_label->SetFontList(
+        gfx::FontList({"Google Sans", "Roboto"}, gfx::Font::NORMAL,
+                      kNoMediaTextFontSize, gfx::Font::Weight::NORMAL));
+  } else {
+    no_media_label->SetFontList(
+        views::Label::GetDefaultFontList().DeriveWithSizeDelta(
+            kNoMediaTextFontSizeIncrease));
+  }
   empty_state_view->AddChildView(std::move(no_media_label));
 
   empty_state_view->SetPaintToLayer();
   empty_state_view->layer()->SetFillsBoundsOpaquely(false);
   empty_state_view_ =
-      bubble_->GetBubbleView()->AddChildView(std::move(empty_state_view));
+      GetBubbleView()->AddChildView(std::move(empty_state_view));
 }
 
 void MediaTray::AnchorUpdated() {
-  if (!bubble_) {
+  if (!GetBubbleView()) {
     return;
   }
 
-  bubble_->GetBubbleView()->SetAnchorRect(
+  GetBubbleView()->SetAnchorRect(
       shelf()->GetStatusAreaWidget()->GetMediaTrayAnchorRect());
 }
 

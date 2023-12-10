@@ -25,6 +25,7 @@
 <translation id="1425903838053942728">{COUNT,plural, =0{O Chrome foi atualizado. Reinicialize para usar a versão mais recente. Depois disso, as guias atuais serão reabertas.}=1{O Chrome foi atualizado. Reinicialize para usar a versão mais recente. Depois disso, as guias atuais serão reabertas. Sua janela anônima não será aberta novamente.}one{O Chrome foi atualizado. Reinicialize para usar a versão mais recente. Depois disso, as guias atuais serão reabertas. Sua # janela anônima não será aberta novamente.}other{O Chrome foi atualizado. Reinicialize para usar a versão mais recente. Depois disso, as guias atuais serão reabertas. Suas # janelas anônimas não serão abertas novamente.}}</translation>
 <translation id="1434626383986940139">Aplicativos Canary do Google Chrome</translation>
 <translation id="1492280395845991349">Reinicialize para concluir a atualização do Chrome</translation>
+<translation id="1497802159252041924">Erro de instalação: <ph name="INSTALL_ERROR" /></translation>
 <translation id="1507198376417198979">Personalize seu novo perfil do Chrome</translation>
 <translation id="1516530951338665275">O Google Chrome precisa acessar o Bluetooth para continuar o 
  pareamento. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
@@ -87,6 +88,7 @@
 <translation id="2467438592969358367">O Google Chrome quer exportar suas senhas. Digite sua senha do Windows para permitir isso.</translation>
 <translation id="2472092250898121027">Esta extensão contém malware e não é segura. Remova do Chrome para que ela não apareça mais e altere seus dados nos sites que você visitar, incluindo suas informações pessoais.</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
+<translation id="2534365042754120737">Para proteger seus dados, permita que o Chrome remova permissões de sites que você não visitou recentemente. Não interrompe notificações.</translation>
 <translation id="2534507159460261402">Google Pay (copiado para o Chrome)</translation>
 <translation id="2556847002339236023">Sua organização vai fechar o Chrome se ele não for usado por <ph name="TIMEOUT_DURATION" />. Os dados de navegação foram excluídos. Isso pode incluir o histórico, o preenchimento automático e os downloads.</translation>
 <translation id="2559253115192232574">Os sites que você visitar vão poder pedir ao Chrome para ver seus interesses e personalizar os anúncios mostrados a você. O Chrome pode compartilhar até três interesses.</translation>
@@ -248,6 +250,7 @@
 <translation id="5139423532931106058">Personalize seu perfil do Chrome</translation>
 <translation id="5163087008893166964">Conheça o Chrome. Nova janela do navegador aberta</translation>
 <translation id="5170938038195470297">Seu perfil não pode ser utilizado pois foi criado em uma versão mais recente do Google Chrome. Alguns recursos podem não estar disponíveis. Especifique um diretório de perfil diferente ou utilize uma versão mais recente do Google Chrome.</translation>
+<translation id="5201744974236816379">Atualização do Chrome</translation>
 <translation id="521447420733633466">Se você compartilha um dispositivo, seus amigos e familiares podem navegar separadamente e configurar o Chrome da maneira que quiserem</translation>
 <translation id="5239627039202700673">Use o Chrome sempre que clicar em links de mensagens, documentos e outros apps.</translation>
 <translation id="5251420635869119124">Convidados podem usar o Google Chrome sem deixar nada para trás.</translation>
@@ -256,13 +259,16 @@
 <translation id="5334487786912937552">O Chrome precisa de acesso ao armazenamento para fazer o download de arquivos</translation>
 <translation id="5337648990166757586">Opcional: ajude a melhorar os recursos e o desempenho do ChromeOS enviando automaticamente dados de uso e diagnóstico ao Google.</translation>
 <translation id="5357889879764279201">Ajuda para o ChromeOS Flex</translation>
+<translation id="5386118856456530849">Acessar as configurações de versão do Chrome</translation>
 <translation id="5386244825306882791">Controla também qual página deve ser exibida quando você inicia o Chrome ou faz uma pesquisa na Omnibox.</translation>
 <translation id="5394833366792865639">Compartilhar uma guia do Chrome</translation>
 <translation id="5412485296464121825">Sites podem armazenar informações sobre seus interesses com o Chrome. Por exemplo, se você visitar um site para comprar sapatos de maratona, ele pode definir "maratonas" como um dos seus interesses. Depois, se você visitar outro site para se inscrever em uma maratona, esse site pode mostrar um anúncio de sapatos de corrida com base nos seus interesses.</translation>
 <translation id="5430073640787465221">Seu arquivo de preferências está corrompido ou é inválido. O Google Chrome não foi capaz de recuperar suas configurações.</translation>
+<translation id="5468572406162360320">Para melhorar esses recursos, o Chrome envia ao Google suas interações com eles. Esses dados podem ser lidos, processados e anotados por revisores humanos.</translation>
 <translation id="5524761631371622910">Quando os testes estão ativados e se o Chrome colocou você aleatoriamente em um teste ativo, seu histórico de navegação vai afetar os anúncios que você vê e os interesses estimados abaixo. Para proteger sua privacidade, o Chrome exclui seus interesses mais antigos do que um mês.</translation>
 <translation id="5530733413481476019">Deixe o Chrome mais rápido</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="5572786658631721382">Quando esta opção estiver desativada, você ainda terá acesso a sugestões que o Chrome oferece localmente</translation>
 <translation id="565744775970812598">O arquivo <ph name="FILE_NAME" /> pode ser perigoso. Por isso, ele foi bloqueado pelo Chrome.</translation>
 <translation id="5678190148303298925">{COUNT,plural, =0{Seu administrador pede que você reinicie o Chrome para que esta atualização seja feita.}=1{Seu administrador pede que você reinicie o Chrome para que esta atualização seja feita. Sua janela anônima não será aberta novamente.}one{Seu administrador pede que você reinicie o Chrome para que esta atualização seja feita. Sua janela anônima não será aberta novamente.}other{Seu administrador pede que você reinicie o Chrome para que esta atualização seja feita. Suas # janelas anônimas não serão abertas novamente.}}</translation>
 <translation id="5686916850681061684">Personalize e controle o Google Chrome. Algo precisa da sua atenção. Clique para ver mais detalhes.</translation>
@@ -273,6 +279,7 @@
 <translation id="5727531838415286053">Se o Chrome colocou você aleatoriamente em um teste ativo, seu histórico de navegação vai afetar os anúncios que você vê e os interesses estimados abaixo. Para proteger sua privacidade, o Chrome exclui seus interesses mais antigos do que um mês. Os interesses são atualizados, a menos que você os remova.</translation>
 <translation id="5736850870166430177">Se um site tentar roubar sua senha ou se você fizer o download de um arquivo nocivo, o Chrome também poderá enviar os URLs, incluindo partes do conteúdo da página, para o Navegação segura</translation>
 <translation id="5756509061973259733">Este dispositivo já tem um perfil do Chrome com essa conta</translation>
+<translation id="5779368197781401531">Faça login para acessar seus dados do Chrome em todos os dispositivos</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" />: Google Chrome Canary</translation>
 <translation id="5804318322022881572">Não foi possível iniciar o Chrome. Tente novamente.</translation>
 <translation id="5809516625706423866">Não foi possível conectar à Internet. HTTP 401 Não autorizado. Verifique sua configuração do proxy.</translation>
@@ -355,6 +362,7 @@ As permissões que você já concedeu a sites e apps podem ser aplicadas a essa 
 <translation id="7177959540995930968">Saiba mais sobre esses recursos nas configurações do Chrome.</translation>
 <translation id="7193885263065350793">Sua organização vai fechar o Chrome se ele não for usado por <ph name="TIMEOUT_DURATION" />.</translation>
 <translation id="7242029209006116544">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Google Chrome. Seus dados do Google Chrome, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME" />. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associá-los a outra conta. Você tem a opção de criar um novo perfil para manter seus dados existentes do Google Chrome separados. <ph name="LEARN_MORE" /></translation>
+<translation id="7284878711178835966">Conforme você digita, o Chrome envia o conteúdo da barra de endereço ou da caixa de pesquisa para seu mecanismo de pesquisa padrão</translation>
 <translation id="7295052994004373688">Esse idioma é usado para exibir a interface do Google Chrome</translation>
 <translation id="7296210096911315575">Informações importantes sobre uso e segurança</translation>
 <translation id="7308322188646931570">O Chrome precisa de acesso para fazer o download e armazenar arquivos</translation>
@@ -400,6 +408,7 @@ As permissões que você já concedeu a sites e apps podem ser aplicadas a essa 
 <translation id="7962410387636238736">Este computador não receberá mais atualizações do Google Chrome porque o Windows XP e o Windows Vista não são mais compatíveis</translation>
 <translation id="8005666035647241369">Para o Gerenciador de senhas do Google deste dispositivo</translation>
 <translation id="8008534537613507642">Reinstalar o Google Chrome</translation>
+<translation id="8009904340233602924">Usar o Chrome sem uma conta</translation>
 <translation id="8013993649590906847">Se uma imagem não tiver uma descrição útil, o Chrome tentará fornecer uma para você. As imagens serão enviadas ao Google para a criação de descrições.</translation>
 <translation id="8019103195866286235">A publicação desta extensão foi cancelada pelo desenvolvedor, e ela pode não ser segura. Remova do Chrome para que ela não apareça mais e altere seus dados nos sites que você visitar, incluindo suas informações pessoais.</translation>
 <translation id="80471789339884597">Agradecemos por fazer a instalação. É necessário reiniciar todos os navegadores antes de utilizar o <ph name="BUNDLE_NAME" />.</translation>
@@ -441,9 +450,9 @@ As permissões que você já concedeu a sites e apps podem ser aplicadas a essa 
 <translation id="8649026945479135076">É comum os sites que você visita lembrarem dos seus interesses para personalizar sua experiência. Sites também podem armazenar informações sobre seus interesses com o Chrome.</translation>
 <translation id="8669527147644353129">Auxiliar do Google Chrome</translation>
 <translation id="8679801911857917785">Controla também qual página deve ser exibida quando você inicia o Chrome.</translation>
-<translation id="8684875378076460854">O Chrome recomenda verificar esse arquivo porque ele pode ser perigoso</translation>
 <translation id="8686817260976772516">Você pode usar os perfis do Chrome para separar todos seus dados nele. Crie perfis para amigos e familiares ou separe trabalho e lazer.</translation>
 <translation id="8712767363896337380">Falta pouco para a atualização terminar. Reinicie o Chrome para concluir.</translation>
+<translation id="8727043961453758442">Aproveite o Chrome ao máximo</translation>
 <translation id="873133009373065397">O Google Chrome não pode determinar ou definir o navegador padrão</translation>
 <translation id="8765470054473112089">Quando você digita na barra de endereço ou na caixa de pesquisa, o Chrome envia o conteúdo digitado ao mecanismo de pesquisa padrão para melhorar as sugestões. Essa opção fica desativada na navegação anônima.</translation>
 <translation id="8821043148920470810">Para receber as futuras atualizações do Google Chrome, você precisa do Windows 10 ou versão mais recente. Este computador está usando o Windows 7.</translation>

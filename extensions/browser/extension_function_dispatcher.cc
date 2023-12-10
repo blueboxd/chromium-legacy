@@ -35,7 +35,6 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/api_activity_monitor.h"
 #include "extensions/browser/bad_message.h"
-#include "extensions/browser/content_script_tracker.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -44,6 +43,8 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/browser/quota_service.h"
+#include "extensions/browser/script_injection_tracker.h"
+#include "extensions/browser/service_worker/service_worker_keepalive.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/context_type_adapter.h"
 #include "extensions/common/extension_api.h"
@@ -119,9 +120,9 @@ bool CanRendererActOnBehalfOfExtension(
   // corresponding type (e.g. Feature::CONTENT_SCRIPT_CONTEXT). We evaluate this
   // later in ProcessMap::CanProcessHostContextType(), but we could be stricter
   // by including it here.
-  if (ContentScriptTracker::DidProcessRunContentScriptFromExtension(
+  if (ScriptInjectionTracker::DidProcessRunContentScriptFromExtension(
           render_process_host, extension_id) ||
-      ContentScriptTracker::DidProcessRunUserScriptFromExtension(
+      ScriptInjectionTracker::DidProcessRunUserScriptFromExtension(
           render_process_host, extension_id)) {
     return true;
   }
@@ -420,7 +421,6 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
   if (!function.get())
     return;
 
-  function->SetDispatcher(weak_ptr_factory_.GetWeakPtr());
   if (extension &&
       ExtensionsBrowserClient::Get()->CanExtensionCrossIncognito(
           extension, browser_context_)) {
@@ -504,28 +504,28 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
   if (!registry->enabled_extensions().GetByID(params.extension_id))
     return;
 
+  function->set_request_uuid(base::Uuid::GenerateRandomV4());
+
   // Increment the keepalive to ensure the extension doesn't shut down while
   // it's executing an API function.
-  base::Uuid request_uuid;
   if (IsRequestFromServiceWorker(params)) {
     CHECK(function->worker_id());
-    const content::ServiceWorkerExternalRequestTimeoutType timeout_type =
+    content::ServiceWorkerExternalRequestTimeoutType timeout_type =
         function->ShouldKeepWorkerAliveIndefinitely()
             ? content::ServiceWorkerExternalRequestTimeoutType::kDoesNotTimeout
             : content::ServiceWorkerExternalRequestTimeoutType::kDefault;
-    request_uuid = process_manager->IncrementServiceWorkerKeepaliveCount(
-        *function->worker_id(), timeout_type, Activity::API_FUNCTION,
-        function->name());
+    function->set_service_worker_keepalive(
+        std::make_unique<ServiceWorkerKeepalive>(
+            browser_context_, *function->worker_id(), timeout_type,
+            Activity::API_FUNCTION, function->name()));
   } else {
     process_manager->IncrementLazyKeepaliveCount(
         function->extension(), Activity::API_FUNCTION, function->name());
-    request_uuid = base::Uuid::GenerateRandomV4();
   }
-  function->set_request_uuid(std::move(request_uuid));
 }
 
 void ExtensionFunctionDispatcher::OnExtensionFunctionCompleted(
-    const ExtensionFunction& extension_function) {
+    ExtensionFunction& extension_function) {
   if (!extension_function.extension()) {
     // The function had no associated extension; nothing to clean up.
     return;
@@ -551,13 +551,7 @@ void ExtensionFunctionDispatcher::OnExtensionFunctionCompleted(
     CHECK(extension_function.request_uuid().is_valid());
     CHECK(extension_function.worker_id());
 
-    // The service worker may have been stopped already. For instance, it may
-    // have timed out and been stopped by the content layer.
-    if (process_manager->HasServiceWorker(*extension_function.worker_id())) {
-      process_manager->DecrementServiceWorkerKeepaliveCount(
-          *extension_function.worker_id(), extension_function.request_uuid(),
-          Activity::API_FUNCTION, extension_function.name());
-    }
+    extension_function.ResetServiceWorkerKeepalive();
   } else {
     process_manager->DecrementLazyKeepaliveCount(extension_function.extension(),
                                                  Activity::API_FUNCTION,
@@ -600,7 +594,6 @@ void ExtensionFunctionDispatcher::ProcessResponseAck(
   response_targets_.erase(iter);
 }
 
-// static
 scoped_refptr<ExtensionFunction>
 ExtensionFunctionDispatcher::CreateExtensionFunction(
     const mojom::RequestParams& params,
@@ -656,6 +649,11 @@ ExtensionFunctionDispatcher::CreateExtensionFunction(
   } else {
     function->SetRenderFrameHost(render_frame_host);
   }
+
+  // Note: `SetDispatcher()` also initializes the `browser_context_` member
+  // for `ExtensionFunction`, which is necessary for properly performing
+  // permission checks.
+  function->SetDispatcher(weak_ptr_factory_.GetWeakPtr());
 
   if (!function->HasPermission()) {
     LOG(ERROR) << "Permission denied for " << params.name;

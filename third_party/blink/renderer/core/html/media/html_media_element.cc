@@ -719,11 +719,13 @@ bool HTMLMediaElement::SupportsFocus() const {
   return ShouldShowControls() || HTMLElement::SupportsFocus();
 }
 
-bool HTMLMediaElement::IsFocusable() const {
+bool HTMLMediaElement::IsFocusable(
+    bool disallow_layout_updates_for_accessibility_only) const {
   if (!SupportsFocus()) {
     return false;
   }
-  return !IsFullscreen() || HTMLElement::IsFocusable();
+  return !IsFullscreen() || HTMLElement::IsFocusable(
+                                disallow_layout_updates_for_accessibility_only);
 }
 
 bool HTMLMediaElement::IsKeyboardFocusable() const {
@@ -3428,7 +3430,7 @@ KURL HTMLMediaElement::SelectNextSourceChild(
   Node* node;
   HTMLSourceElement* source = nullptr;
   String type;
-  bool looking_for_start_node = next_child_node_to_consider_;
+  bool looking_for_start_node = next_child_node_to_consider_ != nullptr;
   bool can_use_source_element = false;
 
   NodeVector potential_source_nodes;
@@ -3736,8 +3738,10 @@ void HTMLMediaElement::SizeChanged() {
 }
 
 WebTimeRanges HTMLMediaElement::BufferedInternal() const {
-  if (media_source_attachment_)
-    return media_source_attachment_->BufferedInternal(media_source_tracer_);
+  if (media_source_attachment_) {
+    return media_source_attachment_->BufferedInternal(
+        media_source_tracer_.Get());
+  }
 
   if (!web_media_player_)
     return {};
@@ -3766,8 +3770,10 @@ WebTimeRanges HTMLMediaElement::SeekableInternal() const {
   if (!web_media_player_)
     return {};
 
-  if (media_source_attachment_)
-    return media_source_attachment_->SeekableInternal(media_source_tracer_);
+  if (media_source_attachment_) {
+    return media_source_attachment_->SeekableInternal(
+        media_source_tracer_.Get());
+  }
 
   return web_media_player_->Seekable();
 }
@@ -4139,7 +4145,7 @@ SpeechSynthesisBase* HTMLMediaElement::SpeechSynthesis() {
     speech_synthesis_->SetOnSpeakingCompletedCallback(WTF::BindRepeating(
         &HTMLMediaElement::OnSpeakingCompleted, WrapWeakPersistent(this)));
   }
-  return speech_synthesis_;
+  return speech_synthesis_.Get();
 }
 
 void HTMLMediaElement::MediaControlsDidBecomeVisible() {
@@ -4231,7 +4237,7 @@ void HTMLMediaElement::SetShouldDelayLoadEvent(bool should_delay) {
 }
 
 MediaControls* HTMLMediaElement::GetMediaControls() const {
-  return media_controls_;
+  return media_controls_.Get();
 }
 
 void HTMLMediaElement::EnsureMediaControls() {

@@ -381,17 +381,10 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, LearnModeEscapeWithGesture) {
   sm_.Replay();
 }
 
-class NotificationCenterSpokenFeedbackTest
-    : public LoggedInSpokenFeedbackTest,
-      public ::testing::WithParamInterface<bool> {
+class NotificationCenterSpokenFeedbackTest : public LoggedInSpokenFeedbackTest {
  protected:
-  NotificationCenterSpokenFeedbackTest() {
-    feature_list_.InitWithFeatureState(features::kQsRevamp,
-                                       IsQsRevampEnabled());
-  }
+  NotificationCenterSpokenFeedbackTest() = default;
   ~NotificationCenterSpokenFeedbackTest() override = default;
-
-  bool IsQsRevampEnabled() const { return GetParam(); }
 
   NotificationCenterTestApi* test_api() {
     if (!test_api_) {
@@ -403,65 +396,33 @@ class NotificationCenterSpokenFeedbackTest
   }
 
  private:
-  base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<NotificationCenterTestApi> test_api_;
 };
 
-INSTANTIATE_TEST_SUITE_P(QsRevampEnabled,
-                         NotificationCenterSpokenFeedbackTest,
-                         ::testing::Bool());
-
 // Tests the spoken feedback text when using the notification center accelerator
 // to navigate to the notification center.
-IN_PROC_BROWSER_TEST_P(NotificationCenterSpokenFeedbackTest,
+IN_PROC_BROWSER_TEST_F(NotificationCenterSpokenFeedbackTest,
                        NavigateNotificationCenter) {
   EnableChromeVox();
 
-  if (IsQsRevampEnabled()) {
-    // Add a notification so that the notification center tray is visible.
-    test_api()->AddNotification();
-    ASSERT_TRUE(test_api()->IsTrayShown());
+  // Add a notification so that the notification center tray is visible.
+  test_api()->AddNotification();
+  ASSERT_TRUE(test_api()->IsTrayShown());
 
-    // Press the accelerator that toggles the notification center.
-    sm_.Call([this]() {
-      EXPECT_TRUE(PerformAcceleratorAction(
-          AcceleratorAction::kToggleMessageCenterBubble));
-    });
-
-    // Verify the spoken feedback text.
-    sm_.ExpectSpeech("Notification Center");
-    sm_.Replay();
-    return;
-  }
-
+  // Press the accelerator that toggles the notification center.
   sm_.Call([this]() {
     EXPECT_TRUE(PerformAcceleratorAction(
         AcceleratorAction::kToggleMessageCenterBubble));
   });
-  sm_.ExpectSpeech(
-      "Quick Settings, Press search plus left to access the notification "
-      "center.");
 
-  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_LEFT); });
-  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_LEFT); });
-
-  // If you are hitting this in the course of changing the UI, please fix. This
-  // item needs a label.
-  sm_.ExpectSpeech("List item");
-
-  // Furthermore, navigation is generally broken using Search+Left.
-
+  // Verify the spoken feedback text.
+  sm_.ExpectSpeech("Notification Center");
   sm_.Replay();
 }
 
 // Tests that clicking the notification center tray does not crash when spoken
 // feedback is enabled.
-IN_PROC_BROWSER_TEST_P(NotificationCenterSpokenFeedbackTest, OpenBubble) {
-  // This test only makes sense in the context of the QS revamp.
-  if (!IsQsRevampEnabled()) {
-    return;
-  }
-
+IN_PROC_BROWSER_TEST_F(NotificationCenterSpokenFeedbackTest, OpenBubble) {
   // Enable spoken feedback and add a notification to ensure the tray is
   // visible.
   EnableChromeVox();
@@ -845,12 +806,19 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ShowHeadingList) {
   sm_.ExpectSpeechPattern("Sub-category Heading 3 Menu item 3 of *");
   sm_.Call([this]() { SendKeyPress(ui::VKEY_SPACE); });
   sm_.ExpectSpeech("Sub-category");
-  sm_.Call([this]() {
-    SendKeyPressWithSearch(ui::VKEY_DOWN);
-    SendKeyPressWithSearch(ui::VKEY_DOWN);
-    SendKeyPressWithSearch(ui::VKEY_DOWN);
-    SendKeyPressWithSearch(ui::VKEY_DOWN);
-  });
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_DOWN); });
+  sm_.ExpectSpeech("Sub-category");
+  if (IsLacrosRunning()) {
+    // With Lacros, it takes one more search+down to get out of the sub-category
+    // after having been in the heading menu.
+    sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_DOWN); });
+    sm_.ExpectSpeech("Sub-category");
+  }
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_DOWN); });
+  sm_.ExpectSpeech("Text");
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_DOWN); });
+  sm_.ExpectSpeech("Second sub-category");
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_DOWN); });
   sm_.ExpectSpeech("Next page Button");
 
   sm_.Replay();
@@ -1099,10 +1067,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, LandmarkNavigation) {
 
   sm_.Call([this]() { SendKeyPress(ui::VKEY_SPACE); });
   sm_.ExpectSpeech("Navigation");
-  sm_.Call([this]() {
-    SendKeyPressWithSearch(ui::VKEY_UP);
-    SendKeyPressWithSearch(ui::VKEY_UP);
-  });
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_UP); });
   sm_.ExpectSpeech("after main");
 
   sm_.Replay();
@@ -1122,7 +1087,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OverviewMode) {
 
   sm_.Call([this]() { SendKeyPress(ui::VKEY_TAB); });
   sm_.ExpectSpeechPattern(
-      "Chrom* - data:text slash html;charset equal utf-8, percent 0A less than "
+      "*window*data:text slash html;charset equal utf-8, percent 0A less than "
       "button autofocus greater than Click me less than slash button greater "
       "than");
   sm_.ExpectSpeechPattern("Press Ctrl plus W to close.");

@@ -22,6 +22,7 @@ export {PrefsMixin, PrefsMixinInterface} from 'chrome://resources/cr_components/
 export {CrSettingsPrefs} from 'chrome://resources/cr_components/settings_prefs/prefs_types.js';
 export {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 export {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
+export {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 export {CrDrawerElement} from 'chrome://resources/cr_elements/cr_drawer/cr_drawer.js';
 export {CrLinkRowElement} from 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 export {CrRadioButtonElement} from 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.js';
@@ -56,9 +57,9 @@ export {SettingsIdleLoadElement} from './controls/settings_idle_load.js';
 export {DefaultBrowserBrowserProxy, DefaultBrowserBrowserProxyImpl, DefaultBrowserInfo} from './default_browser_page/default_browser_browser_proxy.js';
 export {SettingsDefaultBrowserPageElement} from './default_browser_page/default_browser_page.js';
 // </if>
-export {HatsBrowserProxy, HatsBrowserProxyImpl, TrustSafetyInteraction} from './hats_browser_proxy.js';
+export {HatsBrowserProxy, HatsBrowserProxyImpl, SafeBrowsingSetting, SecurityPageInteraction, TrustSafetyInteraction} from './hats_browser_proxy.js';
 export {loadTimeData} from './i18n_setup.js';
-export {DeleteBrowsingDataAction, MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyElementInteractions, PrivacyGuideInteractions, PrivacyGuideSettingsStates, PrivacyGuideStepsEligibleAndReached, SafeBrowsingInteractions, SafetyCheckInteractions, SafetyCheckNotificationsModuleInteractions, SafetyCheckUnusedSitePermissionsModuleInteractions} from './metrics_browser_proxy.js';
+export {DeleteBrowsingDataAction, MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyElementInteractions, PrivacyGuideInteractions, PrivacyGuideSettingsStates, PrivacyGuideStepsEligibleAndReached, SafeBrowsingInteractions, SafetyCheckInteractions, SafetyCheckNotificationsModuleInteractions, SafetyCheckUnusedSitePermissionsModuleInteractions, SafetyHubCardState, SafetyHubSurfaces} from './metrics_browser_proxy.js';
 export {NtpExtension, OnStartupBrowserProxy, OnStartupBrowserProxyImpl} from './on_startup_page/on_startup_browser_proxy.js';
 export {SettingsOnStartupPageElement} from './on_startup_page/on_startup_page.js';
 export {SettingsStartupUrlDialogElement} from './on_startup_page/startup_url_dialog.js';
@@ -101,7 +102,8 @@ export {SettingsSafetyCheckPasswordsChildElement} from './safety_check_page/safe
 export {SettingsSafetyCheckSafeBrowsingChildElement} from './safety_check_page/safety_check_safe_browsing_child.js';
 export {SettingsSafetyCheckUnusedSitePermissionsElement} from './safety_check_page/safety_check_unused_site_permissions.js';
 export {SettingsSafetyCheckUpdatesChildElement} from './safety_check_page/safety_check_updates_child.js';
-export {SearchEngine, SearchEnginesBrowserProxy, SearchEnginesBrowserProxyImpl, SearchEnginesInfo, SearchEnginesInteractions} from './search_engines_page/search_engines_browser_proxy.js';
+export {ChoiceMadeLocation, SearchEngine, SearchEnginesBrowserProxy, SearchEnginesBrowserProxyImpl, SearchEnginesInfo, SearchEnginesInteractions} from './search_engines_page/search_engines_browser_proxy.js';
+export {SettingsSearchEngineListDialogElement} from './search_page/search_engine_list_dialog.js';
 export {SettingsSearchPageElement} from './search_page/search_page.js';
 export {getSearchManager, SearchManager, SearchRequest, setSearchManagerForTesting} from './search_settings.js';
 export {SettingsMainElement} from './settings_main/settings_main.js';

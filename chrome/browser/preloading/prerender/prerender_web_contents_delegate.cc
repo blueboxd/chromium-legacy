@@ -30,11 +30,30 @@ void PrerenderWebContentsDelegateImpl::ActivateContents(
   NOTREACHED_NORETURN();
 }
 
+void PrerenderWebContentsDelegateImpl::LoadingStateChanged(
+    content::WebContents* source,
+    bool should_show_loading_ui) {
+  // Loading events should be deferred until prerender activation.
+  NOTREACHED_NORETURN();
+}
+
 bool PrerenderWebContentsDelegateImpl::ShouldSuppressDialogs(
     content::WebContents* source) {
   // Dialogs (JS dialogs and BeforeUnload confirm) should not be shown on a
   // prerendered page.
   NOTREACHED_NORETURN();
+}
+
+bool PrerenderWebContentsDelegateImpl::ShouldFocusPageAfterCrash(
+    content::WebContents* source) {
+  // A prerendered page cannot be focused.
+  return false;
+}
+
+bool PrerenderWebContentsDelegateImpl::TakeFocus(content::WebContents* source,
+                                                 bool reverse) {
+  // A prerendered page cannot be focused.
+  return false;
 }
 
 void PrerenderWebContentsDelegateImpl::WebContentsCreated(

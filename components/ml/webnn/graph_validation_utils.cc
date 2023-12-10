@@ -18,20 +18,6 @@ namespace webnn {
 
 namespace {
 
-bool IsFloatingPointType(Operand::DataType data_type) {
-  switch (data_type) {
-    case Operand::DataType::kFloat32:
-    case Operand::DataType::kFloat16:
-      return true;
-    case Operand::DataType::kInt32:
-    case Operand::DataType::kUint32:
-    case Operand::DataType::kInt8:
-    case Operand::DataType::kUint8:
-      return false;
-  }
-  NOTREACHED_NORETURN();
-}
-
 // Calculate the output size for conv2d based on WebNN spec:
 // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-conv2d
 // Return the calculated output size if no error.
@@ -380,6 +366,102 @@ base::expected<Operand, std::string> ValidateConv2dAndInferOutput(
   return Operand(input.data_type, std::move(output_shape));
 }
 
+base::expected<Operand, std::string> ValidatePadAndInferOutput(
+    const Operand& input,
+    base::span<const uint32_t> beginning_padding,
+    base::span<const uint32_t> ending_padding) {
+  // Validate the beginning_padding and ending_padding.
+  const auto input_shape = input.dimensions;
+  auto input_rank = input_shape.size();
+  if (beginning_padding.size() != input_rank) {
+    return base::unexpected(
+        "The length of beginningPadding must be "
+        "equal to the rank of the input tensor.");
+  }
+  if (ending_padding.size() != input_rank) {
+    return base::unexpected(
+        "The length of endingPadding must be "
+        "equal to the rank of the input tensor.");
+  }
+
+  // Infer the output.
+  // Each dimension of the output tensor can be calculated as follow:
+  // input_size = input_shape[i];
+  // output_size = beginning_padding + input_size + ending_padding.
+  std::vector<uint32_t> output_shape(input_rank);
+  for (size_t i = 0; i < input_rank; ++i) {
+    auto checked_output_size = base::MakeCheckedNum<uint32_t>(input_shape[i]) +
+                               beginning_padding[i] + ending_padding[i];
+    if (!checked_output_size.AssignIfValid(&output_shape[i])) {
+      return base::unexpected(base::StringPrintf(
+          "The padding of dimension (%zu) is too large.", i));
+    }
+  }
+
+  return Operand(input.data_type, std::move(output_shape));
+}
+
+base::expected<Operand, std::string> ValidateMatmulAndInferOutput(
+    const Operand& a,
+    const Operand& b) {
+  if (a.data_type != b.data_type) {
+    return base::unexpected("The types of first two inputs don't match.");
+  }
+
+  std::vector<uint32_t> a_dimensions = a.dimensions;
+  std::vector<uint32_t> b_dimensions = b.dimensions;
+
+  // Based on the WG discussion:
+  // https://github.com/webmachinelearning/webnn/issues/470, prototype the
+  // matmul without 1-D input tensors support.
+  if (a_dimensions.size() < 2 || b_dimensions.size() < 2) {
+    return base::unexpected(
+        "The rank of input must be larger than or equal to 2.");
+  }
+
+  // The number of columns in the first matrix must be equal to the number of
+  // rows in the second matrix.
+  const uint32_t a_cols = a_dimensions[a_dimensions.size() - 1];
+  const uint32_t a_rows = a_dimensions[a_dimensions.size() - 2];
+  const uint32_t b_cols = b_dimensions[b_dimensions.size() - 1];
+  const uint32_t b_rows = b_dimensions[b_dimensions.size() - 2];
+  if (a_cols != b_rows) {
+    return base::unexpected(base::StringPrintf(
+        "The number of columns (%u) in the first matrix isn't equal to "
+        "the number of rows (%u) in the second matrix.",
+        a_cols, b_rows));
+  }
+
+  size_t output_rank = std::max(a_dimensions.size(), b_dimensions.size());
+  std::vector<uint32_t> output_dimensions;
+  // Figure out the output shape by broadcasting all the dimensions except the
+  // last two. The output is 2-D tensor of shape [M, N].
+  if (a_dimensions.size() > 2 && b_dimensions.size() > 2) {
+    std::vector<uint32_t> sliced_a_dimensions(a_dimensions.begin(),
+                                              a_dimensions.end() - 2);
+    std::vector<uint32_t> sliced_b_dimensions(b_dimensions.begin(),
+                                              b_dimensions.end() - 2);
+    absl::optional<std::vector<uint32_t>> optional_output_dimensions =
+        BroadcastShapes(sliced_a_dimensions, sliced_b_dimensions, true);
+    if (!optional_output_dimensions) {
+      return base::unexpected("The matmul input shapes are not broadcastable.");
+    }
+    output_dimensions = *optional_output_dimensions;
+    output_dimensions.push_back(a_rows);
+    output_dimensions.push_back(b_cols);
+  } else if (a_dimensions.size() == 2 && b_dimensions.size() == 2) {
+    output_dimensions.push_back(a_rows);
+    output_dimensions.push_back(b_cols);
+  } else {
+    output_dimensions =
+        a_dimensions.size() > b_dimensions.size() ? a_dimensions : b_dimensions;
+    output_dimensions[output_rank - 2] = a_rows;
+    output_dimensions[output_rank - 1] = b_cols;
+  }
+  CHECK_EQ(output_rank, output_dimensions.size());
+  return Operand(a.data_type, std::move(output_dimensions));
+}
+
 base::expected<Operand, std::string> ValidatePool2dAndInferOutput(
     const Operand& input,
     const Pool2dAttributes& attributes) {
@@ -625,6 +707,27 @@ base::expected<Operand, std::string> ValidateConcatAndInferOutput(
   return Operand(output_type, std::move(output_shape));
 }
 
+base::expected<Operand, std::string> ValidatePreluAndInferOutput(
+    const Operand& input,
+    const Operand& slope) {
+  if (input.data_type != slope.data_type) {
+    return base::unexpected(
+        "The type of slope doesn't match the type of input.");
+  }
+  if (!IsFloatingPointType(input.data_type)) {
+    return base::unexpected(
+        "The type of input and slope must be one of the floating point types.");
+  }
+  // BroadcastShape unidirectionally broadcasts slope.dimensions to
+  // input.dimensions.
+  if (!BroadcastShapes(slope.dimensions, input.dimensions, false)) {
+    return base::unexpected(
+        "The shape of slope is not broadcastable to the shape of input.");
+  }
+
+  return Operand(input.data_type, input.dimensions);
+}
+
 base::expected<Operand, std::string> ValidateTransposeAndInferOutput(
     const Operand& input,
     base::span<const uint32_t> permutation) {
@@ -833,6 +936,20 @@ absl::optional<PaddingSizes> CalculateConv2dPadding(AutoPad auto_pad,
     return absl::nullopt;
   }
   return PaddingSizes({.begin = padding_begin, .end = padding_end});
+}
+
+bool IsFloatingPointType(Operand::DataType data_type) {
+  switch (data_type) {
+    case Operand::DataType::kFloat32:
+    case Operand::DataType::kFloat16:
+      return true;
+    case Operand::DataType::kInt32:
+    case Operand::DataType::kUint32:
+    case Operand::DataType::kInt8:
+    case Operand::DataType::kUint8:
+      return false;
+  }
+  NOTREACHED_NORETURN();
 }
 
 }  // namespace webnn

@@ -549,7 +549,6 @@ _CONFIG = [
             'compositor_target_property::.+',
             'cors::.+',
             'css_parsing_utils::.+',
-            'css_toggle_key_handling::.+',
             'cssvalue::.+',
             'element_locator::.+',
             'encoding::.+',
@@ -937,7 +936,8 @@ _CONFIG = [
         ]
     },
     {
-        'paths': ['third_party/blink/renderer/core/frame/visual_viewport.cc'],
+        'paths': ['third_party/blink/renderer/core/frame/visual_viewport.cc',
+                  'third_party/blink/renderer/core/frame/visual_viewport.h'],
         'allowed': [
             'cc::SolidColorScrollbarLayer',
         ],
@@ -1229,6 +1229,15 @@ _CONFIG = [
         ],
     },
     {
+        'paths': [
+            'third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h',
+        ],
+        # This class needs to pass gpu::Capabilities() to a //media function.
+        'allowed': [
+            'gpu::Capabilities',
+        ],
+    },
+   {
         'paths': [
             'third_party/blink/renderer/core/html/media/',
         ],
@@ -1960,6 +1969,15 @@ _CONFIG = [
             'webnn::features::.+',
         ]
     },
+    {
+        'paths': [
+            'third_party/blink/renderer/modules/ad_auction/',
+            'third_party/blink/renderer/modules/shared_storage/',
+        ],
+        'allowed': [
+            'aggregation_service::.+',
+        ]
+    },
 ]
 
 
@@ -2137,6 +2155,7 @@ def check(path, contents):
     if (ext not in ('.cc', '.cpp', '.h', '.mm') or path.find('/testing/') >= 0
             or path.find('/core/web_test/') >= 0 or path.find('/tests/') >= 0
             or basename.endswith('_test') or basename.endswith('_test_helpers')
+            or basename.endswith('_test_utils')
             or basename.endswith('_unittest') or basename.endswith('_fuzzer')
             or basename.endswith('_perftest')):
         return results

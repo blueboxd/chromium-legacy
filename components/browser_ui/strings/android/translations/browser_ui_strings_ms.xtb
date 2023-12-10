@@ -26,6 +26,7 @@
 <translation id="1448064542941920355">Zum keluar</translation>
 <translation id="1510341833810331442">Laman tidak dibenarkan menyimpan data pada peranti anda</translation>
 <translation id="1547123415014299762">Kuki pihak ketiga dibenarkan</translation>
+<translation id="1568470248891039841">Laman yang anda lawati boleh membenamkan kandungan daripada laman lain, contohnya imej, iklan dan teks. Laman lain boleh meminta kebenaran anda untuk menggunakan maklumat yang disimpan tentang anda ketika anda menyemak imbas laman tersebut. <ph name="BEGIN_LINK" />Ketahui lebih lanjut tentang kandungan terbenam<ph name="END_LINK" /></translation>
 <translation id="1593426485665524382">Tindakan baharu tersedia berdekatan bahagian atas skrin</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1633720957382884102">Laman yang berkaitan</translation>
@@ -80,6 +81,7 @@
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> dan <ph name="NUM_MORE" /> lagi dibenarkan}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> dan <ph name="NUM_MORE" /> lagi dibenarkan}}</translation>
 <translation id="2410940059315936967">Laman yang anda lawati boleh membenamkan kandungan daripada laman lain, contohnya imej, iklan dan teks. Kuki yang ditetapkan oleh laman lain ini dipanggil kuki pihak ketiga.</translation>
 <translation id="2434158240863470628">Muat turun selesai: <ph name="SEPARATOR" /><ph name="BYTES_DOWNLOADED" /></translation>
+<translation id="2438120137003069591">Anda membenarkan laman ini menggunakan kuki pihak ketiga secara sementara, bermakna kurang perlindungan penyemakan imbas tetapi ciri laman berkemungkinan besar berfungsi seperti yang dijangkakan. <ph name="BEGIN_LINK" />Hantar maklum balas<ph name="END_LINK" /></translation>
 <translation id="244264527810019436">Ciri pada sesetengah laman mungkin tidak berfungsi dalam mod Inkognito</translation>
 <translation id="2442870161001914531">Sentiasa minta laman desktop</translation>
 <translation id="2469312991797799607">Tindakan ini akan memadamkan semua data dan kuki untuk <ph name="ORIGIN" /> dan semua laman di bawah domain ini</translation>
@@ -114,6 +116,7 @@
 <translation id="2910701580606108292">Tanya sebelum membenarkan tapak memainkan kandungan yang dilindungi</translation>
 <translation id="2932883381142163287">Laporkan penyalahgunaan</translation>
 <translation id="2968755619301702150">Pemapar sijil</translation>
+<translation id="2979365474350987274">Kuki pihak ketiga adalah terhad</translation>
 <translation id="3008272652534848354">Tetapkan semula kebenaran</translation>
 <translation id="301521992641321250">Disekat secara automatik</translation>
 <translation id="3069226013421428034">Benarkan log masuk pihak ketiga untuk laman tertentu.</translation>
@@ -169,6 +172,7 @@
 <translation id="3918378745482005425">Sesetengah ciri mungkin tidak berfungsi. Laman yang berkaitan masih boleh menggunakan kuki pihak ketiga.</translation>
 <translation id="3955193568934677022">Benarkan tapak untuk memainkan kandungan yang dilindungi (disyorkan)</translation>
 <translation id="3967822245660637423">Muat turun selesai</translation>
+<translation id="3974105241379491420">Laman boleh meminta untuk menggunakan maklumat yang disimpan tentang anda</translation>
 <translation id="3987993985790029246">Salin pautan</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="3992684624889376114">Perihal halaman ini</translation>
@@ -188,6 +192,7 @@
 <translation id="4278390842282768270">Dibenarkan</translation>
 <translation id="429312253194641664">Tapak sedang memainkan media</translation>
 <translation id="42981349822642051">Kembangkan</translation>
+<translation id="4336566011000459927">Chrome akan mengehadkan kuki lagi hari ini</translation>
 <translation id="4338831206024587507">Semua laman di bawah <ph name="DOMAIN" /></translation>
 <translation id="4402755511846832236">Sekat tapak daripada mengetahui waktu anda menggunakan peranti ini dengan aktif</translation>
 <translation id="4412992751769744546">Benarkan kuki pihak ketiga</translation>
@@ -243,6 +248,7 @@
 <translation id="5335288049665977812">Benarkan tapak menjalankan JavaScript (disyorkan)</translation>
 <translation id="534295439873310000">Peranti NFC</translation>
 <translation id="5344522958567249764">Urus privasi iklan</translation>
+<translation id="5389626883706033615">Laman disekat daripada meminta anda menggunakan maklumat yang disimpan tentang anda</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 lagi)}other{(+ # lagi)}}</translation>
 <translation id="5403592356182871684">Nama</translation>
 <translation id="5438097262470833822">Pilihan ini akan menetapkan semula kebenaran untuk <ph name="WEBSITE" /></translation>
@@ -289,6 +295,8 @@
 <translation id="6177128806592000436">Sambungan anda ke tapak ini tidak selamat</translation>
 <translation id="6181444274883918285">Tambah pengecualian tapak</translation>
 <translation id="6192792657125177640">Pengecualian</translation>
+<translation id="6194967801833346599">{DAYS,plural, =1{Chrome akan menyekat kuki lagi esok}other{# hari sehingga kuki disekat lagi}}</translation>
+<translation id="6195163219142236913">Kuki pihak ketiga terhad</translation>
 <translation id="6196640612572343990">Sekat kuki pihak ketiga</translation>
 <translation id="6205314730813004066">Privasi iklan</translation>
 <translation id="6207207788774442484">Padamkan data &amp; tetapkan semula kebenaran</translation>
@@ -299,6 +307,7 @@
 <translation id="6270391203985052864">Tapak boleh membuat permintaan untuk menghantar pemberitahuan</translation>
 <translation id="6295158916970320988">Semua tapak</translation>
 <translation id="6320088164292336938">Getar</translation>
+<translation id="6344622098450209924">Perlindungan Penjejakan</translation>
 <translation id="6367753977865761591">Sekat log masuk pihak ketiga untuk laman tertentu.</translation>
 <translation id="6398765197997659313">Keluar daripada skrin penuh</translation>
 <translation id="640163077447496506">Tamat tempoh hari ini</translation>
@@ -350,6 +359,7 @@
 <translation id="7243308994586599757">Pilihan tersedia berhampiran bahagian bawah skrin</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> dipilih</translation>
 <translation id="7260727271532453612"><ph name="PERMISSION_1" /> dan <ph name="PERMISSION_2" /> dibenarkan</translation>
+<translation id="7284451015630589124">Anda menyekat laman daripada menggunakan kuki pihak ketiga untuk menjejaki anda semasa menyemak imbas. Lawati tetapan untuk <ph name="BEGIN_LINK" />mengurus perlindungan penjejakan anda<ph name="END_LINK" />.</translation>
 <translation id="7302486331832100261">Anda biasanya menyekat pemberitahuan. Untuk membenarkan pemberitahuan, ketik Butiran.</translation>
 <translation id="7366415735885268578">Tambahkan tapak</translation>
 <translation id="7368695150573390554">Mana-mana data luar talian akan dipadamkan</translation>
@@ -358,6 +368,7 @@
 <translation id="7423098979219808738">Tanya dahulu</translation>
 <translation id="7423538860840206698">Disekat daripada membaca papan keratan</translation>
 <translation id="7425915948813553151">Tema gelap untuk laman</translation>
+<translation id="7474522811371247902">Chrome mengehadkan kebanyakan laman daripada menggunakan kuki pihak ketiga. Namun, kuki pihak ketiga dibenarkan pada laman ini kerana kuki tersebut bergantung pada Chrome untuk memberikan perkhidmatan asas.\n\nAkses tetapan untuk <ph name="BEGIN_LINK" />mengurus perlindungan penjejakan anda<ph name="END_LINK" />.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">Suatu tapak sedang menggunakan mikrofon anda</translation>
 <translation id="7561196759112975576">Sentiasa</translation>
@@ -374,6 +385,7 @@
 <translation id="780301667611848630">Tidak, terima kasih</translation>
 <translation id="7804248752222191302">Suatu tapak sedang menggunakan kamera anda</translation>
 <translation id="7807060072011926525">Disediakan oleh Google</translation>
+<translation id="7822573154188733812">Chrome menyekat laman daripada menggunakan kuki pihak ketiga untuk menjejaki anda ketika anda menyemak imbas. Lawati tetapan untuk <ph name="BEGIN_LINK" />mengurus perlindungan penjejakan anda<ph name="END_LINK" />.</translation>
 <translation id="7835852323729233924">Memainkan media</translation>
 <translation id="783819812427904514">Nyahredam video</translation>
 <translation id="7846076177841592234">Batalkan pilihan</translation>
@@ -390,6 +402,7 @@
 <translation id="8077120325605624147">Mana-mana laman yang anda lawati boleh memaparkan sebarang iklan kepada anda</translation>
 <translation id="8087000398470557479">Kandungan ini adalah daripada <ph name="DOMAIN_NAME" />, disampaikan oleh Google.</translation>
 <translation id="8088603949666785339">Lagi pilihan dalam <ph name="BANNER_TITLE" /></translation>
+<translation id="8113501330600751161">{DAYS,plural, =1{Chrome akan mengehadkan kuki lagi esok}other{# hari sehingga Chrome mengehadkan kuki lagi}}</translation>
 <translation id="8116925261070264013">Diredam</translation>
 <translation id="813082847718468539">Lihat maklumat tapak</translation>
 <translation id="8131740175452115882">Sahkan</translation>
@@ -428,6 +441,7 @@
 <translation id="8564613706851221529">{COUNT,plural, =1{Kuki dibenarkan untuk <ph name="FPS_MEMBERS_COUNT" /> laman <ph name="FPS_OWNER" />}other{Kuki dibenarkan untuk <ph name="FPS_MEMBERS_COUNT" /> laman <ph name="FPS_OWNER" />}}</translation>
 <translation id="857943718398505171">Dibenarkan (disyorkan)</translation>
 <translation id="8609465669617005112">Alihkan ke atas</translation>
+<translation id="8649036394979866943">Chrome mengehadkan kebanyakan laman daripada menggunakan kuki pihak ketiga untuk menjejaki anda semasa menyemak imbas. Lawati tetapan untuk <ph name="BEGIN_LINK" />mengurus perlindungan penjejakan anda<ph name="END_LINK" /></translation>
 <translation id="8676374126336081632">Kosongkan input</translation>
 <translation id="8681886425883659911">Iklan disekat di laman yang diketahui memaparkan iklan yang mengganggu atau mengelirukan</translation>
 <translation id="868929229000858085">Cari dalam kenalan anda</translation>
@@ -444,12 +458,14 @@
 <translation id="8816026460808729765">Sekat tapak daripada mengakses penderia</translation>
 <translation id="8823559166155093873">Sekat kuki</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8874790741333031443">Cuba berikan kebenaran sementara untuk kuki pihak ketiga yang boleh mengurangkan perlindungan penyemakan imbas tetapi ciri laman lebih berkemungkinan untuk berfungsi seperti yang dijangka.</translation>
 <translation id="8889294078294184559">Sementara anda terus menyemak imbas, laman boleh menyemak dengan Chrome dan membuat pengesahan dengan laman yang telah anda lawati sebelum ini bahawa anda berkemungkinan merupakan orang yang sebenar</translation>
 <translation id="8899807382908246773">Iklan mengganggu</translation>
 <translation id="8903921497873541725">Zum masuk</translation>
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">NFC dimatikan untuk peranti ini. Hidupkan dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" />.</translation>
 <translation id="8928445016601307354">Sekat laman daripada melihat dan menukar maklumat pada peranti NFC</translation>
+<translation id="8944485226638699751">Terhad</translation>
 <translation id="8958424370300090006">Sekat kuki untuk tapak tertentu.</translation>
 <translation id="8959122750345127698">Tidak dapat mencapai navigasi: <ph name="URL" /></translation>
 <translation id="8986362086234534611">Lupa</translation>

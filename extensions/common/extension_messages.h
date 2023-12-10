@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/socket_permission_request.h"
+#include "extensions/buildflags/buildflags.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/api/messaging/messaging_endpoint.h"
 #include "extensions/common/api/messaging/port_context.h"
@@ -51,6 +52,7 @@
 
 #define IPC_MESSAGE_START ExtensionMsgStart
 
+#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
 IPC_ENUM_TRAITS_MAX_VALUE(extensions::mojom::CSSOrigin,
                           extensions::mojom::CSSOrigin::kMaxValue)
 
@@ -299,5 +301,6 @@ IPC_MESSAGE_CONTROL4(ExtensionHostMsg_EventAckWorker,
                      int64_t /* service_worker_version_id */,
                      int /* worker_thread_id */,
                      int /* event_id */)
+#endif
 
 #endif  // EXTENSIONS_COMMON_EXTENSION_MESSAGES_H_

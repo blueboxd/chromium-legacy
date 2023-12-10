@@ -12,7 +12,7 @@
 #import "ios/chrome/browser/flags/chrome_switches.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ntp/home/features.h"
-#import "ios/chrome/browser/search_engines/search_engines_app_interface.h"
+#import "ios/chrome/browser/search_engines/model/search_engines_app_interface.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/signin/capabilities_types.h"
@@ -124,8 +124,8 @@ id<GREYMatcher> notPracticallyVisible() {
 + (void)setUpForTestCase {
   [super setUpForTestCase];
   // Mark What's New as already-seen so it does not override Bookmarks.
-  [ChromeEarlGrey setUserDefaultObject:@YES forKey:kWhatsNewUsageEntryKey];
-  [ChromeEarlGrey setUserDefaultObject:@YES forKey:kWhatsNewM116UsageEntryKey];
+  [ChromeEarlGrey setUserDefaultsObject:@YES forKey:kWhatsNewUsageEntryKey];
+  [ChromeEarlGrey setUserDefaultsObject:@YES forKey:kWhatsNewM116UsageEntryKey];
   [NTPHomeTestCase setUpHelper];
 }
 
@@ -141,8 +141,8 @@ id<GREYMatcher> notPracticallyVisible() {
 + (void)tearDown {
   [self closeAllTabs];
   // Clean up What's New already-seen.
-  [ChromeEarlGrey removeUserDefaultObjectForKey:kWhatsNewUsageEntryKey];
-  [ChromeEarlGrey setUserDefaultObject:@YES forKey:kWhatsNewM116UsageEntryKey];
+  [ChromeEarlGrey removeUserDefaultsObjectForKey:kWhatsNewUsageEntryKey];
+  [ChromeEarlGrey setUserDefaultsObject:@YES forKey:kWhatsNewM116UsageEntryKey];
 
   [super tearDown];
 }
@@ -266,7 +266,7 @@ id<GREYMatcher> notPracticallyVisible() {
 - (void)MAYBE_testCollectionShortcutsWithWhatsNew {
   AppLaunchConfiguration config = self.appConfigurationForTestCase;
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
-  [ChromeEarlGrey setUserDefaultObject:@NO forKey:kWhatsNewM116UsageEntryKey];
+  [ChromeEarlGrey setUserDefaultsObject:@NO forKey:kWhatsNewM116UsageEntryKey];
 
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
@@ -1017,15 +1017,25 @@ id<GREYMatcher> notPracticallyVisible() {
                     kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix,
                     index])] assertWithMatcher:grey_sufficientlyVisible()];
   }
-  for (NSInteger index = 0; index < 4; index++) {
+  if (IsMagicStackEnabled()) {
+    // Just check for Magic Stack visibility since the top module shown may
+    // vary.
     [[EarlGrey
-        selectElementWithMatcher:
-            grey_accessibilityID([NSString
-                stringWithFormat:
-                    @"%@%li",
-                    kContentSuggestionsShortcutsAccessibilityIdentifierPrefix,
-                    index])] assertWithMatcher:grey_sufficientlyVisible()];
+        selectElementWithMatcher:grey_accessibilityID(
+                                     kMagicStackViewAccessibilityIdentifier)]
+        assertWithMatcher:grey_sufficientlyVisible()];
+  } else {
+    for (NSInteger index = 0; index < 4; index++) {
+      [[EarlGrey
+          selectElementWithMatcher:
+              grey_accessibilityID([NSString
+                  stringWithFormat:
+                      @"%@%li",
+                      kContentSuggestionsShortcutsAccessibilityIdentifierPrefix,
+                      index])] assertWithMatcher:grey_sufficientlyVisible()];
+    }
   }
+
   // Ensures that fake omnibox visibility is correct.
   // On iPads, fake omnibox disappears and becomes real omnibox. On other
   // devices, fake omnibox persists and sticks to top.

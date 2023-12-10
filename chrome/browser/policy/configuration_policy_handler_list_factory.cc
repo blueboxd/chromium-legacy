@@ -270,6 +270,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kEditBookmarksEnabled,
     bookmarks::prefs::kEditBookmarksEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kFeedbackSurveysEnabled,
+    policy::policy_prefs::kFeedbackSurveysEnabled,
+    base::Value::Type::BOOLEAN },
 // We avoid checking for BUILDFLAG(ENABLE_NACL) since we may want the policy to
 // exist (deprecated) even if NACL is no longer being built.
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA)
@@ -296,6 +299,11 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kPrintingEnabled,
     base::Value::Type::BOOLEAN },
 #endif // BUILDFLAG(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
+  { key::kOopPrintDriversAllowed,
+    prefs::kOopPrintDriversAllowedByPolicy,
+    base::Value::Type::BOOLEAN },
+#endif
   { key::kSafeBrowsingEnabled,
     prefs::kSafeBrowsingEnabled,
     base::Value::Type::BOOLEAN },
@@ -955,6 +963,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     { key::kMicrosoftOneDriveMount,
     prefs::kMicrosoftOneDriveMount,
     base::Value::Type::STRING},
+  { key::kMicrosoftOneDriveAccountRestrictions,
+    prefs::kMicrosoftOneDriveAccountRestrictions,
+    base::Value::Type::LIST},
   { key::kExtensionOAuthRedirectUrls,
     extensions::pref_names::kOAuthRedirectUrls,
     base::Value::Type::DICT },
@@ -1598,6 +1609,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kWindowOcclusionEnabled,
     policy::policy_prefs::kNativeWindowOcclusionEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kNativeHostsExecutablesLaunchDirectly,
+    prefs::kNativeHostsExecutablesLaunchDirectly,
+    base::Value::Type::BOOLEAN },
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
@@ -1734,9 +1748,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kAlwaysOpenPdfExternally,
     prefs::kPluginsAlwaysOpenPdfExternally,
     base::Value::Type::BOOLEAN },
-  { key::kEnterpriseProfileCreationKeepBrowsingData,
-    prefs::kEnterpriseProfileCreationKeepBrowsingData,
-    base::Value::Type::BOOLEAN },
   { key::kNativeMessagingUserLevelHosts,
     extensions::pref_names::kNativeMessagingUserLevelHosts,
     base::Value::Type::BOOLEAN },
@@ -1797,6 +1808,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDeskAPIThirdPartyAllowlist,
     prefs::kDeskAPIThirdPartyAllowlist,
     base::Value::Type::LIST },
+  { key::kDeskAPIDeskSaveAndShareEnabled,
+    prefs::kDeskAPIDeskSaveAndShareEnabled,
+    base::Value::Type::BOOLEAN },
   { key::kDeviceAttributesAllowedForOrigins,
     prefs::kDeviceAttributesAllowedForOrigins,
     base::Value::Type::LIST },
@@ -2039,6 +2053,16 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kIPv6ReachabilityOverrideEnabled,
     prefs::kIPv6ReachabilityOverrideEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kPrivateNetworkAccessRestrictionsEnabled,
+    prefs::kManagedPrivateNetworkAccessRestrictionsEnabled,
+    base::Value::Type::BOOLEAN },
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+  { key::kExtensionInstallTypeBlocklist,
+    extensions::pref_names::kExtensionInstallTypeBlocklist,
+    base::Value::Type::LIST},
+#endif // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+#endif // BUILDFLAG(ENABLE_EXTENSIONS)
 };
 // clang-format on
 
@@ -2151,12 +2175,6 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       enterprise::content::kCopyPreventionSettings, chrome_schema));
   handlers->AddHandler(std::make_unique<DefaultDownloadDirPolicyHandler>());
   handlers->AddHandler(std::make_unique<DownloadDirPolicyHandler>());
-  handlers->AddHandler(
-      std::make_unique<
-          enterprise_connectors::EnterpriseConnectorsPolicyHandler>(
-          key::kContextAwareAccessSignalsAllowlist,
-          enterprise_connectors::kContextAwareAccessSignalsAllowlistPref,
-          chrome_schema));
 #if !BUILDFLAG(IS_FUCHSIA)
   handlers->AddHandler(
       std::make_unique<
@@ -2405,8 +2423,11 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
                                             prefs::kProfileSeparationSettings,
                                             base::Value::Type::INTEGER)));
 
-  handlers->AddHandler(std::make_unique<PolicyWithDependencyHandler>(
-      key::kProfileSeparationSettings,
+  handlers->AddHandler(std::make_unique<SimpleDeprecatingPolicyHandler>(
+      std::make_unique<SimplePolicyHandler>(
+          key::kEnterpriseProfileCreationKeepBrowsingData,
+          prefs::kEnterpriseProfileCreationKeepBrowsingData,
+          base::Value::Type::BOOLEAN),
       std::make_unique<SimplePolicyHandler>(
           key::kProfileSeparationDataMigrationSettings,
           prefs::kProfileSeparationDataMigrationSettings,

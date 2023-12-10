@@ -9,14 +9,14 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/anchor_position_scroll_data.h"
 #include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
+#include "third_party/blink/renderer/core/layout/grid/grid_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/grid/grid_placement.h"
+#include "third_party/blink/renderer/core/layout/inline/physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_layout_algorithm.h"
-#include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_placement.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_box_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_absolute_utils.h"
@@ -476,8 +476,9 @@ NGOutOfFlowLayoutPart::GetContainingBlockInfo(
   const auto& node_style = candidate.Node().Style();
 
   auto IsPlacedWithinGridArea = [&](const auto* containing_block) {
-    if (!containing_block->IsLayoutNGGrid())
+    if (!containing_block->IsLayoutGrid()) {
       return false;
+    }
 
     return !node_style.GridColumnStart().IsAuto() ||
            !node_style.GridColumnEnd().IsAuto() ||
@@ -485,17 +486,16 @@ NGOutOfFlowLayoutPart::GetContainingBlockInfo(
            !node_style.GridRowEnd().IsAuto();
   };
 
-  auto GridAreaContainingBlockInfo = [&](const LayoutNGGrid& containing_grid,
-                                         const NGGridLayoutData& layout_data,
-                                         const BoxStrut& borders,
-                                         const LogicalSize& size)
+  auto GridAreaContainingBlockInfo =
+      [&](const LayoutGrid& containing_grid, const GridLayoutData& layout_data,
+          const BoxStrut& borders, const LogicalSize& size)
       -> NGOutOfFlowLayoutPart::ContainingBlockInfo {
     const auto& grid_style = containing_grid.StyleRef();
     GridItemData grid_item(candidate.Node(), grid_style,
                            grid_style.GetFontBaseline());
 
     return {grid_style.GetWritingDirection(),
-            NGGridLayoutAlgorithm::ComputeOutOfFlowItemContainingRect(
+            GridLayoutAlgorithm::ComputeOutOfFlowItemContainingRect(
                 containing_grid.CachedPlacementData(), layout_data, grid_style,
                 borders, size, &grid_item)};
   };
@@ -539,9 +539,8 @@ NGOutOfFlowLayoutPart::GetContainingBlockInfo(
 
       if (is_placed_within_grid_area) {
         return GridAreaContainingBlockInfo(
-            *To<LayoutNGGrid>(containing_block),
-            *To<LayoutNGGrid>(containing_block)->GridLayoutData(), border,
-            size);
+            *To<LayoutGrid>(containing_block),
+            *To<LayoutGrid>(containing_block)->LayoutData(), border, size);
       }
 
       LogicalSize content_size = ShrinkLogicalSize(size, border);
@@ -562,8 +561,8 @@ NGOutOfFlowLayoutPart::GetContainingBlockInfo(
 
   if (IsPlacedWithinGridArea(container_object)) {
     return GridAreaContainingBlockInfo(
-        *To<LayoutNGGrid>(container_object),
-        container_builder_->GridLayoutData(), container_builder_->Borders(),
+        *To<LayoutGrid>(container_object),
+        container_builder_->GetGridLayoutData(), container_builder_->Borders(),
         {container_builder_->InlineSize(),
          container_builder_->FragmentBlockSize()});
   }
@@ -837,7 +836,7 @@ void NGOutOfFlowLayoutPart::LayoutCandidates(
     HeapVector<NGLogicalOutOfFlowPositionedNode>* candidates) {
   const WritingModeConverter conainer_converter(
       container_builder_->GetWritingDirection(), container_builder_->Size());
-  const NGFragmentItemsBuilder::ItemWithOffsetList* items = nullptr;
+  const FragmentItemsBuilder::ItemWithOffsetList* items = nullptr;
   absl::optional<NGLogicalAnchorQueryMap> anchor_queries;
   while (candidates->size() > 0) {
     if (!has_block_fragmentation_ ||
@@ -869,7 +868,7 @@ void NGOutOfFlowLayoutPart::LayoutCandidates(
             candidate.inline_container.container &&
             container_builder_->AnchorQuery();
         if (needs_anchor_queries && !anchor_queries) {
-          if (NGFragmentItemsBuilder* items_builder =
+          if (FragmentItemsBuilder* items_builder =
                   container_builder_->ItemsBuilder()) {
             items = &items_builder->Items(conainer_converter.OuterSize());
           }
@@ -2684,11 +2683,12 @@ void NGOutOfFlowLayoutPart::ReplaceFragment(
         // fragment generated for the nested multicol container. This happens
         // when we have a floated "inline-level" nested multicol container with
         // an OOF inside.
-        if (NGFragmentItems::ReplaceBoxFragment(
+        if (FragmentItems::ReplaceBoxFragment(
                 old_fragment,
                 To<NGPhysicalBoxFragment>(new_result->PhysicalFragment()),
-                parent_fragment))
+                parent_fragment)) {
           return;
+        }
       }
       // Search inside child fragments of the containing block.
       if (ReplaceChild(parent_fragment))

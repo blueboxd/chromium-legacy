@@ -231,13 +231,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
 
   host()->SetView(this);
 
-  // Let the page-level input event router know about our surface ID
-  // namespace for surface-based hit testing.
-  if (host()->delegate() && host()->delegate()->GetInputEventRouter()) {
-    host()->delegate()->GetInputEventRouter()->AddFrameSinkIdOwner(
-        GetFrameSinkId(), this);
-  }
-
   RenderWidgetHostOwnerDelegate* owner_delegate = host()->owner_delegate();
   if (owner_delegate) {
     // TODO(mostynb): actually use prefs.  Landing this as a separate CL
@@ -446,6 +439,7 @@ void RenderWidgetHostViewMac::InitAsPopup(
 
   // This path is used by the time/date picker.
   ns_view_->InitAsPopup(pos, popup_parent_host_view_->ns_view_id_);
+  Show();
 }
 
 RenderWidgetHostViewBase*

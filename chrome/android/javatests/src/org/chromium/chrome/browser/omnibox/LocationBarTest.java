@@ -188,8 +188,7 @@ public class LocationBarTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     // Do not show a logo image on NTP, unless the default engine is Google, to
-                    // avoid
-                    // occasional timeout in loading it.
+                    // avoid occasional timeout in loading it.
                     doReturn(isGoogle).when(mTemplateUrlService).doesDefaultSearchEngineHaveLogo();
                     doReturn(isGoogle).when(mTemplateUrlService).isDefaultSearchEngineGoogle();
                     doReturn(url)
@@ -520,11 +519,11 @@ public class LocationBarTest {
                     doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
                     // Updating the fraction once should query voice search visibility.
-                    mLocationBarMediator.setUrlFocusChangeFraction(.5f);
+                    mLocationBarMediator.setUrlFocusChangeFraction(.5f, .5f, .5f);
                     Mockito.verify(mVoiceRecognitionHandler).isVoiceSearchEnabled();
 
                     // Further updates to the fraction shouldn't trigger a button visibility update.
-                    mLocationBarMediator.setUrlFocusChangeFraction(.6f);
+                    mLocationBarMediator.setUrlFocusChangeFraction(.6f, .6f, .6f);
                     Mockito.verify(mVoiceRecognitionHandler, Mockito.times(1))
                             .isVoiceSearchEnabled();
                 });

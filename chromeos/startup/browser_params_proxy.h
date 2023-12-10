@@ -75,6 +75,8 @@ class COMPONENT_EXPORT(CHROMEOS_STARTUP) BrowserParamsProxy {
 
   const absl::optional<std::string>& MetricsServiceClientId() const;
 
+  const crosapi::mojom::EntropySourcePtr& EntropySource() const;
+
   uint64_t UkmClientId() const;
 
   bool StandaloneBrowserIsOnlyBrowser() const;
@@ -140,7 +142,7 @@ class COMPONENT_EXPORT(CHROMEOS_STARTUP) BrowserParamsProxy {
 
   bool EnableClipboardHistoryRefresh() const;
 
-  bool IsVariableRefreshRateEnabled() const;
+  bool IsVariableRefreshRateAlwaysOn() const;
 
   bool IsPdfOcrEnabled() const;
 
@@ -153,6 +155,8 @@ class COMPONENT_EXPORT(CHROMEOS_STARTUP) BrowserParamsProxy {
   bool IsAppInstallServiceUriEnabled() const;
 
   bool IsDeskProfilesEnabled() const;
+
+  bool IsCrosWebAppShortcutUiUpdateEnabled() const;
 
  private:
   friend base::NoDestructor<BrowserParamsProxy>;

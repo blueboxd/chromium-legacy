@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/browser_view/tab_lifecycle_mediator.h"
 
+#import "ios/chrome/browser/app_launcher/model/app_launcher_tab_helper.h"
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
 #import "ios/chrome/browser/autofill/bottom_sheet/autofill_bottom_sheet_tab_helper.h"
 #import "ios/chrome/browser/commerce/model/price_notifications/price_notifications_iph_presenter.h"
@@ -30,7 +31,7 @@
 #import "ios/chrome/browser/shared/public/commands/unit_conversion_commands.h"
 #import "ios/chrome/browser/shared/public/commands/web_content_commands.h"
 #import "ios/chrome/browser/snapshots/model/snapshot_tab_helper.h"
-#import "ios/chrome/browser/ssl/captive_portal_tab_helper.h"
+#import "ios/chrome/browser/ssl/model/captive_portal_tab_helper.h"
 #import "ios/chrome/browser/tab_insertion/model/tab_insertion_browser_agent.h"
 #import "ios/chrome/browser/ui/download/download_manager_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
@@ -166,6 +167,8 @@
     priceNotificationsTabHelper->SetPriceNotificationsIPHPresenter(
         _priceNotificationsIPHPresenter);
   }
+  AppLauncherTabHelper::FromWebState(webState)->SetBrowserPresentationProvider(
+      _appLauncherBrowserPresentationProvider);
 }
 
 - (void)uninstallDependencyForWebState:(web::WebState*)webState {
@@ -225,6 +228,9 @@
   if (priceNotificationsTabHelper) {
     priceNotificationsTabHelper->SetPriceNotificationsIPHPresenter(nil);
   }
+
+  AppLauncherTabHelper::FromWebState(webState)->SetBrowserPresentationProvider(
+      nil);
 }
 
 @end

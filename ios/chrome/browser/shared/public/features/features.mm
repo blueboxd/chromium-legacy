@@ -116,7 +116,7 @@ const char kIOSEditMenuSearchWithTitleSearchWithParam[] = "SearchWith";
 const char kIOSEditMenuSearchWithTitleWebSearchParam[] = "WebSearch";
 BASE_FEATURE(kIOSEditMenuSearchWith,
              "IOSEditMenuSearchWith",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsSearchWithEnabled() {
   if (@available(iOS 16, *)) {
@@ -127,7 +127,7 @@ bool IsSearchWithEnabled() {
 
 BASE_FEATURE(kIOSEditMenuHideSearchWeb,
              "IOSEditMenuHideSearchWeb",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kIOSNewOmniboxImplementation,
              "kIOSNewOmniboxImplementation",
@@ -228,7 +228,7 @@ BASE_FEATURE(kNewNTPOmniboxLayout,
 
 BASE_FEATURE(kBottomOmniboxSteadyState,
              "BottomOmniboxSteadyState",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 const char kBottomOmniboxDefaultSettingParam[] =
     "BottomOmniboxDefaultSettingParam";
@@ -240,12 +240,21 @@ BASE_FEATURE(kBottomOmniboxDefaultSetting,
              "BottomOmniboxDefaultSetting",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kBottomOmniboxDeviceSwitcherResults,
+             "BottomOmniboxDeviceSwitcherResults",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 bool IsBottomOmniboxSteadyStateEnabled() {
   // Bottom omnibox is only available on phones.
   if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_PHONE) {
     return false;
   }
   return base::FeatureList::IsEnabled(kBottomOmniboxSteadyState);
+}
+
+bool IsBottomOmniboxDeviceSwitcherResultsEnabled() {
+  return IsBottomOmniboxSteadyStateEnabled() &&
+         base::FeatureList::IsEnabled(kBottomOmniboxDeviceSwitcherResults);
 }
 
 BASE_FEATURE(kOnlyAccessClipboardAsync,
@@ -265,6 +274,12 @@ BASE_FEATURE(kFullScreenPromoOnOmniboxCopyPaste,
 BASE_FEATURE(kThemeColorInTopToolbar,
              "ThemeColorInTopToolbar",
              base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kDynamicThemeColor,
+             "DynamicThemeColor",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kDynamicBackgroundColor,
+             "DynamicBackgroundColor",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kTabGridRefactoring,
              "TabGridRefactoring",
@@ -278,6 +293,10 @@ BASE_FEATURE(kBlockSimultaneousCellSelectionKillSwitch,
              "BlockSimultaneousCellSelectionKillSwitch",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kIOSSaveToDrive,
+             "IOSSaveToDrive",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kIOSSaveToPhotos,
              "IOSSaveToPhotos",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -288,4 +307,8 @@ BASE_FEATURE(kSettingsWillBeDismissedBugFixKillSwitch,
 
 BASE_FEATURE(kEnableUIEditMenuInteraction,
              "EnableUIEditMenuInteraction",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kHistoryOptInForRestoreShortyAndReSignin,
+             "HistoryOptInForRestoreShortyAndReSignin",
              base::FEATURE_DISABLED_BY_DEFAULT);

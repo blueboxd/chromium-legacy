@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/core/layout/mathml/math_operator_layout_algorithm.h"
 
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_child_layout_context.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
+#include "third_party/blink/renderer/core/layout/inline/inline_child_layout_context.h"
+#include "third_party/blink/renderer/core/layout/inline/inline_node.h"
 #include "third_party/blink/renderer/core/layout/mathml/math_layout_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/mathml/mathml_operator_element.h"
@@ -44,11 +44,11 @@ const NGLayoutResult* MathOperatorLayoutAlgorithm::Layout() {
   DCHECK(!child.NextSibling());
   DCHECK(!child.IsOutOfFlowPositioned());
 
-  NGSimpleInlineChildLayoutContext context(To<NGInlineNode>(child),
-                                           &container_builder_);
-  const NGLayoutResult* child_layout_result = To<NGInlineNode>(child).Layout(
-      ConstraintSpace(), /* break_token */ nullptr,
-      /* column_spanner_path */ nullptr, &context);
+  SimpleInlineChildLayoutContext context(To<InlineNode>(child),
+                                         &container_builder_);
+  const NGLayoutResult* child_layout_result =
+      To<InlineNode>(child).Layout(ConstraintSpace(), /* break_token */ nullptr,
+                                   /* column_spanner_path */ nullptr, &context);
   container_builder_.AddResult(*child_layout_result, {});
 
   // https://w3c.github.io/mathml-core/#layout-of-operators

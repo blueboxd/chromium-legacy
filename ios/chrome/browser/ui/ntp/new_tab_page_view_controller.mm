@@ -30,6 +30,7 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_mutator.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
+#import "ios/chrome/common/material_timing.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/elements/gradient_view.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
@@ -137,6 +138,9 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 // `YES` when notifications indicate the omnibox is focused.
 @property(nonatomic, assign) BOOL omniboxFocused;
 
+// When set to YES, the scroll position wont be updated.
+@property(nonatomic, assign) BOOL inhibitScrollPositionUpdates;
+
 @end
 
 @implementation NewTabPageViewController {
@@ -158,14 +162,9 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
     _collectionShiftingOffset = 0;
     _shouldAnimateHeader = YES;
     _focusAccessibilityOmniboxWhenViewAppears = YES;
+    _inhibitScrollPositionUpdates = NO;
   }
   return self;
-}
-
-- (void)dealloc {
-  _viewControllersAboveFeed = nil;
-  [self.overscrollActionsController invalidate];
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (void)viewDidLoad {
@@ -216,6 +215,9 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
 
+  if (IsIOSLargeFakeboxEnabled()) {
+    self.headerViewController.view.alpha = 1;
+  }
   self.headerViewController.showing = YES;
 
   [self updateNTPLayout];
@@ -655,9 +657,23 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   }
 }
 
+- (void)invalidate {
+  _viewControllersAboveFeed = nil;
+  [self.overscrollActionsController invalidate];
+  self.overscrollActionsController = nil;
+  self.NTPContentDelegate = nil;
+  self.contentSuggestionsViewController = nil;
+  self.feedMetricsRecorder = nil;
+  self.feedHeaderViewController = nil;
+  self.feedWrapperViewController = nil;
+  self.mutator = nil;
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
 #pragma mark - NewTabPageConsumer
 
 - (void)restoreScrollPosition:(CGFloat)scrollPosition {
+  [self.view layoutIfNeeded];
   if (scrollPosition > -[self heightAboveFeed]) {
     [self setSavedContentOffset:scrollPosition];
   } else {
@@ -691,10 +707,14 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 }
 
 - (void)omniboxWillResignFirstResponder {
-  if (IsIOSLargeFakeboxEnabled() && [self isFakeboxPinned]) {
-    // Return early to allow the omnibox defocus animation show.
-    return;
+  self.omniboxFocused = NO;
+  if (IsIOSLargeFakeboxEnabled()) {
+    if ([self isFakeboxPinned]) {
+      // Return early to allow the omnibox defocus animation show.
+      return;
+    }
   }
+
   [self omniboxDidResignFirstResponder];
 }
 
@@ -703,7 +723,6 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
     return;
   }
 
-  self.omniboxFocused = NO;
   if (IsIOSLargeFakeboxEnabled()) {
     self.headerViewController.view.alpha = 1;
   }
@@ -855,29 +874,42 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
                                  animated:NO];
   }
 
-  // If the fake omnibox is already at the final position, just focus it and
-  // return early.
-  if ([self shouldSkipScrollToFocusOmnibox]) {
-    self.shouldAnimateHeader = NO;
-    self.disableScrollAnimation = NO;
-    [self.NTPContentDelegate focusOmnibox];
-    [self.headerViewController
-        completeHeaderFakeOmniboxFocusAnimationWithFinalPosition:
-            UIViewAnimatingPositionEnd];
-    return;
-  }
-
   self.shouldAnimateHeader = YES;
   CGFloat pinnedOffsetBeforeAnimation = [self pinnedOffsetY];
   if (CGSizeEqualToSize(self.collectionView.contentSize, CGSizeZero)) {
     [self.collectionView layoutIfNeeded];
   }
 
-  // Save the scroll position prior to the animation to allow the user to return
-  // to it on defocus.
-  self.collectionShiftingOffset =
-      MAX(-[self heightAboveFeed],
-          [self.headerViewController pinnedOffsetY] - [self adjustedOffset].y);
+  if (!self.scrolledToMinimumHeight) {
+    // Save the scroll position prior to the animation to allow the user to
+    // return to it on defocus.
+    self.collectionShiftingOffset =
+        MAX(-[self heightAboveFeed],
+            AlignValueToPixel([self.headerViewController pinnedOffsetY] -
+                              [self adjustedOffset].y));
+  }
+
+  // If the fake omnibox is already at the final position, just focus it and
+  // return early.
+  if ([self shouldSkipScrollToFocusOmnibox]) {
+    self.shouldAnimateHeader = NO;
+    if (!self.scrolledToMinimumHeight) {
+      // Scroll up to pinned position if it is not pinned already, but don't
+      // wait for it to finish to focus the omnibox.
+      __weak __typeof(self) weakSelf = self;
+      [UIView animateWithDuration:kMaterialDuration6
+          animations:^{
+            weakSelf.collectionView.contentOffset =
+                CGPoint(0, pinnedOffsetBeforeAnimation);
+            [weakSelf resetFakeOmniboxConstraints];
+          }];
+    }
+    [self.NTPContentDelegate focusOmnibox];
+    [self.headerViewController
+        completeHeaderFakeOmniboxFocusAnimationWithFinalPosition:
+            UIViewAnimatingPositionEnd];
+    return;
+  }
 
   __weak __typeof(self) weakSelf = self;
   ProceduralBlock shiftOmniboxToTop = ^{
@@ -948,8 +980,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 // Returns YES if scroll should be skipped when focusing the omnibox.
 - (BOOL)shouldSkipScrollToFocusOmnibox {
   return self.scrolledToMinimumHeight ||
-         (IsIOSLargeFakeboxEnabled() &&
-          (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE));
+         (IsIOSLargeFakeboxEnabled() && IsSplitToolbarMode(self));
 }
 
 // Returns the collection view containing all NTP content.
@@ -1028,6 +1059,32 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   if (self.collectionShiftingOffset == 0 || self.collectionView.dragging) {
     self.collectionShiftingOffset = 0;
     [self updateFakeOmniboxForScrollPosition];
+    return;
+  }
+
+  if (IsIOSLargeFakeboxEnabled()) {
+    // Skip the full CADisplayLink animation below, and use a simpler animation
+    // to scroll back into position.
+    CGFloat yOffset = MAX([self pinnedOffsetY] - self.collectionShiftingOffset,
+                          -[self heightAboveFeed]);
+    self.headerViewController.view.alpha = 0;
+    __weak __typeof(self) weakSelf = self;
+    self.inhibitScrollPositionUpdates = YES;
+    [UIView animateWithDuration:kMaterialDuration6
+        delay:0
+        options:UIViewAnimationOptionCurveEaseOut
+        animations:^{
+          weakSelf.headerViewController.view.alpha = 1;
+          weakSelf.collectionView.contentOffset = CGPoint(0, yOffset);
+          [weakSelf updateFakeOmniboxForScrollPosition];
+        }
+        completion:^(BOOL finished) {
+          weakSelf.inhibitScrollPositionUpdates = NO;
+          weakSelf.collectionShiftingOffset = 0;
+          weakSelf.headerViewController.view.alpha = 1;
+          weakSelf.collectionView.contentOffset = CGPoint(0, yOffset);
+          weakSelf.scrolledToMinimumHeight = NO;
+        }];
     return;
   }
 
@@ -1483,6 +1540,9 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 // Calculate the scroll position that should be saved in the NTP state and
 // update the mutator.
 - (void)updateScrollPositionToSave {
+  if (self.inhibitScrollPositionUpdates) {
+    return;
+  }
   CGFloat scrollPositionToSave = [self scrollPosition];
   if ([self.NTPContentDelegate isRecentTabTileVisible]) {
     CGFloat tileSectionHeight =
@@ -1641,7 +1701,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 // updates property.
 - (void)updateScrolledToMinimumHeight {
   CGFloat scrollPosition = [self scrollPosition];
-  CGFloat minimumHeightOffset = [self pinnedOffsetY];
+  CGFloat minimumHeightOffset = AlignValueToPixel([self pinnedOffsetY]);
 
   self.scrolledToMinimumHeight = scrollPosition >= minimumHeightOffset;
 }
@@ -1708,7 +1768,12 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 
 // Sets the y content offset of the NTP collection view.
 - (void)setContentOffset:(CGFloat)offset {
-  self.collectionView.contentOffset = CGPointMake(0, offset);
+  UICollectionView* collectionView = self.collectionView;
+  CGFloat maxOffset = collectionView.contentSize.height +
+                      collectionView.contentInset.bottom -
+                      collectionView.bounds.size.height;
+  offset = MIN(maxOffset, offset);
+  collectionView.contentOffset = CGPointMake(0, offset);
   self.scrolledIntoFeed = offset > [self offsetWhenScrolledIntoFeed];
   [self handleStickyElementsForScrollPosition:offset force:YES];
   if (self.feedHeaderViewController) {

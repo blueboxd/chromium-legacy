@@ -1042,7 +1042,9 @@ bool IsGeneralPromoEligibleUser(bool is_signed_in) {
 }
 
 bool IsVideoPromoEligibleUser(feature_engagement::Tracker* tracker) {
-  if (!IsDefaultBrowserVideoPromoEnabled()) {
+  BOOL is_db_video_promo_enabled =
+      IsDBVideoPromoHalfscreenEnabled() || IsDBVideoPromoFullscreenEnabled();
+  if (!is_db_video_promo_enabled) {
     return false;
   }
 
@@ -1143,13 +1145,13 @@ void RecordPromoStatsToUMAForActionString(PromoStatistics* promo_stats,
   base::UmaHistogramCounts100(
       base::StrCat({histogram_prefix, ".PromoDisplayCount"}),
       promo_stats.promoDisplayCount);
-  base::UmaHistogramCounts100(
+  base::UmaHistogramCounts1000(
       base::StrCat({histogram_prefix, ".LastPromoInteractionNumDays"}),
       promo_stats.numDaysSinceLastPromo);
-  base::UmaHistogramCounts100(
+  base::UmaHistogramCounts1000(
       base::StrCat({histogram_prefix, ".ChromeColdStartCount"}),
       promo_stats.chromeColdStartCount);
-  base::UmaHistogramCounts100(
+  base::UmaHistogramCounts1000(
       base::StrCat({histogram_prefix, ".ChromeWarmStartCount"}),
       promo_stats.chromeWarmStartCount);
   base::UmaHistogramCounts100(
@@ -1215,7 +1217,7 @@ void RecordPromoStatsToUMAForAppear(PromoStatistics* promo_stats) {
 }
 
 void RecordPromoDisplayStatsToUMA() {
-  base::UmaHistogramCounts100(
+  base::UmaHistogramCounts1000(
       "IOS.DefaultBrowserPromo.DaysSinceLastPromoInteraction",
       NumDaysSincePromoInteraction());
   base::UmaHistogramCounts100(

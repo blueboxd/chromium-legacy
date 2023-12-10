@@ -77,14 +77,14 @@
 #include "third_party/blink/renderer/core/html/html_table_row_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/layout/inline/abstract_inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_abstract_inline_text_box.h"
-#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
-#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
-#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_row.h"
+#include "third_party/blink/renderer/core/layout/table/layout_table.h"
+#include "third_party/blink/renderer/core/layout/table/layout_table_cell.h"
+#include "third_party/blink/renderer/core/layout/table/layout_table_row.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -128,6 +128,8 @@
 #endif  // DCHECK_IS_ON()
 
 namespace blink {
+
+using mojom::blink::FormControlType;
 
 namespace {
 
@@ -267,7 +269,8 @@ bool CanIgnoreSpaceNextTo(LayoutObject* layout_object,
   // to detect CSS images, which don't have the same issue of changing layout.
   if (layout_object->IsLayoutImage() || IsA<HTMLImageElement>(elem) ||
       (IsA<HTMLInputElement>(elem) &&
-       To<HTMLInputElement>(elem)->type() == input_type_names::kImage)) {
+       To<HTMLInputElement>(elem)->FormControlType() ==
+           FormControlType::kInputImage)) {
     return false;
   }
 
@@ -793,7 +796,7 @@ AXObject* AXObjectCacheImpl::Root() {
     return root;
 
   ProcessDeferredAccessibilityEvents(GetDocument());
-  return SafeGet(document_);
+  return SafeGet(document_.Get());
 }
 
 AXObject* AXObjectCacheImpl::ObjectFromAXID(AXID id) const {
@@ -993,7 +996,7 @@ AXObject* AXObjectCacheImpl::Get(const Node* node) {
   return SafeGet(node);
 }
 
-AXObject* AXObjectCacheImpl::Get(NGAbstractInlineTextBox* inline_text_box) {
+AXObject* AXObjectCacheImpl::Get(AbstractInlineTextBox* inline_text_box) {
   if (!inline_text_box)
     return nullptr;
 
@@ -1102,9 +1105,10 @@ AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
     return MakeGarbageCollected<AXListBoxOption>(layout_object, *this);
 
   if (auto* html_input_element = DynamicTo<HTMLInputElement>(node)) {
-    const AtomicString& type = html_input_element->type();
-    if (type == input_type_names::kRange)
+    FormControlType type = html_input_element->FormControlType();
+    if (type == FormControlType::kInputRange) {
       return MakeGarbageCollected<AXSlider>(layout_object, *this);
+    }
   }
 
   if (auto* select_element = DynamicTo<HTMLSelectElement>(node)) {
@@ -1271,7 +1275,7 @@ AXObject* AXObjectCacheImpl::CreateFromNode(Node* node) {
 }
 
 AXObject* AXObjectCacheImpl::CreateFromInlineTextBox(
-    NGAbstractInlineTextBox* inline_text_box) {
+    AbstractInlineTextBox* inline_text_box) {
   return MakeGarbageCollected<AXInlineTextBox>(inline_text_box, *this);
 }
 
@@ -1482,9 +1486,8 @@ AXObject* AXObjectCacheImpl::GetOrCreate(LayoutObject* layout_object,
                        parent_if_known);
 }
 
-AXObject* AXObjectCacheImpl::GetOrCreate(
-    NGAbstractInlineTextBox* inline_text_box,
-    AXObject* parent) {
+AXObject* AXObjectCacheImpl::GetOrCreate(AbstractInlineTextBox* inline_text_box,
+                                         AXObject* parent) {
   if (!inline_text_box)
     return nullptr;
 
@@ -1763,11 +1766,11 @@ void AXObjectCacheImpl::RemovePopup(Document* popup_document) {
 }
 
 // This is safe to call even if there isn't a current mapping.
-void AXObjectCacheImpl::Remove(NGAbstractInlineTextBox* inline_text_box) {
+void AXObjectCacheImpl::Remove(AbstractInlineTextBox* inline_text_box) {
   Remove(inline_text_box, /* notify_parent */ true);
 }
 
-void AXObjectCacheImpl::Remove(NGAbstractInlineTextBox* inline_text_box,
+void AXObjectCacheImpl::Remove(AbstractInlineTextBox* inline_text_box,
                                bool notify_parent) {
   if (!inline_text_box)
     return;
@@ -2604,10 +2607,6 @@ void AXObjectCacheImpl::ChildrenChangedWithCleanLayout(Node* optional_node,
 }
 
 void AXObjectCacheImpl::UpdateTreeIfNeeded() {
-  if (!RuntimeEnabledFeatures::AccessibilityEagerAXTreeUpdateEnabled()) {
-    return;
-  }
-
   DCHECK(!updating_tree_);
   if (Root()->HasDirtyDescendants()) {
     base::AutoReset<bool> updating(&updating_tree_, true);
@@ -2769,7 +2768,7 @@ void AXObjectCacheImpl::ProcessDeferredAccessibilityEvents(Document& document) {
 
     // Update (create or remove) validation child of root, if it is needed, so
     // that the tree can be frozen in the correct state.
-    ValidationMessageObjectIfInvalid(/* notify children changed */ true);
+    ValidationMessageObjectIfInvalid();
 
     // Changes to ids or aria-owns may have resulted in queued up relation
     // cache work; do that now.
@@ -2800,10 +2799,10 @@ void AXObjectCacheImpl::ProcessDeferredAccessibilityEvents(Document& document) {
     }
 #endif
 
+    mark_all_dirty_ = false;
+
     // Build out tree, such that each node has computed its children.
-    if (RuntimeEnabledFeatures::AccessibilityEagerAXTreeUpdateEnabled()) {
-      UpdateTreeIfNeeded();
-    }
+    UpdateTreeIfNeeded();
   }
 
   // ***** Serialize *****
@@ -2873,12 +2872,8 @@ bool AXObjectCacheImpl::IsDirty() {
       relation_cache_->IsDirty()) {
     return true;
   }
-  DCHECK(RuntimeEnabledFeatures::AccessibilityEagerAXTreeUpdateEnabled() ||
-         !Root()->HasDirtyDescendants());
-  if (RuntimeEnabledFeatures::AccessibilityEagerAXTreeUpdateEnabled()) {
-    if (Root()->NeedsToUpdateChildren() || Root()->HasDirtyDescendants()) {
-      return true;
-    }
+  if (Root()->NeedsToUpdateChildren() || Root()->HasDirtyDescendants()) {
+    return true;
   }
   return false;
 }
@@ -3775,7 +3770,8 @@ AXObject* AXObjectCacheImpl::GetOrCreateValidationMessageObject() {
       return nullptr;
     }
     message_ax_object = MakeGarbageCollected<AXValidationMessage>(*this);
-    DCHECK(message_ax_object);
+    CHECK(message_ax_object);
+    CHECK(!message_ax_object->IsDetached());
     // Cache the validation message container for reuse.
     validation_message_axid_ = AssociateAXID(message_ax_object);
     // Validation message alert object is a child of the document, as not all
@@ -3784,11 +3780,11 @@ AXObject* AXObjectCacheImpl::GetOrCreateValidationMessageObject() {
     // expected to have alerts within AT client code.
     message_ax_object->Init(Root());
   }
+  CHECK(!message_ax_object->IsDetached());
   return message_ax_object;
 }
 
-AXObject* AXObjectCacheImpl::ValidationMessageObjectIfInvalid(
-    bool notify_children_changed) {
+AXObject* AXObjectCacheImpl::ValidationMessageObjectIfInvalid() {
   Element* focused_element = document_->FocusedElement();
   if (focused_element) {
     ListedElement* form_control = ListedElement::From(*focused_element);
@@ -3800,25 +3796,17 @@ AXObject* AXObjectCacheImpl::ValidationMessageObjectIfInvalid(
       bool was_validation_message_already_created = validation_message_axid_;
       if (was_validation_message_already_created ||
           form_control->IsValidationMessageVisible()) {
-        AXObject* focused_object = FocusedObject();
-        if (focused_object) {
-          // Return as long as the focused form control isn't overriding with a
-          // different message via aria-errormessage.
-          AXObject::AXObjectVector aria_error_messages =
-              focused_object->ErrorMessageFromAria();
-          if (aria_error_messages.empty()) {
-            AXObject* message = GetOrCreateValidationMessageObject();
-            DCHECK(message);
-            DCHECK(!message->IsDetached());
-            if (notify_children_changed &&
-                Root()->FirstChildIncludingIgnored() != message) {
-              // Only notify children changed if not already processing new root
-              // children, and the root doesn't already have this child.
-              ChildrenChangedWithCleanLayout(document_);
-            }
-            DCHECK_EQ(message->CachedParentObject(), Root());
-            return message;
-          }
+        HeapVector<Member<Element>> error_messages;
+        // Create the validation message unless the focused form control is
+        // overriding it with a different message via aria-errormessage.
+        if (!AccessibleNode::GetPropertyOrARIAAttribute(
+                focused_element, AOMRelationListProperty::kErrorMessage,
+                error_messages)) {
+          AXObject* message = GetOrCreateValidationMessageObject();
+          CHECK(message);
+          CHECK(!message->IsDetached());
+          CHECK_EQ(message->CachedParentObject(), Root());
+          return message;
         }
       }
     }
@@ -3841,9 +3829,9 @@ void AXObjectCacheImpl::RemoveValidationMessageObjectWithCleanLayout(
     // the same object is hidden and made visible quickly, which occurs if the
     // user submits the form when an alert is already visible.
     Remove(validation_message_axid_, /* notify_parent */ false);
-    ChildrenChangedWithCleanLayout(document_);
     validation_message_axid_ = 0;
   }
+  ChildrenChangedWithCleanLayout(document_);
 }
 
 // Native validation error popup for focused form control in current document.
@@ -3866,10 +3854,11 @@ void AXObjectCacheImpl::HandleValidationMessageVisibilityChangedWithCleanLayout(
       << "Unclean document at lifecycle " << document->Lifecycle().ToString();
 #endif  // DCHECK_IS_ON()
 
-  AXObject* message_ax_object = ValidationMessageObjectIfInvalid(
-      /* Fire children changed on root if it gains message child */ true);
-  if (message_ax_object)  // May be invisible now.
+  if (AXObject* message_ax_object = ValidationMessageObjectIfInvalid()) {
     MarkAXObjectDirtyWithCleanLayout(message_ax_object);
+  }
+
+  ChildrenChangedWithCleanLayout(Root());
 
   // If the form control is invalid, it will now have an error message relation
   // to the message container.
@@ -4155,7 +4144,6 @@ void AXObjectCacheImpl::MarkDocumentDirtyWithCleanLayout() {
   // but will not create new AXObjects, which avoids resetting the user's
   // position in the content.
   DCHECK(mark_all_dirty_);
-  mark_all_dirty_ = false;
 
   // Assume all nodes in the tree need to recompute their properties.
   // Note that objects can remain in the tree without being re-created.

@@ -51,6 +51,7 @@
 #include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/web_input_event_attribution.h"
+#include "third_party/blink/public/common/loader/lcp_critical_path_predictor_util.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
@@ -69,6 +70,7 @@
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/url_conversion.h"
+#include "third_party/blink/public/platform/web_background_resource_fetch_assets.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -192,6 +194,7 @@
 #include "third_party/blink/renderer/platform/bindings/source_location.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/graphics/image_data_buffer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
@@ -199,6 +202,7 @@
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/image-encoders/image_encoder_utils.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/document_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -787,7 +791,7 @@ ClipPathPaintImageGenerator* LocalFrame::GetClipPathPaintImageGenerator() {
 }
 
 LCPCriticalPathPredictor* LocalFrame::GetLCPP() {
-  if (!base::FeatureList::IsEnabled(features::kLCPCriticalPathPredictor)) {
+  if (!LcppEnabled()) {
     return nullptr;
   }
 
@@ -2043,7 +2047,7 @@ ContentCaptureManager* LocalFrame::GetOrResetContentCaptureManager() {
     content_capture_manager_->Shutdown();
     content_capture_manager_ = nullptr;
   }
-  return content_capture_manager_;
+  return content_capture_manager_.Get();
 }
 
 BrowserInterfaceBrokerProxy& LocalFrame::GetBrowserInterfaceBroker() {
@@ -2119,6 +2123,11 @@ LocalFrame::GetURLLoaderFactory() {
 
 std::unique_ptr<URLLoader> LocalFrame::CreateURLLoaderForTesting() {
   return Client()->CreateURLLoaderForTesting();
+}
+
+scoped_refptr<WebBackgroundResourceFetchAssets>
+LocalFrame::MaybeGetBackgroundResourceFetchAssets() {
+  return Client()->MaybeGetBackgroundResourceFetchAssets();
 }
 
 WebPluginContainerImpl* LocalFrame::GetWebPluginContainer(Node* node) const {
@@ -2458,7 +2467,7 @@ void LocalFrame::FinishedScrollSequence() {
 SmoothScrollSequencer* LocalFrame::GetSmoothScrollSequencer() const {
   if (!IsLocalRoot())
     return LocalFrameRoot().GetSmoothScrollSequencer();
-  return smooth_scroll_sequencer_;
+  return smooth_scroll_sequencer_.Get();
 }
 
 ukm::UkmRecorder* LocalFrame::GetUkmRecorder() {
@@ -3286,27 +3295,48 @@ void LocalFrame::MediaPlayerActionAtViewportPoint(
     case mojom::blink::MediaPlayerActionType::kControls:
       media_element->SetUserWantsControlsVisible(enable);
       break;
+    case mojom::blink::MediaPlayerActionType::kSaveVideoFrameAs:
+      if (auto* video = DynamicTo<HTMLVideoElement>(media_element); video) {
+        auto image = video->CreateStaticBitmapImage();
+        if (!image) {
+          return;
+        }
+        auto data_buffer = ImageDataBuffer::Create(image);
+        if (!data_buffer) {
+          return;
+        }
+
+        ImageEncodingMimeType encoding_mime_type =
+            ImageEncoderUtils::ToEncodingMimeType(
+                "image/png", ImageEncoderUtils::kEncodeReasonToDataURL);
+        String data_url =
+            data_buffer->ToDataURL(encoding_mime_type, /*quality=*/0);
+
+        auto params = mojom::blink::DownloadURLParams::New();
+        params->is_context_menu_save = true;
+        params->suggested_name = media_element->title();
+        params->data_url_blob = DataURLToBlob(data_url);
+        GetLocalFrameHostRemote().DownloadURL(std::move(params));
+      }
+      break;
     case mojom::blink::MediaPlayerActionType::kCopyVideoFrame:
-      DCHECK(IsA<HTMLVideoElement>(media_element));
-      {
-        auto* video_element = To<HTMLVideoElement>(media_element);
-        auto image = video_element->CreateStaticBitmapImage();
+      if (auto* video = DynamicTo<HTMLVideoElement>(media_element); video) {
+        auto image = video->CreateStaticBitmapImage();
         if (image) {
           GetEditor().CopyImage(result, image);
         }
       }
       break;
     case mojom::blink::MediaPlayerActionType::kPictureInPicture:
-      DCHECK(IsA<HTMLVideoElement>(media_element));
-      if (enable) {
-        PictureInPictureController::From(node->GetDocument())
-            .EnterPictureInPicture(To<HTMLVideoElement>(media_element),
-                                   /*promise=*/nullptr);
-      } else {
-        PictureInPictureController::From(node->GetDocument())
-            .ExitPictureInPicture(To<HTMLVideoElement>(media_element), nullptr);
+      if (auto* video = DynamicTo<HTMLVideoElement>(media_element); video) {
+        if (enable) {
+          PictureInPictureController::From(node->GetDocument())
+              .EnterPictureInPicture(video, /*promise=*/nullptr);
+        } else {
+          PictureInPictureController::From(node->GetDocument())
+              .ExitPictureInPicture(video, nullptr);
+        }
       }
-
       break;
   }
 }

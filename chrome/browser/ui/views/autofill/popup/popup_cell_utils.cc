@@ -142,6 +142,10 @@ std::unique_ptr<views::ImageView> GetIconImageViewByName(
     return ImageViewFromVectorIcon(vector_icons::kEditIcon, kIconSize);
   }
 
+  if (icon_str == "codeIcon") {
+    return ImageViewFromVectorIcon(vector_icons::kCodeIcon, kIconSize);
+  }
+
   if (icon_str == "locationIcon") {
     return ImageViewFromVectorIcon(vector_icons::kLocationOnIcon, kIconSize);
   }
@@ -162,10 +166,8 @@ std::unique_ptr<views::ImageView> GetIconImageViewByName(
     return ImageViewFromVectorIcon(kGlobeIcon, kIconSize);
   }
 
-  // TODO(crbug.com/1459990): Use proper icon. The magic_button icon does not
-  // exist yet, I will introduce it in a follow up cl.
   if (icon_str == "magicIcon") {
-    return ImageViewFromVectorIcon(kGlobeIcon, kIconSize);
+    return ImageViewFromVectorIcon(vector_icons::kMagicButtonIcon, kIconSize);
   }
 
   if (icon_str == "accountIcon") {
@@ -522,7 +524,6 @@ std::vector<std::unique_ptr<views::View>> CreateAndTrackSubtextViews(
 
   for (const std::vector<Suggestion::Text>& label_row :
        controller->GetSuggestionAt(line_number).labels) {
-    DCHECK(!label_row.empty());
     if (base::ranges::all_of(label_row, &std::u16string::empty,
                              &Suggestion::Text::value)) {
       // If a row is empty, do not include any further rows.
@@ -552,17 +553,6 @@ std::vector<std::unique_ptr<views::View>> CreateAndTrackSubtextViews(
   return result;
 }
 
-// Adds the callbacks for the content area to `content_view`.
-void AddCallbacksToContentView(
-    base::WeakPtr<AutofillPopupController> controller,
-    int line_number,
-    PopupCellView& content_view) {
-  content_view.SetOnSelectedCallback(base::BindRepeating(
-      &AutofillPopupController::SelectSuggestion, controller, line_number));
-  content_view.SetOnUnselectedCallback(base::BindRepeating(
-      &AutofillPopupController::SelectSuggestion, controller, absl::nullopt));
-}
-
 void AddSuggestionStrategyContentCellChildren(
     PopupCellView* view,
     base::WeakPtr<AutofillPopupController> controller,
@@ -578,9 +568,6 @@ void AddSuggestionStrategyContentCellChildren(
       CreateMinorTextLabel(kSuggestion.minor_text),
       /*description_label=*/nullptr,
       CreateAndTrackSubtextViews(*view, controller, line_number), *view);
-
-  // Prepare the callbacks to the controller.
-  AddCallbacksToContentView(controller, line_number, *view);
 }
 
 std::unique_ptr<views::ImageView> ImageViewFromVectorIcon(

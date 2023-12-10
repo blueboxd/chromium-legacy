@@ -46,6 +46,7 @@ struct AXTreeUpdate;
 
 namespace blink {
 
+class AbstractInlineTextBox;
 class AriaNotificationOptions;
 class AXObject;
 class AccessibleNode;
@@ -55,7 +56,6 @@ class HTMLTableElement;
 class HTMLFrameOwnerElement;
 class HTMLSelectElement;
 class LocalFrameView;
-class NGAbstractInlineTextBox;
 struct PhysicalRect;
 
 class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
@@ -106,7 +106,7 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   virtual void Remove(Node*) = 0;
   virtual void RemoveSubtreeWhenSafe(Node*, bool remove_root = true) = 0;
   virtual void RemovePopup(Document*) = 0;
-  virtual void Remove(NGAbstractInlineTextBox*) = 0;
+  virtual void Remove(AbstractInlineTextBox*) = 0;
 
   virtual const Element* RootAXEditableElement(const Node*) = 0;
 
@@ -205,6 +205,8 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   virtual AXID GetExistingAXID(Node*) = 0;
 
   virtual AXObject* ObjectFromAXID(AXID) const = 0;
+
+  virtual AXObject* Root() = 0;
 
   virtual AXID GenerateAXID() const = 0;
 

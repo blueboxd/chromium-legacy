@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
 #include "third_party/blink/renderer/core/paint/fragment_data_iterator.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_inline_box_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -126,6 +127,10 @@ PaintResult PaintLayerPainter::Paint(GraphicsContext& context,
 
   if (object.GetFrameView()->ShouldThrottleRendering())
     return kFullyPainted;
+
+  if (object.IsFragmentLessBox()) {
+    return kFullyPainted;
+  }
 
   // Non self-painting layers without self-painting descendants don't need to be
   // painted as their layoutObject() should properly paint itself.
@@ -357,6 +362,7 @@ void PaintLayerPainter::PaintOverlayOverflowControls(GraphicsContext& context,
 void PaintLayerPainter::PaintFragmentWithPhase(
     PaintPhase phase,
     const FragmentData& fragment_data,
+    wtf_size_t fragment_data_idx,
     const NGPhysicalBoxFragment* physical_fragment,
     GraphicsContext& context,
     PaintFlags paint_flags) {
@@ -386,8 +392,14 @@ void PaintLayerPainter::PaintFragmentWithPhase(
 
   if (physical_fragment) {
     NGBoxFragmentPainter(*physical_fragment).Paint(paint_info);
+  } else if (const auto* layout_inline =
+                 DynamicTo<LayoutInline>(&paint_layer_.GetLayoutObject())) {
+    NGInlineBoxFragmentPainter::PaintAllFragments(
+        *layout_inline, fragment_data, fragment_data_idx, paint_info);
   } else {
-    paint_info.SetFragmentID(fragment_data.FragmentID());
+    // We are about to enter legacy paint code. Set the right FragmentData
+    // object, to use the right paint offset.
+    paint_info.SetFragmentDataOverride(&fragment_data);
     paint_layer_.GetLayoutObject().Paint(paint_info);
   }
 }
@@ -419,8 +431,8 @@ void PaintLayerPainter::PaintWithPhase(PaintPhase phase,
     if (fragment_idx)
       scoped_display_item_fragment.emplace(context, fragment_idx);
 
-    PaintFragmentWithPhase(phase, fragment, physical_fragment, context,
-                           paint_flags);
+    PaintFragmentWithPhase(phase, fragment, fragment_idx, physical_fragment,
+                           context, paint_flags);
 
     if (!multiple_fragments_allowed)
       break;

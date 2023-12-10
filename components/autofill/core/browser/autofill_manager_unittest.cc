@@ -55,7 +55,6 @@ class MockAutofillDownloadManager : public AutofillDownloadManager {
   explicit MockAutofillDownloadManager(AutofillClient* client)
       : AutofillDownloadManager(client,
                                 /*api_key=*/"",
-                                /*is_raw_metadata_uploading_enabled=*/false,
                                 /*log_manager=*/nullptr) {}
 
   MockAutofillDownloadManager(const MockAutofillDownloadManager&) = delete;
@@ -105,21 +104,6 @@ class MockAutofillManager : public AutofillManager {
   MOCK_METHOD(CreditCardAccessManager*,
               GetCreditCardAccessManager,
               (),
-              (override));
-  MOCK_METHOD(void,
-              FillCreditCardFormImpl,
-              (const FormData& form,
-               const FormFieldData& field,
-               const CreditCard& credit_card,
-               const std::u16string& cvc,
-               const AutofillTriggerDetails& trigger_details),
-              (override));
-  MOCK_METHOD(void,
-              FillProfileFormImpl,
-              (const FormData& form,
-               const FormFieldData& field,
-               const AutofillProfile& profile,
-               const AutofillTriggerDetails& trigger_details),
               (override));
   MOCK_METHOD(void,
               OnFocusNoLongerOnFormImpl,
@@ -488,7 +472,7 @@ TEST_F(AutofillManagerTest, ObserverReceiveCalls) {
   EXPECT_CALL(observer, OnAfterDidFillAutofillFormData(m, f));
   manager_->OnDidFillAutofillFormData(form, {});
 
-  EXPECT_CALL(observer, OnBeforeAskForValuesToFill(m, f, ff));
+  EXPECT_CALL(observer, OnBeforeAskForValuesToFill(m, f, ff, Ref(form)));
   EXPECT_CALL(observer, OnAfterAskForValuesToFill(m, f, ff));
   manager_->OnAskForValuesToFill(form, field, {}, {});
 

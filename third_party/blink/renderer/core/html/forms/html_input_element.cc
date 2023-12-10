@@ -758,8 +758,10 @@ bool HTMLInputElement::IsPresentationAttribute(
   if (name == html_names::kVspaceAttr || name == html_names::kHspaceAttr ||
       name == html_names::kAlignAttr || name == html_names::kWidthAttr ||
       name == html_names::kHeightAttr ||
-      (name == html_names::kBorderAttr && type() == input_type_names::kImage))
+      (name == html_names::kBorderAttr &&
+       FormControlType() == FormControlType::kInputImage)) {
     return true;
+  }
   return TextControlElement::IsPresentationAttribute(name);
 }
 
@@ -791,7 +793,8 @@ void HTMLInputElement::CollectStyleForPresentationAttribute(
         ApplyAspectRatioToStyle(width, value, style);
     }
   } else if (name == html_names::kBorderAttr &&
-             type() == input_type_names::kImage) {  // FIXME: Remove type check.
+             FormControlType() ==
+                 FormControlType::kInputImage) {  // FIXME: Remove type check.
     ApplyBorderAttributeToStyle(value, style);
   } else {
     TextControlElement::CollectStyleForPresentationAttribute(name, value,
@@ -1206,6 +1209,13 @@ void HTMLInputElement::SetSuggestedValue(const String& value) {
     } else {
       placeholder->classList().Remove(reveal);
     }
+
+    const AtomicString fade_out("fade-out-password");
+    if (should_show_strong_password_label_) {
+      placeholder->classList().Add(fade_out);
+    } else {
+      placeholder->classList().Remove(fade_out);
+    }
   }
 
   SetNeedsStyleRecalc(
@@ -1222,7 +1232,7 @@ void HTMLInputElement::SetInnerEditorValue(const String& value) {
 void HTMLInputElement::setValueForBinding(const String& value,
                                           ExceptionState& exception_state) {
   // FIXME: Remove type check.
-  if (type() == input_type_names::kFile && !value.empty()) {
+  if (FormControlType() == FormControlType::kInputFile && !value.empty()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "This input element accepts a filename, "
                                       "which may only be programmatically set "
@@ -1327,7 +1337,9 @@ ScriptValue HTMLInputElement::valueAsDate(ScriptState* script_state) const {
   v8::Isolate* isolate = script_state->GetIsolate();
   if (!std::isfinite(date))
     return ScriptValue::CreateNull(isolate);
-  return ScriptValue(isolate, ToV8(base::Time::FromJsTime(date), script_state));
+  return ScriptValue(
+      isolate,
+      ToV8(base::Time::FromMillisecondsSinceUnixEpoch(date), script_state));
 }
 
 void HTMLInputElement::setValueAsDate(ScriptState* script_state,
@@ -1360,7 +1372,7 @@ void HTMLInputElement::setValueAsNumber(double new_value,
 }
 
 Decimal HTMLInputElement::RatioValue() const {
-  DCHECK_EQ(type(), input_type_names::kRange);
+  DCHECK_EQ(FormControlType(), FormControlType::kInputRange);
   const StepRange step_range(CreateStepRange(kRejectAny));
   const Decimal old_value =
       ParseToDecimalForNumberType(Value(), step_range.DefaultValue());
@@ -1369,7 +1381,7 @@ Decimal HTMLInputElement::RatioValue() const {
 
 void HTMLInputElement::SetValueFromRenderer(const String& value) {
   // File upload controls will never use this.
-  DCHECK_NE(type(), input_type_names::kFile);
+  DCHECK_NE(FormControlType(), FormControlType::kInputFile);
 
   // Clear the suggested value. Use the base class version to not trigger a view
   // update.
@@ -1482,7 +1494,7 @@ void HTMLInputElement::DefaultEventHandler(Event& evt) {
 
   if (input_type_view_->ShouldSubmitImplicitly(evt)) {
     // FIXME: Remove type check.
-    if (type() == input_type_names::kSearch) {
+    if (FormControlType() == FormControlType::kInputSearch) {
       GetDocument()
           .GetTaskRunner(TaskType::kUserInteraction)
           ->PostTask(FROM_HERE, WTF::BindOnce(&HTMLInputElement::OnSearch,
@@ -1747,8 +1759,9 @@ void HTMLInputElement::DidMoveToNewDocument(Document& old_document) {
     ImageLoader()->ElementDidMoveToNewDocument();
 
   // FIXME: Remove type check.
-  if (type() == input_type_names::kRadio)
+  if (FormControlType() == FormControlType::kInputRadio) {
     GetTreeScope().GetRadioButtonGroupScope().RemoveButton(this);
+  }
 
   TextControlElement::DidMoveToNewDocument(old_document);
 }
@@ -1814,7 +1827,7 @@ HTMLInputElement::FilteredDataListOptions() const {
     return filtered;
 
   String editor_value = InnerEditorValue();
-  if (Multiple() && type() == input_type_names::kEmail) {
+  if (Multiple() && FormControlType() == FormControlType::kInputEmail) {
     Vector<String> emails;
     editor_value.Split(',', true, emails);
     if (!emails.empty())
@@ -2012,8 +2025,9 @@ HTMLInputElement::SupportsPopoverTriggering() const {
 
 RadioButtonGroupScope* HTMLInputElement::GetRadioButtonGroupScope() const {
   // FIXME: Remove type check.
-  if (type() != input_type_names::kRadio)
+  if (FormControlType() != FormControlType::kInputRadio) {
     return nullptr;
+  }
   if (HTMLFormElement* form_element = Form())
     return &form_element->GetRadioButtonGroupScope();
   if (isConnected())
@@ -2303,8 +2317,8 @@ void HTMLInputElement::showPicker(ExceptionState& exception_state) {
   // In cross-origin iframes it should throw a "SecurityError" DOMException
   // except on file and color. In same-origin iframes it should work fine.
   // https://github.com/whatwg/html/issues/6909#issuecomment-917138991
-  if (type() != input_type_names::kFile && type() != input_type_names::kColor &&
-      frame) {
+  if (FormControlType() != FormControlType::kInputFile &&
+      FormControlType() != FormControlType::kInputColor && frame) {
     if (!frame->IsSameOrigin()) {
       exception_state.ThrowSecurityError(
           "showPicker() called from cross-origin iframe.");

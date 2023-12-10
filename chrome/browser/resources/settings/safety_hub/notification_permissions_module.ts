@@ -13,6 +13,7 @@ import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
+import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
 import '../settings_shared.css.js';
 import '../i18n_setup.js';
 import '../icons.html.js';
@@ -24,7 +25,7 @@ import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener
 import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
-import {isUndoKeyboardEvent} from 'chrome://resources/js/util_ts.js';
+import {isUndoKeyboardEvent} from 'chrome://resources/js/util.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BaseMixin} from '../base_mixin.js';
@@ -32,6 +33,7 @@ import {routes} from '../route.js';
 import {Route, RouteObserverMixin, Router} from '../router.js';
 import {NotificationPermission, SafetyHubBrowserProxy, SafetyHubBrowserProxyImpl, SafetyHubEvent} from '../safety_hub/safety_hub_browser_proxy.js';
 import {SiteSettingsMixin} from '../site_settings/site_settings_mixin.js';
+import {TooltipMixin} from '../tooltip_mixin.js';
 
 import {getTemplate} from './notification_permissions_module.html.js';
 import {SettingsSafetyHubModuleElement, SiteInfo, SiteInfoWithTarget} from './safety_hub_module.js';
@@ -66,8 +68,8 @@ interface NotificationPermissionsDisplay extends NotificationPermission,
                                                  SiteInfo {}
 
 const SettingsSafetyHubNotificationPermissionsModuleElementBase =
-    WebUiListenerMixin(RouteObserverMixin(
-        BaseMixin(SiteSettingsMixin(I18nMixin(PolymerElement)))));
+    TooltipMixin(WebUiListenerMixin(RouteObserverMixin(
+        BaseMixin(SiteSettingsMixin(I18nMixin(PolymerElement))))));
 
 export class SettingsSafetyHubNotificationPermissionsModuleElement extends
     SettingsSafetyHubNotificationPermissionsModuleElementBase {
@@ -172,6 +174,14 @@ export class SettingsSafetyHubNotificationPermissionsModuleElement extends
             ({...site, detail: site.notificationInfoString}));
   }
 
+  private async setHeaderToCompletionState_() {
+    this.headerString_ = this.toastText_ ?
+        this.toastText_ :
+        this.i18n('safetyCheckNotificationPermissionReviewDoneLabel');
+    this.subheaderString_ = '';
+    this.headerIconString_ = 'cr:check';
+  }
+
   private async onSitesChanged_() {
     if (this.sites_ === null) {
       return;
@@ -185,22 +195,16 @@ export class SettingsSafetyHubNotificationPermissionsModuleElement extends
     this.renderedOrigins_ = this.sites_.map(site => site.origin);
 
     if (this.shouldShowCompletionInfo_) {
-      // In the completion state, the header string should be replaced with
-      // completion string.
-      this.headerString_ =
-          this.i18n('safetyCheckNotificationPermissionReviewDoneLabel');
-      this.subheaderString_ = '';
-      this.headerIconString_ = 'cr:check';
+      this.setHeaderToCompletionState_();
       return;
     }
 
     this.headerString_ =
         await PluralStringProxyImpl.getInstance().getPluralString(
-            'safetyCheckNotificationPermissionReviewPrimaryLabel',
-            this.sites_.length);
+            'safetyHubNotificationPermissionsPrimaryLabel', this.sites_.length);
     this.subheaderString_ =
         await PluralStringProxyImpl.getInstance().getPluralString(
-            'safetyCheckNotificationPermissionReviewSecondaryLabel',
+            'safetyHubNotificationPermissionsSecondaryLabel',
             this.sites_.length);
     this.headerIconString_ = 'settings:notifications-none';
   }
@@ -256,6 +260,7 @@ export class SettingsSafetyHubNotificationPermissionsModuleElement extends
     // origins that were blocked.
     assert(this.sites_);
     this.lastOrigins_ = this.sites_.map(site => site.origin);
+
     this.$.module.animateHide(
         /* all origins */ null,
         this.browserProxy_.blockNotificationPermissionForOrigins.bind(
@@ -371,6 +376,13 @@ export class SettingsSafetyHubNotificationPermissionsModuleElement extends
     }
     return this.i18n(
         'safetyCheckNotificationPermissionReviewResetAriaLabel', origins[0]);
+  }
+
+  private showUndoTooltip_(e: Event) {
+    e.stopPropagation();
+    const tooltip = this.shadowRoot!.querySelector('paper-tooltip');
+    assert(tooltip);
+    this.showTooltipAtTarget(tooltip, e.target!);
   }
 }
 

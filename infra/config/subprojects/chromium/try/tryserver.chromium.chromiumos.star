@@ -63,20 +63,41 @@ try_.builder(
     ),
 )
 
-try_.orchestrator_builder(
+try_.builder(
     name = "chromeos-amd64-generic-rel",
     branch_selector = branches.selector.CROS_LTS_BRANCHES,
+    description_html = "This is a compile only builder for Ash chrome." +
+                       " This builder also build Lacros with alternative toolchain.",
     mirrors = ["ci/chromeos-amd64-generic-rel"],
+    contact_team_email = "chromeos-sw-engprod@google.com",
+    main_list_view = "try",
+)
+
+try_.builder(
+    name = "chromeos-amd64-generic-rel-gtest",
+    branch_selector = branches.selector.CROS_LTS_BRANCHES,
+    description_html = "This is a Ash chrome builder only run gtest",
+    mirrors = [
+        "ci/chromeos-amd64-generic-rel",
+        "ci/chromeos-amd64-generic-rel-gtest",
+    ],
+    contact_team_email = "chromeos-sw-engprod@google.com",
+    main_list_view = "try",
+)
+
+try_.orchestrator_builder(
+    name = "chromeos-amd64-generic-rel-renamed",
+    branch_selector = branches.selector.CROS_LTS_BRANCHES,
+    description_html = "This is a renamed builder of chromeos-amd64-generic-rel.",
+    mirrors = ["ci/chromeos-amd64-generic-rel-renamed"],
     compilator = "chromeos-amd64-generic-rel-compilator",
+    contact_team_email = "chromeos-sw-engprod@google.com",
     experiments = {
         # go/nplus1shardsproposal
         "chromium.add_one_test_shard": 10,
     },
     main_list_view = "try",
     tryjob = try_.job(),
-    # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
-    # are addressed
-    # use_orchestrator_pool = True,
 )
 
 try_.compilator_builder(
@@ -92,7 +113,7 @@ try_.orchestrator_builder(
 This builder shadows chromeos-amd64-generic-rel builder to compare between Siso builds and Ninja builds.<br/>
 This builder should be removed after migrating chromeos-amd64-generic-rel from Ninja to Siso. b/277863839
 """,
-    mirrors = builder_config.copy_from("try/chromeos-amd64-generic-rel"),
+    mirrors = builder_config.copy_from("try/chromeos-amd64-generic-rel-renamed"),
     try_settings = builder_config.try_settings(
         is_compile_only = True,
     ),
@@ -145,6 +166,28 @@ try_.builder(
     contact_team_email = "chrome-desktop-engprod@google.com",
     main_list_view = "try",
     tryjob = try_.job(),
+)
+
+# crbug/1298113: Temporary orchestrator/compilator builders to test
+# orchestrator compatability before converting lacros-amd64-generic-rel
+try_.orchestrator_builder(
+    name = "lacros-amd64-generic-rel-orchestrator",
+    description_html = """\
+Temporary orchestrator setup for lacros-amd-generic-rel""",
+    mirrors = [
+        "ci/lacros-amd64-generic-rel",
+    ],
+    compilator = "lacros-amd64-generic-rel-compilator",
+    contact_team_email = "chrome-browser-infra-team@google.com",
+    main_list_view = "try",
+)
+
+try_.compilator_builder(
+    name = "lacros-amd64-generic-rel-compilator",
+    description_html = """\
+Temporary compilator setup for lacros-amd-generic-rel""",
+    contact_team_email = "chrome-browser-infra-team@google.com",
+    main_list_view = "try",
 )
 
 try_.builder(
@@ -255,6 +298,7 @@ try_.orchestrator_builder(
     experiments = {
         # go/nplus1shardsproposal
         "chromium.add_one_test_shard": 10,
+        "chromium.pre_retry_shards_without_patch_compile": 100,
     },
     main_list_view = "try",
     tryjob = try_.job(),

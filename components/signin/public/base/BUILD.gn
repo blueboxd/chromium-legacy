@@ -63,6 +63,11 @@ static_library("base") {
     "//url",
   ]
 
+  if (is_android) {
+    sources += [ "signin_feature_map.cc" ]
+    deps += [ "//components/signin/public/android:jni_headers" ]
+  }
+
   if (is_chromeos_ash) {
     deps += [ "//components/user_manager" ]
     public_deps += [ "//components/account_manager_core" ]
@@ -96,6 +101,9 @@ static_library("test_support") {
     "//base/test:test_support",
     "//build:chromeos_buildflags",
     "//components/prefs",
+
+    # TODO(b/309104936): Remove this unwanted dependency.
+    "//components/signin/public/identity_manager:identity_manager",
     "//crypto",
     "//google_apis:test_support",
   ]

@@ -15,6 +15,7 @@
 #include "components/attribution_reporting/destination_set.h"
 #include "components/attribution_reporting/event_report_windows.h"
 #include "components/attribution_reporting/filters.h"
+#include "components/attribution_reporting/trigger_config.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/common/content_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -60,7 +61,9 @@ class CONTENT_EXPORT StoredSource {
       ActiveState,
       Id source_id,
       int64_t aggregatable_budget_consumed,
-      double randomized_response_rate);
+      double randomized_response_rate,
+      attribution_reporting::TriggerConfig,
+      bool debug_cookie_set);
 
   ~StoredSource();
 
@@ -123,6 +126,12 @@ class CONTENT_EXPORT StoredSource {
 
   double randomized_response_rate() const { return randomized_response_rate_; }
 
+  const attribution_reporting::TriggerConfig& trigger_config() const {
+    return trigger_config_;
+  }
+
+  bool debug_cookie_set() const { return debug_cookie_set_; }
+
   void SetDedupKeys(std::vector<uint64_t> dedup_keys) {
     dedup_keys_ = std::move(dedup_keys);
   }
@@ -148,7 +157,9 @@ class CONTENT_EXPORT StoredSource {
                ActiveState,
                Id source_id,
                int64_t aggregatable_budget_consumed,
-               double randomized_response_rate);
+               double randomized_response_rate,
+               attribution_reporting::TriggerConfig,
+               bool debug_cookie_set);
 
   CommonSourceInfo common_info_;
 
@@ -179,6 +190,10 @@ class CONTENT_EXPORT StoredSource {
   std::vector<uint64_t> aggregatable_dedup_keys_;
 
   double randomized_response_rate_;
+
+  attribution_reporting::TriggerConfig trigger_config_;
+
+  bool debug_cookie_set_;
 
   // When adding new members, the corresponding `operator==()` definition in
   // `attribution_test_utils.h` should also be updated.

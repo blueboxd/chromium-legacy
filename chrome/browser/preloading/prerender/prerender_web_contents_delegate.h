@@ -26,7 +26,11 @@ class PrerenderWebContentsDelegateImpl
                       bool user_gesture,
                       bool* was_blocked) override;
   void ActivateContents(content::WebContents* contents) override;
+  void LoadingStateChanged(content::WebContents* source,
+                           bool should_show_loading_ui) override;
   bool ShouldSuppressDialogs(content::WebContents* source) override;
+  bool ShouldFocusPageAfterCrash(content::WebContents* source) override;
+  bool TakeFocus(content::WebContents* source, bool reverse) override;
   void WebContentsCreated(content::WebContents* source_contents,
                           int opener_render_process_id,
                           int opener_render_frame_id,

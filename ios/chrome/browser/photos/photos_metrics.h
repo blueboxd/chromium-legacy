@@ -8,6 +8,7 @@
 // UMA histogram names.
 extern const char kSaveToPhotosActionsHistogram[];
 extern const char kSaveToPhotosAccountPickerActionsHistogram[];
+extern const char kSaveToPhotosContextMenuActionsHistogram[];
 extern const char kSaveToPhotosSettingsActionsHistogram[];
 
 // Enum for the IOS.SaveToPhotos histogram.
@@ -39,17 +40,42 @@ enum class SaveToPhotosAccountPickerActions {
   kMaxValue = kSelectedIdentity,
 };
 
+// Enum for the IOS.SaveToPhotos.ContextMenu histogram.
+// Keep in sync with "IOSSaveToPhotosContextMenuType"
+// in src/tools/metrics/histograms/enums.xml.
+enum class SaveToPhotosContextMenuActions {
+  kUnavailableDidSaveImageLocally =
+      0,  // "Save to Google Photos" action was unavailable and the user tapped
+          // "Save to Photos" (saved image locally)
+  kAvailableDidSaveImageLocally =
+      2,  // "Save to Google Photos" action was available but the user tapped
+          // "Save to Photos" (saved image locally)
+  kAvailableDidSaveImageToGooglePhotos =
+      3,  // "Save to Google Photos" action was available and the user tapped
+          // "Save to Google Photos"
+  kMaxValue = kAvailableDidSaveImageToGooglePhotos,
+};
+
 // Enum for the IOS.SaveToPhotos.Settings histogram.
 // Keep in sync with "IOSSaveToPhotosSettingsType"
 // in src/tools/metrics/histograms/enums.xml.
 enum class SaveToPhotosSettingsActions {
   kDefaultAccountNotSet =
-      0,  // User has NOT set a default Save to Photos account
-  kDefaultAccountSetAndValid = 1,  // User has set a default Save to Photos
-                                   // account which exists on device
-  kDefaultAccountSetNotValid = 2,  // User has set a default Save to Photos
-                                   // account but it is not on device anymore
-  kMaxValue = kDefaultAccountSetNotValid,
+      0,  // User has NOT set a default Save to Photos account and did NOT
+          // opt-in to skip the account picker
+  kDefaultAccountSetAndValid =
+      1,  // User has set a default Save to Photos account which exists on
+          // device and did NOT opt-in to skip the account picker
+  kDefaultAccountSetNotValid =
+      2,  // User has set a default Save to Photos account but it is not on
+          // device anymore and did NOT opt-in to skip the account picker
+  kDefaultAccountSetAndValidSkipAccountPicker =
+      3,  // User has set a default Save to Photos account which exists on
+          // device and did opt-in to skip the account picker
+  kDefaultAccountSetNotValidSkipAccountPicker =
+      4,  // User has set a default Save to Photos account but it is not on
+          // device anymore; the user did opt-in to skip the account picker
+  kMaxValue = kDefaultAccountSetNotValidSkipAccountPicker,
 };
 
 #endif  // IOS_CHROME_BROWSER_PHOTOS_PHOTOS_METRICS_H_

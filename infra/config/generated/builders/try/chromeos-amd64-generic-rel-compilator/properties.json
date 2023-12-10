@@ -6,8 +6,8 @@
           {
             "builder_id": {
               "bucket": "ci",
-              "builder": "chromeos-amd64-generic-rel",
-              "project": "chromium"
+              "builder": "chromeos-amd64-generic-rel-renamed",
+              "project": "chromium-m120"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-chromiumos-archive",
@@ -43,8 +43,8 @@
       "builder_ids": [
         {
           "bucket": "ci",
-          "builder": "chromeos-amd64-generic-rel",
-          "project": "chromium"
+          "builder": "chromeos-amd64-generic-rel-renamed",
+          "project": "chromium-m120"
         }
       ]
     }

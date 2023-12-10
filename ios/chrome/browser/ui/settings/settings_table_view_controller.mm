@@ -50,8 +50,8 @@
 #import "ios/chrome/browser/passwords/model/password_checkup_utils.h"
 #import "ios/chrome/browser/photos/photos_service.h"
 #import "ios/chrome/browser/photos/photos_service_factory.h"
-#import "ios/chrome/browser/search_engines/search_engine_observer_bridge.h"
-#import "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/search_engines/model/search_engine_observer_bridge.h"
+#import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
 #import "ios/chrome/browser/settings/model/sync/utils/identity_error_util.h"
 #import "ios/chrome/browser/settings/model/sync/utils/sync_state.h"
 #import "ios/chrome/browser/settings/model/sync/utils/sync_util.h"
@@ -91,8 +91,8 @@
 #import "ios/chrome/browser/sync/model/enterprise_utils.h"
 #import "ios/chrome/browser/sync/model/sync_observer_bridge.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
-#import "ios/chrome/browser/tabs/inactive_tabs/features.h"
-#import "ios/chrome/browser/tabs/tab_pickup/features.h"
+#import "ios/chrome/browser/tabs/model/inactive_tabs/features.h"
+#import "ios/chrome/browser/tabs/model/tab_pickup/features.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_account_item.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
@@ -1976,9 +1976,12 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 #pragma mark - Sign in
 
 - (void)showSignIn {
-  // TODO(crbug.com/1464966): Switch back to DCHECK if the number of reports is
-  // low.
-  DUMP_WILL_BE_CHECK(!self.isSigninInProgress);
+  if (self.isSigninInProgress) {
+    // According to crbug.com/1498153, it is possible for the user to tap twice
+    // on the sign-in cell from the settings to open the sign-in dialog.
+    // If this happens, the second tap should ignored.
+    return;
+  }
   self.isSigninInProgress = YES;
   __weak __typeof(self) weakSelf = self;
   AuthenticationOperation operation =

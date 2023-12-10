@@ -692,8 +692,7 @@ config("compiler") {
     }
   } else if (is_win) {
     cflags_c += [ "/std:c11" ]
-    if ((defined(use_cxx17) && use_cxx17) ||
-        (!is_clang && defined(msvc_use_cxx17) && msvc_use_cxx17)) {
+    if (defined(use_cxx17) && use_cxx17) {
       cflags_cc += [ "/std:c++17" ]
     } else {
       cflags_cc += [ "/std:c++20" ]
@@ -848,6 +847,9 @@ config("compiler") {
   if (compiler_timing) {
     if (is_clang && !is_nacl) {
       cflags += [ "-ftime-trace" ]
+      if (use_lld && is_mac) {
+        ldflags += [ "-Wl,--time-trace" ]
+      }
     } else if (is_win) {
       cflags += [
         # "Documented" here:
@@ -1151,6 +1153,17 @@ config("compiler_cpu_abi") {
         "-m64",
         "-msse3",
       ]
+
+      # Minimum SIMD support for devices running lacros.
+      # See https://crbug.com/1475858
+      if (is_chromeos_lacros) {
+        cflags += [
+          "-mssse3",
+          "-msse4",
+          "-msse4.1",
+          "-msse4.2",
+        ]
+      }
       ldflags += [ "-m64" ]
     } else if (current_cpu == "x86") {
       cflags += [ "-m32" ]
@@ -1860,22 +1873,19 @@ config("default_warnings") {
 
           # TODO(crbug.com/1412713) Evaluate and possibly enable.
           "-Wno-deprecated-this-capture",
-        ]
-
-        if (llvm_force_head_revision) {
-          # TODO(https://crbug.com/1490607): Fix and re-enable.
-          cflags += [ "-Wno-thread-safety-reference" ]
 
           # TODO(https://crbug.com/1491833): Fix and re-enable.
-          cflags += [ "-Wno-invalid-offsetof" ]
-        }
+          "-Wno-invalid-offsetof",
 
-        if (enable_precompiled_headers && !is_win) {
-          cflags += [
-            # TODO(crbug.com/1486799) Find a long-term solution.
-            "-Wno-deprecated-include-gch",
-          ]
-        }
+          # TODO(crbug.com/1494809): Evaluate and possibly enable.
+          "-Wno-vla-extension",
+
+          # TODO(https://crbug.com/1490607): Fix and re-enable.
+          "-Wno-thread-safety-reference-return",
+
+          # TODO(crbug.com/1495100): Evaluate and possibly enable.
+          "-Wno-delayed-template-parsing-in-cxx20",
+        ]
       }
     }
 

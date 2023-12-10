@@ -27,7 +27,8 @@ AutoPipSettingOverlayView::AutoPipSettingOverlayView(
     const GURL& origin,
     const gfx::Rect& browser_view_overridden_bounds,
     views::View* anchor_view,
-    views::BubbleBorder::Arrow arrow) {
+    views::BubbleBorder::Arrow arrow)
+    : show_timer_(std::make_unique<base::OneShotTimer>()) {
   CHECK(result_cb);
 
   init_.auto_pip_setting_view_ = std::make_unique<AutoPipSettingView>(
@@ -51,13 +52,28 @@ AutoPipSettingOverlayView::AutoPipSettingOverlayView(
   FadeInLayer(background_->layer());
 }
 
-void AutoPipSettingOverlayView::ShowBubble(gfx::NativeView parent) {
+void AutoPipSettingOverlayView::ShowBubble(gfx::NativeView parent,
+                                           PipWindowType pip_window_type) {
   DCHECK(parent);
   init_.auto_pip_setting_view_->set_parent_window(parent);
   auto_pip_setting_view_ = init_.auto_pip_setting_view_.get();
   widget_ = views::BubbleDialogDelegate::CreateBubble(
       std::move(init_.auto_pip_setting_view_));
-  widget_->Show();
+
+  // Delay showing the bubble, for document pip, until after the scrim animation
+  // completes.
+  if (pip_window_type == PipWindowType::kDocumentPip) {
+    show_timer_->Start(
+        FROM_HERE, base::Milliseconds(kFadeInDurationMs),
+        base::BindOnce(
+            &views::Widget::ShowInactive,
+            // base::Unretained() is safe since the timer is cancelled if the
+            // WidgetObserver notices that the widget is being destroyed.
+            base::Unretained(widget_)));
+  } else {
+    widget_->ShowInactive();
+  }
+
   bubble_size_ = widget_->GetWindowBoundsInScreen().size();
   widget_->AddObserver(this);
 }
@@ -90,14 +106,18 @@ bool AutoPipSettingOverlayView::WantsEvent(const gfx::Point& point) {
 
 AutoPipSettingOverlayView::~AutoPipSettingOverlayView() {
   if (widget_) {
+    // If we're being deleted and our widget still exists, then ensure that it
+    // closes.
     widget_->RemoveObserver(this);
-    widget_ = nullptr;
+    widget_.ExtractAsDangling()->CloseWithReason(
+        views::Widget::ClosedReason::kUnspecified);
   }
   background_ = nullptr;
   auto_pip_setting_view_ = nullptr;
 }
 
 void AutoPipSettingOverlayView::OnWidgetDestroying(views::Widget*) {
+  show_timer_.reset();
   auto_pip_setting_view_ = nullptr;
   widget_->RemoveObserver(this);
   widget_ = nullptr;

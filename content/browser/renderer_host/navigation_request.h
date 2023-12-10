@@ -440,6 +440,9 @@ class CONTENT_EXPORT NavigationRequest
       override;
   void SetContentSettings(
       blink::mojom::RendererContentSettingsPtr content_settings) override;
+  blink::mojom::RendererContentSettingsPtr GetContentSettingsForTesting()
+      override;
+  void SetIsAdTagged() override;
   // End of NavigationHandle implementation.
 
   // mojom::NavigationRendererCancellationListener implementation:
@@ -1251,7 +1254,9 @@ class CONTENT_EXPORT NavigationRequest
     return std::move(web_ui_);
   }
 
-  bool shared_storage_writable() const { return shared_storage_writable_; }
+  bool shared_storage_writable_eligible() const {
+    return shared_storage_writable_eligible_;
+  }
 
   enum ErrorPageProcess {
     kNotErrorPage,
@@ -2063,6 +2068,12 @@ class CONTENT_EXPORT NavigationRequest
   NavigationState state_ = NOT_STARTED;
   bool is_navigation_started_ = false;
 
+  // Manages the lifetime of a pre-created ServiceWorkerContainerHost until a
+  // corresponding container is created in the renderer. This must be destroyed
+  // after `loader_` to avoid dangling pointers, since `loader_` can have a
+  // raw_ptr to this object.
+  std::unique_ptr<ServiceWorkerMainResourceHandle> service_worker_handle_;
+
   std::unique_ptr<NavigationURLLoader> loader_;
 
   bool navigation_visible_to_embedder_ = false;
@@ -2281,10 +2292,6 @@ class CONTENT_EXPORT NavigationRequest
   const int64_t navigation_id_ = ++unique_id_counter_;
   // static member for generating the unique id above.
   static int64_t unique_id_counter_;
-
-  // Manages the lifetime of a pre-created ServiceWorkerContainerHost until a
-  // corresponding container is created in the renderer.
-  std::unique_ptr<ServiceWorkerMainResourceHandle> service_worker_handle_;
 
   // Timer for detecting an unexpectedly long time to commit a navigation.
   base::OneShotTimer commit_timeout_timer_;
@@ -2601,10 +2608,15 @@ class CONTENT_EXPORT NavigationRequest
   // contain "Observe-Browsing-Topics: ?1", a topic observation will be stored.
   bool topics_eligible_ = false;
 
-  // Whether or not the request is eligible to write to shared storage from
+  // Whether or not the original request (without considering redirects or
+  // permissions policy) opted-in to write to shared storage from response
+  // headers. See https://github.com/WICG/shared-storage#from-response-headers
+  bool shared_storage_writable_opted_in_ = false;
+
+  // Whether or not the current request is eligible to shared storage from
   // response headers. See
   // https://github.com/WICG/shared-storage#from-response-headers
-  bool shared_storage_writable_ = false;
+  bool shared_storage_writable_eligible_ = false;
 
   // A WeakPtr for the BindContext associated with the browser routing loader
   // factory for the committing document. This will be set in
@@ -2746,6 +2758,10 @@ class CONTENT_EXPORT NavigationRequest
 
   EarlyRenderFrameHostSwapType early_render_frame_host_swap_type_ =
       EarlyRenderFrameHostSwapType::kNone;
+
+  // Whether the embedder indicated this navigation is being used for
+  // advertising porpoises.
+  bool is_ad_tagged_ = false;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 };

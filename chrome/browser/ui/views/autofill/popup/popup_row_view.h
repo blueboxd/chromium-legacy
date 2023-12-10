@@ -103,6 +103,7 @@ class PopupRowView : public views::View, public views::ViewObserver {
   PopupRowView(AccessibilitySelectionDelegate& a11y_selection_delegate,
                SelectionDelegate& selection_delegate,
                base::WeakPtr<AutofillPopupController> controller,
+               int line_number,
                std::unique_ptr<PopupRowStrategy> strategy,
                std::optional<ScopedNewBadgeTrackerWithAcceptAction>
                    new_badge_tracker = std::nullopt);
@@ -129,8 +130,10 @@ class PopupRowView : public views::View, public views::ViewObserver {
   absl::optional<CellType> GetSelectedCell() const { return selected_cell_; }
   void SetSelectedCell(absl::optional<CellType> cell);
 
-  // Sets the highlighted state on the cell of specified type.
-  void SetCellPermanentlyHighlighted(CellType cell, bool highlighted);
+  // Sets whether the row's child suggestions are displayed in a sub-popup.
+  // Note that the row doesn't control the sub-popup, but rather should be
+  // synced with it by this method.
+  void SetChildSuggestionsDisplayed(bool child_suggestions_displayed);
 
   // Returns the control cell's bounds. The cell must be present.
   gfx::RectF GetControlCellBounds() const;
@@ -165,6 +168,8 @@ class PopupRowView : public views::View, public views::ViewObserver {
   const raw_ref<SelectionDelegate> selection_delegate_;
   // The controller for the parent view.
   const base::WeakPtr<AutofillPopupController> controller_;
+  // The position of the row in the vertical list of suggestions.
+  const int line_number_;
   // A tracker for "new" badges inside a cell. If set, it logs a performed
   // action on accepting the suggestion.
   std::optional<ScopedNewBadgeTrackerWithAcceptAction> new_badge_tracker_;
@@ -198,10 +203,9 @@ class PopupRowView : public views::View, public views::ViewObserver {
 
   // Whether the `mouse_observed_outside_item_bounds_` will be ignored or not.
   // Today this happens when:
-  // 1. The AutofillSuggestionTriggerSource is
-  // `kManualFallbackForAutocompleteUnrecognized`. This is because in this
-  // situation even though the popup could appear behind the cursor, the user
-  // intention about opening it is explicit.
+  // 1. The AutofillSuggestionTriggerSource is `kManualFallbackAddress`. This is
+  // because in this situation even though the popup could appear behind the
+  // cursor, the user intention about opening it is explicit.
   //
   // 2. The suggestions are of autocomplete type and were regenerated due to a
   // suggestion being removed. We want to ignore the check in this case because
@@ -209,6 +213,10 @@ class PopupRowView : public views::View, public views::ViewObserver {
   // not mean that the popup just showed up to the user so there is no need to
   // move the cursor out and in.
   const bool should_ignore_mouse_observed_outside_item_bounds_check_;
+
+  // Whether the row's child suggestions (see `Suggestion::children`) are
+  // displayed in a sub-popup.
+  bool child_suggestions_displayed_ = false;
 };
 
 }  // namespace autofill

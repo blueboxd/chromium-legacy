@@ -9,6 +9,7 @@
 
 #import "base/apple/foundation_util.h"
 #import "base/memory/scoped_refptr.h"
+#import "base/metrics/histogram_functions.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/password_manager/core/browser/password_manager_client.h"
 #import "components/password_manager/core/browser/ui/affiliated_group.h"
@@ -44,9 +45,10 @@
 #import "ios/chrome/browser/ui/settings/password/password_sharing/password_sharing_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_sharing/password_sharing_first_run_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/password_sharing/password_sharing_first_run_coordinator_delegate.h"
+#import "ios/chrome/browser/ui/settings/password/password_sharing/password_sharing_metrics.h"
 #import "ios/chrome/browser/ui/settings/password/reauthentication/reauthentication_coordinator.h"
 #import "ios/chrome/browser/ui/settings/utils/password_utils.h"
-#import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
+#import "ios/chrome/common/ui/reauthentication/reauthentication_protocol.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/web_state.h"
 #import "ui/base/l10n/l10n_util.h"
@@ -58,13 +60,7 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
     PasswordDetailsMediatorDelegate,
     ReauthenticationCoordinatorDelegate,
     PasswordSharingCoordinatorDelegate,
-    PasswordSharingFirstRunCoordinatorDelegate> {
-  password_manager::AffiliatedGroup _affiliatedGroup;
-  password_manager::CredentialUIEntry _credential;
-
-  // The context in which the password details are accessed.
-  DetailsContext _context;
-}
+    PasswordSharingFirstRunCoordinatorDelegate>
 
 // Main view controller for this coordinator.
 @property(nonatomic, strong) PasswordDetailsTableViewController* viewController;
@@ -75,7 +71,8 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
 // Module containing the reauthentication mechanism for viewing and copying
 // passwords.
 // Has to be strong for password bottom sheet feature or else it becomes nil.
-@property(nonatomic, strong) ReauthenticationModule* reauthenticationModule;
+@property(nonatomic, strong) id<ReauthenticationProtocol>
+    reauthenticationModule;
 
 // Modal alert for interactions with password.
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
@@ -97,7 +94,18 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
 
 @end
 
-@implementation PasswordDetailsCoordinator
+@implementation PasswordDetailsCoordinator {
+  password_manager::AffiliatedGroup _affiliatedGroup;
+  password_manager::CredentialUIEntry _credential;
+
+  // The context in which the password details are accessed.
+  DetailsContext _context;
+
+  // Whether the metric counting visits to the page was already recorded.
+  // Used to avoid over-recording the metric after each successful
+  // authentication.
+  BOOL _visitRecorded;
+}
 
 @synthesize baseNavigationController = _baseNavigationController;
 
@@ -108,7 +116,7 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
                           credential:
                               (const password_manager::CredentialUIEntry&)
                                   credential
-                        reauthModule:(ReauthenticationModule*)reauthModule
+                        reauthModule:(id<ReauthenticationProtocol>)reauthModule
                              context:(DetailsContext)context {
   self = [super initWithBaseViewController:navigationController
                                    browser:browser];
@@ -129,7 +137,7 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
                              browser:(Browser*)browser
                      affiliatedGroup:(const password_manager::AffiliatedGroup&)
                                          affiliatedGroup
-                        reauthModule:(ReauthenticationModule*)reauthModule
+                        reauthModule:(id<ReauthenticationProtocol>)reauthModule
                              context:(DetailsContext)context {
   self = [super initWithBaseViewController:navigationController
                                    browser:browser];
@@ -178,11 +186,18 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
     [self.viewController setupLeftCancelButton];
   }
 
+  BOOL requireAuth = [self shouldRequireAuthOnStart];
+
   // Disable animation when content will be blocked for reauth to prevent
   // flickering in navigation bar.
-  [self.baseNavigationController
-      pushViewController:self.viewController
-                animated:![self shouldRequireAuthOnStart]];
+  [self.baseNavigationController pushViewController:self.viewController
+                                           animated:!requireAuth];
+
+  // Wait for authentication to pass before logging a page visit.
+  if (!requireAuth) {
+    [self maybeRecordVisitMetric];
+  }
+
   if (IsAuthOnEntryV2Enabled()) {
     [self startReauthCoordinator];
   }
@@ -356,6 +371,9 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
 }
 
 - (void)onShareButtonPressed {
+  LogPasswordSharingInteraction(
+      PasswordSharingInteraction::kPasswordDetailsShareButtonClicked);
+
   if (self.browser->GetBrowserState()->GetPrefs()->GetBoolean(
           prefs::kPasswordSharingFlowHasBeenEntered)) {
     [self startPasswordSharingCoordinator];
@@ -424,7 +442,7 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
 
 - (void)successfulReauthenticationWithCoordinator:
     (ReauthenticationCoordinator*)coordinator {
-  // No-op.
+  [self maybeRecordVisitMetric];
 }
 
 - (void)willPushReauthenticationViewController {
@@ -555,6 +573,17 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
   password_manager::PasswordManagerClient* passwordManagerClient =
       PasswordTabHelper::FromWebState(webState)->GetPasswordManagerClient();
   passwordManagerClient->UpdateFormManagers();
+}
+
+// Records a visit to Password Details. Records once during the lifetime of the
+// coordinator.
+- (void)maybeRecordVisitMetric {
+  if (_visitRecorded) {
+    return;
+  }
+  _visitRecorded = YES;
+  base::UmaHistogramBoolean(/*name=*/"PasswordManager.iOS.PasswordDetailsVisit",
+                            /*sample=*/true);
 }
 
 @end

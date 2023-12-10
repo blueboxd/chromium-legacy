@@ -12,6 +12,9 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -31,7 +34,9 @@ import androidx.annotation.Px;
 import androidx.annotation.StringRes;
 
 import org.chromium.base.Callback;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ActivityLayoutState;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -51,6 +56,8 @@ import java.util.function.BooleanSupplier;
  */
 public abstract class PartialCustomTabBaseStrategy
         extends CustomTabHeightStrategy implements FullscreenManager.Observer {
+    private static boolean sDeviceSpecLogged;
+
     protected final Activity mActivity;
     protected final OnResizedCallback mOnResizedCallback;
     protected final OnActivityLayoutCallback mOnActivityLayoutCallback;
@@ -131,15 +138,36 @@ public abstract class PartialCustomTabBaseStrategy
         int COUNT = 4;
     }
 
-    public PartialCustomTabBaseStrategy(Activity activity, OnResizedCallback onResizedCallback,
+    // These values are persisted to logs. Entries should not be renumbered and
+    // numeric values should never be reused.
+    // This should be kept in sync with the definition |PcctDeviceSpec|
+    // in tools/metrics/histograms/enums.xml.
+    @IntDef({
+        DeviceSpec.LOWEND_NOPIP,
+        DeviceSpec.LOWEND_PIP,
+        DeviceSpec.HIGHEND_NOPIP,
+        DeviceSpec.HIGHEND_PIP
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    @interface DeviceSpec {
+        int LOWEND_NOPIP = 0;
+        int LOWEND_PIP = 1;
+        int HIGHEND_NOPIP = 2;
+        int HIGHEND_PIP = 3;
+
+        // Number of elements in the enum
+        int COUNT = 4;
+    }
+
+    public PartialCustomTabBaseStrategy(Activity activity,
+            BrowserServicesIntentDataProvider intentData, OnResizedCallback onResizedCallback,
             OnActivityLayoutCallback onActivityLayoutCallback, FullscreenManager fullscreenManager,
-            boolean isTablet, boolean interactWithBackground,
-            PartialCustomTabHandleStrategyFactory handleStrategyFactory) {
+            boolean isTablet, PartialCustomTabHandleStrategyFactory handleStrategyFactory) {
         mActivity = activity;
         mOnResizedCallback = onResizedCallback;
         mOnActivityLayoutCallback = onActivityLayoutCallback;
         mIsTablet = isTablet;
-        mInteractWithBackground = interactWithBackground;
+        mInteractWithBackground = intentData.canInteractWithBackground();
 
         mVersionCompat = PartialCustomTabVersionCompat.create(mActivity, this::updatePosition);
         mDisplayHeight = mVersionCompat.getDisplayHeight();
@@ -160,15 +188,37 @@ public abstract class PartialCustomTabBaseStrategy
         // down to the initial height/width.
         mHeight = MATCH_PARENT;
         mWidth = MATCH_PARENT;
+
+        if (!sDeviceSpecLogged) {
+            logDeviceSpecForPcct(activity);
+            sDeviceSpecLogged = true;
+        }
+    }
+
+    static void logDeviceSpecForPcct(Context context) {
+        var pm = context.getPackageManager();
+        var am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        boolean pip = pm.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE);
+        boolean lowEnd = am.isLowRamDevice();
+        @DeviceSpec int spec;
+        if (lowEnd && !pip) {
+            spec = DeviceSpec.LOWEND_NOPIP;
+        } else if (lowEnd && pip) {
+            spec = DeviceSpec.LOWEND_PIP;
+        } else if (!lowEnd && !pip) {
+            spec = DeviceSpec.HIGHEND_NOPIP;
+        } else {
+            spec = DeviceSpec.HIGHEND_PIP;
+        }
+        RecordHistogram.recordEnumeratedHistogram("CustomTabs.DeviceSpec", spec, DeviceSpec.COUNT);
     }
 
     @Override
     public void onPostInflationStartup() {
         // Elevate the main web contents area as high as the handle bar to have the shadow
         // effect look right.
-        int ev = mActivity.getResources().getDimensionPixelSize(R.dimen.custom_tabs_elevation);
         View coordinatorLayout = getCoordinatorLayout();
-        coordinatorLayout.setElevation(ev);
+        coordinatorLayout.setElevation(getCustomTabsElevation());
 
         mPositionUpdater.run();
 
@@ -418,11 +468,9 @@ public abstract class PartialCustomTabBaseStrategy
             handleViewStub.inflate();
         }
 
-        getCoordinatorLayout().setElevation(
-                mActivity.getResources().getDimensionPixelSize(R.dimen.custom_tabs_elevation));
+        getCoordinatorLayout().setElevation(getCustomTabsElevation());
         View handleView = mActivity.findViewById(R.id.custom_tabs_handle_view);
-        handleView.setElevation(
-                mActivity.getResources().getDimensionPixelSize(R.dimen.custom_tabs_elevation));
+        handleView.setElevation(getCustomTabsElevation());
         updateShadowOffset();
         GradientDrawable cctBackground = (GradientDrawable) handleView.getBackground();
         adjustCornerRadius(cctBackground, toolbarCornerRadius);
@@ -470,8 +518,7 @@ public abstract class PartialCustomTabBaseStrategy
         View dragBar = mActivity.findViewById(R.id.drag_bar);
         // Check if the current dragBar background is the InsetDrawable used in conjunction with
         // the divider line
-        if (dragBar.getBackground() instanceof InsetDrawable) {
-            InsetDrawable insetDrawable = (InsetDrawable) dragBar.getBackground();
+        if (dragBar.getBackground() instanceof InsetDrawable insetDrawable) {
             return (GradientDrawable) insetDrawable.getDrawable();
         } else {
             return (GradientDrawable) dragBar.getBackground();
@@ -572,6 +619,10 @@ public abstract class PartialCustomTabBaseStrategy
         mFinishRunnable = null;
     }
 
+    protected int getCustomTabsElevation() {
+        return mActivity.getResources().getDimensionPixelSize(R.dimen.custom_tabs_elevation);
+    }
+
     private void onToolbarContainerVisibilityChange(int visibility) {
         // See https://crbug.com/1430948 for more context. The issue is that sometimes when
         // exiting fullscreen, if we don't get a new layout, SurfaceFlinger doesn't recalculate
@@ -605,5 +656,9 @@ public abstract class PartialCustomTabBaseStrategy
 
     int getShadowOffsetForTesting() {
         return mShadowOffset;
+    }
+
+    static void resetDeviceSpecLoggedForTesting() {
+        sDeviceSpecLogged = false;
     }
 }

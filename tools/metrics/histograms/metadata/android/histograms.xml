@@ -379,6 +379,58 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.Automotive.DeviceLockDialogAction.{Source}"
+    enum="DeviceLockDialogAction" expires_after="2024-10-28">
+  <owner>clhager@google.com</owner>
+  <owner>geoffhuang@google.com</owner>
+  <summary>
+    Records action user took when presented with the device lock explainer
+    dialog (ex: button clicked) during a {Source} flow. Other actions such as
+    clicking back on the automotive toolbar or clicking outside of the dialog to
+    escape it can be calculated by subtracting button clicks from number of
+    times the dialog was shown.
+  </summary>
+  <token key="Source">
+    <variant name="AccountPicker"/>
+    <variant name="Autofill"/>
+    <variant name="FirstRun"/>
+    <variant name="SyncConsent"/>
+  </token>
+</histogram>
+
+<histogram name="Android.Automotive.DeviceLockOutcome" enum="Boolean"
+    expires_after="2024-10-28">
+  <owner>twellington@chromium.org</owner>
+  <owner>clhager@google.com</owner>
+  <owner>geoffhuang@google.com</owner>
+  <summary>
+    Records whether the user successfully passed the device lock challenge after
+    having seen the automotive device lock explainer dialog.
+  </summary>
+</histogram>
+
+<histogram name="Android.Automotive.DeviceLockRemovalDialogEvent"
+    enum="MissingDeviceLockDialogEvent" expires_after="2024-10-28">
+  <owner>twellington@chromium.org</owner>
+  <owner>clhager@google.com</owner>
+  <owner>geoffhuang@google.com</owner>
+  <summary>
+    Records an event whenever the missing device lock dialog is shown to the
+    user or the user takes an action on the dialog.
+  </summary>
+</histogram>
+
+<histogram name="Android.Automotive.DeviceLockSet" enum="Boolean"
+    expires_after="2024-10-28">
+  <owner>twellington@chromium.org</owner>
+  <owner>clhager@google.com</owner>
+  <owner>geoffhuang@google.com</owner>
+  <summary>
+    Records whether the automotive device has a device lock set when Chrome is
+    resumed.
+  </summary>
+</histogram>
+
 <histogram name="Android.BackgroundRestrictions.IsBackgroundRestricted"
     enum="Boolean" expires_after="2023-04-30">
   <owner>shaktisahu@chromium.org</owner>
@@ -1808,6 +1860,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.Intent.HasNonSpoofablePackageName" enum="Boolean"
+    expires_after="2024-05-01">
+  <owner>katzz@google.com</owner>
+  <owner>chrome-connective-tissue@google.com</owner>
+  <summary>
+    Android only. Boolean histogram denoting whether the package name can be
+    retrieved in a non-spoofable way from the View Intents sent to Chrome. When
+    the histogram returns true, it means we can confirm the package name was
+    passed by the defined host app. Emitted upon launching the tabbed Chrome
+    Activity via View Intent.
+  </summary>
+</histogram>
+
 <histogram name="Android.Intent.IntentUriNavigationResult"
     enum="IntentUriNavigationResult" expires_after="2023-12-17">
   <owner>mthiesse@chromium.org</owner>
@@ -1845,16 +1910,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Number of URLs present in Text Share intents (ACTION_SEND) received by
     Chrome.
-  </summary>
-</histogram>
-
-<histogram name="Android.IsLastSharedAppInfoRetrieved"
-    enum="BooleanIsLastSharedAppInfoRetrieved" expires_after="M77">
-  <owner>tedchoc@chromium.org</owner>
-  <owner>clank-team@google.com</owner>
-  <summary>
-    Signifies whether the last shared app information is retrieved successfully
-    or not. This is logged when configuring the direct sharing menu item.
   </summary>
 </histogram>
 
@@ -2806,8 +2861,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
-    name="Android.Omnibox.{AndroidSearchPrefetch}.GeoLocationTime.{AndroidNavigationOrSuggestionPrefetch}"
-    units="ms" expires_after="2023-10-15">
+    name="Android.Omnibox.{AndroidSearchPrefetch}.GeoLocationHeaderTime.{AndroidNavigationOrSuggestionPrefetch}"
+    units="ms" expires_after="2024-01-15">
+  <owner>nhiroki@chromium.org</owner>
   <owner>ryansturm@chromium.org</owner>
   <owner>curranmax@chromium.org</owner>
   <owner>chrome-search@google.com</owner>
@@ -2826,7 +2882,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Android.Omnibox.{AndroidSearchPrefetch}.NumPrefetchesStartedInOmniboxSession.{AndroidNavigationPrefetchOnly}"
-    units="count" expires_after="2023-10-15">
+    units="count" expires_after="2024-01-15">
+  <owner>nhiroki@chromium.org</owner>
   <owner>ryansturm@chromium.org</owner>
   <owner>curranmax@chromium.org</owner>
   <owner>chrome-search@google.com</owner>
@@ -2845,7 +2902,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Android.Omnibox.{AndroidSearchPrefetch}.TouchDownPrefetchResult.{AndroidNavigationPrefetchOnly}"
-    enum="SearchPrefetchTouchDownPrefetchResult" expires_after="2023-10-15">
+    enum="SearchPrefetchTouchDownPrefetchResult" expires_after="2024-01-15">
+  <owner>nhiroki@chromium.org</owner>
   <owner>ryansturm@chromium.org</owner>
   <owner>curranmax@chromium.org</owner>
   <owner>chrome-search@google.com</owner>
@@ -2864,7 +2922,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Android.Omnibox.{AndroidSearchPrefetch}.TouchDownProcessTime.{AndroidNavigationPrefetchOnly}"
-    units="ms" expires_after="2023-10-15">
+    units="ms" expires_after="2024-01-15">
+  <owner>nhiroki@chromium.org</owner>
   <owner>ryansturm@chromium.org</owner>
   <owner>curranmax@chromium.org</owner>
   <owner>chrome-search@google.com</owner>
@@ -3639,6 +3698,18 @@ chromium-metrics-reviews@google.com.
     means Mobile site while true means Desktop site. This is recorded when a
     user manually adds a subdomain level Request Desktop Setting from the Add
     site dialog in Site settings.
+  </summary>
+</histogram>
+
+<histogram name="Android.RequestDesktopSite.WindowSettingChanged"
+    enum="Boolean" expires_after="2024-02-20">
+  <owner>shuyng@google.com</owner>
+  <owner>skavuluru@google.com</owner>
+  <summary>
+    Records the new Request Desktop window setting when changed. If the setting
+    is true, Chrome will request mobile view when the window is narrow. This is
+    recorded when a user manually changes the Request Desktop window setting
+    from the site settings.
   </summary>
 </histogram>
 
@@ -5080,16 +5151,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.WebView.Gfx.GLDrawWasToFBO" units="Boolean"
-    expires_after="2023-12-01">
-  <owner>blundell@chromium.org</owner>
-  <owner>vasilyt@chromium.org</owner>
-  <summary>
-    For each draw in GL that WebView does on request from HWUI, records whether
-    the draw was done into the FBO or not.
-  </summary>
-</histogram>
-
 <histogram name="Android.WebView.Gfx.HardwareDrawType"
     enum="WebViewDrawAndSubmissionType" expires_after="2024-02-05">
   <owner>vasilyt@chromium.org</owner>
@@ -5266,6 +5327,67 @@ chromium-metrics-reviews@google.com.
     accurate estimates of memory usage or deltas, but mostly used as a signal in
     Finch experiments. This is intended to evaluate the impact of draw functor
     reclaim.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.Metrics.PackagesAllowList.ParseStatus"
+    enum="AppPackageNameAllowlistParseStatus" expires_after="2024-04-01">
+  <owner>avvall@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records the result of parsing the apps package names allowlist used to
+    populate the &quot;app_package_name&quot; field in UMA metrics logs. This is
+    recorded when the AwAppsPackageNamesAllowlistComponentLoaderPolicy is
+    successfully loaded by EmbeddedComponentLoader, i.e when ComponentLoaded is
+    called by the loader.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.Metrics.PackagesAllowList.RecordStatus"
+    enum="AppPackageNameLoggingRuleStatus" expires_after="2024-03-17">
+  <owner>avvall@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records the status of the apps package names allowlist used to populate the
+    &quot;app_package_name&quot; field in UMA metrics log. The status tracks if
+    a new version is loaded, a cached one is used or if loading the allowlist
+    has failed. It's recorded everytime the app package name is queried when a
+    new metrics log is created.
+  </summary>
+</histogram>
+
+<histogram
+    name="Android.WebView.Metrics.PackagesAllowList.ResultReceivingDelay"
+    units="ms" expires_after="2024-04-01">
+  <owner>avvall@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records the time delta between creating a AwMetricsServiceClient instance
+    during WebView startup and the time when the app package names allowlist is
+    loaded and looked up. This only records when a new version of the allowlist
+    is loaded successfully. i.e it's not recorded if the loading the allowlist
+    fails or if a cached version is used.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.Metrics.PackagesAllowList.ThrottleStatus"
+    enum="Boolean" expires_after="2024-04-01">
+  <owner>avvall@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Whether requests to query the app package names allowlist component is
+    throttled or not.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.Metrics.PackagesAllowList.TimeToExpire"
+    units="hours" expires_after="2024-04-01">
+  <owner>avvall@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    How long before the app package names allowlist record cached in the client
+    expires. This is only recorded from Apps that are in the app package names
+    allowlist. Recorded every time a metrics log is being created.
   </summary>
 </histogram>
 

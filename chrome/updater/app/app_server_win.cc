@@ -141,9 +141,15 @@ bool SwapGoogleUpdate(UpdaterScope scope,
   list->AddCreateRegKeyWorkItem(root, COMPANY_KEY, KEY_WOW64_32KEY);
   list->AddCreateRegKeyWorkItem(root, UPDATER_KEY, KEY_WOW64_32KEY);
   list->AddCreateRegKeyWorkItem(root, CLIENTS_KEY, KEY_WOW64_32KEY);
+  list->AddCreateRegKeyWorkItem(root, CLIENT_STATE_KEY, KEY_WOW64_32KEY);
   list->AddCreateRegKeyWorkItem(root, google_update_appid_key, KEY_WOW64_32KEY);
+  list->AddCreateRegKeyWorkItem(
+      root, GetAppClientStateKey(kLegacyGoogleUpdateAppID), KEY_WOW64_32KEY);
   list->AddSetRegValueWorkItem(root, google_update_appid_key, KEY_WOW64_32KEY,
                                kRegValuePV, kUpdaterVersionUtf16, true);
+  list->AddSetRegValueWorkItem(
+      root, GetAppClientStateKey(kLegacyGoogleUpdateAppID), KEY_WOW64_32KEY,
+      kRegValuePV, kUpdaterVersionUtf16, true);
   list->AddSetRegValueWorkItem(
       root, google_update_appid_key, KEY_WOW64_32KEY, kRegValueName,
       base::ASCIIToWide(PRODUCT_FULLNAME_STRING), true);
@@ -273,12 +279,22 @@ void AppServerWin::PostRpcTaskOnMainSequence(base::OnceClosure task) {
 }
 
 bool AppServerWin::RestoreComInterfaces(bool is_internal) {
-  return AreComInterfacesPresent(updater_scope(), is_internal) ||
-         InstallComInterfaces(updater_scope(), is_internal);
+  if (AreComInterfacesPresent(updater_scope(), is_internal)) {
+    return true;
+  }
+
+  // Skip `DUMP_WILL_BE_CHECK` when running
+  // `IntegrationTest.UpdateAppSucceedsEvenAfterDeletingInterfaces`.
+  if (!base::win::RegKey(HKEY_LOCAL_MACHINE, UPDATER_DEV_KEY, KEY_READ)
+           .HasValue(kRegValueIntegrationTestMode)) {
+    DUMP_WILL_BE_CHECK(false);
+  }
+  return InstallComInterfaces(updater_scope(), is_internal);
 }
 
 HRESULT AppServerWin::RegisterClassObjects() {
-  // TODO(crbug.com/1484803): remove once we know why E_NOINTERFACE happens.
+  // TODO(crbug.com/1484803): maybe remove once the E_NOINTERFACE issue is
+  // fixed.
   const bool succeeded = RestoreComInterfaces(false);
   LOG_IF(ERROR, !succeeded);
 
@@ -290,7 +306,8 @@ HRESULT AppServerWin::RegisterClassObjects() {
 }
 
 HRESULT AppServerWin::RegisterInternalClassObjects() {
-  // TODO(crbug.com/1484803): remove once we know why E_NOINTERFACE happens.
+  // TODO(crbug.com/1484803): maybe remove once the E_NOINTERFACE issue is
+  // fixed.
   const bool succeeded = RestoreComInterfaces(true);
   LOG_IF(ERROR, !succeeded);
 
@@ -307,7 +324,8 @@ void AppServerWin::UnregisterClassObjects() {
           .UnregisterObjects();
   LOG_IF(ERROR, FAILED(hr)) << "UnregisterObjects failed; hr: " << hr;
 
-  // TODO(crbug.com/1484803): remove once we know why E_NOINTERFACE happens.
+  // TODO(crbug.com/1484803): maybe remove once the E_NOINTERFACE issue is
+  // fixed.
   const bool succeeded =
       RestoreComInterfaces(update_service_internal_ != nullptr);
   LOG_IF(ERROR, !succeeded);

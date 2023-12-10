@@ -568,7 +568,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   service_manager::InterfaceProvider* GetJavaInterfaces() override;
 #endif
   bool HasRecentInteraction() override;
-  void SetIgnoreInputEvents(bool ignore_input_events) override;
+  [[nodiscard]] ScopedIgnoreInputEvents IgnoreInputEvents() override;
   bool HasActiveEffectivelyFullscreenVideo() override;
   void WriteIntoTrace(perfetto::TracedValue context) override;
   const base::Location& GetCreatorLocation() override;
@@ -580,6 +580,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void SetV8CompileHints(base::ReadOnlySharedMemoryRegion data) override;
   void SetTabSwitchStartTime(base::TimeTicks start_time,
                              bool destination_is_loaded) override;
+  void ActivatePreviewPage(base::TimeTicks activation_start,
+                           base::OnceClosure completion_callback) override;
 
   // Implementation of PageNavigator.
   WebContents* OpenURL(const OpenURLParams& params) override;
@@ -741,6 +743,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                    int context_id) override;
   void OnFrameAudioStateChanged(RenderFrameHostImpl* host,
                                 bool is_audible) override;
+  void OnFrameVisibilityChanged(
+      RenderFrameHostImpl* host,
+      blink::mojom::FrameVisibility visibility) override;
   media::MediaMetricsProvider::RecordAggregateWatchTimeCallback
   GetRecordAggregateWatchTimeCallback(
       const GURL& page_main_frame_last_committed_url) override;
@@ -887,6 +892,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                             WindowOpenDisposition disposition) override;
   void SetOwnerLocationForDebug(
       absl::optional<base::Location> owner_location) override;
+
+  network::mojom::AttributionSupport GetAttributionSupport() override;
+  void UpdateAttributionSupportRenderer() override;
+  static void UpdateAttributionSupportAllRenderers();
 
   // NavigatorDelegate ---------------------------------------------------------
 
@@ -1045,6 +1054,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void NotifyPageBecamePrimary(PageImpl& page) override;
 
   bool IsInPreviewMode() const override;
+  void CancelPreviewByMojoBinderPolicy(
+      const std::string& interface_name) override;
 
   // blink::mojom::ColorChooserFactory ---------------------------------------
   void OnColorChooserFactoryReceiver(
@@ -1778,10 +1789,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Returns the size that the main frame should be sized to.
   gfx::Size GetSizeForMainFrame();
 
-  // Sets the window's state to the given `ui::WindowShowState` and synchronizes
-  // the visual properties of the `RenderWidgetHost`.
-  void SetWindowShowState(ui::WindowShowState state);
-
   // Helper method that's called whenever |preferred_size_| or
   // |preferred_size_for_capture_| changes, to propagate the new value to the
   // |delegate_|.
@@ -2076,8 +2083,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // once.
   bool notify_disconnection_;
 
-  // Set to true if we shouldn't send input events.
-  bool ignore_input_events_ = false;
+  // Counts the number of outstanding requests to ignore input events. They will
+  // not be sent when this is greater than zero.
+  int ignore_input_events_count_ = 0;
 
   // Pointer to the JavaScript dialog manager, lazily assigned. Used because the
   // delegate of this WebContentsImpl is nulled before its destructor is called.

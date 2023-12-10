@@ -630,11 +630,34 @@ export class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
     }
   }
 
-  private shouldShowSpinner_(item: chrome.languageSettingsPrivate.InputMethod):
-      boolean {
+  private shouldShowSpinner_(imeId: string): boolean {
     return this.languagePacksInSettingsEnabled_ &&
-        this.languageHelper.getImeLanguagePackStatus(item.id) ===
+        this.languageHelper.getImeLanguagePackStatus(imeId) ===
         chrome.inputMethodPrivate.LanguagePackStatus.IN_PROGRESS;
+  }
+
+  private shouldShowLanguagePackError_(imeId: string): boolean {
+    if (!this.languagePacksInSettingsEnabled_) {
+      return false;
+    }
+    const status = this.languageHelper.getImeLanguagePackStatus(imeId);
+    return status ===
+        chrome.inputMethodPrivate.LanguagePackStatus.ERROR_OTHER ||
+        status ===
+        chrome.inputMethodPrivate.LanguagePackStatus.ERROR_NEEDS_REBOOT;
+  }
+
+  private getLanguagePacksErrorMessage_(imeId: string): string {
+    const status = this.languageHelper.getImeLanguagePackStatus(imeId);
+    switch (status) {
+      case chrome.inputMethodPrivate.LanguagePackStatus.ERROR_NEEDS_REBOOT:
+        return this.i18n('inputMethodLanguagePacksNeedsRebootError');
+      case chrome.inputMethodPrivate.LanguagePackStatus.ERROR_OTHER:
+        return this.i18n('inputMethodLanguagePacksGeneralError');
+      default:
+        console.error('Invalid status:', status);
+        return '';
+    }
   }
 }
 

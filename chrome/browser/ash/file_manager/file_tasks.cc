@@ -393,7 +393,7 @@ bool OpenFilesWithBrowser(Profile* profile,
   for (const FileSystemURL& file_url : file_urls) {
     if (ash::FileSystemBackend::CanHandleURL(file_url)) {
       num_opened +=
-          util::OpenFileWithBrowser(profile, file_url, action_id) ? 1 : 0;
+          util::OpenFileWithAppOrBrowser(profile, file_url, action_id) ? 1 : 0;
     }
   }
   return num_opened > 0;
@@ -809,7 +809,7 @@ bool ExecuteFileTask(Profile* profile,
     const bool started = ExecuteWebDriveOfficeTask(
         profile, task, file_urls, modal_parent,
         std::make_unique<ash::cloud_upload::CloudOpenMetrics>(
-            ash::cloud_upload::CloudProvider::kGoogleDrive));
+            ash::cloud_upload::CloudProvider::kGoogleDrive, file_urls.size()));
     if (done) {
       if (started) {
         std::move(done).Run(
@@ -829,7 +829,7 @@ bool ExecuteFileTask(Profile* profile,
     const bool started = ExecuteOpenInOfficeTask(
         profile, task, file_urls, modal_parent,
         std::make_unique<ash::cloud_upload::CloudOpenMetrics>(
-            ash::cloud_upload::CloudProvider::kOneDrive));
+            ash::cloud_upload::CloudProvider::kOneDrive, file_urls.size()));
     if (done) {
       if (started) {
         std::move(done).Run(

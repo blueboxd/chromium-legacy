@@ -2148,8 +2148,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Returns true if a prerender was canceled. Does nothing and returns false if
   // `this` is not prerendered.
   bool CancelPrerendering(const PrerenderCancellationReason& reason);
-  // Called by MojoBinderPolicyApplier when it receives a kCancel interface.
+  // Called by MojoBinderPolicyApplier when it receives a kCancel interface
+  // while prerendering.
   void CancelPrerenderingByMojoBinderPolicy(const std::string& interface_name);
+
+  // LinkPreview:
+  // Called by MojoBinderPolicyApplier when it receives a kCancel interface in
+  // preview mode.
+  void CancelPreviewByMojoBinderPolicy(const std::string& interface_name);
 
   // Called when the Activate IPC is sent to the renderer. Puts the
   // MojoPolicyBinderApplier in "loose" mode via PrepareToGrantAll() until
@@ -2457,6 +2463,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       network::AttributionReportingRuntimeFeatures
           attribution_reporting_runtime_features) override;
   void SetFencedFrameAutomaticBeaconReportEventData(
+      blink::mojom::AutomaticBeaconType event_type,
       const std::string& event_data,
       const std::vector<blink::FencedFrame::ReportingDestination>& destinations,
       network::AttributionReportingRuntimeFeatures
@@ -3025,6 +3032,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void RecordBackForwardCacheDisablingReason(
       BackForwardCacheDisablingFeature feature);
 
+  // Send an automatic beacon of type `event_type` if one was registered
+  // with the NavigationRequest's initiator frame using the
+  // `window.fence.setReportEventDataForAutomaticBeacons` API.
+  void MaybeSendFencedFrameAutomaticReportingBeacon(
+      NavigationRequest& navigation_request,
+      blink::mojom::AutomaticBeaconType event_type);
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -3383,6 +3397,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void Clone(
       mojo::PendingReceiver<network::mojom::SharedDictionaryAccessObserver>
           observer) override;
+
+  // Returns true if this RFH's compositor should be reused by a speculattive
+  // RFH with the `speculative_site_instance`.
+  // Returns false if the speculative RFH should initialize a new compositor.
+  bool ShouldReuseCompositing(
+      SiteInstanceImpl& speculative_site_instance) const;
 
   // Resets any waiting state of this RenderFrameHost that is no longer
   // relevant.
@@ -4050,30 +4070,22 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // document commits first.
   void ClosePageTimeout(ClosePageSource source);
 
-  // Send an automatic `reserved.top_navigation` beacon if one was registered
-  // with the NavigationRequest's initiator frame using the
-  // `window.fence.setReportEventDataForAutomaticBeacons` API.
-  void MaybeSendFencedFrameAutomaticReportingBeacon(
-      NavigationRequest& navigation_request);
-
   // Helper function that handles creating and sending a fenced frame beacon.
   // This also handles sending console messages if the call to send the beacon
   // originated from the renderer.
   // Calls to this function for automatic beacons (i.e. the
-  // "reserved.top_navigation" beacon) will originate from the browser. All
+  // "reserved.top_navigation_*" beacon) will originate from the browser. All
   // other fenced frame beacon calls happen through a `fence.sendBeacon()`
   // JavaScript call which will originate from the renderer.
   // `attribution_reporting_runtime_features` indicates whether Attribution
   // Reporting API related runtime features are enabled and is needed for
   // integration with Attribution Reporting API.
   void SendFencedFrameReportingBeaconInternal(
-      const absl::variant<DestinationEnumEvent, DestinationURLEvent>&
-          event_variant,
+      const FencedFrameReporter::DestinationVariant& event_variant,
       blink::FencedFrame::ReportingDestination destination,
       bool from_renderer,
       network::AttributionReportingRuntimeFeatures
           attribution_reporting_features,
-      int initiator_frame_tree_node_id,
       absl::optional<int64_t> navigation_id = absl::nullopt);
 
   // Indicates whether this frame has third-party storage
@@ -4091,7 +4103,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   std::vector<RenderFrameHostImpl*> GetAncestorChainForStorageKeyCalculation(
       const url::Origin& new_rfh_origin);
 
+  // Returns whether the `RenderFrameHost` can use Additional Windowing Controls
+  // APIs.
+  // https://github.com/ivansandrk/additional-windowing-controls/blob/main/awc-explainer.md
   bool CanUseWindowingControls(base::StringPiece js_api_name);
+
+  // Notifies when the renderer side Widget instance has been created and mojo
+  // interfaces to it can be bound.
+  void RendererWidgetCreated();
 
   // The RenderViewHost that this RenderFrameHost is associated with.
   //
@@ -4537,9 +4556,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   //
   // Note that some use cases may still consider a RenderFrameHost used after a
   // crash, in which case is_initial_empty_document() may be a more relevant
-  // check. Also, unlike is_initial_empty_document(), this field does not
-  // change if this frame is modified via document.open().
+  // check. Also, unlike is_initial_empty_document(), this field does not change
+  // if this frame is modified via document.open().  However, note that
+  // is_initial_empty_document() is updated at DidCommitNavigation() time,
+  // whereas this field is updated at CommitNavigation() time.
   bool has_committed_any_navigation_ = false;
+
   bool must_be_replaced_ = false;
 
   // Counts the number of times the associated renderer process has exited.
@@ -5103,7 +5125,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Whether this document is the initial about:blank document or the
   // synchronously committed about:blank document committed at frame creation,
   // and its "initial empty document"-ness is still true.
-  // This will be false if either of these has happened:
+  // This will become false if either of these has happened:
   // - The RenderFrameHost had committed a cross-document navigation that is
   //   not the synchronously committed about:blank document per:
   //   https://html.spec.whatwg.org/multipage/browsers.html#creating-browsing-contexts:is-initial-about:blank
@@ -5116,6 +5138,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // "initial about:blank document". See also:
   // - https://github.com/whatwg/html/issues/6863
   // - https://crbug.com/1215096
+  //
+  // Note that cross-document navigations update this state at
+  // DidCommitNavigation() time. Thus, this is still true when a cross-document
+  // navigation from an initial empty document is in the pending-commit window,
+  // after sending the CommitNavigation IPC but before receiving
+  // DidCommitNavigation().  This is in contrast to
+  // has_committed_any_navigation(), which is updated in CommitNavigation().
+  // TODO(alexmos): Consider updating this at CommitNavigation() time as well to
+  // match the has_committed_any_navigation() behavior.
   bool is_initial_empty_document_ = true;
 
   // Testing callback run in DidStopLoading() regardless of loading state. This
@@ -5229,6 +5260,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // See: https://chromestatus.com/feature/6002307972464640
   absl::optional<blink::DocumentToken>
       fullscreen_document_on_document_element_ready_ = absl::nullopt;
+
+  // If true, the renderer side widget is created after the navigation is
+  // committed.
+  bool waiting_for_renderer_widget_creation_after_commit_ = false;
 
   // WeakPtrFactories are the last members, to ensure they are destroyed before
   // all other fields of `this`.

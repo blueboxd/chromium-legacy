@@ -193,7 +193,14 @@ UnusedSitePermissionsService::UnusedSitePermissionsResult::ToDictValue() const {
     permission_dict.Set(kSafetyHubOriginKey, permission.origin.ToString());
     base::Value::List permission_types;
     for (ContentSettingsType cst : permission.permission_types) {
-      permission_types.Append(registry->Get(cst)->name());
+      const content_settings::WebsiteSettingsInfo* website_info =
+          registry->Get(cst);
+      if (website_info) {
+        permission_types.Append(website_info->name());
+      }
+    }
+    if (permission_types.empty()) {
+      continue;
     }
     permission_dict.Set(kUnusedSitePermissionsResultPermissionTypesKey,
                         std::move(permission_types));
@@ -684,12 +691,6 @@ void UnusedSitePermissionsService::SetClockForTesting(base::Clock* clock) {
 
 base::WeakPtr<SafetyHubService> UnusedSitePermissionsService::GetAsWeakRef() {
   return weak_factory_.GetWeakPtr();
-}
-
-std::unique_ptr<SafetyHubService::Result>
-UnusedSitePermissionsService::GetResultFromDictValue(
-    const base::Value::Dict& dict) {
-  return std::make_unique<UnusedSitePermissionsResult>(dict);
 }
 
 bool UnusedSitePermissionsService::IsAutoRevocationEnabled() {

@@ -40,6 +40,7 @@ GPU_EXPORT BASE_DECLARE_FEATURE(kDefaultEnableGpuRasterization);
 GPU_EXPORT BASE_DECLARE_FEATURE(kCanvasOopRasterization);
 
 #if BUILDFLAG(IS_OZONE)
+GPU_EXPORT BASE_DECLARE_FEATURE(kEnablePerContextGLTextureCache);
 GPU_EXPORT BASE_DECLARE_FEATURE(kOzoneFrontBufferUsage);
 #endif
 
@@ -74,6 +75,8 @@ GPU_EXPORT BASE_DECLARE_FEATURE(kVulkan);
 GPU_EXPORT BASE_DECLARE_FEATURE(kSkiaGraphite);
 GPU_EXPORT extern const base::FeatureParam<bool>
     kSkiaGraphiteDawnSkipValidation;
+GPU_EXPORT extern const base::FeatureParam<bool>
+    kSkiaGraphiteDawnBackendValidation;
 
 #if BUILDFLAG(IS_WIN)
 GPU_EXPORT BASE_DECLARE_FEATURE(kSkiaGraphiteDawnUseD3D12);

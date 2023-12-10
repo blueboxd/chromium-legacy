@@ -331,16 +331,19 @@
         Writing help
       </message>
       <message name="IDS_EDITOR_MENU_WRITE_CARD_FREEFORM_PLACEHOLDER" desc="Placeholder text in the freeform textfield of the Editor Menu when shown in write mode." translateable="false">
-        What's your writing goal?
+        For example, "write a thank you note"
       </message>
       <message name="IDS_EDITOR_MENU_REWRITE_CARD_TITLE" desc="Title text in the Editor Menu when shown in rewrite mode." translateable="false">
         Rewrite
       </message>
       <message name="IDS_EDITOR_MENU_REWRITE_CARD_FREEFORM_PLACEHOLDER" desc="Placeholder text in the freeform textfield of the Editor Menu when shown in rewrite mode." translateable="false">
-        Custom (e.g. sound more confident)
+        Custom (for example, "sound more confident")
       </message>
       <message name="IDS_EDITOR_MENU_SETTINGS_TOOLTIP" desc="Tooltip text for the settings button in the Editor Menu." translateable="false">
         Settings
+      </message>
+      <message name="IDS_EDITOR_MENU_FREEFORM_TEXTFIELD_ARROW_BUTTON_TOOLTIP" desc="Tooltip text for the arrow button in the freeform textfield in the Editor Menu." translateable="false">
+        Submit
       </message>
       <message name="IDS_EDITOR_MENU_EXPERIMENT_BADGE" desc="Label on the badge shown next to the Editor Menu title to indicate that it is an experimental feature." translateable="false">
         Experiment
@@ -2530,13 +2533,13 @@
           While charging, show screen saver for
         </message>
         <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_DURATION_MINUTES" desc="Label for the screen saver duration option in minutes.">
-          <ph name="MINUTES">$1<ex>10</ex></ph> mins
+          <ph name="MINUTES">$1<ex>10</ex></ph> minutes
         </message>
         <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_DURATION_ONE_HOUR" desc="Label for the screen saver duration option 1 hour.">
-          1 hr
+          1 hour
         </message>
         <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_DURATION_FOREVER" desc="Label for the screen saver duration option forever.">
-          Forever
+          forever
         </message>
         <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_TOPIC_SOURCE_TITLE" desc="Label for the radio button group of ambient mode topic source, where the screen contents come from.">
           Image source
@@ -3938,6 +3941,9 @@
         <message name="IDS_FEEDBACK_TOOL_ATTACH_FILES_LABEL" desc="Label for adding a screenshot and/or a filename.">
           Attach files
         </message>
+        <message name="IDS_FEEDBACK_TOOL_ATTACH_FILES_LABEL_LOGGED_OUT" desc="Label for adding a screenshot. Shown to loggout users.">
+          Add screenshot
+        </message>
         <message name="IDS_FEEDBACK_TOOL_REPLACE_FILE_LABEL" desc="Label of the replace file button">
           Replace file
         </message>
@@ -4088,8 +4094,7 @@
         <message name="IDS_SHORTCUT_CUSTOMIZATION_CANCEL" desc="Used to cancel action in various modals">
           Cancel
         </message>
-        <!-- TODO(b/286268215): Translate this string -->
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_EDIT" desc="Used to edit action in various modals" translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_EDIT" desc="Used to edit action in various modals">
           Edit
         </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_CUSTOMIZATION_DISABLED_BY_POLICY_MESSAGE"
@@ -4164,6 +4169,11 @@
         </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_SEARCH_PLACEHOLDER_LABEL" desc="Placeholder text shown in search input field before user has typed anything.">
           Search shortcuts
+        </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_INPUT_KEY_PLACEHOLDER"
+            desc="The placeholder text that appears in the input box where the
+            user is required to press a key combination for a shortcut.">
+          key
         </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_ACCELERATOR_TEXT_DIVIDER" desc="The text shown between multiple shortcut keys.">
           or
@@ -4303,8 +4313,7 @@
         <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BROWSER_BACK" desc="The text read aloud by the screen reader describing the keyboard icon 'back'.">
           back
         </message>
-        <!-- TODO(b/286268215): Translate this string -->
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BROWSER_FORWARD" desc="The text read aloud by the screen reader describing the keyboard icon 'forward'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BROWSER_FORWARD" desc="The text read aloud by the screen reader describing the keyboard icon 'forward'.">
           forward
         </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BROWSER_REFRESH" desc="The text read aloud by the screen reader describing the keyboard icon 'refresh'.">
@@ -4504,6 +4513,9 @@
         </message>
         <message name="IDS_SETTINGS_APN_DIALOG_DEFAULT_APN_REQUIRED" desc="Error message that is shown whenever a default APN type is required">
           A default APN is required
+        </message>
+        <message name="IDS_SETTINGS_APN_NAME_MODEM" desc="Label for APNs that are selected by the modem">
+          Modem APN
         </message>
         <message name="IDS_SETTINGS_APN_AUTO_DETECTED" desc="Statement that the APN is automatically detected">
           Automatically detected

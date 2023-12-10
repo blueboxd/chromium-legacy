@@ -26,6 +26,7 @@
 <translation id="1448064542941920355">Decrease zoom</translation>
 <translation id="1510341833810331442">Sites aren't allowed to save data on your device</translation>
 <translation id="1547123415014299762">Third-party cookies are allowed</translation>
+<translation id="1568470248891039841">Sites you visit can embed content from other sites. For example, images, ads and text. These other sites can ask for permission to use info they've saved about you as you browse the site. <ph name="BEGIN_LINK" />Learn more about embedded content<ph name="END_LINK" /></translation>
 <translation id="1593426485665524382">New actions available near top of the screen</translation>
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1633720957382884102">Related sites</translation>
@@ -80,6 +81,7 @@
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> and <ph name="NUM_MORE" /> more allowed}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> and <ph name="NUM_MORE" /> more allowed}}</translation>
 <translation id="2410940059315936967">A site that you visit can embed content from other sites, for example, images, ads and text. Cookies set by these other sites are called third-party cookies.</translation>
 <translation id="2434158240863470628">Download complete <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
+<translation id="2438120137003069591">You temporarily allowed this site to use third-party cookies, which means less browsing protection but site features are more likely to work as expected. <ph name="BEGIN_LINK" />Send feedback<ph name="END_LINK" /></translation>
 <translation id="244264527810019436">Features on some sites may not work in Incognito mode</translation>
 <translation id="2442870161001914531">Always request desktop site</translation>
 <translation id="2469312991797799607">This action will clear all data and cookies for <ph name="ORIGIN" /> and all sites under it</translation>
@@ -114,6 +116,7 @@
 <translation id="2910701580606108292">Ask before allowing sites to play protected content</translation>
 <translation id="2932883381142163287">Report abuse</translation>
 <translation id="2968755619301702150">Certificate viewer</translation>
+<translation id="2979365474350987274">Third-party cookies are limited</translation>
 <translation id="3008272652534848354">Reset permissions</translation>
 <translation id="301521992641321250">Automatically blocked</translation>
 <translation id="3069226013421428034">Allow third-party sign-in for a specific site.</translation>
@@ -169,6 +172,7 @@
 <translation id="3918378745482005425">Some features may not work. Related sites can still use third-party cookies.</translation>
 <translation id="3955193568934677022">Allow sites to play protected content (recommended)</translation>
 <translation id="3967822245660637423">Download complete</translation>
+<translation id="3974105241379491420">Sites can ask to use info they've saved about you</translation>
 <translation id="3987993985790029246">Copy link</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="3992684624889376114">About this page</translation>
@@ -188,6 +192,7 @@
 <translation id="4278390842282768270">Allowed</translation>
 <translation id="429312253194641664">A site is playing media</translation>
 <translation id="42981349822642051">Expand</translation>
+<translation id="4336566011000459927">Chrome will limit cookies again today</translation>
 <translation id="4338831206024587507">All sites under <ph name="DOMAIN" /></translation>
 <translation id="4402755511846832236">Block sites from knowing when you're actively using this device</translation>
 <translation id="4412992751769744546">Allow third-party cookies</translation>
@@ -243,6 +248,7 @@
 <translation id="5335288049665977812">Allow sites to run JavaScript (recommended)</translation>
 <translation id="534295439873310000">NFC devices</translation>
 <translation id="5344522958567249764">Manage ads privacy</translation>
+<translation id="5389626883706033615">Sites are blocked from asking you to use info they've saved about you</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 more)}other{(+ # more)}}</translation>
 <translation id="5403592356182871684">Names</translation>
 <translation id="5438097262470833822">This choice will reset permissions for <ph name="WEBSITE" /></translation>
@@ -289,6 +295,8 @@
 <translation id="6177128806592000436">Your connection to this site is not secure</translation>
 <translation id="6181444274883918285">Add site exception</translation>
 <translation id="6192792657125177640">Exceptions</translation>
+<translation id="6194967801833346599">{DAYS,plural, =1{Chrome will block cookies again tomorrow}other{# days until cookies are blocked again}}</translation>
+<translation id="6195163219142236913">Third-party cookies limited</translation>
 <translation id="6196640612572343990">Block third-party cookies</translation>
 <translation id="6205314730813004066">Ads privacy</translation>
 <translation id="6207207788774442484">Delete data and reset permissions</translation>
@@ -299,6 +307,7 @@
 <translation id="6270391203985052864">Sites can ask to send notifications</translation>
 <translation id="6295158916970320988">All sites</translation>
 <translation id="6320088164292336938">Vibrate</translation>
+<translation id="6344622098450209924">Tracking protection</translation>
 <translation id="6367753977865761591">Block third-party sign-in for a specific site.</translation>
 <translation id="6398765197997659313">Exit full screen</translation>
 <translation id="640163077447496506">Expires today</translation>
@@ -350,6 +359,7 @@
 <translation id="7243308994586599757">Options available near bottom of the screen</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> selected</translation>
 <translation id="7260727271532453612"><ph name="PERMISSION_1" /> and <ph name="PERMISSION_2" /> allowed</translation>
+<translation id="7284451015630589124">You blocked sites from using third-party cookies to track you as you browse. Visit settings to <ph name="BEGIN_LINK" />manage your tracking protections<ph name="END_LINK" />.</translation>
 <translation id="7302486331832100261">You usually block notifications. To allow, tap Details.</translation>
 <translation id="7366415735885268578">Add a site</translation>
 <translation id="7368695150573390554">Any offline data will be deleted</translation>
@@ -358,6 +368,7 @@
 <translation id="7423098979219808738">Ask first</translation>
 <translation id="7423538860840206698">Blocked from reading clipboard</translation>
 <translation id="7425915948813553151">Dark theme for sites</translation>
+<translation id="7474522811371247902">Chrome limits most sites from using third-party cookies. But third-party cookies are allowed on this site because it relies on them to provide basic services.\n\nVisit settings to <ph name="BEGIN_LINK" />manage your tracking protections<ph name="END_LINK" />.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">A site is using your microphone</translation>
 <translation id="7561196759112975576">Always</translation>
@@ -374,6 +385,7 @@
 <translation id="780301667611848630">No, thanks</translation>
 <translation id="7804248752222191302">A site is using your camera</translation>
 <translation id="7807060072011926525">Provided by Google</translation>
+<translation id="7822573154188733812">Chrome blocks sites from using third-party cookies to track you as you browse. Visit settings to <ph name="BEGIN_LINK" />manage your Tracking Protections<ph name="END_LINK" />.</translation>
 <translation id="7835852323729233924">Playing media</translation>
 <translation id="783819812427904514">Unmute video</translation>
 <translation id="7846076177841592234">Cancel selection</translation>
@@ -390,6 +402,7 @@
 <translation id="8077120325605624147">Any site that you visit can show any ad to you</translation>
 <translation id="8087000398470557479">This content is from <ph name="DOMAIN_NAME" />, delivered by Google.</translation>
 <translation id="8088603949666785339">More options in the <ph name="BANNER_TITLE" /></translation>
+<translation id="8113501330600751161">{DAYS,plural, =1{Chrome will limit cookies again tomorrow}other{# days until Chrome limits cookies again}}</translation>
 <translation id="8116925261070264013">Muted</translation>
 <translation id="813082847718468539">View site information</translation>
 <translation id="8131740175452115882">Confirm</translation>
@@ -428,6 +441,7 @@
 <translation id="8564613706851221529">{COUNT,plural, =1{Cookies allowed for <ph name="FPS_MEMBERS_COUNT" /> <ph name="FPS_OWNER" /> site}other{Cookies allowed for <ph name="FPS_MEMBERS_COUNT" /> <ph name="FPS_OWNER" /> sites}}</translation>
 <translation id="857943718398505171">Allowed (recommended)</translation>
 <translation id="8609465669617005112">Move up</translation>
+<translation id="8649036394979866943">Chrome limits most sites from using third-party cookies to track you as you browse. Visit settings to <ph name="BEGIN_LINK" />manage your tracking protections<ph name="END_LINK" /></translation>
 <translation id="8676374126336081632">Clear input</translation>
 <translation id="8681886425883659911">Ads are blocked on sites known to show intrusive or misleading ads</translation>
 <translation id="868929229000858085">Search your contacts</translation>
@@ -444,12 +458,14 @@
 <translation id="8816026460808729765">Block sites from accessing sensors</translation>
 <translation id="8823559166155093873">Block cookies</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8874790741333031443">Try temporarily allowing third-party cookies, which means less browsing protection but site features are more likely to work as expected.</translation>
 <translation id="8889294078294184559">As you keep browsing, sites can check with Chrome and verify with a previous site that you've visited that you're likely a real person</translation>
 <translation id="8899807382908246773">Intrusive ads</translation>
 <translation id="8903921497873541725">Zoom in</translation>
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">NFC is off for this device. Turn it on in <ph name="BEGIN_LINK" />Android settings<ph name="END_LINK" />.</translation>
 <translation id="8928445016601307354">Block sites from seeing and changing information on NFC devices</translation>
+<translation id="8944485226638699751">Limited</translation>
 <translation id="8958424370300090006">Block cookies for a specific site.</translation>
 <translation id="8959122750345127698">Navigation is unreachable: <ph name="URL" /></translation>
 <translation id="8986362086234534611">Forget</translation>

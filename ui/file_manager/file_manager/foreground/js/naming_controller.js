@@ -5,8 +5,11 @@
 import {assert} from 'chrome://resources/ash/common/assert.js';
 
 import {getFile} from '../../common/js/api.js';
+import {ArrayDataModel} from '../../common/js/array_data_model.js';
 import {getKeyModifiers} from '../../common/js/dom_utils.js';
-import {strf, UserCanceledError, util} from '../../common/js/util.js';
+import {isFakeEntry, isSameEntry} from '../../common/js/entry_utils.js';
+import {strf} from '../../common/js/translations.js';
+import {FileErrorToDomError, UserCanceledError} from '../../common/js/util.js';
 
 import {FileFilter} from './directory_contents.js';
 import {DirectoryModel} from './directory_model.js';
@@ -15,6 +18,7 @@ import {FileSelectionHandler} from './file_selection.js';
 import {ConfirmDialog} from './ui/dialogs.js';
 import {FilesAlertDialog} from './ui/files_alert_dialog.js';
 import {ListContainer} from './ui/list_container.js';
+import {ListSelectionModel} from './ui/list_selection_model.js';
 
 /**
  * Controller to handle naming.
@@ -107,7 +111,7 @@ export class NamingController {
         throw new Error('Invalid filename.');
       }
 
-      if (directory && util.isFakeEntry(directory)) {
+      if (directory && isFakeEntry(directory)) {
         // Can't save a file into a fake directory.
         throw new Error('Cannot save into fake entry.');
       }
@@ -115,13 +119,13 @@ export class NamingController {
       await getFile(directory, filename, {create: false});
     } catch (error) {
       // @ts-ignore: error TS18046: 'error' is of type 'unknown'.
-      if (error.name == util.FileError.NOT_FOUND_ERR) {
+      if (error.name == FileErrorToDomError.NOT_FOUND_ERR) {
         // The file does not exist, so it should be ok to create a new file.
         return fileUrl;
       }
 
       // @ts-ignore: error TS18046: 'error' is of type 'unknown'.
-      if (error.name == util.FileError.TYPE_MISMATCH_ERR) {
+      if (error.name == FileErrorToDomError.TYPE_MISMATCH_ERR) {
         // A directory is found. Do not allow to overwrite directory.
         this.alertDialog_.show(strf('DIRECTORY_ALREADY_EXISTS', filename));
         throw error;
@@ -171,8 +175,9 @@ export class NamingController {
     }
     const label = item.querySelector('.filename-label');
     const input = this.listContainer_.renameInput;
-    const currentEntry =
-        this.listContainer_.currentList.dataModel.item(item.listIndex);
+    const dataModel = /** @type {!ArrayDataModel} */ (
+        this.listContainer_.currentList.dataModel);
+    const currentEntry = dataModel.item(item.listIndex);
 
     // @ts-ignore: error TS18047: 'label' is possibly 'null'.
     input.value = label.textContent;
@@ -217,7 +222,7 @@ export class NamingController {
     }
 
     const leadEntry = /** @type {Entry} */ (dm.getFileList().item(leadIndex));
-    if (!util.isSameEntry(
+    if (!isSameEntry(
             // @ts-ignore: error TS2339: Property 'currentEntry' does not exist
             // on type 'HTMLInputElement'.
             this.listContainer_.renameInput.currentEntry, leadEntry)) {
@@ -356,8 +361,11 @@ export class NamingController {
         await this.directoryModel_.onRenameEntry(entry, assert(newEntry));
       }
 
+      const selectionModel = /** @type {!ListSelectionModel} */ (
+          this.listContainer_.currentList.selectionModel);
+
       // Select new entry.
-      this.listContainer_.currentList.selectionModel.selectedIndex =
+      selectionModel.selectedIndex =
           this.directoryModel_.getFileList().indexOf(newEntry);
       // Force to update selection immediately.
       this.selectionHandler_.onFileSelectionChanged();

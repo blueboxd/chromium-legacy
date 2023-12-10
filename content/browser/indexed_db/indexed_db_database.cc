@@ -34,7 +34,6 @@
 #include "content/browser/indexed_db/indexed_db_bucket_context_handle.h"
 #include "content/browser/indexed_db/indexed_db_callback_helpers.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
-#include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_external_object.h"
 #include "content/browser/indexed_db/indexed_db_factory_client.h"
@@ -43,7 +42,6 @@
 #include "content/browser/indexed_db/indexed_db_return_value.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
-#include "content/browser/indexed_db/transaction_impl.h"
 #include "ipc/ipc_channel.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "third_party/blink/public/common/features.h"
@@ -584,7 +582,7 @@ Status IndexedDBDatabase::VersionChangeOperation(
       base::BindOnce(&IndexedDBDatabase::VersionChangeAbortOperation,
                      AsWeakPtr(), old_version));
 
-  connection_coordinator_.CreateAndBindUpgradeTransaction();
+  connection_coordinator_.BindVersionChangeTransactionReceiver();
   connection_coordinator_.OnUpgradeTransactionStarted(old_version);
   return Status::OK();
 }

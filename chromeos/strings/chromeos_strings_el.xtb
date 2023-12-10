@@ -42,6 +42,7 @@
 <translation id="1290331692326790741">Ασθενές σήμα</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1308754910631152188">Πραγματοποιείται ενημέρωση (ολοκληρώθηκε το <ph name="PERCENTAGE_VALUE" />%)</translation>
+<translation id="1309341072016605398"><ph name="MINUTES" /> λεπτά</translation>
 <translation id="1310380015393971138">Δεν υπάρχει διαθέσιμο δίκτυο <ph name="NETWORK_NAME" /></translation>
 <translation id="131421566576084655">Η ημερομηνία της τελευταίας επαναφοράς δεδομένων δεν είναι διαθέσιμη</translation>
 <translation id="1314565355471455267">Android VPN</translation>
@@ -86,6 +87,7 @@
 <translation id="1572585716423026576">Ορισμός ως ταπετσαρία</translation>
 <translation id="1578784163189013834">Επιλέξτε το παρασκήνιο της προφύλαξης οθόνης</translation>
 <translation id="160633243685262989">Εικόνα προεπισκόπησης</translation>
+<translation id="1611649489706141841">προώθηση</translation>
 <translation id="1615335640928990664">Χρήση δεδομένων από τις <ph name="FRIENDLY_DATE" /></translation>
 <translation id="1621067168122174824">Εκτέλεση δοκιμής φόρτισης</translation>
 <translation id="1639239467298939599">Φόρτωση</translation>
@@ -187,6 +189,7 @@
 <translation id="2236746079896696523">Εναλλαγή οπίσθιου φωτισμού πληκτρολογίου</translation>
 <translation id="2240366984605217732">Εναλλαγή διάταξης</translation>
 <translation id="225692081236532131">Κατάσταση ενεργοποίησης</translation>
+<translation id="2267285889943769271">Προσθήκη στιγμιότυπου</translation>
 <translation id="2271469253353559191">Πρόγραμμα λειτουργίας χαμηλού φωτισμού</translation>
 <translation id="2276999893457278469">Κορυφαίο περιεχόμενο βοήθειας</translation>
 <translation id="2279051792571591988">Επαναφορά προεπιλογών</translation>
@@ -288,6 +291,7 @@
 <translation id="3226405216343213872">Αναζήτηση για σαρωτές</translation>
 <translation id="3226657629376379887">Μενού ενεργειών διάταξης</translation>
 <translation id="3246869037381808805">Οι εργασίες εκτύπωσης που είναι παλαιότερες της 1 ημέρας θα καταργηθούν.</translation>
+<translation id="324961752321393509">Ο διαχειριστής σας δεν επιτρέπει το κλείσιμο αυτής της εφαρμογής</translation>
 <translation id="3268178239013324452">Σφάλμα - Η θύρα είναι ανοικτή</translation>
 <translation id="3275729367986477355">Εικόνα avatar</translation>
 <translation id="3283504360622356314">{0,plural, =1{Επεξεργασία αρχείου}other{Επεξεργασία αρχείων}}</translation>
@@ -429,6 +433,7 @@
 <translation id="4297501883039923494">Διακοπή - Άγνωστο σφάλμα</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> εικόνες</translation>
 <translation id="4333390807948134856">Το πλήκτρο <ph name="KEY_NAME" /> πατήθηκε</translation>
+<translation id="4354430579665871434">πλήκτρο</translation>
 <translation id="435692326371619097">Διαχείριση ρυθμίσεων APN δικτύου. Τα APN δημιουργούν μια σύνδεση μεταξύ ενός δικτύου κινητής τηλεφωνίας και του διαδικτύου. <ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" /></translation>
 <translation id="437294888293595148">Επαναφορά όλων των συντομεύσεων</translation>
 <translation id="4378373042927530923">Δεν εκτελέστηκε</translation>
@@ -691,9 +696,11 @@
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">Ενεργοποίηση σκούρου θέματος</translation>
 <translation id="628726841779494414">Διαχείριση των εκτυπωτών σας στις ρυθμίσεις εκτυπωτών</translation>
+<translation id="6292095526077353682">Κατά τη φόρτιση, να εμφανίζεται η προστασία οθόνης</translation>
 <translation id="629550705077076970">μείωση φωτεινότητας πληκτρολογίου</translation>
 <translation id="6302401976930124515">Η δοκιμή <ph name="TEST_NAME" /> ακυρώθηκε</translation>
 <translation id="631063167932043783">Εφαρμογή Εξερεύνηση</translation>
+<translation id="6318437367327684789">για πάντα</translation>
 <translation id="6319207335391420837">Ενημέρωση υλικολογισμικού στη συσκευή <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Ενεργοποίηση προφύλαξης οθόνης</translation>
 <translation id="6324916366299863871">Επεξεργασία συντόμευσης</translation>
@@ -943,6 +950,7 @@
 <translation id="8227119283605456246">Επισύναψη αρχείου</translation>
 <translation id="8230672074305416752">Αποτυχία ping της προεπιλεγμένης πύλης δικτύου.</translation>
 <translation id="8246209727385807362">Άγνωστη εταιρεία κινητής τηλεφωνίας</translation>
+<translation id="8262870577632766028">1 ώρα</translation>
 <translation id="827422111966801947">Λουλάκι</translation>
 <translation id="8286154143153872371">Συνδεθείτε σε ένα δίκτυο και επαναφορτώστε τη σελίδα για να δείτε την ταπετσαρία.</translation>
 <translation id="8291967909914612644">Χώρα παρόχου αρχικής σελίδας</translation>
@@ -1007,6 +1015,7 @@
 <translation id="8747900814994928677">Επιβεβαίωση αλλαγής</translation>
 <translation id="8764414543112028321">WireGuard</translation>
 <translation id="87646919272181953">Λεύκωμα Φωτογραφιών Google</translation>
+<translation id="8775713578693478175">APN μόντεμ</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8789196995628578448">Η συντόμευση χρησιμοποιείται για το <ph name="CONFLICT_ACCEL_NAME" />. Πατήστε μια νέα συντόμευση. Για να αντικαταστήσετε την αρχική συντόμευση, πατήστε ξανά αυτήν τη συντόμευση.</translation>
 <translation id="879568662008399081">Αυτό το δίκτυο μπορεί να έχει πύλη υποδοχής</translation>

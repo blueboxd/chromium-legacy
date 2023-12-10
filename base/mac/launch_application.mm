@@ -221,7 +221,7 @@ void LaunchApplication(const base::FilePath& app_bundle_path,
 
       _LSOpenURLsWithCompletionHandler(
           base::apple::NSToCFPtrCast(ns_urls ? ns_urls : @[]),
-          apple::FilePathToCFURL(app_bundle_path),
+          apple::FilePathToCFURL(app_bundle_path).get(),
           base::apple::NSToCFPtrCast(
               GetOpenOptions(options, command_line_args)),
           action_block);
@@ -234,7 +234,6 @@ void LaunchApplication(const base::FilePath& app_bundle_path,
             std::move(callback_block_access).Run(app, error);
           });
         };
-
     NSWorkspaceOpenConfiguration* configuration =
         GetOpenConfiguration(options, command_line_args);
 
@@ -258,7 +257,7 @@ void LaunchApplication(const base::FilePath& app_bundle_path,
 
     NSError* error = nil;
     NSRunningApplication* app;
-    if (ns_urls) {
+    if (@available(macOS 10.10, *) && ns_urls) {
       app = [NSWorkspace.sharedWorkspace openURLs:ns_urls
                              withApplicationAtURL:bundle_url
                                           options:launch_options

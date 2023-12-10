@@ -37,8 +37,10 @@ public class CookieControlsBridge {
 
     public void updateWebContents(
             WebContents webContents, @Nullable BrowserContextHandle originalBrowserContext) {
-        CookieControlsBridgeJni.get().updateWebContents(
-                mNativeCookieControlsBridge, webContents, originalBrowserContext);
+        if (mNativeCookieControlsBridge != 0) {
+            CookieControlsBridgeJni.get().updateWebContents(
+                    mNativeCookieControlsBridge, webContents, originalBrowserContext);
+        }
     }
 
     public void setThirdPartyCookieBlockingEnabledForSite(boolean blockCookies) {
@@ -103,9 +105,12 @@ public class CookieControlsBridge {
     }
 
     @CalledByNative
-    private void onStatusChanged(@CookieControlsStatus int status,
-            @CookieControlsEnforcement int enforcement, long expiration) {
-        mObserver.onStatusChanged(status, enforcement, expiration);
+    private void onStatusChanged(
+            @CookieControlsStatus int status,
+            @CookieControlsEnforcement int enforcement,
+            @CookieBlocking3pcdStatus int blockingStatus,
+            long expiration) {
+        mObserver.onStatusChanged(status, enforcement, blockingStatus, expiration);
     }
 
     @CalledByNative

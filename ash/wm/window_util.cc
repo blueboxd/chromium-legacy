@@ -654,6 +654,10 @@ bool ShouldRoundThumbnailWindow(views::View* backdrop_view,
 }
 
 bool IsFasterSplitScreenOrSnapGroupArm1Enabled() {
+  if (Shell::Get()->IsInTabletMode()) {
+    // FasterSplitScreen is not supported in tablet mode.
+    return false;
+  }
   if (features::IsFasterSplitScreenSetupEnabled()) {
     return true;
   }
@@ -662,7 +666,8 @@ bool IsFasterSplitScreenOrSnapGroupArm1Enabled() {
          snap_group_controller->IsArm1AutomaticallyLockEnabled();
 }
 
-void MaybeStartSplitViewOverview(aura::Window* window) {
+void MaybeStartSplitViewOverview(aura::Window* window,
+                                 WindowSnapActionSource snap_action_source) {
   auto* root_window_controller = RootWindowController::ForWindow(window);
   if (root_window_controller->split_view_overview_session()) {
     // If split view overview is already active, which may be the case if this
@@ -672,8 +677,8 @@ void MaybeStartSplitViewOverview(aura::Window* window) {
 
   if (!IsInOverviewSession()) {
     root_window_controller->StartSplitViewOverviewSession(
-        window, OverviewStartAction::kSplitView,
-        OverviewEnterExitType::kNormal);
+        window, OverviewStartAction::kFasterSplitScreenSetup,
+        OverviewEnterExitType::kNormal, snap_action_source);
   } else {
     // If overview has already started, we may need to update the bounds. This
     // may happen if a snapped window swaps positions or ratios during split

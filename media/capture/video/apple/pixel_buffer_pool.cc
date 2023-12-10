@@ -111,7 +111,7 @@ base::apple::ScopedCFTypeRef<CVPixelBufferRef> PixelBufferPool::CreateBuffer() {
   CVReturn buffer_creation_error;
   if (!max_buffers_.has_value()) {
     buffer_creation_error = CVPixelBufferPoolCreatePixelBuffer(
-        nil, buffer_pool_, buffer.InitializeInto());
+        nil, buffer_pool_.get(), buffer.InitializeInto());
   } else {
     // Specify the allocation threshold using auxiliary attributes.
     CFStringRef attribute_keys[] = {kCVPixelBufferPoolAllocationThresholdKey};
@@ -128,7 +128,7 @@ base::apple::ScopedCFTypeRef<CVPixelBufferRef> PixelBufferPool::CreateBuffer() {
         attribute_count, &kCFTypeDictionaryKeyCallBacks,
         &kCFTypeDictionaryValueCallBacks));
     buffer_creation_error = CVPixelBufferPoolCreatePixelBufferWithAuxAttributes(
-        nil, buffer_pool_, attributes.get(), buffer.InitializeInto());
+        nil, buffer_pool_.get(), attributes.get(), buffer.InitializeInto());
   }
   if (buffer_creation_error == kCVReturnWouldExceedAllocationThreshold) {
     LOG(ERROR) << "Cannot exceed the pool's maximum buffer count";
@@ -160,7 +160,8 @@ void PixelBufferPool::Flush() {
   static const CVPixelBufferPoolFlushPtr CVPixelBufferPoolFlushFuncPtr =
       reinterpret_cast<CVPixelBufferPoolFlushPtr>(dlsym(((void *) -2), "CVPixelBufferPoolFlush"));
   if(CVPixelBufferPoolFlushFuncPtr) {
-    CVPixelBufferPoolFlushFuncPtr(buffer_pool_, kCVPixelBufferPoolFlushExcessBuffers);
+    CVPixelBufferPoolFlushPtr(buffer_pool_.get(),
+                           kCVPixelBufferPoolFlushExcessBuffers);
   }
 }
 

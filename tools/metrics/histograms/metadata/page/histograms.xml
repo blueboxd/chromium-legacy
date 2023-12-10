@@ -310,6 +310,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Clients.Ads.AverageViewportAdDensity" units="%"
+    expires_after="2024-04-29">
+  <owner>yaoxia@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    The estimated average viewport ad density. Each density sample value is
+    calculated as the area of (iframe and img) ads within the viewport * 100 /
+    viewport area, where each overlapping area is counted once. And this metric
+    takes the average of the densities accumulated over the page load time
+    rounded to the nearest integer. Recorded when the page is destroyed.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Clients.Ads.HeavyAds.DisallowedByBlocklist"
     enum="BooleanBlocked" expires_after="2024-04-17">
   <owner>johnidel@chromium.org</owner>
@@ -845,6 +859,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Clients.LCPP.PaintTiming.PredictLCPSuccess"
+    enum="Boolean" expires_after="2024-03-31">
+  <owner>yoichio@chromium.org</owner>
+  <owner>
+    src/third_party/blink/renderer/core/lcp_critical_path_predictor/OWNERS
+  </owner>
+  <summary>
+    Records whether the LCP timing predicor predicted the right LCP. The metric
+    is emitted only for navigations that LCP Critical Path Predictor provided
+    non-empty hint data.
+  </summary>
+</histogram>
+
 <histogram
     name="PageLoad.Clients.MultiTabLoading{OtherLoadingCount}.{Timing}{Background}"
     units="ms" expires_after="2024-02-20">
@@ -1254,6 +1281,59 @@ chromium-metrics-reviews@google.com.
     Records the largest contentful paint only for pages that load a third party
     font and whose largest contentful resource type is text. See
     PageLoad.PaintTiming.NavigationToLargestContentfulPaint2 for details.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Clients.TPCD.AdTPCAccess.BlockedByExperiment2"
+    enum="Boolean" expires_after="2024-07-01">
+  <owner>johnidel@chromium.org</owner>
+  <owner>victortan@chromium.org</owner>
+  <owner>src/chrome/browser/tpcd/OWNERS</owner>
+  <summary>
+    Record when a third party ad request reads cookies. True means the third
+    party cookie deprecation experiment blocks third party cookies access while
+    some mechanisms re-enable the third party cookie access. False means third
+    party cookie access isn't blocked.
+  </summary>
+</histogram>
+
+<histogram
+    name="PageLoad.Clients.TPCD.CookieAccess.ThirdPartyCookieAllowMechanism"
+    enum="ThirdPartyCookieAllowMechanism" expires_after="2024-07-01">
+  <owner>victortan@chromium.org</owner>
+  <owner>src/chrome/browser/tpcd/OWNERS</owner>
+  <summary>
+    Record the different mechanisms to re-enable third party cookie access when
+    a third party accesses(read|change) cookies either via resource request
+    headers or document.cookie.
+  </summary>
+</histogram>
+
+<histogram
+    name="PageLoad.Clients.TPCD.ThirdPartyCookieAccessBlockedByExperiment2"
+    enum="Boolean" expires_after="2024-07-01">
+  <owner>victortan@chromium.org</owner>
+  <owner>src/chrome/browser/tpcd/OWNERS</owner>
+  <summary>
+    Record when a third party accesses(read|change) cookies either via resource
+    request headers or document.cookie. True means the third party cookie
+    deprecation experiment blocks third party cookies access while some
+    mechanisms re-enable the third party cookie access. False means third party
+    cookie access isn't blocked.
+  </summary>
+</histogram>
+
+<histogram
+    name="PageLoad.Clients.TPCD.TPCAccess.BlockedByExperiment.IsAdOrNonAd2"
+    enum="Boolean" expires_after="2024-07-01">
+  <owner>johnidel@chromium.org</owner>
+  <owner>victortan@chromium.org</owner>
+  <owner>src/chrome/browser/tpcd/OWNERS</owner>
+  <summary>
+    Records whether a cookie read that would be blocked by the TPCD experiment
+    is for advertising purposes. Recorded only on third party cookie reads are
+    blocked by the TPCD experiment when some mechanisms re-enable the third
+    party cookie access.
   </summary>
 </histogram>
 

@@ -2,25 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {ComposeDialogCallbackRouter, ComposeDialogPageHandlerFactory, ComposeDialogPageHandlerInterface, ComposeDialogPageHandlerRemote, StyleModifiers} from './compose.mojom-webui.js';
+import {CloseReason, ComposeDialogCallbackRouter, ComposeDialogClosePageHandlerRemote, ComposeDialogPageHandlerFactory, ComposeDialogPageHandlerRemote, ComposeState, OpenMetadata, StyleModifiers} from './compose.mojom-webui.js';
 
 /** @interface */
 export interface ComposeApiProxy {
+  acceptComposeResult(): Promise<boolean>;
+  closeUi(reason: CloseReason): void;
   compose(style: StyleModifiers, input: string): void;
   getRouter(): ComposeDialogCallbackRouter;
+  openBugReportingLink(): void;
+  requestInitialState(): Promise<OpenMetadata>;
+  saveWebuiState(state: string): void;
+  undo(): Promise<(ComposeState | null)>;
 }
 
 export class ComposeApiProxyImpl implements ComposeApiProxy {
   static instance: ComposeApiProxy|null = null;
 
-  handler: ComposeDialogPageHandlerInterface =
-      new ComposeDialogPageHandlerRemote();
   composeDialogPageHandler = new ComposeDialogPageHandlerRemote();
+  composeDialogClosePageHandler = new ComposeDialogClosePageHandlerRemote();
   router = new ComposeDialogCallbackRouter();
 
   constructor() {
     const factoryRemote = ComposeDialogPageHandlerFactory.getRemote();
     factoryRemote.createComposeDialogPageHandler(
+        this.composeDialogClosePageHandler.$.bindNewPipeAndPassReceiver(),
         this.composeDialogPageHandler.$.bindNewPipeAndPassReceiver(),
         this.router.$.bindNewPipeAndPassRemote());
   }
@@ -34,13 +40,38 @@ export class ComposeApiProxyImpl implements ComposeApiProxy {
     ComposeApiProxyImpl.instance = newInstance;
   }
 
-  /** @override */
+  acceptComposeResult(): Promise<boolean> {
+    return this.composeDialogPageHandler.acceptComposeResult().then(
+        res => res.success);
+  }
+
+  closeUi(reason: CloseReason): void {
+    this.composeDialogClosePageHandler.closeUI(reason);
+  }
+
   compose(style: StyleModifiers, input: string): void {
     this.composeDialogPageHandler.compose(style, input);
   }
 
-  /** @override */
   getRouter() {
     return this.router;
+  }
+
+  openBugReportingLink() {
+    this.composeDialogPageHandler.openBugReportingLink();
+  }
+
+  requestInitialState(): Promise<OpenMetadata> {
+    return this.composeDialogPageHandler.requestInitialState().then(
+        res => res.initialState);
+  }
+
+  saveWebuiState(state: string): void {
+    this.composeDialogPageHandler.saveWebUIState(state);
+  }
+
+  undo(): Promise<(ComposeState | null)> {
+    return this.composeDialogPageHandler.undo().then(
+        composeState => composeState.lastState);
   }
 }

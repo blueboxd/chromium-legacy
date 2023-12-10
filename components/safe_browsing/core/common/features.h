@@ -18,6 +18,9 @@ namespace safe_browsing {
 // for example to control how often collection should occur.
 BASE_DECLARE_FEATURE(kAdSamplerTriggerFeature);
 
+// Enables adding warning shown timestamp to client safe browsing report.
+BASE_DECLARE_FEATURE(kAddWarningShownTSToClientSafeBrowsingReport);
+
 // Enables logging new phishing prevention data.
 BASE_DECLARE_FEATURE(kAntiPhishingTelemetry);
 
@@ -43,9 +46,6 @@ const char kClientSideDetectionTagParamName[] = "reporter_omaha_tag";
 // Enables force request CSD-P ping when RT Lookup Response has FORCE_REQUEST in
 // the client_side_detection_type field
 BASE_DECLARE_FEATURE(kClientSideDetectionTypeForceRequest);
-
-// Controls whether new deep scanning UX is enabled or not.
-BASE_DECLARE_FEATURE(kDeepScanningUpdatedUX);
 
 // Controls whether we prompt encrypted archive deep scans to provide a
 // password.
@@ -103,6 +103,10 @@ extern const base::FeatureParam<int>
 // offstore extension file data.
 extern const base::FeatureParam<int>
     kExtensionTelemetryFileDataStartupDelaySeconds;
+
+// Allows the Extension Telemetry Service to include file data of extensions
+// specified in the --load-extension commandline switch in telemetry reports.
+BASE_DECLARE_FEATURE(kExtensionTelemetryFileDataForCommandLineExtensions);
 
 // Enables collection of telemetry signal whenever an extension invokes the
 // chrome.tabs API methods.

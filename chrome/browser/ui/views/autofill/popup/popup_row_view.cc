@@ -162,18 +162,21 @@ std::unique_ptr<PopupRowView> PopupRowView::Create(PopupViewViews& popup_view,
 
   return std::make_unique<PopupRowView>(
       /*a11y_selection_delegate=*/popup_view, /*selection_delegate=*/popup_view,
-      controller, std::move(strategy), std::move(new_badge_tracker));
+      controller, line_number, std::move(strategy),
+      std::move(new_badge_tracker));
 }
 
 PopupRowView::PopupRowView(
     AccessibilitySelectionDelegate& a11y_selection_delegate,
     SelectionDelegate& selection_delegate,
     base::WeakPtr<AutofillPopupController> controller,
+    int line_number,
     std::unique_ptr<PopupRowStrategy> strategy,
     std::optional<ScopedNewBadgeTrackerWithAcceptAction> new_badge_tracker)
     : a11y_selection_delegate_(a11y_selection_delegate),
       selection_delegate_(selection_delegate),
       controller_(controller),
+      line_number_(line_number),
       new_badge_tracker_(std::move(new_badge_tracker)),
       strategy_(std::move(strategy)),
       should_ignore_mouse_observed_outside_item_bounds_check_(
@@ -205,8 +208,7 @@ PopupRowView::PopupRowView(
                   view->should_ignore_mouse_observed_outside_item_bounds_check_;
               if (can_select_suggestion) {
                 view->selection_delegate_->SetSelectedCell(
-                    PopupViewViews::CellIndex{view->strategy_->GetLineNumber(),
-                                              type},
+                    PopupViewViews::CellIndex{view->line_number_, type},
                     PopupCellSelectionSource::kMouse);
               }
             },
@@ -302,7 +304,7 @@ void PopupRowView::OnViewFocused(views::View* view) {
     // a11y), but for selection purposes these non-mouse sources are similar
     // enough to treat them equally as a keyboard.
     selection_delegate_->SetSelectedCell(
-        PopupViewViews::CellIndex{strategy_->GetLineNumber(), type},
+        PopupViewViews::CellIndex{line_number_, type},
         PopupCellSelectionSource::kKeyboard);
   }
 }
@@ -316,11 +318,17 @@ void PopupRowView::SetSelectedCell(absl::optional<CellType> cell) {
       selected_cell_ ? GetCellView(*selected_cell_) : nullptr;
   if (old_view) {
     old_view->SetSelected(false);
+    if (selected_cell_ == CellType::kContent && controller_) {
+      controller_->SelectSuggestion(absl::nullopt);
+    }
   }
 
   PopupCellView* new_view = cell ? GetCellView(*cell) : nullptr;
   if (new_view) {
     new_view->SetSelected(true);
+    if (cell == CellType::kContent && controller_) {
+      controller_->SelectSuggestion(line_number_);
+    }
     GetA11ySelectionDelegate().NotifyAXSelection(*new_view);
     NotifyAccessibilityEvent(ax::mojom::Event::kSelectedChildrenChanged, true);
     selected_cell_ = cell;
@@ -334,10 +342,12 @@ void PopupRowView::SetSelectedCell(absl::optional<CellType> cell) {
   UpdateBackground();
 }
 
-void PopupRowView::SetCellPermanentlyHighlighted(CellType type,
-                                                 bool highlighted) {
-  if (PopupCellView* view = GetCellView(type)) {
-    view->SetPermanentlyHighlighted(highlighted);
+void PopupRowView::SetChildSuggestionsDisplayed(
+    bool child_suggestions_displayed) {
+  child_suggestions_displayed_ = child_suggestions_displayed;
+
+  if (PopupCellView* view = GetCellView(CellType::kControl)) {
+    view->SetChecked(child_suggestions_displayed);
   }
 
   UpdateBackground();
@@ -375,8 +385,7 @@ bool PopupRowView::HandleKeyPressEvent(
   switch (event.windows_key_code) {
     case ui::VKEY_RETURN:
       if (*GetSelectedCell() == CellType::kContent && controller_) {
-        controller_->AcceptSuggestion(strategy_->GetLineNumber(),
-                                      base::TimeTicks::Now());
+        controller_->AcceptSuggestion(line_number_, base::TimeTicks::Now());
         return true;
       }
       return false;
@@ -402,7 +411,7 @@ void PopupRowView::RunOnAcceptedForEvent(const ui::Event& event) {
   if (new_badge_tracker_) {
     new_badge_tracker_->OnSuggestionAccepted();
   }
-  controller_->AcceptSuggestion(strategy_->GetLineNumber(), time);
+  controller_->AcceptSuggestion(line_number_, time);
 }
 
 const PopupCellView* PopupRowView::GetCellView(CellType type) const {
@@ -419,12 +428,11 @@ PopupCellView* PopupRowView::GetCellView(CellType type) {
 }
 
 void PopupRowView::UpdateBackground() {
-  PopupCellView* control_cell = GetCellView(CellType::kControl);
-  if (!control_cell) {
-    return;
+  bool highlighted = child_suggestions_displayed_;
+  if (PopupCellView* control_cell = GetCellView(CellType::kControl)) {
+    highlighted = highlighted || control_cell->GetSelected();
   }
-
-  ui::ColorId kBackgroundColorId = control_cell->IsHighlighted()
+  ui::ColorId kBackgroundColorId = highlighted
                                        ? ui::kColorDropdownBackgroundSelected
                                        : ui::kColorDropdownBackground;
   SetBackground(views::CreateThemedRoundedRectBackground(

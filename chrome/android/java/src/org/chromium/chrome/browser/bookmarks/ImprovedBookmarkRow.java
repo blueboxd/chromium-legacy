@@ -35,13 +35,11 @@ public class ImprovedBookmarkRow extends ViewLookupCachingFrameLayout
      * The base duration of the settling animation of the sheet. 218 ms is a spec for material
      * design (this is the minimum time a user is guaranteed to pay attention to something).
      */
-    @VisibleForTesting
-    static final int BASE_ANIMATION_DURATION_MS = 218;
+    @VisibleForTesting static final int BASE_ANIMATION_DURATION_MS = 218;
 
     private ViewGroup mContainer;
     // The start image view which is shows the favicon.
     private ImageView mStartImageView;
-    private View mStartImageContainer;
     private ImprovedBookmarkFolderView mFolderIconView;
     // Displays the title of the bookmark.
     private TextView mTitleView;
@@ -59,19 +57,22 @@ public class ImprovedBookmarkRow extends ViewLookupCachingFrameLayout
 
     private boolean mDragEnabled;
     private boolean mBookmarkIdEditable;
+    private boolean mEndImageViewVisible;
     private boolean mMoreButtonVisible;
     private boolean mSelectionEnabled;
     private boolean mIsSelected;
 
     /**
      * Factory constructor for building the view programmatically.
+     *
      * @param context The calling context, usually the parent view.
      * @param isVisual Whether the visual row should be used.
      */
     public static ImprovedBookmarkRow buildView(Context context, boolean isVisual) {
         ImprovedBookmarkRow row = new ImprovedBookmarkRow(context, null);
-        row.setLayoutParams(new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        row.setLayoutParams(
+                new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         LayoutInflater.from(context)
                 .inflate(
@@ -101,9 +102,13 @@ public class ImprovedBookmarkRow extends ViewLookupCachingFrameLayout
         assert mStartImageView != null;
 
         mStartImageView.setOutlineProvider(
-                new RoundedCornerOutlineProvider(getContext().getResources().getDimensionPixelSize(
-                        isVisual ? R.dimen.improved_bookmark_row_outer_corner_radius
-                                 : R.dimen.improved_bookmark_icon_radius)));
+                new RoundedCornerOutlineProvider(
+                        getContext()
+                                .getResources()
+                                .getDimensionPixelSize(
+                                        isVisual
+                                                ? R.dimen.improved_bookmark_row_outer_corner_radius
+                                                : R.dimen.improved_bookmark_icon_radius)));
         mStartImageView.setClipToOutline(true);
     }
 
@@ -114,7 +119,6 @@ public class ImprovedBookmarkRow extends ViewLookupCachingFrameLayout
         mContainer = findViewById(R.id.container);
 
         mStartImageView = findViewById(R.id.start_image);
-        mStartImageContainer = findViewById(R.id.start_image_container);
         mFolderIconView = findViewById(R.id.folder_view);
 
         mTitleView = findViewById(R.id.title);
@@ -129,7 +133,10 @@ public class ImprovedBookmarkRow extends ViewLookupCachingFrameLayout
 
     void setTitle(String title) {
         mTitleView.setText(title);
-        SelectableListUtils.setContentDescriptionContext(getContext(), mMoreButton, title,
+        SelectableListUtils.setContentDescriptionContext(
+                getContext(),
+                mMoreButton,
+                title,
                 SelectableListUtils.ContentDescriptionSource.MENU_BUTTON);
     }
 
@@ -142,7 +149,7 @@ public class ImprovedBookmarkRow extends ViewLookupCachingFrameLayout
     }
 
     void setStartImageVisible(boolean visible) {
-        mStartImageContainer.setVisibility(visible ? View.VISIBLE : View.GONE);
+        mStartImageView.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
     void setFolderViewVisible(boolean visible) {
@@ -200,7 +207,8 @@ public class ImprovedBookmarkRow extends ViewLookupCachingFrameLayout
         mSelectionEnabled = selectionEnabled;
         mMoreButton.setClickable(!selectionEnabled);
         mMoreButton.setEnabled(!selectionEnabled);
-        mMoreButton.setImportantForAccessibility(!selectionEnabled
+        mMoreButton.setImportantForAccessibility(
+                !selectionEnabled
                         ? IMPORTANT_FOR_ACCESSIBILITY_YES
                         : IMPORTANT_FOR_ACCESSIBILITY_NO);
         updateView();
@@ -217,10 +225,6 @@ public class ImprovedBookmarkRow extends ViewLookupCachingFrameLayout
         updateView();
     }
 
-    void setFolderCoordinator(ImprovedBookmarkFolderViewCoordinator folderCoordinator) {
-        folderCoordinator.setView(mFolderIconView);
-    }
-
     void setRowClickListener(View.OnClickListener listener) {
         setOnClickListener(listener);
     }
@@ -230,12 +234,13 @@ public class ImprovedBookmarkRow extends ViewLookupCachingFrameLayout
     }
 
     void setEndImageVisible(boolean visible) {
-        mEndImageView.setVisibility(visible ? View.VISIBLE : View.GONE);
+        mEndImageViewVisible = visible;
+        updateView();
     }
 
     void setEndMenuVisible(boolean visible) {
         mMoreButtonVisible = visible;
-        mMoreButton.setVisibility(visible ? View.VISIBLE : View.GONE);
+        updateView();
     }
 
     void setEndImageRes(int res) {
@@ -252,6 +257,8 @@ public class ImprovedBookmarkRow extends ViewLookupCachingFrameLayout
         boolean moreVisible = mMoreButtonVisible && !mIsSelected && mBookmarkIdEditable;
         mCheckImageView.setVisibility(checkVisible ? View.VISIBLE : View.GONE);
         mMoreButton.setVisibility(moreVisible ? View.VISIBLE : View.GONE);
+        mEndImageView.setVisibility(
+                !moreVisible && mEndImageViewVisible ? View.VISIBLE : View.GONE);
     }
 
     ImprovedBookmarkFolderView getFolderView() {

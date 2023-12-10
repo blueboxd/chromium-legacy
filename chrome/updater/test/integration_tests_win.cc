@@ -12,6 +12,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/base_paths.h"
@@ -112,13 +113,35 @@ HRESULT CreateLocalServer(GUID clsid,
       .Valid();
 }
 
+[[nodiscard]] bool RegKeyExists64(HKEY root, const std::wstring& path) {
+  return base::win::RegKey(root, path.c_str(),
+                           KEY_WOW64_64KEY | KEY_QUERY_VALUE)
+      .Valid();
+}
+
 [[nodiscard]] bool RegKeyExistsCOM(HKEY root, const std::wstring& path) {
   return base::win::RegKey(root, path.c_str(), KEY_QUERY_VALUE).Valid();
+}
+
+[[nodiscard]] std::wstring ReadRegValue(HKEY root,
+                                        const std::wstring& path,
+                                        const std::wstring& value,
+                                        REGSAM wow64_access) {
+  std::wstring result;
+  base::win::RegKey(root, path.c_str(), wow64_access | KEY_QUERY_VALUE)
+      .ReadValue(value.c_str(), &result);
+  return result;
 }
 
 [[nodiscard]] bool DeleteRegKey(HKEY root, const std::wstring& path) {
   LONG result =
       base::win::RegKey(root, L"", Wow6432(DELETE)).DeleteKey(path.c_str());
+  return result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND;
+}
+
+[[nodiscard]] bool DeleteRegKey64(HKEY root, const std::wstring& path) {
+  LONG result = base::win::RegKey(root, L"", KEY_WOW64_64KEY | DELETE)
+                    .DeleteKey(path.c_str());
   return result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND;
 }
 
@@ -237,6 +260,13 @@ void CheckInstallation(UpdaterScope scope,
                     Wow6432(KEY_READ))
                     .ReadValue(kRegValuePV, &pv));
       EXPECT_STREQ(kUpdaterVersionUtf16, pv.c_str());
+      EXPECT_EQ(
+          ERROR_SUCCESS,
+          base::win::RegKey(
+              root, GetAppClientStateKey(kLegacyGoogleUpdateAppID).c_str(),
+              Wow6432(KEY_READ))
+              .ReadValue(kRegValuePV, &pv));
+      EXPECT_STREQ(kUpdaterVersionUtf16, pv.c_str());
 
       std::wstring uninstall_cmd_line_string;
       EXPECT_EQ(ERROR_SUCCESS,
@@ -297,11 +327,18 @@ void CheckInstallation(UpdaterScope scope,
     }
   }
 
-  for (const IID& iid :
-       JoinVectors(GetSideBySideInterfaces(scope),
-                   is_active_and_sxs ? GetActiveInterfaces(scope)
-                                     : std::vector<IID>())) {
-    EXPECT_EQ(is_installed, RegKeyExistsCOM(root, GetComIidRegistryPath(iid)));
+  for (const auto& [iid, expected_interface_name] : JoinVectors(
+           GetSideBySideInterfaces(scope),
+           is_active_and_sxs ? GetActiveInterfaces(scope)
+                             : std::vector<std::pair<IID, std::wstring>>())) {
+    EXPECT_EQ(is_installed, RegKeyExists(root, GetComIidRegistryPath(iid)));
+    EXPECT_EQ(is_installed, RegKeyExists64(root, GetComIidRegistryPath(iid)));
+    if (is_installed) {
+      for (const auto& key_flag : {KEY_WOW64_32KEY, KEY_WOW64_64KEY}) {
+        EXPECT_EQ(ReadRegValue(root, GetComIidRegistryPath(iid), L"", key_flag),
+                  expected_interface_name);
+      }
+    }
     EXPECT_EQ(is_installed,
               RegKeyExistsCOM(root, GetComTypeLibRegistryPath(iid)));
   }
@@ -641,7 +678,7 @@ void RunOfflineInstallWithManifest(UpdaterScope scope,
   base::FilePath manifest_path = offline_dir.Append(manifest_filename);
   int64_t app_installer_size = 0;
   EXPECT_TRUE(base::GetFileSize(app_installer, &app_installer_size));
-  const std::string manifest = base::StringPrintf(
+  const std::string manifest = base::StringPrintfNonConstexpr(
       manifest_format.c_str(), kTestAppID, kTestPV.GetString().c_str(),
       kAppInstallerName, app_installer_size, kAppInstallerName);
   EXPECT_TRUE(base::WriteFile(manifest_path, manifest));
@@ -746,9 +783,10 @@ void Clean(UpdaterScope scope) {
     }
   }
 
-  for (const IID& iid : JoinVectors(GetSideBySideInterfaces(scope),
-                                    GetActiveInterfaces(scope))) {
-    EXPECT_TRUE(DeleteRegKeyCOM(root, GetComIidRegistryPath(iid)));
+  for (const auto& [iid, interface_name] : JoinVectors(
+           GetSideBySideInterfaces(scope), GetActiveInterfaces(scope))) {
+    EXPECT_TRUE(DeleteRegKey(root, GetComIidRegistryPath(iid)));
+    EXPECT_TRUE(DeleteRegKey64(root, GetComIidRegistryPath(iid)));
     EXPECT_TRUE(DeleteRegKeyCOM(root, GetComTypeLibRegistryPath(iid)));
   }
 
@@ -813,6 +851,26 @@ void ExpectClean(UpdaterScope scope) {
   ExpectCleanProcesses();
   CheckInstallation(scope, CheckInstallationStatus::kCheckIsNotInstalled,
                     CheckInstallationVersions::kCheckActiveAndSxS);
+
+  // Check that the caches have been removed.
+  const absl::optional<base::FilePath> path = GetCacheBaseDirectory(scope);
+  ASSERT_TRUE(path);
+  EXPECT_TRUE(WaitFor(
+      [&]() { return !base::PathExists(*path); },
+      [&]() { VLOG(0) << "Still waiting for cache removal: " << *path; }))
+      << base::JoinString(
+             [&path]() {
+               std::vector<base::FilePath::StringType> files;
+               base::FileEnumerator(*path, true,
+                                    base::FileEnumerator::FILES |
+                                        base::FileEnumerator::DIRECTORIES)
+                   .ForEach([&files](const base::FilePath& name) {
+                     files.push_back(name.value());
+                   });
+
+               return files;
+             }(),
+             FILE_PATH_LITERAL(","));
 }
 
 void ExpectCandidateUninstalled(UpdaterScope scope) {
@@ -890,31 +948,31 @@ bool WaitForUpdaterExit(UpdaterScope /*scope*/) {
 // typelib.
 void VerifyInterfacesRegistryEntries(UpdaterScope scope) {
   for (const auto is_internal : {true, false}) {
-    for (const auto& iid : GetInterfaces(is_internal, scope)) {
+    for (const auto& [iid, interface_name] :
+         GetInterfaces(is_internal, scope)) {
       const HKEY root = UpdaterScopeToHKeyRoot(scope);
       const std::wstring iid_reg_path = GetComIidRegistryPath(iid);
       const std::wstring typelib_reg_path = GetComTypeLibRegistryPath(iid);
       const std::wstring iid_string = base::win::WStringFromGUID(iid);
 
-      std::wstring val;
-      {
-        const auto& path = iid_reg_path + L"\\ProxyStubClsid32";
-        EXPECT_EQ(base::win::RegKey(root, path.c_str(), KEY_READ)
-                      .ReadValue(L"", &val),
-                  ERROR_SUCCESS)
-            << ": " << root << ": " << path << ": " << iid_string;
-        EXPECT_EQ(val, L"{00020424-0000-0000-C000-000000000046}");
+      for (const auto& key_flag : {KEY_WOW64_32KEY, KEY_WOW64_64KEY}) {
+        std::wstring val;
+        EXPECT_EQ(ReadRegValue(root, iid_reg_path, L"", key_flag),
+                  interface_name);
+        EXPECT_EQ(ReadRegValue(root, iid_reg_path + L"\\ProxyStubClsid32", L"",
+                               key_flag),
+                  L"{00020424-0000-0000-C000-000000000046}");
+        EXPECT_EQ(
+            ReadRegValue(root, iid_reg_path + L"\\TypeLib", L"", key_flag),
+            iid_string);
+        EXPECT_EQ(ReadRegValue(root, iid_reg_path + L"\\TypeLib", L"Version",
+                               key_flag),
+                  L"1.0");
       }
 
-      {
-        const auto& path = iid_reg_path + L"\\TypeLib";
-        EXPECT_EQ(base::win::RegKey(root, path.c_str(), KEY_READ)
-                      .ReadValue(L"", &val),
-                  ERROR_SUCCESS)
-            << ": " << root << ": " << path << ": " << iid_string;
-        EXPECT_EQ(val, iid_string);
-      }
-
+      EXPECT_EQ(ReadRegValue(root, typelib_reg_path + L"\\1.0", L"", 0),
+                base::StrCat({PRODUCT_FULLNAME_STRING L" TypeLib for ",
+                              interface_name}));
       const std::wstring typelib_reg_path_win32 =
           typelib_reg_path + L"\\1.0\\0\\win32";
       const std::wstring typelib_reg_path_win64 =

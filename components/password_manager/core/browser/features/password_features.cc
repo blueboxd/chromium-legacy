@@ -3,8 +3,18 @@
 // found in the LICENSE file.
 
 #include "components/password_manager/core/browser/features/password_features.h"
+#include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 
 namespace password_manager::features {
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+// Enables attaching password manager and autofill internals logs to an Autofill
+// Rater Extension Report.
+BASE_FEATURE(kAttachLogsToAutofillRaterExtensionReport,
+             "AttachLogsToAutofillRaterExtensionReport",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 // When enabled, updates to shared existing passwords from the same sender are
 // auto-approved.
@@ -20,7 +30,7 @@ BASE_FEATURE(kBiometricTouchToFill,
 // Delete undecryptable passwords from the store when Sync is active.
 BASE_FEATURE(kClearUndecryptablePasswordsOnSync,
              "ClearUndecryptablePasswordsInSync",
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_IOS)
              base::FEATURE_ENABLED_BY_DEFAULT
 #else
              base::FEATURE_DISABLED_BY_DEFAULT
@@ -64,11 +74,18 @@ BASE_FEATURE(kFillOnAccountSelect,
              "fill-on-account-select",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+#if BUILDFLAG(IS_IOS)
+// Enables filling for sign-in UFF on iOS.
+BASE_FEATURE(kIOSPasswordSignInUff,
+             "IOSPasswordSignInUff",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // IS_IOS
+
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 // Enables new confirmation bubble flow if generated password was used in a
 // form.
 BASE_FEATURE(kNewConfirmationBubbleForGeneratedPasswords,
-             "kNewConfirmationBubbleForGeneratedPasswords",
+             "NewConfirmationBubbleForGeneratedPasswords",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
@@ -108,7 +125,12 @@ BASE_FEATURE(kSharedPasswordNotificationUI,
 // manager
 BASE_FEATURE(kSkipUndecryptablePasswords,
              "SkipUndecryptablePasswords",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_IOS)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 
 #if BUILDFLAG(IS_ANDROID)
 // Enables use of Google Mobile services for non-synced password storage that
@@ -165,11 +187,26 @@ BASE_FEATURE(kUsernameFirstFlowHonorAutocomplete,
 BASE_FEATURE(kUsernameFirstFlowStoreSeveralValues,
              "UsernameFirstFlowStoreSeveralValues",
              base::FEATURE_ENABLED_BY_DEFAULT);
+extern const base::FeatureParam<int> kMaxSingleUsernameFieldsToStore{
+    &kUsernameFirstFlowStoreSeveralValues, /*name=*/"max_elements",
+    /*default_value=*/10};
 
 // Enables tolerating intermediate fields like OTP or CAPTCHA
 // between username and password fields in Username First Flow.
 BASE_FEATURE(kUsernameFirstFlowWithIntermediateValues,
              "UsernameFirstFlowWithIntermediateValues",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables new prediction that is based on votes from Username First Flow with
+// Intermediate Values.
+BASE_FEATURE(kUsernameFirstFlowWithIntermediateValuesPredictions,
+             "UsernameFirstFlowWithIntermediateValuesPredictions",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables voting for more text fields outside of the password form in Username
+// First Flow.
+BASE_FEATURE(kUsernameFirstFlowWithIntermediateValuesVoting,
+             "UsernameFirstFlowWithIntermediateValuesVoting",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace password_manager::features

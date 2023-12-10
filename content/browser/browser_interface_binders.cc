@@ -25,7 +25,6 @@
 #include "content/browser/browsing_topics/browsing_topics_document_host.h"
 #include "content/browser/contacts/contacts_manager_impl.h"
 #include "content/browser/content_index/content_index_service_impl.h"
-#include "content/browser/cookie_deprecation_label/cookie_deprecation_label_document_service.h"
 #include "content/browser/cookie_store/cookie_store_manager.h"
 #include "content/browser/eye_dropper_chooser_impl.h"
 #include "content/browser/handwriting/handwriting_recognition_service_factory.h"
@@ -57,6 +56,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_worker/service_worker_host.h"
 #include "content/browser/speech/speech_recognition_dispatcher_host.h"
+#include "content/browser/storage_access/storage_access_handle.h"
 #include "content/browser/tracing/trace_report/trace_report.mojom.h"
 #include "content/browser/tracing/trace_report/trace_report_internals_ui.h"
 #include "content/browser/wake_lock/wake_lock_service_impl.h"
@@ -119,13 +119,13 @@
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom.h"
+#include "third_party/blink/public/mojom/blob/file_backed_blob_factory.mojom.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/mojom/buckets/bucket_manager_host.mojom.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/choosers/color_chooser.mojom.h"
 #include "third_party/blink/public/mojom/contacts/contacts_manager.mojom.h"
 #include "third_party/blink/public/mojom/content_index/content_index.mojom.h"
-#include "third_party/blink/public/mojom/cookie_deprecation_label/cookie_deprecation_label.mojom.h"
 #include "third_party/blink/public/mojom/cookie_store/cookie_store.mojom.h"
 #include "third_party/blink/public/mojom/credentialmanagement/credential_manager.mojom.h"
 #include "third_party/blink/public/mojom/device/device.mojom.h"
@@ -170,6 +170,7 @@
 #include "third_party/blink/public/mojom/speculation_rules/speculation_rules.mojom.h"
 #include "third_party/blink/public/mojom/speech/speech_recognizer.mojom.h"
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
+#include "third_party/blink/public/mojom/storage_access/storage_access_handle.mojom.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 #include "third_party/blink/public/mojom/wake_lock/wake_lock.mojom.h"
 #include "third_party/blink/public/mojom/webaudio/audio_context_manager.mojom.h"
@@ -354,7 +355,8 @@ void BindDateTimeChooserForFrame(
 void BindTextSuggestionHostForFrame(
     RenderFrameHost* host,
     mojo::PendingReceiver<blink::mojom::TextSuggestionHost> receiver) {
-  auto* view = static_cast<RenderWidgetHostViewAndroid*>(host->GetView());
+  auto* view =
+      RenderWidgetHostViewAndroid::FromRenderWidgetHostView(host->GetView());
   if (!view || !view->text_suggestion_host())
     return;
 
@@ -1152,12 +1154,6 @@ void PopulateBinderMapWithContext(
     map->Add<blink::mojom::EnvironmentIntegrityService>(base::BindRepeating(
         &EmptyBinderForFrame<blink::mojom::EnvironmentIntegrityService>));
   }
-  if (base::FeatureList::IsEnabled(
-          features::kCookieDeprecationFacilitatedTesting)) {
-    map->Add<blink::mojom::CookieDeprecationLabelDocumentService>(
-        base::BindRepeating(
-            &CookieDeprecationLabelDocumentService::CreateMojoService));
-  }
 #if !BUILDFLAG(IS_ANDROID)
   map->Add<blink::mojom::DirectSocketsService>(
       base::BindRepeating(&DirectSocketsServiceImpl::CreateForFrame));
@@ -1262,6 +1258,8 @@ void PopulateBinderMapWithContext(
 
   map->Add<blink::mojom::OriginTrialStateHost>(
       base::BindRepeating(&OriginTrialStateHostImpl::Create));
+  map->Add<blink::mojom::StorageAccessHandle>(
+      base::BindRepeating(&StorageAccessHandle::Create));
 }
 
 void PopulateBinderMap(RenderFrameHostImpl* host, mojo::BinderMap* map) {
@@ -1400,6 +1398,8 @@ void PopulateBinderMapWithContext(
     map->Add<device::mojom::PressureManager>(
         BindPressureManagerWorkerForOrigin(host));
   }
+  map->Add<blink::mojom::FileBackedBlobFactory>(BindWorkerReceiverForOrigin(
+      &RenderProcessHostImpl::BindFileBackedBlobFactory, host));
 }
 
 void PopulateBinderMap(DedicatedWorkerHost* host, mojo::BinderMap* map) {
@@ -1500,6 +1500,8 @@ void PopulateBinderMapWithContext(
     map->Add<device::mojom::PressureManager>(
         BindPressureManagerWorkerForOrigin(host));
   }
+  map->Add<blink::mojom::FileBackedBlobFactory>(BindWorkerReceiverForOrigin(
+      &RenderProcessHostImpl::BindFileBackedBlobFactory, host));
 }
 
 void PopulateBinderMap(SharedWorkerHost* host, mojo::BinderMap* map) {
@@ -1621,6 +1623,9 @@ void PopulateBinderMapWithContext(
       BindServiceWorkerReceiverForStorageKey(
           &RenderProcessHostImpl::BindQuotaManagerHost, host));
   map->Add<blink::mojom::NotificationService>(BindNotificationService(host));
+  map->Add<blink::mojom::FileBackedBlobFactory>(
+      BindServiceWorkerReceiverForOrigin(
+          &RenderProcessHostImpl::BindFileBackedBlobFactory, host));
 
   // This is called when `host` is constructed. ServiceWorkerVersion, which
   // constructs `host`, checks that context() is not null and also uses

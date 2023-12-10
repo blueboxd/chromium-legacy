@@ -145,7 +145,8 @@ class TargetDeviceBootstrapControllerTest : public testing::Test {
     fake_target_device_connection_broker_->InitiateConnection(kSourceDeviceId);
     fake_target_device_connection_broker_->AuthenticateConnection(
         kSourceDeviceId);
-    ASSERT_EQ(fake_observer_->last_status.step, Step::CONNECTING_TO_WIFI);
+    ASSERT_EQ(fake_observer_->last_status.step,
+              Step::REQUESTING_WIFI_CREDENTIALS);
   }
 
   void NotifySourceOfUpdateResponse(bool ack_successful) {
@@ -416,7 +417,8 @@ TEST_F(TargetDeviceBootstrapControllerTest, RequestWifiCredentials) {
   fake_target_device_connection_broker_->AuthenticateConnection(
       kSourceDeviceId);
 
-  EXPECT_EQ(fake_observer_->last_status.step, Step::CONNECTING_TO_WIFI);
+  EXPECT_EQ(fake_observer_->last_status.step,
+            Step::REQUESTING_WIFI_CREDENTIALS);
   EXPECT_TRUE(absl::holds_alternative<absl::monostate>(
       fake_observer_->last_status.payload));
 
@@ -454,9 +456,8 @@ TEST_F(TargetDeviceBootstrapControllerTest,
   fake_target_device_connection_broker_->GetFakeConnection()
       ->SendWifiCredentials(absl::nullopt);
 
-  EXPECT_EQ(fake_observer_->last_status.step, Step::ERROR);
-  EXPECT_EQ(absl::get<ErrorCode>(fake_observer_->last_status.payload),
-            ErrorCode::WIFI_CREDENTIALS_NOT_RECEIVED);
+  EXPECT_EQ(fake_observer_->last_status.step,
+            Step::EMPTY_WIFI_CREDENTIALS_RECEIVED);
 }
 
 TEST_F(TargetDeviceBootstrapControllerTest,
@@ -468,7 +469,8 @@ TEST_F(TargetDeviceBootstrapControllerTest,
   fake_target_device_connection_broker_->AuthenticateConnection(
       kSourceDeviceId);
 
-  EXPECT_EQ(fake_observer_->last_status.step, Step::CONNECTING_TO_WIFI);
+  EXPECT_EQ(fake_observer_->last_status.step,
+            Step::REQUESTING_WIFI_CREDENTIALS);
   EXPECT_TRUE(absl::holds_alternative<absl::monostate>(
       fake_observer_->last_status.payload));
 
@@ -491,7 +493,8 @@ TEST_F(TargetDeviceBootstrapControllerTest,
   fake_target_device_connection_broker_->AuthenticateConnection(
       kSourceDeviceId);
 
-  EXPECT_EQ(fake_observer_->last_status.step, Step::CONNECTING_TO_WIFI);
+  EXPECT_EQ(fake_observer_->last_status.step,
+            Step::REQUESTING_WIFI_CREDENTIALS);
   EXPECT_TRUE(absl::holds_alternative<absl::monostate>(
       fake_observer_->last_status.payload));
 
@@ -501,6 +504,30 @@ TEST_F(TargetDeviceBootstrapControllerTest,
   EXPECT_EQ(fake_observer_->last_status.step, Step::ERROR);
   EXPECT_EQ(absl::get<ErrorCode>(fake_observer_->last_status.payload),
             ErrorCode::USER_VERIFICATION_FAILED);
+}
+
+TEST_F(TargetDeviceBootstrapControllerTest,
+       RequestGoogleAccountInfoStateUpdates) {
+  bootstrap_controller_->StartAdvertisingAndMaybeGetQRCode();
+  fake_target_device_connection_broker_->on_start_advertising_callback().Run(
+      /*success=*/true);
+  fake_target_device_connection_broker_->InitiateConnection(kSourceDeviceId);
+  fake_target_device_connection_broker_->AuthenticateConnection(
+      kSourceDeviceId);
+
+  bootstrap_controller_->RequestGoogleAccountInfo();
+
+  EXPECT_EQ(fake_observer_->last_status.step,
+            Step::REQUESTING_GOOGLE_ACCOUNT_INFO);
+  EXPECT_TRUE(absl::holds_alternative<absl::monostate>(
+      fake_observer_->last_status.payload));
+
+  fake_target_device_connection_broker_->GetFakeConnection()->SendAccountInfo();
+
+  EXPECT_EQ(fake_observer_->last_status.step,
+            Step::GOOGLE_ACCOUNT_INFO_RECEIVED);
+  EXPECT_TRUE(absl::holds_alternative<absl::monostate>(
+      fake_observer_->last_status.payload));
 }
 
 TEST_F(TargetDeviceBootstrapControllerTest,
@@ -620,7 +647,8 @@ TEST_F(TargetDeviceBootstrapControllerTest,
   fake_target_device_connection_broker_->AuthenticateConnection(
       kSourceDeviceId);
 
-  EXPECT_EQ(fake_observer_->last_status.step, Step::CONNECTING_TO_WIFI);
+  EXPECT_EQ(fake_observer_->last_status.step,
+            Step::REQUESTING_WIFI_CREDENTIALS);
   EXPECT_TRUE(absl::holds_alternative<absl::monostate>(
       fake_observer_->last_status.payload));
 
@@ -637,7 +665,7 @@ TEST_F(TargetDeviceBootstrapControllerTest,
                                       1);
   histogram_tester_.ExpectBucketCount(
       kWifiTransferResultFailureReasonHistogramName,
-      quick_start_metrics::WifiTransferResultFailureReason::
+      QuickStartMetrics::WifiTransferResultFailureReason::
           kConnectionDroppedDuringAttempt,
       1);
   ExpectQuickStartConnectivityServiceCleanupCalled();

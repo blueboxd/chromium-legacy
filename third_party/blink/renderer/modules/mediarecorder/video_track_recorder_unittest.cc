@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/mediarecorder/video_track_recorder.h"
 
+#include <sstream>
+
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -32,6 +34,7 @@
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/video_frame_utils.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -215,7 +218,7 @@ class VideoTrackRecorderTest : public VideoTrackRecorderTestBase {
         .Times(testing::AnyNumber());
     EXPECT_CALL(*mock_source_, OnCapturingLinkSecured(_))
         .Times(testing::AnyNumber());
-    EXPECT_CALL(*mock_source_, GetCropVersion())
+    EXPECT_CALL(*mock_source_, GetSubCaptureTargetVersion())
         .Times(testing::AnyNumber())
         .WillRepeatedly(Return(0));
     EXPECT_CALL(*mock_source_, OnSourceCanDiscardAlpha(_))
@@ -263,7 +266,7 @@ class VideoTrackRecorderTest : public VideoTrackRecorderTestBase {
     video_track_recorder_ = std::make_unique<VideoTrackRecorderImpl>(
         scheduler::GetSingleThreadTaskRunnerForTesting(), codec_profile,
         WebMediaStreamTrack(component_.Get()), mock_callback_interface_,
-        0u /* bits_per_second */, keyframe_config);
+        /*bits_per_second=*/1000000, keyframe_config);
   }
 
   void Encode(scoped_refptr<media::VideoFrame> frame,
@@ -284,6 +287,20 @@ class VideoTrackRecorderTest : public VideoTrackRecorderTestBase {
         [](base::WaitableEvent* finished, bool* out_result,
            VideoTrackRecorder::Encoder* encoder) {
           *out_result = encoder->CanEncodeAlphaChannel();
+          finished->Signal();
+        },
+        CrossThreadUnretained(&finished), CrossThreadUnretained(&result)));
+    finished.Wait();
+    return result;
+  }
+
+  bool IsScreenContentEncoding() {
+    bool result;
+    base::WaitableEvent finished;
+    video_track_recorder_->encoder_.PostTaskWithThisObject(CrossThreadBindOnce(
+        [](base::WaitableEvent* finished, bool* out_result,
+           VideoTrackRecorder::Encoder* encoder) {
+          *out_result = encoder->IsScreenContentEncodingForTesting();
           finished->Signal();
         },
         CrossThreadUnretained(&finished), CrossThreadUnretained(&result)));
@@ -372,10 +389,14 @@ class VideoTrackRecorderTestParam
     : public TestWithParam<testing::tuple<VideoTrackRecorder::CodecId,
                                           gfx::Size,
                                           bool,
-                                          TestFrameType>>,
-      public VideoTrackRecorderTest {
+                                          TestFrameType,
+                                          bool>>,
+      public VideoTrackRecorderTest,
+      public ScopedMediaRecorderUseMediaVideoEncoderForTest {
  public:
-  VideoTrackRecorderTestParam() = default;
+  VideoTrackRecorderTestParam()
+      : ScopedMediaRecorderUseMediaVideoEncoderForTest(
+            testing::get<4>(GetParam())) {}
   ~VideoTrackRecorderTestParam() override = default;
 };
 
@@ -470,6 +491,48 @@ TEST_P(VideoTrackRecorderTestParam, VideoEncoding) {
     EXPECT_EQ(third_frame_encoded_alpha.size(), kEmptySize);
   }
 
+  // The encoder is configured non screen content by default.
+  EXPECT_FALSE(IsScreenContentEncoding());
+
+  Mock::VerifyAndClearExpectations(this);
+}
+
+// VideoEncoding with the screencast track.
+TEST_P(VideoTrackRecorderTestParam, ConfigureEncoderWithScreenContent) {
+  track_->SetIsScreencastForTesting(true);
+
+  InitializeRecorder(testing::get<0>(GetParam()));
+
+  const bool encode_alpha_channel = testing::get<2>(GetParam());
+  // |frame_size| cannot be arbitrarily small, should be reasonable.
+  const gfx::Size& frame_size = testing::get<1>(GetParam());
+  const TestFrameType test_frame_type = testing::get<3>(GetParam());
+
+  // We don't support alpha channel with GpuMemoryBuffer frames.
+  if (test_frame_type != TestFrameType::kI420 && encode_alpha_channel) {
+    return;
+  }
+
+  const scoped_refptr<media::VideoFrame> video_frame = CreateFrameForTest(
+      test_frame_type, frame_size, encode_alpha_channel, /*padding=*/0);
+  if (!video_frame) {
+    ASSERT_TRUE(!!video_frame);
+  }
+
+  InSequence s;
+  base::RunLoop run_loop1;
+  EXPECT_CALL(*mock_callback_interface_, OnEncodedVideo)
+      .WillOnce(RunClosure(run_loop1.QuitClosure()));
+  Encode(video_frame, base::TimeTicks::Now());
+  run_loop1.Run();
+
+  EXPECT_TRUE(HasEncoderInstance());
+
+  // MediaRecorderEncoderWrapper is configured with a screen content hint.
+  const bool is_media_recorder_encoder_wrapper =
+      testing::get<4>(GetParam()) ||
+      testing::get<0>(GetParam()) == VideoTrackRecorder::CodecId::kAv1;
+  EXPECT_EQ(is_media_recorder_encoder_wrapper, IsScreenContentEncoding());
   Mock::VerifyAndClearExpectations(this);
 }
 
@@ -498,7 +561,8 @@ TEST_P(VideoTrackRecorderTestParam, CheckMetricsProviderInVideoEncoding) {
   int initialize_time = 1;
   if (encode_alpha_channel &&
       (video_codec_profile == media::VideoCodecProfile::VP8PROFILE_ANY ||
-       video_codec_profile == media::VideoCodecProfile::VP9PROFILE_PROFILE0)) {
+       video_codec_profile == media::VideoCodecProfile::VP9PROFILE_PROFILE0) &&
+      !testing::get<4>(GetParam())) {
     initialize_time = 2;
   }
 
@@ -846,12 +910,66 @@ TEST_F(VideoTrackRecorderTestNoParam, RequiredRefreshRate) {
   test::RunDelayedTasks(base::Seconds(1));
 }
 
+std::string PrintTestParams(
+    const testing::TestParamInfo<testing::tuple<VideoTrackRecorder::CodecId,
+                                                gfx::Size,
+                                                bool,
+                                                TestFrameType,
+                                                bool>>& info) {
+  std::stringstream ss;
+  ss << "codec ";
+  switch (testing::get<0>(info.param)) {
+    case VideoTrackRecorder::CodecId::kVp8:
+      ss << "vp8";
+      break;
+    case VideoTrackRecorder::CodecId::kVp9:
+      ss << "vp9";
+      break;
+#if BUILDFLAG(RTC_USE_H264)
+    case VideoTrackRecorder::CodecId::kH264:
+      ss << "h264";
+      break;
+#endif
+#if BUILDFLAG(ENABLE_LIBAOM)
+    case VideoTrackRecorder::CodecId::kAv1:
+      ss << "av1";
+      break;
+#endif
+    case VideoTrackRecorder::CodecId::kLast:
+    default:
+      ss << "invalid";
+      break;
+  }
+
+  ss << " size " + testing::get<1>(info.param).ToString() << " encode alpha "
+     << (testing::get<2>(info.param) ? "true" : "false") << " frame type ";
+  switch (testing::get<3>(info.param)) {
+    case TestFrameType::kNv12GpuMemoryBuffer:
+      ss << "NV12 GMB";
+      break;
+    case TestFrameType::kNv12Software:
+      ss << "I420 SW";
+      break;
+    case TestFrameType::kI420:
+      ss << "I420";
+      break;
+  }
+  ss << " mediaVideoEncoder "
+     << (testing::get<4>(info.param) ? "true" : "false");
+
+  std::string out;
+  base::ReplaceChars(ss.str(), " ", "_", &out);
+  return out;
+}
+
 INSTANTIATE_TEST_SUITE_P(All,
                          VideoTrackRecorderTestParam,
                          ::testing::Combine(ValuesIn(kTrackRecorderTestCodec),
                                             ValuesIn(kTrackRecorderTestSize),
                                             ::testing::Bool(),
-                                            ValuesIn(kTestFrameTypes)));
+                                            ValuesIn(kTestFrameTypes),
+                                            ::testing::Bool()),
+                         PrintTestParams);
 
 class VideoTrackRecorderPassthroughTest
     : public TestWithParam<VideoTrackRecorder::CodecId>,

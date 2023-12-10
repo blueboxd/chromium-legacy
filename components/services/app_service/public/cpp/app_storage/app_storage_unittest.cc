@@ -14,9 +14,12 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
+#include "base/time/time.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_storage/app_storage_file_handler.h"
 #include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/icon_effects.h"
+#include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace apps {
@@ -75,6 +78,7 @@ class FakeAppStorage : public AppStorage {
 
   std::vector<AppPtr>& GetAppInfo() { return apps_; }
   std::set<AppType>& GetAppTypeInfo() { return app_types_; }
+  bool is_app_changed() { return is_app_changed_; }
 
   void WaitForSaveFinished(size_t expect_app_count) {
     expect_app_count_ = expect_app_count;
@@ -83,6 +87,12 @@ class FakeAppStorage : public AppStorage {
   }
 
  private:
+  // Override to call to AppStorage::OnAppUpdate.
+  void OnAppUpdate(const apps::AppUpdate& update) override {
+    is_app_changed_ = IsAppChanged(update);
+    AppStorage::OnAppUpdate(update);
+  }
+
   // Override to call to AppStorage::OnGetAppInfoData.
   void OnGetAppInfoData(base::OnceCallback<void()> callback,
                         std::unique_ptr<AppInfo> app_info) override {
@@ -113,6 +123,8 @@ class FakeAppStorage : public AppStorage {
 
   std::unique_ptr<base::test::TestFuture<void>> write_result_;
   size_t expect_app_count_ = -1;
+
+  bool is_app_changed_ = false;
 };
 
 class AppStorageTest : public testing::Test {
@@ -135,6 +147,8 @@ class AppStorageTest : public testing::Test {
                                    const std::string& app_id) {
     AppPtr app = std::make_unique<App>(app_type, app_id);
     app->readiness = kReadiness1;
+    app->has_badge = false;
+    app->paused = false;
     std::vector<AppPtr> apps;
     apps.push_back(std::move(app));
     return apps;
@@ -146,17 +160,46 @@ class AppStorageTest : public testing::Test {
     AppPtr app1 = std::make_unique<App>(kAppType1, kAppId1);
     app1->readiness = kReadiness1;
     app1->name = kAppName1;
+    app1->has_badge = false;
+    app1->paused = false;
     apps.push_back(std::move(app1));
 
     AppPtr app2 = std::make_unique<App>(kAppType2, kAppId2);
     app2->readiness = kReadiness2;
     app2->name = kAppName2;
     app2->short_name = kAppShortName1;
+    app2->description = "description";
+    app2->version = "version";
+    app2->additional_search_terms = {"term1", "term2"};
+    app2->icon_key =
+        apps::IconKey(apps::IconKey::kDoesNotChangeOverTime,
+                      /*resource_id=*/65535, apps::IconEffects::kNone);
+    app2->last_launch_time = base::Time() + base::Days(2);
+    app2->install_time = base::Time() + base::Days(1);
+
+    app2->permissions.push_back(std::make_unique<Permission>(
+        PermissionType::kLocation, /*PermissionValue=*/false,
+        /*is_managed=*/true, "details"));
+    app2->permissions.push_back(std::make_unique<Permission>(
+        PermissionType::kPrinting, /*PermissionValue=*/TriState::kBlock,
+        /*is_managed=*/false));
+
     app2->install_reason = InstallReason::kUser;
     app2->install_source = InstallSource::kBrowser;
+    app2->policy_ids = {"plicy1", "policy2"};
     app2->is_platform_app = false;
     app2->recommendable = true;
     app2->searchable = true;
+    app2->show_in_launcher = true;
+    app2->show_in_shelf = true;
+    app2->show_in_search = true;
+    app2->show_in_management = true;
+    app2->handles_intents = false;
+    app2->allow_uninstall = false;
+    app2->has_badge = false;
+    app2->paused = false;
+    app2->intent_filters.push_back(apps_util::MakeIntentFilterForUrlScope(
+        GURL("https://www.google.com/abc")));
     apps.push_back(std::move(app2));
 
     // TODO(crbug.com/1385932): Add other files in the App structure.
@@ -165,11 +208,45 @@ class AppStorageTest : public testing::Test {
 
   MODIFY_FIELD(name, kAppName2)
   MODIFY_FIELD(short_name, kAppShortName2)
+  MODIFY_FIELD(description, "description")
+  MODIFY_FIELD(version, "version")
+  MODIFY_FIELD(additional_search_terms, {"term1"})
+  MODIFY_FIELD(last_launch_time, base::Time() + base::Days(2))
+  MODIFY_FIELD(install_time, base::Time() + base::Days(1))
   MODIFY_FIELD(install_reason, InstallReason::kDefault)
   MODIFY_FIELD(install_source, InstallSource::kSync)
+  MODIFY_FIELD(policy_ids, {"policy"})
   MODIFY_FIELD(is_platform_app, true)
   MODIFY_FIELD(recommendable, false)
   MODIFY_FIELD(searchable, false)
+  MODIFY_FIELD(show_in_launcher, true)
+  MODIFY_FIELD(show_in_shelf, true)
+  MODIFY_FIELD(show_in_search, true)
+  MODIFY_FIELD(show_in_management, true)
+  MODIFY_FIELD(handles_intents, false)
+  MODIFY_FIELD(allow_uninstall, false)
+
+  void ModifyPermissions() {
+    AppPtr app = std::make_unique<App>(kAppType1, kAppId1);
+    app->permissions.push_back(std::make_unique<Permission>(
+        PermissionType::kLocation, /*PermissionValue=*/false,
+        /*is_managed=*/true, "details"));
+    std::vector<AppPtr> apps;
+    apps.push_back(std::move(app));
+    app_registry_cache_.OnApps(std::move(apps), kAppType1,
+                               /*should_notify_initialized=*/false);
+  }
+
+  void ModifyIntentFilters() {
+    AppPtr app = std::make_unique<App>(kAppType1, kAppId1);
+    auto intent_filter = std::make_unique<apps::IntentFilter>();
+    intent_filter->activity_name = "activity_name";
+    app->intent_filters.push_back(std::move(intent_filter));
+    std::vector<AppPtr> apps;
+    apps.push_back(std::move(app));
+    app_registry_cache_.OnApps(std::move(apps), kAppType1,
+                               /*should_notify_initialized=*/false);
+  }
 
   void RemoveOneApp(AppType app_type, const std::string& app_id) {
     AppPtr app = std::make_unique<App>(app_type, app_id);
@@ -207,11 +284,13 @@ class AppStorageTest : public testing::Test {
   void OnApps(std::vector<AppPtr> deltas,
               apps::AppType app_type,
               bool should_notify_initialized) {
-    app_registry_cache_.OnApps(std::move(deltas), kAppType1,
+    app_registry_cache_.OnApps(std::move(deltas), app_type,
                                /*should_notify_initialized=*/false);
   }
 
   const base::ScopedTempDir& tmp_dir() { return tmp_dir_; }
+
+  AppRegistryCache& app_registry_cache() { return app_registry_cache_; }
 
   FakeAppStorage* app_storage() { return app_storage_.get(); }
 
@@ -282,11 +361,48 @@ TEST_F(AppStorageTest, ReadAndWriteMultipleApps) {
 
   VERIFY_MODIFY_FIELD(name, kAppName2);
   VERIFY_MODIFY_FIELD(short_name, kAppShortName2);
+  VERIFY_MODIFY_FIELD(description, "description");
+  VERIFY_MODIFY_FIELD(version, "version");
+  VERIFY_MODIFY_FIELD(additional_search_terms, {"term1"});
+  VERIFY_MODIFY_FIELD(last_launch_time, base::Time() + base::Days(2));
+  VERIFY_MODIFY_FIELD(install_time, base::Time() + base::Days(1));
   VERIFY_MODIFY_FIELD(install_reason, InstallReason::kDefault);
   VERIFY_MODIFY_FIELD(install_source, InstallSource::kSync);
+  VERIFY_MODIFY_FIELD(policy_ids, {"policy"});
   VERIFY_MODIFY_FIELD(is_platform_app, true);
   VERIFY_MODIFY_FIELD(recommendable, false);
   VERIFY_MODIFY_FIELD(searchable, false);
+  VERIFY_MODIFY_FIELD(show_in_launcher, true);
+  VERIFY_MODIFY_FIELD(show_in_shelf, true);
+  VERIFY_MODIFY_FIELD(show_in_search, true);
+  VERIFY_MODIFY_FIELD(show_in_management, true);
+  VERIFY_MODIFY_FIELD(handles_intents, false);
+  VERIFY_MODIFY_FIELD(allow_uninstall, false);
+
+  ModifyPermissions();
+  app_storage()->WaitForSaveFinished(/*expect_app_count=*/2);
+  apps[0]->permissions.push_back(std::make_unique<Permission>(
+      PermissionType::kLocation, /*PermissionValue=*/false,
+      /*is_managed=*/true, "details"));
+  VerifySavedApps(apps);
+
+  ModifyIntentFilters();
+  app_storage()->WaitForSaveFinished(/*expect_app_count=*/2);
+  auto intent_filter = std::make_unique<apps::IntentFilter>();
+  intent_filter->activity_name = "activity_name";
+  apps[0]->intent_filters.push_back(std::move(intent_filter));
+  VerifySavedApps(apps);
+
+  // Verify `apps` are not changed.
+  AppPtr app = std::make_unique<App>(kAppType1, kAppId1);
+  // Set `paused` as true to call `OnAppUpdate`.
+  app->paused = true;
+  std::vector<AppPtr> deltas;
+  deltas.push_back(std::move(app));
+  OnApps(std::move(deltas), AppType::kUnknown,
+         /*should_notify_initialized=*/false);
+  EXPECT_FALSE(app_storage()->is_app_changed());
+  VerifySavedApps(apps);
 
   RemoveOneApp(kAppType1, kAppId1);
   app_storage()->WaitForSaveFinished(/*expect_app_count=*/2);
@@ -366,6 +482,40 @@ TEST_F(AppStorageTest, AddAndRemoveApp) {
   // Verify the app has been added.
   auto apps3 = CreateOneApp(kAppType1, kAppId1);
   VerifySavedApps(apps3);
+}
+
+// Test AppStorageTest can remove the app when the app is uninstalled.
+TEST_F(AppStorageTest, UninstallApp) {
+  CreateAppStorage();
+  EXPECT_TRUE(app_storage()->GetAppInfo().empty());
+
+  // Add 1 app.
+  OnApps(CreateOneApp(kAppType1, kAppId1), kAppType1,
+         /*should_notify_initialized=*/false);
+  app_storage()->WaitForSaveFinished(/*expect_app_count=*/1);
+
+  // Verify the app is saved correctly.
+  auto apps1 = CreateOneApp(kAppType1, kAppId1);
+  VerifySavedApps(apps1, /*should_verify_app_type_init=*/true);
+
+  // Uninstall the app.
+  RemoveOneApp(kAppType1, kAppId1);
+  // Though the app is uninstalled, it is still saved in `app_registry_cache_`,
+  // so `expect_app_count` should be 1. But the apps saved in the AppStorage
+  // file should be empty, so we verify that with an empty vector, `apps2`.
+  app_storage()->WaitForSaveFinished(/*expect_app_count=*/1);
+  std::vector<AppPtr> apps2;
+  VerifySavedApps(apps2);
+
+  // Reinstall the app again and change the app type to simulate the system
+  // restarts.
+  app_registry_cache().ReinitializeForTesting();
+  OnApps(CreateOneApp(kAppType2, kAppId1), kAppType2,
+         /*should_notify_initialized=*/true);
+  app_storage()->WaitForSaveFinished(/*expect_app_count=*/1);
+
+  auto apps3 = CreateOneApp(kAppType2, kAppId1);
+  VerifySavedApps(apps3, /*should_verify_app_type_init=*/true);
 }
 
 }  // namespace apps

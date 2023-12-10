@@ -278,16 +278,10 @@ class CrdAdminSessionControllerTest : public ash::AshTestBase {
         .WillOnce(
             [&](auto callback) { std::move(callback).Run(absl::nullopt); });
 
-    TestFuture<void> done_signal;
-    session_controller().Init(&local_state(), done_signal.GetCallback());
-    ASSERT_TRUE(done_signal.Wait());
+    session_controller().Init(&local_state());
   }
 
-  void TerminateActiveSession() {
-    TestFuture<void> terminate_signal;
-    delegate().TerminateSession(terminate_signal.GetCallback());
-    ASSERT_TRUE(terminate_signal.GetCallback());
-  }
+  void TerminateActiveSession() { delegate().TerminateSession(); }
 
   void SimulateLoginScreenIsVisible() {
     // Notifies the observers that the login screen is visible and ensure the
@@ -312,7 +306,7 @@ class CrdAdminSessionControllerTest : public ash::AshTestBase {
     return notification_widget->IsVisible();
   }
 
-  void FlushForTesting() { observer_.FlushForTesting(); }
+  void FlushObserverForTesting() { observer_.FlushForTesting(); }
 
   mojo::PendingReceiver<SupportHostObserver> BindObserver() {
     return observer_.BindNewPipeAndPassReceiver();
@@ -550,15 +544,14 @@ TEST_F(CrdAdminSessionControllerTest, ShouldReturnAccessCode) {
   EXPECT_EQ("the-access-code", response.access_code());
 }
 
-TEST_F(CrdAdminSessionControllerTest,
-       ShouldReportErrorWhenHostStateChangesToDisconnected) {
+TEST_F(CrdAdminSessionControllerTest, ShouldReportErrorWhenClientDisconnects) {
   SupportHostObserver& observer = StartCrdHostAndBindObserver();
 
   observer.OnHostStateDisconnected("the-disconnect-reason");
 
   Response response = WaitForResponse();
   ASSERT_TRUE(response.HasError());
-  EXPECT_EQ("host disconnected", response.error_message());
+  EXPECT_EQ("client disconnected", response.error_message());
   EXPECT_EQ(ResultCode::HOST_SESSION_DISCONNECTED, response.error_code());
 }
 
@@ -596,16 +589,43 @@ TEST_F(CrdAdminSessionControllerTest,
   EXPECT_TRUE(delegate().HasActiveSession());
 }
 
+TEST_F(CrdAdminSessionControllerTest, ShouldCleanupSessionWhenHostDisconnects) {
+  SupportHostObserver& observer = StartCrdHostAndBindObserver();
+  ASSERT_TRUE(delegate().HasActiveSession());
+
+  observer.OnHostStateDisconnected("disconnect-reason");
+  FlushObserverForTesting();
+
+  EXPECT_FALSE(delegate().HasActiveSession());
+}
+
+TEST_F(CrdAdminSessionControllerTest,
+       ShouldCleanupSessionWhenWeFailToStartTheHost) {
+  EXPECT_CALL(remoting_service(), StartSession)
+      .WillOnce([](SupportSessionParamsPtr params,
+                   const remoting::ChromeOsEnterpriseParams& enterprise_params,
+                   StartSupportSessionCallback callback) {
+        auto response = StartSupportSessionResponse::NewSupportSessionError(
+            remoting::mojom::StartSupportSessionError::kExistingAdminSession);
+        std::move(callback).Run(std::move(response));
+      });
+
+  delegate().StartCrdHostAndGetCode(SessionParameters{}, success_callback(),
+                                    error_callback(),
+                                    session_finished_callback());
+
+  WaitForResponse();
+
+  EXPECT_FALSE(delegate().HasActiveSession());
+}
+
 TEST_F(CrdAdminSessionControllerTest,
        TerminateSessionShouldTerminateTheActiveSession) {
   StartCrdHostAndBindObserver();
   EXPECT_TRUE(delegate().HasActiveSession());
 
-  TestFuture<void> terminate_session_future;
-  delegate().TerminateSession(terminate_session_future.GetCallback());
+  delegate().TerminateSession();
 
-  ASSERT_TRUE(terminate_session_future.Wait())
-      << "TerminateSession did not invoke the callback.";
   EXPECT_FALSE(delegate().HasActiveSession());
 }
 
@@ -616,11 +636,13 @@ TEST_F(CrdAdminSessionControllerTest,
   observer.OnHostStateReceivedAccessCode("access-code", base::Days(1));
   observer.OnHostStateStarting();
   observer.OnHostStateDisconnected(absl::nullopt);
+  observer.OnHostStateDisconnected(absl::nullopt);
+  observer.OnHostStateConnected("name");
   observer.OnHostStateError(1);
   observer.OnPolicyError();
   observer.OnInvalidDomainError();
 
-  FlushForTesting();
+  FlushObserverForTesting();
 }
 
 TEST_F(CrdAdminSessionControllerTest,
@@ -680,6 +702,22 @@ TEST_F(CrdAdminSessionControllerTest,
 }
 
 TEST_F(CrdAdminSessionControllerTest,
+       ShouldNotHaveActiveSessionIfReconnectableSessionIsUnavailable) {
+  EnableFeature(kEnableCrdAdminRemoteAccessV2);
+
+  // Indicate there is no reconnectable session by returning nullopt when we
+  // query for the reconnectable session id.
+  EXPECT_CALL(remoting_service(), GetReconnectableSessionId)
+      .WillOnce([&](auto callback) { std::move(callback).Run(absl::nullopt); });
+
+  TestFuture<void> done_signal;
+  session_controller().Init(&local_state(), done_signal.GetCallback());
+  ASSERT_TRUE(done_signal.Wait());
+
+  ASSERT_FALSE(delegate().HasActiveSession());
+}
+
+TEST_F(CrdAdminSessionControllerTest,
        ShouldNotTryToResumeReconnectableSessionIfFeatureIsDisabled) {
   DisableFeature(kEnableCrdAdminRemoteAccessV2);
 
@@ -701,7 +739,7 @@ TEST_F(
 
   Response response = WaitForResponse();
   ASSERT_TRUE(response.HasError());
-  EXPECT_EQ("enterprise remote support disabled", response.error_message());
+  EXPECT_EQ("host state error", response.error_message());
   EXPECT_EQ(ResultCode::FAILURE_DISABLED_BY_POLICY, response.error_code());
 }
 
@@ -717,7 +755,7 @@ TEST_F(CrdAdminSessionControllerTest,
 
   SupportHostObserver& observer = StartCrdHostAndBindObserver(parameters);
   observer.OnHostStateConnected(kTestUserName);
-  FlushForTesting();
+  FlushObserverForTesting();
 
   EXPECT_EQ(GetPref(prefs::kRemoteAdminWasPresent), false);
 }
@@ -725,14 +763,13 @@ TEST_F(CrdAdminSessionControllerTest,
 TEST_F(CrdAdminSessionControllerTest, ShouldSetRemoteAdminWasPresentPref) {
   EnableFeature(kEnableCrdAdminRemoteAccessV2);
   InitControllerWithNoReconnectableSession();
-  TerminateActiveSession();
 
   SessionParameters parameters;
   parameters.curtain_local_user_session = true;
 
   SupportHostObserver& observer = StartCrdHostAndBindObserver(parameters);
   observer.OnHostStateConnected(kTestUserName);
-  FlushForTesting();
+  FlushObserverForTesting();
 
   EXPECT_EQ(GetPref(prefs::kRemoteAdminWasPresent), true);
 }
@@ -741,14 +778,13 @@ TEST_F(CrdAdminSessionControllerTest,
        ShouldNotSetRemoteAdminWasPresentPrefIfSessionIsUncurtained) {
   EnableFeature(kEnableCrdAdminRemoteAccessV2);
   InitControllerWithNoReconnectableSession();
-  TerminateActiveSession();
 
   SessionParameters parameters;
   parameters.curtain_local_user_session = false;
 
   SupportHostObserver& observer = StartCrdHostAndBindObserver(parameters);
   observer.OnHostStateConnected(kTestUserName);
-  FlushForTesting();
+  FlushObserverForTesting();
 
   EXPECT_EQ(GetPref(prefs::kRemoteAdminWasPresent), false);
 }
@@ -795,14 +831,13 @@ TEST_F(CrdAdminSessionControllerTest,
   EnableFeature(kEnableCrdAdminRemoteAccessV2);
   SetPref(prefs::kRemoteAdminWasPresent, true);
   InitControllerWithNoReconnectableSession();
-  TerminateActiveSession();
 
   SessionParameters parameters;
   parameters.curtain_local_user_session = false;
 
   SupportHostObserver& observer = StartCrdHostAndBindObserver(parameters);
   observer.OnHostStateConnected(kTestUserName);
-  FlushForTesting();
+  FlushObserverForTesting();
 
   SimulateLoginScreenIsVisible();
 
@@ -819,14 +854,13 @@ TEST_F(
   EnableFeature(kEnableCrdAdminRemoteAccessV2);
   SetPref(prefs::kRemoteAdminWasPresent, true);
   InitControllerWithNoReconnectableSession();
-  TerminateActiveSession();
 
   SessionParameters parameters;
   parameters.curtain_local_user_session = true;
 
   SupportHostObserver& observer = StartCrdHostAndBindObserver(parameters);
   observer.OnHostStateConnected(kTestUserName);
-  FlushForTesting();
+  FlushObserverForTesting();
 
   SimulateLoginScreenIsVisible();
 
@@ -882,7 +916,6 @@ TEST_F(CrdAdminSessionControllerTest,
     EXPECT_EQ(expected_result_code, response.error_code());
 
     ResetObserver();
-    TerminateActiveSession();
   }
 }
 

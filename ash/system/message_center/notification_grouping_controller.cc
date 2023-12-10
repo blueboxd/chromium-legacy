@@ -291,15 +291,20 @@ NotificationGroupingController::CreateCopyForParentNotification(
           message_center_utils::GenerateGroupParentNotificationIdSuffix(
               parent_notification.notifier_id()),
       parent_notification.title(), parent_notification.message(),
-      ui::ImageModel(), std::u16string(), parent_notification.origin_url(),
-      parent_notification.notifier_id(), message_center::RichNotificationData(),
+      ui::ImageModel(), parent_notification.display_source(),
+      parent_notification.origin_url(), parent_notification.notifier_id(),
+      message_center::RichNotificationData(),
       /*delegate=*/nullptr);
   copy->set_timestamp(parent_notification.timestamp() - base::Milliseconds(1));
   copy->set_settings_button_handler(
       parent_notification.rich_notification_data().settings_button_handler);
   copy->set_fullscreen_visibility(parent_notification.fullscreen_visibility());
-  copy->set_delegate(parent_notification.delegate());
+  if (parent_notification.delegate()) {
+    copy->set_delegate(
+        parent_notification.delegate()->GetDelegateForParentCopy());
+  }
   copy->set_vector_small_image(parent_notification.parent_vector_small_image());
+  copy->set_small_image(parent_notification.small_image());
 
   if (parent_notification.accent_color_id().has_value()) {
     copy->set_accent_color_id(parent_notification.accent_color_id().value());
@@ -382,8 +387,11 @@ void NotificationGroupingController::OnNotificationAdded(
       message_center->FindParentNotification(notification);
   std::string parent_id = parent_notification->id();
 
+  // TODO(b/308814203): clean the static_cast checks by replacing
+  // AshNotificationView* with a base class.
   auto* parent_view =
-      GetActiveNotificationViewController()
+      (GetActiveNotificationViewController() &&
+       message_center_utils::IsAshNotification(parent_notification))
           ? static_cast<AshNotificationView*>(
                 GetActiveNotificationViewController()
                     ->GetMessageViewForNotificationId(parent_id))
@@ -479,6 +487,12 @@ void NotificationGroupingController::OnNotificationUpdated(
       grouped_notification_list_->GetParentForChild(notification_id);
   Notification* parent_notification =
       MessageCenter::Get()->FindNotificationById(parent_id);
+
+  auto* notification_view_controller = GetActiveNotificationViewController();
+  if (notification_view_controller) {
+    notification_view_controller->OnChildNotificationViewUpdated(
+        parent_id, notification_id);
+  }
 
   if (parent_notification && notification->pinned()) {
     parent_notification->set_pinned(true);

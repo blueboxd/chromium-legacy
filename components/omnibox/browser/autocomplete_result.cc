@@ -440,13 +440,11 @@ void AutocompleteResult::SortAndCull(
         if (omnibox::IsNTPPage(page_classification)) {
           size_t num_trending_queries =
               OmniboxFieldTrial::kInspireMeAdditionalTrendingQueries.Get();
-          size_t psuggest_count =
+          size_t num_psuggest_queries =
               OmniboxFieldTrial::kInspireMePsuggestQueries.Get();
 
-          size_t total_count = OmniboxFieldTrial::kInspireMeNTPZPSLimit.Get();
-
           sections.push_back(std::make_unique<IOSNTPZpsSection>(
-              num_trending_queries, psuggest_count, total_count,
+              num_trending_queries, num_psuggest_queries,
               suggestion_groups_map_));
         } else if (omnibox::IsSearchResultsPage(page_classification)) {
           sections.push_back(
@@ -1451,15 +1449,15 @@ void AutocompleteResult::GroupSuggestionsBySearchVsURL(iterator begin,
 #if !BUILDFLAG(IS_IOS)
     // Group history cluster suggestions with searches.
     if (m.type == AutocompleteMatchType::HISTORY_CLUSTER)
-      return 1;
+      return 2;
 #endif  // !BUILDFLAG(IS_IOS)
     if (AutocompleteMatch::IsSearchType(m.type))
-      return 1;
-    // Group boosted shortcuts with searches.
+      return 2;
+    // Group boosted shortcuts above searches.
     if (omnibox_feature_configs::ShortcutBoosting::Get().group_with_searches &&
         m.shortcut_boosted) {
       return 1;
     }
-    return 2;
+    return 3;
   });
 }

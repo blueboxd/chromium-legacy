@@ -18,14 +18,17 @@
 #include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "content/browser/interest_group/additional_bid_result.h"
 #include "content/browser/interest_group/auction_nonce_manager.h"
 #include "content/browser/interest_group/auction_result.h"
 #include "content/browser/interest_group/auction_worklet_manager.h"
 #include "content/browser/interest_group/bidding_and_auction_response.h"
 #include "content/browser/interest_group/header_direct_from_seller_signals.h"
 #include "content/browser/interest_group/interest_group_auction_reporter.h"
+#include "content/browser/interest_group/interest_group_caching_storage.h"
 #include "content/browser/interest_group/interest_group_pa_report_util.h"
 #include "content/browser/interest_group/interest_group_storage.h"
 #include "content/browser/interest_group/subresource_url_builder.h"
@@ -168,7 +171,34 @@ class CONTENT_EXPORT InterestGroupAuction
   };
 
   struct CONTENT_EXPORT BidState {
-    BidState();
+    // Used as a key to group Private Aggregation API requests from worklets in
+    // a map. The `reporting_origin` and `aggregation_coordinator_origin` are
+    // passed into the Private Aggregation API.
+    struct PrivateAggregationPhaseKey {
+      PrivateAggregationPhaseKey(
+          url::Origin reporting_origin,
+          PrivateAggregationPhase phase,
+          absl::optional<url::Origin> aggregation_coordinator_origin);
+      PrivateAggregationPhaseKey(const PrivateAggregationPhaseKey& other);
+      PrivateAggregationPhaseKey& operator=(
+          const PrivateAggregationPhaseKey& other);
+      PrivateAggregationPhaseKey(PrivateAggregationPhaseKey&& other);
+      PrivateAggregationPhaseKey& operator=(PrivateAggregationPhaseKey&& other);
+      ~PrivateAggregationPhaseKey();
+
+      bool operator<(const PrivateAggregationPhaseKey& other) const {
+        return std::tie(reporting_origin, phase,
+                        aggregation_coordinator_origin) <
+               std::tie(other.reporting_origin, other.phase,
+                        other.aggregation_coordinator_origin);
+      }
+
+      url::Origin reporting_origin;
+      PrivateAggregationPhase phase;
+      absl::optional<url::Origin> aggregation_coordinator_origin;
+    };
+
+    explicit BidState(const SingleStorageInterestGroup&& bidder);
     ~BidState();
 
     BidState(BidState&&);
@@ -194,10 +224,7 @@ class CONTENT_EXPORT InterestGroupAuction
     void BeginTracingKAnonScoring();
     void EndTracingKAnonScoring();
 
-    // Use a unique pointer so this can be more safely moved to the
-    // InterestGroupAuctionReporter. Doing so both preserves pointers, and make
-    // sure there's a crash if this is dereferenced after move.
-    std::unique_ptr<StorageInterestGroup> bidder;
+    const SingleStorageInterestGroup bidder;
 
     // Set of render keys that are k-anonymous and correspond to ad or ad
     // component render URLs for this interest group.
@@ -298,13 +325,10 @@ class CONTENT_EXPORT InterestGroupAuction
 
     // Requests made to Private aggregation API in generateBid() and scoreAd().
     // Keyed by reporting origin of the associated requests, i.e., buyer origin
-    // for generateBid() and seller origin for scoreAd(), plus an enum that
-    // determines exactly which phase of the auction made that request.
-    //
-    // TODO(qingxinwu): Consider only saving the requests without saving Origin,
-    // since copying Origin is expensive.
-    std::map<std::pair<url::Origin, PrivateAggregationPhase>,
-             PrivateAggregationRequests>
+    // for generateBid() and seller origin for scoreAd(), an enum that
+    // determines exactly which phase of the auction made that request, and an
+    // optional aggregation coordinator origin.
+    std::map<PrivateAggregationPhaseKey, PrivateAggregationRequests>
         private_aggregation_requests;
 
     // Requests made to Private aggregation API in generateBid() for the
@@ -455,6 +479,7 @@ class CONTENT_EXPORT InterestGroupAuction
       AuctionNonceManager* auction_nonce_manager,
       InterestGroupManagerImpl* interest_group_manager,
       AuctionMetricsRecorder* auction_metrics_recorder,
+      AdAuctionPageData* ad_auction_page_data,
       base::Time auction_start_time,
       IsInterestGroupApiAllowedCallback is_interest_group_api_allowed_callback,
       base::RepeatingCallback<
@@ -622,11 +647,13 @@ class CONTENT_EXPORT InterestGroupAuction
 
   // Retrieves all requests with reserved event type to the Private Aggregation
   // API returned by GenerateBid() and ScoreAd(). The return value is keyed by
-  // reporting origin of the associated requests. May only be called by external
-  // consumers after an auction has failed (on success, used internally to pass
-  // them to the InterestGroupAuctionReporter). May only be called once, since
-  // it takes ownership of stored reporting URLs.
-  std::map<url::Origin, PrivateAggregationRequests>
+  // reporting origin and aggregation coordinator origin of the associated
+  // requests. May only be called by external consumers after an auction has
+  // failed (on success, used internally to pass them to the
+  // InterestGroupAuctionReporter). May only be called once, since it takes
+  // ownership of stored reporting URLs.
+  std::map<InterestGroupAuctionReporter::PrivateAggregationKey,
+           PrivateAggregationRequests>
   TakeReservedPrivateAggregationRequests();
 
   // Retrieves all requests with non-reserved event type to the Private
@@ -820,7 +847,8 @@ class CONTENT_EXPORT InterestGroupAuction
 
   // Invoked whenever the interest groups for a buyer have loaded. Adds
   // `interest_groups` to `bid_states_`.
-  void OnInterestGroupRead(std::vector<StorageInterestGroup> interest_groups);
+  void OnInterestGroupRead(
+      scoped_refptr<StorageInterestGroups> interest_groups);
 
   // Invoked when the interest groups for an entire component auction have
   // loaded. If `success` is false, removes the component auction.
@@ -874,6 +902,11 @@ class CONTENT_EXPORT InterestGroupAuction
   // Score bids if both the seller worklet and config with all promises resolved
   // are ready.
   void ScoreQueuedBidsIfReady();
+
+  // Performs errors handling when an error is encountered while decoding an
+  // additional bid. The caller of this should return immediately after calling
+  // this function.
+  void HandleAdditionalBidError(AdditionalBidResult result, std::string error);
 
   // If we're in the bidding and scoring phase, and
   // `encoded_signed_additional_bids_` has been filled in, starts of the process
@@ -1172,6 +1205,9 @@ class CONTENT_EXPORT InterestGroupAuction
   // Start time of the BiddingAndScoring phase for UKM metrics.
   base::TimeTicks bidding_and_scoring_phase_start_time_;
 
+  // Time at which we began decoding the additional bids.
+  base::TimeTicks decode_additional_bids_start_time_;
+
   // Invoked in the bidding and scoring phase, once the seller worklet has
   // loaded. May be null.
   base::OnceClosure on_seller_receiver_callback_;
@@ -1277,8 +1313,10 @@ class CONTENT_EXPORT InterestGroupAuction
   // Stores all pending Private Aggregation API report requests of reserved
   // event type from the bidding and scoring phase. These are passed to the
   // InterestGroupAuctionReporter when it's created. Keyed by the origin of the
-  // script that issued the request (i.e. the reporting origin).
-  std::map<url::Origin, PrivateAggregationRequests>
+  // script that issued the request (i.e. the reporting origin) and the
+  // aggregation coordinator origin.
+  std::map<InterestGroupAuctionReporter::PrivateAggregationKey,
+           PrivateAggregationRequests>
       private_aggregation_requests_reserved_;
 
   // Stores all pending Private Aggregation API report requests of non-reserved
@@ -1325,7 +1363,7 @@ class CONTENT_EXPORT InterestGroupAuction
   mojo::ReceiverSet<auction_worklet::mojom::ScoreAdClient, std::unique_ptr<Bid>>
       score_ad_receivers_;
 
-  data_decoder::DataDecoder data_decoder_;
+  raw_ptr<data_decoder::DataDecoder> data_decoder_;
 
   base::WeakPtrFactory<InterestGroupAuction> weak_ptr_factory_{this};
 };

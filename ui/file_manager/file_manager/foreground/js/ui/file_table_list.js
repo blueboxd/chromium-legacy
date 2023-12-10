@@ -5,8 +5,10 @@
 import {assert} from 'chrome://resources/ash/common/assert.js';
 
 import {ArrayDataModel} from '../../../common/js/array_data_model.js';
+import {isTeamDriveRoot} from '../../../common/js/entry_utils.js';
 import {FileType} from '../../../common/js/file_type.js';
-import {str, strf, util} from '../../../common/js/util.js';
+import {isDlpEnabled, isDriveFsBulkPinningEnabled, isInlineSyncStatusEnabled} from '../../../common/js/flags.js';
+import {getEntryLabel, str, strf} from '../../../common/js/translations.js';
 import {EntryLocation} from '../../../externs/entry_location.js';
 import {FilesAppEntry} from '../../../externs/files_app_entry_interfaces.js';
 import {VolumeManager} from '../../../externs/volume_manager.js';
@@ -89,7 +91,7 @@ implicitly has an 'any' return type.
       if (!item) {
         continue;
       }
-      const isSelected = this.selectionModel.getIndexSelected(i);
+      const isSelected = !!this.selectionModel?.getIndexSelected(i);
       if (item.selected !== isSelected) {
         item.selected = isSelected;
       }
@@ -259,7 +261,8 @@ implicitly has an 'any' return type.
     const itemHeight = this.getDefaultItemHeight_();
     const countOfGroupHeadings =
         this.getGroupHeadingCountAfterIndex_(lastIndex);
-    return (this.dataModel.length - lastIndex) * itemHeight +
+    const length = this.dataModel?.length ?? 0;
+    return (length - lastIndex) * itemHeight +
         countOfGroupHeadings * this.getGroupHeadingHeight_();
   }
 
@@ -302,7 +305,8 @@ implicitly has an 'any' return type.
     const currentSelection = [];
     const startHeight = y;
     const endHeight = y + (opt_height || 0);
-    for (let i = 0; i < this.selectionModel.length; i++) {
+    const length = this.selectionModel?.length ?? 0;
+    for (let i = 0; i < length; i++) {
       // @ts-ignore: error TS2339: Property 'getHeightsForIndex' does not exist
       // on type 'FileTableList'.
       const itemMetrics = this.getHeightsForIndex(i);
@@ -421,7 +425,7 @@ filelist.decorateListItem = (li, entry, metadataModel, volumeManager) => {
   filelist.updateListItemExternalProps(
       // @ts-ignore: error TS2345: Argument of type 'MetadataItem | undefined'
       // is not assignable to parameter of type 'MetadataItem'.
-      li, entry, externalProps, util.isTeamDriveRoot(entry));
+      li, entry, externalProps, isTeamDriveRoot(entry));
 
   // Overriding the default role 'list' to 'listbox' for better
   // accessibility on ChromeOS.
@@ -470,7 +474,7 @@ filelist.decorateListItem = (li, entry, metadataModel, volumeManager) => {
  * @return {boolean} If `entry` is DLP blocked.
  */
 filelist.isDlpBlocked = (entry, metadataModel, volumeManager) => {
-  if (!util.isDlpEnabled()) {
+  if (!isDlpEnabled()) {
     return false;
   }
   // TODO(b/259184588): Properly handle case when VolumeInfo is not
@@ -494,7 +498,7 @@ filelist.isDlpBlocked = (entry, metadataModel, volumeManager) => {
  * Render the type column of the detail table.
  * @param {!Document} doc Owner document.
  * @param {!Entry} entry The Entry object to render.
- * @param {EntryLocation} locationInfo
+ * @param {?EntryLocation} locationInfo
  * @param {string=} opt_mimeType Optional mime type for the file.
  * @return {!HTMLDivElement} Created element.
  */
@@ -523,7 +527,7 @@ filelist.renderIconBadge = (doc) => {
  * Render filename label for grid and list view.
  * @param {!Document} doc Owner document.
  * @param {!Entry|!FilesAppEntry} entry The Entry object to render.
- * @param {EntryLocation} locationInfo
+ * @param {?EntryLocation} locationInfo
  * @return {!HTMLDivElement} The label.
  */
 filelist.renderFileNameLabel = (doc, entry, locationInfo) => {
@@ -533,7 +537,7 @@ filelist.renderFileNameLabel = (doc, entry, locationInfo) => {
   box.className = 'filename-label';
   const fileName = doc.createElement('span');
   fileName.className = 'entry-name';
-  fileName.textContent = util.getEntryLabel(locationInfo, entry);
+  fileName.textContent = getEntryLabel(locationInfo, entry);
   box.appendChild(fileName);
 
   return box;
@@ -544,10 +548,9 @@ filelist.renderFileNameLabel = (doc, entry, locationInfo) => {
  * @param {ListItem} li List item.
  * @param {Entry|FilesAppEntry} entry The entry.
  * @param {MetadataItem} externalProps Metadata.
+ * @param {boolean} isTeamDriveRoot Whether the entry is a team drive root.
  */
 filelist.updateListItemExternalProps =
-    // @ts-ignore: error TS7006: Parameter 'isTeamDriveRoot' implicitly has an
-    // 'any' type.
     (li, entry, externalProps, isTeamDriveRoot) => {
       if (li.classList.contains('file')) {
         li.classList.toggle('dim-hosted', !!externalProps.hosted);
@@ -1151,7 +1154,7 @@ filelist.updateInlineStatus = (li, metadata) => {
     syncCompletedTime,
   } = metadata;
 
-  if (util.isDriveFsBulkPinningEnabled()) {
+  if (isDriveFsBulkPinningEnabled()) {
     const cantPin = canPin === false;
     li.classList.toggle('cant-pin', cantPin);
     inlineStatus.toggleAttribute('cant-pin', cantPin);
@@ -1164,7 +1167,7 @@ filelist.updateInlineStatus = (li, metadata) => {
   li.classList.toggle('pinned', pinned);
   inlineStatus.toggleAttribute('available-offline', pinned && !dimOffline);
 
-  if (util.isInlineSyncStatusEnabled()) {
+  if (isInlineSyncStatusEnabled()) {
     let actualSyncStatus = syncStatus;
     let actualProgress = progress;
     // Force sync status as completed if it has been less than 300ms since the

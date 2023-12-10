@@ -28,7 +28,6 @@
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/translate/partial_translate_bubble_model.h"
-#include "chrome/browser/ui/user_education/browser_feature_promo_storage_service.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views_context.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
@@ -46,8 +45,10 @@
 #include "components/user_education/common/feature_promo_controller.h"
 #include "components/user_education/common/feature_promo_handle.h"
 #include "components/webapps/browser/banners/app_banner_manager.h"
+#include "content/public/browser/page_user_data.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -114,6 +115,7 @@ class BrowserView : public BrowserWindow,
                     public ui::AcceleratorProvider,
                     public views::WidgetDelegate,
                     public views::WidgetObserver,
+                    public content::WebContentsObserver,
                     public views::ClientView,
                     public infobars::InfoBarContainer::Delegate,
                     public ExclusiveAccessContext,
@@ -448,8 +450,7 @@ class BrowserView : public BrowserWindow,
 
   void UpdateWebAppStatusIconsVisiblity();
 
-  // Setter and getter for the `window.setResizable(bool)` state.
-  void SetCanResizeFromWebAPI(absl::optional<bool> can_resize);
+  // Getter for the `window.setResizable(bool)` state.
   absl::optional<bool> GetCanResizeFromWebAPI() const;
 
   // BrowserWindow:
@@ -501,6 +502,8 @@ class BrowserView : public BrowserWindow,
   void Maximize() override;
   void Minimize() override;
   void Restore() override;
+  void SetCanResizeFromWebAPI(absl::optional<bool> can_resize) override;
+  bool GetCanResize() override;
   void EnterFullscreen(const GURL& url,
                        ExclusiveAccessBubbleType bubble_type,
                        int64_t display_id) override;
@@ -715,6 +718,9 @@ class BrowserView : public BrowserWindow,
   void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
   void OnWidgetSizeConstraintsChanged(views::Widget* widget) override;
 
+  // content::WebContentsObserver:
+  void PrimaryPageChanged(content::Page& page) override;
+
   // views::ClientView:
   views::CloseRequestResult OnWindowCloseRequested() override;
   int NonClientHitTest(const gfx::Point& point) override;
@@ -773,8 +779,11 @@ class BrowserView : public BrowserWindow,
 
   // Creates an accessible tab label for screen readers that includes the tab
   // status for the given tab index. This takes the form of
-  // "Page title - Tab state".
-  std::u16string GetAccessibleTabLabel(int index) const;
+  // "Page title - Tab state". The optional parameter `is_for_tab` can be set
+  // when getting the label for a tab (instead of a window). Titles for the
+  // window don't include less important messages like memory usage.
+  std::u16string GetAccessibleTabLabel(int index,
+                                       bool is_for_tab = false) const;
 
   // Testing interface:
   views::View* GetContentsContainerForTest() { return contents_container_; }
@@ -828,6 +837,26 @@ class BrowserView : public BrowserWindow,
   FRIEND_TEST_ALL_PREFIXES(BrowserViewTest, BrowserView);
   FRIEND_TEST_ALL_PREFIXES(BrowserViewTest, AccessibleWindowTitle);
   class AccessibilityModeObserver;
+
+  // Data scoped to a single page. PageData has the same lifetime as the page's
+  // main document.
+  class PageData : public content::PageUserData<PageData> {
+   public:
+    explicit PageData(content::Page& page);
+    PageData(const PageData&) = delete;
+    PageData& operator=(const PageData&) = delete;
+
+    absl::optional<bool> can_resize() const { return can_resize_; }
+    void set_can_resize(absl::optional<bool> can_resize) {
+      can_resize_ = can_resize;
+    }
+
+    PAGE_USER_DATA_KEY_DECL();
+
+   private:
+    // Keeps track of the resizability set by `window.setResizable(bool)` API.
+    absl::optional<bool> can_resize_ = absl::nullopt;
+  };
 
   // If the browser is in immersive full screen mode, it will reveal the
   // tabstrip for a short duration. This is useful for shortcuts that perform
@@ -1249,8 +1278,6 @@ class BrowserView : public BrowserWindow,
 
   std::unique_ptr<AccessibilityFocusHighlight> accessibility_focus_highlight_;
 
-  std::unique_ptr<BrowserFeaturePromoStorageService>
-      feature_promo_storage_service_ = nullptr;
   std::unique_ptr<BrowserFeaturePromoController> feature_promo_controller_ =
       nullptr;
 
@@ -1272,8 +1299,9 @@ class BrowserView : public BrowserWindow,
   absl::optional<content::PermissionController::SubscriptionId>
       window_management_subscription_id_;
 
-  // Keeps track of the resizability set by `window.setResizable(bool)` API.
-  absl::optional<bool> can_resize_from_web_api_;
+  // Caching the last value of `PageData::can_resize_` that has been notified to
+  // the WidgetObservers to avoid notifying them when nothing has changed.
+  absl::optional<bool> cached_can_resize_from_web_api_;
 
   base::CallbackListSubscription paint_as_active_subscription_;
 

@@ -90,6 +90,7 @@
 #include "chromeos/crosapi/mojom/force_installed_tracker.mojom.h"
 #include "chromeos/crosapi/mojom/fullscreen_controller.mojom.h"
 #include "chromeos/crosapi/mojom/geolocation.mojom.h"
+#include "chromeos/crosapi/mojom/guest_os_sk_forwarder.mojom.h"
 #include "chromeos/crosapi/mojom/holding_space_service.mojom.h"
 #include "chromeos/crosapi/mojom/identity_manager.mojom.h"
 #include "chromeos/crosapi/mojom/image_writer.mojom.h"
@@ -296,7 +297,7 @@ constexpr InterfaceVersionEntry MakeInterfaceVersionEntry() {
   return {T::Uuid_, T::Version_};
 }
 
-static_assert(crosapi::mojom::Crosapi::Version_ == 120,
+static_assert(crosapi::mojom::Crosapi::Version_ == 121,
               "If you add a new crosapi, please add it to "
               "kInterfaceVersionEntries below.");
 
@@ -308,7 +309,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<chromeos::sensors::mojom::SensorHalClient>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Arc>(),
     MakeInterfaceVersionEntry<crosapi::mojom::AudioService>(),
-    MakeInterfaceVersionEntry<crosapi::mojom::Authentication>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::AuthenticationDeprecated>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Automation>(),
     MakeInterfaceVersionEntry<crosapi::mojom::AutomationFactory>(),
     MakeInterfaceVersionEntry<crosapi::mojom::AccountManager>(),
@@ -384,6 +385,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::Power>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Prefs>(),
     MakeInterfaceVersionEntry<crosapi::mojom::PrintingMetrics>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::PrintingMetricsForProfile>(),
     MakeInterfaceVersionEntry<
         crosapi::mojom::TelemetryDiagnosticRoutinesService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::TelemetryEventService>(),
@@ -429,6 +431,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
         crosapi::mojom::EmbeddedAccessibilityHelperClient>(),
     MakeInterfaceVersionEntry<
         crosapi::mojom::EmbeddedAccessibilityHelperClientFactory>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::GuestOsSkForwarderFactory>(),
 };
 
 constexpr bool HasDuplicatedUuid() {
@@ -537,6 +540,10 @@ void InjectBrowserInitParams(
     if (!client_id.empty()) {
       params->metrics_service_client_id = client_id;
     }
+    params->entropy_source = crosapi::mojom::EntropySource::New(
+        metrics_service->GetLowEntropySource(),
+        metrics_service->GetOldLowEntropySource(),
+        metrics_service->GetPseudoLowEntropySource());
   }
 
   if (auto* metrics_services_manager =
@@ -661,8 +668,8 @@ void InjectBrowserInitParams(
   params->enable_clipboard_history_refresh =
       chromeos::features::IsClipboardHistoryRefreshEnabled();
 
-  params->is_variable_refresh_rate_enabled =
-      ::features::IsVariableRefreshRateEnabled();
+  params->is_variable_refresh_rate_always_on =
+      ::features::IsVariableRefreshRateAlwaysOn();
 
   params->is_pdf_ocr_enabled = ::features::IsPdfOcrEnabled();
 
@@ -680,6 +687,9 @@ void InjectBrowserInitParams(
 
   params->is_desk_profiles_enabled =
       chromeos::features::IsDeskProfilesEnabled();
+
+  params->is_cros_web_app_shortcut_ui_update_enabled =
+      chromeos::features::IsCrosWebAppShortcutUiUpdateEnabled();
 }
 
 template <typename BrowserParams>

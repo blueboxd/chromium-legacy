@@ -301,6 +301,9 @@ void SetFlags(IsolateHolder::ScriptMode mode,
   SetV8FlagsIfOverridden(features::kV8Turbofan, "--turbofan", "--no-turbofan");
   SetV8FlagsIfOverridden(features::kV8Turboshaft, "--turboshaft",
                          "--no-turboshaft");
+  SetV8FlagsIfOverridden(features::kV8TurboshaftInstructionSelection,
+                         "--turboshaft-instruction-selection",
+                         "--no-turboshaft-instruction-selection");
   SetV8FlagsIfOverridden(features::kV8ConcurrentSparkplug,
                          "--concurrent-sparkplug", "--no-concurrent-sparkplug");
   SetV8FlagsIfOverridden(features::kV8SparkplugNeedsShortBuiltinCalls,
@@ -411,6 +414,12 @@ void SetFlags(IsolateHolder::ScriptMode mode,
   SetV8FlagsIfOverridden(features::kWebAssemblyGenericWrapper,
                          "--wasm-to-js-generic-wrapper",
                          "--no-wasm-to-js-generic-wrapper");
+  SetV8FlagsIfOverridden(features::kWebAssemblyMultipleMemories,
+                         "--experimental-wasm-multi-memory",
+                         "--no-experimental-wasm-multi-memory");
+  SetV8FlagsIfOverridden(features::kWebAssemblyTurboshaft, "--turboshaft-wasm",
+                         "--no-turboshaft-wasm");
+
   if (js_command_line_flags.empty())
     return;
 

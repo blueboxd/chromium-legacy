@@ -210,6 +210,19 @@ base::expected<Operand, std::string> ValidateConv2dAndInferOutput(
     const Operand& filter,
     const Conv2dAttributes& attributes);
 
+// Validate and infer output information of pad operator defined in
+// WebIDL here https://www.w3.org/TR/webnn/#api-mlgraphbuilder-pad
+base::expected<Operand, std::string> ValidatePadAndInferOutput(
+    const Operand& input,
+    base::span<const uint32_t> beginning_padding,
+    base::span<const uint32_t> ending_padding);
+
+// Validate and infer output information of matmul operator defined in
+// WebIDL here https://www.w3.org/TR/webnn/#api-mlgraphbuilder-matmul
+base::expected<Operand, std::string> ValidateMatmulAndInferOutput(
+    const Operand& a,
+    const Operand& b);
+
 // Validate and infer output information of 2-D pooling operator defined in
 // WebIDL here https://www.w3.org/TR/webnn/#api-mlgraphbuilder-pool2d
 base::expected<Operand, std::string> ValidatePool2dAndInferOutput(
@@ -228,6 +241,12 @@ base::expected<Operand, std::string> ValidateGemmAndInferOutput(
 base::expected<Operand, std::string> ValidateConcatAndInferOutput(
     const std::vector<Operand>& input,
     const uint32_t axis);
+
+// Validate prelu operator defined in WebIDL here:
+// https://www.w3.org/TR/webnn/#api-mlgraphbuilder-prelu
+base::expected<Operand, std::string> ValidatePreluAndInferOutput(
+    const Operand& input,
+    const Operand& slope);
 
 // Validate transpose operator defined in WebIDL here
 // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-transpose
@@ -279,6 +298,8 @@ absl::optional<PaddingSizes> CalculateConv2dPadding(AutoPad auto_pad,
                                                     const uint32_t filter_size,
                                                     const uint32_t stride,
                                                     const uint32_t dilation);
+
+bool IsFloatingPointType(Operand::DataType data_type);
 
 }  // namespace webnn
 

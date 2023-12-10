@@ -42,6 +42,7 @@
 <translation id="1290331692326790741">નબળું સિગ્નલ</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1308754910631152188">અપડેટ કરી રહ્યાં છીએ (<ph name="PERCENTAGE_VALUE" />% પૂર્ણ)</translation>
+<translation id="1309341072016605398"><ph name="MINUTES" /> મિનિટ</translation>
 <translation id="1310380015393971138">કોઈ <ph name="NETWORK_NAME" /> નેટવર્ક ઉપલબ્ધ નથી</translation>
 <translation id="131421566576084655">છેલ્લા ડેટા રીસેટની તારીખ ઉપલબ્ધ નથી</translation>
 <translation id="1314565355471455267">Android VPN</translation>
@@ -86,6 +87,7 @@
 <translation id="1572585716423026576">વૉલપેપર તરીકે સેટ કરો</translation>
 <translation id="1578784163189013834">સ્ક્રીન સેવરનું બૅકગ્રાઉન્ડ પસંદ કરો</translation>
 <translation id="160633243685262989">છબીનો પ્રીવ્યૂ જુઓ</translation>
+<translation id="1611649489706141841">ફોરવર્ડ કરો</translation>
 <translation id="1615335640928990664"><ph name="FRIENDLY_DATE" />થી ડેટા વપરાશ</translation>
 <translation id="1621067168122174824">ચાર્જિંગનું પરીક્ષણ ચાલુ કરો</translation>
 <translation id="1639239467298939599">લોડ થઇ રહી છે</translation>
@@ -187,6 +189,7 @@
 <translation id="2236746079896696523">કીબોર્ડની બૅકલાઇટ માટે ટૉગલ કી</translation>
 <translation id="2240366984605217732">લેઆઉટ સ્વિચ કી</translation>
 <translation id="225692081236532131">સક્રિયતાની સ્થિતિ</translation>
+<translation id="2267285889943769271">સ્ક્રીનશૉટ ઉમેરો</translation>
 <translation id="2271469253353559191">ઘેરા મોડનું શેડ્યૂલ</translation>
 <translation id="2276999893457278469">લોકપ્રિય સહાયક કન્ટેન્ટ</translation>
 <translation id="2279051792571591988">ડિફૉલ્ટ રિસ્ટોર કરો</translation>
@@ -288,6 +291,7 @@
 <translation id="3226405216343213872">સ્કૅનર શોધી રહ્યાં છીએ</translation>
 <translation id="3226657629376379887">લેઆઉટ ક્રિયા મેનૂ</translation>
 <translation id="3246869037381808805">1 દિવસ કરતાં જૂના પ્રિન્ટ કાર્યો કાઢી નાખવામાં આવશે</translation>
+<translation id="324961752321393509">તમારા ઍડમિનિસ્ટ્રેટર દ્વારા આ ઍપને બંધ કરવાની મંજૂરી આપવામાં આવતી નથી</translation>
 <translation id="3268178239013324452">નિષ્ફળ રહ્યું - પ્રિન્ટરનું ઢાંકણ ખૂલ્લું છે</translation>
 <translation id="3275729367986477355">અવતારની છબી</translation>
 <translation id="3283504360622356314">{0,plural, =1{ફાઇલમાં ફેરફાર કરો}one{ફાઇલમાં ફેરફાર કરો}other{ફાઇલમાં ફેરફાર કરો}}</translation>
@@ -429,6 +433,7 @@
 <translation id="4297501883039923494">બંધ - અજાણી ભૂલ</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> છબી</translation>
 <translation id="4333390807948134856"><ph name="KEY_NAME" /> કી દબાવી</translation>
+<translation id="4354430579665871434">કી</translation>
 <translation id="435692326371619097">નેટવર્ક APN સેટિંગ મેનેજ કરો. APN સેલ્યુલર નેટવર્ક અને ઇન્ટરનેટ વચ્ચે કનેક્શન સ્થાપિત કરે છે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 <translation id="437294888293595148">બધા શૉર્ટકટ રીસેટ કરો</translation>
 <translation id="4378373042927530923">ચલાવ્યું નથી</translation>
@@ -691,9 +696,11 @@
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">ઘેરી થીમ ચાલુ કરો</translation>
 <translation id="628726841779494414">પ્રિન્ટરના સેટિંગમાં જઈને તમારા પ્રિન્ટર મેનેજ કરો</translation>
+<translation id="6292095526077353682">ચાર્જ કરતી વખતે, આટલા સમય માટે સ્ક્રીન સેવર બતાવો</translation>
 <translation id="629550705077076970">કીબોર્ડ ડિમ કરવું</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" />નું પરીક્ષણ રદ કરવામાં આવ્યું</translation>
 <translation id="631063167932043783">Explore ઍપ</translation>
+<translation id="6318437367327684789">કાયમ માટે</translation>
 <translation id="6319207335391420837"><ph name="DEVICE_NAME" /> પર ફર્મવેયર અપડેટ કરો</translation>
 <translation id="6321407676395378991">સ્ક્રીન સેવર ચાલુ કરો</translation>
 <translation id="6324916366299863871">શૉર્ટકટમાંમાં ફેરફાર કરો</translation>
@@ -943,6 +950,7 @@
 <translation id="8227119283605456246">ફાઇલ જોડો</translation>
 <translation id="8230672074305416752">ડિફૉલ્ટ નેટવર્ક ગેટવેને પિંગ કરવામાં નિષ્ફળ રહ્યાં</translation>
 <translation id="8246209727385807362">અજાણ કૅરિઅર</translation>
+<translation id="8262870577632766028">1 કલાક</translation>
 <translation id="827422111966801947">ઘેરો ભૂરો</translation>
 <translation id="8286154143153872371">કૃપા કરીને નેટવર્ક સાથે કનેક્ટ કરો અને વૉલપેપર જોવા માટે પેજને ફરીથી લોડ કરો.</translation>
 <translation id="8291967909914612644">હોમ પ્રદાતાનો દેશ</translation>
@@ -1007,6 +1015,7 @@
 <translation id="8747900814994928677">ફેરફાર કન્ફર્મ કરો</translation>
 <translation id="8764414543112028321">WireGuard</translation>
 <translation id="87646919272181953">Google Photos આલ્બમ</translation>
+<translation id="8775713578693478175">મૉડેમ APN</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8789196995628578448">આ શૉર્ટકટનો ઉપયોગ "<ph name="CONFLICT_ACCEL_NAME" />" માટે કરવામાં આવી રહ્યો છે. કોઈ નવો શૉર્ટકટ દબાવો. ઑરિજિનલ શૉર્ટકટને બદલવા માટે, આ શૉર્ટકટને ફરી દબાવો.</translation>
 <translation id="879568662008399081">આ નેટવર્કમાં કૅપ્ટિવ પોર્ટલ હોઈ શકે છે</translation>

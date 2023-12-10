@@ -48,7 +48,6 @@
 #include "third_party/blink/renderer/core/css/css_resolution_units.h"
 #include "third_party/blink/renderer/core/css/properties/longhands.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
-#include "third_party/blink/renderer/core/dom/css_toggle_inference.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/focus_params.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
@@ -110,14 +109,14 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/layout/inline/abstract_inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/inline/inline_node.h"
+#include "third_party/blink/renderer/core/layout/inline/offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_abstract_inline_text_box.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/mathml/mathml_element.h"
 #include "third_party/blink/renderer/core/mathml_names.h"
@@ -352,6 +351,7 @@ using html_names::kAltAttr;
 using html_names::kTitleAttr;
 using html_names::kTypeAttr;
 using html_names::kValueAttr;
+using mojom::blink::FormControlType;
 
 // In ARIA 1.1, default value of aria-level was changed to 2.
 const int kDefaultHeadingLevel = 2;
@@ -1330,41 +1330,42 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
     return DetermineTableSectionRole();
 
   if (const auto* input = DynamicTo<HTMLInputElement>(*GetNode())) {
-    const AtomicString& type = input->type();
-    if (input->DataList() && type != input_type_names::kColor)
+    FormControlType type = input->FormControlType();
+    if (input->DataList() && type != FormControlType::kInputColor) {
       return ax::mojom::blink::Role::kTextFieldWithComboBox;
-    if (type == input_type_names::kButton)
-      return ButtonRoleType();
-    if (type == input_type_names::kCheckbox)
-      return ax::mojom::blink::Role::kCheckBox;
-    if (type == input_type_names::kDate)
-      return ax::mojom::blink::Role::kDate;
-    if (type == input_type_names::kDatetime ||
-        type == input_type_names::kDatetimeLocal ||
-        type == input_type_names::kMonth || type == input_type_names::kWeek) {
-      return ax::mojom::blink::Role::kDateTime;
     }
-    if (type == input_type_names::kFile)
-      return ax::mojom::blink::Role::kButton;
-    if (type == input_type_names::kRadio)
-      return ax::mojom::blink::Role::kRadioButton;
-    if (type == input_type_names::kNumber)
-      return ax::mojom::blink::Role::kSpinButton;
-    if (input->IsTextButton())
-      return ButtonRoleType();
-    if (type == input_type_names::kRange)
-      return ax::mojom::blink::Role::kSlider;
-    if (type == input_type_names::kSearch)
-      return ax::mojom::blink::Role::kSearchBox;
-    if (type == input_type_names::kColor)
-      return ax::mojom::blink::Role::kColorWell;
-    if (type == input_type_names::kTime)
-      return ax::mojom::blink::Role::kInputTime;
-    if (type == input_type_names::kButton || type == input_type_names::kImage ||
-        type == input_type_names::kReset || type == input_type_names::kSubmit) {
-      return ax::mojom::blink::Role::kButton;
+    switch (type) {
+      case FormControlType::kInputButton:
+      case FormControlType::kInputReset:
+      case FormControlType::kInputSubmit:
+        return ButtonRoleType();
+      case FormControlType::kInputCheckbox:
+        return ax::mojom::blink::Role::kCheckBox;
+      case FormControlType::kInputDate:
+        return ax::mojom::blink::Role::kDate;
+      case FormControlType::kInputDatetimeLocal:
+      case FormControlType::kInputMonth:
+      case FormControlType::kInputWeek:
+        return ax::mojom::blink::Role::kDateTime;
+      case FormControlType::kInputFile:
+        return ax::mojom::blink::Role::kButton;
+      case FormControlType::kInputRadio:
+        return ax::mojom::blink::Role::kRadioButton;
+      case FormControlType::kInputNumber:
+        return ax::mojom::blink::Role::kSpinButton;
+      case FormControlType::kInputRange:
+        return ax::mojom::blink::Role::kSlider;
+      case FormControlType::kInputSearch:
+        return ax::mojom::blink::Role::kSearchBox;
+      case FormControlType::kInputColor:
+        return ax::mojom::blink::Role::kColorWell;
+      case FormControlType::kInputTime:
+        return ax::mojom::blink::Role::kInputTime;
+      case FormControlType::kInputImage:
+        return ax::mojom::blink::Role::kButton;
+      default:
+        return ax::mojom::blink::Role::kTextField;
     }
-    return ax::mojom::blink::Role::kTextField;
   }
 
   if (auto* select_element = DynamicTo<HTMLSelectElement>(*GetNode())) {
@@ -1620,75 +1621,6 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
   return RoleFromLayoutObjectOrNode();
 }
 
-namespace {
-
-ax::mojom::blink::Role InferredCSSToggleRole(Node* node) {
-  Element* element = DynamicTo<Element>(node);
-  if (!element) {
-    return ax::mojom::blink::Role::kUnknown;
-  }
-
-  // toggle_inference is null when CSS toggles are not used in the document.
-  CSSToggleInference* toggle_inference =
-      element->GetDocument().GetCSSToggleInference();
-  if (!toggle_inference) {
-    return ax::mojom::blink::Role::kUnknown;
-  }
-
-  DCHECK(RuntimeEnabledFeatures::CSSTogglesEnabled());
-
-  switch (toggle_inference->RoleForElement(element)) {
-    case CSSToggleRole::kNone:
-      break;
-    case CSSToggleRole::kButtonWithPopup:
-      return ax::mojom::blink::Role::kPopUpButton;
-    case CSSToggleRole::kDisclosure:
-      break;
-    case CSSToggleRole::kDisclosureButton:
-      return ax::mojom::blink::Role::kButton;
-    case CSSToggleRole::kTree:
-      return ax::mojom::blink::Role::kTree;
-    case CSSToggleRole::kTreeGroup:
-      return ax::mojom::blink::Role::kGroup;
-    case CSSToggleRole::kTreeItem:
-      return ax::mojom::blink::Role::kTreeItem;
-    case CSSToggleRole::kAccordion:
-      break;
-    case CSSToggleRole::kAccordionItem:
-      return ax::mojom::blink::Role::kRegion;
-    case CSSToggleRole::kAccordionItemButton:
-      return ax::mojom::blink::Role::kButton;
-    case CSSToggleRole::kTabContainer:
-      // TODO(https://crbug.com/1250716): We should verify that using
-      // kTabList really works here, since this is a container that has
-      // both the tab list *and* the tab panels.  We should also make
-      // sure that posinset/setsize work correctly for the tabs.
-      return ax::mojom::blink::Role::kTabList;
-    case CSSToggleRole::kTab:
-      return ax::mojom::blink::Role::kTab;
-    case CSSToggleRole::kTabPanel:
-      return ax::mojom::blink::Role::kTabPanel;
-    case CSSToggleRole::kRadioGroup:
-      return ax::mojom::blink::Role::kRadioGroup;
-    case CSSToggleRole::kRadioItem:
-      return ax::mojom::blink::Role::kRadioButton;
-    case CSSToggleRole::kCheckboxGroup:
-      break;
-    case CSSToggleRole::kCheckbox:
-      return ax::mojom::blink::Role::kCheckBox;
-    case CSSToggleRole::kListbox:
-      return ax::mojom::blink::Role::kListBox;
-    case CSSToggleRole::kListboxItem:
-      return ax::mojom::blink::Role::kListBoxOption;
-    case CSSToggleRole::kButton:
-      return ax::mojom::blink::Role::kButton;
-  }
-
-  return ax::mojom::blink::Role::kUnknown;
-}
-
-}  // namespace
-
 ax::mojom::blink::Role AXNodeObject::DetermineAccessibilityRole() {
 #if DCHECK_IS_ON()
   base::AutoReset<bool> reentrancy_protector(&is_computing_role_, true);
@@ -1704,25 +1636,8 @@ ax::mojom::blink::Role AXNodeObject::DetermineAccessibilityRole() {
 
   aria_role_ = DetermineAriaRoleAttribute();
 
-  // Order of precedence is currently:
-  //   1. ARIA role
-  //   2. Inferred role from CSS Toggle inference engine
-  //   3. Native markup role
-  // but we may decide to change how the CSS Toggle inference fits in.
-  //
-  // TODO(https://crbug.com/1250716): Perhaps revisit whether there are
-  // types of elements where toggles should not work.
-
-  if (aria_role_ != ax::mojom::blink::Role::kUnknown) {
-    return aria_role_;
-  }
-
-  ax::mojom::blink::Role css_toggle_role = InferredCSSToggleRole(GetNode());
-  if (css_toggle_role != ax::mojom::blink::Role::kUnknown) {
-    return css_toggle_role;
-  }
-
-  return native_role_;
+  return aria_role_ == ax::mojom::blink::Role::kUnknown ? native_role_
+                                                        : aria_role_;
 }
 
 void AXNodeObject::AccessibilityChildrenFromAOMProperty(
@@ -1781,8 +1696,7 @@ void AXNodeObject::Init(AXObject* parent) {
 #endif
   AXObject::Init(parent);
 
-  DCHECK(role_ == native_role_ || role_ == aria_role_ ||
-         GetNode()->GetDocument().GetCSSToggleInference())
+  DCHECK(role_ == native_role_ || role_ == aria_role_)
       << "Role must be either the cached native role or cached aria role: "
       << "\n* Final role: " << role_ << "\n* Native role: " << native_role_
       << "\n* Aria role: " << aria_role_ << "\n* Node: " << GetNode();
@@ -1854,8 +1768,10 @@ bool AXNodeObject::IsImageButton() const {
 
 bool AXNodeObject::IsInputImage() const {
   auto* html_input_element = DynamicTo<HTMLInputElement>(GetNode());
-  if (html_input_element && RoleValue() == ax::mojom::blink::Role::kButton)
-    return html_input_element->type() == input_type_names::kImage;
+  if (html_input_element && RoleValue() == ax::mojom::blink::Role::kButton) {
+    return html_input_element->FormControlType() ==
+           FormControlType::kInputImage;
+  }
 
   return false;
 }
@@ -1960,7 +1876,7 @@ bool AXNodeObject::IsNativeImage() const {
     return true;
 
   if (const auto* input = DynamicTo<HTMLInputElement>(*node))
-    return input->type() == input_type_names::kImage;
+    return input->FormControlType() == FormControlType::kInputImage;
 
   return false;
 }
@@ -1989,13 +1905,13 @@ bool AXNodeObject::IsSpinButton() const {
 
 bool AXNodeObject::IsNativeSlider() const {
   if (const auto* input = DynamicTo<HTMLInputElement>(GetNode()))
-    return input->type() == input_type_names::kRange;
+    return input->FormControlType() == FormControlType::kInputRange;
   return false;
 }
 
 bool AXNodeObject::IsNativeSpinButton() const {
   if (const auto* input = DynamicTo<HTMLInputElement>(GetNode()))
-    return input->type() == input_type_names::kNumber;
+    return input->FormControlType() == FormControlType::kInputNumber;
   return false;
 }
 
@@ -2646,8 +2562,10 @@ AXObject::AXObjectVector AXNodeObject::RadioButtonsInGroup() const {
 HeapVector<Member<HTMLInputElement>>
 AXNodeObject::FindAllRadioButtonsWithSameName(HTMLInputElement* radio_button) {
   HeapVector<Member<HTMLInputElement>> all_radio_buttons;
-  if (!radio_button || radio_button->type() != input_type_names::kRadio)
+  if (!radio_button ||
+      radio_button->FormControlType() != FormControlType::kInputRadio) {
     return all_radio_buttons;
+  }
 
   constexpr bool kTraverseForward = true;
   constexpr bool kTraverseBackward = false;
@@ -3372,7 +3290,7 @@ AXObject* AXNodeObject::ChooserPopup() const {
     case ax::mojom::blink::Role::kTextFieldWithComboBox: {
       for (const auto& child : ChildrenIncludingIgnored()) {
         if (IsA<Document>(child->GetNode())) {
-          return child;
+          return child.Get();
         }
       }
       return nullptr;
@@ -3477,15 +3395,16 @@ String AXNodeObject::GetValueForControl() const {
   // buttons which will return their name.
   // https://html.spec.whatwg.org/C/#dom-input-value
   if (const auto* input = DynamicTo<HTMLInputElement>(node)) {
-    if (input->type() == input_type_names::kFile)
+    if (input->FormControlType() == FormControlType::kInputFile) {
       return input->FileStatusText();
+    }
 
-    if (input->type() != input_type_names::kButton &&
-        input->type() != input_type_names::kCheckbox &&
-        input->type() != input_type_names::kImage &&
-        input->type() != input_type_names::kRadio &&
-        input->type() != input_type_names::kReset &&
-        input->type() != input_type_names::kSubmit) {
+    if (input->FormControlType() != FormControlType::kInputButton &&
+        input->FormControlType() != FormControlType::kInputCheckbox &&
+        input->FormControlType() != FormControlType::kInputImage &&
+        input->FormControlType() != FormControlType::kInputRadio &&
+        input->FormControlType() != FormControlType::kInputReset &&
+        input->FormControlType() != FormControlType::kInputSubmit) {
       return input->Value();
     }
   }
@@ -3888,6 +3807,9 @@ static bool ShouldInsertSpaceBetweenObjectsIfNeeded(
     AXObject* next,
     ax::mojom::blink::NameFrom last_used_name_from,
     ax::mojom::blink::NameFrom name_from) {
+  LayoutObject* next_layout = next->GetLayoutObject();
+  LayoutObject* prev_layout = previous->GetLayoutObject();
+
   // If we're going between two LayoutObjects that are in separate
   // LayoutBoxes, add whitespace if it wasn't there already. Intuitively if
   // you have <span>Hello</span><span>World</span>, those are part of the same
@@ -3895,8 +3817,7 @@ static bool ShouldInsertSpaceBetweenObjectsIfNeeded(
   // <div>Hello</div><div>World</div> the strings are in separate boxes so we
   // should return "Hello World".
   // https://www.w3.org/TR/css-display-3/#the-display-properties
-  if (!IsInSameBlockFlow(next->GetLayoutObject(),
-                         previous->GetLayoutObject())) {
+  if (!IsInSameBlockFlow(next_layout, prev_layout)) {
     return true;
   }
 
@@ -3910,8 +3831,10 @@ static bool ShouldInsertSpaceBetweenObjectsIfNeeded(
   //    <span style="display:inline-table;">Hello</span><span>World</span>
   // to return "Hello World". See "inner display type" in the CSS Display 3.0
   // spec: https://www.w3.org/TR/css-display-3/#the-display-properties
-  if (next->GetLayoutObject()->IsAtomicInlineLevel() ||
-      previous->GetLayoutObject()->IsAtomicInlineLevel()) {
+  CHECK(next_layout);
+  CHECK(prev_layout);
+  if (next_layout->IsAtomicInlineLevel() ||
+      prev_layout->IsAtomicInlineLevel()) {
     return true;
   }
 
@@ -3973,9 +3896,8 @@ static bool ShouldInsertSpaceBetweenObjectsIfNeeded(
   //      LayoutBlockFlow (anonymous)
   //        LayoutText "def" <= next
   // See accessibility/name-calc-aria-hidden.html
-  const auto* next_layout_object = next->GetLayoutObject();
   for (auto* layout_object = previous->GetLayoutObject();
-       layout_object && layout_object != next_layout_object;
+       layout_object && layout_object != next_layout;
        layout_object = layout_object->NextInPreOrder()) {
     if (layout_object->IsBlockInInline())
       return true;
@@ -4317,7 +4239,7 @@ int AXNodeObject::TextOffsetInFormattingContext(int offset) const {
   // Layout br (subclass of layout text), e.g. <p><br></p>.
 
   if (layout_obj->IsLayoutInline()) {
-    // The NGOffsetMapping class doesn't map layout inline objects to their text
+    // The OffsetMapping class doesn't map layout inline objects to their text
     // mappings because such an operation could be ambiguous. An inline object
     // may have another inline object inside it. For example,
     // <span><span>Inner</span outer</span>. We need to recursively retrieve the
@@ -4347,18 +4269,18 @@ int AXNodeObject::TextOffsetInFormattingContext(int offset) const {
   }
 
   LayoutBlockFlow* formatting_context =
-      NGOffsetMapping::GetInlineFormattingContextOf(*layout_obj);
+      OffsetMapping::GetInlineFormattingContextOf(*layout_obj);
   if (!formatting_context || formatting_context == layout_obj)
     return AXObject::TextOffsetInFormattingContext(offset);
 
   // If "formatting_context" is not a Layout NG object, the offset mappings will
   // be computed on demand and cached.
-  const NGOffsetMapping* inline_offset_mapping =
-      NGInlineNode::GetOffsetMapping(formatting_context);
+  const OffsetMapping* inline_offset_mapping =
+      InlineNode::GetOffsetMapping(formatting_context);
   if (!inline_offset_mapping)
     return AXObject::TextOffsetInFormattingContext(offset);
 
-  const base::span<const NGOffsetMappingUnit> mapping_units =
+  const base::span<const OffsetMappingUnit> mapping_units =
       inline_offset_mapping->GetMappingUnitsForLayoutObject(*layout_obj);
   if (mapping_units.empty())
     return AXObject::TextOffsetInFormattingContext(offset);
@@ -4480,8 +4402,7 @@ void AXNodeObject::AddValidationMessageChild() {
   // event is needed in AXObjectCacheImpl::ValidationMessageObjectIfInvalid().
   DCHECK_EQ(children_.size(), 0U)
       << "Validation message must be the first child";
-  AddChildAndCheckIncluded(AXObjectCache().ValidationMessageObjectIfInvalid(
-      /* suppress children changed, already processing that */ false));
+  AddChildAndCheckIncluded(AXObjectCache().ValidationMessageObjectIfInvalid());
 }
 
 void AXNodeObject::AddImageMapChildren() {
@@ -4990,7 +4911,7 @@ Node* AXNodeObject::GetNode() const {
       << "If there is an associated layout object, its node should match the "
          "associated node of this accessibility object.\n"
       << ToString(true, true);
-  return node_;
+  return node_.Get();
 }
 
 // TODO(chrishall): consider merging this with AXObject::Language in followup.
@@ -5316,7 +5237,7 @@ AXObject::AXObjectVector AXNodeObject::ErrorMessageFromAria() const {
   AXObjectVector error_messages;
   for (Element* element : elements_from_attribute) {
     AXObject* obj = AXObjectCache().GetOrCreate(element);
-    if (!obj->AccessibilityIsIgnored()) {
+    if (obj && !obj->AccessibilityIsIgnored()) {
       error_messages.push_back(obj);
     }
   }
@@ -5332,8 +5253,9 @@ AXObject::AXObjectVector AXNodeObject::ErrorMessageFromHTML() const {
   }
 
   AXObject* native_error_message =
-      AXObjectCache().ValidationMessageObjectIfInvalid(true);
+      AXObjectCache().ValidationMessageObjectIfInvalid();
   if (native_error_message && !native_error_message->IsDetached()) {
+    CHECK_GE(native_error_message->IndexInParent(), 0);
     return AXObjectVector({native_error_message});
   }
 
@@ -5918,8 +5840,10 @@ String AXNodeObject::NativeTextAlternative(
 String AXNodeObject::MaybeAppendFileDescriptionToName(
     const String& name) const {
   const auto* input_element = DynamicTo<HTMLInputElement>(GetNode());
-  if (!input_element || input_element->type() != input_type_names::kFile)
+  if (!input_element ||
+      input_element->FormControlType() != FormControlType::kInputFile) {
     return name;
+  }
 
   String displayed_file_path = GetValueForControl();
   if (!displayed_file_path.empty()) {

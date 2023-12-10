@@ -179,6 +179,12 @@ const char kBottomOmniboxDefaultSettingDescription[] =
     "hasn't already changed the setting, changes the omnibox position to top "
     "or bottom of the screen on iPhone. The default is top omnibox.";
 
+const char kBottomOmniboxDeviceSwitcherResultsName[] =
+    "Bottom omnibox device switcher results.";
+const char kBottomOmniboxDeviceSwitcherResultsDescription[] =
+    "Enabled by default. Retrieve device switcher results for the default "
+    "omnibox position.";
+
 const char kBottomOmniboxSteadyStateName[] = "Bottom Omnibox (Steady)";
 const char kBottomOmniboxSteadyStateDescription[] =
     "Move the omnibox to the bottom in steady state";
@@ -316,6 +322,17 @@ const char kDetectMainThreadFreezeDescription[] =
 const char kDiscoverFeedSportCardName[] = "Sport card in Discover feed";
 const char kDiscoverFeedSportCardDescription[] =
     "Enables the live sport card in the NTP's Discover feed";
+
+const char kDynamicBackgroundColorName[] = "Use Dynamic theme color";
+const char kDynamicBackgroundColorDescription[] =
+    "When enabled, the toolbar background is using a dynamic color from the "
+    "page's theme color. Takes precedence over Background color if both flags "
+    "are enabled.";
+
+const char kDynamicThemeColorName[] = "Use Dynamic background color";
+const char kDynamicThemeColorDescription[] =
+    "When enabled, the toolbar background is using a dynamic color from the "
+    "page's underpage background color. If the color is white, it is ignored.";
 
 const char kEnableDiscoverFeedTopSyncPromoName[] =
     "Enables the top of feed sync promo.";
@@ -586,6 +603,10 @@ const char kIOSPasswordUISplitDescription[] =
     "Splits Password Settings and "
     "Password Manager into two separate UIs.";
 
+const char kIOSSaveToDriveName[] = "IOS Save to Drive";
+const char kIOSSaveToDriveDescription[] =
+    "Enables the Save to Drive feature on iOS.";
+
 const char kIOSSaveToPhotosName[] = "IOS Save to Photos";
 const char kIOSSaveToPhotosDescription[] =
     "Enables the Save to Photos feature on iOS.";
@@ -678,6 +699,12 @@ const char kOverflowMenuCustomizationDescription[] =
 const char kNTPViewHierarchyRepairName[] = "NTP View Hierarchy Repair";
 const char kNTPViewHierarchyRepairDescription[] =
     "Checks if NTP view hierarchy is broken and fixes it if necessary.";
+
+const char kOmniboxCompanyEntityIconAdjustmentName[] =
+    "Omnibox Company Entity Icon Adjustment";
+const char kOmniboxCompanyEntityIconAdjustmentDescription[] =
+    "When enabled, company entity icons may be replaced based on the search "
+    "suggestions and their corresponding order.";
 
 const char kOmniboxGroupingFrameworkForZPSName[] =
     "Omnibox Grouping Framework for ZPS";
@@ -844,10 +871,15 @@ const char kPasswordReuseDetectionDescription[] =
     "Displays warning when user types or pastes a saved password into a "
     "phishing website.";
 
-const char kPolicyLogsPageIOSName[] = "Policy Logs Page on IOS";
-const char kPolicyLogsPageIOSDescription[] =
-    "Enable the new chrome://policy/logs page containing logs for debugging "
-    "policy related issues on IOS.";
+const char kPasswordSharingName[] = "Enables password sharing";
+const char kPasswordSharingDescription[] =
+    "Enables password sharing between members of the same family.";
+
+const char kEnablePolicyTestPageName[] =
+    "Enable access to the policy test page";
+const char kEnablePolicyTestPageDescription[] =
+    "When enabled, allows the policy test page to be accessed at "
+    "chrome://policy/test.";
 
 const char kPostRestoreDefaultBrowserPromoName[] =
     "Post Restore Default Browser Promo";
@@ -855,6 +887,11 @@ const char kPostRestoreDefaultBrowserPromoDescription[] =
     "When enabled, the user will be presented a promo showing how to set "
     "Chrome as default browser after losing their default browser status from "
     "an iOS restore.";
+
+const char kPrivacyGuideIosName[] = "Privacy Guide on iOS";
+const char kPrivacyGuideIosDescription[] =
+    "Shows a new subpage in Settings that helps the user to review various "
+    "privacy settings.";
 
 const char kPromosManagerUsesFETName[] = "Promos Manager using FET";
 const char kPromosManagerUsesFETDescription[] =
@@ -941,12 +978,6 @@ const char kSkipUndecryptablePasswordsDescription[] =
     "The password store will silently skip undecryptable passwords when "
     "reading them";
 
-const char kSmartSortingPriceTrackingDestinationName[] =
-    "Price Tracking destination (with Smart Sorting)";
-const char kSmartSortingPriceTrackingDestinationDescription[] =
-    "Adds the Price Tracking destination (with Smart Sorting) to the "
-    "new overflow menu.";
-
 const char kSpotlightOpenTabsSourceName[] = "Show Open local tabs in Spotlight";
 const char kSpotlightOpenTabsSourceDescription[] =
     "Donate local open tabs items to iOS Search Engine Spotlight";
@@ -958,6 +989,11 @@ const char kSpotlightReadingListSourceDescription[] =
 const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =
     "Connects to the testing server for Chrome Sync.";
+
+const char kSyncSessionOnVisibilityChangedName[] =
+    "Sync session when tab visibility changes";
+const char kSyncSessionOnVisibilityChangedDescription[] =
+    "This flag enables session syncing when the visibility of a tab changes.";
 
 const char kSyncSegmentsDataName[] = "Use synced segments data";
 const char kSyncSegmentsDataDescription[] =
@@ -987,7 +1023,7 @@ const char kTFLiteLanguageDetectionIgnoreDescription[] =
 const char kThemeColorInTopToolbarName[] = "Top toolbar use page's theme color";
 const char kThemeColorInTopToolbarDescription[] =
     "When enabled with bottom omnibox, the top toolbar background color is the "
-    "page's theme color";
+    "page's theme color. Disabled when a dynamic color flag is enabled.";
 
 const char kIOSHideFeedWithSearchChoiceName[] = "Hide Feed with Search Choice";
 const char kIOSHideFeedWithSearchChoiceDescription[] =

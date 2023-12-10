@@ -20,7 +20,6 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
 #include "components/supervised_user/core/common/buildflags.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/buildflags/buildflags.h"
 #include "pdf/buildflags.h"
@@ -168,7 +167,6 @@ class ProfileKeyedServiceBrowserTest : public InProcessBrowserTest {
           companion::visual_search::features::kVisualSearchSuggestions,
 #endif  // !BUILDFLAG(IS_ANDROID)
           blink::features::kBrowsingTopics,
-          features::kCookieDeprecationFacilitatedTesting,
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
           omnibox::kOnDeviceTailModel,
           omnibox::kOnDeviceHeadProviderNonIncognito,
@@ -352,7 +350,6 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "BookmarkExpandedStateTracker",
 #endif
     "BookmarkModel",
-    "BookmarkSyncServiceFactory",
     "BookmarkUndoService",
     "BookmarksAPI",
     "BrailleDisplayPrivateAPI",
@@ -371,7 +368,6 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "DeveloperPrivateAPI",
     "DeviceInfoSyncService",
     "DownloadCoreService",
-    "EligibilityServiceFactory",
     "EventRouter",
     "ExtensionActionAPI",
     "ExtensionActionManager",
@@ -422,6 +418,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     "ListFamilyMembersService",
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
+    "LocalOrSyncableBookmarkSyncServiceFactory",
     "LoginUIServiceFactory",
     "MDnsAPI",
     "ManagedBookmarkService",

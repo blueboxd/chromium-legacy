@@ -202,10 +202,18 @@ extern const char kBottomOmniboxDefaultSettingParamSafariSwitcher[];
 // Feature flag to change the default position of the omnibox.
 BASE_DECLARE_FEATURE(kBottomOmniboxDefaultSetting);
 
+// Feature flag to retrieve device switcher results for omnibox default
+// position. Enabled by default.
+BASE_DECLARE_FEATURE(kBottomOmniboxDeviceSwitcherResults);
+
 // Returns true if `kBottomOmniboxSteadyState` feature flag is enabled and the
 // current device is a phone. This checks that the flag is enabled, not that the
 // omnibox is currently at the bottom.
 bool IsBottomOmniboxSteadyStateEnabled();
+
+// Returns true if `kBottomOmniboxDeviceSwitcherResults` feature flag is
+// enabled.
+bool IsBottomOmniboxDeviceSwitcherResultsEnabled();
 
 // Feature flag to put all clipboard access onto a background thread. Any
 // synchronous clipboard access will always return nil/false.
@@ -226,6 +234,14 @@ BASE_DECLARE_FEATURE(kFullScreenPromoOnOmniboxCopyPaste);
 // Feature flag to try using the page theme color in the top toolbar
 BASE_DECLARE_FEATURE(kThemeColorInTopToolbar);
 
+// Feature flag to try using the page theme color as dynamic color for the
+// toolbars.
+BASE_DECLARE_FEATURE(kDynamicThemeColor);
+
+// Feature flag to try using the page background color as dynamic color for the
+// toolbars.
+BASE_DECLARE_FEATURE(kDynamicBackgroundColor);
+
 // Feature flag enabling tab grid refactoring.
 BASE_DECLARE_FEATURE(kTabGridRefactoring);
 
@@ -235,6 +251,9 @@ bool IsSafetyCheckMagicStackEnabled();
 // Kill switch to control the blocking of the simultaneous cell selection in
 // ChromeTableViewController.
 BASE_DECLARE_FEATURE(kBlockSimultaneousCellSelectionKillSwitch);
+
+// Feature flag enabling Save to Drive.
+BASE_DECLARE_FEATURE(kIOSSaveToDrive);
 
 // Feature flag enabling Save to Photos.
 BASE_DECLARE_FEATURE(kIOSSaveToPhotos);
@@ -248,5 +267,10 @@ BASE_DECLARE_FEATURE(kSettingsWillBeDismissedBugFixKillSwitch);
 // TODO(crbug.com/1489734) Remove Flag once the minimum iOS deployment version
 // has been increased to iOS 16.
 BASE_DECLARE_FEATURE(kEnableUIEditMenuInteraction);
+
+// Causes the restore shorty and re-signin flows to offer a history opt-in
+// screen. This only has any effect if kReplaceSyncPromosWithSignInPromos is
+// also enabled.
+BASE_DECLARE_FEATURE(kHistoryOptInForRestoreShortyAndReSignin);
 
 #endif  // IOS_CHROME_BROWSER_SHARED_PUBLIC_FEATURES_FEATURES_H_

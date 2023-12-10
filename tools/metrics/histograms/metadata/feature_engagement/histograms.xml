@@ -75,6 +75,7 @@ chromium-metrics-reviews@google.com.
   <variant name="IPH_BatterySaverMode" summary="battery saver mode"/>
   <variant name="IPH_Bookmark" summary="bookmark"/>
   <variant name="IPH_BottomToolbarTip" summary="bottom toolbar"/>
+  <variant name="IPH_CCTMinimized" summary="CCT minimize action"/>
   <variant name="IPH_ChromeDuet"
       summary="notifying users that search accelerator is at the bottom of
                the screen"/>
@@ -128,6 +129,8 @@ chromium-metrics-reviews@google.com.
       summary="customizing new tab page"/>
   <variant name="IPH_DesktopCustomizeChromeRefresh"
       summary="customizing new tab page for refresh"/>
+  <variant name="IPH_DesktopNewTabPageModulesCustomizeFeature"
+      summary="customizing new tab page modules"/>
   <variant name="IPH_DesktopPwaInstall" summary="desktop PWA install icon"/>
   <variant name="IPH_DesktopTabGroupsNewGroup"
       summary="creating a new tab group"/>
@@ -208,6 +211,8 @@ chromium-metrics-reviews@google.com.
       summary="history item on the overflow menu on iOS"/>
   <variant name="IPH_iOSNewTabToolbarItemFeature"
       summary="the new tab tool bar item (bottom on iPhone, top on iPad)"/>
+  <variant name="IPH_iOSParcelTrackingFeature"
+      summary="showing the Parcel Tracking IPH on the Magic Stack"/>
   <variant name="IPH_iOSPasswordPromoDesktop"
       summary="showing the iOS password promo on desktop"/>
   <variant name="IPH_iOSPromoAppStore"
@@ -255,6 +260,9 @@ chromium-metrics-reviews@google.com.
       summary="Password Manager shortcut."/>
   <variant name="IPH_PasswordsAccountStorage"
       summary="passwords account storage"/>
+  <variant name="IPH_PasswordSharingFeature"
+      summary="educating the users about password sharing when they open
+               password details page"/>
   <variant name="IPH_PasswordsManagementBubbleAfterSave"
       summary="educating the users about the password management bubble after
                saving a password"/>

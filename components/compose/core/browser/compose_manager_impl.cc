@@ -9,8 +9,51 @@
 
 #include "base/feature_list.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/autofill_manager.h"
 #include "components/compose/core/browser/compose_client.h"
 #include "components/compose/core/browser/compose_features.h"
+
+namespace {
+// Passes the autofill `text` back into the `field` the dialog was opened on.
+// Called upon insertion.
+void FillTextWithAutofill(base::WeakPtr<autofill::AutofillManager> manager,
+                          autofill::FieldGlobalId field,
+                          const std::u16string& text) {
+  if (manager) {
+    manager->driver().ApplyFieldAction(
+        autofill::mojom::ActionPersistence::kFill,
+        autofill::mojom::TextReplacement::kReplaceSelection, field, text);
+  }
+}
+
+void GetBrowserFormHandler(autofill::FieldGlobalId field_id,
+                           autofill::AutofillDriver* driver,
+                           const std::optional<autofill::FormData>& form_data) {
+  if (!form_data) {
+    // TODO(b/305798770): replace with assert once form_data is always
+    // populated.
+    return;
+  }
+  const autofill::FormFieldData* form_field_data =
+      form_data->FindFieldByGlobalId(field_id);
+  if (!form_field_data) {
+    // TODO(b/305798770): replace with assert once form_data is always
+    // populated.
+    return;
+  }
+  autofill::AutofillManager& manager = driver->GetAutofillManager();
+  auto compose_callback =
+      base::BindOnce(&FillTextWithAutofill, manager.GetWeakPtr(),
+                     form_field_data->global_id());
+
+  autofill::AutofillComposeDelegate* delegate =
+      manager.client().GetComposeDelegate();
+  delegate->OpenCompose(
+      compose::ComposeManagerImpl::UiEntryPoint::kContextMenu, *form_field_data,
+      manager.client().GetPopupScreenLocation(), std::move(compose_callback));
+}
+
+}  // namespace
 
 namespace compose {
 
@@ -19,11 +62,18 @@ ComposeManagerImpl::ComposeManagerImpl(ComposeClient* client)
 
 ComposeManagerImpl::~ComposeManagerImpl() = default;
 
-bool ComposeManagerImpl::ShouldOfferCompose(
-    UiEntryPoint ui_entry_point,
+bool ComposeManagerImpl::ShouldOfferComposePopup(
     const autofill::FormFieldData& trigger_field) {
-  // TODO(b/300941076): Improve should-offer logic.
-  return IsEnabled();
+  return client_->ShouldTriggerPopup(trigger_field.autocomplete_attribute,
+                                     trigger_field.global_id());
+}
+
+bool ComposeManagerImpl::HasSavedState(
+    const autofill::FieldGlobalId& trigger_field_id) {
+  // State is saved as a ComposeSession in the ComposeClient. A user can resume
+  // where they left off in a field if the ComposeClient has a ComposeSession
+  // for that field.
+  return client_->HasSession(trigger_field_id);
 }
 
 bool ComposeManagerImpl::IsEnabled() const {
@@ -31,16 +81,15 @@ bool ComposeManagerImpl::IsEnabled() const {
 }
 
 void ComposeManagerImpl::OpenComposeFromContextMenu(
-    const autofill::LocalFrameToken frame_token,
-    const autofill::FieldRendererId field_renderer_id,
-    const gfx::RectF bounds) {
-  // TODO(b/301609035): Either pass a weak pointer or make sure that
-  // the dialog never outlives the tab. (Should be a given once the
-  // bubble destroys itself prior to WebContents destruction.)
-  RequestFormFieldData(
-      frame_token, field_renderer_id, bounds,
-      base::BindOnce(&ComposeManagerImpl::OpenComposeFromContextMenuCallback,
-                     base::Unretained(this)));
+    autofill::AutofillDriver* driver,
+    const autofill::FormRendererId form_renderer_id,
+    const autofill::FieldRendererId field_renderer_id) {
+  const autofill::LocalFrameToken frame_token = driver->GetFrameToken();
+  autofill::FormGlobalId form_global_id = {frame_token, form_renderer_id};
+  autofill::FieldGlobalId field_global_id = {frame_token, field_renderer_id};
+
+  driver->ExtractForm(form_global_id,
+                      base::BindOnce(&GetBrowserFormHandler, field_global_id));
 }
 
 void ComposeManagerImpl::OpenCompose(
@@ -48,40 +97,9 @@ void ComposeManagerImpl::OpenCompose(
     const autofill::FormFieldData& trigger_field,
     std::optional<PopupScreenLocation> popup_screen_location,
     ComposeCallback callback) {
-  callback_ = std::move(callback);
   CHECK(IsEnabled());
-  // TODO(b/301609035): Either pass a weak pointer or make sure that
-  // the dialog never outlives the tab. (Should be a given once the
-  // bubble destroys itself prior to WebContents destruction.)
-  client_->ShowComposeDialog(
-      ui_entry_point, trigger_field, popup_screen_location,
-      base::BindOnce(&ComposeManagerImpl::ComposeTextForQuery,
-                     base::Unretained(this)));
-}
-
-void ComposeManagerImpl::ComposeTextForQuery(
-    const ComposeClient::QueryParams& params) {
-  std::move(callback_).Run(u"Cucumbers? " + params.query);
-}
-
-void ComposeManagerImpl::OpenComposeFromContextMenuCallback(
-    const autofill::FormFieldData form_field_data) {
-  compose::ComposeManagerImpl::ComposeCallback compose_callback =
-      base::BindOnce([](const std::u16string& text) {});
-  OpenCompose(UiEntryPoint::kContextMenu, form_field_data, std::nullopt,
-              std::move(compose_callback));
-}
-
-void ComposeManagerImpl::RequestFormFieldData(
-    const autofill::LocalFrameToken frame_token,
-    const autofill::FieldRendererId field_renderer_id,
-    const gfx::RectF bounds,
-    base::OnceCallback<void(autofill::FormFieldData)> callback) {
-  autofill::FormFieldData form_field_data = autofill::FormFieldData();
-  form_field_data.host_frame = frame_token;
-  form_field_data.unique_renderer_id = field_renderer_id;
-  form_field_data.bounds = bounds;
-  std::move(callback).Run(form_field_data);
+  client_->ShowComposeDialog(ui_entry_point, trigger_field,
+                             popup_screen_location, std::move(callback));
 }
 
 }  // namespace compose

@@ -205,7 +205,7 @@ BASE_FEATURE(kAutofillSuggestServerCardInsteadOfLocalCard,
 // the legacy Payments Center.
 BASE_FEATURE(kAutofillUpdateChromeSettingsLinkToGPayWeb,
              "AutofillUpdateChromeSettingsLinkToGPayWeb",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls offering credit card upload to Google Payments. Cannot ever be
 // ENABLED_BY_DEFAULT because the feature state depends on the user's country.
@@ -227,7 +227,7 @@ BASE_FEATURE(kAutofillUpstreamAllowAdditionalEmailDomains,
 // the user's email domain.
 BASE_FEATURE(kAutofillUpstreamAllowAllEmailDomains,
              "AutofillUpstreamAllowAllEmailDomains",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_IOS)
 // When enabled, use two '•' when displaying the last four digits of a credit

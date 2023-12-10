@@ -23,7 +23,14 @@ mojom("mojom_ip_address") {
     "ip_endpoint.mojom",
   ]
 
-  webui_module_path = "chrome://resources/mojo/services/network/public/mojom"
+  # WebUI bindings are only needed on ChromeOS Ash.
+  if (is_chromeos_ash) {
+    webui_module_path = "chrome://resources/mojo/services/network/public/mojom"
+
+    # Used by ash/webui/resources/common/network_health, which is still using
+    # Closure Compiler, so generate WebUI bindings in JavaScript.
+    use_typescript_sources = false
+  }
 
   public_deps = [ "//url/mojom:url_mojom_gurl" ]
 
@@ -453,7 +460,6 @@ mojom("url_loader_base") {
     "chunked_data_pipe_getter.mojom",
     "client_security_state.mojom",
     "content_security_policy.mojom",
-    "cookie_setting_overrides.mojom",
     "cors.mojom",
     "cross_origin_embedder_policy.mojom",
     "cross_origin_opener_policy.mojom",
@@ -768,18 +774,6 @@ mojom("url_loader_base") {
           [ "//services/network/public/cpp/load_timing_info_mojom_traits.h" ]
       traits_public_deps = [ "//net" ]
     },
-    {
-      types = [
-        {
-          mojom = "network.mojom.CookieSettingOverrides"
-          cpp = "::net::CookieSettingOverrides"
-        },
-      ]
-      traits_headers = [
-        "//services/network/public/cpp/cookie_setting_overrides_mojom_traits.h",
-      ]
-      traits_public_deps = [ "//net" ]
-    },
   ]
 
   if (is_linux) {
@@ -924,6 +918,10 @@ mojom("mojom_network_param") {
         {
           mojom = "network.mojom.HttpVersion"
           cpp = "::net::HttpVersion"
+        },
+        {
+          mojom = "network.mojom.ProxyChain"
+          cpp = "::net::ProxyChain"
         },
         {
           mojom = "network.mojom.ProxyServer"
@@ -1106,6 +1104,7 @@ mojom("cookies_mojom") {
     "cookie_access_observer.mojom",
     "cookie_manager.mojom",
     "cookie_partition_key.mojom",
+    "cookie_setting_overrides.mojom",
     "restricted_cookie_manager.mojom",
     "site_for_cookies.mojom",
   ]
@@ -1240,6 +1239,18 @@ mojom("cookies_mojom") {
           [ "//services/network/public/cpp/cookie_manager_mojom_traits.h" ]
       traits_sources =
           [ "//services/network/public/cpp/cookie_manager_mojom_traits.cc" ]
+      traits_public_deps = [ "//net" ]
+    },
+    {
+      types = [
+        {
+          mojom = "network.mojom.CookieSettingOverrides"
+          cpp = "::net::CookieSettingOverrides"
+        },
+      ]
+      traits_headers = [
+        "//services/network/public/cpp/cookie_setting_overrides_mojom_traits.h",
+      ]
       traits_public_deps = [ "//net" ]
     },
   ]

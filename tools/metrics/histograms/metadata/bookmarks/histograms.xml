@@ -312,14 +312,26 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Bookmarks.MobileBookmarkManager.FilterUsed"
+<histogram name="Bookmarks.MobileBookmarkManager.FilterShown"
+    enum="MobileBookmarkManagerFilter" expires_after="2024-01-14">
+  <owner>wylieb@chromium.org</owner>
+  <owner>chrome-collections@google.com</owner>
+  <component>UI&gt;Browser&gt;Bookmarks</component>
+  <summary>
+    Records when the filter options are shown to the user in mobile bookmarks
+    manager. This isn't recorded in any particular interval, so the raw counts
+    should be ignored.
+  </summary>
+</histogram>
+
+<histogram name="Bookmarks.MobileBookmarkManager.FilterUsed2"
     enum="MobileBookmarkManagerFilter" expires_after="2024-01-14">
   <owner>wylieb@chromium.org</owner>
   <owner>chrome-collections@google.com</owner>
   <component>UI&gt;Browser&gt;Bookmarks</component>
   <summary>
     Records when a user interacts with the filter options in the mobile
-    bookmarks manager.
+    bookmarks manager. Recorded for both on/off events.
   </summary>
 </histogram>
 
@@ -820,6 +832,19 @@ chromium-metrics-reviews@google.com.
     database determines whether the error is catastrophic and handles it
     accordingly.
   </summary>
+</histogram>
+
+<histogram name="PowerBookmarks.SuggestedSaveLocation.{FeatureName}"
+    enum="SuggestedSaveLocationState" expires_after="2024-02-20">
+  <owner>ayman@chromium.org</owner>
+  <owner>mdjones@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <summary>
+    Records how a suggested save location is handled for a new bookmark.
+  </summary>
+  <token key="FeatureName">
+    <variant name="ShoppingCollection"/>
+  </token>
 </histogram>
 
 <histogram name="PowerBookmarks.{Function}.PowerType" enum="PowerBookmarkType"

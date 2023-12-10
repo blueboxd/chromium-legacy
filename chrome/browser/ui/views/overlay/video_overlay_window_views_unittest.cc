@@ -59,7 +59,10 @@ class MockOverlayView : public AutoPipSettingOverlayView {
                                   gfx::Rect(),
                                   anchor_view,
                                   views::BubbleBorder::Arrow::FLOAT) {}
-  MOCK_METHOD(void, ShowBubble, (gfx::NativeView parent), (override));
+  MOCK_METHOD(void,
+              ShowBubble,
+              (gfx::NativeView parent, PipWindowType pip_window_type),
+              (override));
 
   bool WantsEvent(const gfx::Point& point_in_screen) override {
     // Consume any event we're given.  The goal is to make sure we're given the
@@ -643,4 +646,8 @@ TEST_F(VideoOverlayWindowViewsTest, OverlayWindowFitsInMinimumSize) {
   auto bubble_min_size = overlay_view->GetBubbleSize();
   EXPECT_GT(window_min_size.width(), bubble_min_size.width());
   EXPECT_GT(window_min_size.height(), bubble_min_size.height());
+
+  // When the overlay view is hidden, the minimum size should return to normal.
+  overlay_view->SetVisible(false);
+  EXPECT_EQ(overlay_window().GetMinimumSize(), kMinWindowSize);
 }

@@ -75,7 +75,7 @@ bool TryPromptUserForScreenCapture() {
             ^(CGDisplayStreamFrameStatus status, uint64_t displayTime,
               IOSurfaceRef frameSurface, CGDisplayStreamUpdateRef updateRef){
             }));
-    return stream != nullptr;
+    return stream.get() != nullptr;
   } else {
     // Screen capture is always allowed in older macOS versions.
     return true;

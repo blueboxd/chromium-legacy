@@ -237,18 +237,6 @@ void ScriptResource::SetSerializedCachedMetadata(mojo_base::BigBuffer data) {
   }
 }
 
-bool ScriptResource::CodeCacheHashRequired() const {
-  if (cached_metadata_handler_) {
-    bool result = cached_metadata_handler_->HashRequired();
-    if (result) {
-      DCHECK(SchemeRegistry::SchemeSupportsCodeCacheWithHashing(
-          GetResourceRequest().Url().Protocol()));
-    }
-    return result;
-  }
-  return false;
-}
-
 void ScriptResource::DestroyDecodedDataIfPossible() {
   if (cached_metadata_handler_) {
     // Since we are clearing locally we don't need a CodeCacheHost interface
@@ -329,6 +317,12 @@ void ScriptResource::ResponseReceived(const ResourceResponse& response) {
           GetResourceRequest().Url().Protocol()) &&
       GetResourceRequest().Url().ProtocolIs(
           response.CurrentRequestUrl().Protocol());
+
+  // There is also a flag on ResourceResponse so that hash-based code caching
+  // can be used on resources other than those specified by the scheme registry.
+  code_cache_with_hashing_supported |=
+      response.ShouldUseSourceHashForJSCodeCache();
+
   bool code_cache_supported = http_family || code_cache_with_hashing_supported;
   if (code_cache_supported) {
     std::unique_ptr<CachedMetadataSender> sender = CachedMetadataSender::Create(

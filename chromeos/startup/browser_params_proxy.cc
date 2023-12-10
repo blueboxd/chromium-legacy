@@ -162,6 +162,11 @@ const absl::optional<std::string>& BrowserParamsProxy::MetricsServiceClientId()
   return BrowserInitParams::Get()->metrics_service_client_id;
 }
 
+const crosapi::mojom::EntropySourcePtr& BrowserParamsProxy::EntropySource()
+    const {
+  return BrowserInitParams::Get()->entropy_source;
+}
+
 uint64_t BrowserParamsProxy::UkmClientId() const {
   return BrowserInitParams::Get()->ukm_client_id;
 }
@@ -319,8 +324,8 @@ bool BrowserParamsProxy::EnableClipboardHistoryRefresh() const {
   return BrowserInitParams::Get()->enable_clipboard_history_refresh;
 }
 
-bool BrowserParamsProxy::IsVariableRefreshRateEnabled() const {
-  return BrowserInitParams::Get()->is_variable_refresh_rate_enabled;
+bool BrowserParamsProxy::IsVariableRefreshRateAlwaysOn() const {
+  return BrowserInitParams::Get()->is_variable_refresh_rate_always_on;
 }
 
 bool BrowserParamsProxy::IsPdfOcrEnabled() const {
@@ -345,6 +350,10 @@ bool BrowserParamsProxy::IsAppInstallServiceUriEnabled() const {
 
 bool BrowserParamsProxy::IsDeskProfilesEnabled() const {
   return BrowserInitParams::Get()->is_desk_profiles_enabled;
+}
+
+bool BrowserParamsProxy::IsCrosWebAppShortcutUiUpdateEnabled() const {
+  return BrowserInitParams::Get()->is_cros_web_app_shortcut_ui_update_enabled;
 }
 
 }  // namespace chromeos

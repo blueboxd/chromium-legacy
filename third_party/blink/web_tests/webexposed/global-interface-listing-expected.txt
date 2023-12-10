@@ -931,7 +931,7 @@ interface CSSScale : CSSTransformComponent
     setter x
     setter y
     setter z
-interface CSSScopeRule : CSSConditionRule
+interface CSSScopeRule : CSSGroupingRule
     attribute @@toStringTag
     getter end
     getter start
@@ -1003,42 +1003,6 @@ interface CSSStyleValue
 interface CSSSupportsRule : CSSConditionRule
     attribute @@toStringTag
     method constructor
-interface CSSToggle
-    attribute @@toStringTag
-    getter cycle
-    getter group
-    getter scope
-    getter states
-    getter value
-    getter valueAsNumber
-    getter valueAsString
-    method constructor
-    setter cycle
-    setter group
-    setter scope
-    setter states
-    setter value
-    setter valueAsNumber
-    setter valueAsString
-interface CSSToggleEvent : Event
-    attribute @@toStringTag
-    getter toggle
-    getter toggleName
-    method constructor
-interface CSSToggleMap
-    attribute @@toStringTag
-    getter size
-    method @@iterator
-    method clear
-    method constructor
-    method delete
-    method entries
-    method forEach
-    method get
-    method has
-    method keys
-    method set
-    method values
 interface CSSTransformComponent
     attribute @@toStringTag
     getter is2D
@@ -1298,6 +1262,7 @@ interface ClipboardEvent : Event
     getter clipboardData
     method constructor
 interface ClipboardItem
+    static method supports
     attribute @@toStringTag
     getter types
     method constructor
@@ -1308,6 +1273,16 @@ interface CloseEvent : Event
     getter reason
     getter wasClean
     method constructor
+interface CloseWatcher : EventTarget
+    attribute @@toStringTag
+    getter oncancel
+    getter onclose
+    method close
+    method constructor
+    method destroy
+    method requestClose
+    setter oncancel
+    setter onclose
 interface Comment : CharacterData
     attribute @@toStringTag
     method constructor
@@ -2370,7 +2345,6 @@ interface Element : Node
     getter shadowRoot
     getter slot
     getter tagName
-    getter toggles
     method after
     method animate
     method append
@@ -2736,6 +2710,10 @@ interface FencedFrameConfig
     getter width
     method constructor
     method setSharedStorageContext
+interface FetchLaterResult
+    attribute @@toStringTag
+    getter activated
+    method constructor
 interface File : Blob
     attribute @@toStringTag
     getter lastModified
@@ -3155,6 +3133,7 @@ interface GPUSupportedFeatures
 interface GPUSupportedLimits
     attribute @@toStringTag
     getter maxBindGroups
+    getter maxBindGroupsPlusVertexBuffers
     getter maxBindingsPerBindGroup
     getter maxBufferSize
     getter maxColorAttachmentBytesPerSample
@@ -3530,6 +3509,8 @@ interface HTMLButtonElement : HTMLElement
     getter formMethod
     getter formNoValidate
     getter formTarget
+    getter invokeAction
+    getter invokeTargetElement
     getter labels
     getter name
     getter popoverTargetAction
@@ -3549,6 +3530,8 @@ interface HTMLButtonElement : HTMLElement
     setter formMethod
     setter formNoValidate
     setter formTarget
+    setter invokeAction
+    setter invokeTargetElement
     setter name
     setter popoverTargetAction
     setter popoverTargetElement
@@ -4209,6 +4192,8 @@ interface HTMLInputElement : HTMLElement
     getter height
     getter incremental
     getter indeterminate
+    getter invokeAction
+    getter invokeTargetElement
     getter labels
     getter list
     getter max
@@ -4268,6 +4253,8 @@ interface HTMLInputElement : HTMLElement
     setter height
     setter incremental
     setter indeterminate
+    setter invokeAction
+    setter invokeTargetElement
     setter max
     setter maxLength
     setter min
@@ -4634,12 +4621,12 @@ interface HTMLParamElement : HTMLElement
     setter valueType
 interface HTMLPermissionElement : HTMLElement
     attribute @@toStringTag
-    getter ondismissed
-    getter onresolved
+    getter ondismiss
+    getter onresolve
     getter type
     method constructor
-    setter ondismissed
-    setter onresolved
+    setter ondismiss
+    setter onresolve
     setter type
 interface HTMLPictureElement : HTMLElement
     attribute @@toStringTag
@@ -5259,7 +5246,7 @@ interface IIRFilterNode : AudioNode
 interface IdentityCredential : Credential
     static method logoutRPs
     attribute @@toStringTag
-    getter isIdentityCredentialAutoSelected
+    getter isAutoSelected
     getter token
     method constructor
 interface IdentityCredentialError : DOMException
@@ -5438,6 +5425,11 @@ interface IntersectionObserverEntry
     getter rootBounds
     getter target
     getter time
+    method constructor
+interface InvokeEvent : Event
+    attribute @@toStringTag
+    getter action
+    getter invoker
     method constructor
 interface Keyboard
     attribute @@toStringTag
@@ -5633,6 +5625,7 @@ interface MLGraphBuilder
     method hardSwish
     method input
     method leakyRelu
+    method matmul
     method max
     method maxPool2d
     method min
@@ -7807,6 +7800,7 @@ interface Request
     getter referrer
     getter referrerPolicy
     getter signal
+    getter targetAddressSpace
     getter url
     method arrayBuffer
     method blob

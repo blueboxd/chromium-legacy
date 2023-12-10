@@ -40,6 +40,7 @@
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/metrics/payments/mandatory_reauth_metrics.h"
 #include "components/autofill/core/browser/personal_data_manager_test_base.h"
+#include "components/autofill/core/browser/profile_token_quality_test_api.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/ui/label_formatter_utils.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
@@ -75,9 +76,9 @@ using testing::UnorderedElementsAre;
 constexpr char kGuid[] = "a21f010a-eac1-41fc-aee9-c06bbedfb292";
 constexpr char kPrimaryAccountEmail[] = "syncuser@example.com";
 
-const base::Time kArbitraryTime = base::Time::FromDoubleT(25);
-const base::Time kSomeLaterTime = base::Time::FromDoubleT(1000);
-const base::Time kMuchLaterTime = base::Time::FromDoubleT(5000);
+const base::Time kArbitraryTime = base::Time::FromSecondsSinceUnixEpoch(25);
+const base::Time kSomeLaterTime = base::Time::FromSecondsSinceUnixEpoch(1000);
+const base::Time kMuchLaterTime = base::Time::FromSecondsSinceUnixEpoch(5000);
 
 class PersonalDataManagerMock : public PersonalDataManager {
  public:
@@ -433,6 +434,32 @@ TEST_F(PersonalDataManagerTest, AddProfile) {
   ExpectSameElements(profiles, personal_data_->GetProfiles());
 }
 
+TEST_F(PersonalDataManagerTest, UpdateProfile_ModificationDate) {
+  TestAutofillClock test_clock;
+  test_clock.SetNow(kArbitraryTime);
+  AutofillProfile profile = test::GetFullProfile();
+  AddProfileToPersonalDataManager(profile);
+  ASSERT_THAT(personal_data_->GetProfiles(),
+              UnorderedElementsAre(Pointee(profile)));
+
+  // Update the profile arbitrarily. Expect that the modification date changes.
+  // Note that `AutofillProfile::operator==()` doesn't check the
+  // `modification_date()`.
+  test_clock.SetNow(kSomeLaterTime);
+  profile.SetRawInfo(EMAIL_ADDRESS, u"new" + profile.GetRawInfo(EMAIL_ADDRESS));
+  UpdateProfileOnPersonalDataManager(profile);
+  std::vector<AutofillProfile*> profiles = personal_data_->GetProfiles();
+  ASSERT_THAT(profiles, UnorderedElementsAre(Pointee(profile)));
+  EXPECT_EQ(profiles[0]->modification_date(), kSomeLaterTime);
+
+  // If the profile hasn't change, expect that updating is a no-op.
+  test_clock.SetNow(kMuchLaterTime);
+  UpdateProfileOnPersonalDataManager(profile);
+  profiles = personal_data_->GetProfiles();
+  ASSERT_THAT(profiles, UnorderedElementsAre(Pointee(profile)));
+  EXPECT_EQ(profiles[0]->modification_date(), kSomeLaterTime);
+}
+
 // Tests that profiles with source `kAccount` and `kLocalOrSyncable` are loaded,
 // and accessible via `GetProfiles()` and `GetProfilesFromSource()`.
 // If duplicates exist across sources, they should be considered distinct.
@@ -781,6 +808,67 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveProfiles) {
 
   // Verify that we've loaded the profiles from the web database.
   ExpectSameElements(profiles, personal_data_->GetProfiles());
+}
+
+// Tests that `UpdateProfile()` takes changes in the `ProfileTokenQuality`
+// observations into considerations.
+TEST_F(PersonalDataManagerTest, UpdateProfile_NewObservations) {
+  base::test::ScopedFeatureList feature{
+      features::kAutofillTrackProfileTokenQuality};
+
+  // Add a profile without observations at `kArbitraryTime`.
+  TestAutofillClock test_clock;
+  test_clock.SetNow(kArbitraryTime);
+  AutofillProfile profile = test::GetFullProfile();
+  AddProfileToPersonalDataManager(profile);
+  test_clock.SetNow(kSomeLaterTime);
+
+  // Add an observation, as might happen during a form submit.
+  test_api(profile.token_quality())
+      .AddObservation(NAME_FIRST,
+                      ProfileTokenQuality::ObservationType::kAccepted);
+  UpdateProfileOnPersonalDataManager(profile);
+
+  // Expect that `UpdateProfile()` didn't reject the update as a no-op.
+  // Since new observations are considered a metadata change, further expected
+  // that the modification date hasn't changed.
+  const AutofillProfile* pdm_profile =
+      personal_data_->GetProfileByGUID(profile.guid());
+  EXPECT_THAT(
+      pdm_profile->token_quality().GetObservationTypesForFieldType(NAME_FIRST),
+      UnorderedElementsAre(ProfileTokenQuality::ObservationType::kAccepted));
+  EXPECT_EQ(profile.modification_date(), kArbitraryTime);
+}
+
+// Tests that when the value for a type changes, `UpdateProfile()` resets the
+// observations for that type.
+TEST_F(PersonalDataManagerTest, UpdateProfile_ResetObservations) {
+  base::test::ScopedFeatureList feature{
+      features::kAutofillTrackProfileTokenQuality};
+
+  // Add a profile with observations for NAME_FIRST and NAME_LAST.
+  AutofillProfile profile = test::GetFullProfile();
+  test_api(profile.token_quality())
+      .AddObservation(NAME_FIRST,
+                      ProfileTokenQuality::ObservationType::kAccepted);
+  test_api(profile.token_quality())
+      .AddObservation(NAME_LAST,
+                      ProfileTokenQuality::ObservationType::kEditedFallback);
+  AddProfileToPersonalDataManager(profile);
+
+  // Modify the NAME_FIRST and update the profile in the PDM.
+  profile.SetRawInfo(NAME_FIRST, u"new " + profile.GetRawInfo(NAME_FIRST));
+  UpdateProfileOnPersonalDataManager(profile);
+
+  // Expect that only the observations for NAME_LAST remain.
+  profile = *personal_data_->GetProfileByGUID(profile.guid());
+  EXPECT_TRUE(profile.token_quality()
+                  .GetObservationTypesForFieldType(NAME_FIRST)
+                  .empty());
+  EXPECT_THAT(
+      profile.token_quality().GetObservationTypesForFieldType(NAME_LAST),
+      UnorderedElementsAre(
+          ProfileTokenQuality::ObservationType::kEditedFallback));
 }
 
 TEST_F(PersonalDataManagerTest, MigrateProfileToAccount) {
@@ -2936,92 +3024,6 @@ TEST_F(PersonalDataManagerTest, DeleteAllLocalCreditCards) {
 
   // Expect the local credit cards to have been deleted.
   EXPECT_EQ(0U, personal_data_->GetLocalCreditCards().size());
-}
-
-
-TEST_F(PersonalDataManagerTest, RemoveByGUID_ResetsBillingAddress) {
-  ///////////////////////////////////////////////////////////////////////
-  // Setup.
-  ///////////////////////////////////////////////////////////////////////
-  std::vector<CreditCard> server_cards;
-
-  // Add two different profiles
-  AutofillProfile profile0;
-  test::SetProfileInfo(&profile0, "Bob", "", "Doe", "", "Fox", "1212 Center.",
-                       "Bld. 5", "Orlando", "FL", "32801", "US", "19482937549");
-  AutofillProfile profile1;
-  test::SetProfileInfo(&profile1, "Seb", "", "Doe", "", "ACME",
-                       "1234 Evergreen Terrace", "Bld. 5", "Springfield", "IL",
-                       "32801", "US", "15151231234");
-
-  // Add a local and a server card that have profile0 as their billing address.
-  CreditCard local_card0(base::Uuid::GenerateRandomV4().AsLowercaseString(),
-                         test::kEmptyOrigin);
-  test::SetCreditCardInfo(&local_card0, "John Dillinger",
-                          "4111111111111111" /* Visa */, "01", "2999",
-                          profile0.guid());
-  CreditCard server_card0(CreditCard::RecordType::kFullServerCard, "c789");
-  test::SetCreditCardInfo(&server_card0, "John Barrow",
-                          "378282246310005" /* American Express */, "04",
-                          "2999", profile0.guid());
-  server_cards.push_back(server_card0);
-
-  // Do the same but for profile1.
-  CreditCard local_card1(base::Uuid::GenerateRandomV4().AsLowercaseString(),
-                         test::kEmptyOrigin);
-  test::SetCreditCardInfo(&local_card1, "Seb Dillinger",
-                          "4111111111111111" /* Visa */, "01", "2999",
-                          profile1.guid());
-  CreditCard server_card1(CreditCard::RecordType::kFullServerCard, "c789");
-  test::SetCreditCardInfo(&server_card1, "John Barrow",
-                          "378282246310005" /* American Express */, "04",
-                          "2999", profile1.guid());
-  server_cards.push_back(server_card1);
-
-  // Add the data to the database.
-  AddProfileToPersonalDataManager(profile0);
-  AddProfileToPersonalDataManager(profile1);
-  personal_data_->AddCreditCard(local_card0);
-  personal_data_->AddCreditCard(local_card1);
-  SetServerCards(server_cards);
-
-  // Verify that the web database has been updated and the notification sent.
-  personal_data_->Refresh();
-  PersonalDataProfileTaskWaiter(*personal_data_).Wait();
-
-  // Make sure everything was saved properly.
-  EXPECT_EQ(2U, personal_data_->GetProfiles().size());
-  EXPECT_EQ(4U, personal_data_->GetCreditCards().size());
-
-  ///////////////////////////////////////////////////////////////////////
-  // Tested method.
-  ///////////////////////////////////////////////////////////////////////
-  RemoveByGUIDFromPersonalDataManager(profile0.guid());
-
-  ///////////////////////////////////////////////////////////////////////
-  // Validation.
-  ///////////////////////////////////////////////////////////////////////
-
-  // Wait for the data to be refreshed.
-  // PersonalDataProfileTaskWaiter(*personal_data_).Wait();
-
-  // Make sure only profile0 was deleted.
-  ASSERT_EQ(1U, personal_data_->GetProfiles().size());
-  EXPECT_EQ(profile1.guid(), personal_data_->GetProfiles()[0]->guid());
-  EXPECT_EQ(4U, personal_data_->GetCreditCards().size());
-
-  for (CreditCard* card : personal_data_->GetCreditCards()) {
-    if (card->guid() == local_card0.guid() ||
-        card->guid() == server_card0.guid()) {
-      // The billing address id of local_card0 and server_card0 should have been
-      // reset.
-      EXPECT_EQ("", card->billing_address_id());
-    } else {
-      // The billing address of local_card1 and server_card1 should still refer
-      // to profile1.
-      EXPECT_EQ(profile1.guid(), card->billing_address_id());
-    }
-  }
 }
 
 TEST_F(PersonalDataManagerTest, LogStoredCreditCardMetrics) {

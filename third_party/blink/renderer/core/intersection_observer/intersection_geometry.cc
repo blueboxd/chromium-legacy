@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -183,6 +184,12 @@ IntersectionGeometry::RootGeometry::RootGeometry(const LayoutObject* root,
   root_to_document_transform = transform_state.AccumulatedTransform();
 }
 
+bool IntersectionGeometry::RootGeometry::operator==(
+    const RootGeometry& other) const {
+  return zoom == other.zoom && local_root_rect == other.local_root_rect &&
+         root_to_document_transform == other.root_to_document_transform;
+}
+
 const LayoutObject* IntersectionGeometry::GetExplicitRootLayoutObject(
     const Node& root_node) {
   if (!root_node.isConnected()) {
@@ -194,14 +201,16 @@ const LayoutObject* IntersectionGeometry::GetExplicitRootLayoutObject(
   return root_node.GetLayoutObject();
 }
 
-IntersectionGeometry::IntersectionGeometry(const Node* root_node,
-                                           const Element& target_element,
-                                           const Vector<Length>& root_margin,
-                                           const Vector<float>& thresholds,
-                                           const Vector<Length>& target_margin,
-                                           const Vector<Length>& scroll_margin,
-                                           unsigned flags,
-                                           CachedRects* cached_rects)
+IntersectionGeometry::IntersectionGeometry(
+    const Node* root_node,
+    const Element& target_element,
+    const Vector<Length>& root_margin,
+    const Vector<float>& thresholds,
+    const Vector<Length>& target_margin,
+    const Vector<Length>& scroll_margin,
+    unsigned flags,
+    absl::optional<RootGeometry>& root_geometry,
+    CachedRects* cached_rects)
     : flags_(flags & kConstructorFlagsMask) {
   // Only one of root_margin or target_margin can be specified.
   DCHECK(root_margin.empty() || target_margin.empty());
@@ -213,30 +222,14 @@ IntersectionGeometry::IntersectionGeometry(const Node* root_node,
   if (root_and_target.relationship == RootAndTarget::kInvalid) {
     return;
   }
-  RootGeometry root_geometry(root_and_target.root, root_margin);
 
-  ComputeGeometry(root_geometry, root_and_target, thresholds, target_margin,
-                  scroll_margin, cached_rects);
-}
-
-IntersectionGeometry::IntersectionGeometry(const RootGeometry& root_geometry,
-                                           const Node& explicit_root,
-                                           const Element& target_element,
-                                           const Vector<float>& thresholds,
-                                           const Vector<Length>& target_margin,
-                                           const Vector<Length>& scroll_margin,
-                                           unsigned flags,
-                                           CachedRects* cached_rects)
-    : flags_(flags & kConstructorFlagsMask),
-      intersection_ratio_(0),
-      threshold_index_(0) {
-  auto root_and_target =
-      PrepareComputeGeometry(&explicit_root, target_element, cached_rects);
-  if (root_and_target.relationship == RootAndTarget::kInvalid) {
-    return;
+  if (root_geometry) {
+    DCHECK(*root_geometry == RootGeometry(root_and_target.root, root_margin));
+  } else {
+    root_geometry.emplace(root_and_target.root, root_margin);
   }
 
-  ComputeGeometry(root_geometry, root_and_target, thresholds, target_margin,
+  ComputeGeometry(*root_geometry, root_and_target, thresholds, target_margin,
                   scroll_margin, cached_rects);
 }
 
@@ -310,11 +303,14 @@ void IntersectionGeometry::RootAndTarget::ComputeRelationship(
   bool has_intermediate_clippers = false;
   const LayoutObject* container = target;
   while (container != root) {
-    has_filter |= container->HasFilterInducingProperty();
+    if (!RuntimeEnabledFeatures::IntersectionObserverIgnoreFiltersEnabled()) {
+      has_filter |= container->HasFilterInducingProperty();
+    }
     // Don't check for filters if we've already found one.
     LayoutObject::AncestorSkipInfo skip_info(root, !has_filter);
     container = container->Container(&skip_info);
-    if (!has_filter) {
+    if (!RuntimeEnabledFeatures::IntersectionObserverIgnoreFiltersEnabled() &&
+        !has_filter) {
       has_filter = skip_info.FilterSkipped();
     }
     if (!container || skip_info.AncestorSkipped()) {
@@ -604,8 +600,12 @@ bool IntersectionGeometry::ClipToRoot(const LayoutObject* root,
 
   unsigned flags = kDefaultVisualRectFlags | kEdgeInclusive |
                    kDontApplyMainFrameOverflowClip;
-  if (CanUseGeometryMapper(target))
+  if (RuntimeEnabledFeatures::IntersectionObserverIgnoreFiltersEnabled()) {
+    flags |= kIgnoreFilters;
+  }
+  if (CanUseGeometryMapper(target)) {
     flags |= kUseGeometryMapper;
+  }
 
   bool does_intersect = false;
 
@@ -758,6 +758,7 @@ gfx::Vector2dF IntersectionGeometry::ComputeMinScrollDeltaToUpdate(
     return kInfiniteScrollDelta;
   }
   if (root_and_target.has_filter) {
+    DCHECK(!RuntimeEnabledFeatures::IntersectionObserverIgnoreFiltersEnabled());
     // With filters, the intersection rect can be non-empty even if root_rect_
     // and target_rect_ don't intersect.
     return gfx::Vector2dF();

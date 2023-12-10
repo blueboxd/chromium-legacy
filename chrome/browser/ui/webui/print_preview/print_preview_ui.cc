@@ -91,6 +91,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
+#include "chrome/browser/printing/prefs_util.h"
 #include "chrome/browser/printing/print_backend_service_manager.h"
 #include "printing/printing_features.h"
 #endif
@@ -392,6 +393,28 @@ PrintPreviewHandler* CreatePrintPreviewHandlers(content::WebUI* web_ui) {
 
 }  // namespace
 
+PrintPreviewUIConfig::PrintPreviewUIConfig()
+    : WebUIConfig(content::kChromeUIScheme, chrome::kChromeUIPrintHost) {}
+
+bool PrintPreviewUIConfig::IsWebUIEnabled(
+    content::BrowserContext* browser_context) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  bool disabled = profile->GetPrefs()->GetBoolean(prefs::kPrintPreviewDisabled);
+  return !disabled;
+}
+
+bool PrintPreviewUIConfig::ShouldHandleURL(const GURL& url) {
+  return url.path() == "/" || url.path() == "/test_loader.html";
+}
+
+PrintPreviewUIConfig::~PrintPreviewUIConfig() = default;
+
+std::unique_ptr<content::WebUIController>
+PrintPreviewUIConfig::CreateWebUIController(content::WebUI* web_ui,
+                                            const GURL& url) {
+  return std::make_unique<PrintPreviewUI>(web_ui);
+}
+
 WEB_UI_CONTROLLER_TYPE_IMPL(PrintPreviewUI)
 
 PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui,
@@ -434,14 +457,14 @@ PrintPreviewUI::~PrintPreviewUI() {
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
 void PrintPreviewUI::RegisterPrintBackendServiceManagerClient() {
-  if (base::FeatureList::IsEnabled(features::kEnableOopPrintDrivers)) {
+  if (IsOopPrintingEnabled()) {
     service_manager_client_id_ =
         PrintBackendServiceManager::GetInstance().RegisterQueryClient();
   }
 }
 
 void PrintPreviewUI::UnregisterPrintBackendServiceManagerClient() {
-  if (base::FeatureList::IsEnabled(features::kEnableOopPrintDrivers)) {
+  if (IsOopPrintingEnabled()) {
     PrintBackendServiceManager::GetInstance().UnregisterClient(
         service_manager_client_id_);
   }

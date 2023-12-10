@@ -1762,7 +1762,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Notifications.ExpandState"
-    enum="ArcNotificationExpandState" expires_after="2023-10-22">
+    enum="ArcNotificationExpandState" expires_after="2024-02-25">
   <owner>yaoqq@google.com</owner>
   <owner>arc-framework@google.com</owner>
   <summary>
@@ -2854,6 +2854,18 @@ chromium-metrics-reviews@google.com.
     Records the time elapsed from a window closing operation until the window is
     destroyed. The data is collected once when a closing operation happens.
   </summary>
+</histogram>
+
+<histogram name="Arc.WM.WindowEnterTabletModeDelayTime.{ChromeOSAppType}"
+    units="ms" expires_after="2024-10-30">
+  <owner>lingyufeng@google.com</owner>
+  <owner>arc-framework@google.com</owner>
+  <summary>
+    Records the time elapsed from entering the tablet mode until the window
+    state is changed to be maximized in tablet mode. The data is only collected
+    for the top window shown in tablet mode.
+  </summary>
+  <token key="ChromeOSAppType" variants="ChromeOSAppType"/>
 </histogram>
 
 <histogram name="Arc.WM.WindowMaximizedDelayTime.{ChromeOSAppType}" units="ms"

@@ -216,6 +216,17 @@ bool IsFullscreenSurfaceSyncSupported() {
 
 }  // namespace
 
+// static
+RenderWidgetHostViewAndroid*
+RenderWidgetHostViewAndroid::FromRenderWidgetHostView(
+    RenderWidgetHostView* view) {
+  if (!view || static_cast<RenderWidgetHostViewBase*>(view)
+                   ->IsRenderWidgetHostViewChildFrame()) {
+    return nullptr;
+  }
+  return static_cast<RenderWidgetHostViewAndroid*>(view);
+}
+
 RenderWidgetHostViewAndroid::ScreenStateChangeHandler::ScreenStateChangeHandler(
     RenderWidgetHostViewAndroid* rwhva)
     : rwhva_(rwhva) {}
@@ -632,13 +643,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
         local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
         GetCompositorViewportPixelSize(), host()->delegate()->IsFullscreen(),
         TakeContentToVisibleTimeRequest(host()));
-  }
-
-  // Let the page-level input event router know about our frame sink ID
-  // for surface-based hit testing.
-  if (ShouldRouteEvents()) {
-    host()->delegate()->GetInputEventRouter()->AddFrameSinkIdOwner(
-        GetFrameSinkId(), this);
   }
 
   host()->SetView(this);
@@ -1168,10 +1172,14 @@ bool RenderWidgetHostViewAndroid::IsShowing() {
 }
 
 void RenderWidgetHostViewAndroid::SelectAroundCaretAck(
+    int startOffset,
+    int endOffset,
+    int surroundingTextLength,
     blink::mojom::SelectAroundCaretResultPtr result) {
   if (!selection_popup_controller_)
     return;
-  selection_popup_controller_->OnSelectAroundCaretAck(std::move(result));
+  selection_popup_controller_->OnSelectAroundCaretAck(
+      startOffset, endOffset, surroundingTextLength, std::move(result));
 }
 
 gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() {

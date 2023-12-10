@@ -24,8 +24,7 @@
 #import "components/segmentation_platform/embedder/default_model/device_switcher_result_dispatcher.h"
 #import "components/signin/ios/browser/active_state_manager.h"
 #import "components/translate/core/browser/translate_manager.h"
-#import "ios/chrome/browser/app_launcher/model/app_launcher_abuse_detector.h"
-#import "ios/chrome/browser/app_launcher/model/app_launcher_tab_helper.h"
+#import "ios/chrome/browser/app_launcher/model/app_launcher_tab_helper_browser_presentation_provider.h"
 #import "ios/chrome/browser/commerce/model/push_notification/push_notification_feature.h"
 #import "ios/chrome/browser/commerce/model/shopping_service_factory.h"
 #import "ios/chrome/browser/content_settings/model/host_content_settings_map_factory.h"
@@ -52,6 +51,7 @@
 #import "ios/chrome/browser/parcel_tracking/parcel_tracking_infobar_delegate.h"
 #import "ios/chrome/browser/parcel_tracking/parcel_tracking_step.h"
 #import "ios/chrome/browser/parcel_tracking/parcel_tracking_util.h"
+#import "ios/chrome/browser/parcel_tracking/tracking_source.h"
 #import "ios/chrome/browser/passwords/model/password_controller_delegate.h"
 #import "ios/chrome/browser/prerender/model/preload_controller_delegate.h"
 #import "ios/chrome/browser/prerender/model/prerender_service.h"
@@ -115,7 +115,7 @@
 #import "ios/chrome/browser/store_kit/model/store_kit_coordinator_delegate.h"
 #import "ios/chrome/browser/sync/model/sync_error_browser_agent.h"
 #import "ios/chrome/browser/tab_insertion/model/tab_insertion_browser_agent.h"
-#import "ios/chrome/browser/tabs/tab_title_util.h"
+#import "ios/chrome/browser/tabs/model/tab_title_util.h"
 #import "ios/chrome/browser/translate/model/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/app_store_rating/features.h"
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_prompt/enterprise_prompt_coordinator.h"
@@ -253,6 +253,7 @@ enum class ToolbarKind {
 }  // anonymous namespace
 
 @interface BrowserCoordinator () <
+    AppLauncherTabHelperBrowserPresentationProvider,
     AutofillAddCreditCardCoordinatorDelegate,
     BrowserCoordinatorCommands,
     BubblePresenterDelegate,
@@ -906,6 +907,7 @@ enum class ToolbarKind {
       initWithDeviceSwitcherResultDispatcher:deviceSwitcherResultDispatcher
                       hostContentSettingsMap:settingsMap
                              loadingNotifier:_urlLoadingNotifierBrowserAgent
+                                 prefService:browserState->GetPrefs()
                                   sceneState:SceneStateBrowserAgent::
                                                  FromBrowser(self.browser)
                                                      ->GetSceneState()
@@ -919,7 +921,6 @@ enum class ToolbarKind {
 
   _toolbarCoordinator =
       [[ToolbarCoordinator alloc] initWithBrowser:self.browser];
-  _toolbarCoordinator.bubblePresenter = _bubblePresenter;
 
   _toolbarAccessoryPresenter = [[ToolbarAccessoryPresenter alloc]
       initWithIsIncognito:browserState->IsOffTheRecord()];
@@ -1457,6 +1458,7 @@ enum class ToolbarKind {
       TabInsertionBrowserAgent::FromBrowser(browser);
   tabLifecycleMediator.snapshotGeneratorDelegate = self;
   tabLifecycleMediator.overscrollActionsDelegate = self;
+  tabLifecycleMediator.appLauncherBrowserPresentationProvider = self;
 
   self.tabLifecycleMediator = tabLifecycleMediator;
 }
@@ -1490,8 +1492,6 @@ enum class ToolbarKind {
                       originView:positioner.sourceView
                       originRect:positioner.sourceRect
                           anchor:anchor];
-  self.sharingCoordinator.activityHandler =
-      HandlerForProtocol(self.dispatcher, ActivityServiceCommands);
   [self.sharingCoordinator start];
 }
 
@@ -2373,6 +2373,9 @@ enum class ToolbarKind {
   commerce::ShoppingService* shoppingService =
       commerce::ShoppingServiceFactory::GetForBrowserState(
           self.browser->GetBrowserState());
+  if (!shoppingService) {
+    return;
+  }
   // Filter out parcels that are already being tracked and post
   // `showParcelTrackingUIWithNewParcels` command for the new parcel list.
   FilterParcelsAndShowParcelTrackingUI(
@@ -2385,6 +2388,9 @@ enum class ToolbarKind {
   commerce::ShoppingService* shoppingService =
       commerce::ShoppingServiceFactory::GetForBrowserState(
           self.browser->GetBrowserState());
+  if (!shoppingService) {
+    return;
+  }
   if (IsUserEligibleParcelTrackingOptInPrompt(
           self.browser->GetBrowserState()->GetPrefs(), shoppingService)) {
     [self showParcelTrackingOptInPromptWithParcels:parcels];
@@ -2398,10 +2404,15 @@ enum class ToolbarKind {
                                      forStep:(ParcelTrackingStep)step {
   web::WebState* activeWebState = self.activeWebState;
   CHECK(activeWebState);
-  if (!commerce::ShoppingServiceFactory::GetForBrowserState(
-           self.browser->GetBrowserState())
+  ChromeBrowserState* browserState = self.browser->GetBrowserState();
+  if (!commerce::ShoppingServiceFactory::GetForBrowserState(browserState)
            ->IsParcelTrackingEligible()) {
     return;
+  }
+  if (step == ParcelTrackingStep::kNewPackageTracked) {
+    feature_engagement::Tracker* engagementTracker =
+        feature_engagement::TrackerFactory::GetForBrowserState(browserState);
+    engagementTracker->NotifyEvent(feature_engagement::events::kParcelTracked);
   }
   std::unique_ptr<ParcelTrackingInfobarDelegate> delegate =
       std::make_unique<ParcelTrackingInfobarDelegate>(
@@ -2415,6 +2426,10 @@ enum class ToolbarKind {
       InfobarType::kInfobarTypeParcelTracking, std::move(delegate));
   infobar_manager->AddInfoBar(std::move(infobar),
                               /*replace_existing=*/true);
+}
+
+- (void)showParcelTrackingIPH {
+  [_bubblePresenter presentParcelTrackingTipBubble];
 }
 
 #pragma mark - ParcelTrackingOptInCommands helpers
@@ -2434,7 +2449,7 @@ enum class ToolbarKind {
       TrackParcels(
           shoppingService, parcels, std::string(),
           HandlerForProtocol(self.dispatcher, ParcelTrackingOptInCommands),
-          /*display_infobar=*/true);
+          /*display_infobar=*/true, TrackingSource::kAutoTrack);
       break;
     }
     case IOSParcelTrackingOptInStatus::kAskToTrack:
@@ -3204,6 +3219,12 @@ enum class ToolbarKind {
     (AutofillAddCreditCardCoordinator*)coordinator {
   CHECK_EQ(coordinator, self.addCreditCardCoordinator);
   [self stopAutofillAddCreditCardCoordinator];
+}
+
+#pragma mark - AppLauncherTabHelperBrowserPresentationProvider
+
+- (BOOL)isBrowserPresentingUI {
+  return self.viewController.presentedViewController != nil;
 }
 
 @end

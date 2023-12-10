@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html/shadow/permission_shadow_element.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -29,8 +30,8 @@ class CORE_EXPORT HTMLPermissionElement final : public HTMLElement {
 
   const AtomicString& GetType() const;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(resolved, kResolved)
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(dismissed, kDismissed)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(resolve, kResolve)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(dismiss, kDismiss)
 
   void Trace(Visitor*) const override;
 
@@ -104,8 +105,8 @@ class CORE_EXPORT HTMLPermissionElement final : public HTMLElement {
   // |base::TimeTicks::Max()| if it's indefinite.
   HashMap<DisableReason, base::TimeTicks> clicking_disabled_reasons_;
 
-  Member<HTMLDivElement> inner_element_;
-  Member<HTMLSpanElement> permission_text_;
+  Member<PermissionShadowElement> shadow_element_;
+  Member<HTMLSpanElement> permission_text_span_;
 
   // Set to true only if all the corresponding permissions (from `type`
   // attribute) are granted.

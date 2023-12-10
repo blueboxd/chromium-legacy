@@ -50,6 +50,8 @@
 #include "components/attribution_reporting/source_registration_time_config.mojom.h"
 #include "components/attribution_reporting/source_type.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
+#include "components/attribution_reporting/trigger_config.h"
+#include "components/attribution_reporting/trigger_data_matching.mojom.h"
 #include "components/attribution_reporting/trigger_registration.h"
 #include "content/browser/attribution_reporting/aggregatable_attribution_utils.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
@@ -60,8 +62,10 @@
 #include "content/browser/attribution_reporting/attribution_storage_delegate.h"
 #include "content/browser/attribution_reporting/attribution_storage_sql_migrations.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
+#include "content/browser/attribution_reporting/attribution_utils.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/create_report_result.h"
+#include "content/browser/attribution_reporting/privacy_math.h"
 #include "content/browser/attribution_reporting/rate_limit_result.h"
 #include "content/browser/attribution_reporting/sql_queries.h"
 #include "content/browser/attribution_reporting/sql_utils.h"
@@ -95,6 +99,7 @@ using ::attribution_reporting::EventReportWindows;
 using ::attribution_reporting::SuitableOrigin;
 using ::attribution_reporting::mojom::SourceRegistrationTimeConfig;
 using ::attribution_reporting::mojom::SourceType;
+using ::attribution_reporting::mojom::TriggerDataMatching;
 
 const base::FilePath::CharType kDatabasePath[] =
     FILE_PATH_LITERAL("Conversions");
@@ -490,6 +495,11 @@ int64_t StorageFileSizeKB(const base::FilePath& path_to_database) {
   return file_size;
 }
 
+uint64_t SanitizeTriggerData(uint64_t trigger_data, SourceType source_type) {
+  return trigger_data %
+         attribution_reporting::DefaultTriggerDataCardinality(source_type);
+}
+
 }  // namespace
 
 struct AttributionStorageSql::StoredSourceData {
@@ -582,6 +592,12 @@ AttributionStorageSql::ReadSourceFromStatement(sql::Statement& statement) {
           : delegate_->GetRandomizedResponseRate(
                 *source_type, *event_report_windows, max_event_level_reports);
 
+  // If "debug_cookie_set" field was not set in earlier versions, set the value
+  // to whether the debug key was set for the source.
+  bool debug_cookie_set = read_only_source_data_msg->has_debug_cookie_set()
+                              ? read_only_source_data_msg->debug_cookie_set()
+                              : debug_key.has_value();
+
   static constexpr char kDestinationSitesSql[] =
       "SELECT destination_site "
       "FROM source_destinations "
@@ -606,6 +622,16 @@ AttributionStorageSql::ReadSourceFromStatement(sql::Statement& statement) {
     return absl::nullopt;
   }
 
+  TriggerDataMatching trigger_data_matching;
+  switch (read_only_source_data_msg->trigger_data_matching()) {
+    case proto::AttributionReadOnlySourceData::EXACT:
+      trigger_data_matching = TriggerDataMatching::kExact;
+      break;
+    case proto::AttributionReadOnlySourceData::MODULUS:
+      trigger_data_matching = TriggerDataMatching::kModulus;
+      break;
+  }
+
   absl::optional<StoredSource> stored_source = StoredSource::Create(
       CommonSourceInfo(std::move(*source_origin), std::move(*reporting_origin),
                        *source_type),
@@ -613,7 +639,9 @@ AttributionStorageSql::ReadSourceFromStatement(sql::Statement& statement) {
       std::move(*event_report_windows), aggregatable_report_window_time,
       max_event_level_reports, priority, std::move(*filter_data), debug_key,
       std::move(*aggregation_keys), *attribution_logic, *active_state,
-      source_id, aggregatable_budget_consumed, randomized_response_rate);
+      source_id, aggregatable_budget_consumed, randomized_response_rate,
+      attribution_reporting::TriggerConfig(trigger_data_matching),
+      debug_cookie_set);
   if (!stored_source.has_value()) {
     return absl::nullopt;
   }
@@ -705,8 +733,11 @@ bool AttributionStorageSql::DeactivateSources(
 }
 
 StoreSourceResult AttributionStorageSql::StoreSource(
-    const StorableSource& source) {
+    const StorableSource& source,
+    bool debug_cookie_set) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  CHECK(!source.registration().debug_key.has_value() || debug_cookie_set);
 
   // Force the creation of the database if it doesn't exist, as we need to
   // persist the source.
@@ -747,13 +778,13 @@ StoreSourceResult AttributionStorageSql::StoreSource(
     if (int64_t file_size = StorageFileSizeKB(path_to_database_);
         file_size > -1) {
       base::UmaHistogramCounts10M(
-          "Conversions.Storage.Sql.FileSizeSourcesPerOriginLimitReached",
+          "Conversions.Storage.Sql.FileSizeSourcesPerOriginLimitReached2",
           file_size);
       absl::optional<int64_t> number_of_sources = NumberOfSources();
       if (number_of_sources.has_value()) {
         CHECK_GT(*number_of_sources, 0);
         base::UmaHistogramCounts1M(
-            "Conversions.Storage.Sql.FileSizeSourcesPerOriginLimitReached."
+            "Conversions.Storage.Sql.FileSizeSourcesPerOriginLimitReached2."
             "PerSource",
             file_size * 1024 / *number_of_sources);
       }
@@ -871,7 +902,8 @@ StoreSourceResult AttributionStorageSql::StoreSource(
   statement.BindBlob(
       16, SerializeReadOnlySourceData(reg.event_report_windows,
                                       reg.max_event_level_reports,
-                                      randomized_response_data.rate()));
+                                      randomized_response_data.rate(),
+                                      &reg.trigger_config, &debug_cookie_set));
 
   if (!statement.Run()) {
     return StoreSourceResult(StorableSource::Result::kInternalError);
@@ -899,7 +931,8 @@ StoreSourceResult AttributionStorageSql::StoreSource(
       aggregatable_report_window_time, reg.max_event_level_reports,
       reg.priority, reg.filter_data, reg.debug_key, reg.aggregation_keys,
       attribution_logic, *active_state, source_id,
-      /*aggregatable_budget_consumed=*/0, randomized_response_data.rate());
+      /*aggregatable_budget_consumed=*/0, randomized_response_data.rate(),
+      reg.trigger_config, debug_cookie_set);
 
   if (!stored_source.has_value() ||
       !rate_limit_table_.AddRateLimitForSource(&db_, *stored_source)) {
@@ -914,20 +947,29 @@ StoreSourceResult AttributionStorageSql::StoreSource(
                 SanitizeTriggerData(fake_report.trigger_data,
                                     common_info.source_type()));
 
-      DCHECK_LT(source_time, fake_report.trigger_time);
-      DCHECK_LT(fake_report.trigger_time, fake_report.report_time);
+      const EventReportWindows& windows = reg.event_report_windows;
+      DCHECK_LT(fake_report.window_index,
+                static_cast<int>(windows.end_times().size()));
+
+      base::Time report_time =
+          windows.ReportTimeAtWindow(source_time, fake_report.window_index);
+      // The last trigger time will always fall within a report window, no
+      // matter the report window's start time.
+      base::Time trigger_time = LastTriggerTimeForReportTime(report_time);
+      DCHECK_EQ(windows.ComputeReportTime(source_time, trigger_time),
+                report_time);
 
       // Set the `context_origin` to be the source origin for fake reports,
       // as these reports are generated only via the source site's context.
       // The fake destinations are not relevant to the context that
       // actually created the report.
       AttributionReport fake_attribution_report(
-          AttributionInfo(fake_report.trigger_time,
+          AttributionInfo(trigger_time,
                           /*debug_key=*/absl::nullopt,
                           /*context_origin=*/common_info.source_origin()),
-          AttributionReport::Id(kUnsetRecordId), fake_report.report_time,
-          /*initial_report_time=*/fake_report.report_time,
-          delegate_->NewReportID(), /*failed_send_attempts=*/0,
+          AttributionReport::Id(kUnsetRecordId), report_time,
+          /*initial_report_time=*/report_time, delegate_->NewReportID(),
+          /*failed_send_attempts=*/0,
           AttributionReport::EventLevelData(fake_report.trigger_data,
                                             /*priority=*/0, *stored_source));
       if (!StoreAttributionReport(fake_attribution_report)) {
@@ -935,8 +977,8 @@ StoreSourceResult AttributionStorageSql::StoreSource(
       }
 
       if (!min_fake_report_time.has_value() ||
-          fake_report.report_time < *min_fake_report_time) {
-        min_fake_report_time = fake_report.report_time;
+          report_time < *min_fake_report_time) {
+        min_fake_report_time = report_time;
       }
     }
   }
@@ -1532,6 +1574,22 @@ EventLevelResult AttributionStorageSql::MaybeCreateEventLevelReport(
       return EventLevelResult::kInternalError;
   }
 
+  uint64_t trigger_data;
+  switch (source.trigger_config().trigger_data_matching()) {
+    case TriggerDataMatching::kExact: {
+      uint64_t cardinality =
+          attribution_reporting::DefaultTriggerDataCardinality(source_type);
+      if (event_trigger->data >= cardinality) {
+        return EventLevelResult::kNoMatchingTriggerData;
+      }
+      trigger_data = event_trigger->data;
+      break;
+    }
+    case TriggerDataMatching::kModulus:
+      trigger_data = SanitizeTriggerData(event_trigger->data, source_type);
+      break;
+  }
+
   switch (
       CapacityForStoringReport(trigger, AttributionReport::Type::kEventLevel)) {
     case ConversionCapacityStatus::kHasCapacity:
@@ -1557,9 +1615,8 @@ EventLevelResult AttributionStorageSql::MaybeCreateEventLevelReport(
       attribution_info, AttributionReport::Id(kUnsetRecordId), report_time,
       /*initial_report_time=*/report_time, delegate_->NewReportID(),
       /*failed_send_attempts=*/0,
-      AttributionReport::EventLevelData(
-          SanitizeTriggerData(event_trigger->data, source_type),
-          event_trigger->priority, source));
+      AttributionReport::EventLevelData(trigger_data, event_trigger->priority,
+                                        source));
 
   dedup_key = event_trigger->dedup_key;
 
@@ -2381,10 +2438,10 @@ bool AttributionStorageSql::LazyInit(DbCreationPolicy creation_policy) {
 
   if (int64_t file_size = StorageFileSizeKB(path_to_database_);
       file_size > -1) {
-    base::UmaHistogramCounts10M("Conversions.Storage.Sql.FileSize", file_size);
+    base::UmaHistogramCounts10M("Conversions.Storage.Sql.FileSize2", file_size);
     absl::optional<int64_t> number_of_sources = NumberOfSources();
     if (number_of_sources.has_value() && *number_of_sources > 0) {
-      base::UmaHistogramCounts1M("Conversions.Storage.Sql.FileSize.PerSource",
+      base::UmaHistogramCounts1M("Conversions.Storage.Sql.FileSize2.PerSource",
                                  file_size * 1024 / *number_of_sources);
     }
   }
@@ -2468,13 +2525,13 @@ void AttributionStorageSql::RecordSourcesPerSourceOrigin() {
       &std::pair<const std::string, int64_t>::second, &CountOnly::count);
 
   // Record sampled top counts.
-  base::UmaHistogramCounts10000("Conversions.SourcesPerSourceOrigin.1st",
+  base::UmaHistogramCounts10000("Conversions.SourcesPerSourceOrigin2.1st",
                                 k >= 1 ? top_k[0].count : 0);
-  base::UmaHistogramCounts10000("Conversions.SourcesPerSourceOrigin.3rd",
+  base::UmaHistogramCounts10000("Conversions.SourcesPerSourceOrigin2.3rd",
                                 k >= 3 ? top_k[2].count : 0);
-  base::UmaHistogramCounts10000("Conversions.SourcesPerSourceOrigin.7th",
+  base::UmaHistogramCounts10000("Conversions.SourcesPerSourceOrigin2.7th",
                                 k >= 7 ? top_k[6].count : 0);
-  base::UmaHistogramCounts10000("Conversions.SourcesPerSourceOrigin.20th",
+  base::UmaHistogramCounts10000("Conversions.SourcesPerSourceOrigin2.20th",
                                 k >= 20 ? top_k[19].count : 0);
 }
 
@@ -3336,13 +3393,6 @@ void AttributionStorageSql::SetDelegate(
   DCHECK(delegate);
   rate_limit_table_.SetDelegate(*delegate);
   delegate_ = std::move(delegate);
-}
-
-uint64_t AttributionStorageSql::SanitizeTriggerData(uint64_t trigger_data,
-                                                    SourceType source_type) {
-  uint64_t cardinality = delegate_->TriggerDataCardinality(source_type);
-  CHECK_NE(cardinality, 0u);
-  return trigger_data % cardinality;
 }
 
 }  // namespace content

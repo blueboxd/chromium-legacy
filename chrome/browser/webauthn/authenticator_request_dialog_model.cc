@@ -158,8 +158,10 @@ password_manager::PasskeyCredential::Source ToPasswordManagerSource(
       return password_manager::PasskeyCredential::Source::kAndroidPhone;
     case device::AuthenticatorType::kICloudKeychain:
       return password_manager::PasskeyCredential::Source::kICloudKeychain;
-    case device::AuthenticatorType::kChromeOS:
     case device::AuthenticatorType::kEnclave:
+      return password_manager::PasskeyCredential::Source::
+          kGooglePasswordManager;
+    case device::AuthenticatorType::kChromeOS:
     case device::AuthenticatorType::kOther:
       return password_manager::PasskeyCredential::Source::kOther;
   }
@@ -473,8 +475,19 @@ void AuthenticatorRequestDialogModel::
          (transport_availability_.has_empty_allow_list &&
           // iCloud Keychain has its own confirmation UI and we don't want to
           // duplicate it.
-          cred->value().source !=
-              device::AuthenticatorType::kICloudKeychain))) {
+          cred->value().source != device::AuthenticatorType::kICloudKeychain)
+#if BUILDFLAG(IS_MAC)
+         ||
+         // Never auto-trigger macOS profile credentials without either a local
+         // biometric or a UV requirement because, otherwise, there'll not be
+         // *any* UI.
+         (cred->value().source == device::AuthenticatorType::kTouchID &&
+          transport_availability_.user_verification_requirement !=
+              device::UserVerificationRequirement::kRequired &&
+          !local_biometrics_override_for_testing_.value_or(
+              device::fido::mac::DeviceHasBiometricsAvailable()))
+#endif
+             )) {
       SetCurrentStep(Step::kSelectPriorityMechanism);
     } else {
       mechanism.callback.Run();
@@ -2185,7 +2198,9 @@ void AuthenticatorRequestDialogModel::
 #if BUILDFLAG(IS_WIN)
   // The Windows-native UI already handles retrying so we do not offer a second
   // level of retry in that case.
-  offer_try_again_in_ui_ = false;
+  if (type != device::AuthenticatorType::kEnclave) {
+    offer_try_again_in_ui_ = false;
+  }
 #elif BUILDFLAG(IS_MAC)
   // If there are multiple platform authenticators, one of them is the default.
   if (!type.has_value() &&
@@ -2198,6 +2213,9 @@ void AuthenticatorRequestDialogModel::
       ephemeral_state_.saved_authenticators_.authenticator_list();
   auto platform_authenticator_it = base::ranges::find_if(
       authenticators, [type](const AuthenticatorReference& ref) -> bool {
+        if (type && *type == device::AuthenticatorType::kEnclave) {
+          return ref.type == *type;
+        }
         return ref.transport == device::FidoTransportProtocol::kInternal &&
                (!type || ref.type == *type ||
                 !base::FeatureList::IsEnabled(device::kWebAuthnICloudKeychain));

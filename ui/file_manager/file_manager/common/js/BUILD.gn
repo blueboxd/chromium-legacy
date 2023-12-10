@@ -13,36 +13,22 @@ visibility = [
 
 group("js_modules") {
   deps = [
-    ":app_util",
     ":array_data_model",
     ":async_util",
-    ":dialog_type",
     ":error_counter",
     ":file_type",
     ":file_types_data",
     ":files_app_entry_types",
     ":filtered_volume_manager",
     ":glitch",
-    ":icon_util",
     ":notifications",
     ":progress_center_common",
     ":recent_date_bucket",
     ":storage",
     ":ui",
     ":url_constants",
-    ":util",
     ":volume_manager_types",
   ]
-}
-
-js_library("app_util") {
-  deps = [
-    ":storage",
-    "//ui/file_manager/file_manager/externs:file_manager_private",
-    "//ui/file_manager/file_manager/externs:volume_manager",
-  ]
-  externs_list =
-      [ "//ui/file_manager/file_manager/externs/app_window_common.js" ]
 }
 
 js_library("array_data_model") {
@@ -69,9 +55,6 @@ js_library("error_counter") {
 js_library("glitch") {
 }
 
-js_library("dialog_type") {
-}
-
 js_unittest("files_app_entry_types_unittest") {
   deps = [
     ":files_app_entry_types",
@@ -83,17 +66,11 @@ js_unittest("files_app_entry_types_unittest") {
 }
 
 js_library("files_app_entry_types") {
-  deps = [
-    ":icon_util",
-    "//ui/file_manager/file_manager/common/js:volume_manager_types",
-  ]
+  deps = [ "//ui/file_manager/file_manager/common/js:volume_manager_types" ]
 }
 
 js_library("files_app_state") {
-  deps = [
-    ":dialog_type",
-    ":volume_manager_types",
-  ]
+  deps = [ ":volume_manager_types" ]
 }
 
 js_library("file_types_data") {
@@ -124,7 +101,6 @@ js_unittest("file_type_unittest") {
 js_library("filtered_volume_manager") {
   deps = [
     ":array_data_model",
-    ":util",
     "//ash/webui/common/resources:assert",
     "//ash/webui/common/resources:cr_deprecated",
     "//ash/webui/common/resources:event_target",
@@ -152,7 +128,6 @@ js_library("mock_chrome") {
 }
 
 js_library("mock_entry") {
-  deps = [ ":util" ]
 }
 
 js_library("notifications") {
@@ -165,7 +140,6 @@ js_library("progress_center_common") {
 
 js_library("recent_date_bucket") {
   deps = [
-    ":util",
     "//ui/file_manager/file_manager/externs:file_manager_private",
     "//ui/file_manager/file_manager/externs/ts:state",
   ]
@@ -205,50 +179,9 @@ js_library("unittest_util") {
 js_library("url_constants") {
 }
 
-js_library("util") {
-  deps = [
-    ":files_app_entry_types",
-    "//ash/webui/common/resources:assert",
-    "//ash/webui/common/resources:load_time_data.m",
-    "//ui/file_manager/file_manager/common/js:files_app_entry_types",
-    "//ui/file_manager/file_manager/common/js:ui",
-    "//ui/file_manager/file_manager/common/js:volume_manager_types",
-    "//ui/file_manager/file_manager/externs:entry_location",
-    "//ui/file_manager/file_manager/externs:file_manager_private",
-    "//ui/file_manager/file_manager/externs:files_app_entry_interfaces",
-    "//ui/file_manager/file_manager/externs:volume_manager",
-    "//ui/file_manager/file_manager/externs/ts:store",
-    "//ui/file_manager/file_manager/foreground/js:constants",
-  ]
-
-  externs_list = [
-    "//ui/file_manager/file_manager/externs/platform.js",
-    "//ui/file_manager/file_manager/externs/app_window_common.js",
-  ]
-}
-
-js_unittest("util_unittest") {
-  deps = [
-    ":files_app_entry_types",
-    ":mock_entry",
-    ":util",
-    "//chrome/test/data/webui/chromeos:chai_assert",
-    "//ui/file_manager/file_manager/background/js:mock_volume_manager",
-    "//ui/file_manager/file_manager/common/js:volume_manager_types",
-  ]
-}
-
-js_unittest("volume_manager_types_unittest") {
-  deps = [ ":volume_manager_types" ]
-}
-
 js_library("volume_manager_types") {
   deps = [
     "//ash/webui/common/resources:assert",
     "//ui/file_manager/file_manager/externs:file_manager_private",
   ]
-}
-
-js_library("icon_util") {
-  deps = [ "//ui/file_manager/file_manager/externs:file_manager_private" ]
 }

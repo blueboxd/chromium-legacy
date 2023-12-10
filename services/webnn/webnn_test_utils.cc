@@ -63,6 +63,40 @@ uint64_t GraphInfoBuilder::BuildOutput(const std::string& name,
   return operand_id;
 }
 
+void GraphInfoBuilder::BuildPad(uint64_t input_operand_id,
+                                uint64_t output_operand_id,
+                                const std::vector<uint32_t>& beginning_padding,
+                                const std::vector<uint32_t>& ending_padding,
+                                mojom::PaddingMode::Tag mode,
+                                float value) {
+  mojom::PadPtr pad = mojom::Pad::New();
+  pad->input_operand_id = input_operand_id;
+  pad->output_operand_id = output_operand_id;
+  pad->beginning_padding = beginning_padding;
+  pad->ending_padding = ending_padding;
+  switch (mode) {
+    case mojom::PaddingMode::Tag::kConstant: {
+      auto constant_padding = mojom::ConstantPadding::New();
+      constant_padding->value = value;
+      pad->mode = mojom::PaddingMode::NewConstant(std::move(constant_padding));
+      break;
+    }
+    case mojom::PaddingMode::Tag::kEdge:
+      pad->mode = mojom::PaddingMode::NewEdge(mojom::EdgePadding::New());
+      break;
+    case mojom::PaddingMode::Tag::kReflection:
+      pad->mode =
+          mojom::PaddingMode::NewReflection(mojom::ReflectionPadding::New());
+      break;
+    case mojom::PaddingMode::Tag::kSymmetric:
+      pad->mode =
+          mojom::PaddingMode::NewSymmetric(mojom::SymmetricPadding::New());
+      break;
+  }
+
+  graph_info_->operations.push_back(mojom::Operation::NewPad(std::move(pad)));
+}
+
 void GraphInfoBuilder::BuildSplit(
     uint64_t input_operand_id,
     const std::vector<uint64_t>& output_operand_ids,
@@ -74,20 +108,6 @@ void GraphInfoBuilder::BuildSplit(
 
   graph_info_->operations.push_back(
       mojom::Operation::NewSplit(std::move(split)));
-}
-
-void GraphInfoBuilder::BuildOperator(
-    mojom::Operator::Kind kind,
-    const std::vector<uint64_t>& inputs,
-    const std::vector<uint64_t>& outputs,
-    mojom::OperatorAttributesPtr operator_attributes) {
-  mojom::OperatorPtr operation = mojom::Operator::New();
-  operation->kind = kind;
-  operation->input_operands = inputs;
-  operation->output_operands = outputs;
-  operation->attributes = std::move(operator_attributes);
-  graph_info_->operations.push_back(
-      mojom::Operation::NewGenericOperator(std::move(operation)));
 }
 
 void GraphInfoBuilder::BuildClamp(uint64_t input_operand_id,
@@ -128,12 +148,41 @@ void GraphInfoBuilder::BuildElementWiseBinary(
       mojom::Operation::NewElementWiseBinary(std::move(binary)));
 }
 
+void GraphInfoBuilder::BuildPrelu(uint64_t input_operand_id,
+                                  uint64_t slope_operand_id,
+                                  uint64_t output_operand_id) {
+  mojom::PreluPtr prelu = mojom::Prelu::New();
+  prelu->input_operand_id = input_operand_id;
+  prelu->slope_operand_id = slope_operand_id;
+  prelu->output_operand_id = output_operand_id;
+  graph_info_->operations.push_back(
+      mojom::Operation::NewPrelu(std::move(prelu)));
+}
+
 void GraphInfoBuilder::BuildRelu(uint64_t input_operand_id,
                                  uint64_t output_operand_id) {
   mojom::ReluPtr relu = mojom::Relu::New();
   relu->input_operand_id = input_operand_id;
   relu->output_operand_id = output_operand_id;
   graph_info_->operations.push_back(mojom::Operation::NewRelu(std::move(relu)));
+}
+
+void GraphInfoBuilder::BuildReshape(uint64_t input_operand_id,
+                                    uint64_t output_operand_id) {
+  mojom::ReshapePtr reshape = mojom::Reshape::New();
+  reshape->input_operand_id = input_operand_id;
+  reshape->output_operand_id = output_operand_id;
+  graph_info_->operations.push_back(
+      mojom::Operation::NewReshape(std::move(reshape)));
+}
+
+void GraphInfoBuilder::BuildSigmoid(uint64_t input_operand_id,
+                                    uint64_t output_operand_id) {
+  mojom::SigmoidPtr sigmoid = mojom::Sigmoid::New();
+  sigmoid->input_operand_id = input_operand_id;
+  sigmoid->output_operand_id = output_operand_id;
+  graph_info_->operations.push_back(
+      mojom::Operation::NewSigmoid(std::move(sigmoid)));
 }
 
 void GraphInfoBuilder::BuildSoftmax(uint64_t input_operand_id,
@@ -143,6 +192,14 @@ void GraphInfoBuilder::BuildSoftmax(uint64_t input_operand_id,
   softmax->output_operand_id = output_operand_id;
   graph_info_->operations.push_back(
       mojom::Operation::NewSoftmax(std::move(softmax)));
+}
+
+void GraphInfoBuilder::BuildTanh(uint64_t input_operand_id,
+                                 uint64_t output_operand_id) {
+  mojom::TanhPtr tanh = mojom::Tanh::New();
+  tanh->input_operand_id = input_operand_id;
+  tanh->output_operand_id = output_operand_id;
+  graph_info_->operations.push_back(mojom::Operation::NewTanh(std::move(tanh)));
 }
 
 void GraphInfoBuilder::BuildTranspose(uint64_t input_operand_id,

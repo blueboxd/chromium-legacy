@@ -17,7 +17,7 @@ import * as inferenceUtil from '//components/autofill/ios/form_util/resources/fi
  * @return {string} The label of element or an empty string if there is no
  *                  sibling or no label.
  */
-__gCrWeb.fill.inferLabelFromSibling = function(element, forward) {
+function inferLabelFromSibling(element, forward) {
   let inferredLabel = '';
   let sibling = element;
   if (!sibling) {
@@ -89,7 +89,7 @@ __gCrWeb.fill.inferLabelFromSibling = function(element, forward) {
     break;
   }
   return inferredLabel.trim();
-};
+}
 
 /**
  * Helper for |InferLabelForElement()| that infers a label, if possible, from
@@ -109,7 +109,7 @@ __gCrWeb.fill.inferLabelFromSibling = function(element, forward) {
  * @return {string} The label of element.
  */
 __gCrWeb.fill.inferLabelFromPrevious = function(element) {
-  return __gCrWeb.fill.inferLabelFromSibling(element, false);
+  return inferLabelFromSibling(element, false);
 };
 
 /**
@@ -123,9 +123,9 @@ __gCrWeb.fill.inferLabelFromPrevious = function(element) {
  * @param {FormControlElement} element An element to examine.
  * @return {string} The label of element.
  */
-__gCrWeb.fill.inferLabelFromNext = function(element) {
-  return __gCrWeb.fill.inferLabelFromSibling(element, true);
-};
+function inferLabelFromNext(element) {
+  return inferLabelFromSibling(element, true);
+}
 
 /**
  * Helper for |InferLabelForElement()| that infers a label, if possible, from
@@ -138,13 +138,13 @@ __gCrWeb.fill.inferLabelFromNext = function(element) {
  * @param {FormControlElement} element An element to examine.
  * @return {string} The label of element.
  */
-__gCrWeb.fill.inferLabelFromPlaceholder = function(element) {
+function inferLabelFromPlaceholder(element) {
   if (!element) {
     return '';
   }
 
   return element.placeholder || element.getAttribute('placeholder') || '';
-};
+}
 
 /**
  * Helper for |InferLabelForElement()| that infers a label, if possible, from
@@ -158,14 +158,14 @@ __gCrWeb.fill.inferLabelFromPlaceholder = function(element) {
  * @param {FormControlElement} element An element to examine.
  * @return {string} The label of element.
  */
-__gCrWeb.fill.InferLabelFromValueAttr = function(element) {
+function inferLabelFromValueAttr(element) {
   if (!element || !element.value || !element.hasAttribute('value') ||
       element.value !== element.getAttribute('value')) {
     return '';
   }
 
   return element.value;
-};
+}
 
 /**
  * Helper for |InferLabelForElement()| that infers a label, if possible, from
@@ -541,7 +541,7 @@ __gCrWeb.fill.inferLabelFromDefinitionList = function(element) {
 __gCrWeb.fill.inferLabelForElement = function(element) {
   let inferredLabel;
   if (__gCrWeb.fill.isCheckableElement(element)) {
-    inferredLabel = __gCrWeb.fill.inferLabelFromNext(element);
+    inferredLabel = inferLabelFromNext(element);
     if (inferenceUtil.isLabelValid(inferredLabel)) {
       return inferredLabel;
     }
@@ -553,7 +553,7 @@ __gCrWeb.fill.inferLabelForElement = function(element) {
   }
 
   // If we didn't find a label, check for the placeholder case.
-  inferredLabel = __gCrWeb.fill.inferLabelFromPlaceholder(element);
+  inferredLabel = inferLabelFromPlaceholder(element);
   if (inferenceUtil.isLabelValid(inferredLabel)) {
     return inferredLabel;
   }
@@ -597,10 +597,12 @@ __gCrWeb.fill.inferLabelForElement = function(element) {
     }
   }
   // If we didn't find a label, check for the value attribute case.
-  inferredLabel = __gCrWeb.fill.InferLabelFromValueAttr(element);
+  inferredLabel = inferLabelFromValueAttr(element);
   if (inferenceUtil.isLabelValid(inferredLabel)) {
     return inferredLabel;
   }
 
   return '';
 };
+
+export {inferLabelFromNext};

@@ -38,7 +38,11 @@
 #include "chrome/browser/ui/webui/metrics_reporter/metrics_reporter.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search_prefs.h"
 #include "chrome/browser/ui/webui/util/image_util.h"
+#include "chrome/browser/user_education/user_education_service.h"
+#include "chrome/browser/user_education/user_education_service_factory.h"
 #include "chrome/common/webui_url_constants.h"
+#include "components/user_education/common/tutorial_identifier.h"
+#include "components/user_education/common/tutorial_service.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/color/color_provider.h"
 
@@ -163,6 +167,9 @@ void TabSearchPageHandler::AcceptTabOrganization(
     const std::string& name,
     std::vector<tab_search::mojom::TabPtr> tabs) {
   // TODO(dpenning): Implement this
+  Browser* browser = chrome::FindLastActive();
+  browser->profile()->GetPrefs()->SetBoolean(
+      tab_search_prefs::kTabOrganizationShowFRE, false);
 }
 
 void TabSearchPageHandler::RejectTabOrganization(int32_t session_id,
@@ -279,6 +286,28 @@ void TabSearchPageHandler::SaveRecentlyClosedExpandedPref(bool expanded) {
 void TabSearchPageHandler::SetTabIndex(int32_t index) {
   Profile::FromWebUI(web_ui_)->GetPrefs()->SetInteger(
       tab_search_prefs::kTabSearchTabIndex, index);
+}
+
+void TabSearchPageHandler::StartTabGroupTutorial() {
+  // Close the tab search bubble if showing.
+  auto embedder = webui_controller_->embedder();
+  if (embedder) {
+    embedder->CloseUI();
+  }
+
+  const Browser* const browser = chrome::FindLastActive();
+  auto* const user_education_service =
+      UserEducationServiceFactory::GetForBrowserContext(browser->profile());
+  user_education::TutorialService* const tutorial_service =
+      user_education_service ? &user_education_service->tutorial_service()
+                             : nullptr;
+  CHECK(tutorial_service);
+
+  const ui::ElementContext context = browser->window()->GetElementContext();
+  CHECK(context);
+
+  user_education::TutorialIdentifier tutorial_id = kTabGroupTutorialId;
+  tutorial_service->StartTutorial(tutorial_id, context);
 }
 
 void TabSearchPageHandler::ShowUI() {

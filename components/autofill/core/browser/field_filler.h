@@ -26,13 +26,21 @@ class FieldFiller {
               AddressNormalizer* address_normalizer);
   ~FieldFiller();
 
+  // Returns the appropriate `profile` value based on `field_type` to fill
+  // into `field_data`.
+  static std::u16string GetValueForProfile(const AutofillProfile& profile,
+                                           const std::string& app_locale,
+                                           const AutofillType& field_type,
+                                           const FormFieldData* field_data,
+                                           std::string* failure_to_fill);
+
   // Based on |field.Type()|, returns value that is supposed to be filled in the
   // |field_data|.
   std::u16string GetValueForFilling(
       const AutofillField& field,
       absl::variant<const AutofillProfile*, const CreditCard*>
           profile_or_credit_card,
-      FormFieldData* field_data,
+      const FormFieldData* field_data,
       const std::u16string& cvc,
       mojom::ActionPersistence action_persistence,
       std::string* failure_to_fill);
@@ -69,9 +77,10 @@ class FieldFiller {
 
   // Returns the index of the shortest entry in the given select field of which
   // |value| is a substring. Returns -1 if no such entry exists.
-  static int FindShortestSubstringMatchInSelect(const std::u16string& value,
-                                                bool ignore_whitespace,
-                                                const FormFieldData* field);
+  static int FindShortestSubstringMatchInSelect(
+      const std::u16string& value,
+      bool ignore_whitespace,
+      base::span<const SelectOption> field_options);
 
  private:
   const std::string app_locale_;

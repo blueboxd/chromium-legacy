@@ -69,6 +69,8 @@ class ASH_EXPORT FastInkHost : public FrameSinkHost {
     return gpu_memory_buffer_.get();
   }
 
+  const gpu::Mailbox& mailbox_for_test() const { return mailbox_; }
+
   int get_pending_bitmaps_size_for_test() const {
     return pending_bitmaps_.size();
   }
@@ -108,6 +110,10 @@ class ASH_EXPORT FastInkHost : public FrameSinkHost {
   };
 
   std::vector<PendingBitmap> pending_bitmaps_;
+
+  gpu::Mailbox mailbox_;
+  gpu::SyncToken sync_token_;
+  scoped_refptr<viz::RasterContextProvider> context_provider_;
 };
 
 }  // namespace ash

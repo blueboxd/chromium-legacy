@@ -663,33 +663,6 @@
   </event>
 </project>
 
-<project name="CameraPeripheralInfo">
-  <owner>cros-camera-eng@chromium.org</owner>
-  <id>none</id>
-  <scope>device</scope>
-  <key-rotation>90</key-rotation>
-  <summary>
-    Project for camera peripheral popularity study. This is to get the list of
-    top camera peripherals.
-  </summary>
-
-  <event name="OpenCamera">
-    <summary>
-      Recorded whenever a camera is opened from Chrome.
-    </summary>
-    <metric name="VendorId" type="int">
-      <summary>
-        The vendor id of the device.
-      </summary>
-    </metric>
-    <metric name="ProductId" type="int">
-      <summary>
-        The product id of the device.
-      </summary>
-    </metric>
-  </event>
-</project>
-
 <project name="TestProjectOne">
   <owner>tby@chromium.org</owner>
   <id>per-project</id>
@@ -825,6 +798,27 @@
       Event for unit testing, do not use.
     </summary>
     <metric name="TestMetricSeven" type="double">
+      <summary>
+        A floating point value.
+      </summary>
+    </metric>
+  </event>
+</project>
+
+<project name="TestProjectSeven">
+  <owner>andrewbregger@google.com</owner>
+  <id>none</id>
+  <scope>profile</scope>
+  <key-rotation>90</key-rotation>
+  <summary>
+    Project for unit testing, do not use.
+  </summary>
+
+  <event name="TestEventEight" force_record="true">
+    <summary>
+      Event for unit testing, do not use.
+    </summary>
+    <metric name="TestMetricEight" type="double">
       <summary>
         A floating point value.
       </summary>

@@ -1302,6 +1302,32 @@ TEST_F(AutofillChildrenSuggestionsGenenarationTest,
       Field(&Suggestion::popup_item_id, PopupItemId::kFillFullPhoneNumber));
 }
 
+// Same as above but for email fields.
+TEST_F(AutofillChildrenSuggestionsGenenarationTest,
+       CreateSuggestionsFromProfiles_ChildrenSuggestionsEmailField) {
+  std::vector<Suggestion> suggestions = CreateSuggestionWithChildrenFromProfile(
+      profile(), kAllServerFieldTypes, EMAIL_ADDRESS);
+
+  // The child suggestions should be:
+  //
+  // 1. first name
+  // 2. middle name
+  // 3. family name
+  // 4. line separator
+  // 5. address line 1
+  // 6. address line 2
+  // 7. Zip
+  // 8. line separator
+  // 9. phone number
+  // 10. email
+  // 11. line separator
+  // 12. edit profile
+  // 13. delete address
+  ASSERT_EQ(13U, suggestions[0].children.size());
+  EXPECT_THAT(suggestions[0].children[9],
+              Field(&Suggestion::popup_item_id, PopupItemId::kFillFullEmail));
+}
+
 TEST_F(AutofillChildrenSuggestionsGenenarationTest,
        CreateSuggestionsFromProfiles_ChildrenSuggestionsAddressField) {
   std::vector<Suggestion> suggestions = CreateSuggestionWithChildrenFromProfile(
@@ -1503,8 +1529,7 @@ TEST_F(AutofillSuggestionGeneratorTest, GetSuggestionsForProfiles_Filtering) {
                 ->GetSuggestionsForProfiles(
                     {NAME_FIRST}, triggering_field, NAME_FIRST,
                     /*last_targeted_fields=*/absl::nullopt,
-                    AutofillSuggestionTriggerSource::
-                        kManualFallbackForAutocompleteUnrecognized)
+                    AutofillSuggestionTriggerSource::kManualFallbackAddress)
                 .size(),
             2u);
 }
@@ -2089,7 +2114,7 @@ TEST_F(AutofillSuggestionGeneratorTest, GetLocalAndServerIbanSuggestions) {
 
   Iban server_iban1 = test::GetServerIban();
   Iban server_iban2 = test::GetServerIban2();
-  Iban local_iban1 = test::GetIban();
+  Iban local_iban1 = test::GetLocalIban();
 
   std::vector<Suggestion> iban_suggestions =
       AutofillSuggestionGenerator::GetSuggestionsForIbans(
@@ -2217,9 +2242,38 @@ TEST_F(AutofillSuggestionGeneratorTest,
             PopupItemId::kMerchantPromoCodeEntry);
 }
 
-// This class helps test the credit card contents that are displayed in Autofill
-// suggestions. It covers suggestions on Desktop/Android dropdown, and on
-// Android keyboard accessory.
+TEST_F(AutofillSuggestionGeneratorTest, TestAddressSuggestion) {
+  AutofillProfile profile = test::GetFullProfile();
+  personal_data()->set_test_addresses({profile});
+  std::vector<Suggestion> suggestions =
+      suggestion_generator()->CreateSuggestionsFromProfiles(
+          {&profile}, /*field_types=*/{NAME_FIRST},
+          /*last_targeted_fields=*/kAllServerFieldTypes, NAME_FIRST,
+          /*trigger_field_max_length=*/0);
+
+  // Therere should be test address suggestion and one regular profile
+  // suggestion.
+  ASSERT_EQ(suggestions.size(), 2u);
+  EXPECT_EQ(suggestions[0].popup_item_id, PopupItemId::kDevtoolsTestAddresses);
+  EXPECT_EQ(suggestions[1].popup_item_id, PopupItemId::kAddressEntry);
+
+  EXPECT_EQ(suggestions[0].main_text.value, u"Devtools");
+  EXPECT_EQ(suggestions[0].labels.size(), 1u);
+  EXPECT_EQ(suggestions[0].labels[0].size(), 1u);
+  EXPECT_EQ(suggestions[0].labels[0][0],
+            Suggestion::Text(u"Address test data"));
+  EXPECT_EQ(suggestions[0].icon, "codeIcon");
+  EXPECT_EQ(suggestions[0].children.size(), 1u);
+
+  const Suggestion& child = suggestions[0].children.back();
+  EXPECT_EQ(child.main_text.value, u"United States");
+  EXPECT_EQ(child.GetPayload<Suggestion::BackendId>().value(), profile.guid());
+  EXPECT_EQ(child.popup_item_id, PopupItemId::kDevtoolsTestAddressEntry);
+}
+
+// This class helps test the credit card contents that are displayed in
+// Autofill suggestions. It covers suggestions on Desktop/Android dropdown,
+// and on Android keyboard accessory.
 class AutofillCreditCardSuggestionContentTest
     : public AutofillSuggestionGeneratorTest {
  public:

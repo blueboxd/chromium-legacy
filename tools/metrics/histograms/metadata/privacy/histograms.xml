@@ -32,6 +32,34 @@ reviewer.
   <variant name="Server" summary="server-side"/>
 </variants>
 
+<histogram name="Privacy.3PCD.AdsHeuristicAddedToOverrides"
+    enum="ProfileEligibilityMismatch" expires_after="2024-07-01">
+  <owner>johnidel@chromium.org</owner>
+  <owner>src/chrome/browser/tpcd/OWNERS</owner>
+  <summary>
+    Records what overrides were added to cookie setting overrides by the ads
+    heuristic. For non-ad cookie accesses, this records none. Only recorded
+    while the SkipTPCDMitigationsWithAdsHeuristic feature is on. Recorded once
+    on request start, or document.cookie access. Note that a single request may
+    emit multiple entries to this histogram, and the overall bucket proportions
+    will not be accurate.
+  </summary>
+</histogram>
+
+<histogram name="Privacy.3pcd.Experiment3pcBlockStatusHistogram"
+    enum="Experiment3pcBlockStatus" expires_after="2024-07-01">
+  <owner>trishalfonso@google.com</owner>
+  <owner>src/chrome/browser/tpcd/OWNERS</owner>
+  <summary>
+    Records the state of 3P cookie enablement in relation to the requested 3P
+    cookie usage for the 3P cookie deprecation experiment when the 3P cookie
+    deprecation experiment is enabled.
+
+    Recorded for each main-frame navigation when that navigation commits. Only
+    counts HTTP or HTTPS URLs and ignores downloads.
+  </summary>
+</histogram>
+
 <histogram name="Privacy.3pcd.ProfileEligibilityMismatch"
     enum="ProfileEligibilityMismatch" expires_after="2024-07-01">
   <owner>trishalfonso@google.com</owner>
@@ -723,18 +751,57 @@ reviewer.
   </summary>
 </histogram>
 
+<histogram name="PrivacySandbox.Attestations.IsSiteAttested"
+    enum="PrivacySandboxApiAllowed" expires_after="2024-04-28">
+  <owner>shivanisha@chromium.org</owner>
+  <owner>xiaochenzh@chromium.org</owner>
+  <summary>
+    Records the status of Privacy Sandbox APIs attestation checks. Each time a
+    Privacy Sandbox API attestation check takes place, the status is recorded.
+    The status can be allowed, or denied with reasons. This is an aggregate
+    metric across all Privacy Sandbox APIs that require attestations.
+  </summary>
+</histogram>
+
 <histogram
-    name="PrivacySandbox.CookieDeprecationFacilitatedTesting.ProfileEligibility"
+    name="PrivacySandbox.CookieDeprecationFacilitatedTesting.ReasonForComputedEligibilityForProfile"
     enum="CookieDeprecationFacilitatedTestingProfileEligibility"
     expires_after="2024-10-25">
   <owner>anthonygarant@chromium.org</owner>
   <owner>linan@chromium.org</owner>
   <owner>measurement-api-dev+metrics@google.com</owner>
   <summary>
-    Records the profile eligibility to cookie deprecation facilitated testing.
+    Records a profile computed eligibility to cookie deprecation facilitated
+    testing.
 
-    The metric is only recorded when the client eligibility has not been
-    determined and then the profile eligibility is computed.
+    Recorded each time a profile is first loaded in a browser session.
+
+    We define the computed eligibility as the actual eligibility of the profile
+    regardless of the profile's used/effective eligibility.
+
+    There might be a mismatches between the computed and used/effective
+    eligibility of a profile as all profiles on a client share a single
+    eligibility value.
+
+    For data on mismatches, see: Privacy.3pcd.ProfileEligibilityMismatch.
+  </summary>
+</histogram>
+
+<histogram
+    name="PrivacySandbox.CookieDeprecationFacilitatedTesting.ReasonForEligibilityStoredInPrefs"
+    enum="CookieDeprecationFacilitatedTestingProfileEligibility"
+    expires_after="2024-10-25">
+  <owner>anthonygarant@chromium.org</owner>
+  <owner>linan@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Records the profile's computed eligibility which was used to set the
+    client's eligibility to cookie deprecation facilitated testing.
+
+    Once set, the eligibility is stored in the pref service local state.
+
+    For a given client, the metric will not be recorded again so long as the set
+    eligibility is available from the pref service local state.
   </summary>
 </histogram>
 
@@ -897,6 +964,50 @@ reviewer.
 </histogram>
 
 <histogram
+    name="PrivacySandbox.TrackingProtection.NoticeService.IsObservingTabStripModel"
+    enum="Boolean" expires_after="2024-09-30">
+  <owner>jacobstanley@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <summary>
+    Records a boolean for whether or not the tab strip model is being observed.
+  </summary>
+</histogram>
+
+<histogram
+    name="PrivacySandbox.TrackingProtection.Offboarding.NoticeServiceEvent"
+    enum="TrackingProtectionMetricsNoticeEvent" expires_after="2024-09-30">
+  <owner>jacobstanley@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <summary>
+    Records different events, such as tab changes, navigation finishing, and
+    browser type being non normal, that occur in the notice service during
+    offboarding for 3PCD.
+  </summary>
+</histogram>
+
+<histogram
+    name="PrivacySandbox.TrackingProtection.Onboarding.DidNoticeActionAckowledge"
+    enum="Boolean" expires_after="2024-09-30">
+  <owner>jacobstanley@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <summary>
+    Records a boolean for whether or not the NoticeActionTaken function marked
+    the user to have acknowledged the onboarding notice.
+  </summary>
+</histogram>
+
+<histogram
+    name="PrivacySandbox.TrackingProtection.Onboarding.DidNoticeShownOnboard"
+    enum="Boolean" expires_after="2024-09-30">
+  <owner>jacobstanley@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <summary>
+    Records a boolean for whether or not the NoticeShown function changed the
+    user from eligible to onboarded.
+  </summary>
+</histogram>
+
+<histogram
     name="PrivacySandbox.TrackingProtection.Onboarding.EligibleToOnboardedDuration"
     units="ms" expires_after="2024-09-30">
   <owner>jacobstanley@google.com</owner>
@@ -919,6 +1030,39 @@ reviewer.
 </histogram>
 
 <histogram
+    name="PrivacySandbox.TrackingProtection.Onboarding.MarkedEligibleDueToForcedFlag"
+    enum="Boolean" expires_after="2024-09-30">
+  <owner>jacobstanley@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <summary>
+    Records a boolean for whether or not status was marked eligible due to the
+    forced eligibility flag.
+  </summary>
+</histogram>
+
+<histogram
+    name="PrivacySandbox.TrackingProtection.Onboarding.MaybeMarkEligible"
+    enum="Boolean" expires_after="2024-09-30">
+  <owner>jacobstanley@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <summary>
+    Records a boolean for whether or not the MaybeMarkEligible function changed
+    the user to eligible.
+  </summary>
+</histogram>
+
+<histogram
+    name="PrivacySandbox.TrackingProtection.Onboarding.MaybeMarkIneligible"
+    enum="Boolean" expires_after="2024-09-30">
+  <owner>jacobstanley@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <summary>
+    Records a boolean for whether or not the MaybeMarkIneligible function
+    changed the user to ineligible.
+  </summary>
+</histogram>
+
+<histogram
     name="PrivacySandbox.TrackingProtection.Onboarding.NoticeControllerEvent"
     enum="TrackingProtectionNoticeControllerEvent" expires_after="2024-09-01">
   <owner>tommasin@chromium.org</owner>
@@ -929,6 +1073,18 @@ reviewer.
     its controller. This is a Clank-only metric and helps understanding whether
     the message was requested to be shown but wasn't due to e.g. navigation only
     on tabs with non-secure connection state.
+  </summary>
+</histogram>
+
+<histogram
+    name="PrivacySandbox.TrackingProtection.Onboarding.NoticeServiceEvent"
+    enum="TrackingProtectionMetricsNoticeEvent" expires_after="2024-09-30">
+  <owner>jacobstanley@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <summary>
+    Records different events, such as tab changes, navigation finishing, and
+    browser type being non normal, that occur in the notice service during
+    onboarding for 3PCD.
   </summary>
 </histogram>
 
@@ -984,6 +1140,34 @@ reviewer.
     Records the time it takes while waiting to be onboarded to 3PCD. This occurs
     once per profile during the startup of onboarding.
   </summary>
+</histogram>
+
+<histogram
+    name="PrivacySandbox.TrackingProtection.SentimentSurvey.HatsGroupRegisteredAndEligible"
+    enum="SentimentSurveyGroupMetrics" expires_after="2024-09-30">
+  <owner>jacobstanley@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <summary>
+    Records the group that the profile is part of in RunHatsLogic function
+    before the ProbabilityCheck.
+  </summary>
+</histogram>
+
+<histogram name="PrivacySandbox.TrackingProtection.SentimentSurvey.Registered"
+    enum="SentimentSurveyGroupMetrics" expires_after="2024-09-30">
+  <owner>jacobstanley@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <summary>
+    Records the group that the profile is registered to for the sentiment
+    survey. This occurs once per profile.
+  </summary>
+</histogram>
+
+<histogram name="PrivacySandbox.TrackingProtection.SentimentSurvey.WasSurveyed"
+    enum="Boolean" expires_after="2024-09-30">
+  <owner>jacobstanley@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <summary>Records whether that the profile responded to the survey.</summary>
 </histogram>
 
 <histogram name="PrivacySandbox.{ApiType}" enum="PrivacySandboxApiAllowed"

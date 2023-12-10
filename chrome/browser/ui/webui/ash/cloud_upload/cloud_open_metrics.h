@@ -44,7 +44,9 @@ class Metric {
   // `value`. Update the state:
   //   kCorrectlyNotLogged  -> kCorrectlyLogged
   //   !kCorrectlyNotLogged -> kIncorrectlyLoggedMultipleTimes
-  void Log(MetricType new_value) {
+  // Return false if there was a metric inconsistency. That is, if the latter
+  // state change occurred.
+  bool Log(MetricType new_value) {
     LogMetric(new_value);
     if (state == MetricState::kCorrectlyNotLogged) {
       state = MetricState::kCorrectlyLogged;
@@ -53,6 +55,7 @@ class Metric {
     }
     old_value = value;
     value = new_value;
+    return state == MetricState::kCorrectlyLogged;
   }
 
   // Return true if the `state` is a logged state.
@@ -69,39 +72,33 @@ class Metric {
     }
   }
 
-  // Metric should not be logged.
-  void MakeInconsistentIfLogged() {
+  // Check metric is not logged, otherwise mark the metric as inconsistent and
+  // return false.
+  bool IsNotLogged() {
     if (logged()) {
       state = MetricState::kIncorrectlyLogged;
+      return false;
     }
+    return true;
   }
 
-  // Metric should be logged but not with a value in `values`.
-  void MakeInconsistentIfLoggedWith(const std::vector<MetricType>& values) {
+  // Check metric is logged, otherwise mark the metric as inconsistent and
+  // return false.
+  bool IsLogged() {
     if (!logged()) {
       state = MetricState::kIncorrectlyNotLogged;
-    } else if (base::Contains(values, value)) {
-      state = MetricState::kWrongValueLogged;
+      return false;
     }
+    return true;
   }
 
-  // Metric should be logged.
-  void MakeInconsistentIfNotLogged() {
-    if (!logged()) {
-      state = MetricState::kIncorrectlyNotLogged;
-    }
+  void set_state(MetricState new_state) { state = new_state; }
+
+  void set_metric_name(std::string new_metric_name) {
+    metric_name = new_metric_name;
   }
 
-  // Metric should be logged with a value in `values`.
-  void MakeInconsistentIfNotLoggedWith(const std::vector<MetricType>& values) {
-    if (!logged()) {
-      state = MetricState::kIncorrectlyNotLogged;
-    } else if (!base::Contains(values, value)) {
-      state = MetricState::kWrongValueLogged;
-    }
-  }
-
-  const std::string metric_name;
+  std::string metric_name;
   MetricState state = MetricState::kCorrectlyNotLogged;
   MetricType value;
   MetricType old_value;
@@ -129,7 +126,7 @@ inline void Metric<MetricType>::LogMetric(MetricType new_value) {
 // a SafeRef.
 class CloudOpenMetrics {
  public:
-  explicit CloudOpenMetrics(CloudProvider cloud_provider);
+  explicit CloudOpenMetrics(CloudProvider cloud_provider, size_t file_count);
   ~CloudOpenMetrics();
 
   // Not copyable. Create a SafeRef instead.
@@ -164,46 +161,42 @@ class CloudOpenMetrics {
   // Log the `value` for the UploadResult metric.
   void LogUploadResult(OfficeFilesUploadResult value);
 
+  // Updates the cloud provider for the cloud upload flow. Updates the metric
+  // names to log with.
+  void UpdateCloudProvider(CloudProvider cloud_provider);
+
   base::SafeRef<CloudOpenMetrics> GetSafeRef() const;
 
   // For testing.
   base::WeakPtr<CloudOpenMetrics> GetWeakPtr();
 
  private:
-  // Print the debug information for each metric.
-  void PrintMetrics();
-
-  // If the metric has moved to an inconsistent state print debug information
-  // about the inconsistency. Only handle the kIncorrectlyLoggedMultipleTimes
-  // state during the cloud upload flow and not when the `destructor` is
-  // running.
+  // Print debug information about the detected inconsistency and every metric.
+  // If `immediately_dump`, `DumpWithoutCrashing()`, otherwise set
+  // `delayed_dump_`.
   template <typename MetricType>
-  void PrintDebugInformationIfInconsistent(Metric<MetricType>& metric,
-                                           bool destructor = true);
+  void OnInconsistencyFound(Metric<MetricType>& metric,
+                            bool immediately_dump = true);
 
   // Expect that the `metric` is not logged. Otherwise update the state and
-  // print debug information.
+  // call `OnInconsistencyFound()` with `immediately_dump` as false.
   template <typename MetricType>
   void ExpectNotLogged(Metric<MetricType>& metric);
 
-  // Expect that the `metric` is logged but not with a value in `values`.
-  // Otherwise update the state and print debug information.
-  template <typename MetricType>
-  void ExpectNotLoggedWith(Metric<MetricType>& metric,
-                           const std::vector<MetricType>& values);
-
   // Expect that the `metric` metric is logged with a value. Otherwise update
-  // the state and print debug information.
+  // the state and call `OnInconsistencyFound()` with `immediately_dump` as
+  // false.
   template <typename MetricType>
   void ExpectLogged(Metric<MetricType>& metric);
 
-  // Expect that the `metric` metric is logged with a value from `values`.
-  // Otherwise update the state and print debug information.
+  // Update the `metric` state to `kWrongValueLogged` and call
+  // `OnInconsistencyFound()` with `immediately_dump` as false.
   template <typename MetricType>
-  void ExpectLoggedWith(Metric<MetricType>& metric,
-                        const std::vector<MetricType>& values);
+  void SetWrongValueLogged(Metric<MetricType>& metric);
 
-  bool inconsistency_found_ = false;
+  bool multiple_files_;
+  // Whether to `DumpWithoutCrashing()` at the end of the destructor.
+  bool delayed_dump_ = false;
   CloudProvider cloud_provider_;
   Metric<base::File::Error> copy_error_;
   Metric<base::File::Error> move_error_;

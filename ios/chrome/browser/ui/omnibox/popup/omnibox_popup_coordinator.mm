@@ -20,7 +20,7 @@
 #import "ios/chrome/browser/history/top_sites_factory.h"
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/policy/policy_util.h"
-#import "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
 #import "ios/chrome/browser/shared/coordinator/layout_guide/layout_guide_util.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
@@ -186,6 +186,11 @@
 
 - (id<ToolbarOmniboxConsumer>)toolbarOmniboxConsumer {
   return self.mediator.presenter;
+}
+
+- (void)toggleOmniboxDebuggerView {
+  CHECK(experimental_flags::IsOmniboxDebuggingEnabled());
+  [self.popupViewController toggleOmniboxDebuggerView];
 }
 
 #pragma mark - Property accessor

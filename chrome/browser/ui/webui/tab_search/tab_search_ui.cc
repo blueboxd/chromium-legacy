@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search_prefs.h"
+#include "chrome/browser/ui/webui/tab_search/tab_search_sync_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -75,10 +76,25 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
       {"failureTitleGrouping", IDS_TAB_ORGANIZATION_FAILURE_TITLE_GROUPING},
       {"inProgressTitle", IDS_TAB_ORGANIZATION_IN_PROGRESS_TITLE},
       {"notStartedBody", IDS_TAB_ORGANIZATION_NOT_STARTED_BODY},
+      {"notStartedBodyFRE", IDS_TAB_ORGANIZATION_NOT_STARTED_BODY_FRE},
+      {"notStartedBodyUnsynced",
+       IDS_TAB_ORGANIZATION_NOT_STARTED_BODY_UNSYNCED},
+      {"notStartedBodyUnsyncedHistory",
+       IDS_TAB_ORGANIZATION_NOT_STARTED_BODY_UNSYNCED_HISTORY},
       {"notStartedButton", IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON},
+      {"notStartedButtonUnsynced",
+       IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_UNSYNCED},
+      {"notStartedButtonUnsyncedHistory",
+       IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_UNSYNCED_HISTORY},
+      {"notStartedButtonSyncPaused",
+       IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_SYNC_PAUSED},
       {"notStartedTitle", IDS_TAB_ORGANIZATION_NOT_STARTED_TITLE},
+      {"notStartedTitleFRE", IDS_TAB_ORGANIZATION_NOT_STARTED_TITLE_FRE},
       {"successTitle", IDS_TAB_ORGANIZATION_SUCCESS_TITLE},
       {"tabOrganizationTabName", IDS_TAB_ORGANIZATION_TAB_NAME},
+      {"tipTitle", IDS_TAB_ORGANIZATION_TIP_TITLE},
+      {"tipBody", IDS_TAB_ORGANIZATION_TIP_BODY},
+      {"tipAction", IDS_TAB_ORGANIZATION_TIP_ACTION},
   };
   webui::SetupChromeRefresh2023(source);
   source->AddLocalizedStrings(kStrings);
@@ -117,6 +133,7 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
 
   source->AddBoolean("tabOrganizationEnabled", features::IsTabOrganization());
   source->AddInteger("tabIndex", TabIndex());
+  source->AddBoolean("showTabOrganizationFRE", ShowTabOrganizationFRE());
 
   ui::Accelerator accelerator(ui::VKEY_A,
                               ui::EF_SHIFT_DOWN | ui::EF_PLATFORM_ACCELERATOR);
@@ -129,6 +146,8 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
   content::URLDataSource::Add(
       profile, std::make_unique<FaviconSource>(
                    profile, chrome::FaviconUrlFormat::kFavicon2));
+
+  web_ui->AddMessageHandler(std::make_unique<TabSearchSyncHandler>(profile));
 
   page_handler_timer_ = base::ElapsedTimer();
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
@@ -178,6 +197,11 @@ void TabSearchUI::CreatePageHandler(
   // per instance of the TabSearchUI.
   page_handler_ = std::make_unique<TabSearchPageHandler>(
       std::move(receiver), std::move(page), web_ui(), this, &metrics_reporter_);
+}
+
+bool TabSearchUI::ShowTabOrganizationFRE() {
+  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  return prefs->GetBoolean(tab_search_prefs::kTabOrganizationShowFRE);
 }
 
 int TabSearchUI::TabIndex() {

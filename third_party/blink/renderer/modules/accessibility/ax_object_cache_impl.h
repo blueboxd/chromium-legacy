@@ -67,9 +67,9 @@
 namespace blink {
 
 class AXRelationCache;
+class AbstractInlineTextBox;
 class HTMLAreaElement;
 class LocalFrameView;
-class NGAbstractInlineTextBox;
 class WebLocalFrameClient;
 
 // Describes a decicion on whether to create an AXNodeObject, an AXLayoutObject,
@@ -196,7 +196,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   void Remove(LayoutObject*) override;
   void Remove(Node*) override;
   void RemovePopup(Document*) override;
-  void Remove(NGAbstractInlineTextBox*) override;
+  void Remove(AbstractInlineTextBox*) override;
   // Remove an AXObject or its subtree, and if |notify_parent| is true,
   // recompute the parent's children and reserialize the parent.
   void Remove(AXObject*, bool notify_parent);
@@ -319,19 +319,22 @@ class MODULES_EXPORT AXObjectCacheImpl
   void OnTouchAccessibilityHover(const gfx::Point&) override;
 
   AXObject* ObjectFromAXID(AXID id) const override;
-  AXObject* Root();
+  AXObject* Root() override;
 
   // Used for objects without backing DOM nodes, layout objects, etc.
   AXObject* CreateAndInit(ax::mojom::blink::Role, AXObject* parent);
 
+  // Note that these functions do NOT guarantee that an AXObject will
+  // be created. For instance, not all HTMLElements can have an AXObject,
+  // such as <head> or <script> tags.
   AXObject* GetOrCreate(AccessibleNode*, AXObject* parent);
-  AXObject* GetOrCreate(LayoutObject*, AXObject* parent_if_known) override;
+  AXObject* GetOrCreate(LayoutObject*, AXObject* parent_if_known);
   AXObject* GetOrCreate(LayoutObject* layout_object);
-  AXObject* GetOrCreate(const Node*, AXObject* parent_if_known);
+  AXObject* GetOrCreate(const Node*, AXObject* parent_if_known) override;
   AXObject* GetOrCreate(Node*, AXObject* parent_if_known);
   AXObject* GetOrCreate(Node*);
   AXObject* GetOrCreate(const Node*);
-  AXObject* GetOrCreate(NGAbstractInlineTextBox*, AXObject* parent_if_known);
+  AXObject* GetOrCreate(AbstractInlineTextBox*, AXObject* parent_if_known);
 
   AXID GetAXID(Node*) override;
 
@@ -340,10 +343,10 @@ class MODULES_EXPORT AXObjectCacheImpl
   // Return an AXObject for the AccessibleNode. If the AccessibleNode is
   // attached to an element, will return the AXObject for that element instead.
   AXObject* Get(AccessibleNode*);
-  AXObject* Get(NGAbstractInlineTextBox*);
+  AXObject* Get(AbstractInlineTextBox*);
 
   // Get an AXObject* backed by the passed-in DOM node.
-  AXObject* Get(const Node*);
+  AXObject* Get(const Node*) override;
   // Get an AXObject* backed by the passed-in LayoutObject, or the
   // LayoutObject's DOM node, if that is available.
   // If |parent_for_repair| is provided, and the object had been detached from
@@ -451,9 +454,8 @@ class MODULES_EXPORT AXObjectCacheImpl
   // granted, it only applies to the next event received.
   void RequestAOMEventListenerPermission();
 
-  // For built-in HTML form validation messages. Set notify_children_changed to
-  // true if not already processing changed children.
-  AXObject* ValidationMessageObjectIfInvalid(bool notify_children_changed);
+  // For built-in HTML form validation messages.
+  AXObject* ValidationMessageObjectIfInvalid();
 
   WebAXAutofillState GetAutofillState(AXID id) const;
   void SetAutofillState(AXID id, WebAXAutofillState state);
@@ -547,6 +549,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   bool IsProcessingDeferredEvents() const {
     return processing_deferred_events_;
   }
+  bool EntireDocumentIsDirty() const { return mark_all_dirty_; }
   // Returns true if UpdateTreeIfNeeded has been called and has not finished.
   bool UpdatingTree() { return updating_tree_; }
   // The document/cache are in the tear-down phase.
@@ -633,7 +636,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   AXObject* CreateFromRenderer(LayoutObject*);
   AXObject* CreateFromNode(Node*);
 
-  AXObject* CreateFromInlineTextBox(NGAbstractInlineTextBox*);
+  AXObject* CreateFromInlineTextBox(AbstractInlineTextBox*);
 
   // Removes AXObject backed by passed-in object, if there is one.
   // It will also notify the parent that its children have changed, so that the
@@ -641,7 +644,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   // |notify_parent| is passed in as false.
   void Remove(AccessibleNode*, bool notify_parent);
   void Remove(LayoutObject*, bool notify_parent);
-  void Remove(NGAbstractInlineTextBox*, bool notify_parent);
+  void Remove(AbstractInlineTextBox*, bool notify_parent);
 
   // Helper to remove the object from the cache.
   // Most callers should be using Remove(AXObject) instead.
@@ -810,7 +813,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   HeapHashMap<Member<AccessibleNode>, AXID> accessible_node_mapping_;
   HeapHashMap<Member<const LayoutObject>, AXID> layout_object_mapping_;
   HeapHashMap<Member<const Node>, AXID> node_object_mapping_;
-  HeapHashMap<Member<NGAbstractInlineTextBox>, AXID>
+  HeapHashMap<Member<AbstractInlineTextBox>, AXID>
       inline_text_box_object_mapping_;
 
   // Used for a mock AXObject representing the message displayed in the

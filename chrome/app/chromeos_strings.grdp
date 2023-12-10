@@ -1698,13 +1698,19 @@
   <message name="IDS_LOGIN_CONFIRM_PASSWORD_TITLE" desc="Title for the confirm password dialog.">
     Please re-enter your password to update your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> profile.
   </message>
-  <message name="IDS_LOGIN_LOCAL_PASSWORD_SETUP_TITLE" desc="Title local password setup dialog.">
+  <message name="IDS_LOGIN_LOCAL_PASSWORD_SETUP_TITLE" desc="Title for the local password setup dialog.">
     Set <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> password
   </message>
-  <message name="IDS_LOGIN_LOCAL_PASSWORD_SETUP_DONE_TITLE" desc="Title local password setup done dialog.">
+  <message name="IDS_LOGIN_LOCAL_PASSWORD_RESET_TITLE" desc="Title for the local password reset dialog.">
+    Reset <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> password
+  </message>
+  <message name="IDS_LOGIN_LOCAL_PASSWORD_SETUP_DONE_TITLE" desc="Title for the local password setup done dialog.">
     Your password is set
   </message>
-  <message name="IDS_LOGIN_LOCAL_PASSWORD_SETUP_DONE_SUBTITLE" desc="Subitle local password setup done dialog.">
+  <message name="IDS_LOGIN_LOCAL_PASSWORD_RESET_DONE_TITLE" desc="Title for the local password reset done dialog.">
+    Your password has been updated
+  </message>
+  <message name="IDS_LOGIN_LOCAL_PASSWORD_SETUP_DONE_SUBTITLE" desc="Subitle for the local password setup done dialog.">
     You can use this password to sign in to your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
   </message>
   <message name="IDS_LOGIN_MANUAL_PASSWORD_TITLE" desc="Title for the manual password setting dialog.">
@@ -4813,9 +4819,6 @@
   <message name="IDS_INTERNAL_APP_SETTINGS" desc="The name of Settings.">
     Settings
   </message>
-  <message name="IDS_INTERNAL_APP_CONTINUOUS_READING" desc="The default title of Chrome browser to allow users to seamlessly continue reading a web page when they switch from phones or tablets to Chromebook.">
-    Continue reading in Chrome
-  </message>
 
   <!-- Launcher Settings shortcuts -->
   <message name="IDS_LAUNCHER_SHORTCUTS_BLUETOOTH" desc="The name of bluetooth shortcut.">
@@ -6670,6 +6673,11 @@ You can manage this account’s settings by installing the Family Link app on yo
     GIF not supported. Copied to clipboard.
   </message>
 
+  <!-- Strings for orca-->
+  <message name="IDS_ACCNAME_ORCA" desc="The name for the orca feature in the task manager (this is a code name)">
+    Orca
+  </message>
+
   <!-- Strings for Custom Tab UI -->
   <message name="IDS_CUSTOM_TABS_ACTION_MENU_ACCESSIBLE_NAME" desc="Accessible name for the overflow menu of the Chrome Custom Tab toolbar.">
     Action menu button
@@ -7309,6 +7317,17 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   <message name="IDS_PROMP_REMOVE_SHORTCUT_BUTTON"
     desc="Text for the remove button on the shortcut removal prompt">
     Remove
+  </message>
+
+  <!-- Remote activity notification dialog -->
+  <message name="IDS_REMOTE_ACTIVITY_NOTIFICATION_TITLE" desc="Title text displayed to inform the user a remote admin had taken control of the ChromeOS device for maintenance.">
+    Maintenance is done
+  </message>
+  <message name="IDS_REMOTE_ACTIVITY_NOTIFICATION_DESCRIPTION" desc="Detailed description displayed to inform the user a remote admin had taken control of the ChromeOS device for maintenance.">
+    Your administrator has logged out. You're in control now.
+  </message>
+  <message name="IDS_REMOTE_ACTIVITY_NOTIFICATION_BUTTON_LABEL" desc="Button label for describing that the device is available for use and user can click on the button to remove the full screen notification.">
+    Continue to use the device
   </message>
 
 </grit-part>

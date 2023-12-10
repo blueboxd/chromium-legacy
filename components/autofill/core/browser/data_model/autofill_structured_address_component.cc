@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/country_type.h"
 #include "components/autofill/core/browser/data_model/autofill_i18n_api.h"
 #include "components/autofill/core/browser/data_model/autofill_structured_address_format_provider.h"
 #include "components/autofill/core/browser/data_model/autofill_structured_address_utils.h"
@@ -99,7 +100,7 @@ ServerFieldType AddressComponent::GetStorageType() const {
 }
 
 std::string AddressComponent::GetStorageTypeName() const {
-  return std::string(FieldTypeToStringPiece(storage_type_));
+  return FieldTypeToString(storage_type_);
 }
 
 void AddressComponent::CopyFrom(const AddressComponent& other) {
@@ -135,8 +136,12 @@ bool AddressComponent::SameAs(const AddressComponent& other) const {
       value_verification_status_ != other.value_verification_status_) {
     return false;
   }
-  CHECK_EQ(other.subcomponents_.size(), subcomponents_.size())
-      << GetStorageTypeName();
+
+  if (subcomponents_.size() != other.subcomponents_.size()) {
+    CHECK(base::FeatureList::IsEnabled(features::kAutofillUseI18nAddressModel))
+        << GetStorageTypeName();
+    return false;
+  }
   for (size_t i = 0; i < other.subcomponents_.size(); i++) {
     if (!(subcomponents_[i]->SameAs(*other.subcomponents_[i]))) {
       return false;
@@ -273,7 +278,7 @@ std::u16string AddressComponent::GetFormatString() const {
   std::vector<std::string> format_pieces;
   for (const auto& subcomponent : subcomponents_) {
     std::string format_piece = GetPlaceholderToken(
-        FieldTypeToStringPiece(subcomponent->GetStorageType()));
+        FieldTypeToStringView(subcomponent->GetStorageType()));
     format_pieces.emplace_back(std::move(format_piece));
   }
   return base::ASCIIToUTF16(base::JoinString(format_pieces, " "));
@@ -434,12 +439,33 @@ void AddressComponent::ParseValueAndAssignSubcomponents() {
     subcomponent->SetValue(std::u16string(), VerificationStatus::kParsed);
   }
 
-  // First attempt, try to parse by expressions.
-  if (ParseValueAndAssignSubcomponentsByRegularExpressions())
+  bool parsing_successful =
+      base::FeatureList::IsEnabled(features::kAutofillUseI18nAddressModel)
+          ? ParseValueAndAssignSubcomponentsByI18nParsingRules()
+          : ParseValueAndAssignSubcomponentsByRegularExpressions();
+
+  if (parsing_successful) {
     return;
+  }
 
   // As a final fallback, parse using the fallback method.
   ParseValueAndAssignSubcomponentsByFallbackMethod();
+}
+
+bool AddressComponent::ParseValueAndAssignSubcomponentsByI18nParsingRules() {
+  const AddressCountryCode country_code = AddressCountryCode(
+      base::UTF16ToUTF8(GetRootNode().GetValueForType(ADDRESS_HOME_COUNTRY)));
+
+  i18n_model_definition::ValueParsingResults results =
+      i18n_model_definition::ParseValueByI18nRegularExpression(
+          base::UTF16ToUTF8(GetValue()), GetStorageType(),
+          AddressCountryCode(country_code));
+
+  if (results) {
+    AssignParsedValuesToSubcomponents(std::move(results));
+    return true;
+  }
+  return false;
 }
 
 bool AddressComponent::ParseValueAndAssignSubcomponentsByRegularExpressions() {
@@ -455,6 +481,19 @@ bool AddressComponent::ParseValueAndAssignSubcomponentsByRegularExpressions() {
 
 void AddressComponent::
     TryParseValueAndAssignSubcomponentsRespectingSetValues() {
+  if (base::FeatureList::IsEnabled(features::kAutofillUseI18nAddressModel)) {
+    const AddressCountryCode country_code = AddressCountryCode(
+        base::UTF16ToUTF8(GetRootNode().GetValueForType(ADDRESS_HOME_COUNTRY)));
+
+    i18n_model_definition::ValueParsingResults results =
+        i18n_model_definition::ParseValueByI18nRegularExpression(
+            base::UTF16ToUTF8(GetValue()), GetStorageType(),
+            AddressCountryCode(country_code));
+
+    AssignParsedValuesToSubcomponentsRespectingSetValues(std::move(results));
+    return;
+  }
+
   for (const auto* parse_expression : GetParseRegularExpressionsByRelevance()) {
     if (!parse_expression) {
       continue;
@@ -469,38 +508,12 @@ void AddressComponent::
 bool AddressComponent::ParseValueAndAssignSubcomponentsRespectingSetValues(
     const std::u16string& value,
     const RE2* parse_expression) {
-  absl::optional<base::flat_map<std::string, std::string>> result_map =
-      ParseValueByRegularExpression(base::UTF16ToUTF8(value), parse_expression);
+  i18n_model_definition::ValueParsingResults results =
+      ParseValueByRegularExpression(base::UTF16ToUTF8(GetValue()),
+                                    parse_expression);
 
-  if (!result_map) {
-    return false;
-  }
-
-  // Make sure that parsing matches non-empty values.
-  for (auto& subcomponent : subcomponents_) {
-    if (!subcomponent->GetValue().empty()) {
-      auto it = result_map->find(subcomponent->GetStorageTypeName());
-      if (it == result_map->end() ||
-          base::UTF8ToUTF16(it->second) != subcomponent->GetValue()) {
-        return false;
-      }
-    }
-  }
-
-  // Parsing was successful and results from the result map can be written
-  // to the structure.
-
-  for (auto& subcomponent : subcomponents_) {
-    auto it = result_map->find(subcomponent->GetStorageTypeName());
-    if (subcomponent->GetValue().empty() && it != result_map->end()) {
-      const std::u16string parsed_value = base::UTF8ToUTF16(it->second);
-      if (!parsed_value.empty() &&
-          subcomponent->IsValueCompatibleWithDescendants(parsed_value)) {
-        subcomponent->SetValue(parsed_value, VerificationStatus::kParsed);
-      }
-    }
-  }
-  return true;
+  return AssignParsedValuesToSubcomponentsRespectingSetValues(
+      std::move(results));
 }
 
 bool AddressComponent::IsValueCompatibleWithDescendants(
@@ -518,22 +531,10 @@ bool AddressComponent::IsValueCompatibleWithDescendants(
 bool AddressComponent::ParseValueAndAssignSubcomponentsByRegularExpression(
     const std::u16string& value,
     const RE2* parse_expression) {
-  absl::optional<base::flat_map<std::string, std::string>> result_map =
+  i18n_model_definition::ValueParsingResults results =
       ParseValueByRegularExpression(base::UTF16ToUTF8(value), parse_expression);
-  if (result_map) {
-    // Parsing was successful and results from the result map can be written
-    // to the structure.
-    for (const auto& [field_type, field_value] : *result_map) {
-      // Do not reassign the value of this node.
-      if (field_type == GetStorageTypeName()) {
-        continue;
-      }
-      // Setting the value should always work unless the regular expression is
-      // invalid.
-      CHECK(SetValueForType(TypeNameToFieldType(field_type),
-                            base::UTF8ToUTF16(field_value),
-                            VerificationStatus::kParsed));
-    }
+  if (results) {
+    AssignParsedValuesToSubcomponents(std::move(results));
     return true;
   }
   return false;
@@ -575,6 +576,57 @@ void AddressComponent::ParseValueAndAssignSubcomponentsByFallbackMethod() {
   // expression is wrong.
   CHECK(SetValueForType(subcomponent_types.back(), remaining_tokens,
                         VerificationStatus::kParsed));
+}
+
+void AddressComponent::AssignParsedValuesToSubcomponents(
+    i18n_model_definition::ValueParsingResults values) {
+  if (!values) {
+    return;
+  }
+  // Parsing was successful and results from the result map can be written
+  // to the structure.
+  for (const auto& [field_type, field_value] : *values) {
+    // Do not reassign the value of this node.
+    if (field_type == GetStorageTypeName()) {
+      continue;
+    }
+    // Setting the value should always work unless the regular expression is
+    // invalid.
+    CHECK(SetValueForType(TypeNameToFieldType(field_type),
+                          base::UTF8ToUTF16(field_value),
+                          VerificationStatus::kParsed));
+  }
+}
+
+bool AddressComponent::AssignParsedValuesToSubcomponentsRespectingSetValues(
+    i18n_model_definition::ValueParsingResults values) {
+  if (!values) {
+    return false;
+  }
+  // Make sure that parsing matches non-empty values.
+  for (auto& subcomponent : Subcomponents()) {
+    if (!subcomponent->GetValue().empty()) {
+      auto it = values->find(subcomponent->GetStorageTypeName());
+      if (it == values->end() ||
+          base::UTF8ToUTF16(it->second) != subcomponent->GetValue()) {
+        return false;
+      }
+    }
+  }
+
+  // Parsing was successful and results from the result map can be written
+  // to the structure.
+  for (auto& subcomponent : Subcomponents()) {
+    auto it = values->find(subcomponent->GetStorageTypeName());
+    if (subcomponent->GetValue().empty() && it != values->end()) {
+      const std::u16string parsed_value = base::UTF8ToUTF16(it->second);
+      if (!parsed_value.empty() &&
+          subcomponent->IsValueCompatibleWithDescendants(parsed_value)) {
+        subcomponent->SetValue(parsed_value, VerificationStatus::kParsed);
+      }
+    }
+  }
+  return true;
 }
 
 bool AddressComponent::AllDescendantsAreEmpty() const {
@@ -938,8 +990,13 @@ bool AddressComponent::IsMergeableWithComponent(
   // Checks if all child nodes are mergeable.
   if (merge_mode_ & kMergeChildrenAndReformatIfNeeded) {
     bool is_mergeable = true;
-    CHECK_EQ(newer_component.subcomponents_.size(), subcomponents_.size())
-        << GetStorageTypeName();
+
+    if (subcomponents_.size() != newer_component.subcomponents_.size()) {
+      CHECK(
+          base::FeatureList::IsEnabled(features::kAutofillUseI18nAddressModel))
+          << GetStorageTypeName();
+      return false;
+    }
     for (size_t i = 0; i < newer_component.subcomponents_.size(); i++) {
       if (!subcomponents_[i]->IsMergeableWithComponent(
               *newer_component.subcomponents_[i])) {

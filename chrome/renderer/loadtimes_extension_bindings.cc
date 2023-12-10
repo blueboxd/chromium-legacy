@@ -4,8 +4,6 @@
 
 #include "chrome/renderer/loadtimes_extension_bindings.h"
 
-#include <math.h>
-
 #include "base/time/time.h"
 #include "extensions/renderer/v8_helpers.h"
 #include "net/http/http_response_info.h"
@@ -356,11 +354,11 @@ class LoadTimesExtensionWrapper : public v8::Extension {
     blink::WebPerformanceMetricsForReporting web_performance =
         frame->PerformanceMetricsForReporting();
     base::Time now = base::Time::Now();
-    base::Time start =
-        base::Time::FromDoubleT(web_performance.NavigationStart());
+    base::Time start = base::Time::FromSecondsSinceUnixEpoch(
+        web_performance.NavigationStart());
 
-    base::Time dom_content_loaded_end =
-        base::Time::FromDoubleT(web_performance.DomContentLoadedEventEnd());
+    base::Time dom_content_loaded_end = base::Time::FromSecondsSinceUnixEpoch(
+        web_performance.DomContentLoadedEventEnd());
     base::TimeDelta page = now - start;
     int navigation_type =
         GetCSITransitionType(document_loader->GetNavigationType());
@@ -374,7 +372,7 @@ class LoadTimesExtensionWrapper : public v8::Extension {
                 v8::String::NewFromUtf8Literal(
                     isolate, "startE", v8::NewStringType::kInternalized),
                 CSIGetter, nullptr,
-                v8::Number::New(isolate, floor(start.ToDoubleT() * 1000)))
+                v8::Number::New(isolate, start.InMillisecondsSinceUnixEpoch()))
              .FromMaybe(false)) {
       return;
     }
@@ -387,7 +385,8 @@ class LoadTimesExtensionWrapper : public v8::Extension {
                     isolate, "onloadT", v8::NewStringType::kInternalized),
                 CSIGetter, nullptr,
                 v8::Number::New(
-                    isolate, floor(dom_content_loaded_end.ToDoubleT() * 1000)))
+                    isolate,
+                    dom_content_loaded_end.InMillisecondsSinceUnixEpoch()))
              .FromMaybe(false)) {
       return;
     }

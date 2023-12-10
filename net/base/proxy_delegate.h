@@ -9,6 +9,7 @@
 
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
+#include "net/base/network_anonymization_key.h"
 #include "net/base/proxy_chain.h"
 #include "net/proxy_resolution/proxy_retry_info.h"
 
@@ -33,11 +34,12 @@ class NET_EXPORT ProxyDelegate {
   // Allows the delegate to override the proxy resolution decision made by
   // ProxyResolutionService. The delegate may override the decision by modifying
   // the ProxyInfo |result|.
-  virtual void OnResolveProxy(const GURL& url,
-                              const GURL& top_frame_url,
-                              const std::string& method,
-                              const ProxyRetryInfoMap& proxy_retry_info,
-                              ProxyInfo* result) = 0;
+  virtual void OnResolveProxy(
+      const GURL& url,
+      const NetworkAnonymizationKey& network_anonymization_key,
+      const std::string& method,
+      const ProxyRetryInfoMap& proxy_retry_info,
+      ProxyInfo* result) = 0;
 
   // Called when use of a proxy chain failed due to `net_error`, but another
   // proxy chain in the list succeeded. The failed proxy is within `bad_chain`,
@@ -70,18 +72,19 @@ class NET_EXPORT ProxyDelegate {
     OnFallback(ProxyChain(bad_server), net_error);
   }
 
-  void OnBeforeTunnelRequestServerOnly(const ProxyServer& proxy_server,
+  void OnBeforeTunnelRequestServerOnly(const ProxyChain& proxy_chain,
+                                       size_t proxy_chain_index,
                                        HttpRequestHeaders* extra_headers) {
-    DCHECK(!proxy_server.is_direct());
-    OnBeforeTunnelRequest(ProxyChain(proxy_server), /*chain_index=*/0,
-                          extra_headers);
+    DCHECK(!proxy_chain.is_direct());
+    OnBeforeTunnelRequest(proxy_chain, proxy_chain_index, extra_headers);
   }
 
   Error OnTunnelHeadersReceivedServerOnly(
-      const ProxyServer& proxy_server,
+      const ProxyChain& proxy_chain,
+      size_t proxy_chain_index,
       const HttpResponseHeaders& response_headers) {
-    return OnTunnelHeadersReceived(ProxyChain(proxy_server),
-                                   /*chain_index=*/0, response_headers);
+    return OnTunnelHeadersReceived(proxy_chain, proxy_chain_index,
+                                   response_headers);
   }
 };
 

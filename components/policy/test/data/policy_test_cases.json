@@ -769,6 +769,39 @@
       }
     ]
   },
+  "OopPrintDriversAllowed": {
+    "os": [
+      "chromeos_ash",
+      "chromeos_lacros",
+      "linux",
+      "mac",
+      "win"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "OopPrintDriversAllowed": false
+        },
+        "prefs": {
+          "printing.oop_print_drivers_allowed_by_policy": {
+            "location": "local_state",
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "OopPrintDriversAllowed": true
+        },
+        "prefs": {
+          "printing.oop_print_drivers_allowed_by_policy": {
+            "location": "local_state",
+            "value": true
+          }
+        }
+      }
+    ]
+  },
   "PrintHeaderFooter": {
     "os": [
       "win",
@@ -1305,6 +1338,31 @@
       }
     ]
   },
+"FeedbackSurveysEnabled": {
+  "os": [
+    "android",
+    "win",
+    "mac",
+    "linux",
+    "chromeos_ash",
+    "chromeos_lacros",
+    "fuchsia"
+  ],
+  "can_be_recommended": true,
+  "policy_pref_mapping_tests": [
+    {
+      "policies": {
+        "FeedbackSurveysEnabled": false
+      },
+      "prefs": {
+        "policy.feedback_surveys_enabled": {
+          "location": "user_profile",
+          "value": false
+        }
+      }
+    }
+  ]
+},
   "NativePrinters": {
     "reason_for_missing_test": "Policy was removed"
   },
@@ -5032,6 +5090,47 @@
               "[*.]google.com",
               "http://example.com:1234"
             ]
+          }
+        }
+      }
+    ]
+  },
+  "PrivateNetworkAccessRestrictionsEnabled": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "android",
+      "fuchsia"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "managed_private_network_access_restrictions_enabled": {
+            "default_value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "PrivateNetworkAccessRestrictionsEnabled": false
+        },
+        "prefs": {
+          "managed_private_network_access_restrictions_enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "PrivateNetworkAccessRestrictionsEnabled": true
+        },
+        "prefs": {
+          "managed_private_network_access_restrictions_enabled": {
+            "value": true
           }
         }
       }
@@ -15125,34 +15224,7 @@
     "reason_for_missing_test": "Maps into CrosSettings"
   },
   "ContextAwareAccessSignalsAllowlist": {
-    "os": [
-      "win",
-      "linux",
-      "mac",
-      "chromeos_ash",
-      "chromeos_lacros",
-      "fuchsia"
-    ],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": {
-          "ContextAwareAccessSignalsAllowlist": [
-            "https://example1.com",
-            "https://[*.]example2.com",
-            "https://foo.example3.com/path"
-          ]
-        },
-        "prefs": {
-          "enterprise_connectors.device_trust.origins": {
-            "value": [
-              "https://example1.com",
-              "https://[*.]example2.com",
-              "https://foo.example3.com/path"
-            ]
-          }
-        }
-      }
-    ]
+    "reason_for_missing_test": "Policy is deprecated."
   },
   "DeviceLoginScreenContextAwareAccessSignalsAllowlist": {
     "os": [
@@ -15163,10 +15235,6 @@
         "note": "Default value when DeviceLoginScreenContextAwareAccessSignalsAllowlist is unset.",
         "policies": {},
         "prefs": {
-          "enterprise_connectors.device_trust.origins": {
-            "default_value": [],
-            "location": "signin_profile"
-          },
           "enterprise_connectors.device_trust_user.origins": {
             "default_value": [],
             "location": "signin_profile"
@@ -15183,14 +15251,6 @@
           ]
         },
         "prefs": {
-          "enterprise_connectors.device_trust.origins": {
-            "value": [
-              "https://example1.com",
-              "https://[*.]example2.com",
-              "https://foo.example3.com/path"
-            ],
-            "location": "signin_profile"
-          },
           "enterprise_connectors.device_trust_user.origins": {
             "value": [
               "https://example1.com",
@@ -22741,8 +22801,39 @@
       }
     ]
   },
-  "MicrosoftOneDriveAccountRestriction": {
-    "reason_for_missing_test": "TODO(b/299077762) implement this policy"
+  "MicrosoftOneDriveAccountRestrictions": {
+    "os": [
+      "chromeos_ash",
+      "chromeos_lacros"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "Check default values (no policies set).",
+        "policies": {},
+        "prefs": {
+          "filebrowser.office.microsoft_one_drive_account_restrictions": {
+            "default_value": []
+          }
+        }
+      },
+      {
+        "note": "Simple value.",
+        "policies": {
+          "MicrosoftOneDriveAccountRestrictions": [
+            "domain.com",
+            "consumer"
+          ]
+        },
+        "prefs": {
+          "filebrowser.office.microsoft_one_drive_account_restrictions": {
+            "value": [
+              "domain.com",
+              "consumer"
+            ]
+          }
+        }
+      }
+    ]
   },
   "MicrosoftOfficeCloudUpload": {
     "os": [
@@ -24490,6 +24581,30 @@
       }
     ]
   },
+  "ExtensionInstallTypeBlocklist": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "fuchsia"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "ExtensionInstallTypeBlocklist": [
+            "command_line"
+          ]
+        },
+        "prefs": {
+          "extensions.extension_install_type_blocklist": {
+            "value": [
+              "command_line"
+            ]
+          }
+        }
+      }
+    ]
+  },
   "AllowBackForwardCacheForCacheControlNoStorePageEnabled": {
     "os": [
       "win",
@@ -25122,7 +25237,7 @@
         },
         "prefs": {
           "profile_separation.data_migration_settings": {
-            "default_value": 1
+            "value": 1
           }
         }
       },
@@ -25603,6 +25718,92 @@
         "prefs": {
           "net.ipv6_reachability_override_enabled": {
             "value": true
+          }
+        }
+      }
+    ]
+  },
+  "DeviceFlexHwDataForProductImprovementEnabled": {
+    "reason_for_missing_test": "ChromeOS Flex device policy only read by services, not used in Chrome."
+  },
+  "SiteSearchSettings": {
+    "reason_for_missing_test": "TODO(b/306201833): enable this policy test once policy handler is implemented"
+  },
+  "ContextMenuPhotoSharingSettings" : {
+    "reason_for_missing_test": "Maps into an iOS-specific pref"
+  },
+  "ParcelTrackingEnabled" : {
+    "reason_for_missing_test": "Maps into an iOS-specific pref"
+  },
+  "NativeHostsExecutablesLaunchDirectly": {
+    "os": [
+      "win"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "Check default values (no policies set)",
+        "policies": { },
+        "prefs": {
+          "native_hosts_executables_launch_directly": {
+            "default_value": false
+          }
+        }
+      },
+      {
+        "note": "Check policy value (false)",
+        "policies": {
+          "NativeHostsExecutablesLaunchDirectly": false
+        },
+        "prefs": {
+          "native_hosts_executables_launch_directly": {
+            "value": false
+          }
+        }
+      },
+      {
+        "note": "Check policy value (true)",
+        "policies": {
+          "NativeHostsExecutablesLaunchDirectly": true
+        },
+        "prefs": {
+          "native_hosts_executables_launch_directly": {
+            "value": true
+          }
+        }
+      }
+    ]
+  },
+  "DeskAPIDeskSaveAndShareEnabled": {
+    "os": [
+      "chromeos_ash",
+      "chromeos_lacros"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "DeskAPIDeskSaveAndShareEnabled": true
+        },
+        "prefs": {
+          "desk_api.desk_save_and_share_enabled": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "DeskAPIDeskSaveAndShareEnabled": false
+        },
+        "prefs": {
+          "desk_api.desk_save_and_share_enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "desk_api.desk_save_and_share_enabled": {
+            "default_value": false
           }
         }
       }

@@ -27,12 +27,8 @@
 
 namespace {
 
-NSString* const kGooglePhotosAppProductIdentifier = @"962194608";
-
-NSString* const kGooglePhotosRecentlyAddedURLString =
-    @"https://photos.google.com/search/_tra_?obfsgid=";
-
-NSString* const kGooglePhotosAppURLScheme = @"googlephotos";
+// Maximum length of the suggested image name passed to the Photos service.
+constexpr size_t kSuggestedImageNameMaxLength = 100;
 
 NSURL* GetGooglePhotosAppURL() {
   NSURLComponents* photosAppURLComponents = [[NSURLComponents alloc] init];
@@ -58,6 +54,15 @@ void StartMediatorHelper(__weak SaveToPhotosMediator* mediator,
 }
 
 }  // namespace
+
+NSString* const kGooglePhotosAppProductIdentifier = @"962194608";
+
+NSString* const kGooglePhotosStoreKitCampaignToken = @"chrome-x-photos";
+
+NSString* const kGooglePhotosRecentlyAddedURLString =
+    @"https://photos.google.com/search/_tra_?obfsgid=";
+
+NSString* const kGooglePhotosAppURLScheme = @"googlephotos";
 
 @implementation SaveToPhotosMediator {
   PhotosService* _photosService;
@@ -275,7 +280,9 @@ void StartMediatorHelper(__weak SaveToPhotosMediator* mediator,
       base::BindRepeating(^(const PhotosService::UploadProgress& progress) {
         [weakSelf photosServiceReportedUploadProgress:progress];
       });
-  _photosService->UploadImage(_imageName, _imageData, _identity,
+  NSString* suggestedImageName =
+      _imageName.length > kSuggestedImageNameMaxLength ? nil : _imageName;
+  _photosService->UploadImage(suggestedImageName, _imageData, _identity,
                               std::move(uploadProgressCallback),
                               std::move(uploadCompletionCallback));
 }
@@ -406,7 +413,8 @@ void StartMediatorHelper(__weak SaveToPhotosMediator* mediator,
   // If the Photos app is not installed, show StoreKit.
   if (![UIApplication.sharedApplication canOpenURL:GetGooglePhotosAppURL()]) {
     [self.delegate
-        showStoreKitWithProductIdentifier:kGooglePhotosAppProductIdentifier];
+        showStoreKitWithProductIdentifier:kGooglePhotosAppProductIdentifier
+                            campaignToken:kGooglePhotosStoreKitCampaignToken];
     return;
   }
 

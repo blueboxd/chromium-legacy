@@ -11,8 +11,8 @@
 # tags: [ android-nexus-5x android-pixel-2 android-pixel-4
 #             android-pixel-6 android-shield-android-tv android-sm-a135m
 #             android-sm-a235m
-#         chromeos-board-amd64-generic chromeos-board-kevin chromeos-board-eve
-#             chromeos-board-jacuzzi chromeos-board-octopus
+#         chromeos-board-amd64-generic chromeos-board-eve chromeos-board-jacuzzi
+#             chromeos-board-octopus
 #         fuchsia-board-astro fuchsia-board-nelson fuchsia-board-sherlock
 #             fuchsia-board-qemu-x64 ]
 # Platform
@@ -244,15 +244,10 @@ crbug.com/1453832 [ win nvidia ] OverlayModeTraceTest_DirectComposition_Video_VP
 # Win AMD failure since test added
 crbug.com/1446057 [ win10 amd-0x7340 angle-d3d11 ] VideoPathTraceTest_DirectComposition_Video_SW_Decode [ Failure ]
 
-# Android devices
-crbug.com/1487723 [ android android-shield-android-tv ] TraceTest_CSS3DBlueBox [ RetryOnFailure ]
-crbug.com/1487723 [ android android-shield-android-tv ] TraceTest_SolidColorBackground [ RetryOnFailure ]
 
 # Canvas capture trace tests on M1 Mac
-crbug.com/1493530 [ mac apple angle-metal ] WebGLCanvasCaptureTraceTest_VideoStreamFromWebGLCanvas_TwoCopy_Accelerated [ RetryOnFailure ]
-crbug.com/1493530 [ mac apple angle-metal ] WebGPUTraceTest_WebGPUCanvasDisableOneCopyCapture_Accelerated [ RetryOnFailure ]
-crbug.com/1493530 [ mac apple angle-metal ] WebGPUTraceTest_WebGPUCanvasOneCopyCapture_Hidden [ RetryOnFailure ]
-crbug.com/1493530 [ mac apple angle-metal no-asan ] WebGPUTraceTest_WebGPUCanvasOneCopyCapture [ RetryOnFailure ]
+crbug.com/1493530 [ angle-metal apple-angle-metal-renderer:-apple-m1 mac ] WebGLCanvasCaptureTraceTest_VideoStreamFromWebGLCanvas_TwoCopy_Accelerated [ RetryOnFailure ]
+crbug.com/1493530 [ angle-metal apple-angle-metal-renderer:-apple-m2 mac ] WebGPUTraceTest_WebGPUCanvasOneCopyCapture_Hidden [ RetryOnFailure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

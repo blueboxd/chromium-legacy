@@ -9,7 +9,9 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -17,7 +19,9 @@
 #include "chrome/browser/ui/webui/side_panel/read_anything/read_anything_prefs.h"
 #include "chrome/common/accessibility/read_anything_constants.h"
 #include "chrome/common/pdf_util.h"
+#include "components/language/core/common/locale_util.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -66,7 +70,7 @@ ReadAnythingUntrustedPageHandler::ReadAnythingUntrustedPageHandler(
     mojo::PendingRemote<UntrustedPage> page,
     mojo::PendingReceiver<UntrustedPageHandler> receiver,
     content::WebUI* web_ui)
-    : browser_(chrome::FindLastActive()),
+    : browser_(chrome::FindLastActive()->AsWeakPtr()),
       web_ui_(web_ui),
       receiver_(this, std::move(receiver)),
       page_(std::move(page)) {
@@ -75,7 +79,7 @@ ReadAnythingUntrustedPageHandler::ReadAnythingUntrustedPageHandler(
   ax_action_handler_observer_.Observe(
       ui::AXActionHandlerRegistry::GetInstance());
 
-  coordinator_ = ReadAnythingCoordinator::FromBrowser(browser_);
+  coordinator_ = ReadAnythingCoordinator::FromBrowser(browser_.get());
   if (coordinator_) {
     coordinator_->AddObserver(this);
     coordinator_->AddModelObserver(this);
@@ -102,7 +106,11 @@ ReadAnythingUntrustedPageHandler::ReadAnythingUntrustedPageHandler(
         prefs->GetDouble(prefs::kAccessibilityReadAnythingFontScale),
         static_cast<read_anything::mojom::Colors>(
             prefs->GetInteger(prefs::kAccessibilityReadAnythingColorInfo)),
-        speechRate, highlightGranularity);
+        speechRate,
+        features::IsReadAnythingReadAloudEnabled()
+            ? prefs->GetDict(prefs::kAccessibilityReadAnythingVoiceName).Clone()
+            : base::Value::Dict(),
+        highlightGranularity);
   }
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
@@ -168,42 +176,64 @@ void ReadAnythingUntrustedPageHandler::OnCopy() {
 
 void ReadAnythingUntrustedPageHandler::OnLineSpaceChange(
     read_anything::mojom::LineSpacing line_spacing) {
-  browser_->profile()->GetPrefs()->SetInteger(
-      prefs::kAccessibilityReadAnythingLineSpacing,
-      static_cast<size_t>(line_spacing));
+  if (browser_) {
+    browser_->profile()->GetPrefs()->SetInteger(
+        prefs::kAccessibilityReadAnythingLineSpacing,
+        static_cast<size_t>(line_spacing));
+  }
 }
 
 void ReadAnythingUntrustedPageHandler::OnLetterSpaceChange(
     read_anything::mojom::LetterSpacing letter_spacing) {
-  browser_->profile()->GetPrefs()->SetInteger(
-      prefs::kAccessibilityReadAnythingLetterSpacing,
-      static_cast<size_t>(letter_spacing));
+  if (browser_) {
+    browser_->profile()->GetPrefs()->SetInteger(
+        prefs::kAccessibilityReadAnythingLetterSpacing,
+        static_cast<size_t>(letter_spacing));
+  }
 }
 void ReadAnythingUntrustedPageHandler::OnFontChange(const std::string& font) {
-  browser_->profile()->GetPrefs()->SetString(
-      prefs::kAccessibilityReadAnythingFontName, font);
+  if (browser_) {
+    browser_->profile()->GetPrefs()->SetString(
+        prefs::kAccessibilityReadAnythingFontName, font);
+  }
 }
 void ReadAnythingUntrustedPageHandler::OnFontSizeChange(double font_size) {
   double saved_font_size = std::min(font_size, kReadAnythingMaximumFontScale);
-  browser_->profile()->GetPrefs()->SetDouble(
-      prefs::kAccessibilityReadAnythingFontScale, saved_font_size);
+  if (browser_) {
+    browser_->profile()->GetPrefs()->SetDouble(
+        prefs::kAccessibilityReadAnythingFontScale, saved_font_size);
+  }
 }
 void ReadAnythingUntrustedPageHandler::OnColorChange(
     read_anything::mojom::Colors color) {
-  browser_->profile()->GetPrefs()->SetInteger(
-      prefs::kAccessibilityReadAnythingColorInfo, static_cast<size_t>(color));
+  if (browser_) {
+    browser_->profile()->GetPrefs()->SetInteger(
+        prefs::kAccessibilityReadAnythingColorInfo, static_cast<size_t>(color));
+  }
 }
-
 void ReadAnythingUntrustedPageHandler::OnSpeechRateChange(double rate) {
-  browser_->profile()->GetPrefs()->SetDouble(
-      prefs::kAccessibilityReadAnythingSpeechRate, rate);
+  if (browser_) {
+    browser_->profile()->GetPrefs()->SetDouble(
+        prefs::kAccessibilityReadAnythingSpeechRate, rate);
+  }
+}
+void ReadAnythingUntrustedPageHandler::OnVoiceChange(const std::string& voice,
+                                                     const std::string& lang) {
+  if (browser_) {
+    PrefService* prefs = browser_->profile()->GetPrefs();
+    ScopedDictPrefUpdate update(prefs,
+                                prefs::kAccessibilityReadAnythingVoiceName);
+    update->Set(lang, voice);
+  }
 }
 
 void ReadAnythingUntrustedPageHandler::OnHighlightGranularityChanged(
     read_anything::mojom::HighlightGranularity granularity) {
-  browser_->profile()->GetPrefs()->SetInteger(
-      prefs::kAccessibilityReadAnythingHighlightGranularity,
-      static_cast<size_t>(granularity));
+  if (browser_) {
+    browser_->profile()->GetPrefs()->SetInteger(
+        prefs::kAccessibilityReadAnythingHighlightGranularity,
+        static_cast<size_t>(granularity));
+  }
 }
 
 void ReadAnythingUntrustedPageHandler::OnLinkClicked(
@@ -307,7 +337,8 @@ void ReadAnythingUntrustedPageHandler::StateChanged(
   DCHECK(features::IsReadAnythingWithScreen2xEnabled());
   // If Screen AI library is downloaded but not initialized yet, ensure it is
   // loadable and initializes without any problems.
-  if (state == screen_ai::ScreenAIInstallState::State::kDownloaded) {
+  if (state == screen_ai::ScreenAIInstallState::State::kDownloaded &&
+      browser_) {
     screen_ai::ScreenAIServiceRouterFactory::GetForBrowserContext(
         browser_->profile())
         ->InitializeMainContentExtractionIfNeeded();
@@ -352,7 +383,7 @@ void ReadAnythingUntrustedPageHandler::OnActiveWebContentsChanged() {
   // 2. Set an AXContext on the web contents with web contents only mode
   //    enabled.
   content::WebContents* web_contents = nullptr;
-  if (active_) {
+  if (active_ && browser_) {
     web_contents = browser_->tab_strip_model()->GetActiveWebContents();
   }
 
@@ -391,7 +422,7 @@ void ReadAnythingUntrustedPageHandler::OnActiveAXTreeIDChanged(
 }
 
 void ReadAnythingUntrustedPageHandler::LogTextStyle() {
-  if (!browser_ || !browser_->profile()->GetPrefs()) {
+  if (!browser_) {
     return;
   }
 

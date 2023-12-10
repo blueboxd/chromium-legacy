@@ -34,9 +34,6 @@ absl::optional<V8GPUFeatureName::Enum> ToV8FeatureNameEnum(WGPUFeatureName f) {
     case WGPUFeatureName_ChromiumExperimentalTimestampQueryInsidePasses:
       return V8GPUFeatureName::Enum::
           kChromiumExperimentalTimestampQueryInsidePasses;
-    case WGPUFeatureName_ChromiumExperimentalPipelineStatisticsQuery:
-      return V8GPUFeatureName::Enum::
-          kChromiumExperimentalPipelineStatisticsQuery;
     case WGPUFeatureName_TextureCompressionBC:
       return V8GPUFeatureName::Enum::kTextureCompressionBc;
     case WGPUFeatureName_TextureCompressionETC2:
@@ -119,11 +116,19 @@ GPUAdapter::GPUAdapter(
   description_ = properties.name;
   driver_ = properties.driverDescription;
 
+  features_ = MakeFeatureNameSet(GetProcs(), handle_);
+
   WGPUSupportedLimits limits = {};
+  // Chain to get experimental subgroup limits, if support experimental
+  // subgroups feature.
+  WGPUDawnExperimentalSubgroupLimits subgroupLimits = {};
+  subgroupLimits.chain.sType = WGPUSType_DawnExperimentalSubgroupLimits;
+  if (features_->has(V8GPUFeatureName::Enum::kChromiumExperimentalSubgroups)) {
+    limits.nextInChain = &subgroupLimits.chain;
+  }
+
   GetProcs().adapterGetLimits(handle_, &limits);
   limits_ = MakeGarbageCollected<GPUSupportedLimits>(limits);
-
-  features_ = MakeFeatureNameSet(GetProcs(), handle_);
 }
 
 void GPUAdapter::AddConsoleWarning(ExecutionContext* execution_context,

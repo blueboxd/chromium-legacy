@@ -7,7 +7,14 @@ source_set("metrics") {
     "metrics.h",
     "metrics.mm",
   ]
-  deps = [ "//base" ]
+  deps = [
+    ":tracking_source",
+    "//base",
+  ]
+}
+
+source_set("tracking_source") {
+  sources = [ "tracking_source.h" ]
 }
 
 source_set("infobar_delegate") {
@@ -16,7 +23,9 @@ source_set("infobar_delegate") {
     "parcel_tracking_infobar_delegate.mm",
   ]
   deps = [
+    ":metrics",
     ":parcel_tracking_step",
+    ":tracking_source",
     ":util",
     "//base",
     "//components/commerce/core:proto",
@@ -52,7 +61,10 @@ source_set("util") {
     "parcel_tracking_util.mm",
   ]
   deps = [
+    ":features",
+    ":metrics",
     ":prefs",
+    ":tracking_source",
     "//base",
     "//components/commerce/core:proto",
     "//components/commerce/core:shopping_service",
@@ -64,14 +76,25 @@ source_set("util") {
     "//ios/chrome/browser/shared/model/prefs:pref_names",
     "//ios/chrome/browser/shared/public/commands",
     "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/ui/content_suggestions:constants",
+    "//ios/chrome/browser/ui/ntp/metrics:home_metrics",
     "//ios/web/public/annotations:custom_text_check_result",
   ]
+}
+
+source_set("features") {
+  sources = [
+    "features.h",
+    "features.mm",
+  ]
+  deps = [ "//base" ]
 }
 
 source_set("unit_tests") {
   testonly = true
   sources = [ "parcel_tracking_util_unittest.mm" ]
   deps = [
+    ":features",
     ":util",
     "//base/test:test_support",
     "//components/commerce/core:shopping_service_test_support",

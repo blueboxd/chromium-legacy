@@ -26,6 +26,7 @@
 <translation id="1448064542941920355">Smanjenje zumiranja</translation>
 <translation id="1510341833810331442">Web lokacijama nije dozvoljeno da pohranjuju podatke na uređaj</translation>
 <translation id="1547123415014299762">Kolačići treće strane su dozvoljeni</translation>
+<translation id="1568470248891039841">Web lokacije koje posjetite mogu ugraditi sadržaj s drugih web lokacija, npr. slike, oglase i tekst. Te druge web lokacije mogu tražiti odobrenje za korištenje informacija o vama koje su sačuvale dok ste pregledali web lokaciju. <ph name="BEGIN_LINK" />Saznajte više o ugrađenom sadržaju<ph name="END_LINK" /></translation>
 <translation id="1593426485665524382">Nove radnje su dostupne pri vrhu ekrana</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1633720957382884102">Srodne web lokacije</translation>
@@ -80,6 +81,7 @@
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{Dozvoljeno: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> i još <ph name="NUM_MORE" />}one{Dozvoljeno: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> i još <ph name="NUM_MORE" />}few{Dozvoljeno: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> i još <ph name="NUM_MORE" />}other{Dozvoljeno: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> i još <ph name="NUM_MORE" />}}</translation>
 <translation id="2410940059315936967">Web lokacija koju posjetite može ugraditi sadržaj s drugih web lokacija, naprimjer slike, oglase i tekst. Kolačići koje postavljaju ove druge web lokacije se nazivaju kolačićima treće strane.</translation>
 <translation id="2434158240863470628">Preuzimanje je završeno <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
+<translation id="2438120137003069591">Ovoj web lokaciji ste privremeno dozvolili da koristi kolačiće trećih strana, što podrazumijeva manju zaštitu prilikom pregledanja, ali veću vjerovatnost da će funkcije web lokacije funkcionirati u skladu s očekivanjima. <ph name="BEGIN_LINK" />Pošaljite povratne informacije<ph name="END_LINK" /></translation>
 <translation id="244264527810019436">Funkcije na nekim web lokacijama možda neće funkcionirati u anonimnom načinu rada</translation>
 <translation id="2442870161001914531">Uvijek zatraži verziju web lokacije za računar</translation>
 <translation id="2469312991797799607">Ova radnja će izbrisati sve podatke i kolačiće za domenu <ph name="ORIGIN" /> i sve njene web lokacije</translation>
@@ -114,6 +116,7 @@
 <translation id="2910701580606108292">Web lokacije moraju tražiti dozvolu za reprodukciju zaštićenog sadržaja</translation>
 <translation id="2932883381142163287">Prijavite zloupotrebu</translation>
 <translation id="2968755619301702150">Preglednik certifikata</translation>
+<translation id="2979365474350987274">Kolačići trećih strana su ograničeni</translation>
 <translation id="3008272652534848354">Poništi odobrenja</translation>
 <translation id="301521992641321250">Automatski blokirano</translation>
 <translation id="3069226013421428034">Dozvolite prijavu trećih stana za određenu web lokaciju.</translation>
@@ -169,6 +172,7 @@
 <translation id="3918378745482005425">Moguće je da neke funkcije neće raditi. Povezane web lokacije i dalje mogu koristiti kolačiće treće strane.</translation>
 <translation id="3955193568934677022">Dozvoljava web lokacijama da reproduciraju zaštićeni sadržaj (preporučeno)</translation>
 <translation id="3967822245660637423">Preuzimanje je završeno</translation>
+<translation id="3974105241379491420">Web lokacije mogu tražiti da koriste informacije koje su sačuvale o vama</translation>
 <translation id="3987993985790029246">Kopiraj link</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="3992684624889376114">O ovoj stranici</translation>
@@ -188,6 +192,7 @@
 <translation id="4278390842282768270">Dozvoljeno</translation>
 <translation id="429312253194641664">Web lokacija reproducira medij</translation>
 <translation id="42981349822642051">Proširi</translation>
+<translation id="4336566011000459927">Chrome će ponovo ograničiti kolačiće danas</translation>
 <translation id="4338831206024587507">Sve web lokacije pod domenom <ph name="DOMAIN" /></translation>
 <translation id="4402755511846832236">Blokirajte web lokacijama informacije o vašem aktivnom korištenju ovog uređaja</translation>
 <translation id="4412992751769744546">Dopusti kolačiće trećih strana</translation>
@@ -243,6 +248,7 @@
 <translation id="5335288049665977812">Dozvolite web lokacijama da pokrenu JavaScript (preporučeno)</translation>
 <translation id="534295439873310000">NFC uređaji</translation>
 <translation id="5344522958567249764">Upravljajte privatnošću pri izloženosti oglasima</translation>
+<translation id="5389626883706033615">Web lokacije su blokirane tako da vas ne pitaju za korištenje sačuvanih informacija o vama</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(i još 1)}one{(i još #)}few{(i još #)}other{(i još #)}}</translation>
 <translation id="5403592356182871684">Imena</translation>
 <translation id="5438097262470833822">Ovim odabirom će se poništiti odobrenja za web lokaciju <ph name="WEBSITE" /></translation>
@@ -289,6 +295,8 @@
 <translation id="6177128806592000436">Vaša veza s ovom web lokacijom nije sigurna</translation>
 <translation id="6181444274883918285">Dodaj izuzetak web lokaciji</translation>
 <translation id="6192792657125177640">Izuzeci</translation>
+<translation id="6194967801833346599">{DAYS,plural, =1{Chrome će ponovo blokirati kolačiće sutra}one{Kolačići će se ponovo blokirati za # dan}few{Kolačići će se ponovo blokirati za # dana}other{Kolačići će se ponovo blokirati za # dana}}</translation>
+<translation id="6195163219142236913">Kolačići treće strane su ograničeni</translation>
 <translation id="6196640612572343990">Blokiraj kolačiće treće strane</translation>
 <translation id="6205314730813004066">Privatnost pri izloženosti oglasima</translation>
 <translation id="6207207788774442484">Izbriši podatke i poništi odobrenja</translation>
@@ -299,6 +307,7 @@
 <translation id="6270391203985052864">Web lokacije mogu tražiti da šalju obavještenja</translation>
 <translation id="6295158916970320988">Sve web lokacije</translation>
 <translation id="6320088164292336938">Vibracija</translation>
+<translation id="6344622098450209924">Zaštita od praćenja</translation>
 <translation id="6367753977865761591">Blokirajte prijavu trećih stana za određenu web lokaciju.</translation>
 <translation id="6398765197997659313">Napusti prikaz preko cijelog ekrana</translation>
 <translation id="640163077447496506">Ističe danas</translation>
@@ -329,6 +338,7 @@
 <translation id="6864395892908308021">Ovaj uređaj ne može očitavati NFC</translation>
 <translation id="6912998170423641340">Blokirajte web lokacijama čitanje teksta i pregled slika u međumemoriji</translation>
 <translation id="6945221475159498467">Odaberi</translation>
+<translation id="6950072572526089586">Web lokacija koju posjetite može sačuvati informacije o tome šta radite kako bi funkcionirala prema očekivanjima – naprimjer, da ostanete prijavljeni na web lokaciju ili sačuvate artikle u kolica za kupovinu. Web lokacije često privremeno pohranjuju te informacije na vaš uređaj.</translation>
 <translation id="6965382102122355670">Uredu</translation>
 <translation id="6981982820502123353">Pristupačnost</translation>
 <translation id="6992289844737586249">Web lokacije moraju tražiti dopuštenje da koriste mikrofon (preporučeno)</translation>
@@ -349,6 +359,7 @@
 <translation id="7243308994586599757">Opcije su dostupne pri dnu ekrana</translation>
 <translation id="7250468141469952378">Odabrano <ph name="ITEM_COUNT" /></translation>
 <translation id="7260727271532453612">Dozvoljeno: <ph name="PERMISSION_1" /> i <ph name="PERMISSION_2" /></translation>
+<translation id="7284451015630589124">Blokirali ste da web lokacije koriste kolačiće trećih strana kako bi vas pratile dok pregledate. Idite u postavke da <ph name="BEGIN_LINK" />upravljate zaštitama od praćenja<ph name="END_LINK" />.</translation>
 <translation id="7302486331832100261">Obično blokirate obavještenja. Da dozvolite, dodirnite Detalji.</translation>
 <translation id="7366415735885268578">Dodajte web lokaciju</translation>
 <translation id="7368695150573390554">Svi offline podaci će se izbrisati</translation>
@@ -357,6 +368,7 @@
 <translation id="7423098979219808738">Prvo pitaj</translation>
 <translation id="7423538860840206698">Čitanje međumemorije je blokirano</translation>
 <translation id="7425915948813553151">Tamna tema za web lokacije</translation>
+<translation id="7474522811371247902">Chrome ograničava većini web lokacija da koriste kolačiće trećih strana. Međutim, kolačići trećih strana su dozvoljeni na ovoj web lokaciji jer se ona oslanja na njih radi pružanja osnovnih usluga.\n\nIdite u postavke da <ph name="BEGIN_LINK" />upravljate zaštitama od praćenja<ph name="END_LINK" />.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">Web lokacija koristi vaš mikrofon</translation>
 <translation id="7561196759112975576">Uvijek</translation>
@@ -373,6 +385,7 @@
 <translation id="780301667611848630">Ne, hvala</translation>
 <translation id="7804248752222191302">Web lokacija koristi vašu kameru</translation>
 <translation id="7807060072011926525">Pruža Google</translation>
+<translation id="7822573154188733812">Chrome blokira da web lokacije koriste kolačiće trećih strana da vas prate dok pregledate. Idite u postavke da <ph name="BEGIN_LINK" />upravljate zaštitama od praćenja<ph name="END_LINK" />.</translation>
 <translation id="7835852323729233924">Reproduciranje medija</translation>
 <translation id="783819812427904514">Uključi zvuk videozapisa</translation>
 <translation id="7846076177841592234">Otkazivanje odabira</translation>
@@ -389,6 +402,7 @@
 <translation id="8077120325605624147">Bilo koja web lokacija koju posjetite vam može prikazivati bilo koje oglase</translation>
 <translation id="8087000398470557479">Ovaj sadržaj je iz domene <ph name="DOMAIN_NAME" />, a isporučio ga je Google.</translation>
 <translation id="8088603949666785339">Više opcija u baneru <ph name="BANNER_TITLE" /></translation>
+<translation id="8113501330600751161">{DAYS,plural, =1{Chrome će ponovo ograničiti kolačiće sutra}one{Chrome će ponovo ograničiti kolačiće za # dan}few{Chrome će ponovo ograničiti kolačiće za # dana}other{Chrome će ponovo ograničiti kolačiće za # dana}}</translation>
 <translation id="8116925261070264013">Isključen zvuk</translation>
 <translation id="813082847718468539">Prikaz informacija o web lokaciji</translation>
 <translation id="8131740175452115882">Potvrdi</translation>
@@ -427,6 +441,7 @@
 <translation id="8564613706851221529">{COUNT,plural, =1{Kolačići su dozvoljeni za <ph name="FPS_MEMBERS_COUNT" /> web lokaciju čiji je vlasnik <ph name="FPS_OWNER" />}one{Kolačići su dozvoljeni za <ph name="FPS_MEMBERS_COUNT" /> web lokaciju čiji je vlasnik <ph name="FPS_OWNER" />}few{Kolačići su dozvoljeni za <ph name="FPS_MEMBERS_COUNT" /> web lokacije čiji je vlasnik <ph name="FPS_OWNER" />}other{Kolačići su dozvoljeni za <ph name="FPS_MEMBERS_COUNT" /> web lokacija čiji je vlasnik <ph name="FPS_OWNER" />}}</translation>
 <translation id="857943718398505171">Dozvoljeno (preporučeno)</translation>
 <translation id="8609465669617005112">Pomjeri nagore</translation>
+<translation id="8649036394979866943">Chrome ograničava većini web lokacija da koriste kolačiće trećih strana kako bi vas pratile dok pregledate. Idite u postavke da <ph name="BEGIN_LINK" />upravljate zaštitama od praćenja<ph name="END_LINK" /></translation>
 <translation id="8676374126336081632">Brisanje unosa</translation>
 <translation id="8681886425883659911">Oglasi se blokiraju na web lokacijama za koje je poznato da prikazuju ometajuće ili obmanjujuće oglase</translation>
 <translation id="868929229000858085">Pretražite kontakte</translation>
@@ -443,12 +458,14 @@
 <translation id="8816026460808729765">Blokiranje web lokacijama pristup senzorima</translation>
 <translation id="8823559166155093873">Blokiraj kolačiće</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8874790741333031443">Pokušajte privremeno dozvoliti kolačiće treće strane, što podrazumijeva manju zaštitu prilikom pregledanja, ali i veću vjerovatnost da će funkcije web lokacije funkcionirati prema očekivanjima.</translation>
 <translation id="8889294078294184559">Kako nastavljate pregledati, web lokacije mogu provjeravati u Chromeu i s prethodnom web lokacijom koju ste posjetili potvrditi da ste stvarna osoba</translation>
 <translation id="8899807382908246773">Ometajući oglasi</translation>
 <translation id="8903921497873541725">Uvećaj</translation>
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">NFC je isključen na ovom uređaju. Uključite ga u <ph name="BEGIN_LINK" />Postavkama Androida<ph name="END_LINK" />.</translation>
 <translation id="8928445016601307354">Blokirajte web lokacijama pregled i izmjenu informacija na NFC uređajima</translation>
+<translation id="8944485226638699751">Ograničeno</translation>
 <translation id="8958424370300090006">Blokiranje kolačića za određenu web lokaciju.</translation>
 <translation id="8959122750345127698">Navigacija je nedostupna: <ph name="URL" /></translation>
 <translation id="8986362086234534611">Zaboravi</translation>

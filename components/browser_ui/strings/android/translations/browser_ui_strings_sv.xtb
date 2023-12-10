@@ -7,6 +7,7 @@
 <translation id="1073417869336441572">Hjälp oss att förbättra Chrome genom att berätta varför du har tillåtit cookies från tredje part. <ph name="BEGIN_LINK" />Skicka feedback<ph name="END_LINK" /></translation>
 <translation id="1178581264944972037">Paus</translation>
 <translation id="1181037720776840403">Ta bort</translation>
+<translation id="1192844206376121885">All data och alla cookies som har sparats av <ph name="ORIGIN" /> raderas.</translation>
 <translation id="1201402288615127009">Nästa</translation>
 <translation id="1242008676835033345">Inbäddad på <ph name="WEBSITE_URL" /></translation>
 <translation id="1272079795634619415">Stopp</translation>
@@ -25,6 +26,7 @@
 <translation id="1448064542941920355">Minska zoom</translation>
 <translation id="1510341833810331442">Webbplatser får inte spara data på enheten</translation>
 <translation id="1547123415014299762">Tredjepartscookies tillåts</translation>
+<translation id="1568470248891039841">Webbplatser du besöker kan bädda in innehåll från andra webbplatser, till exempel bilder, annonser och text. Dessa andra webbplatser kan begära tillstånd att använda uppgifter som de har sparat om dig när du surfar på webbplatsen. <ph name="BEGIN_LINK" />Läs mer om inbäddat innehåll<ph name="END_LINK" /></translation>
 <translation id="1593426485665524382">Nya åtgärder visas högt upp på skärmen</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1633720957382884102">Relaterade webbplatser</translation>
@@ -58,6 +60,7 @@
 <translation id="216989819110952009">Trots de skyddande gröna glasögonen blev Dorothy och hennes vänner först bländade av</translation>
 <translation id="2176704795966505152">Visa zoomalternativ i huvudmenyn</translation>
 <translation id="2182457891543959921">Fråga innan webbplatser tillåts att skapa en 3D-karta över dina omgivningar eller registrera kamerans position (rekommenderas)</translation>
+<translation id="2185965788978862351"><ph name="DATASIZE" /> data och cookies som har sparats av webbplatser eller appar på startskärmen raderas.</translation>
 <translation id="2194856509914051091">Tänk på detta</translation>
 <translation id="2212565012507486665">Tillåt cookies</translation>
 <translation id="2228071138934252756">Om du vill ge <ph name="APP_NAME" /> åtkomst till kameran måste du även aktivera kameran i <ph name="BEGIN_LINK" />Android-inställningarna<ph name="END_LINK" />.</translation>
@@ -78,8 +81,10 @@
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> och <ph name="NUM_MORE" /> till tillåts}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> och <ph name="NUM_MORE" /> till tillåts}}</translation>
 <translation id="2410940059315936967">En webbplats som du besöker kan bädda in innehåll från andra webbplatser, till exempel bilder, annonser och text. Cookies som sparas av dessa andra webbplatser kallas tredjepartscookies.</translation>
 <translation id="2434158240863470628">Nedladdningen är klar<ph name="SEPARATOR" /><ph name="BYTES_DOWNLOADED" /></translation>
+<translation id="2438120137003069591">Du har tillfälligt tillåtit att den här webbplatsen använder tredjepartscookies, vilket innebär att webbsökningen är mindre skyddad, men det är mer troligt att webbplatsfunktioner fungerar som förväntat. <ph name="BEGIN_LINK" />Skicka feedback<ph name="END_LINK" /></translation>
 <translation id="244264527810019436">Funktioner på vissa webbplatser kanske inte fungerar i inkognitoläge</translation>
 <translation id="2442870161001914531">Begär alltid datorversionen av webbplatsen</translation>
+<translation id="2469312991797799607">När du gör detta raderas all data och alla cookies för <ph name="ORIGIN" /> och alla underordnade webbplatser</translation>
 <translation id="2479148705183875116">Öppna inställningarna</translation>
 <translation id="2482878487686419369">Aviseringar</translation>
 <translation id="2485422356828889247">Avinstallera</translation>
@@ -111,6 +116,7 @@
 <translation id="2910701580606108292">Fråga innan webbplatser tillåts att spela upp skyddat innehåll</translation>
 <translation id="2932883381142163287">Anmäl otillåten användning</translation>
 <translation id="2968755619301702150">Certifikatvisare</translation>
+<translation id="2979365474350987274">Tredjepartscookies är begränsade</translation>
 <translation id="3008272652534848354">Återställ behörigheter</translation>
 <translation id="301521992641321250">Blockerades automatiskt</translation>
 <translation id="3069226013421428034">Tillåt inloggning hos tredje part på en viss webbplats.</translation>
@@ -166,6 +172,7 @@
 <translation id="3918378745482005425">En del funktioner fungerar eventuellt inte. Relaterade webbplatser kan fortfarande använda tredjepartscookies.</translation>
 <translation id="3955193568934677022">Tillåt att skyddat innehåll spelas upp på webbplatser (rekommenderas)</translation>
 <translation id="3967822245660637423">Nedladdning slutförd</translation>
+<translation id="3974105241379491420">Webbplatser får begära tillstånd att använda uppgifter som de har sparat om dig</translation>
 <translation id="3987993985790029246">Kopiera länk</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="3992684624889376114">Om den här sidan</translation>
@@ -185,6 +192,7 @@
 <translation id="4278390842282768270">Tillåts</translation>
 <translation id="429312253194641664">Media spelas upp på en webbplats</translation>
 <translation id="42981349822642051">Expandera</translation>
+<translation id="4336566011000459927">Chrome begränsar cookies igen i dag</translation>
 <translation id="4338831206024587507">Alla webbplatser under <ph name="DOMAIN" /></translation>
 <translation id="4402755511846832236">Blockera webbplatser från att veta när du använder enheten aktivt</translation>
 <translation id="4412992751769744546">Tillåt cookies från tredje part</translation>
@@ -223,6 +231,7 @@
 <translation id="5063480226653192405">Användning</translation>
 <translation id="5091013926750941408">Mobil webbplats</translation>
 <translation id="509133520954049755">Begär datorvy</translation>
+<translation id="5099358668261120049">All data och alla cookies som har sparats av <ph name="ORIGIN" /> eller motsvarande app på startskärmen raderas.</translation>
 <translation id="5100237604440890931">Vyn har komprimerats. Expandera den genom att klicka.</translation>
 <translation id="5123685120097942451">Inkognitoflik</translation>
 <translation id="5186036860380548585">Alternativet visas högt upp på skärmen</translation>
@@ -239,6 +248,7 @@
 <translation id="5335288049665977812">Tillåt att JavaScript körs på webbplatser (rekommenderas)</translation>
 <translation id="534295439873310000">NFC-enheter</translation>
 <translation id="5344522958567249764">Hantera annonsintegritet</translation>
+<translation id="5389626883706033615">Webbplatser hindras från att be dig använda information som de har sparat om dig</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 till)}other{(+ # till)}}</translation>
 <translation id="5403592356182871684">Namn</translation>
 <translation id="5438097262470833822">Detta återställer behörigheter för <ph name="WEBSITE" /></translation>
@@ -269,6 +279,7 @@
 <translation id="5916664084637901428">På</translation>
 <translation id="5922853908706496913">Delar skärmen</translation>
 <translation id="5922967540311291836">Blockera cookies från tredje part</translation>
+<translation id="5923512600150154850"><ph name="DATASIZE" /> data och cookies som har sparats av webbplatser raderas.</translation>
 <translation id="5939518447894949180">Återställ</translation>
 <translation id="5964247741333118902">Inbäddat innehåll</translation>
 <translation id="5968921426641056619">Ange webbadress</translation>
@@ -284,6 +295,8 @@
 <translation id="6177128806592000436">Anslutningen till webbplatsen är inte säker</translation>
 <translation id="6181444274883918285">Lägg till en webbplats i undantagen</translation>
 <translation id="6192792657125177640">Undantag</translation>
+<translation id="6194967801833346599">{DAYS,plural, =1{Cookies blockeras i Chrome igen i morgon}other{# dagar tills cookies blockeras igen}}</translation>
+<translation id="6195163219142236913">Tredjepartscookies är begränsade</translation>
 <translation id="6196640612572343990">Blockera cookies från tredje part</translation>
 <translation id="6205314730813004066">Annonsintegritet</translation>
 <translation id="6207207788774442484">Radera data och återställ behörigheter</translation>
@@ -294,6 +307,7 @@
 <translation id="6270391203985052864">Webbplatser får be om tillåtelse att skicka aviseringar</translation>
 <translation id="6295158916970320988">Alla webbplatser</translation>
 <translation id="6320088164292336938">Vibration</translation>
+<translation id="6344622098450209924">Spårningsskydd</translation>
 <translation id="6367753977865761591">Blockera inloggning hos tredje part på en viss webbplats.</translation>
 <translation id="6398765197997659313">Avsluta helskärmsläge</translation>
 <translation id="640163077447496506">Löper ut i dag</translation>
@@ -324,6 +338,7 @@
 <translation id="6864395892908308021">Enheten kan inte läsa NFC</translation>
 <translation id="6912998170423641340">Webbplatser ges inte tillgång till text och bilder i Urklipp</translation>
 <translation id="6945221475159498467">Välj</translation>
+<translation id="6950072572526089586">En webbplats som du besöker kan spara information om vad du gör så att den fungerar som förväntat. Det kan till exempel vara att hålla dig inloggad på en webbplats eller spara varor i kundvagnen. Webbplatser sparar ofta den här informationen tillfälligt på enheten.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6981982820502123353">Tillgänglighet</translation>
 <translation id="6992289844737586249">Fråga innan webbplatser tillåts att använda mikrofonen (rekommenderas)</translation>
@@ -337,12 +352,14 @@
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
 <translation id="7180611975245234373">Uppdatera</translation>
 <translation id="7188508872042490670">Webbplatsdata på enheten</translation>
+<translation id="7201549776650881587">När du gör detta raderas all data och alla cookies som lagras av alla underordnade webbplatser för <ph name="ORIGIN" /> eller tillhörande app på startskärmen</translation>
 <translation id="7203150201908454328">Utökat</translation>
 <translation id="7219254577985949841">Vill du radera webbplatsdata?</translation>
 <translation id="723171743924126238">Välj bilder</translation>
 <translation id="7243308994586599757">Alternativ visas nära skärmens nedre kant</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> har valts</translation>
 <translation id="7260727271532453612"><ph name="PERMISSION_1" /> och <ph name="PERMISSION_2" /> tillåts</translation>
+<translation id="7284451015630589124">Du blockerade webbplatser från att använda tredjepartscookies för att spåra dig när du surfar. Öppna inställningarna för att <ph name="BEGIN_LINK" />hantera spårningsskydd<ph name="END_LINK" />.</translation>
 <translation id="7302486331832100261">Du brukar blockera aviseringar. Tryck på Info om du vill tillåta dem.</translation>
 <translation id="7366415735885268578">Lägg till en webbplats</translation>
 <translation id="7368695150573390554">All offlinedata raderas</translation>
@@ -351,6 +368,7 @@
 <translation id="7423098979219808738">Fråga först</translation>
 <translation id="7423538860840206698">Läsbehörighet till Urklipp har nekats</translation>
 <translation id="7425915948813553151">Mörkt tema för webbplatser</translation>
+<translation id="7474522811371247902">Chrome begränsar de flesta webbplatser från att använda tredjepartscookies. Tredjepartscookies tillåts dock på den här webbplatsen eftersom den förlitar sig på att de tillhandahåller grundläggande tjänster.\n\nÖppna inställningarna för att <ph name="BEGIN_LINK" />hantera spårningsskydd<ph name="END_LINK" />.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">En webbplats använder mikrofonen</translation>
 <translation id="7561196759112975576">Alltid</translation>
@@ -367,6 +385,7 @@
 <translation id="780301667611848630">Nej tack</translation>
 <translation id="7804248752222191302">En webbplats använder kameran</translation>
 <translation id="7807060072011926525">Tillhandahålls av Google</translation>
+<translation id="7822573154188733812">Chrome blockerar webbplatser från att spåra dig med hjälp av tredjepartscookies när du surfar. Öppna inställningarna för att <ph name="BEGIN_LINK" />hantera spårningsskydd<ph name="END_LINK" />.</translation>
 <translation id="7835852323729233924">Spelar upp media</translation>
 <translation id="783819812427904514">Slå på ljudet för videon</translation>
 <translation id="7846076177841592234">Rensa val</translation>
@@ -383,6 +402,7 @@
 <translation id="8077120325605624147">Alla webbplatser du besöker kan visa alla annonser för dig</translation>
 <translation id="8087000398470557479">Innehållet kommer från <ph name="DOMAIN_NAME" /> via Google.</translation>
 <translation id="8088603949666785339">Fler alternativ i <ph name="BANNER_TITLE" /></translation>
+<translation id="8113501330600751161">{DAYS,plural, =1{Chrome begränsar cookies igen i morgon}other{# dagar tills Chrome begränsar cookies igen}}</translation>
 <translation id="8116925261070264013">Ljudet avstängt</translation>
 <translation id="813082847718468539">Visa information om webbplatsen</translation>
 <translation id="8131740175452115882">Bekräfta</translation>
@@ -421,6 +441,7 @@
 <translation id="8564613706851221529">{COUNT,plural, =1{Cookies tillåts för webbplatsen <ph name="FPS_MEMBERS_COUNT" /> <ph name="FPS_OWNER" />-webbplats}other{Cookies tillåts för <ph name="FPS_MEMBERS_COUNT" /> <ph name="FPS_OWNER" />-webbplatser}}</translation>
 <translation id="857943718398505171">Tillåten (rekommenderas)</translation>
 <translation id="8609465669617005112">Flytta upp</translation>
+<translation id="8649036394979866943">Chrome begränsar de flesta webbplatser från att använda tredjepartscookies för att spåra dig när du surfar. Öppna inställningarna för att <ph name="BEGIN_LINK" />hantera spårningsskydd<ph name="END_LINK" /></translation>
 <translation id="8676374126336081632">Radera inmatning</translation>
 <translation id="8681886425883659911">Annonser blockeras på webbplatser som är kända för att visa påträngande eller vilseledande annonser</translation>
 <translation id="868929229000858085">Sök bland kontakterna</translation>
@@ -437,12 +458,14 @@
 <translation id="8816026460808729765">Blockera webbplatser från att använda enhetens sensorer</translation>
 <translation id="8823559166155093873">Blockera cookies</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8874790741333031443">Testa att tillfälligt tillåta tredjepartscookies, vilket innebär mindre skydd när du surfar men större sannolikhet att webbplatsfunktionerna fungerar som förväntat.</translation>
 <translation id="8889294078294184559">När du fortsätter surfa kan webbplatser kontrollera informationen med Chrome och verifiera med den föregående webbplatsen du besökte att du troligen är en riktig person.</translation>
 <translation id="8899807382908246773">Påträngande annonser</translation>
 <translation id="8903921497873541725">Zooma in</translation>
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">NFC är inte aktiverat på enheten. Aktivera det i <ph name="BEGIN_LINK" />Android-inställningarna<ph name="END_LINK" />.</translation>
 <translation id="8928445016601307354">Förhindra att webbplatser visar och ändrar information på NFC-enheter</translation>
+<translation id="8944485226638699751">Begränsade</translation>
 <translation id="8958424370300090006">Blockera cookies för en enskild webbplats.</translation>
 <translation id="8959122750345127698">Det går inte att nå webbadressen: <ph name="URL" /></translation>
 <translation id="8986362086234534611">Glöm</translation>

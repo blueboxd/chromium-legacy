@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/barrier_callback.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/functional/callback.h"
 #include "base/types/optional_util.h"
@@ -45,6 +46,16 @@ const FormData& WithNewVersion(const FormData& form) {
   static FormVersion version_counter;
   ++*version_counter;
   const_cast<FormData&>(form).version = version_counter;
+  return form;
+}
+
+// TODO(crbug.com/1117028): Remove once FormData objects aren't stored
+// globally anymore.
+const std::optional<FormData>& WithNewVersion(
+    const std::optional<FormData>& form) {
+  if (form) {
+    WithNewVersion(*form);
+  }
   return form;
 }
 
@@ -189,7 +200,11 @@ bool ContentAutofillDriver::CanShowAutofillUi() const {
 }
 
 bool ContentAutofillDriver::RendererIsAvailable() {
-  return render_frame_host_->GetRenderViewHost() != nullptr;
+  if (!render_frame_host_->GetRenderViewHost()) {
+    base::debug::DumpWithoutCrashing();
+    return false;
+  }
+  return true;
 }
 
 void ContentAutofillDriver::PopupHidden() {
@@ -238,33 +253,97 @@ std::vector<FieldGlobalId> ContentAutofillDriver::ApplyFormAction(
 
 void ContentAutofillDriver::ApplyFieldAction(
     mojom::ActionPersistence action_persistence,
+    mojom::TextReplacement text_replacement,
     const FieldGlobalId& field,
     const std::u16string& value) {
   router().ApplyFieldAction(
-      this, action_persistence, field, value,
+      this, action_persistence, text_replacement, field, value,
       [](autofill::AutofillDriver* target,
          mojom::ActionPersistence action_persistence,
-         const FieldRendererId& field, const std::u16string& value) {
+         mojom::TextReplacement text_replacement, const FieldRendererId& field,
+         const std::u16string& value) {
         if (!cast(target)->RendererIsAvailable()) {
           return;
         }
-        cast(target)->GetAutofillAgent()->ApplyFieldAction(action_persistence,
-                                                           field, value);
+        cast(target)->GetAutofillAgent()->ApplyFieldAction(
+            action_persistence, text_replacement, field, value);
       });
 }
 
-void ContentAutofillDriver::ExtractForm(
-    FormGlobalId form,
-    base::OnceCallback<void(const std::optional<FormData>&)>
-        response_callback) {
-  router().ExtractForm(
-      this, form, std::move(response_callback),
-      [](autofill::AutofillDriver* target, const FormRendererId& form,
-         base::OnceCallback<void(const std::optional<FormData>&)>
-             response_callback) {
-        cast(target)->GetAutofillAgent()->ExtractForm(
-            form, std::move(response_callback));
-      });
+void ContentAutofillDriver::ExtractForm(FormGlobalId form_id,
+                                        BrowserFormHandler final_handler) {
+  // Caution: nested callbacks ahead.
+  //
+  // There are three drivers involved:
+  //   `this` --> `request_target` == `response_source` --> `response_target`.
+  // The hops between these drivers happen in AutofillDriverRouter, which
+  // continues the control flow through synchronous callbacks. The response of
+  // the renderer is handled by an asynchronous callback.
+  //
+  // The chronological order of events is this:
+  //
+  // (1) AutofillDriverRouter::ExtractForm() finds the right AutofillDriver.
+  // (2) make_request() sends the request to the right AutofillAgent.
+  // (3) set_meta_data() sets the meta data upon receival of the renderer form.
+  // (4) flatten_form() converts the received renderer form to a browser form.
+  // (5) set_version() increments FormData::version.
+  // (6) final_handler() processes the browser form.
+  //
+  // Step (N+1) is called by Step (N).
+  // Step (3) set_meta_data() is the only asynchronous call.
+  //
+  // These steps occur in reverse order in the code below due to the callbacks.
+  // Reading it from the bottom up is recommended.
+  //
+  // Perhaps most confusing is that flatten_form() becomes available in (2) but
+  // is called only in (3). The reason is that
+  // - we must set the meta data before flattening the form, and
+  // - since the response to make_request() is asynchronous, the only way to
+  //   squeeze that in is through a separate callback.
+  //
+  // TODO(crbug.com/1331312): Make ExtractForm() trigger a FormsSeen() event and
+  // await that event in the browser process, instead of having the response
+  // callback.
+
+  auto set_version = base::BindOnce(
+      [](BrowserFormHandler final_handler,
+         autofill::AutofillDriver* response_target,
+         const std::optional<FormData>& browser_form) {
+        // (6) Process the browser form (with meta data and version).
+        std::move(final_handler)
+            .Run(response_target,
+                 // (5) Increment the form's version as very last step.
+                 WithNewVersion(browser_form));
+      },
+      std::move(final_handler));
+
+  using RendererFormHandler =
+      base::OnceCallback<void(const absl::optional<::autofill::FormData>&)>;
+  // Called on the autofill driver that hosts the form with `form_id`.
+  auto make_request = [](autofill::AutofillDriver* request_target,
+                         const FormRendererId& form_id,
+                         RendererFormHandler flatten_form) {
+    // Called asynchronously. Binding `response_target` is safe because
+    // destroying `*response_target` also destroys any pending callback.
+    auto set_meta_data = base::BindOnce(
+        [](RendererFormHandler flatten_form,
+           raw_ref<ContentAutofillDriver> response_target,
+           const std::optional<FormData>& raw_form) {
+          // (4) Convert the received renderer form to a browser form.
+          std::move(flatten_form)
+              .Run(
+                  // (3) Set the meta data on receival of the renderer form.
+                  response_target->GetFormWithFrameAndFormMetaData(raw_form));
+        },
+        std::move(flatten_form), raw_ref(*cast(request_target)));
+    // (2) Send the mojo message to the right AutofillAgent.
+    cast(request_target)
+        ->GetAutofillAgent()
+        ->ExtractForm(form_id, std::move(set_meta_data));
+  };
+
+  // (1) Route the request to the right AutofillDriver.
+  router().ExtractForm(this, form_id, std::move(set_version), make_request);
 }
 
 void ContentAutofillDriver::SendAutofillTypePredictionsToRenderer(
@@ -382,10 +461,7 @@ void ContentAutofillDriver::SetFormToBeProbablySubmitted(
     return;
   }
   router().SetFormToBeProbablySubmitted(
-      this,
-      form ? absl::make_optional<FormData>(
-                 GetFormWithFrameAndFormMetaData(*form))
-           : absl::nullopt,
+      this, GetFormWithFrameAndFormMetaData(form),
       [](autofill::AutofillDriver* target, const FormData* optional_form) {
         cast(target)->potentially_submitted_form_ =
             base::OptionalFromPtr(optional_form);
@@ -695,6 +771,14 @@ FormData ContentAutofillDriver::GetFormWithFrameAndFormMetaData(
     FormData form) const {
   SetFrameAndFormMetaData(form, nullptr);
   return form;
+}
+
+std::optional<FormData> ContentAutofillDriver::GetFormWithFrameAndFormMetaData(
+    base::optional_ref<const FormData> form) const {
+  if (!form.has_value()) {
+    return std::nullopt;
+  }
+  return GetFormWithFrameAndFormMetaData(*form);
 }
 
 AutofillDriverRouter& ContentAutofillDriver::router() {

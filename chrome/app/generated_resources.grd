@@ -550,11 +550,14 @@ are declared in tools/grit/grit_rule.gni.
         <message name="IDS_CONTENT_CONTEXT_LIVE_CAPTION_DISABLE" desc="The name of the Live Caption command in the content area context menu to disable Live Caption">
           &amp;Disable Live Caption
         </message>
-        <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED_TITLE" desc="The title of the Autofill manual fallback for unrecognized autocomplete attribute command in the content area context menu.">
+        <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_TITLE" desc="The title of the Autofill manual fallback for showing the Autofill suggestions in the content area context menu.">
          Fill in form
         </message>
-        <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED" desc="The name of the Autofill manual fallback for unrecognized autocomplete attribute command in the content area context menu.">
+        <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_ADDRESS" desc="The name of the Autofill manual fallback for showing address suggestions in the content area context menu.">
          Addresses and more
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_PAYMENTS" desc="The name of the Autofill manual fallback for payment methods attribute command in the content area context menu.">
+         Payment methods
         </message>
         <if expr="not use_titlecase">
           <message name="IDS_CONTENT_CONTEXT_BACK" desc="The name of the Back command in the content area context menu">
@@ -697,6 +700,9 @@ are declared in tools/grit/grit_rule.gni.
             Rotate c&amp;ounterclockwise
           </message>
 
+          <message name="IDS_CONTENT_CONTEXT_SAVEVIDEOFRAMEAS" desc="The name of the Save Video Frame As command in the content area context menu">
+            Sa&amp;ve video frame as...
+          </message>
           <message name="IDS_CONTENT_CONTEXT_SAVEVIDEOAS" desc="The name of the Save Video As command in the content area context menu">
             Sa&amp;ve video as...
           </message>
@@ -966,6 +972,9 @@ are declared in tools/grit/grit_rule.gni.
             Rotate C&amp;ounterclockwise
           </message>
 
+          <message name="IDS_CONTENT_CONTEXT_SAVEVIDEOFRAMEAS" desc="In Title Case: The name of the Save Video Frame As command in the content area context menu">
+           Sa&amp;ve Video Frame As...
+          </message>
           <message name="IDS_CONTENT_CONTEXT_SAVEVIDEOAS" desc="In Title Case: The name of the Save Video As command in the content area context menu">
            Sa&amp;ve Video As...
           </message>
@@ -2178,10 +2187,6 @@ are declared in tools/grit/grit_rule.gni.
          desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it was insecurely delivered.">
         This file can't be downloaded securely
       </message>
-      <message name="IDS_BLOCK_REASON_DEEP_SCANNING"
-        desc="Message shown on chrome://downloads when a download is being scanned">
-        This file is being scanned.
-      </message>
       <message name="IDS_BLOCK_REASON_DEEP_SCANNING_UPDATED"
           desc="Message shown on chrome://downloads when a download is being scanned">
         This file might be a virus or malware. You can send it to Google to check if it's unsafe.
@@ -2193,10 +2198,6 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_BLOCK_REASON_PROMPT_FOR_SCANNING_UPDATED"
                desc="Message shown to the user on chrome://downloads page to explain that this download is recommended to be scanned.">
         This file might be a virus or malware. You can send it to Google to check if it's unsafe.
-      </message>
-      <message name="IDS_DEEP_SCANNED_SAFE_DESCRIPTION"
-        desc="Message shown to the user on chrome://downloads page to explain this this download was deep scanned, and found to be safe.">
-        Security checks are done
       </message>
       <message name="IDS_DEEP_SCANNED_OPENED_DANGEROUS_DESCRIPTION"
         desc="Message shown to the user on chrome://downloads page to explain this this download was deep scanned, and found to be malicious.">
@@ -2859,10 +2860,6 @@ are declared in tools/grit/grit_rule.gni.
                desc="When a download is finished, let the user know.">
         Done
       </message>
-      <message name="IDS_DOWNLOAD_BUBBLE_STATUS_DEEP_SCANNING_DONE"
-               desc="When a download has finished deep scanning and the result is safe, let the user know.">
-        Done, no issues found
-      </message>
       <message name="IDS_DOWNLOAD_BUBBLE_STATUS_DEEP_SCANNING_DONE_UPDATED"
                desc="When a download has finished deep scanning and the result is safe, let the user know.">
         Scan is done
@@ -3287,10 +3284,6 @@ are declared in tools/grit/grit_rule.gni.
       </message>
 
       <!-- Deep scanning in download bubble -->
-      <message name="IDS_DOWNLOAD_BUBBLE_STATUS_DEEP_SCANNING_PROMPT"
-               desc="Prompt for Deep Scanning of a download">
-        Scan before opening
-      </message>
       <message name="IDS_DOWNLOAD_BUBBLE_STATUS_DEEP_SCANNING_PROMPT_UPDATED"
                desc="Prompt for Deep Scanning of a download">
         Scan for malware
@@ -3671,17 +3664,17 @@ are declared in tools/grit/grit_rule.gni.
         Always block multiple automatic downloads on <ph name="HOST">$1<ex>example.com</ex></ph>
       </message>
 
-      <message name="IDS_BLOCKED_COOKIES_TITLE" desc="Short title of the bubble showing that a page was blocked from using cookies.">
-        Cookies blocked
+      <message name="IDS_BLOCKED_ON_DEVICE_SITE_DATA_TITLE" desc="Short title of the bubble showing that a page was blocked from saving site data on-device.">
+        On-device site data not allowed
       </message>
-      <message name="IDS_ACCESSED_COOKIES_TITLE" desc="Short title of the bubble showing that a page wrote cookies or other site data.">
-        Cookies set
+      <message name="IDS_ACCESSED_ON_DEVICE_SITE_DATA_TITLE" desc="Short title of the bubble showing that a page saves site data while saving all site data is blocked.">
+        On-device site data allowed
       </message>
-      <message name="IDS_BLOCKED_COOKIES_MESSAGE" desc="Tooltip and bubble message text when a page is not allowed to write cookies or other site data.">
-        This page was prevented from setting cookies.
+      <message name="IDS_BLOCKED_ON_DEVICE_SITE_DATA_MESSAGE" desc="Tooltip and bubble message text when a page is blocked from saving site data on-device.">
+        This site isn't allowed to save data on your device.
       </message>
-      <message name="IDS_ACCESSED_COOKIES_MESSAGE" desc="Tooltip and bubble info header text when a page wrote cookies or other site data.">
-        This page set cookies.
+      <message name="IDS_ACCESSED_ON_DEVICE_SITE_DATA_MESSAGE" desc="Tooltip and bubble info header text when a page saves site data while saving all site data is blocked.">
+        This site is allowed to save data on your device.
       </message>
       <message name="IDS_BLOCKED_COOKIES_INFO" desc="Info link to a dialog showing the blocked/allowed cookies, displayed in bubble when a page tries to write cookies or other site data.">
         Show cookies and other site data...
@@ -3692,20 +3685,20 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_BLOCKED_IMAGES_MESSAGE" desc="Tooltip and bubble info header text when a page is not allowed to display images.">
         Images were blocked on this page.
       </message>
-      <message name="IDS_BLOCKED_COOKIES_UNBLOCK" desc="Radio button choice to unblock a site from setting cookies, displayed in bubble when a page tries to set cookies.">
-        Always allow <ph name="HOST">$1<ex>mail.google.com</ex></ph> to set cookies
+      <message name="IDS_BLOCKED_ON_DEVICE_SITE_DATA_UNBLOCK" desc="Radio button choice to unblock a site from saving data on-device, displayed in bubble when a page tries to save data.">
+        Allow site to save data
       </message>
       <message name="IDS_BLOCKED_IMAGES_UNBLOCK" desc="Radio button choice to unblock a site from showing images, displayed in bubble when a page tries to display images.">
         Always allow <ph name="HOST">$1<ex>mail.google.com</ex></ph> to show images
       </message>
-      <message name="IDS_BLOCKED_COOKIES_NO_ACTION" desc="Radio button choice to continue blocking a site from setting cookies, displayed in bubble when a page tries to set cookies.">
-        Continue blocking cookies
+      <message name="IDS_BLOCKED_ON_DEVICE_SITE_DATA_NO_ACTION" desc="Radio button choice to continue blocking a site from saving data on device, displayed in bubble when a page tries to save data.">
+        Don't allow site to save data
       </message>
-      <message name="IDS_ALLOWED_COOKIES_NO_ACTION" desc="Radio button choice to keep allowing a site to set the cookies, displayed in bubble when a page tries to set cookies.">
-        Continue allowing cookies
+      <message name="IDS_ALLOWED_ON_DEVICE_SITE_DATA_NO_ACTION" desc="Radio button choice to keep allowing a site to save site data, displayed in bubble when a page tries to save site data.">
+        Allow site to save data
       </message>
-      <message name="IDS_ALLOWED_COOKIES_BLOCK" desc="Radio button choice to block a site to set the cookies, displayed in bubble when a page tries to set cookies.">
-        Always block cookies on <ph name="HOST">$1<ex>mail.google.com</ex></ph>
+      <message name="IDS_ALLOWED_ON_DEVICE_SITE_DATA_BLOCK" desc="Radio button choice to block a site to save site data, displayed in bubble when a page tries to save site data.">
+        Don't allow site to save data
       </message>
       <message name="IDS_BLOCKED_IMAGES_NO_ACTION" desc="Radio button choice to continue blocking a site from showing images, displayed in bubble when a page tries to display images.">
         Continue blocking images
@@ -3993,6 +3986,9 @@ are declared in tools/grit/grit_rule.gni.
       </message>
       <message name="IDS_COOKIE_CONTROLS_PAGE_ACTION_COOKIES_BLOCKED_LABEL" desc="Label in the Page Action (omnibox) icon indicating that cookies are blocked on the current site.">
         Third-party cookies blocked
+      </message>
+      <message name="IDS_COOKIE_CONTROLS_PAGE_ACTION_COOKIES_LIMITED_LABEL" desc="Label in the Page Action (omnibox) icon indicating that cookies are limited on the current site.">
+        Third-party cookies limited
       </message>
       <message name="IDS_TRACKING_PROTECTION_PAGE_ACTION_SITE_NOT_WORKING_LABEL" desc="Label for the Page Action (omnibox) icon that highlights the Tracking Protection bubble entrypoint when cookies are blocked and we have high confidence that this is breaking the current site.">
         Site not working?
@@ -5011,16 +5007,16 @@ are declared in tools/grit/grit_rule.gni.
       <if expr="enable_extensions">
         <!-- Extension blocked action bubble -->
         <message name="IDS_EXTENSION_SITE_RELOAD_PAGE_BUBBLE_HEADING" desc="Heading of the bubble to tell users that in order to run or not run an extension, they'll need to refresh the page. Deliberately similar to IDS_PAGE_INFO_INFOBAR_TEXT, but used for an different permission setting so they are not combined. If updating the one, please update the other or consult the extensions and privacy teams.">
-          To apply your updated settings to this site, reload this page
+          Reload this page to apply your updated settings on this site
         </message>
         <message name="IDS_EXTENSION_RELOAD_PAGE_BUBBLE_OK_BUTTON" desc="The text of the button to proceed with the page refresh for running an extension.">
           Reload
         </message>
         <message name="IDS_EXTENSION_RELOAD_PAGE_BUBBLE_ALLOW_SINGLE_EXTENSION_TITLE" desc="Title of the bubble to tell users that in order to run or block an extension, they'll need to refresh the page.">
-          To apply your updated settings for "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" to this site, reload this page
+          Reload this page to apply your updated settings for "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" on this site
         </message>
         <message name="IDS_EXTENSION_RELOAD_PAGE_BUBBLE_ALLOW_MULTIPLE_EXTENSIONS_TITLE" desc="Title of the bubble to tell users that in order to run or block an extension, they'll need to refresh the page.">
-          To apply your updated settings to this site for these extensions, reload this page
+          Reload this page to apply your updated extension settings to this site
         </message>
       </if>
 
@@ -6368,7 +6364,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Extensions can request access to this site
       </message>
       <message name="IDS_EXTENSIONS_MENU_MESSAGE_SECTION_RELOAD_CONTAINER_DESCRIPTION_TEXT" desc="Text of the message section when the user has to reload the page to apply the updated user site settings.">
-        To apply your updated settings to this site, reload this page
+        Reload this page to apply your updated settings on this site
       </message>
       <message name="IDS_EXTENSIONS_MENU_MESSAGE_SECTION_RELOAD_CONTAINER_BUTTON_TEXT" desc="Text of the button in the message section to reload the page when the user has to reload the page to apply the updated user site settings.">
         Reload
@@ -6575,9 +6571,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <message name="IDS_SUB_APPS_INSTALL_DIALOG_PERMISSIONS_DESCRIPTION" desc="Explanation of the permissions mechanisms resulting from the install of sub app(s). [ICU Syntax]">
         {NUM_SUB_APP_INSTALLS, plural,
-          =1 {Permissions that you allow for "<ph name="APP_NAME">{APP_NAME}<ex>Citrix</ex></ph>" will also be allowed for this app.}
-          other {Permissions that you allow for "<ph name="APP_NAME">{APP_NAME}<ex>Citrix</ex></ph>" will also be allowed for these apps.}
+          =1 {Permissions that you allow for "<ph name="APP_NAME">$1<ex>Citrix</ex></ph>" will also be allowed for this app. <ph name="MANAGE_LINK">$2<ex>Manage</ex></ph>}
+          other {Permissions that you allow for "<ph name="APP_NAME">$1<ex>Citrix</ex></ph>" will also be allowed for these apps. <ph name="MANAGE_LINK">$2<ex>Manage</ex></ph>}
         }
+      </message>
+
+      <message name="IDS_SUB_APPS_INSTALL_DIALOG_MANAGE_PERMISSIONS_LINK" desc="">
+        Manage
       </message>
 
       <message name="IDS_SUB_APPS_INSTALL_DIALOG_PERMISSIONS_BUTTON" desc="Button label on a dialog that lets the user approve the install of one or more sub apps.">
@@ -6786,9 +6786,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_TITLE" desc="The title of the account chooser dialog.">
         Sign in as
       </message>
-      <message name="IDS_PASSWORD_MANAGER_CONFIRM_SAVED_TITLE" desc="The title text used in the passwords bubble after the user has saved a password.">
-        Password saved
-      </message>
 
       <if expr="not use_titlecase">
         <message name="IDS_PASSWORD_GENERATION_SUGGESTION_GPM" desc="Text shown next to a generated password describing it as a suggestion.">
@@ -6812,6 +6809,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_PASSWORD_GENERATION_NUDGE_CANCEL_BUTTON" desc="Text shown on a cancel button in the password generation flow.">
           Choose your own
         </message>
+        <message name="IDS_PASSWORD_MANAGER_CONFIRM_SAVED_TITLE" desc="The title text used in the passwords bubble after the user has saved a password.">
+          Password saved
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_CONFIRM_UPDATE_TITLE" desc="The title text used in the passwords bubble after the user has updated a password.">
+          Password updated
+        </message>
       </if>
       <if expr="use_titlecase">
         <message name="IDS_PASSWORD_GENERATION_SUGGESTION_GPM" desc="In Title Case: Text shown next to a generated password describing it as a suggestion.">
@@ -6834,6 +6837,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_PASSWORD_GENERATION_NUDGE_CANCEL_BUTTON" desc="Text shown on a cancel button in the password generation flow.">
           Choose Your Own
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_CONFIRM_SAVED_TITLE" desc="The title text used in the passwords bubble after the user has saved a password.">
+          Password Saved
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_CONFIRM_UPDATE_TITLE" desc="The title text used in the passwords bubble after the user has updated a password.">
+          Password Updated
         </message>
       </if>
 
@@ -8100,6 +8109,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_TITLE" desc="The consent flow is a 2-step process. This text shown on the step 2 as the title description.">
         Get discounts?
       </message>
+      <message name="IDS_NTP_MODULES_CUSTOMIZE_IPH" desc="The description of the IPH that shows for customizing NTP Desktop modules.">
+        Customize what you see on this page
+      </message>
       <message name="IDS_NTP_MODULES_NEW_TAG_LABEL" desc="Label for tag shown on new Modular NTP Desktop features.">
         New
       </message>
@@ -8328,6 +8340,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_SIDE_PANEL_COMPANION_PROMO" desc="Text shown on promotional UI appearing next to the pinned companion button, which encourages users to try the feature.">
         Get a page summary, related searches, and other useful info about this page
+      </message>
+      <message name="IDS_SIDE_PANEL_COMPANION_PROMO_PINNING" desc="Text shown on promotional UI appearing next to the pinned companion button, which encourages users to try the feature when Side Panel Pinning is enabled.">
+        You can search this page with Google to get additional useful info
       </message>
       <message name="IDS_SIDE_PANEL_COMPANION_PROMO_SCREEN_READER" is_accessibility_with_no_ui="true" desc="Screen reader announcement on the promotional UI appearing next to the pinned companion button, which excourages users to try the feature.">
         To get a page summary, related searches, and other useful info about this page, select Google Search side panel button in the toolbar
@@ -8656,6 +8671,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_READING_MODE_SIDE_PANEL_PROMO"
                desc="Text for the in-product-help bubble shown for the reading mode bubble.">
         To show a simplified view of this page, open the side panel and select Reading mode
+      </message>
+      <message name="IDS_READING_MODE_SIDE_PANEL_PROMO_PINNING"
+               desc="Text for the in-product-help bubble shown for the reading mode bubble when Side Panel Pinning is enabled.">
+        To see a simplified view of this page, go to More Tools > Reading Mode
+      </message>
+     <message name="IDS_READING_MODE_VOICE_PREVIEW_STRING" desc="Message to be played when a user previews a voice for Read Aloud." translateable="false">
+        Hi. This is a preview
       </message>
 
       <!-- User note strings -->
@@ -9204,8 +9226,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_POWER_BOOKMARKS_SIDE_PANEL_PROMO" desc="Text shown on promotional UI appearing next to the side panel button, which encourages users to view their bookmarks there.">
         See all your bookmarks here
       </message>
+      <message name="IDS_POWER_BOOKMARKS_SIDE_PANEL_PROMO_PINNING" desc="Text shown on promotional UI appearing next to the side panel button, which encourages users to view their bookmarks there when Side Panel Pinning is enabled.">
+        See all your bookmarks in Bookmarks and Lists
+      </message>
       <message name="IDS_READING_LIST_DISCOVERY_PROMO" desc="Text shown on promotional UI appearing next to the reading list button">
         When you're ready, find your reading list here
+      </message>
+      <message name="IDS_READING_LIST_DISCOVERY_PROMO_PINNING" desc="Text shown on promotional UI appearing next to the reading list button when Side Panel Pinning is enabled">
+        When you're ready, find your reading list in Bookmarks and Lists
       </message>
       <message name="IDS_READING_LIST_ENTRY_POINT_PROMO" desc="Text shown on promotional UI to encourage users to add a tab to their reading list">
         To add this page to your reading list, click the Bookmark icon
@@ -9218,6 +9246,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_READING_LIST_IN_SIDE_PANEL_PROMO" desc="Text shown on promotional UI appearing next to the side panel button">
         Your reading list has moved to the new side panel. Try it here.
+      </message>
+      <message name="IDS_READING_LIST_IN_SIDE_PANEL_PROMO_PINNING" desc="Text shown on promotional UI appearing next to the side panel button when Side Panel Pinning is enabled">
+        Find your reading list and bookmarks in Bookmarks and Lists
       </message>
       <message name="IDS_TAB_GROUPS_NEW_GROUP_PROMO" desc="Text shown on promotional UI encouraging users to create a tab group in their tab strip">
         Organize your tabs with tab groups
@@ -9572,6 +9603,12 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         </message>
         <message name="IDS_PASSWORD_MANAGER_IPH_MANAGEMENT_BUBBLE_AFTER_SAVE_SCREENREADER" desc="Text announced with the in Product Help after saving a password informing the user about the password management bubble">
           To view your password or add a note about it, select manage your passwords in the search and address bar
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_IPH_SHARE_PASSWORD_BUTTON" desc="Body of the in Product Help for Share Password Button in Password Manager.">
+          You can securely share a copy of your password with someone in your family group
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_IPH_SHARE_PASSWORD_BUTTON_SCREENREADER" desc="Text announced with the in Product Help for Share Password Button in Password Manager.">
+          Use Share button at the bottom of the card to share a copy of your password with someone in your family group
         </message>
         <message name="IDS_PASSWORD_MANAGER_IPH_CREATE_SHORTCUT_TITLE" desc="Body of the in Product Help shown after successfully logging into a website telling user about how to create a shortcut">
           Get to your saved passwords quicker
@@ -10172,6 +10209,9 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         <message name="IDS_TAB_CXMENU_MOVETOANOTHERNEWWINDOW" desc="The label for the Tab context item to move items to a new window from the 'Move tabs to another window' submenu.">
           New window
         </message>
+        <message name="IDS_TAB_CXMENU_ORGANIZE_TABS" desc="The label of the 'Organize tabs' Tab context menu item." translateable="false">
+          Organize tabs
+        </message>
         <message name="IDS_TAB_CXMENU_FOLLOW_SITE" desc="The label of the tab context menu item
  for following a site.">
           Follow site
@@ -10271,6 +10311,9 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         </message>
         <message name="IDS_TAB_CXMENU_MOVETOANOTHERNEWWINDOW" desc="In Title Case: The label for the Tab context item to move items to a new window from the 'Move tabs to another window' submenu.">
           New Window
+        </message>
+        <message name="IDS_TAB_CXMENU_ORGANIZE_TABS" desc="In Title Case: The label of the 'Organize tabs' Tab context menu item." translateable="false">
+          Organize Tabs
         </message>
         <message name="IDS_TAB_CXMENU_FOLLOW_SITE" desc="In Title Case: The label of the tab context menu item for following a site.">
           Follow Site
@@ -10388,11 +10431,32 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
       <message name="IDS_TAB_ORGANIZATION_NOT_STARTED_TITLE" desc="The header text for the not started state in the tab organization UI" translateable="false">
         Organize tabs
       </message>
+      <message name="IDS_TAB_ORGANIZATION_NOT_STARTED_TITLE_FRE" desc="The header text for the first run experience of the not started state in the tab organization UI" translateable="false">
+        Let Chrome organize your tabs
+      </message>
       <message name="IDS_TAB_ORGANIZATION_NOT_STARTED_BODY" desc="The body text for the not started state in the tab organization UI" translateable="false">
         You can organize your tabs anytime
       </message>
-      <message name="IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON" desc="The label for the button in the not started state of the tab organization UI" translateable="false">
+      <message name="IDS_TAB_ORGANIZATION_NOT_STARTED_BODY_FRE" desc="The body text for the first run experience of the not started state in the tab organization UI" translateable="false">
+        Chrome can help your tabs stay organized and easy to find
+      </message>
+      <message name="IDS_TAB_ORGANIZATION_NOT_STARTED_BODY_UNSYNCED" desc="The body text for the not started state in the tab organization UI, when not signed in or signed in but unsynced/sync paused" translateable="false">
+        Turn on sync to let Chrome keep your tabs organized.
+      </message>
+      <message name="IDS_TAB_ORGANIZATION_NOT_STARTED_BODY_UNSYNCED_HISTORY" desc="The body text for the not started state in the tab organization UI, when history sync is disabled" translateable="false">
+        Turn on History sync in Settings to let Chrome keep your tabs organized.
+      </message>
+      <message name="IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON" desc="The label for the button in the not started state of the tab organization UI, when synced" translateable="false">
         Organize tabs
+      </message>
+      <message name="IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_UNSYNCED" desc="The label for the button in the not started state of the tab organization UI, when not signed in or signed in but unsynced" translateable="false">
+        Turn on sync
+      </message>
+      <message name="IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_UNSYNCED_HISTORY" desc="The label for the button in the not started state of the tab organization UI, when history sync is disabled" translateable="false">
+        Settings
+      </message>
+      <message name="IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_SYNC_PAUSED" desc="The label for the button in the not started state of the tab organization UI, when sync is paused" translateable="false">
+        Sign in
       </message>
       <message name="IDS_TAB_ORGANIZATION_IN_PROGRESS_TITLE" desc="The header text for the in progress state in the tab organization UI" translateable="false">
         Organizing…
@@ -10411,6 +10475,15 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
       </message>
       <message name="IDS_TAB_ORGANIZATION_FAILURE_BODY_GROUPING" desc="The body text for the grouping failure state in the tab organization UI" translateable="false">
         You'll get more opportunities for tab organization after you open new related tabs
+      </message>
+      <message name="IDS_TAB_ORGANIZATION_TIP_TITLE" desc="The bolded text at the start of the tip in the tab organization UI" translateable="false">
+        Tip:
+      </message>
+      <message name="IDS_TAB_ORGANIZATION_TIP_BODY" desc="The main text of the tip in the tab organization UI" translateable="false">
+        You can organize your own tabs anytime.
+      </message>
+      <message name="IDS_TAB_ORGANIZATION_TIP_ACTION" desc="The actionable text of the tip in the tab organization UI" translateable="false">
+        Show me how
       </message>
 
       <!-- Strings for Window Titles in Menus -->
@@ -11304,7 +11377,7 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         Cleared on Exit
       </message>
       <message name="IDS_COLLECTED_COOKIES_INFOBAR_MESSAGE" desc="The string shown in the infobar after the user has changed the allowed/blocked state of a cookie, reminding them to reload the page in order for the new cookies to take effect.">
-        New cookie settings will take effect after reloading the page
+        Reload this page to apply your updated settings on this site
       </message>
       <message name="IDS_COLLECTED_COOKIES_INFOBAR_BUTTON" desc="The string used in the infobar button allowing the user to reload the page directly from the infobar.">
         Reload
@@ -11314,24 +11387,31 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
       </message>
 
       <!-- Page specific site data dialog (redesign of Collected cookies window) -->
-      <message name="IDS_PAGE_SPECIFIC_SITE_DATA_DIALOG_TITLE" desc="The title of `Cookies and site data` dialog (previously 'Cookies in use' dialog). The dialog contains a list of sites that have access to storage or are blocked from accessing it. It also has controls for each site to allow access, block access or allow access for a session only.">
-        Cookies and site data
+      <message name="IDS_PAGE_SPECIFIC_SITE_DATA_DIALOG_TITLE" desc="The title of `On-device site data` dialog (previously 'Cookies and site data' dialog). The dialog contains a list of sites that have access to storage or are blocked from accessing it. It also has controls for each site to allow access, block access or allow access for a session only.">
+        On-device site data
       </message>
 
+      <message name="IDS_PAGE_SPECIFIC_SITE_DATA_DIALOG_SUBTITLE" desc="The subtitle of `On-device site data` dialog that explains to users the data displayed in this dialog and allows users to manager their site data through a hyperlink to settings.">
+        To improve your visit, sites often save your activity – often to your device. <ph name="SETTINGS">$1<ex>Manage site data</ex></ph>
+      </message>
+
+      <message name="IDS_PAGE_SPECIFIC_SITE_DATA_DIALOG_SETTINGS_LINK" desc="This is a text label for a link to on-device site data settings page displayed as part of the on-device site data dialog subtitle.">
+        Manage site data
+      </message>
       <message name="IDS_PAGE_SPECIFIC_SITE_DATA_DIALOG_FIRST_PARTY_TITLE" desc="This is a title of a section that displayed a list of sites that have accessed storage and are considered first-party to the site the user is currently visiting. The label is shown in the `Cookies and site data` dialog.">
-        From the site you’re viewing
+        Data from the site you’re visiting
       </message>
 
       <message name="IDS_PAGE_SPECIFIC_SITE_DATA_DIALOG_FIRST_PARTY_SUBTITLE" desc="This is a subtitle of a section that displayed a list of sites that have accessed storage and are considered first-party to the site the user is currently visiting. It provides more information about what first party sites means. The label is shown in the `Cookies and site data` dialog.">
-        Including sites from the same domain, for example, google.com and mail.google.com. Sites you’re viewing can save data on your device.
+        A site might save your preferred language or items you want to buy. This info is avaiable to the site and its subdomains.
       </message>
 
       <message name="IDS_PAGE_SPECIFIC_SITE_DATA_DIALOG_THIRD_PARTY_TITLE" desc="This is a title of a section that displayed a list of sites that have accessed storage and are considered third-party to the site the user is currently visiting. The label is shown in the `Cookies and site data` dialog.">
-        From other sites
+        Data from embedded sites
       </message>
 
       <message name="IDS_PAGE_SPECIFIC_SITE_DATA_DIALOG_THIRD_PARTY_SUBTITLE" desc="This is a subtitle of a section that displayed a list of sites that have accessed storage and are considered third-party to the site the user is currently visiting. It provides more information about what third party sites means. The label is shown in the `Cookies and site data` dialog.">
-        A site you’re viewing can embed content from other sites, for example images, ads, and text. These embedded sites can save data on your device.
+        A site can also embed content from other sites, for example images, ads, and text. These other sites can also save data.
       </message>
 
       <message name="IDS_PAGE_SPECIFIC_SITE_DATA_DIALOG_EMPTY_STATE_LABEL" desc="The text used to explain to users that there are no cookies set and that this is the place where they will be shown. The label is shown in the `Cookies and site data` dialog.">
@@ -12016,8 +12096,8 @@ This can include information about installed software, files, your browser, and 
         <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CONFIRM_SWITCH_BUTTON_LABEL_V2" desc="Label of the profile switch button in the web signin interception bubble">
           Continue
         </message>
-        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_GUEST_LINK" desc="Text of the link to offer switching to a Guest profile">
-            Not your device? Use <ph name="BEGIN_LINK">&lt;a is="action-link" target="_blank"&gt;</ph>Guest mode<ph name="END_LINK">&lt;/a&gt;</ph>.
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CHROME_SIGNIN_ACCEPT_TEXT" desc="Label of the Accept button of the Chrome Signin Bubble intercept that is shown when a signed out user signs in on the web with it's first account. It also uses the given name of the user.">
+          Continue as <ph name="NAME">$1<ex>Bob</ex></ph>
         </message>
         <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_ENTERPRISE_BUBBLE_DESC" desc="Body of the web signin interception bubble when the new account is personal and the existing account is managed">
           This will separate your browsing from <ph name="EXISTING_USER">$1<ex>bob@example.com</ex></ph>
@@ -15114,6 +15194,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_WEBAUTHN_USE_PASSKEY_QR_BODY" desc="The body of a dialog prompting the user to use a passkey to sign into a website. Refer to Glossary for the meaning of 'passkey'; do not translate it as 'password'.">
          Scan this QR code with the device that has the passkey you want to use for <ph name="APP_NAME">$1<ex>example.com</ex></ph>
       </message>
+      <message name="IDS_WEBAUTHN_QR_CODE_ALT_TEXT" desc="Alt text for an image depicting a QR code. This will be read by screen readers to help blind and low vision users scan a QR code.">
+        QR code
+      </message>
       <message name="IDS_WEBAUTHN_USE_A_DIFFERENT_DEVICE" desc="Label on a secondary button on a dialog for creating or using a passkey to sign into a website. Clicking this button will show a menu that lets the user pick a different device (such as a phone or hardware security key) to sign in.">
          Use a different device
       </message>
@@ -15764,58 +15847,58 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_IDP_SIGNIN_STATUS_MISMATCH_DIALOG_BODY" desc="Body for mismatch dialog which is shown to prompt the user to sign in to a website using an account from an identity provider.">
       You can use your <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">$1<ex>idp.example</ex></ph> account on this site. To continue, sign in to <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">$1<ex>idp.example</ex></ph>.
     </message>
-    <message name="IDS_SIGNIN_GENERIC_ERROR_DIALOG_SUMMARY" desc="Summary of generic error upon user failing to sign in with an account from an identity provider." translateable="false">
+    <message name="IDS_SIGNIN_GENERIC_ERROR_DIALOG_SUMMARY" desc="Summary of generic error upon user failing to sign in with an account from an identity provider.">
       Can't continue with <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">$1<ex>idp.example</ex></ph>
     </message>
-    <message name="IDS_SIGNIN_GENERIC_ERROR_DIALOG_DESCRIPTION" desc="Description of generic error upon user failing to sign in with an account from an identity provider." translateable="false">
+    <message name="IDS_SIGNIN_GENERIC_ERROR_DIALOG_DESCRIPTION" desc="Description of generic error upon user failing to sign in with an account from an identity provider.">
       Something went wrong
     </message>
-    <message name="IDS_SIGNIN_UNAUTHORIZED_CLIENT_ERROR_DIALOG_SUMMARY" desc="Summary of unauthorized client error upon user failing to sign in with an account from an identity provider." translateable="false">
+    <message name="IDS_SIGNIN_UNAUTHORIZED_CLIENT_ERROR_DIALOG_SUMMARY" desc="Summary of unauthorized client error upon user failing to sign in with an account from an identity provider.">
       <ph name="SITE_ETLD_PLUS_ONE">$1<ex>rp.example</ex></ph> can't continue using <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">$2<ex>idp.example</ex></ph>
     </message>
-    <message name="IDS_SIGNIN_UNAUTHORIZED_CLIENT_ERROR_DIALOG_DESCRIPTION" desc="Description of unauthorized client error upon user failing to sign in with an account from an identity provider." translateable="false">
+    <message name="IDS_SIGNIN_UNAUTHORIZED_CLIENT_ERROR_DIALOG_DESCRIPTION" desc="Description of unauthorized client error upon user failing to sign in with an account from an identity provider.">
       This option is unavailable right now.
     </message>
-    <message name="IDS_SIGNIN_INVALID_REQUEST_ERROR_DIALOG_SUMMARY" desc="Summary of invalid request error upon user failing to sign in with an account from an identity provider." translateable="false">
+    <message name="IDS_SIGNIN_INVALID_REQUEST_ERROR_DIALOG_SUMMARY" desc="Summary of invalid request error upon user failing to sign in with an account from an identity provider.">
       <ph name="SITE_ETLD_PLUS_ONE">$1<ex>rp.example</ex></ph> can't continue using <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">$2<ex>idp.example</ex></ph>
     </message>
-    <message name="IDS_SIGNIN_INVALID_REQUEST_ERROR_DIALOG_DESCRIPTION" desc="Description of invalid request error upon user failing to sign in with an account from an identity provider." translateable="false">
+    <message name="IDS_SIGNIN_INVALID_REQUEST_ERROR_DIALOG_DESCRIPTION" desc="Description of invalid request error upon user failing to sign in with an account from an identity provider.">
       This option is unavailable right now.
     </message>
-    <message name="IDS_SIGNIN_ACCESS_DENIED_ERROR_DIALOG_SUMMARY" desc="Summary of access denied error upon user failing to sign in with an account from an identity provider." translateable="false">
+    <message name="IDS_SIGNIN_ACCESS_DENIED_ERROR_DIALOG_SUMMARY" desc="Summary of access denied error upon user failing to sign in with an account from an identity provider.">
       Check that you chose the right account
     </message>
-    <message name="IDS_SIGNIN_ACCESS_DENIED_ERROR_DIALOG_DESCRIPTION" desc="Description of access denied error upon user failing to sign in with an account from an identity provider." translateable="false">
+    <message name="IDS_SIGNIN_ACCESS_DENIED_ERROR_DIALOG_DESCRIPTION" desc="Description of access denied error upon user failing to sign in with an account from an identity provider.">
       Check if the selected account is supported.
     </message>
-    <message name="IDS_SIGNIN_SERVER_ERROR_DIALOG_SUMMARY" desc="Summary of server error upon user failing to sign in with an account from an identity provider." translateable="false">
+    <message name="IDS_SIGNIN_SERVER_ERROR_DIALOG_SUMMARY" desc="Summary of server error upon user failing to sign in with an account from an identity provider.">
       Check your internet connection
     </message>
-    <message name="IDS_SIGNIN_SERVER_ERROR_DIALOG_DESCRIPTION" desc="Description of server error upon user failing to sign in with an account from an identity provider." translateable="false">
+    <message name="IDS_SIGNIN_SERVER_ERROR_DIALOG_DESCRIPTION" desc="Description of server error upon user failing to sign in with an account from an identity provider.">
       If you're online but this issue keeps happening, you can try other ways to continue on <ph name="SITE_ETLD_PLUS_ONE">$1<ex>rp.example</ex></ph>.
     </message>
-    <message name="IDS_SIGNIN_TEMPORARILY_UNAVAILABLE_ERROR_DIALOG_SUMMARY" desc="Summary of temporarily unavailable error upon user failing to sign in with an account from an identity provider." translateable="false">
+    <message name="IDS_SIGNIN_TEMPORARILY_UNAVAILABLE_ERROR_DIALOG_SUMMARY" desc="Summary of temporarily unavailable error upon user failing to sign in with an account from an identity provider.">
       Try again later
     </message>
-    <message name="IDS_SIGNIN_TEMPORARILY_UNAVAILABLE_ERROR_DIALOG_DESCRIPTION" desc="Description of temporarily unavailable error upon user failing to sign in with an account from an identity provider." translateable="false">
+    <message name="IDS_SIGNIN_TEMPORARILY_UNAVAILABLE_ERROR_DIALOG_DESCRIPTION" desc="Description of temporarily unavailable error upon user failing to sign in with an account from an identity provider.">
       <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">$1<ex>idp.example</ex></ph> isn't available right now.
     </message>
-    <message name="IDS_SIGNIN_ERROR_DIALOG_GOT_IT_BUTTON" desc="The button text on the error dialog for the user to acknowledge that an error has occurred in their attempt to sign in with an account from an identity provider." translateable="false">
+    <message name="IDS_SIGNIN_ERROR_DIALOG_GOT_IT_BUTTON" desc="The button text on the error dialog for the user to acknowledge that an error has occurred in their attempt to sign in with an account from an identity provider.">
       Got it
     </message>
-    <message name="IDS_SIGNIN_ERROR_DIALOG_MORE_DETAILS_BUTTON" desc="The button text on the error dialog for the user to get more details about an error that has occurred in their attempt to sign in with an account from an identity provider." translateable="false">
+    <message name="IDS_SIGNIN_ERROR_DIALOG_MORE_DETAILS_BUTTON" desc="The button text on the error dialog for the user to get more details about an error that has occurred in their attempt to sign in with an account from an identity provider.">
       More details
     </message>
-    <message name="IDS_SIGNIN_ERROR_DIALOG_MORE_DETAILS_PROMPT" desc="Prompt user to click on the more details button to get more details about an error that has occurred in their attempt to sign in with an account from an identity provider." translateable="false">
+    <message name="IDS_SIGNIN_ERROR_DIALOG_MORE_DETAILS_PROMPT" desc="Prompt user to click on the more details button to get more details about an error that has occurred in their attempt to sign in with an account from an identity provider.">
       Choose "More details" below to get more information from <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">$1<ex>idp.example</ex></ph>.
     </message>
-    <message name="IDS_SIGNIN_ERROR_DIALOG_TRY_OTHER_WAYS_PROMPT" desc="Prompt user to try other ways of signing in after an error has occurred in their attempt to sign in with an account from an identity provider." translateable="false">
+    <message name="IDS_SIGNIN_ERROR_DIALOG_TRY_OTHER_WAYS_PROMPT" desc="Prompt user to try other ways of signing in after an error has occurred in their attempt to sign in with an account from an identity provider.">
       You can try other ways to continue on <ph name="SITE_ETLD_PLUS_ONE">$1<ex>rp.example</ex></ph>.
     </message>
-    <message name="IDS_SIGNIN_ERROR_DIALOG_MORE_DETAILS_RETRY_PROMPT" desc="Prompt user to click on the more details button to get more details about an error if it continues to occur after their first attempt to sign in with an account from an identity provider." translateable="false">
+    <message name="IDS_SIGNIN_ERROR_DIALOG_MORE_DETAILS_RETRY_PROMPT" desc="Prompt user to click on the more details button to get more details about an error if it continues to occur after their first attempt to sign in with an account from an identity provider.">
       If this issue keeps happening, choose "More details" below to get more information from <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">$1<ex>idp.example</ex></ph>.
     </message>
-    <message name="IDS_SIGNIN_ERROR_DIALOG_TRY_OTHER_WAYS_RETRY_PROMPT" desc="Prompt user to try other ways of signing in after an error if it continues to occur after their first attempt to sign in with an account from an identity provider." translateable="false">
+    <message name="IDS_SIGNIN_ERROR_DIALOG_TRY_OTHER_WAYS_RETRY_PROMPT" desc="Prompt user to try other ways of signing in after an error if it continues to occur after their first attempt to sign in with an account from an identity provider.">
       If this issue keeps happening, you can try other ways to continue on <ph name="SITE_ETLD_PLUS_ONE">$1<ex>rp.example</ex></ph>.
     </message>
     <message name="IDS_MULTI_IDP_ACCOUNT_SELECTION_SHEET_TITLE_EXPLICIT" desc="Header for sign in sheet when there are multiple identity providers. Sheet is shown to prompt user for sign in consent." translateable="false">
@@ -16164,6 +16247,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_PLUS_ADDRESS_MODAL_PLUS_ADDRESS_LABEL" desc="Label for the upper portion of the plus addresses modal" translateable="false">
       Lorem Ipsum
     </message>
+    <message name="IDS_PLUS_ADDRESS_MODAL_PROPOSED_PLUS_ADDRESS_AND_COPY" desc="The plus address with some descriptive text around it." translateable="false">
+      Use <ph name="PLUS_ADDRESS">$1<ex>plus@plus.plus</ex>?</ph>
+    </message>
     <message name="IDS_PLUS_ADDRESS_MODAL_PROPOSED_PLUS_ADDRESS_PLACEHOLDER" desc="A placeholder for the plus address" translateable="false">
       Lorem Ipsum or whatever
     </message>
@@ -16179,8 +16265,14 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_PLUS_ADDRESS_MODAL_OK_TEXT" desc="Ok button text for the experimental enterprise plus addresses feature modal" translateable="false">
       Sit
     </message>
+    <message name="IDS_PLUS_ADDRESS_MODAL_PLUS_ADDRESS_DESCRIPTION_V2" desc="An illustrative description of the plus addresses modal" translateable="false">
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua <ph name="BEGIN_LINK">&lt;link&gt;</ph>Ut enim ad minim veniam<ph name="END_LINK">&lt;/link&gt;</ph> for <ph name="BEGIN_BOLD">&lt;b&gt;</ph><ph name="REGULAR_ADDRESS">$1<ex>test@example.test</ex></ph><ph name="END_BOLD">&lt;/b&gt;</ph>.
+    </message>
 
     <!-- Responsive Toolbar -->
+    <message name="IDS_OVERFLOW_MENU_ITEM_TEXT_PROFILE" desc="Overflow menu item text of profile button">
+      Profile
+    </message>
     <message name="IDS_OVERFLOW_MENU_ITEM_TEXT_DOWNLOADS" desc="Overflow menu item text of download button">
       Downloads
     </message>
@@ -16199,6 +16291,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_OVERFLOW_MENU_ITEM_TEXT_MEDIA_CONTROLS" desc="Text of overflow menu item of media controls">
       Media controls
     </message>
+    <message name="IDS_OVERFLOW_MENU_ITEM_TEXT_NEW_TAB" desc="Text of overflow menu item of new tab button in tablet mode">
+      New tab
+    </message>
     <message name="IDS_OVERFLOW_MENU_ITEM_TEXT_SIDE_PANEL" desc="Text of overflow menu item of side panel button">
       Open side panel
     </message>
@@ -16209,6 +16304,41 @@ Please help our engineers fix this problem. Tell us what happened right before y
     </message>
     <message name="IDS_PROMISE_STATUS_INSTALLING" desc="Text label for a promise icon in the Launcher or Shelf to indicate that the app is currently downloading or installing">
       installing...
+    </message>
+    <message name="IDS_PROMISE_APP_ACCESSIBLE_LABEL_WAITING" desc="Accessibility label for a promise icon in the Launcher or Shelf to indicate that the app is pending installation">
+      <ph name="APP_NAME">$1<ex>Gmail</ex></ph>, waiting
+    </message>
+    <message name="IDS_PROMISE_APP_ACCESSIBLE_LABEL_INSTALLING" desc="Accessibility label for a promise icon in the Launcher or Shelf to indicate that the app is currently downloading or installing">
+      <ph name="APP_NAME">$1<ex>Gmail</ex></ph>, installing
+    </message>
+    <message name="IDS_PROMISE_APP_PLACEHOLDER_ACCESSIBLE_LABEL_WAITING" desc="Accessibility label for a promise icon in the Launcher or Shelf to indicate that an app without a name is pending installation">
+      An app, waiting
+    </message>
+    <message name="IDS_PROMISE_APP_PLACEHOLDER_ACCESSIBLE_LABEL_INSTALLING" desc="Accessibility label for a promise icon in the Launcher or Shelf to indicate that an app without a name is currently downloading or installing">
+      An app, installing
+    </message>
+
+    <!-- Isolated Web App installer. -->
+    <message name="IDS_IWA_INSTALLER_DISABLED_TITLE" desc="Title of the feature disabled screen of the Isolated Web App installer">
+      This app can’t be opened because you do not have permission to run isolated web apps
+    </message>
+    <message name="IDS_IWA_INSTALLER_DISABLED_CHANGE_PREFERENCE" desc="Link to a settings page to enable/disable Isolated Web Apps">
+      Change your preferences
+    </message>
+    <message name="IDS_IWA_INSTALLER_DISABLED_SUBTITLE" desc="Subtitle of the feature disabled screen of the IWA installer. $1 = IDS_IWA_INSTALLER_DISABLED_CHANGE_PREFERENCE">
+      You security preferences do not allow installations of Isolated Apps. <ph name="CHANGE_PREFERENCE">$1<ex>Change your preferences</ex></ph>
+    </message>
+    <message name="IDS_IWA_INSTALLER_VERIFICATION_TITLE" desc="Title of the verification step of the IWA installation">
+      Chrome is verifying the installation bundle
+    </message>
+    <message name="IDS_IWA_INSTALLER_VERIFICATION_SUBTITLE" desc="Subtitle of the verification step of the IWA installation">
+      Please wait while verification is in progress
+    </message>
+    <message name="IDS_IWA_INSTALLER_VERIFICATION_STATUS" desc="Text below a progress bar describing the operation being performed and a time remaining estimate">
+      {MINUTES, plural,
+        =0 {Checking public key and integrity block... Less than 1 minute remaining}
+        =1 {Checking public key and integrity block... 1 minute remaining}
+        other {Checking public key and integrity block... # minutes remaining}}
     </message>
   </messages>
 </release>

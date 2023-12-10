@@ -33,13 +33,6 @@ targets.legacy_matrix_compound_suite(
 )
 
 targets.legacy_matrix_compound_suite(
-    name = "android_12_emulator_fyi_gtests",
-    basic_suites = {
-        "oop_network_service_tests": None,
-    },
-)
-
-targets.legacy_matrix_compound_suite(
     name = "android_12_emulator_gtests",
     basic_suites = {
         "android_12_fieldtrial_webview_tests": None,
@@ -575,12 +568,10 @@ targets.legacy_matrix_compound_suite(
                 "xcode_parallelization",
             ],
             variants = [
-                "SIM_IPHONE_13_15_5",
                 "SIM_IPHONE_14_16_4",
                 "SIM_IPHONE_14_17_0",
                 "SIM_IPAD_AIR_5TH_GEN_16_4",
                 "SIM_IPAD_AIR_5TH_GEN_17_0",
-                "SIM_IPAD_PRO_5TH_GEN_15_5",
                 "SIM_IPAD_PRO_6TH_GEN_16_4",
                 "SIM_IPAD_PRO_6TH_GEN_17_0",
             ],
@@ -590,27 +581,16 @@ targets.legacy_matrix_compound_suite(
                 "xcode_parallelization",
             ],
             variants = [
-                "SIM_IPHONE_13_15_5",
                 "SIM_IPHONE_14_16_4",
                 "SIM_IPHONE_14_17_0",
-                "SIM_IPAD_AIR_5TH_GEN_16_4",
-                "SIM_IPAD_AIR_5TH_GEN_17_0",
-                "SIM_IPAD_PRO_5TH_GEN_15_5",
                 "SIM_IPAD_PRO_6TH_GEN_16_4",
                 "SIM_IPAD_PRO_6TH_GEN_17_0",
             ],
         ),
         "ios_screen_size_dependent_tests": targets.legacy_matrix_config(
             variants = [
-                "SIM_IPHONE_13_15_5",
                 "SIM_IPHONE_14_16_4",
                 "SIM_IPHONE_14_17_0",
-                "SIM_IPHONE_SE_3RD_GEN_15_5",
-                "SIM_IPHONE_SE_3RD_GEN_16_4",
-                "SIM_IPHONE_SE_3RD_GEN_17_0",
-                "SIM_IPAD_AIR_5TH_GEN_16_4",
-                "SIM_IPAD_AIR_5TH_GEN_17_0",
-                "SIM_IPAD_PRO_5TH_GEN_15_5",
                 "SIM_IPAD_PRO_6TH_GEN_16_4",
                 "SIM_IPAD_PRO_6TH_GEN_17_0",
             ],
@@ -1093,6 +1073,15 @@ targets.legacy_matrix_compound_suite(
                 "CROS_PUFF_RELEASE_DEV",
                 "CROS_PUFF_RELEASE_BETA",
                 "CROS_PUFF_RELEASE_STABLE",
+            ],
+        ),
+        "lacros_skylab_tests_with_gtests": targets.legacy_matrix_config(
+            variants = [
+                "CROS_BRYA_RELEASE_LKGM",
+                "CROS_DEDEDE_RELEASE_LKGM",
+                "CROS_FIZZ_RELEASE_LKGM",
+                "CROS_GUYBRUSH_RELEASE_LKGM",
+                "CROS_PUFF_RELEASE_LKGM",
             ],
         ),
     },

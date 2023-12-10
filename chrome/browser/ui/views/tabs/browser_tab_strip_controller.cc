@@ -587,7 +587,7 @@ absl::optional<int> BrowserTabStripController::GetCustomBackgroundId(
 std::u16string BrowserTabStripController::GetAccessibleTabName(
     const Tab* tab) const {
   return browser_view_->GetAccessibleTabLabel(
-      tabstrip_->GetModelIndexOf(tab).value());
+      tabstrip_->GetModelIndexOf(tab).value(), /*is_for_tab=*/true);
 }
 
 Profile* BrowserTabStripController::GetProfile() const {
@@ -779,14 +779,6 @@ void BrowserTabStripController::AddTab(WebContents* contents, int index) {
   hover_tab_selector_.CancelTabTransition();
 
   tabstrip_->AddTabAt(index, TabRendererData::FromTabInModel(model_, index));
-  // Try to show tab groups IPH if needed.
-  if (tabstrip_->GetTabCount() >= 6 && model_->SupportsTabGroups()) {
-    browser_view_->NotifyFeatureEngagementEvent(
-        feature_engagement::events::kSixthTabOpened);
-
-    browser_view_->MaybeShowFeaturePromo(
-        feature_engagement::kIPHDesktopTabGroupsNewGroupFeature);
-  }
 
   // Try to show tab search IPH if needed.
   constexpr int kTabSearchIPHTriggerThreshold = 8;

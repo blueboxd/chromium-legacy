@@ -20,11 +20,9 @@
 #include "ash/shelf/window_scale_animation.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wallpaper/views/wallpaper_view.h"
-#include "ash/wallpaper/views/wallpaper_widget_controller.h"
-#include "ash/wallpaper/wallpaper_constants.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_drop_target.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_test_util.h"
@@ -595,31 +593,6 @@ TEST_F(DragWindowFromShelfControllerTest, DragOrFlingInSplitView) {
   ExitOverview();
 }
 
-// Test wallpaper should be blurred as in overview, even though overview might
-// not open during dragging.
-TEST_F(DragWindowFromShelfControllerTest, WallpaperBlurDuringDragging) {
-  UpdateDisplay("500x400");
-  const gfx::Rect shelf_bounds = GetShelfBounds();
-  auto window = CreateTestWindow();
-
-  StartDrag(window.get(), shelf_bounds.CenterPoint());
-  Drag(gfx::Point(0, 200), 0.f,
-       DragWindowFromShelfController::kShowOverviewThreshold + 1);
-  OverviewController* overview_controller = OverviewController::Get();
-  EXPECT_FALSE(overview_controller->InOverviewSession());
-  auto* wallpaper_view =
-      RootWindowController::ForWindow(window->GetRootWindow())
-          ->wallpaper_widget_controller()
-          ->wallpaper_view();
-  EXPECT_EQ(wallpaper_view->blur_sigma(),
-            chromeos::features::IsJellyrollEnabled()
-                ? wallpaper_constants::kClear
-                : wallpaper_constants::kOverviewBlur);
-
-  EndDrag(shelf_bounds.CenterPoint(), /*velocity_y=*/absl::nullopt);
-  EXPECT_EQ(wallpaper_view->blur_sigma(), wallpaper_constants::kClear);
-}
-
 // Test overview is hidden during dragging and shown when drag slows down or
 // stops.
 TEST_F(DragWindowFromShelfControllerTest, HideOverviewDuringDragging) {
@@ -638,15 +611,15 @@ TEST_F(DragWindowFromShelfControllerTest, HideOverviewDuringDragging) {
   OverviewGrid* current_grid =
       overview_controller->overview_session()->GetGridWithRootWindow(
           window1->GetRootWindow());
-  auto* drop_target_item = current_grid->GetDropTarget();
-  EXPECT_TRUE(drop_target_item);
-  EXPECT_EQ(drop_target_item->GetWindow()->layer()->GetTargetOpacity(), 1.f);
+  auto* drop_target = current_grid->drop_target();
+  EXPECT_TRUE(drop_target);
+  EXPECT_EQ(drop_target->item_widget()->GetLayer()->GetTargetOpacity(), 1.f);
 
   Drag(gfx::Point(200, 200), 0.5f,
        DragWindowFromShelfController::kShowOverviewThreshold + 1);
-  // Test overview should be invisble.
+  // Test that the overview drop target is invisible.
   EXPECT_TRUE(overview_controller->InOverviewSession());
-  EXPECT_EQ(drop_target_item->GetWindow()->layer()->GetTargetOpacity(), 0.f);
+  EXPECT_EQ(drop_target->item_widget()->GetLayer()->GetTargetOpacity(), 0.f);
 
   Drag(gfx::Point(200, 200), 0.5f, 0.5f);
   DragWindowFromShelfControllerTestApi().WaitUntilOverviewIsShown(

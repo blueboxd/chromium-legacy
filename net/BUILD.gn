@@ -1240,10 +1240,6 @@ component("net") {
     ]
   }
 
-  if (is_chromeos) {
-    deps += [ "//third_party/xdg_shared_mime_info" ]
-  }
-
   if (is_mac) {
     sources += [
       "base/network_notification_thread_mac.cc",
@@ -2818,6 +2814,7 @@ test("net_unittests") {
     "spdy/spdy_network_transaction_unittest.cc",
     "spdy/spdy_proxy_client_socket_unittest.cc",
     "spdy/spdy_read_queue_unittest.cc",
+    "spdy/spdy_session_key_unittest.cc",
     "spdy/spdy_session_pool_unittest.cc",
     "spdy/spdy_session_test_util.cc",
     "spdy/spdy_session_test_util.h",

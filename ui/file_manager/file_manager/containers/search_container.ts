@@ -6,7 +6,7 @@ import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.j
 
 import {queryRequiredElement} from '../common/js/dom_utils.js';
 import {recordUserAction} from '../common/js/metrics.js';
-import {str, strf} from '../common/js/util.js';
+import {str, strf} from '../common/js/translations.js';
 import {VolumeManagerCommon} from '../common/js/volume_manager_types.js';
 import {CurrentDirectory, PropStatus, SearchData, SearchLocation, SearchOptions, SearchRecency, State} from '../externs/ts/state.js';
 import {VolumeManager} from '../externs/volume_manager.js';
@@ -132,6 +132,45 @@ function createRecencyOptions(state: State): XfOption[] {
   const index = isInRecent(state.currentDirectory) ? 4 : 0;
   recencyOptions[index]!.default = true;
   return recencyOptions;
+}
+
+/**
+ * Creates file category option. Uses the state to find out if we are in the
+ * Recent view. If so, it sets the default based on the Recent view selectors.
+ */
+function createFileCategoryOptions(state: State): XfOption[] {
+  let fileCategory = chrome.fileManagerPrivate.FileCategory.ALL;
+  if (isInRecent(state.currentDirectory)) {
+    fileCategory =
+        state.allEntries[state.currentDirectory!.key].entry.fileCategory;
+  }
+  return [
+    {
+      value: chrome.fileManagerPrivate.FileCategory.ALL,
+      text: str('SEARCH_OPTIONS_TYPES_ALL_TYPES'),
+      default: fileCategory == chrome.fileManagerPrivate.FileCategory.ALL,
+    },
+    {
+      value: chrome.fileManagerPrivate.FileCategory.AUDIO,
+      text: str('SEARCH_OPTIONS_TYPES_AUDIO'),
+      default: fileCategory == chrome.fileManagerPrivate.FileCategory.AUDIO,
+    },
+    {
+      value: chrome.fileManagerPrivate.FileCategory.DOCUMENT,
+      text: str('SEARCH_OPTIONS_TYPES_DOCUMENTS'),
+      default: fileCategory == chrome.fileManagerPrivate.FileCategory.DOCUMENT,
+    },
+    {
+      value: chrome.fileManagerPrivate.FileCategory.IMAGE,
+      text: str('SEARCH_OPTIONS_TYPES_IMAGES'),
+      default: fileCategory == chrome.fileManagerPrivate.FileCategory.IMAGE,
+    },
+    {
+      value: chrome.fileManagerPrivate.FileCategory.VIDEO,
+      text: str('SEARCH_OPTIONS_TYPES_VIDEOS'),
+      default: fileCategory == chrome.fileManagerPrivate.FileCategory.VIDEO,
+    },
+  ];
 }
 
 /**
@@ -462,28 +501,7 @@ export class SearchContainer extends EventTarget {
     element.id = 'search-options';
     element.getLocationSelector().options = createLocationOptions(state);
     element.getRecencySelector().options = createRecencyOptions(state);
-    element.getFileTypeSelector().options = [
-      {
-        value: chrome.fileManagerPrivate.FileCategory.ALL,
-        text: str('SEARCH_OPTIONS_TYPES_ALL_TYPES'),
-      },
-      {
-        value: chrome.fileManagerPrivate.FileCategory.AUDIO,
-        text: str('SEARCH_OPTIONS_TYPES_AUDIO'),
-      },
-      {
-        value: chrome.fileManagerPrivate.FileCategory.DOCUMENT,
-        text: str('SEARCH_OPTIONS_TYPES_DOCUMENTS'),
-      },
-      {
-        value: chrome.fileManagerPrivate.FileCategory.IMAGE,
-        text: str('SEARCH_OPTIONS_TYPES_IMAGES'),
-      },
-      {
-        value: chrome.fileManagerPrivate.FileCategory.VIDEO,
-        text: str('SEARCH_OPTIONS_TYPES_VIDEOS'),
-      },
-    ];
+    element.getFileTypeSelector().options = createFileCategoryOptions(state);
     this.updateSearchOptions_(state);
     element.addEventListener(
         SEARCH_OPTIONS_CHANGED, this.onOptionsChanged_.bind(this));

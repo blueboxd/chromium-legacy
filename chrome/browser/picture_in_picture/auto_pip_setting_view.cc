@@ -42,7 +42,7 @@ constexpr int kBubbleBorderMdShadowElevation = 2;
 constexpr gfx::Insets kBubbleMargins = gfx::Insets::TLBR(0, 20, 20, 20);
 
 // Bubble title margins.
-constexpr gfx::Insets kBubbleTitleMargins = gfx::Insets::TLBR(16, 20, 10, 20);
+constexpr gfx::Insets kBubbleTitleMargins = gfx::Insets::TLBR(20, 20, 10, 20);
 
 // Maximum origin text width, for cases where the origin needs to be
 // elided.
@@ -111,6 +111,7 @@ void AutoPipSettingView::InitBubble() {
           .SetElideBehavior(gfx::NO_ELIDE)
           .SetMultiLine(true)
           .SetTextContext(views::style::CONTEXT_DIALOG_BODY_TEXT)
+          .SetTextStyle(views::style::STYLE_BODY_3)
           .SetText(l10n_util::GetStringUTF16(
               IDS_AUTO_PICTURE_IN_PICTURE_DESCRIPTION))
           .Build());
@@ -177,12 +178,9 @@ void AutoPipSettingView::InitBubbleTitleView(const GURL& origin) {
       origin.SchemeIsFile() ? gfx::ELIDE_TAIL : gfx::ELIDE_HEAD;
   // Determining the origin of a file URL is left as an exercise to the reader
   // https://url.spec.whatwg.org/#concept-url-origin. Therefore, for URLs with a
-  // file scheme which do not have an origin, we use a default string.
-  //
-  // TODO(crbug.com/1485611): Investigate what to display as the origin for file
-  // URLs hosted locally.
+  // file scheme which do not have an origin, we use the entire URL spec.
   const std::u16string host = (origin.SchemeIsFile() && !origin.has_host())
-                                  ? u"localhost"
+                                  ? base::UTF8ToUTF16(origin.spec())
                                   : url_formatter::IDNToUnicode(origin.host());
   origin_text_ = gfx::ElideText(host, gfx::FontList(),
                                 kBubbleOriginTextMaximumWidth, elide_behavior);
@@ -193,7 +191,7 @@ void AutoPipSettingView::InitBubbleTitleView(const GURL& origin) {
           .SetElideBehavior(gfx::NO_ELIDE)
           .SetMultiLine(false)
           .SetTextContext(views::style::CONTEXT_DIALOG_TITLE)
-          .SetTextStyle(views::style::STYLE_PRIMARY)
+          .SetTextStyle(views::style::STYLE_HEADLINE_4)
           .SetText(l10n_util::GetStringFUTF16(IDS_PERMISSIONS_BUBBLE_PROMPT,
                                               origin_text_))
           .Build());

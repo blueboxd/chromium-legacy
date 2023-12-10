@@ -18,11 +18,11 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/ash/auth/legacy_fingerprint_engine.h"
+#include "chrome/browser/ui/webui/ash/settings/os_settings_features_util.h"
 #include "chrome/browser/ui/webui/ash/settings/pages/privacy/metrics_consent_handler.h"
 #include "chrome/browser/ui/webui/ash/settings/pages/privacy/peripheral_data_access_handler.h"
 #include "chrome/browser/ui/webui/ash/settings/pages/privacy/privacy_hub_handler.h"
 #include "chrome/browser/ui/webui/ash/settings/search/search_tag_registry.h"
-#include "chrome/browser/ui/webui/settings/ash/os_settings_features_util.h"
 #include "chrome/browser/ui/webui/settings/settings_secure_dns_handler.h"
 #include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/webui_util.h"
@@ -43,6 +43,7 @@ namespace mojom {
 using ::chromeos::settings::mojom::kFingerprintSubpagePathV2;
 using ::chromeos::settings::mojom::kManageOtherPeopleSubpagePathV2;
 using ::chromeos::settings::mojom::kPrivacyAndSecuritySectionPath;
+using ::chromeos::settings::mojom::kPrivacyHubGeolocationSubpagePath;
 using ::chromeos::settings::mojom::kPrivacyHubMicrophoneSubpagePath;
 using ::chromeos::settings::mojom::kPrivacyHubSubpagePath;
 using ::chromeos::settings::mojom::kSecurityAndSignInSubpagePathV2;
@@ -262,6 +263,10 @@ const std::vector<SearchConcept>& GetPrivacyControlsSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags([] {
     std::vector<SearchConcept> init_tags;
 
+    if (IsGuestModeActive()) {
+      return init_tags;
+    }
+
     if (ash::features::IsCrosPrivacyHubV0Enabled()) {
       init_tags.push_back({IDS_OS_SETTINGS_TAG_PRIVACY_CONTROLS,
                            mojom::kPrivacyHubSubpagePath,
@@ -459,10 +464,10 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_OS_SETTINGS_PRIVACY_HUB_SPEAK_ON_MUTE_DETECTION_TOGGLE_TITLE},
       {"speakOnMuteDetectionToggleSubtext",
        IDS_OS_SETTINGS_PRIVACY_HUB_SPEAK_ON_MUTE_DETECTION_TOGGLE_SUBTEXT},
-      {"geolocationToggleTitle",
-       IDS_OS_SETTINGS_PRIVACY_HUB_GEOLOCATION_TOGGLE_TITLE},
-      {"geolocationToggleDesc",
-       IDS_OS_SETTINGS_PRIVACY_HUB_GEOLOCATION_TOGGLE_DESC},
+      {"geolocationAreaTitle",
+       IDS_OS_SETTINGS_PRIVACY_HUB_GEOLOCATION_AREA_TITLE},
+      {"geolocationAreaDescription",
+       IDS_OS_SETTINGS_PRIVACY_HUB_GEOLOCATION_AREA_DESCRIPTION},
       {"microphoneHwToggleTooltip",
        IDS_OS_SETTINGS_PRIVACY_HUB_HW_MICROPHONE_TOGGLE_TOOLTIP},
       {"websitesSectionTitle",
@@ -471,6 +476,8 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_OS_SETTINGS_PRIVACY_HUB_MANAGE_MIC_PERMISSIONS_IN_CHROME_TEXT},
       {"noWebsiteCanUseMicText",
        IDS_OS_SETTINGS_PRIVACY_HUB_NO_WEBSITE_CAN_USE_MIC_TEXT},
+      {"privacyHubAppsSectionTitle",
+       IDS_OS_SETTINGS_PRIVACY_HUB_APPS_SECTION_TITLE},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -512,8 +519,8 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddString("speakOnMuteDetectionLearnMoreURL",
                          chrome::kSpeakOnMuteDetectionLearnMoreURL);
 
-  html_source->AddString("geolocationToggleLearnMoreURL",
-                         chrome::kGeolocationToggleLearnMoreURL);
+  html_source->AddString("geolocationAreaLearnMoreURL",
+                         chrome::kGeolocationAreaLearnMoreURL);
 
   html_source->AddBoolean("showSecureDnsSetting", IsSecureDnsAvailable());
   html_source->AddBoolean("showSecureDnsOsSettingLink", false);
@@ -660,6 +667,11 @@ void PrivacySection::RegisterHierarchy(HierarchyGenerator* generator) const {
       mojom::SearchResultDefaultRank::kMedium,
       mojom::kPrivacyHubMicrophoneSubpagePath);
 
+  generator->RegisterTopLevelSubpage(
+      IDS_OS_SETTINGS_PRIVACY_HUB_GEOLOCATION_AREA_TITLE,
+      mojom::Subpage::kPrivacyHubGeolocation, mojom::SearchResultIcon::kShield,
+      mojom::SearchResultDefaultRank::kMedium,
+      mojom::kPrivacyHubGeolocationSubpagePath);
   // `sync_subsection_` is initialized only if the feature revamp wayfinding is
   // enabled.
   if (sync_subsection_) {

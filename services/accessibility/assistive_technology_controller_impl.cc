@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/notreached.h"
 #include "base/types/cxx23_to_underlying.h"
 #include "services/accessibility/automation_impl.h"
 #include "services/accessibility/features/interface_binder.h"
@@ -34,6 +35,11 @@ void AssistiveTechnologyControllerImpl::BindAccessibilityServiceClient(
   DCHECK(!accessibility_service_client_remote_.is_bound());
   accessibility_service_client_remote_.Bind(
       std::move(accessibility_client_remote));
+
+  // Once we have access to the AccessibilityServiceClient, initialize file
+  // loading capabilities.
+  accessibility_service_client_remote_->BindAccessibilityFileLoader(
+      file_loader_remote_.BindNewPipeAndPassReceiver());
 }
 
 void AssistiveTechnologyControllerImpl::BindAutomation(
@@ -41,6 +47,18 @@ void AssistiveTechnologyControllerImpl::BindAutomation(
     mojo::PendingReceiver<mojom::AutomationClient> automation_client) {
   accessibility_service_client_remote_->BindAutomation(
       std::move(automation), std::move(automation_client));
+}
+
+void AssistiveTechnologyControllerImpl::BindAutoclickClient(
+    mojo::PendingReceiver<mojom::AutoclickClient> autoclick_client) {
+  accessibility_service_client_remote_->BindAutoclickClient(
+      std::move(autoclick_client));
+}
+
+void AssistiveTechnologyControllerImpl::BindSpeechRecognition(
+    mojo::PendingReceiver<mojom::SpeechRecognition> sr_receiver) {
+  accessibility_service_client_remote_->BindSpeechRecognition(
+      std::move(sr_receiver));
 }
 
 void AssistiveTechnologyControllerImpl::BindTts(
@@ -52,6 +70,12 @@ void AssistiveTechnologyControllerImpl::BindUserInterface(
     mojo::PendingReceiver<mojom::UserInterface> user_interface_receiver) {
   accessibility_service_client_remote_->BindUserInterface(
       std::move(user_interface_receiver));
+}
+
+void AssistiveTechnologyControllerImpl::BindAccessibilityFileLoader(
+    mojo::PendingReceiver<ax::mojom::AccessibilityFileLoader>
+        file_loader_receiver) {
+  NOTREACHED();
 }
 
 void AssistiveTechnologyControllerImpl::EnableAssistiveTechnology(
@@ -112,7 +136,8 @@ void AssistiveTechnologyControllerImpl::CreateV8ManagerForType(
   V8Manager& manager = enabled_ATs_[type];
 
   // Install bindings on the global context depending on the type.
-  // For example, some types may need TTS and some may not. All need Automation.
+  // For example, some types may need TTS and some may not. All need Automation
+  // and file loading.
   // TODO(b/262637071): Create a easy way to map AT types to APIs needed instead
   // of these large if statements.
   mojo::PendingAssociatedReceiver<mojom::Automation> automation;
@@ -121,6 +146,7 @@ void AssistiveTechnologyControllerImpl::CreateV8ManagerForType(
                  automation_client.InitWithNewPipeAndPassReceiver());
   manager.ConfigureAutomation(std::move(automation),
                               std::move(automation_client));
+  manager.ConfigureFileLoader(&file_loader_remote_);
   if (type == mojom::AssistiveTechnologyType::kChromeVox ||
       type == mojom::AssistiveTechnologyType::kSelectToSpeak) {
     // TTS needs to know the type that is speaking.
@@ -131,6 +157,12 @@ void AssistiveTechnologyControllerImpl::CreateV8ManagerForType(
       type == mojom::AssistiveTechnologyType::kAutoClick ||
       type == mojom::AssistiveTechnologyType::kSwitchAccess) {
     manager.ConfigureUserInterface(this);
+  }
+  if (type == mojom::AssistiveTechnologyType::kDictation) {
+    manager.ConfigureSpeechRecognition(this);
+  }
+  if (type == mojom::AssistiveTechnologyType::kAutoClick) {
+    manager.ConfigureAutoclick(this);
   }
   // TODO(b/262637071): Configure other bindings based on the type
   // once they are implemented.

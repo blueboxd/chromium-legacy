@@ -114,6 +114,7 @@ void CookieControlsBubbleViewController::OnFaviconFetched(
 }
 
 void CookieControlsBubbleViewController::ApplyThirdPartyCookiesAllowedState(
+    CookieControlsEnforcement enforcement,
     base::Time expiration) {
   bool is_permanent_exception = expiration == base::Time();
   std::u16string label_title;
@@ -135,7 +136,8 @@ void CookieControlsBubbleViewController::ApplyThirdPartyCookiesAllowedState(
     }
   } else {
     bubble_title = IDS_TRACKING_PROTECTION_BUBBLE_TITLE;
-    if (is_permanent_exception) {
+    if (is_permanent_exception ||
+        enforcement == CookieControlsEnforcement::kEnforcedByCookieSetting) {
       label_title = l10n_util::GetStringUTF16(
           IDS_TRACKING_PROTECTION_BUBBLE_PERMANENT_ALLOWED_TITLE);
       label_description =
@@ -155,7 +157,6 @@ void CookieControlsBubbleViewController::ApplyThirdPartyCookiesAllowedState(
   bubble_view_->UpdateTitle(l10n_util::GetStringUTF16(bubble_title));
   bubble_view_->GetContentView()->UpdateContentLabels(
       label_title, l10n_util::GetStringUTF16(label_description));
-  bubble_view_->GetContentView()->SetFeedbackSectionVisibility(true);
   bubble_view_->GetContentView()->SetToggleIsOn(true);
   bubble_view_->GetContentView()->SetToggleIcon(GetToggleIcon(true));
 }
@@ -181,7 +182,6 @@ void CookieControlsBubbleViewController::ApplyThirdPartyCookiesBlockedState() {
       l10n_util::GetStringUTF16(
           IDS_COOKIE_CONTROLS_BUBBLE_SITE_NOT_WORKING_TITLE),
       l10n_util::GetStringUTF16(label_description));
-  bubble_view_->GetContentView()->SetFeedbackSectionVisibility(false);
   bubble_view_->GetContentView()->SetToggleIsOn(false);
   bubble_view_->GetContentView()->SetToggleIcon(GetToggleIcon(false));
 }
@@ -202,7 +202,7 @@ void CookieControlsBubbleViewController::OnStatusChanged(
       ApplyThirdPartyCookiesBlockedState();
       break;
     case CookieControlsStatus::kDisabledForSite:
-      ApplyThirdPartyCookiesAllowedState(expiration);
+      ApplyThirdPartyCookiesAllowedState(enforcement, expiration);
       break;
     case CookieControlsStatus::kDisabled:
     case CookieControlsStatus::kUninitialized:
@@ -216,6 +216,8 @@ void CookieControlsBubbleViewController::OnStatusChanged(
   switch (enforcement) {
     case CookieControlsEnforcement::kNoEnforcement:
       bubble_view_->GetContentView()->SetContentLabelsVisible(true);
+      bubble_view_->GetContentView()->SetFeedbackSectionVisibility(
+          status == CookieControlsStatus::kDisabledForSite);
       bubble_view_->GetContentView()->SetToggleVisible(true);
       bubble_view_->GetContentView()->SetEnforcedIconVisible(false);
       break;
@@ -225,8 +227,11 @@ void CookieControlsBubbleViewController::OnStatusChanged(
     case CookieControlsEnforcement::kEnforcedByPolicy:
     case CookieControlsEnforcement::kEnforcedByExtension:
     case CookieControlsEnforcement::kEnforcedByCookieSetting:
+      // In 3PCD, tell the user if they allowed the current site in settings.
+      bubble_view_->GetContentView()->SetContentLabelsVisible(
+          enforcement == CookieControlsEnforcement::kEnforcedByCookieSetting &&
+          blocking_status != CookieBlocking3pcdStatus::kNotIn3pcd);
       bubble_view_->GetContentView()->SetFeedbackSectionVisibility(false);
-      bubble_view_->GetContentView()->SetContentLabelsVisible(false);
       bubble_view_->GetContentView()->SetToggleVisible(false);
       bubble_view_->GetContentView()->SetEnforcedIcon(
           content_settings::CookieControlsUtil::GetEnforcedIcon(enforcement),

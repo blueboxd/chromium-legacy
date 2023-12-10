@@ -383,6 +383,12 @@ inline constexpr char16_t kPaymentMethodsURL[] =
     u"home?utm_source=chrome&utm_medium=settings&utm_campaign=chrome-payment#"
     u"paymentMethods";
 
+// Help URL for the newer GPay Web site instead of the legacy Payments Center.
+inline constexpr char16_t kPaymentMethodsURLForGPayWeb[] =
+    u"https://pay.google.com/"
+    u"pay?p=paymentmethods&utm_source=chrome&utm_medium=settings&utm_campaign="
+    u"payment_methods";
+
 // The URL for the "Fill out forms automatically" support page.
 inline constexpr char kAddressesAndPaymentMethodsLearnMoreURL[] =
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -390,6 +396,10 @@ inline constexpr char kAddressesAndPaymentMethodsLearnMoreURL[] =
 #else
     "https://support.google.com/chrome?p=settings_autofill";
 #endif
+
+// "Learn more" URL for the preloading section in Performance settings.
+inline constexpr char kPreloadingLearnMoreUrl[] =
+    "https://support.google.com/chrome/?p=performance_preload_pages";
 
 // "Learn more" URL for the Privacy section under Options.
 inline constexpr char kPrivacyLearnMoreURL[] =
@@ -419,9 +429,9 @@ inline constexpr char kSafeBrowsingHelpCenterUpdatedURL[] =
 inline constexpr char16_t kSafeBrowsingInChromeHelpCenterURL[] =
     u"https://support.google.com/chrome?p=safebrowsing_in_chrome";
 
-// The URL of Safe Browsing p-tour.
-inline constexpr char16_t kSafeBrowsingPTourURL[] =
-    u"https://support.google.com/chrome?p=safebrowsing_in_chrome";
+// The URL for Safe Browsing link in Safety Check page.
+inline constexpr char16_t kSafeBrowsingUseInChromeURL[] =
+    u"https://support.google.com/chrome/answer/9890866";
 
 // "Learn more" URL for safety tip bubble.
 inline constexpr char kSafetyTipHelpCenterURL[] =
@@ -666,6 +676,9 @@ inline constexpr char kHapticFeedbackHelpURL[] =
 // The URL path to offline OEM EULA.
 inline constexpr char kOemEulaURLPath[] = "oem";
 
+inline constexpr char kOrcaSuggestionLearnMoreURL[] =
+    "https://support.google.com/chromebook?p=copyeditor";
+
 // Help URL for the OS settings page's search feature.
 inline constexpr char kOsSettingsSearchHelpURL[] =
     "https://support.google.com/chromebook?p=settings_search_help";
@@ -731,9 +744,9 @@ inline constexpr char kGoogleDriveOfflineLearnMoreURL[] =
 inline constexpr char kSpeakOnMuteDetectionLearnMoreURL[] =
     "https://support.google.com/chromebook?p=mic-mute";
 
-// The URL for the "Learn more" page for the geolocation toggle in the privacy
+// The URL for the "Learn more" page for the geolocation area in the privacy
 // hub page.
-inline constexpr char kGeolocationToggleLearnMoreURL[] =
+inline constexpr char kGeolocationAreaLearnMoreURL[] =
     "https://support.google.com/chromebook?p=cpn_location_sharing";
 
 // The URL for the "Learn more" page for Suggested Content in the privacy page.

@@ -26,6 +26,7 @@
 <translation id="1448064542941920355">Diminuir zoom</translation>
 <translation id="1510341833810331442">Os sites não têm autorização para guardar dados no dispositivo</translation>
 <translation id="1547123415014299762">Os cookies de terceiros são permitidos</translation>
+<translation id="1568470248891039841">Os sites que visitar podem incorporar conteúdo de outros sites, por exemplo, imagens, anúncios e texto. Estes outros sites podem pedir autorização para usar as informações que guardaram sobre si enquanto navega no site. <ph name="BEGIN_LINK" />Saiba mais sobre conteúdo incorporado<ph name="END_LINK" /></translation>
 <translation id="1593426485665524382">Novas ações disponíveis junto à parte superior do ecrã</translation>
 <translation id="1620510694547887537">Câmara</translation>
 <translation id="1633720957382884102">Sites relacionados</translation>
@@ -80,6 +81,7 @@
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> e mais <ph name="NUM_MORE" /> permitidas.}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> e mais <ph name="NUM_MORE" /> permitidas.}}</translation>
 <translation id="2410940059315936967">Um site que visita pode incorporar conteúdo de outros sites, por exemplo, imagens, anúncios e texto. Os cookies definidos por estes sites são denominados cookies de terceiros.</translation>
 <translation id="2434158240863470628">Transferência concluída: <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
+<translation id="2438120137003069591">Permitiu temporariamente que este site usasse cookies de terceiros, o que significa uma proteção da navegação inferior, mas é mais provável que as funcionalidades do site funcionem conforme esperado. <ph name="BEGIN_LINK" />Envie feedback<ph name="END_LINK" /></translation>
 <translation id="244264527810019436">As funcionalidades em alguns sites podem não funcionar no Modo de navegação anónima</translation>
 <translation id="2442870161001914531">Peça sempre o site para computador</translation>
 <translation id="2469312991797799607">Esta ação vai eliminar todos os dados e cookies de <ph name="ORIGIN" /> e de todos os sites associados a este</translation>
@@ -114,6 +116,7 @@
 <translation id="2910701580606108292">Perguntar antes de permitir que os sites reproduzam conteúdos protegidos</translation>
 <translation id="2932883381142163287">Denunciar abuso</translation>
 <translation id="2968755619301702150">Visualizador de certificados</translation>
+<translation id="2979365474350987274">Os cookies de terceiros são limitados</translation>
 <translation id="3008272652534848354">Repor autorizações</translation>
 <translation id="301521992641321250">Bloqueada automaticamente</translation>
 <translation id="3069226013421428034">Permita o início de sessão de terceiros num site específico.</translation>
@@ -169,6 +172,7 @@
 <translation id="3918378745482005425">Algumas funcionalidades podem não funcionar. Os sites relacionados ainda podem usar cookies de terceiros.</translation>
 <translation id="3955193568934677022">Permitir que os sites reproduzam conteúdo protegido (recomendado)</translation>
 <translation id="3967822245660637423">Transferência concluída</translation>
+<translation id="3974105241379491420">Os sites podem pedir para usar as informações guardadas sobre si</translation>
 <translation id="3987993985790029246">Cop. link</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="3992684624889376114">Acerca desta página</translation>
@@ -188,6 +192,7 @@
 <translation id="4278390842282768270">Permitido</translation>
 <translation id="429312253194641664">Um site está a reproduzir multimédia.</translation>
 <translation id="42981349822642051">Expandir</translation>
+<translation id="4336566011000459927">O Chrome vai limitar os cookies novamente hoje</translation>
 <translation id="4338831206024587507">Todos os sites em <ph name="DOMAIN" /></translation>
 <translation id="4402755511846832236">Impeça os sites de saberem quando está ativamente a utilizar este dispositivo.</translation>
 <translation id="4412992751769744546">Permitir cookies de terceiros</translation>
@@ -243,6 +248,7 @@
 <translation id="5335288049665977812">Permitir que os sites executem JavaScript (recomendado)</translation>
 <translation id="534295439873310000">Dispositivos NFC</translation>
 <translation id="5344522958567249764">Gerir privacidade dos anúncios</translation>
+<translation id="5389626883706033615">Os sites estão impedidos de pedir para usar informações que guardaram sobre si</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(mais 1)}other{(mais #)}}</translation>
 <translation id="5403592356182871684">Nomes</translation>
 <translation id="5438097262470833822">Esta opção repõe as autorizações de <ph name="WEBSITE" /></translation>
@@ -289,6 +295,8 @@
 <translation id="6177128806592000436">A sua ligação a este site não é segura</translation>
 <translation id="6181444274883918285">Adicionar exceção de site</translation>
 <translation id="6192792657125177640">Excepções</translation>
+<translation id="6194967801833346599">{DAYS,plural, =1{O Chrome vai bloquear os cookies novamente amanhã}other{# dias até os cookies serem bloqueados novamente}}</translation>
+<translation id="6195163219142236913">Cookies de terceiros limitados</translation>
 <translation id="6196640612572343990">Bloquear cookies de terceiros</translation>
 <translation id="6205314730813004066">Privacidade dos anúncios</translation>
 <translation id="6207207788774442484">Eliminar dados e repor autorizações</translation>
@@ -299,6 +307,7 @@
 <translation id="6270391203985052864">Os sites podem pedir para enviar notificações.</translation>
 <translation id="6295158916970320988">Todos os sites</translation>
 <translation id="6320088164292336938">Vibrar</translation>
+<translation id="6344622098450209924">Proteção contra monitorização</translation>
 <translation id="6367753977865761591">Bloqueie o início de sessão de terceiros para um site específico.</translation>
 <translation id="6398765197997659313">Sair do modo de ecrã inteiro</translation>
 <translation id="640163077447496506">Expira hoje</translation>
@@ -350,6 +359,7 @@
 <translation id="7243308994586599757">Opções disponíveis junto à parte inferior do ecrã</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> selecionado(s).</translation>
 <translation id="7260727271532453612">Autorização de <ph name="PERMISSION_1" /> e <ph name="PERMISSION_2" />.</translation>
+<translation id="7284451015630589124">Impediu os sites de usarem cookies de terceiros para monitorização do seu perfil enquanto navega. Visite as definições para <ph name="BEGIN_LINK" />gerir as suas proteções antirrastreio<ph name="END_LINK" />.</translation>
 <translation id="7302486331832100261">Normalmente, bloqueia as notificações. Para permitir, toque em Detalhes.</translation>
 <translation id="7366415735885268578">Adicionar um site</translation>
 <translation id="7368695150573390554">Todos os dados offline são eliminados</translation>
@@ -358,6 +368,7 @@
 <translation id="7423098979219808738">Perguntar primeiro</translation>
 <translation id="7423538860840206698">Leitura da área de transferência bloqueada</translation>
 <translation id="7425915948813553151">Tema escuro para sites</translation>
+<translation id="7474522811371247902">Na maioria dos sites, o Chrome limita a utilização de cookies de terceiros. Porém, os cookies de terceiros são permitidos neste site porque este depende deles para oferecer serviços básicos.\n\nAceda às definições para <ph name="BEGIN_LINK" />gerir as suas Proteções Antirrastreio<ph name="END_LINK" />.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">Um site está a utilizar o seu microfone.</translation>
 <translation id="7561196759112975576">Sempre</translation>
@@ -374,6 +385,7 @@
 <translation id="780301667611848630">Não</translation>
 <translation id="7804248752222191302">Um site está a utilizar a sua câmara.</translation>
 <translation id="7807060072011926525">Disponibilizados pela Google</translation>
+<translation id="7822573154188733812">O Chrome impede que os sites usem cookies de terceiros para acompanhar o seu perfil enquanto navega. Visite as definições para <ph name="BEGIN_LINK" />gerir as suas proteções antirrastreio<ph name="END_LINK" />.</translation>
 <translation id="7835852323729233924">Multimédia em reprodução</translation>
 <translation id="783819812427904514">Reativar o som do vídeo</translation>
 <translation id="7846076177841592234">Cancelar seleção</translation>
@@ -390,6 +402,7 @@
 <translation id="8077120325605624147">Qualquer site que visitar pode mostrar-lhe qualquer anúncio</translation>
 <translation id="8087000398470557479">Este conteúdo é proveniente de <ph name="DOMAIN_NAME" />, fornecido pela Google.</translation>
 <translation id="8088603949666785339">Mais opções no <ph name="BANNER_TITLE" /></translation>
+<translation id="8113501330600751161">{DAYS,plural, =1{O Chrome vai limitar os cookies novamente amanhã}other{# dias até o Chrome limitar os cookies novamente}}</translation>
 <translation id="8116925261070264013">Com som desativado</translation>
 <translation id="813082847718468539">Ver informações do Website</translation>
 <translation id="8131740175452115882">Confirmar</translation>
@@ -428,6 +441,7 @@
 <translation id="8564613706851221529">{COUNT,plural, =1{Cookies permitidos para <ph name="FPS_MEMBERS_COUNT" /> site de <ph name="FPS_OWNER" />}other{Cookies permitidos para <ph name="FPS_MEMBERS_COUNT" /> sites de <ph name="FPS_OWNER" />}}</translation>
 <translation id="857943718398505171">Permitido (recomendado)</translation>
 <translation id="8609465669617005112">Mover para cima</translation>
+<translation id="8649036394979866943">Na maioria dos sites, o Chrome limita a utilização de cookies de terceiros para monitorização do seu perfil enquanto navega. Visite as definições para <ph name="BEGIN_LINK" />gerir as suas proteções antirrastreio<ph name="END_LINK" /></translation>
 <translation id="8676374126336081632">Limpar texto</translation>
 <translation id="8681886425883659911">Os anúncios são bloqueados em sites conhecidos por mostrarem anúncios intrusivos ou enganadores</translation>
 <translation id="868929229000858085">Pesquise os seus contactos</translation>
@@ -444,12 +458,14 @@
 <translation id="8816026460808729765">Impedir que os sites acedam aos sensores</translation>
 <translation id="8823559166155093873">Bloquear cookies</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8874790741333031443">Experimente permitir temporariamente os cookies de terceiros, o que significa uma menor proteção da navegação, mas é mais provável que as funcionalidades do site funcionem conforme esperado.</translation>
 <translation id="8889294078294184559">À medida que navega, os sites podem verificar com o Chrome e validar com um site anterior que tenha visitado que provavelmente é uma pessoa real</translation>
 <translation id="8899807382908246773">Anúncios intrusivos</translation>
 <translation id="8903921497873541725">Ampliar</translation>
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">O NFC está desativado para este dispositivo. Ative-o nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="8928445016601307354">Impedir os sites de verem e alterarem informações em dispositivos NFC</translation>
+<translation id="8944485226638699751">Conteúdo visível por um grupo limitado de pessoas ou um grupo</translation>
 <translation id="8958424370300090006">Bloqueie cookies para um site específico.</translation>
 <translation id="8959122750345127698">A navegação está inacessível: <ph name="URL" /></translation>
 <translation id="8986362086234534611">Esquecer</translation>

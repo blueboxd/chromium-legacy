@@ -166,6 +166,12 @@ BASE_FEATURE(kCanvasOopRasterization,
 );
 
 #if BUILDFLAG(IS_OZONE)
+// Enables per context GLTexture cache for OzoneImageBacking that avoids
+// unnecessary construction/destruction of GLTextures.
+BASE_FEATURE(kEnablePerContextGLTextureCache,
+             "EnablePerContextGLTextureCache",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Detect front buffering condition and set buffer usage as such.
 // This is a killswitch to be removed once launched.
 BASE_FEATURE(kOzoneFrontBufferUsage,
@@ -361,6 +367,10 @@ BASE_FEATURE(kSkiaGraphite,
 // Whether the Dawn "skip_validation" toggle is enabled for Skia Graphite.
 const base::FeatureParam<bool> kSkiaGraphiteDawnSkipValidation{
     &kSkiaGraphite, "dawn_skip_validation", true};
+
+// Whether Dawn backend validation is enabled for Skia Graphite.
+const base::FeatureParam<bool> kSkiaGraphiteDawnBackendValidation{
+    &kSkiaGraphite, "dawn_backend_validation", false};
 
 #if BUILDFLAG(IS_WIN)
 BASE_FEATURE(kSkiaGraphiteDawnUseD3D12,

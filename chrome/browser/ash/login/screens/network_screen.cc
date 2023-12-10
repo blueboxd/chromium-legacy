@@ -136,13 +136,11 @@ void NetworkScreen::ShowImpl() {
             base::BindOnce(&NetworkScreen::SetQuickStartButtonVisibility,
                            weak_ptr_factory_.GetWeakPtr()));
   }
-  if (context()->quick_start_wifi_credentials.has_value()) {
-    // QuickStart WiFi Transfer Screen Step
-    ConfigureWifiNetwork(context()->quick_start_wifi_credentials.value());
-    const auto ssid = context()->quick_start_wifi_credentials->ssid;
-    view_->ShowScreenWithData(base::Value::Dict().Set("ssid", ssid));
-    context()->quick_start_wifi_credentials.reset();
+
+  if (context()->quick_start_setup_ongoing) {
+    ShowStepsWhenQuickStartOngoing();
   } else {
+    // Shows the typical network list.
     view_->ShowScreenWithData({});
   }
 }
@@ -151,6 +149,10 @@ void NetworkScreen::HideImpl() {
   connection_timer_.Stop();
 
   UnsubscribeNetworkNotification();
+
+  WizardController::default_controller()
+      ->quick_start_controller()
+      ->DetachFrontend(this);
 }
 
 void NetworkScreen::OnUserAction(const base::Value::List& args) {
@@ -160,7 +162,13 @@ void NetworkScreen::OnUserAction(const base::Value::List& args) {
   } else if (action_id == kUserActionContinueButtonClicked) {
     OnContinueButtonClicked();
   } else if (action_id == kUserActionBackButtonClicked) {
-    OnBackButtonClicked();
+    if (context()->quick_start_setup_ongoing) {
+      // Clicking 'Back' (only visible on the actual network list) while
+      // QuickStart is going on will cancel the QuickStart flow.
+      ExitQuickStartFlow();
+    } else {
+      OnBackButtonClicked();
+    }
   } else if (action_id == kUserActionCancelButtonClicked) {
     CHECK(context()->quick_start_setup_ongoing);
     ExitQuickStartFlow();
@@ -194,6 +202,20 @@ void NetworkScreen::NetworkConnectionStateChanged(const NetworkState* network) {
 
 void NetworkScreen::DefaultNetworkChanged(const NetworkState* network) {
   UpdateStatus();
+}
+
+void NetworkScreen::OnUiUpdateRequested(
+    quick_start::QuickStartController::UiState state) {
+  if (state == ash::quick_start::QuickStartController::UiState::EXIT_SCREEN) {
+    // Controller requested the flow to be aborted.
+    WizardController::default_controller()
+        ->quick_start_controller()
+        ->DetachFrontend(this);
+    // Show the standard 'Network List'
+    if (view_) {
+      view_->ShowScreenWithData({});
+    }
+  }
 }
 
 void NetworkScreen::Refresh() {
@@ -375,14 +397,41 @@ void NetworkScreen::ExitQuickStartFlow() {
   auto* quick_start_controller = LoginDisplayHost::default_host()
                                      ->GetWizardController()
                                      ->quick_start_controller();
+  quick_start_controller->DetachFrontend(this);
   const auto entry_point = quick_start_controller->GetExitPoint();
-  quick_start_controller->HandleFlowCancellationRequest();
+  quick_start_controller->AbortFlow();
   if (entry_point ==
       quick_start::QuickStartController::EntryPoint::NETWORK_SCREEN) {
+    // Switches to the screen step that shows the list of networks.
     Show(context());
     return;
   }
   exit_callback_.Run(Result::BACK);
+}
+
+void NetworkScreen::ShowStepsWhenQuickStartOngoing() {
+  CHECK(context()->quick_start_setup_ongoing);
+  // Attach frontend so that the QuickStartController may notify us in case the
+  // flow is severed from the phone side, or if an error occurs.
+  WizardController::default_controller()
+      ->quick_start_controller()
+      ->AttachFrontend(this);
+
+  if (context()->quick_start_wifi_credentials.has_value()) {
+    // QuickStart WiFi Transfer Screen Step
+    const auto credentials = context()->quick_start_wifi_credentials.value();
+    context()->quick_start_wifi_credentials.reset();
+    ConfigureWifiNetwork(credentials);
+    view_->ShowScreenWithData(
+        base::Value::Dict().Set("ssid", credentials.ssid));
+  } else {
+    // QuickStart is ongoing, but no WiFi credentials have been provided.
+    // Customize the UI with a specific subtitle informing the user that they
+    // need to connect to a network in order to continue setting up with their
+    // Android phone.
+    view_->ShowScreenWithData(
+        base::Value::Dict().Set("useQuickStartSubtitle", true));
+  }
 }
 
 bool NetworkScreen::UpdateStatusIfConnectedToEthernet() {

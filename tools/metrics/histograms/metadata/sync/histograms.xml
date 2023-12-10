@@ -183,7 +183,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sync.BookmarkModelMerger.ValidInputUpdates" units="bookmarks"
-    expires_after="2023-11-19">
+    expires_after="2024-11-19">
   <owner>rushans@google.com</owner>
   <owner>mastiz@chromium.org</owner>
   <component>Services&gt;Sync</component>
@@ -349,6 +349,17 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Sync.CrossUserSharingPublicPrivateKeyInitializedOnStartup"
+    enum="Boolean" expires_after="2024-03-17">
+  <owner>rushans@google.com</owner>
+  <owner>mmoskvitin@google.com</owner>
+  <component>Services&gt;Sync</component>
+  <summary>
+    Records whether Nigori contains cross user sharing key pair. Recorded on
+    browser startup if there is valid local data.
+  </summary>
+</histogram>
+
 <histogram name="Sync.CrossUserSharingPublicPrivateKeyInitSuccess"
     enum="Boolean" expires_after="2024-03-17">
   <owner>eliaskh@chromium.org</owner>
@@ -456,6 +467,21 @@ chromium-metrics-reviews@google.com.
     See also &quot;Sync.SelectedTypesInTransportMode&quot; which is the
     corresponding histogram for Sync-transport users.
   </summary>
+</histogram>
+
+<histogram name="Sync.DataTypeActiveForSyncToSigninMigration{SyncModelType}"
+    enum="BooleanActive" expires_after="2024-05-01">
+  <owner>treib@chromium.org</owner>
+  <owner>mastiz@chromium.org</owner>
+  <component>Services&gt;Sync</component>
+  <summary>
+    The Sync-the-feature &quot;active&quot; status of {SyncModelType} for the
+    purpose of the SyncToSignin migration. Recorded on profile creation/startup,
+    capturing the state from just before shutdown during the previous run of
+    Chrome (i.e. before re-evaluation). Recorded only if
+    `Sync.FeatureStatusForSyncToSigninMigration` recorded &quot;active&quot;.
+  </summary>
+  <token key="SyncModelType" variants="SyncModelType"/>
 </histogram>
 
 <histogram name="Sync.DataTypeRunFailures2" enum="SyncModelTypes"
@@ -578,6 +604,20 @@ chromium-metrics-reviews@google.com.
     invalidations. Recorded on successful token fetch excluding token validation
     requests (Sync.FCMInstanceIdTokenRetrievalStatus can be used to compare with
     token fetch failure count).
+  </summary>
+</histogram>
+
+<histogram name="Sync.FeatureStatusForSyncToSigninMigration"
+    enum="SyncFeatureStatusForSyncToSigninMigration" expires_after="2024-05-01">
+  <owner>treib@chromium.org</owner>
+  <owner>mastiz@chromium.org</owner>
+  <component>Services&gt;Sync</component>
+  <summary>
+    The overall status of Sync-the-feature for the purpose of the SyncToSignin
+    migration, recorded on profile creation/startup, capturing the state from
+    just before shutdown during the previous run of Chrome (i.e. before
+    re-evaluation). See also data-type-specific statuses in
+    `Sync.DataTypeActiveForSyncToSigninMigration.*`.
   </summary>
 </histogram>
 
@@ -1258,7 +1298,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sync.ProblematicServerSideBookmarks"
-    enum="RemoteBookmarkUpdateError" expires_after="2023-11-25">
+    enum="RemoteBookmarkUpdateError" expires_after="2024-11-25">
   <owner>mastiz@chromium.org</owner>
   <owner>rushans@google.com</owner>
   <component>Services&gt;Sync</component>
@@ -1269,7 +1309,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sync.ProblematicServerSideBookmarksDuringMerge"
-    enum="RemoteBookmarkUpdateError" expires_after="2023-11-25">
+    enum="RemoteBookmarkUpdateError" expires_after="2024-11-25">
   <owner>rushans@google.com</owner>
   <owner>mastiz@chromium.org</owner>
   <component>Services&gt;Sync</component>
@@ -1325,6 +1365,20 @@ chromium-metrics-reviews@google.com.
   <component>Services&gt;Sync</component>
   <summary>
     Counts the number of commit results while committing sharing message.
+  </summary>
+</histogram>
+
+<histogram name="Sync.SignoutWithUnsyncedData" enum="Boolean"
+    expires_after="2024-10-26">
+  <owner>ankushkush@google.com</owner>
+  <owner>src/components/sync/OWNERS</owner>
+  <component>Services&gt;Sync</component>
+  <summary>
+    Logs whether the user chooses to proceed with signout or not, after a
+    warning dialog about unsynced data is shown. True means the user continued
+    with sign out, False means the action was cancelled.
+
+    Note: iOS only.
   </summary>
 </histogram>
 
@@ -1533,7 +1587,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sync.TrustedVaultAccessTokenFetchSuccess" enum="Boolean"
-    expires_after="2023-12-04">
+    expires_after="2024-06-04">
   <owner>mmoskvitin@google.com</owner>
   <owner>mastiz@chromium.org</owner>
   <component>Services&gt;Sync</component>
@@ -1897,6 +1951,20 @@ chromium-metrics-reviews@google.com.
     Recorded when TypedURLSyncBridge encounters a database error. As a result,
     the bridge stops operating (and tracking metadata) for the rest of the
     runtime of Chrome.
+  </summary>
+</histogram>
+
+<histogram name="Sync.UnsyncedDataOnSignout" enum="SyncModelTypes"
+    expires_after="2024-10-26">
+  <owner>ankushkush@google.com</owner>
+  <owner>src/components/sync/OWNERS</owner>
+  <component>Services&gt;Sync</component>
+  <summary>
+    Records the unsynced data types, when the user clicks on sign out but some
+    data has not been synced yet. Only PASSWORDS, BOOKMARKS, READING_LIST and
+    CONTACT_INFO are considered.
+
+    Note: iOS only.
   </summary>
 </histogram>
 

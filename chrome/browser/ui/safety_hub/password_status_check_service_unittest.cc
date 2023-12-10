@@ -10,13 +10,14 @@
 #include "base/test/bind.h"
 #include "base/time/time.h"
 #include "chrome/browser/password_manager/password_manager_test_util.h"
+#include "chrome/browser/ui/safety_hub/password_status_check_result.h"
 #include "chrome/browser/ui/safety_hub/safety_hub_constants.h"
 #include "chrome/browser/ui/safety_hub/safety_hub_prefs.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/password_manager/core/browser/bulk_leak_check_service.h"
+#include "components/password_manager/core/browser/leak_detection/bulk_leak_check_service.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -146,7 +147,7 @@ class PasswordStatusCheckServiceBaseTest : public testing::Test {
     base::Time check_time = base::Time::Now() - time_ago;
     profile().GetPrefs()->SetDouble(
         password_manager::prefs::kLastTimePasswordCheckCompleted,
-        check_time.ToDoubleT());
+        check_time.InSecondsFSinceUnixEpoch());
   }
 
   void RunUntilIdle() { task_env_.RunUntilIdle(); }
@@ -249,6 +250,25 @@ class PasswordStatusCheckServiceParameterizedCardTest
   bool any_password_saved() const {
     return any_issue_included() || include_safe_password();
   }
+};
+
+class PasswordStatusCheckServiceWithoutPasswordStoreTest
+    : public testing::Test {
+ public:
+  PasswordStatusCheckService* service() { return service_.get(); }
+
+  content::BrowserTaskEnvironment* task_environment() { return &task_env_; }
+
+ private:
+  void SetUp() override {
+    service_ = std::make_unique<PasswordStatusCheckService>(&profile_);
+    task_env_.RunUntilIdle();
+  }
+
+  content::BrowserTaskEnvironment task_env_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  TestingProfile profile_;
+  std::unique_ptr<PasswordStatusCheckService> service_;
 };
 
 TEST_F(PasswordStatusCheckServiceBaseTest, NoIssuesInitially) {
@@ -447,9 +467,7 @@ TEST_F(PasswordStatusCheckServiceBaseTest, PasswordCheck_FindCompromised) {
 
   bulk_leak_check_service()->set_state_and_notify(
       BulkLeakCheckService::State::kIdle);
-  static_cast<BulkLeakCheckDelegateInterface*>(bulk_leak_check_service())
-      ->OnFinishedCredential(LeakCheckCredential(kUsername1, kPassword),
-                             IsLeaked(true));
+  profile_store().UpdateLogin(MakeForm(kUsername1, kUsername1, kOrigin1, true));
   RunUntilIdle();
 
   // New leak is now picked up by service.
@@ -628,7 +646,7 @@ TEST_P(PasswordStatusCheckServiceParameterizedCardTest, PasswordCardState) {
   if (check_ran_previously()) {
     profile().GetPrefs()->SetDouble(
         password_manager::prefs::kLastTimePasswordCheckCompleted,
-        base::Time::Now().ToDoubleT());
+        base::Time::Now().InSecondsFSinceUnixEpoch());
   }
   if (include_safe_password()) {
     profile_store().AddLogin(MakeForm(kUsername1, kPassword));
@@ -812,6 +830,42 @@ TEST_F(PasswordStatusCheckServiceBaseTest, PasswordCardCheckTime) {
   EXPECT_EQ(*service()->GetPasswordCardData(true).FindString(
                 safety_hub::kCardSubheaderKey),
             std::string("Checked 300 days ago"));
+}
+
+TEST_P(PasswordStatusCheckServiceParameterizedStoreTest,
+       ResultWhenChangingLeakedPassword) {
+  absl::optional<std::unique_ptr<SafetyHubService::Result>> opt_old_result =
+      service()->GetCachedResult();
+  EXPECT_TRUE(opt_old_result.has_value());
+  PasswordStatusCheckResult* old_result =
+      static_cast<PasswordStatusCheckResult*>(opt_old_result.value().get());
+  EXPECT_THAT(old_result->GetCompromisedOrigins(), testing::IsEmpty());
+
+  // When a leaked password is found, the result should be updated.
+  password_store().AddLogin(MakeForm(kUsername2, kPassword, kOrigin1, true));
+  RunUntilIdle();
+
+  absl::optional<std::unique_ptr<SafetyHubService::Result>> opt_new_result =
+      service()->GetCachedResult();
+  EXPECT_TRUE(opt_new_result.has_value());
+  PasswordStatusCheckResult* new_result =
+      static_cast<PasswordStatusCheckResult*>(opt_new_result.value().get());
+  EXPECT_THAT(new_result->GetCompromisedOrigins(),
+              testing::ElementsAre(kOrigin1));
+}
+
+TEST_F(PasswordStatusCheckServiceWithoutPasswordStoreTest, NoPasswordStored) {
+  // Let the time pass until a check should have happened.
+  task_environment()->AdvanceClock(base::Days(30));
+  task_environment()->RunUntilIdle();
+
+  // Expect that nothing is initialized.
+  EXPECT_FALSE(service()->GetSavedPasswordsPresenterForTesting());
+  EXPECT_FALSE(service()->GetPasswordCheckDelegateForTesting());
+  EXPECT_FALSE(service()->IsObservingSavedPasswordsPresenterForTesting());
+  EXPECT_FALSE(service()->IsObservingBulkLeakCheckForTesting());
+  EXPECT_FALSE(service()->is_password_check_running());
+  EXPECT_FALSE(service()->is_update_credential_count_pending());
 }
 
 INSTANTIATE_TEST_SUITE_P(

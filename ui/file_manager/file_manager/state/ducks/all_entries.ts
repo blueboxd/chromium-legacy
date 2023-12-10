@@ -4,11 +4,13 @@
 
 import {getParentEntry} from '../../common/js/api.js';
 import {DialogType} from '../../common/js/dialog_type.js';
-import {isDriveRootEntryList, isFakeEntryInDrives, isGrandRootEntryInDrives, isVolumeEntry, sortEntries} from '../../common/js/entry_utils.js';
+import {isDriveRootEntryList, isFakeEntryInDrives, isGrandRootEntryInDrives, isSameEntry, isVolumeEntry, sortEntries} from '../../common/js/entry_utils.js';
 import {FileType} from '../../common/js/file_type.js';
 import {EntryList, VolumeEntry} from '../../common/js/files_app_entry_types.js';
+import {isSinglePartitionFormatEnabled} from '../../common/js/flags.js';
 import {recordInterval, recordSmallCount, startInterval} from '../../common/js/metrics.js';
-import {str, util} from '../../common/js/util.js';
+import {getEntryLabel, str} from '../../common/js/translations.js';
+import {iconSetToCSSBackgroundImageValue} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {EntryLocation} from '../../externs/entry_location.js';
 import {FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
@@ -196,7 +198,7 @@ function getEntryIcon(
         const iconSet = entry.volumeInfo.iconSet;
         if (iconSet) {
           const backgroundImage =
-              util.iconSetToCSSBackgroundImageValue(entry.volumeInfo.iconSet);
+              iconSetToCSSBackgroundImageValue(entry.volumeInfo.iconSet);
           if (backgroundImage !== 'none') {
             return iconSet;
           }
@@ -230,7 +232,7 @@ function appendChildIfNotExisted(
     parentEntry: VolumeEntry|EntryList,
     childEntry: Entry|FilesAppEntry): boolean {
   if (!parentEntry.getUIChildren().find(
-          (entry) => util.isSameEntry(entry, childEntry))) {
+          (entry) => isSameEntry(entry, childEntry))) {
     parentEntry.addEntry(childEntry);
     return true;
   }
@@ -249,9 +251,7 @@ export function convertEntryToFileData(entry: Entry|FilesAppEntry): FileData {
   const volumeInfo = 'volumeInfo' in entry ? entry.volumeInfo as VolumeInfo :
                                              volumeManager.getVolumeInfo(entry);
   const locationInfo = volumeManager.getLocationInfo(entry);
-  // getEntryLabel() can accept locationInfo=null, but TS doesn't recognize the
-  // type definition in closure, hence the ! here.
-  const label = util.getEntryLabel(locationInfo!, entry);
+  const label = getEntryLabel(locationInfo, entry);
   // For FakeEntry, we need to read from entry.volumeType because it doesn't
   // have volumeInfo in the volume manager.
   const volumeType = 'volumeType' in entry && entry.volumeType ?
@@ -619,15 +619,18 @@ export function volumeNestingEntries(
       volumeInfo.source === VolumeManagerCommon.Source.FILE;
 
   if (volumeInfo.volumeType === VolumeType.REMOVABLE) {
-    // It should be nested/grouped when there is more than 1 partition in the
-    // same device.
     const groupingKey = removableGroupKey(volumeMetadata);
-    const shouldGroup = Object.values<Volume>(state.volumes).some(v => {
-      return (
-          v.volumeType === VolumeType.REMOVABLE &&
-          removableGroupKey(v) === groupingKey &&
-          v.volumeId != volumeInfo.volumeId);
-    });
+    // When the flag is on, we always group removable volume even there's only 1
+    // partition, otherwise the group only happens when there are more than 1
+    // partition in the same device.
+    const shouldGroup = isSinglePartitionFormatEnabled() ?
+        true :
+        Object.values<Volume>(state.volumes).some(v => {
+          return (
+              v.volumeType === VolumeType.REMOVABLE &&
+              removableGroupKey(v) === groupingKey &&
+              v.volumeId != volumeInfo.volumeId);
+        });
 
     if (shouldGroup) {
       const parentKey = makeRemovableParentKey(volumeMetadata);
@@ -643,8 +646,8 @@ export function volumeNestingEntries(
       }
       // Update the siblings too.
       for (const v of Object.values<Volume>(state.volumes)) {
-        // Ignore the partitions that already is nested via `prefixKey`. Note:
-        // `prefixKey` field is handled by AddVolume() reducer.
+        // Ignore the partitions that are already nested via `prefixKey`. Note:
+        // `prefixKey` field is handled by `addVolumeReducer`.
         if (v.volumeType === VolumeType.REMOVABLE &&
             removableGroupKey(v) === groupingKey && !v.prefixKey) {
           const fileData = getFileData(state, v.rootKey!);

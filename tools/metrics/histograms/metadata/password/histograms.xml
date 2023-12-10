@@ -1772,6 +1772,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.iOS.PasswordDetailsVisit" enum="Boolean"
+    expires_after="2024-03-31">
+  <owner>eic@google.com</owner>
+  <owner>bling-transactions@google.com</owner>
+  <summary>
+    This metric counts how many times the Password Manager Details Page is
+    visited on iOS. Recorded when the user opens the Password Manager Details
+    Page after successful Local Authentication (if authentication is required).
+    Only the true bucket is logged.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.iOS.PasswordManagerVisit" enum="Boolean"
     expires_after="2024-03-31">
   <owner>eic@google.com</owner>
@@ -2358,6 +2370,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="PasswordManager.PasswordGenerationBottomSheet.InteractionResult"
+    enum="PasswordManager.PasswordGenerationBottomSheet.InteractionResult"
+    expires_after="2024-04-01">
+  <owner>atsvirchkova@google.com</owner>
+  <owner>ioanap@chromium.org</owner>
+  <summary>
+    Records the interaction result with the password generation bottom sheet.
+    The metric is recorded regardless of how the bottom sheet was triggered
+    (automatically, from keyboard accessory or through manual generation). The
+    metric is logged when the bottom sheet is dismissed.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.PasswordManagementBubble.UserAction"
     enum="PasswordManagementBubbleInteractions" expires_after="2024-03-24">
   <owner>mamir@chromium.org</owner>
@@ -2462,13 +2488,14 @@ chromium-metrics-reviews@google.com.
   <summary>
     This metric shows how user created / edited / cleared the note field in the
     passwords settings page. Recorded after closing the add/edit password dialog
-    in settings.
+    in settings. This metric was mistakenly deleted between M116 and M120 and
+    data is missing in this period.
   </summary>
 </histogram>
 
 <histogram
     name="PasswordManager.PasswordNotesMigrationToOSCrypt.{Store}DeletedNotesCount"
-    units="count" expires_after="M120">
+    units="count" expires_after="2024-03-17">
   <owner>rgod@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -2480,7 +2507,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.PasswordNotesMigrationToOSCrypt.{Store}KeychainRetrievalError"
-    enum="ErrSecOSStatus" expires_after="M120">
+    enum="ErrSecOSStatus" expires_after="2024-03-17">
   <owner>rgod@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -2492,7 +2519,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.PasswordNotesMigrationToOSCrypt.{Store}MigratedNotesCount"
-    units="count" expires_after="M120">
+    units="count" expires_after="2024-03-17">
   <owner>rgod@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -2657,6 +2684,17 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records user interactions with the elements of password sharing flow in the
     desktop settings.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.PasswordSharingIOS.UserAction"
+    enum="PasswordManager.PasswordSharingIOSUserAction"
+    expires_after="2024-03-01">
+  <owner>rgod@google.com</owner>
+  <owner>mamir@chromium.org</owner>
+  <summary>
+    Records user interactions with the elements of password sharing flow in the
+    iOS settings.
   </summary>
 </histogram>
 
@@ -3564,6 +3602,22 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.TouchToFill.PasswordGeneration.TriggerOutcome"
+    enum="TouchToFillPasswordGenerationTriggerOutcome"
+    expires_after="2024-04-01">
+  <owner>atsvirchkova@google.com</owner>
+  <owner>ioanap@chromium.org</owner>
+  <summary>
+    Records the outcome of an attempt to trigger the password generation bottom
+    sheet. It either records success or the reason why the sheet was not shown.
+    The metric is recorded when the browser process receives the notification
+    about password generation being available and only if the generation bottom
+    sheet feature is on. Important: due to the renderer issuing 2 generation
+    available calls per field focus event, all buckets apart from
+    &quot;Shown&quot; are double-counted.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.TouchToFill.PasswordGeneration.UserChoice"
     enum="GenerationDialogChoice" expires_after="2024-06-01">
   <owner>atsvirchkova@google.com</owner>
@@ -4160,6 +4214,15 @@ chromium-metrics-reviews@google.com.
     The time it takes to extract the visual features of a login page before
     sending a PasswordProtectionRequest. Logged every time visual features are
     extracted (when an SBER user sends an On Focus ping).
+  </summary>
+</histogram>
+
+<histogram name="PasswordProtection.VisualFeaturesClearReason"
+    enum="CanExtractVisualFeaturesResult" expires_after="2024-10-26">
+  <owner>andysjlim@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Log the reason why PhishGuard pings does not contain visual features images.
   </summary>
 </histogram>
 

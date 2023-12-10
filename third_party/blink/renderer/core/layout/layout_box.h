@@ -1023,13 +1023,13 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   bool IsFlexItemIncludingNG() const {
     NOT_DESTROYED();
     return !IsInline() && !IsOutOfFlowPositioned() && Parent() &&
-           Parent()->IsFlexibleBoxIncludingNG();
+           Parent()->IsFlexibleBox();
   }
 
   // TODO(1229581): Rename this function.
   bool IsGridItemIncludingNG() const {
     NOT_DESTROYED();
-    return Parent() && Parent()->IsLayoutNGGrid();
+    return Parent() && Parent()->IsLayoutGrid();
   }
 
   bool IsMathItem() const {
@@ -1582,7 +1582,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
  private:
   // The index of the first fragment item associated with this object in
-  // |NGFragmentItems::Items()|. Zero means there are no such item.
+  // |FragmentItems::Items()|. Zero means there are no such item.
   // Valid only when IsInLayoutNGInlineFormattingContext().
   wtf_size_t first_fragment_item_index_ = 0u;
 

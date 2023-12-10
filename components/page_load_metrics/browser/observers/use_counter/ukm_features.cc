@@ -234,6 +234,7 @@ UseCounterMetricsRecorder::GetAllowedUkmFeatures() {
           WebFeature::kPrivateNetworkAccessIgnoredCrossOriginPreflightError,
           WebFeature::kPrivateNetworkAccessIgnoredCrossSitePreflightError,
           WebFeature::kPrivateNetworkAccessPreflightWarning,
+          WebFeature::kPrivateNetworkAccessPermissionPrompt,
           WebFeature::kWebBluetoothGetAvailability,
           WebFeature::kCookieHasNotBeenRefreshedIn201To300Days,
           WebFeature::kCookieHasNotBeenRefreshedIn301To350Days,
@@ -286,7 +287,7 @@ UseCounterMetricsRecorder::GetAllowedUkmFeatures() {
           WebFeature::kMediaStreamOnInactive,
           WebFeature::kPrivacySandboxAdsAPIs,
           WebFeature::kV8Navigator_RunAdAuction_Method,
-          WebFeature::kConversionAPIAll,
+          WebFeature::kAttributionReportingAPIAll,
           WebFeature::kSharedStorageAPI_SharedStorage_DOMReference,
           WebFeature::kSharedStorageAPI_Run_Method,
           WebFeature::kSharedStorageAPI_SelectURL_Method,
@@ -318,6 +319,32 @@ UseCounterMetricsRecorder::GetAllowedUkmFeatures() {
           WebFeature::kChromeCSIPageT,
           WebFeature::kChromeCSIStartE,
           WebFeature::kChromeCSITran,
+          WebFeature::kThirdPartyCookieAccessBlockByExperiment,
+          WebFeature::kStorageAccessAPI_requestStorageAccess_BeyondCookies,
+          WebFeature::kStorageAccessAPI_requestStorageAccess_BeyondCookies_all,
+          WebFeature::
+              kStorageAccessAPI_requestStorageAccess_BeyondCookies_sessionStorage,
+          WebFeature::
+              kStorageAccessAPI_requestStorageAccess_BeyondCookies_sessionStorage_Use,
+          WebFeature::
+              kStorageAccessAPI_requestStorageAccess_BeyondCookies_localStorage,
+          WebFeature::
+              kStorageAccessAPI_requestStorageAccess_BeyondCookies_localStorage_Use,
+          WebFeature::
+              kStorageAccessAPI_requestStorageAccess_BeyondCookies_indexedDB,
+          WebFeature::
+              kStorageAccessAPI_requestStorageAccess_BeyondCookies_indexedDB_Use,
+          WebFeature::
+              kStorageAccessAPI_requestStorageAccess_BeyondCookies_locks,
+          WebFeature::
+              kStorageAccessAPI_requestStorageAccess_BeyondCookies_locks_Use,
+          WebFeature::kThirdPartyCookieDeprecation_AllowByExplicitSetting,
+          WebFeature::kThirdPartyCookieDeprecation_AllowByGlobalSetting,
+          WebFeature::kThirdPartyCookieDeprecation_AllowBy3PCDMetadata,
+          WebFeature::kThirdPartyCookieDeprecation_AllowBy3PCD,
+          WebFeature::kThirdPartyCookieDeprecation_AllowBy3PCDHeuristics,
+          WebFeature::kThirdPartyCookieDeprecation_AllowByStorageAccess,
+          WebFeature::kThirdPartyCookieDeprecation_AllowByTopLevelStorageAccess,
       }));
   return *opt_in_features;
 }

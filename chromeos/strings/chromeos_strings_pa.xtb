@@ -42,6 +42,7 @@
 <translation id="1290331692326790741">ਕਮਜ਼ੋਰ ਸਿਗਨਲ</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1308754910631152188">ਅੱਪਡੇਟ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ (<ph name="PERCENTAGE_VALUE" />% ਪੂਰਾ ਹੋ ਗਿਆ)</translation>
+<translation id="1309341072016605398"><ph name="MINUTES" /> ਮਿੰਟ</translation>
 <translation id="1310380015393971138">ਕੋਈ <ph name="NETWORK_NAME" /> ਨੈੱਟਵਰਕ ਉਪਲਬਧ ਨਹੀਂ</translation>
 <translation id="131421566576084655">ਪਿਛਲੇ ਡਾਟਾ ਰੀਸੈੱਟ ਦੀ ਤਾਰੀਖ ਉਪਲਬਧ ਨਹੀਂ ਹੈ</translation>
 <translation id="1314565355471455267">Android VPN</translation>
@@ -75,6 +76,7 @@
 <translation id="1499900233129743732"><ph name="MANAGER" /> ਇਸ ਵਰਤੋਂਕਾਰ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰਦਾ ਹੈ ਅਤੇ ਦੂਰ-ਦਰਾਡੇ ਤੋਂ ਸੈਟਿੰਗਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਅਤੇ ਵਰਤੋਂਕਾਰ ਸਰਗਰਮੀ ਦੀ ਨਿਗਰਾਨੀ ਕਰ ਸਕਦਾ ਹੈ।</translation>
 <translation id="150962533380566081">ਅਵੈਧ PUK।</translation>
 <translation id="1510238584712386396">ਲੌਂਚਰ</translation>
+<translation id="1515129336378114413">ਬ੍ਰਾਊਜ਼ਰ ਦਾ ਹੋਮ ਪੇਜ</translation>
 <translation id="1526389707933164996">ਸਕ੍ਰੀਨ ਸੇਵਰ ਐਨੀਮੇਸ਼ਨ</translation>
 <translation id="152892567002884378">ਅਵਾਜ਼ ਵਧਾਓ</translation>
 <translation id="1555130319947370107">ਨੀਲਾ</translation>
@@ -85,6 +87,7 @@
 <translation id="1572585716423026576">ਵਾਲਪੇਪਰ ਵਜੋਂ ਸੈੱਟ ਕਰੋ</translation>
 <translation id="1578784163189013834">ਸਕ੍ਰੀਨ ਸੇਵਰ ਬੈਕਗ੍ਰਾਊਂਡ ਚੁਣੋ</translation>
 <translation id="160633243685262989">ਚਿੱਤਰ ਦੀ ਪੂਰਵ-ਝਲਕ ਦੇਖੋ</translation>
+<translation id="1611649489706141841">ਅੱਗੇ ਭੇਜੋ</translation>
 <translation id="1615335640928990664"><ph name="FRIENDLY_DATE" /> ਤੋਂ ਡਾਟਾ ਵਰਤੋਂ</translation>
 <translation id="1621067168122174824">ਚਾਰਜ ਟੈਸਟ ਚਲਾਓ</translation>
 <translation id="1639239467298939599">ਲੋਡ ਕਰ ਰਿਹਾ ਹੈ</translation>
@@ -186,6 +189,7 @@
 <translation id="2236746079896696523">ਕੀ-ਬੋਰਡ ਬੈਕਲਾਈਟ ਨੂੰ ਟੌਗਲ ਕਰਨ ਵਾਲਾ ਬਟਨ</translation>
 <translation id="2240366984605217732">ਖਾਕਾ ਸਵਿੱਚ ਕਰਨ ਵਾਲੀ ਕੁੰਜੀ</translation>
 <translation id="225692081236532131">ਕਿਰਿਆਸ਼ੀਲਤਾ ਸਥਿਤੀ</translation>
+<translation id="2267285889943769271">ਸਕ੍ਰੀਨਸ਼ਾਟ ਸ਼ਾਮਲ ਕਰੋ</translation>
 <translation id="2271469253353559191">ਗੂੜ੍ਹਾ ਮੋਡ ਨਿਯਤ ਕਰੋ</translation>
 <translation id="2276999893457278469">ਪ੍ਰਮੁੱਖ ਮਦਦ ਸਮੱਗਰੀ</translation>
 <translation id="2279051792571591988">ਪੂਰਵ-ਨਿਰਧਾਰਿਤ ਸੈਟਿੰਗਾਂ ਨੂੰ ਮੁੜ-ਬਹਾਲ ਕਰੋ</translation>
@@ -350,7 +354,7 @@
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> ਸਮੀਖਿਆਵਾਂ)</translation>
 <translation id="3748026146096797577">ਕਨੈਕਟ ਨਹੀਂ ਕੀਤਾ</translation>
 <translation id="3749289110408117711">ਫਾਈਲ ਨਾਮ</translation>
-<translation id="3771294271822695279">ਵੀਡਿਓ ਫਾਈਲਾਂ</translation>
+<translation id="3771294271822695279">ਵੀਡੀਓ ਫ਼ਾਈਲਾਂ</translation>
 <translation id="3784455785234192852">ਲਾਕ ਕਰੋ</translation>
 <translation id="380097101658023925">RGB ਕੰਟਰੋਲ</translation>
 <translation id="38114475217616659">ਸਾਰਾ ਇਤਿਹਾਸ ਕਲੀਅਰ ਕਰੋ</translation>
@@ -429,6 +433,7 @@
 <translation id="4297501883039923494">ਬੰਦ ਹੋ ਗਿਆ - ਅਗਿਆਤ ਗੜਬੜ</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> ਚਿੱਤਰ</translation>
 <translation id="4333390807948134856"><ph name="KEY_NAME" /> ਕੁੰਜੀ ਦਬਾਈ ਗਈ</translation>
+<translation id="4354430579665871434">ਕੁੰਜੀ</translation>
 <translation id="435692326371619097">ਨੈੱਟਵਰਕ APN ਸੈਟਿੰਗਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ APN ਸੈਲਿਊਲਰ ਨੈੱਟਵਰਕ ਅਤੇ ਇੰਟਰਨੈੱਟ ਵਿਚਕਾਰ ਕਨੈਕਸ਼ਨ ਸਥਾਪਤ ਕਰਦੇ ਹਨ। <ph name="BEGIN_LINK" />ਹੋਰ ਜਾਣੋ<ph name="END_LINK" /></translation>
 <translation id="437294888293595148">ਸਾਰੇ ਸ਼ਾਰਟਕੱਟਾਂ ਨੂੰ ਰੀਸੈੱਟ ਕਰੋ</translation>
 <translation id="4378373042927530923">ਨੈੱਟਵਰਕ ਤਸ਼ਖੀਸ ਨਹੀਂ ਚੱਲੀ</translation>
@@ -450,7 +455,7 @@
 <translation id="4469288414739283461">ਧਰਤੀ ਪ੍ਰਵਾਹ ਦਾ ਸਕ੍ਰੀਨ ਸੇਵਰ</translation>
 <translation id="4479639480957787382">ਈਥਰਨੈਟ</translation>
 <translation id="4483049906298469269">ਗੈਰ-ਪੂਰਵ-ਨਿਰਧਾਰਤ ਨੈੱਟਵਰਕ ਗੇਟਵੇ ਨੂੰ ਪਿੰਗ ਕਰਨਾ ਅਸਫਲ ਰਿਹਾ</translation>
-<translation id="4500966230243561393">ਇੰਟਰਫੇਸ ਦਾ ਰੰਗ</translation>
+<translation id="4500966230243561393">ਇੰਟਰਫ਼ੇਸ ਦਾ ਰੰਗ</translation>
 <translation id="4503223151711056411">ਖੱਬਾ ਤੀਰ</translation>
 <translation id="4507392511610824664">ਚਮਕ ਵਧਾਓ</translation>
 <translation id="4511264077854731334">ਪੋਰਟਲ</translation>
@@ -691,9 +696,11 @@
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">ਗੂੜ੍ਹਾ ਥੀਮ ਚਾਲੂ ਕਰੋ</translation>
 <translation id="628726841779494414">ਪ੍ਰਿੰਟਰ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਆਪਣੇ ਪ੍ਰਿੰਟਰਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ</translation>
+<translation id="6292095526077353682">ਚਾਰਜ ਕਰਨ ਦੌਰਾਨ, ਇਸ ਮਿਆਦ ਤੱਕ ਸਕ੍ਰੀਨ ਸੇਵਰ ਦਿਖਾਓ</translation>
 <translation id="629550705077076970">ਕੀ-ਬੋਰਡ ਦੀ ਰੋਸ਼ਨੀ ਘੱਟ ਕਰੋ</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" /> ਟੈਸਟ ਨੂੰ ਰੱਦ ਕਰ ਦਿੱਤਾ ਗਿਆ ਹੈ</translation>
 <translation id="631063167932043783">Explore ਐਪ</translation>
+<translation id="6318437367327684789">ਹਮੇਸ਼ਾਂ</translation>
 <translation id="6319207335391420837"><ph name="DEVICE_NAME" /> 'ਤੇ ਫ਼ਰਮਵੇਅਰ ਨੂੰ ਅੱਪਡੇਟ ਕਰੋ</translation>
 <translation id="6321407676395378991">ਸਕ੍ਰੀਨ ਸੇਵਰ ਚਾਲੂ ਕਰੋ</translation>
 <translation id="6324916366299863871">ਸ਼ਾਰਟਕੱਟ ਦਾ ਸੰਪਾਦਨ ਕਰੋ</translation>
@@ -752,6 +759,7 @@
 <translation id="6659594942844771486">ਟੈਬ</translation>
 <translation id="6673898378497337661">ਕੀ-ਬੋਰਡ ਦੀ ਚਮਕ ਵਧਾਓ</translation>
 <translation id="6692996468359469499">ਆਪਣੀ ਚੋਣ ਨਾਲ ਸੰਬੰਧਿਤ ਜਾਣਕਾਰੀ ਪ੍ਰਾਪਤ ਕਰੋ</translation>
+<translation id="6694534975463174713">ਲਾਕ</translation>
 <translation id="6704062477274546131">DNS ਰੈਜ਼ੋਲਿਊਸ਼ਨ</translation>
 <translation id="6723839937902243910">ਪਾਵਰ</translation>
 <translation id="6723847290197874913">ਕੀ-ਬੋਰਡ ਬੈਕਲਾਈਟ</translation>
@@ -942,6 +950,7 @@
 <translation id="8227119283605456246">ਫ਼ਾਈਲ ਨੱਥੀ ਕਰੋ</translation>
 <translation id="8230672074305416752">ਪੂਰਵ-ਨਿਰਧਾਰਤ ਨੈੱਟਵਰਕ ਗੇਟਵੇ ਨੂੰ ਪਿੰਗ ਕਰਨਾ ਅਸਫਲ ਰਿਹਾ</translation>
 <translation id="8246209727385807362">ਅਗਿਆਤ ਕੈਰੀਅਰ</translation>
+<translation id="8262870577632766028">1 ਘੰਟਾ</translation>
 <translation id="827422111966801947">ਜਾਮਨੀ ਨੀਲਾ</translation>
 <translation id="8286154143153872371">ਵਾਲਪੇਪਰ ਦੇਖਣ ਲਈ ਕਿਰਪਾ ਕਰਕੇ ਕਿਸੇ ਨੈੱਟਵਰਕ ਨਾਲ ਕਨੈਕਟ ਕਰੋ ਅਤੇ ਪੰਨੇ ਨੂੰ ਰੀਲੋਡ ਕਰੋ।</translation>
 <translation id="8291967909914612644">ਹੋਮ ਪ੍ਰਦਾਨਕ ਦੇਸ਼</translation>
@@ -1006,6 +1015,7 @@
 <translation id="8747900814994928677">ਤਬਦੀਲੀ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ</translation>
 <translation id="8764414543112028321">WireGuard</translation>
 <translation id="87646919272181953">Google Photos ਐਲਬਮ</translation>
+<translation id="8775713578693478175">ਮੋਡੈਮ APN</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8789196995628578448">"<ph name="CONFLICT_ACCEL_NAME" />" ਲਈ ਸ਼ਾਰਟਕੱਟ ਵਰਤਿਆ ਜਾ ਰਿਹਾ ਹੈ। ਨਵਾਂ ਸ਼ਾਰਟਕੱਟ ਦਬਾਓ। ਮੂਲ ਸ਼ਾਰਟਕੱਟ ਨੂੰ ਬਦਲਣ ਲਈ, ਇਸ ਸ਼ਾਰਟਕੱਟ ਨੂੰ ਦੁਬਾਰਾ ਦਬਾਓ।</translation>
 <translation id="879568662008399081">ਇਸ ਨੈੱਟਵਰਕ ਕੋਲ ਕੈਪਟਿਵ ਪੋਰਟਲ ਹੋ ਸਕਦਾ ਹੈ</translation>

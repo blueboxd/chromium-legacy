@@ -99,6 +99,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Download.Blocked.ContentType.Automotive"
+    enum="DownloadContentType" expires_after="2024-10-28">
+  <owner>twellington@chromium.org</owner>
+  <owner>clhager@google.com</owner>
+  <owner>geoffhuang@google.com</owner>
+  <summary>
+    Records the content type of downloads that have been blocked on automotive,
+    as Chrome on automotive blocks any downloads that cannot be viewed natively
+    in Chrome.
+  </summary>
+</histogram>
+
 <histogram name="Download.Bubble.DownloadCompletionToPartialViewShownLatency"
     units="ms" expires_after="2024-06-01">
   <owner>kerenzhu@chromium.org</owner>
@@ -446,7 +458,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Download.IOSDownloadCalendarFileUI"
-    enum="DownloadCalendarFileUI" expires_after="2023-10-25">
+    enum="DownloadCalendarFileUI" expires_after="2024-10-25">
   <owner>sdefresne@chromium.org</owner>
   <owner>ewannpv@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
@@ -535,7 +547,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Download.IOSDownloadMobileConfigFileUI"
-    enum="DownloadMobileConfigFileUI" expires_after="2023-10-25">
+    enum="DownloadMobileConfigFileUI" expires_after="2024-10-25">
   <owner>sdefresne@chromium.org</owner>
   <owner>ewannpv@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
@@ -635,15 +647,6 @@ chromium-metrics-reviews@google.com.
   <owner>qinmin@chromium.org</owner>
   <summary>
     Records events when using media parser to analyze local media files.
-  </summary>
-</histogram>
-
-<histogram name="Download.Mobile.DangerousDownloadInfobarEvent"
-    enum="DangerousDownloadInfobarEvent" expires_after="2022-06-05">
-  <owner>qinmin@chromium.org</owner>
-  <owner>dtrainor@chromium.org</owner>
-  <summary>
-    Records user interactions with the dangerous download infobar on Android.
   </summary>
 </histogram>
 

@@ -216,8 +216,6 @@ class ASH_EXPORT UnifiedSystemTray
   TrayBubbleView* GetBubbleView() override;
   const char* GetClassName() const override;
   absl::optional<AcceleratorAction> GetAcceleratorAction() const override;
-  void OnAnyBubbleVisibilityChanged(views::Widget* bubble_widget,
-                                    bool visible) override;
 
   // ShelfConfig::Observer:
   void OnShelfConfigUpdated() override;
@@ -266,8 +264,6 @@ class ASH_EXPORT UnifiedSystemTray
   UnifiedSliderBubbleController* slider_bubble_controller() {
     return slider_bubble_controller_.get();
   }
-
-  CameraMicTrayItemView* camera_view() { return camera_view_; }
 
   CameraMicTrayItemView* mic_view() { return mic_view_; }
 

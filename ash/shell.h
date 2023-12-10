@@ -19,6 +19,7 @@
 #include "ash/public/cpp/system_sounds_delegate.h"
 #include "ash/quick_pair/keyed_service/quick_pair_mediator.h"
 #include "ash/system/toast/system_nudge_pause_manager_impl.h"
+#include "ash/wm/coral/coral_controller.h"
 #include "ash/wm/system_modal_container_event_filter_delegate.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
@@ -126,6 +127,7 @@ class CameraEffectsController;
 class CaptureModeController;
 class ColorPaletteController;
 class ControlVHistogramRecorder;
+class CoralController;
 class CrosDisplayConfig;
 class DarkLightModeControllerImpl;
 class DesksController;
@@ -195,13 +197,16 @@ class NightLightControllerImpl;
 class OcclusionTrackerPauser;
 class OverviewController;
 class ParentAccessController;
+class LocalAuthenticationRequestControllerImpl;
 class PartialMagnifierController;
 class PciePeripheralNotificationController;
 class UsbPeripheralNotificationController;
 class PeripheralBatteryListener;
 class PeripheralBatteryNotifier;
 class PersistentWindowController;
+class PipController;
 class PolicyRecommendationRestorer;
+class PostLoginGlanceablesMetricsRecorder;
 class PowerButtonController;
 class PowerEventObserver;
 class PowerPrefs;
@@ -229,6 +234,7 @@ class ShelfWindowWatcher;
 class ShellDelegate;
 struct ShellInitParams;
 class ShellObserver;
+class ShortcutInputHandler;
 class ShutdownControllerImpl;
 class SmsObserver;
 class SnapGroupController;
@@ -553,6 +559,10 @@ class ASH_EXPORT Shell : public SessionObserver,
   GlanceablesController* glanceables_controller() {
     return glanceables_controller_.get();
   }
+  PostLoginGlanceablesMetricsRecorder*
+  post_login_glanceables_metrics_reporter() {
+    return post_login_glanceables_metrics_reporter_.get();
+  }
   ColorEnhancementController* color_enhancement_controller() {
     return color_enhancement_controller_.get();
   }
@@ -593,6 +603,10 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   LocaleUpdateControllerImpl* locale_update_controller() {
     return locale_update_controller_.get();
+  }
+  LocalAuthenticationRequestControllerImpl*
+  local_authentication_request_controller() {
+    return local_authentication_request_controller_.get();
   }
   LoginScreenController* login_screen_controller() {
     return login_screen_controller_.get();
@@ -641,6 +655,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   PeripheralBatteryListener* peripheral_battery_listener() {
     return peripheral_battery_listener_.get();
   }
+  PipController* pip_controller() { return pip_controller_.get(); }
   PolicyRecommendationRestorer* policy_recommendation_restorer() {
     return policy_recommendation_restorer_.get();
   }
@@ -701,6 +716,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   ShelfConfig* shelf_config() { return shelf_config_.get(); }
   ShelfController* shelf_controller() { return shelf_controller_.get(); }
   ShellDelegate* shell_delegate() { return shell_delegate_.get(); }
+  ShortcutInputHandler* shortcut_input_handler() {
+    return shortcut_input_handler_.get();
+  }
   ShutdownControllerImpl* shutdown_controller() {
     return shutdown_controller_.get();
   }
@@ -794,6 +812,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   OcclusionTrackerPauser* occlusion_tracker_pauser() {
     return occlusion_tracker_pauser_.get();
   }
+
+  CoralController* coral_controller() { return coral_controller_.get(); }
 
   // Does the primary display have status area?
   bool HasPrimaryStatusArea();
@@ -927,6 +947,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<KeyboardModifierMetricsRecorder>
       keyboard_modifier_metrics_recorder_;
   std::unique_ptr<InputDeviceKeyAliasManager> input_device_key_alias_manager_;
+  std::unique_ptr<ShortcutInputHandler> shortcut_input_handler_;
   std::unique_ptr<UserMetricsRecorder> user_metrics_recorder_;
 
   std::unique_ptr<AcceleratorPrefs> accelerator_prefs_;
@@ -978,6 +999,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<GeolocationController> geolocation_controller_;
   std::unique_ptr<BootingAnimationController> booting_animation_controller_;
   std::unique_ptr<GlanceablesController> glanceables_controller_;
+  std::unique_ptr<PostLoginGlanceablesMetricsRecorder>
+      post_login_glanceables_metrics_reporter_;
   std::unique_ptr<HoldingSpaceController> holding_space_controller_;
   std::unique_ptr<PowerPrefs> power_prefs_;
   std::unique_ptr<SnapGroupController> snap_group_controller_;
@@ -1011,6 +1034,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<NearbyShareControllerImpl> nearby_share_controller_;
   std::unique_ptr<NearbyShareDelegate> nearby_share_delegate_;
   std::unique_ptr<ParentAccessController> parent_access_controller_;
+  std::unique_ptr<LocalAuthenticationRequestControllerImpl>
+      local_authentication_request_controller_;
   std::unique_ptr<PciePeripheralNotificationController>
       pcie_peripheral_notification_controller_;
   std::unique_ptr<PrivacyHubController> privacy_hub_controller_;
@@ -1024,6 +1049,7 @@ class ASH_EXPORT Shell : public SessionObserver,
       feature_discover_reporter_;
   std::unique_ptr<AshColorProvider> ash_color_provider_;
   std::unique_ptr<NightLightControllerImpl> night_light_controller_;
+  std::unique_ptr<PipController> pip_controller_;
   std::unique_ptr<PrivacyScreenController> privacy_screen_controller_;
   std::unique_ptr<PolicyRecommendationRestorer> policy_recommendation_restorer_;
   std::unique_ptr<ScreenSwitchCheckController> screen_switch_check_controller_;
@@ -1186,6 +1212,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<quick_pair::Mediator> quick_pair_mediator_;
 
   std::unique_ptr<display::NativeDisplayDelegate> native_display_delegate_;
+
+  std::unique_ptr<CoralController> coral_controller_;
 
   base::ObserverList<ShellObserver>::Unchecked shell_observers_;
 

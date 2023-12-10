@@ -116,6 +116,7 @@ ContentSettingsType kPermissionType[] = {
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
     ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
 #endif
+    ContentSettingsType::MIDI,
     ContentSettingsType::MIDI_SYSEX,
     ContentSettingsType::CLIPBOARD_READ_WRITE,
 #if BUILDFLAG(IS_ANDROID)
@@ -1333,6 +1334,33 @@ bool PageInfo::ShouldShowPermission(
     return true;
   }
 
+  if (base::FeatureList::IsEnabled(
+          permissions::features::kBlockMidiByDefault)) {
+    ContentSetting midi_sysex_setting = GetContentSettings()->GetContentSetting(
+        site_url_, site_url_, ContentSettingsType::MIDI_SYSEX);
+    // At most one of MIDI and MIDI-SysEx should be displayed in the page info
+    // bubble. Show MIDI-SysEx if it's allowed since it has higher access to
+    // MIDI devices, show MIDI otherwise.
+    // Don't show MIDI if SysEx is allowed.
+    if (info.type == ContentSettingsType::MIDI &&
+        midi_sysex_setting == ContentSetting::CONTENT_SETTING_ALLOW) {
+      return false;
+    }
+    // Don't show MIDI-SysEx if it is not allowed. Technically having MIDI_SYSEX
+    // blocked and MIDI default is legal, but with the current implementation
+    // blocking either permission with block both permissions so we don't have
+    // to handle that case.
+    if (info.type == ContentSettingsType::MIDI_SYSEX &&
+        midi_sysex_setting != ContentSetting::CONTENT_SETTING_ALLOW) {
+      return false;
+    }
+  } else {
+    // Don't show MIDI.
+    if (info.type == ContentSettingsType::MIDI) {
+      return false;
+    }
+  }
+
   // Show the content setting when it has a non-default value.
   if (!PageInfo::IsPermissionFactoryDefault(info, is_incognito)) {
     return true;
@@ -1491,6 +1519,7 @@ void PageInfo::PresentSiteDataInternal(base::OnceClosure done) {
   cookies_info.blocking_status = blocking_status_;
   cookies_info.expiration = cookie_exception_expiration_;
   cookies_info.confidence = cookie_controls_confidence_;
+  cookies_info.is_otr = web_contents_->GetBrowserContext()->IsOffTheRecord();
   ui_->SetCookieInfo(cookies_info);
 
   std::move(done).Run();

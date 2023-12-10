@@ -1157,7 +1157,7 @@ AtomicString LocalFrameView::MediaType() const {
 void LocalFrameView::AdjustMediaTypeForPrinting(bool printing) {
   if (printing) {
     if (media_type_when_not_printing_.IsNull())
-      media_type_when_not_printing_ = MediaType();
+      media_type_when_not_printing_ = media_type_;
     SetMediaType(media_type_names::kPrint);
   } else {
     if (!media_type_when_not_printing_.IsNull())
@@ -2216,9 +2216,6 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
   // RunScrollSnapshotClientSteps must not run more than once.
   bool should_run_scroll_snapshot_client_steps = true;
 
-  // CSS Toggle steps must not run more than once.
-  bool should_run_css_toggle_steps = true;
-
   // Run style, layout, compositing and prepaint lifecycle phases and deliver
   // resize observations if required. Resize observer callbacks/delegates have
   // the potential to dirty layout (until loop limit is reached) and therefore
@@ -2250,15 +2247,6 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
     }
     bool run_more_lifecycle_phases =
         RunStyleAndLayoutLifecyclePhases(target_state);
-
-    if (RuntimeEnabledFeatures::CSSTogglesEnabled() &&
-        should_run_css_toggle_steps) {
-      should_run_css_toggle_steps = false;
-      bool needs_to_repeat_lifecycle = RunCSSToggleSteps();
-      if (needs_to_repeat_lifecycle)
-        continue;
-    }
-
     if (!run_more_lifecycle_phases)
       return;
     DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean);
@@ -2397,16 +2385,6 @@ bool LocalFrameView::RunScrollSnapshotClientSteps() {
         bool valid = frame_view.GetFrame().ValidateScrollSnapshotClients();
         re_run_lifecycles |= !valid;
       });
-  return re_run_lifecycles;
-}
-
-bool LocalFrameView::RunCSSToggleSteps() {
-  bool re_run_lifecycles = false;
-  ForAllNonThrottledLocalFrameViews([&re_run_lifecycles](
-                                        LocalFrameView& frame_view) {
-    re_run_lifecycles |=
-        frame_view.GetFrame().GetDocument()->SetNeedsStyleRecalcForToggles();
-  });
   return re_run_lifecycles;
 }
 
@@ -3232,6 +3210,7 @@ void LocalFrameView::ForceLayoutForPagination(float maximum_shrink_factor) {
 
   auto LayoutForPrinting = [&layout_view]() {
     Document& document = layout_view->GetDocument();
+    document.GetStyleEngine().UpdateViewportSize();
     document.MarkViewportUnitsDirty();
     layout_view->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
         layout_invalidation_reason::kPrintingChanged);
@@ -3975,6 +3954,8 @@ void LocalFrameView::PaintOutsideOfLifecycle(GraphicsContext& context,
                                              const CullRect& cull_rect) {
   DCHECK(PaintOutsideOfLifecycleIsAllowed(context, *this));
 
+  UpdateAllLifecyclePhasesExceptPaint(DocumentUpdateReason::kPrinting);
+
   SCOPED_UMA_AND_UKM_TIMER(GetUkmAggregator(), LocalFrameUkmAggregator::kPaint);
 
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
@@ -4282,10 +4263,10 @@ IntersectionUpdateResult LocalFrameView::UpdateViewportIntersectionsForSubtree(
 
   UMA_HISTOGRAM_COUNTS_1000(
       "Blink.IntersectionObservation.FrameMinScrollDeltaToUpdateX",
-      min_scroll_delta_to_update_intersection_.x());
+      base::saturated_cast<int>(min_scroll_delta_to_update_intersection_.x()));
   UMA_HISTOGRAM_COUNTS_1000(
       "Blink.IntersectionObservation.FrameMinScrollDeltaToUpdateY",
-      min_scroll_delta_to_update_intersection_.y());
+      base::saturated_cast<int>(min_scroll_delta_to_update_intersection_.y()));
 
   if (DocumentFencedFrames* fenced_frames =
           DocumentFencedFrames::Get(*frame_->GetDocument())) {

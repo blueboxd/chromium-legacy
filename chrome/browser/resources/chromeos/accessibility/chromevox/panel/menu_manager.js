@@ -106,12 +106,10 @@ export class MenuManager {
     let brailleText;
     let gestureText;
     if (isTouchScreen) {
-      for (let i = 0, gesture; gesture = gestures[i]; i++) {
-        const data = GestureCommandData.GESTURE_COMMAND_MAP[gesture];
-        if (data && data.command === binding.command) {
-          gestureText = Msgs.getMsg(data.msgId);
-          break;
-        }
+      const gestureData = Object.values(GestureCommandData.GESTURE_COMMAND_MAP);
+      const data = gestureData.find(data => data.command === binding.command);
+      if (data) {
+        gestureText = Msgs.getMsg(data.msgId);
       }
     } else {
       keyText = binding.keySeq;
@@ -191,6 +189,39 @@ export class MenuManager {
     $('menus_background').appendChild(this.searchMenu_.menuContainerElement);
     this.menus_.push(this.searchMenu_);
     return this.searchMenu_;
+  }
+
+  /** @param {!PanelMenu} touchMenu */
+  addTouchGestureMenuItems(touchMenu) {
+    const touchGestureItems = [];
+    for (const data of Object.values(GestureCommandData.GESTURE_COMMAND_MAP)) {
+      const command = data.command;
+      if (!command) {
+        continue;
+      }
+
+      const gestureText = Msgs.getMsg(data.msgId);
+      const msgForCmd = data.commandDescriptionMsgId ||
+          CommandStore.messageForCommand(command);
+      let titleText;
+      if (msgForCmd) {
+        titleText = Msgs.getMsg(msgForCmd);
+      } else {
+        console.error('No localization for: ' + command + ' (gesture)');
+        titleText = '';
+      }
+      touchGestureItems.push({titleText, gestureText, command});
+    }
+
+    touchGestureItems.sort(
+        (item1, item2) => item1.titleText.localeCompare(item2.titleText));
+
+    for (const item of touchGestureItems) {
+      touchMenu.addMenuItem(
+          item.titleText, '', '', item.gestureText,
+          () => BackgroundBridge.CommandHandler.onCommand(item.command),
+          item.command);
+    }
   }
 
   /**
@@ -275,7 +306,7 @@ export class MenuManager {
   }
 
   /**
-   * @return {!Promise<Array<!KeyBinding>>}
+   * @return {!Promise<!Array<!KeyBinding>>}
    */
   async getSortedKeyBindings() {
     // TODO(accessibility): Commands should be based off of CommandStore and
@@ -330,6 +361,17 @@ export class MenuManager {
       [CommandCategory.OVERVIEW]: jumpMenu,
       [CommandCategory.TABLES]: jumpMenu,
     };
+  }
+  /**
+   * @param {!Array<!KeyBinding>} sortedBindings
+   * @return {!Map<!Command, !KeyBinding>}
+   */
+  makeBindingMap(sortedBindings) {
+    const bindingMap = new Map();
+    for (const binding of sortedBindings) {
+      bindingMap.set(binding.command, binding);
+    }
+    return bindingMap;
   }
 
   /**

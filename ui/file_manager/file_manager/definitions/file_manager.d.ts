@@ -21,6 +21,11 @@ interface FileManager {
   directoryTreeNamingController: DirectoryTreeNamingController;
 }
 
+interface AppState {
+  currentDirectoryURL?: string;
+  selectionURL?: string;
+}
+
 /**
  * The singleton instance for FileManager is available in the Window object.
  */
@@ -36,9 +41,18 @@ declare global {
     /** Namespace used for test utils. */
     test: any;
 
+    appState?: AppState;
+
     webkitResolveLocalFileSystemURL(
         url: string, successCallback: FileSystemEntryCallback,
         errorCallback: ErrorCallback): void;
+
+    // Only used for grid.ts
+    cvox?: {
+      Api?: {
+        isChromeVoxActive: () => boolean,
+      },
+    };
   }
 }
 

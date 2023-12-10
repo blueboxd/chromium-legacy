@@ -501,7 +501,7 @@ class NetworkContextTest : public testing::Test {
         ->GetSession()
         ->GetSocketPool(
             net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL,
-            net::ProxyServer::Direct())
+            net::ProxyChain::Direct())
         ->GetInfoAsValue("", "")
         .GetDict()
         .FindInt(name)
@@ -516,7 +516,7 @@ class NetworkContextTest : public testing::Test {
             ->GetSession()
             ->GetSocketPool(
                 net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL,
-                net::ProxyServer::Direct())
+                net::ProxyChain::Direct())
             ->GetInfoAsValue("", "")
             .TakeDict();
 
@@ -5363,7 +5363,7 @@ TEST_F(NetworkContextTest, GetHSTSState) {
 
   absl::optional<double> dynamic_sts_expiry =
       state.FindDouble("dynamic_sts_expiry");
-  EXPECT_EQ(expiry.ToDoubleT(), dynamic_sts_expiry);
+  EXPECT_EQ(expiry.InSecondsFSinceUnixEpoch(), dynamic_sts_expiry);
 }
 
 TEST_F(NetworkContextTest, ForceReloadProxyConfig) {

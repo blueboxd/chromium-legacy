@@ -11,19 +11,32 @@
 #include "chrome/browser/ui/tabs/organization/tab_data.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_request.h"
+#include "chrome/browser/ui/tabs/organization/tab_organization_service.h"
+
+namespace {
+int kNextSessionID = 1;
+}  // anonymous namespace
 
 TabOrganizationSession::TabOrganizationSession()
-    : TabOrganizationSession(std::make_unique<TabOrganizationRequest>()) {}
+    : TabOrganizationSession(nullptr,
+                             std::make_unique<TabOrganizationRequest>()) {}
 
 TabOrganizationSession::TabOrganizationSession(
+    const TabOrganizationService* service,
     std::unique_ptr<TabOrganizationRequest> request)
-    : request_(std::move(request)) {}
+    : service_(service),
+      request_(std::move(request)),
+      session_id_(kNextSessionID) {
+  kNextSessionID++;
+}
 
 TabOrganizationSession::~TabOrganizationSession() = default;
 
 // static
 std::unique_ptr<TabOrganizationSession>
-TabOrganizationSession::CreateSessionForBrowser(const Browser* browser) {
+TabOrganizationSession::CreateSessionForBrowser(
+    const Browser* browser,
+    const TabOrganizationService* service) {
   std::unique_ptr<TabOrganizationRequest> request =
       TabOrganizationRequestFactory::Get()->CreateRequest(browser->profile());
 
@@ -35,7 +48,7 @@ TabOrganizationSession::CreateSessionForBrowser(const Browser* browser) {
         tab_strip_model, tab_strip_model->GetWebContentsAt(index)));
   }
 
-  return std::make_unique<TabOrganizationSession>(std::move(request));
+  return std::make_unique<TabOrganizationSession>(service, std::move(request));
 }
 
 const TabOrganization* TabOrganizationSession::GetNextTabOrganization() const {
@@ -73,6 +86,9 @@ void TabOrganizationSession::StartRequest() {
   request_->SetResponseCallback(base::BindOnce(
       &TabOrganizationSession::PopulateAndCreate, base::Unretained(this)));
   request_->StartRequest();
+  if (service_) {
+    service_->OnStartRequest(session_id_);
+  }
 }
 
 void TabOrganizationSession::PopulateAndCreate(

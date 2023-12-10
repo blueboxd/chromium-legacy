@@ -50,9 +50,8 @@ class PageInfoCookiesContentView : public views::View, public PageInfoUI {
   friend class PageInfoBubbleViewCookiesSubpageBrowserTest;
 
   // Ensures the allowed sites information UI is present, with placeholder
-  // information if necessary. Uses `tracking_protection_3pcd_enabled` to
-  // set the title of the button.
-  void InitCookiesDialogButton(bool tracking_protection_3pcd_enabled);
+  // information if necessary.
+  void InitCookiesDialogButton();
 
   //  Checks if |blocking_third_party_cookies_row_| should be initiated and if
   //  so does it  and sets its info.
@@ -66,10 +65,11 @@ class PageInfoCookiesContentView : public views::View, public PageInfoUI {
   // Sets properties for `third_party_cookies_toggle_` using `cookie_info`.
   void SetThirdPartyCookiesToggle(const CookiesNewInfo& cookie_info);
 
-  // Sets `cookie_description_label_` text and style using `blocking_status` or
-  // `enforcement`.
+  // Sets `cookie_description_label_` text and style using `blocking_status`,
+  // `enforcement`, and `is_otr`.
   void SetDescriptionLabel(CookieBlocking3pcdStatus blocking_status,
-                           CookieControlsEnforcement enforcement);
+                           CookieControlsEnforcement enforcement,
+                           bool is_otr);
 
   // Updates the new third-party cookies section using |cookie_info|.
   void SetThirdPartyCookiesInfo(const CookiesNewInfo& cookie_info);

@@ -66,10 +66,6 @@ struct CONTENT_EXPORT AttributionConfig {
     // Returns true if this config is valid.
     [[nodiscard]] bool Validate() const;
 
-    // Controls the valid range of trigger data.
-    uint64_t navigation_source_trigger_data_cardinality = 8;
-    uint64_t event_source_trigger_data_cardinality = 2;
-
     // Controls randomized response rates for the API: when a source is
     // registered, this parameter is used to determine the probability that any
     // subsequent attributions for the source are handled truthfully, or whether
@@ -152,7 +148,7 @@ struct CONTENT_EXPORT AttributionConfig {
   [[nodiscard]] bool Validate() const;
 
   // Controls how many sources can be in the storage per source origin.
-  int max_sources_per_origin = 1024;
+  int max_sources_per_origin = 4096;
 
   // Controls the maximum number of distinct attribution destinations that can
   // be in storage at any time for sources with the same <source site, reporting

@@ -17,7 +17,7 @@ namespace chromeos::features {
 // Enables triggering app installs from a specific URI.
 BASE_FEATURE(kAppInstallServiceUri,
              "AppInstallServiceUri",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Enables or disables more filtering out of phones from the Bluetooth UI.
@@ -48,6 +48,11 @@ BASE_FEATURE(kBlinkExtensionDiagnostics,
              "BlinkExtensionDiagnostics",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables handling of key press event in background.
+BASE_FEATURE(kCrosAppsBackgroundEventHandling,
+             "CrosAppsBackgroundEventHandling",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables the use of cros-component UI elements. Contact:
 // cros-jellybean-team@google.com.
 BASE_FEATURE(kCrosComponents,
@@ -58,6 +63,20 @@ BASE_FEATURE(kCrosComponents,
 BASE_FEATURE(kCrosWebAppInstallDialog,
              "CrosWebAppInstallDialog",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// With this feature enabled, the shortcut app badge is painted in the UI
+// instead of being part of the shortcut app icon.
+BASE_FEATURE(kSeparateWebAppShortcutBadgeIcon,
+             "SeparateWebAppShortcutBadgeIcon",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the new UI for browser created shortcut backed by web app system
+// on Chrome OS.
+BASE_FEATURE(kCrosWebAppShortcutUiUpdate,
+             "CrosWebAppShortcutUiUpdate",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Enables the desk profiles feature.
 BASE_FEATURE(kDeskProfiles, "DeskProfiles", base::FEATURE_DISABLED_BY_DEFAULT);
@@ -81,11 +100,6 @@ BASE_FEATURE(kDisableOfficeEditingComponentApp,
 // Disables translation services of the Quick Answers V2.
 BASE_FEATURE(kDisableQuickAnswersV2Translation,
              "DisableQuickAnswersV2Translation",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enable experimental goldfish web app profile isolation.
-BASE_FEATURE(kExperimentalWebAppProfileIsolation,
-             "ExperimentalWebAppProfileIsolation",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable experimental goldfish web app isolation.
@@ -174,6 +188,24 @@ bool IsBlinkExtensionDiagnosticsEnabled() {
 
 bool IsCrosComponentsEnabled() {
   return base::FeatureList::IsEnabled(kCrosComponents) && IsJellyEnabled();
+}
+
+bool IsSeparateWebAppShortcutBadgeIconEnabled() {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // TODO(b/304661502): Pass the value to lacros.
+  return false;
+#else
+  return base::FeatureList::IsEnabled(kSeparateWebAppShortcutBadgeIcon);
+#endif
+}
+
+bool IsCrosWebAppShortcutUiUpdateEnabled() {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  return chromeos::BrowserParamsProxy::Get()
+      ->IsCrosWebAppShortcutUiUpdateEnabled();
+#else
+  return base::FeatureList::IsEnabled(kCrosWebAppShortcutUiUpdate);
+#endif
 }
 
 bool IsDeskProfilesEnabled() {

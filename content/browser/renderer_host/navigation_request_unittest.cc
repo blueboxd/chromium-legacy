@@ -497,8 +497,8 @@ TEST_F(NavigationRequestTest, SharedStorageWritable) {
   // Verify that the main frame's `NavigationRequest` will not be
   // SharedStorageWritable.
   ASSERT_TRUE(main_navigation->GetNavigationHandle());
-  EXPECT_FALSE(
-      main_navigation->GetNavigationHandle()->shared_storage_writable());
+  EXPECT_FALSE(main_navigation->GetNavigationHandle()
+                   ->shared_storage_writable_eligible());
 
   // Commit the navigation.
   main_navigation->Commit();
@@ -520,8 +520,8 @@ TEST_F(NavigationRequestTest, SharedStorageWritable) {
 
   // Verify that the `NavigationRequest` will be SharedStorageWritable.
   ASSERT_TRUE(child_navigation->GetNavigationHandle());
-  EXPECT_TRUE(
-      child_navigation->GetNavigationHandle()->shared_storage_writable());
+  EXPECT_TRUE(child_navigation->GetNavigationHandle()
+                  ->shared_storage_writable_eligible());
 
   // Commit the navigation.
   child_navigation->Commit();
@@ -559,7 +559,7 @@ TEST_F(NavigationRequestTest, SharedStorageWritable) {
   // Verify that the `NavigationRequest` will be SharedStorageWritable.
   ASSERT_TRUE(child_of_fenced_frame_navigation->GetNavigationHandle());
   EXPECT_TRUE(child_of_fenced_frame_navigation->GetNavigationHandle()
-                  ->shared_storage_writable());
+                  ->shared_storage_writable_eligible());
 
   // Commit the navigation.
   child_of_fenced_frame_navigation->Commit();
@@ -975,6 +975,19 @@ TEST_F(NavigationRequestTest, IsolatedAppPolicyInjection) {
   EXPECT_EQ("'self' blob: data:", csp->raw_directives[Directive::FontSrc]);
   EXPECT_EQ("'self' 'unsafe-inline'", csp->raw_directives[Directive::StyleSrc]);
   EXPECT_EQ("'script'", csp->raw_directives[Directive::RequireTrustedTypesFor]);
+}
+
+TEST_F(NavigationRequestTest, UpdatePrivateNetworkRequestPolicy) {
+  std::unique_ptr<NavigationSimulator> navigation =
+      NavigationSimulator::CreateRendererInitiated(GURL("https://example.com/"),
+                                                   main_test_rfh());
+  navigation->SetSocketAddress(net::IPEndPoint());
+
+  navigation->ReadyToCommit();
+  NavigationRequest* request =
+      NavigationRequest::From(navigation->GetNavigationHandle());
+  EXPECT_FALSE(request->GetSocketAddress().address().IsValid());
+  navigation->Commit();
 }
 
 // Test that the required CSP of every frame is computed/inherited correctly and

@@ -15,7 +15,6 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
-#include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/common/omnibox_features.h"
@@ -299,6 +298,9 @@ extern const base::FeatureParam<bool> kActionsUISimplificationIncludeRealbox;
 // total number of matches exceeds the limit (i.e. there are extra matches).
 extern const base::FeatureParam<bool> kActionsUISimplificationTrimExtra;
 
+// Returns true if the OmniboxKeywordModeRefresh feature is enabled.
+bool IsKeywordModeRefreshEnabled();
+
 // Returns true if the fuzzy URL suggestions feature is enabled.
 bool IsFuzzyUrlSuggestionsEnabled();
 // Indicates whether fuzzy match behavior is counterfactual.
@@ -564,6 +566,12 @@ extern const base::FeatureParam<double> kDomainSuggestionsScoreFactor;
 // traditional and the alternate scoring algorithms.
 extern const base::FeatureParam<bool> kDomainSuggestionsAlternativeScoring;
 
+extern const base::FeatureParam<omnibox::CompanyEntityIconAdjustmentGroup>
+    kCompanyEntityIconAdjustmentGroup;
+
+extern const base::FeatureParam<bool>
+    kCompanyEntityIconAdjustmentCounterfactual;
+
 // ---------------------------------------------------------
 // ML Relevance Scoring ->
 
@@ -585,6 +593,10 @@ struct MLConfig {
   // If true, enables scoring signal annotators for populating additional
   // Omnibox URL scoring signals for logging or ML scoring.
   bool enable_scoring_signals_annotators{false};
+
+  // If true, document suggestions from the shortcut provider will include
+  // shortcut signals.
+  bool shortcut_document_signals{false};
 
   // If true, runs the ML scoring model to assign new relevance scores to the
   // URL suggestions and reranks them.
@@ -710,16 +722,22 @@ constexpr base::FeatureParam<int> kInspireMeAdditionalRelatedQueries(
 constexpr base::FeatureParam<int> kInspireMeAdditionalTrendingQueries(
     &omnibox::kInspireMe,
     "AdditionalTrendingQueries",
-    10);
+    0);
 
 constexpr base::FeatureParam<int> kInspireMePsuggestQueries(
     &omnibox::kInspireMe,
     "PersonalizedSuggestQueries",
     20);
 
-constexpr base::FeatureParam<int>
-    kInspireMeNTPZPSLimit(&omnibox::kInspireMe, "NTPZPSSuggestionsLimit", 20);
+constexpr base::FeatureParam<int> kQueryTilesCacheMaxAge(
+    &omnibox::kQueryTilesInZPSOnNTP,
+    "QueryTilesMaxCacheAgeHours",
+    8);
 
+constexpr base::FeatureParam<bool> kQueryTilesShowAboveTrends(
+    &omnibox::kQueryTilesInZPSOnNTP,
+    "QueryTilesShowAboveTrends",
+    true);
 // <- Inspire Me
 // ---------------------------------------------------------
 // Actions In Suggest ->

@@ -221,6 +221,7 @@
   E_CPONLY(kColorNewTabPageModuleControlBorder) \
   E_CPONLY(kColorNewTabPageModuleContextMenuDivider) \
   E_CPONLY(kColorNewTabPageModuleBackground) \
+  E_CPONLY(kColorNewTabPageModuleElementDivider) \
   E_CPONLY(kColorNewTabPageModuleIconContainerBackground) \
   E_CPONLY(kColorNewTabPageModuleItemBackground) \
   E_CPONLY(kColorNewTabPageModuleItemBackgroundHovered) \
@@ -270,7 +271,11 @@
   E_CPONLY(kColorOmniboxResultsButtonIcon) \
   E_CPONLY(kColorOmniboxResultsButtonIconSelected) \
   E_CPONLY(kColorOmniboxResultsButtonInkDrop) \
+  E_CPONLY(kColorOmniboxResultsButtonInkDropRowHovered) \
+  E_CPONLY(kColorOmniboxResultsButtonInkDropRowSelected) \
   E_CPONLY(kColorOmniboxResultsButtonInkDropSelected) \
+  E_CPONLY(kColorOmniboxResultsButtonInkDropSelectedRowHovered) \
+  E_CPONLY(kColorOmniboxResultsButtonInkDropSelectedRowSelected) \
   E_CPONLY(kColorOmniboxResultsFocusIndicator) \
   E_CPONLY(kColorOmniboxResultsIcon) \
   E_CPONLY(kColorOmniboxResultsIconGM3Background) \

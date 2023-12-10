@@ -353,22 +353,23 @@ BASE_FEATURE(kEnableServiceWorkersForChromeScheme,
 // We enable it here by default to support use in origin trials.
 BASE_FEATURE(kFedCm, "FedCm", base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables usage of the FedCM IdentityCredentialAutoSelectedFlag feature.
+// Enables usage of the FedCM AutoSelectedFlag feature.
 // ChromeStatus entry: https://chromestatus.com/feature/5384360374566912
-BASE_FEATURE(kFedCmIdentityCredentialAutoSelectedFlag,
-             "FedCmIdentityCredentialAutoSelectedFlag",
+BASE_FEATURE(kFedCmAutoSelectedFlag,
+             "FedCmAutoSelectedFlag",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables usage of the FedCM Authz API.
 BASE_FEATURE(kFedCmAuthz, "FedCmAuthz", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables usage of the FedCM Error API.
-BASE_FEATURE(kFedCmError, "FedCmError", base::FEATURE_DISABLED_BY_DEFAULT);
+// ChromeStatus entry: https://chromestatus.com/feature/5384360374566912
+BASE_FEATURE(kFedCmError, "FedCmError", base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables usage of the FedCM HostedDomain feature. ChromeStatus entry:
+// Enables usage of the FedCM DomainHint feature. ChromeStatus entry:
 // https://chromestatus.com/feature/5202286040580096
-BASE_FEATURE(kFedCmHostedDomain,
-             "FedCmHostedDomain",
+BASE_FEATURE(kFedCmDomainHint,
+             "FedCmDomainHint",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables usage of the FedCM IdP Registration API.
@@ -392,6 +393,9 @@ BASE_FEATURE(kFedCmMultipleIdentityProviders,
              "FedCmMultipleIdentityProviders",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables the revoke method within the FedCM API.
+BASE_FEATURE(kFedCmRevoke, "FedCmRevoke", base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables usage of the FedCM API with the Selective Disclosure API at the same
 // time.
 BASE_FEATURE(kFedCmSelectiveDisclosure,
@@ -402,7 +406,7 @@ BASE_FEATURE(kFedCmSelectiveDisclosure,
 // network requests when not signed in and mismatch handling.
 BASE_FEATURE(kFedCmIdpSigninStatusEnabled,
              "FedCmIdpSigninStatusEnabled",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables bypassing the well-known file enforcement.
 BASE_FEATURE(kFedCmWithoutWellKnownEnforcement,
@@ -514,11 +518,16 @@ BASE_FEATURE(kLazyInitializeMediaControls,
              "LazyInitializeMediaControls",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables reporting of Cookie Issues for Legacy Technology Report.
+BASE_FEATURE(kLegacyTechReportEnableCookieIssueReports,
+             "LegacyTechReportEnableCookieIssueReports",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Using top-level document URL when create an enterprise report for legacy
 // technologies usage
 BASE_FEATURE(kLegacyTechReportTopLevelUrl,
              "LegacyTechReportTopLevelUrl",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Configures whether Blink on Windows 8.0 and below should use out of process
 // API font fallback calls to retrieve a fallback font family name as opposed to
@@ -771,6 +780,11 @@ BASE_FEATURE(kReduceSubresourceResponseStartedIPC,
 BASE_FEATURE(kRenderDocument,
              "RenderDocument",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Reuse compositor instances with RenderDocument
+BASE_FEATURE(kRenderDocumentCompositorReuse,
+             "RenderDocumentCompositorReuse",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables retrying to obtain list of available cameras after restarting the
 // video capture service if a previous attempt failed, which could be caused

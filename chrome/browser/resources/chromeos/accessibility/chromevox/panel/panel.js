@@ -339,49 +339,16 @@ export class Panel extends PanelInterface {
       const sortedBindings = await this.menuManager_.getSortedKeyBindings();
 
       // Insert items from the bindings into the menus.
-      const sawBindingSet = {};
-      const bindingMap = new Map();
-      sortedBindings.forEach(binding => {
-        const command = binding.command;
-        bindingMap.set(binding.command, binding);
-        if (sawBindingSet[command]) {
-          return;
-        }
-        sawBindingSet[command] = true;
+      const bindingMap = this.menuManager_.makeBindingMap(sortedBindings);
+      for (const binding of bindingMap.values()) {
         const category = CommandStore.categoryForCommand(binding.command);
         const menu = category ? categoryToMenu[category] : null;
         this.menuManager_.addMenuItemFromKeyBinding(binding, menu, touchScreen);
-      });
+      }
 
       // Add Touch Gestures menu items.
-      if (touchScreen) {
-        const touchGestureItems = [];
-        for (const key in GestureCommandData.GESTURE_COMMAND_MAP) {
-          const command =
-              GestureCommandData.GESTURE_COMMAND_MAP[key]['command'];
-          if (!command) {
-            continue;
-          }
-
-          const gestureText =
-              Msgs.getMsg(GestureCommandData.GESTURE_COMMAND_MAP[key]['msgId']);
-          const msgForCmd =
-              GestureCommandData
-                  .GESTURE_COMMAND_MAP[key]['commandDescriptionMsgId'] ||
-              CommandStore.messageForCommand(command);
-          const titleText = Msgs.getMsg(msgForCmd);
-          touchGestureItems.push({titleText, gestureText, command});
-        }
-
-        touchGestureItems.sort(
-            (item1, item2) => item1.titleText.localeCompare(item2.titleText));
-
-        for (const item of touchGestureItems) {
-          touchMenu.addMenuItem(
-              item.titleText, '', '', item.gestureText,
-              () => BackgroundBridge.CommandHandler.onCommand(item.command),
-              item.command);
-        }
+      if (touchMenu) {
+        this.menuManager_.addTouchGestureMenuItems(touchMenu);
       }
 
       if (this.sessionState_ !== 'IN_SESSION') {
@@ -407,8 +374,11 @@ export class Panel extends PanelInterface {
           continue;
         }
         const commandName = CommandStore.commandForMessage(actionMsg);
-        const command = bindingMap.get(commandName);
-        const shortcutName = command ? command.keySeq : '';
+        let shortcutName = '';
+        if (commandName) {
+          const commandBinding = bindingMap.get(commandName);
+          shortcutName = commandBinding ? commandBinding.keySeq : '';
+        }
         const actionDesc = Msgs.getMsg(actionMsg);
         actionsMenu.addMenuItem(
             actionDesc, shortcutName, '' /* menuItemBraille */,

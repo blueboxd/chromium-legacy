@@ -700,6 +700,17 @@ class CONTENT_EXPORT NavigationHandle : public base::SupportsUserData {
   // running javascript is allowed). See ContentSettingsType for more details.
   virtual void SetContentSettings(
       blink::mojom::RendererContentSettingsPtr content_settings) = 0;
+
+  // Makes a copy of the content settings.
+  virtual blink::mojom::RendererContentSettingsPtr
+  GetContentSettingsForTesting() = 0;
+
+  // Allows the embedder to mark whether this navigation handle is being used
+  // for advertising purposes. This is expected to be best-effort, and may be
+  // inaccurate. Notably, this defers from the status from
+  // `GetNavigationInitiatorActivationAndAdStatus()` as it can include other
+  // signals outside of the initiator.
+  virtual void SetIsAdTagged() = 0;
 };
 
 }  // namespace content

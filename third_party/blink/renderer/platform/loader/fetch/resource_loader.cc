@@ -526,6 +526,7 @@ bool ResourceLoader::WillFollowRedirect(
     const WebURLResponse& passed_redirect_response,
     bool& has_devtools_request_id,
     std::vector<std::string>* removed_headers,
+    net::HttpRequestHeaders& modified_headers,
     bool insecure_scheme_was_upgraded) {
   DCHECK(!passed_redirect_response.IsNull());
 
@@ -650,12 +651,6 @@ bool ResourceLoader::WillFollowRedirect(
   fetcher_->RecordResourceTimingOnRedirect(resource_.Get(), redirect_response,
                                            new_url);
 
-  // `Context().PrepareRequest()` below may update the value of
-  // `new_request->GetSharedStorageWritable()`. If it does, we will need to
-  // remove the corresponding header.
-  bool need_to_check_for_shared_storage_writable_change =
-      new_request->GetSharedStorageWritable() && removed_headers;
-
   // The following two calls may rewrite the new_request->Url() to
   // something else not for rejecting redirect but for other reasons.
   // E.g. WebFrameTestClient::WillSendRequest() and
@@ -685,9 +680,20 @@ bool ResourceLoader::WillFollowRedirect(
   DCHECK_EQ(new_request->GetMode(), request_mode);
   DCHECK_EQ(new_request->GetCredentialsMode(), credentials_mode);
 
-  if (need_to_check_for_shared_storage_writable_change &&
-      !new_request->GetSharedStorageWritable()) {
-    removed_headers->push_back(http_names::kSharedStorageWritable.Ascii());
+  // If `Shared-Storage-Writable` eligibity has changed, update the headers.
+  bool previous_shared_storage_writable_eligible =
+      resource_->LastResourceRequest().GetSharedStorageWritableEligible();
+  bool new_shared_storage_writable_eligible =
+      new_request->GetSharedStorageWritableEligible();
+  if (new_shared_storage_writable_eligible !=
+      previous_shared_storage_writable_eligible) {
+    if (new_shared_storage_writable_eligible) {
+      CHECK(new_request->GetSharedStorageWritableOptedIn());
+      modified_headers.SetHeader(http_names::kSecSharedStorageWritable.Ascii(),
+                                 "?1");
+    } else if (removed_headers) {
+      removed_headers->push_back(http_names::kSecSharedStorageWritable.Ascii());
+    }
   }
 
   if (new_request->Url() != KURL(new_url)) {
@@ -717,10 +723,38 @@ FetchContext& ResourceLoader::Context() const {
 
 void ResourceLoader::DidReceiveResponse(
     const WebURLResponse& response,
+    mojo::ScopedDataPipeConsumerHandle body,
     absl::optional<mojo_base::BigBuffer> cached_metadata) {
   DCHECK(!response.IsNull());
   DidReceiveResponseInternal(response.ToResourceResponse(),
                              std::move(cached_metadata));
+  if (!IsLoading() || !body) {
+    return;
+  }
+
+  if (is_downloading_to_blob_) {
+    DCHECK(!blob_response_started_);
+    blob_response_started_ = true;
+
+    AtomicString mime_type = response.MimeType();
+
+    // Callback is bound to a WeakPersistent, as ResourceLoader is kept alive by
+    // ResourceFetcher as long as we still care about the result of the load.
+    fetcher_->GetBlobRegistry()->RegisterFromStream(
+        mime_type.IsNull() ? g_empty_string : mime_type.LowerASCII(), "",
+        std::max(static_cast<int64_t>(0), response.ExpectedContentLength()),
+        std::move(body),
+        progress_receiver_.BindNewEndpointAndPassRemote(GetLoadingTaskRunner()),
+        WTF::BindOnce(&ResourceLoader::FinishedCreatingBlob,
+                      WrapWeakPersistent(this)));
+    return;
+  }
+
+  DataPipeBytesConsumer::CompletionNotifier* completion_notifier = nullptr;
+  DidStartLoadingResponseBodyInternal(
+      *MakeGarbageCollected<DataPipeBytesConsumer>(
+          task_runner_for_body_loader_, std::move(body), &completion_notifier));
+  data_pipe_completion_notifier_ = completion_notifier;
 }
 
 void ResourceLoader::DidReceiveResponseInternal(
@@ -933,34 +967,6 @@ void ResourceLoader::DidReceiveResponseInternal(
     HandleError(ResourceError::HttpError(response.CurrentRequestUrl()));
     return;
   }
-}
-
-void ResourceLoader::DidStartLoadingResponseBody(
-    mojo::ScopedDataPipeConsumerHandle body) {
-  if (is_downloading_to_blob_) {
-    DCHECK(!blob_response_started_);
-    blob_response_started_ = true;
-
-    const ResourceResponse& response = resource_->GetResponse();
-    AtomicString mime_type = response.MimeType();
-
-    // Callback is bound to a WeakPersistent, as ResourceLoader is kept alive by
-    // ResourceFetcher as long as we still care about the result of the load.
-    fetcher_->GetBlobRegistry()->RegisterFromStream(
-        mime_type.IsNull() ? g_empty_string : mime_type.LowerASCII(), "",
-        std::max(static_cast<int64_t>(0), response.ExpectedContentLength()),
-        std::move(body),
-        progress_receiver_.BindNewEndpointAndPassRemote(GetLoadingTaskRunner()),
-        WTF::BindOnce(&ResourceLoader::FinishedCreatingBlob,
-                      WrapWeakPersistent(this)));
-    return;
-  }
-
-  DataPipeBytesConsumer::CompletionNotifier* completion_notifier = nullptr;
-  DidStartLoadingResponseBodyInternal(
-      *MakeGarbageCollected<DataPipeBytesConsumer>(
-          task_runner_for_body_loader_, std::move(body), &completion_notifier));
-  data_pipe_completion_notifier_ = completion_notifier;
 }
 
 void ResourceLoader::DidReceiveData(const char* data, size_t length) {
@@ -1199,7 +1205,8 @@ void ResourceLoader::RequestSynchronously(const ResourceRequestHead& request) {
     return;
   }
 
-  DidReceiveResponse(response_out, /*cached_metadata=*/absl::nullopt);
+  DidReceiveResponseInternal(response_out.ToResourceResponse(),
+                             /*cached_metadata=*/absl::nullopt);
   if (!IsLoading()) {
     return;
   }
@@ -1309,14 +1316,25 @@ void ResourceLoader::ActivateCacheAwareLoadingIfNeeded(
 }
 
 bool ResourceLoader::ShouldBeKeptAliveWhenDetached() const {
-  bool extra_check = true;
-  if (base::FeatureList::IsEnabled(blink::features::kFetchLaterAPI)) {
-    // FetchLater requests should not be kept alive by renderer.
-    extra_check = !resource_->GetResourceRequest().IsFetchLaterAPI();
+  if (base::FeatureList::IsEnabled(
+          blink::features::kKeepAliveInBrowserMigration) &&
+      resource_->GetResourceRequest().GetKeepalive()) {
+    if (resource_->GetResourceRequest().GetAttributionReportingEligibility() ==
+        network::mojom::AttributionReportingEligibility::kUnset) {
+      // When enabled, non-attribution reporting Fetch keepalive requests should
+      // not be kept alive by renderer.
+      return false;
+    }
+    if (base::FeatureList::IsEnabled(
+            blink::features::kAttributionReportingInBrowserMigration)) {
+      // Attribution reporting keepalive requests with its owned migration
+      // enabled should not be kept alive by renderer.
+      return false;
+    }
   }
 
   return resource_->GetResourceRequest().GetKeepalive() &&
-         resource_->GetResponse().IsNull() && extra_check;
+         resource_->GetResponse().IsNull();
 }
 
 void ResourceLoader::AbortResponseBodyLoading() {

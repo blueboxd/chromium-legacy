@@ -29,6 +29,7 @@ import org.chromium.base.task.TaskTraits;
 import org.chromium.base.task.test.ShadowPostTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Features;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -46,6 +47,7 @@ import java.util.concurrent.TimeUnit;
 public class TabStateAttributesTest {
     @Rule public TestRule mProcessor = new Features.JUnitProcessor();
 
+    @Mock private Profile mProfile;
     @Mock private WebContents mWebContents;
     @Mock private TabStateAttributes.Observer mAttributesObserver;
 
@@ -62,7 +64,7 @@ public class TabStateAttributesTest {
                 });
 
         mTab =
-                new MockTab(0, false) {
+                new MockTab(0, mProfile) {
                     @Override
                     public WebContents getWebContents() {
                         return mWebContents;
@@ -179,7 +181,7 @@ public class TabStateAttributesTest {
                 TabStateAttributes.from(mTab).getDirtinessState());
 
         while (observers.hasNext()) {
-            observers.next().onLoadStopped(mTab, /* toDifferentDocument */ true);
+            observers.next().onLoadStopped(mTab, /* toDifferentDocument= */ true);
         }
         Assert.assertEquals(
                 TabStateAttributes.DirtinessState.CLEAN,
@@ -190,7 +192,7 @@ public class TabStateAttributesTest {
         TabStateAttributes.from(mTab).setStateForTesting(TabStateAttributes.DirtinessState.UNTIDY);
         observers = TabTestUtils.getTabObservers(mTab);
         while (observers.hasNext()) {
-            observers.next().onLoadStopped(mTab, /* toDifferentDocument */ true);
+            observers.next().onLoadStopped(mTab, /* toDifferentDocument= */ true);
         }
         Assert.assertEquals(
                 TabStateAttributes.DirtinessState.DIRTY,
@@ -210,7 +212,7 @@ public class TabStateAttributesTest {
                 TabStateAttributes.from(mTab).getDirtinessState());
 
         while (observers.hasNext()) {
-            observers.next().onLoadStopped(mTab, /* toDifferentDocument */ false);
+            observers.next().onLoadStopped(mTab, /* toDifferentDocument= */ false);
         }
         Assert.assertEquals(
                 TabStateAttributes.DirtinessState.CLEAN,
@@ -222,7 +224,7 @@ public class TabStateAttributesTest {
         TabStateAttributes.from(mTab).setStateForTesting(TabStateAttributes.DirtinessState.UNTIDY);
         observers = TabTestUtils.getTabObservers(mTab);
         while (observers.hasNext()) {
-            observers.next().onLoadStopped(mTab, /* toDifferentDocument */ false);
+            observers.next().onLoadStopped(mTab, /* toDifferentDocument= */ false);
         }
         Assert.assertEquals(
                 TabStateAttributes.DirtinessState.UNTIDY,
@@ -233,7 +235,7 @@ public class TabStateAttributesTest {
         // task be queued.
         observers = TabTestUtils.getTabObservers(mTab);
         while (observers.hasNext()) {
-            observers.next().onLoadStopped(mTab, /* toDifferentDocument */ false);
+            observers.next().onLoadStopped(mTab, /* toDifferentDocument= */ false);
         }
         Assert.assertEquals(
                 TabStateAttributes.DirtinessState.UNTIDY,

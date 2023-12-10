@@ -70,6 +70,14 @@ bool IsDeprecateAltClickEnabled() {
   return base::FeatureList::IsEnabled(kDeprecateAltClick);
 }
 
+BASE_FEATURE(kNotificationsIgnoreRequireInteraction,
+             "NotificationsIgnoreRequireInteraction",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsNotificationsIgnoreRequireInteractionEnabled() {
+  return base::FeatureList::IsEnabled(kNotificationsIgnoreRequireInteraction);
+}
+
 BASE_FEATURE(kShortcutCustomizationApp,
              "ShortcutCustomizationApp",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -262,7 +270,7 @@ bool IsUsingWMPointerForTouch() {
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS)
-// This feature supercedes kNewShortcutMapping.
+// This feature supersedes kNewShortcutMapping.
 BASE_FEATURE(kImprovedKeyboardShortcuts,
              "ImprovedKeyboardShortcuts",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -349,7 +357,10 @@ bool IsUseCommonSelectPopupEnabled() {
   return base::FeatureList::IsEnabled(features::kUseCommonSelectPopup);
 }
 
-// Enables keyboard accessible tooltip.
+// Used to enable keyboard accessible tooltips in in-page content
+// (i.e., inside Blink). See
+// ::views::features::kKeyboardAccessibleTooltipInViews for
+// keyboard-accessible tooltips in Views UI.
 BASE_FEATURE(kKeyboardAccessibleTooltip,
              "KeyboardAccessibleTooltip",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -445,12 +456,28 @@ bool IsRawDrawUsingMSAA() {
   return kIsRawDrawUsingMSAA.Get();
 }
 
+BASE_FEATURE(kVariableRefreshRateAvailable,
+             "VariableRefreshRateAvailable",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kEnableVariableRefreshRate,
              "EnableVariableRefreshRate",
              base::FEATURE_DISABLED_BY_DEFAULT);
+// This param indicates whether to ignore the VRR availability flag. It is set
+// to false by Finch for non-forced groups.
+const base::FeatureParam<bool> kVrrIgnoreAvailability{
+    &kEnableVariableRefreshRate, /*name=*/"ignore-availability",
+    /*default_value=*/true};
 bool IsVariableRefreshRateEnabled() {
-  return base::FeatureList::IsEnabled(kEnableVariableRefreshRate) ||
-         base::FeatureList::IsEnabled(kEnableVariableRefreshRateAlwaysOn);
+  if (base::FeatureList::IsEnabled(kEnableVariableRefreshRateAlwaysOn)) {
+    return true;
+  }
+
+  if (base::FeatureList::IsEnabled(kEnableVariableRefreshRate)) {
+    return kVrrIgnoreAvailability.Get() ||
+           base::FeatureList::IsEnabled(kVariableRefreshRateAvailable);
+  }
+
+  return false;
 }
 BASE_FEATURE(kEnableVariableRefreshRateAlwaysOn,
              "EnableVariableRefreshRateAlwaysOn",
@@ -499,6 +526,48 @@ BASE_FEATURE(kChromeRefresh2023,
 BASE_FEATURE(kChromeRefreshSecondary2023,
              "ChromeRefreshSecondary2023",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kChromeRefresh2023NTB,
+             "ChromeRefresh2023NTB",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const char kChromeRefresh2023NTBVariationKey[] = "Variation";
+
+constexpr base::FeatureParam<ChromeRefresh2023NTBVariation>::Option
+    ChromeRefresh2023NTBVariationOption[] = {
+        {ChromeRefresh2023NTBVariation::kGM2Full, "GM2Full"},
+        {ChromeRefresh2023NTBVariation::kGM3OldIconNoBackground,
+         "GM3OldIconNoBackground"},
+        {ChromeRefresh2023NTBVariation::kGM3OldIconWithBackground,
+         "GM3OldIconWithBackground"},
+        {ChromeRefresh2023NTBVariation::kGM3NewIconNoBackground,
+         "GM3NewIconNoBackground"},
+        {ChromeRefresh2023NTBVariation::kGM3NewIconWithBackground,
+         "GM3NewIconWithBackground"},
+        {ChromeRefresh2023NTBVariation::kNoChoice, "No Choice"}};
+
+const base::FeatureParam<ChromeRefresh2023NTBVariation>
+    kChromeRefresh2023NTBValue(&kChromeRefresh2023NTB,
+                               kChromeRefresh2023NTBVariationKey,
+                               ChromeRefresh2023NTBVariation::kNoChoice,
+                               &ChromeRefresh2023NTBVariationOption);
+
+ChromeRefresh2023NTBVariation GetChromeRefresh2023NTB() {
+  ChromeRefresh2023NTBVariation option = kChromeRefresh2023NTBValue.Get();
+  if (option == ChromeRefresh2023NTBVariation::kNoChoice) {
+    if (!IsChromeRefresh2023()) {
+      return ChromeRefresh2023NTBVariation::kGM2Full;
+    } else {
+      return ChromeRefresh2023NTBVariation::kGM3NewIconNoBackground;
+    }
+  }
+
+  return option;
+}
+
+BASE_FEATURE(kChromeRefresh2023TopChromeFont,
+             "ChromeRefresh2023TopChromeFont",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsChromeRefresh2023() {
   if (!CustomizeChromeSupportsChromeRefresh2023()) {

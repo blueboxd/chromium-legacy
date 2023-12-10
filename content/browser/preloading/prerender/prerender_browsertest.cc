@@ -278,30 +278,14 @@ void ExpectWebContentsIsForNewTabPrerendering(WebContentsImpl& web_contents) {
   EXPECT_TRUE(web_contents.IsHidden());
 }
 
-// This is a fake implementation of PrerenderWebContentsDelegate. This is used
-// for WebContents hosting a prerendered page for a new tab.
-class FakePrerenderWebContentsDelegate : public PrerenderWebContentsDelegate {
+// This is a fake implementation of WebContentsDelegate that allows
+// prerendering.
+class FakeWebContentsDelegate : public WebContentsDelegate {
  public:
   // WebContentsDelegate overrides.
   PreloadingEligibility IsPrerender2Supported(
       WebContents& web_contents) override {
     return PreloadingEligibility::kEligible;
-  }
-};
-
-// This is an implementation of ContentBrowserTestContentBrowserClient to handle
-// creation of FakePrerenderWebContentsDelegate. Thanks to the parent class, the
-// incumbent ContentBrowserClient is swapped with an instance of this class on
-// the constructor and then reset to that on the destructor, so the name is
-// prefixed with Scoped.
-class ScopedPrerenderContentBrowserClient
-    : public ContentBrowserTestContentBrowserClient {
- public:
-  ScopedPrerenderContentBrowserClient() = default;
-
-  std::unique_ptr<PrerenderWebContentsDelegate>
-  CreatePrerenderWebContentsDelegate() override {
-    return std::make_unique<FakePrerenderWebContentsDelegate>();
   }
 };
 
@@ -1101,8 +1085,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ActivateOnLinkClick_TargetBlank) {
 // prerender whose target_hint is "_blank".
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        ActivateOnLinkClick_TargetBlank_WithTargetHintBlank) {
-  ScopedPrerenderContentBrowserClient prerender_content_browser_client;
-
   const GURL kInitialUrl = GetUrl("/simple_links.html");
   const GURL kPrerenderingUrl = GetUrl("/title2.html");
 
@@ -1204,8 +1186,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     PrerenderBrowserTest,
     ActivateOnLinkClick_TargetBlankWithNoopener_WithTargetHintBlank) {
-  ScopedPrerenderContentBrowserClient prerender_content_browser_client;
-
   const GURL kInitialUrl = GetUrl("/simple_links.html");
   const GURL kPrerenderingUrl = GetUrl("/title2.html");
 
@@ -1314,8 +1294,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     PrerenderBrowserTest,
     ActivateOnLinkClick_TargetBlankWithOpener_WithTargetHintBlank) {
-  ScopedPrerenderContentBrowserClient prerender_content_browser_client;
-
   const GURL kInitialUrl = GetUrl("/simple_links.html");
   const GURL kPrerenderingUrl = GetUrl("/title2.html");
 
@@ -1766,8 +1744,6 @@ IN_PROC_BROWSER_TEST_F(
   if (base::FeatureList::IsEnabled(features::kPrerender2NewLimitAndScheduler)) {
     GTEST_SKIP();
   }
-
-  ScopedPrerenderContentBrowserClient prerender_content_browser_client;
 
   // Navigate to an initial page.
   const GURL kInitialUrl = GetUrl("/title1.html");
@@ -4447,8 +4423,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 // "target=_blank" are canceled when it times out in the background .
 void PrerenderBrowserTest::TestCancelPrerenderWithTargetBlankWhenTimeout(
     Visibility visibility) {
-  ScopedPrerenderContentBrowserClient prerender_content_browser_client;
-
   const GURL kInitialUrl = GetUrl("/simple_links.html");
   const GURL kPrerenderUrl = GetUrl("/title2.html");
 
@@ -6133,8 +6107,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
 // them succeed.
 IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
                        MultipleNewTabPrerendering) {
-  ScopedPrerenderContentBrowserClient prerender_content_browser_client;
-
   GURL initial_url = GetUrl("/simple_links.html");
   std::vector<GURL> prerendering_urls = {GetUrl("/title2.html"),
                                          GetUrl("/title2.html?2"),
@@ -7810,28 +7782,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderWithProactiveBrowsingInstanceSwap,
   EXPECT_EQ(GetRequestCount(kPrerenderingUrl), 1);
 }
 
-class PrerenderWithBackForwardCacheBrowserTest
-    : public PrerenderBrowserTest,
-      public testing::WithParamInterface<BackForwardCacheType> {
- public:
-  PrerenderWithBackForwardCacheBrowserTest() {
-    switch (GetParam()) {
-      case BackForwardCacheType::kDisabled:
-        feature_list_.InitAndDisableFeature(::features::kBackForwardCache);
-        break;
-      case BackForwardCacheType::kEnabled:
-        feature_list_.InitWithFeaturesAndParameters(
-            GetDefaultEnabledBackForwardCacheFeaturesForTesting(
-                /*ignore_outstanding_network_request=*/false),
-            GetDefaultDisabledBackForwardCacheFeaturesForTesting());
-        break;
-    }
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
 class PrerenderEagernessBrowserTest : public PrerenderBrowserTest {
  public:
   PrerenderEagernessBrowserTest() {
@@ -8364,6 +8314,28 @@ IN_PROC_BROWSER_TEST_F(PrerenderNewLimitAndSchedulerBrowserTest,
   }
 }
 #endif  // !BUILDFLAG(IS_FUCHSIA) && !BUILDFLAG(IS_IOS)
+
+class PrerenderWithBackForwardCacheBrowserTest
+    : public PrerenderBrowserTest,
+      public testing::WithParamInterface<BackForwardCacheType> {
+ public:
+  PrerenderWithBackForwardCacheBrowserTest() {
+    switch (GetParam()) {
+      case BackForwardCacheType::kDisabled:
+        feature_list_.InitAndDisableFeature(::features::kBackForwardCache);
+        break;
+      case BackForwardCacheType::kEnabled:
+        feature_list_.InitWithFeaturesAndParameters(
+            GetDefaultEnabledBackForwardCacheFeaturesForTesting(
+                /*ignore_outstanding_network_request=*/false),
+            GetDefaultDisabledBackForwardCacheFeaturesForTesting());
+        break;
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
 
 INSTANTIATE_TEST_SUITE_P(All,
                          PrerenderWithBackForwardCacheBrowserTest,
@@ -11734,10 +11706,8 @@ INSTANTIATE_TEST_SUITE_P(All,
 // Other tests in `PrerenderSessionHistoryBrowserTest` explicitly trigger the
 // prediction and the navigation. For this test, we actually simulate the back
 // button press events.
-// TODO(https://crbug.com/1059468): Flaky on ChromeOS.
-// TODO(https://crbug.com/1493726): Also flaky on other platforms after r1208618
 IN_PROC_BROWSER_TEST_P(PrerenderSessionHistoryBrowserTest,
-                       DISABLED_BackButtonNavigation) {
+                       BackButtonNavigation) {
   const GURL url1 = GetUrl("/title1.html");
   const GURL url2 = GetCrossSiteUrl("/title2.html");
   PerformInitialNavigations(web_contents_impl(), url1, url2);
@@ -12280,7 +12250,7 @@ IN_PROC_BROWSER_TEST_P(PrerenderSessionHistoryBrowserTest,
       !web_contents_impl()->GetSiteInstance()->IsRelatedSiteInstance(
           prev_site_instance);
 
-  FakePrerenderWebContentsDelegate clone_delegate;
+  FakeWebContentsDelegate clone_delegate;
   std::unique_ptr<WebContents> new_web_contents_owned =
       web_contents_impl()->Clone();
   WebContentsImpl* new_web_contents =
@@ -12329,7 +12299,7 @@ IN_PROC_BROWSER_TEST_P(
   const GURL url2 = GetCrossSiteUrl("/title2.html");
   PerformInitialNavigations(web_contents_impl(), url1, url2);
 
-  FakePrerenderWebContentsDelegate clone_delegate;
+  FakeWebContentsDelegate clone_delegate;
   std::unique_ptr<WebContents> new_web_contents_owned =
       web_contents_impl()->Clone();
   WebContentsImpl* new_web_contents =

@@ -5,12 +5,18 @@
 package org.chromium.chrome.browser.page_insights;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import android.graphics.Color;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
@@ -23,11 +29,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
+import org.chromium.base.FeatureList;
+import org.chromium.base.FeatureList.TestValues;
 import org.chromium.base.shared_preferences.SharedPreferencesManager;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Batch;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
@@ -54,7 +64,12 @@ public class PageInsightsSheetContentTest {
     private PageInsightsSheetContent mSheetContent;
     private BottomSheetTestSupport mTestSupport;
     private int mFullHeight;
+    private boolean mTapHandlerResult;
+    private boolean mTapHandlerCalled;
+    private boolean mBackPressHandlerCalled;
+    private boolean mBackPressHandlerResult;
     private static final float ASSERTION_DELTA = 0.01f;
+    private static final long MILLIS_IN_ONE_DAY = 86400000;
 
     @BeforeClass
     public static void setUpSuite() {
@@ -64,8 +79,14 @@ public class PageInsightsSheetContentTest {
 
     @Before
     public void setUp() throws Exception {
+        mTapHandlerCalled = false;
+        mBackPressHandlerCalled = false;
         ViewGroup rootView = sTestRule.getActivity().findViewById(android.R.id.content);
         TestThreadUtils.runOnUiThreadBlocking(() -> rootView.removeAllViews());
+
+        TestValues testValues = new TestValues();
+        testValues.addFeatureFlagOverride(ChromeFeatureList.CCT_PAGE_INSIGHTS_HUB, true);
+        FeatureList.setTestValues(testValues);
 
         mScrimCoordinator =
                 new ScrimCoordinator(
@@ -95,10 +116,33 @@ public class PageInsightsSheetContentTest {
                         });
 
         mTestSupport = new BottomSheetTestSupport(mBottomSheetController);
+    }
+
+    private void createSheetContent() {
+        TestValues testValues = new TestValues();
+        testValues.addFeatureFlagOverride(ChromeFeatureList.CCT_PAGE_INSIGHTS_HUB, true);
+        createSheetContent(testValues);
+    }
+
+    private void createSheetContent(TestValues testValues) {
+        FeatureList.setTestValues(testValues);
+
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mSheetContent =
-                            new PageInsightsSheetContent(sTestRule.getActivity(), view -> {});
+                            new PageInsightsSheetContent(
+                                    sTestRule.getActivity(),
+                                    new View(sTestRule.getActivity()),
+                                    view -> {},
+                                    () -> {
+                                        mBackPressHandlerCalled = true;
+                                        return mBackPressHandlerResult;
+                                    },
+                                    new ObservableSupplierImpl<>(false),
+                                    () -> {
+                                        mTapHandlerCalled = true;
+                                        return mTapHandlerResult;
+                                    });
                     mBottomSheetController.requestShowContent(mSheetContent, false);
                     mFullHeight =
                             sTestRule.getActivity().getResources().getDisplayMetrics().heightPixels;
@@ -119,46 +163,54 @@ public class PageInsightsSheetContentTest {
     }
 
     @Test
+    @SmallTest
+    public void backButtonPressed_handlerCalled() {
+        createSheetContent();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    getToolbarViewById(R.id.page_insights_back_button).performClick();
+                    assertTrue(mBackPressHandlerCalled);
+                });
+    }
+
+    @Test
     @MediumTest
-    public void testAvailableStates() throws Exception {
-        // Starts with peeking state.
-        assertEquals(BottomSheetController.SheetState.PEEK, mBottomSheetController.getSheetState());
-
-        // Half state is disabled. Expanding sheets leads to full state.
-        TestThreadUtils.runOnUiThreadBlocking(mBottomSheetController::expandSheet);
-        waitForAnimationToFinish();
-        assertEquals(BottomSheetController.SheetState.FULL, mBottomSheetController.getSheetState());
-
-        // Collapsing from full state leads to peeking state.
-        TestThreadUtils.runOnUiThreadBlocking(() -> mBottomSheetController.collapseSheet(false));
-        assertEquals(BottomSheetController.SheetState.PEEK, mBottomSheetController.getSheetState());
+    public void backButtonNotClicked_handlerNotCalled() {
+        createSheetContent();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    assertFalse(mTapHandlerCalled);
+                });
     }
 
     @Test
     @SmallTest
-    public void backButtonPressed() {
+    public void handleBackPress_true() {
+        createSheetContent();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    getToolbarViewById(R.id.page_insights_back_button).performClick();
-                    assertEquals(
-                            View.VISIBLE,
-                            getToolbarViewById(R.id.page_insights_feed_header).getVisibility());
-                    assertEquals(
-                            View.GONE,
-                            getToolbarViewById(R.id.page_insights_child_page_header)
-                                    .getVisibility());
-                    assertEquals(
-                            View.VISIBLE,
-                            getContentViewById(R.id.page_insights_feed_content).getVisibility());
-                    assertEquals(
-                            View.GONE,
-                            getContentViewById(R.id.page_insights_child_content).getVisibility());
+                    mBackPressHandlerResult = true;
+
+                    assertTrue(mSheetContent.handleBackPress());
+                });
+    }
+
+    @Test
+    @SmallTest
+    public void handleBackPress_false() {
+        createSheetContent();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    mBackPressHandlerResult = false;
+
+                    assertFalse(mSheetContent.handleBackPress());
                 });
     }
 
     @Test
     @SmallTest
     public void showFeedPage() {
+        createSheetContent();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mSheetContent.showFeedPage();
@@ -167,8 +219,10 @@ public class PageInsightsSheetContentTest {
                             getToolbarViewById(R.id.page_insights_feed_header).getVisibility());
                     assertEquals(
                             View.GONE,
-                            getToolbarViewById(R.id.page_insights_child_page_header)
-                                    .getVisibility());
+                            getToolbarViewById(R.id.page_insights_back_button).getVisibility());
+                    assertEquals(
+                            View.GONE,
+                            getToolbarViewById(R.id.page_insights_child_title).getVisibility());
                     assertEquals(
                             View.VISIBLE,
                             getContentViewById(R.id.page_insights_feed_content).getVisibility());
@@ -184,24 +238,75 @@ public class PageInsightsSheetContentTest {
 
     @Test
     @SmallTest
-    public void setFeedpage() {
+    public void initContent() {
+        createSheetContent();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     View testView = new View(sTestRule.getActivity());
 
-                    mSheetContent.setFeedPage(testView);
+                    mSheetContent.initContent(
+                            testView,
+                            /* isPrivacyNoticeRequired= */ true,
+                            /* shouldHavePeekState= */ true);
                     ViewGroup feedView =
                             mSheetContent
                                     .getContentView()
                                     .findViewById(R.id.page_insights_feed_content);
 
-                    assertEquals(feedView.getChildAt(0), testView);
+                    assertEquals(testView, feedView.getChildAt(0));
+                    int expectedHeight =
+                            (int) (mFullHeight * PageInsightsSheetContent.DEFAULT_FULL_HEIGHT_RATIO)
+                                    - sTestRule
+                                            .getActivity()
+                                            .getResources()
+                                            .getDimensionPixelSize(
+                                                    R.dimen.page_insights_toolbar_height);
+                    assertEquals(
+                            expectedHeight,
+                            getContentViewById(R.id.page_insights_content_container).getHeight());
+                    assertEquals(expectedHeight, feedView.getHeight());
+                });
+    }
+
+    @Test
+    @SmallTest
+    public void initContent_fullHeightFromFlag() {
+        TestValues testValues = new TestValues();
+        testValues.addFeatureFlagOverride(ChromeFeatureList.CCT_PAGE_INSIGHTS_HUB, true);
+        testValues.addFieldTrialParamOverride(
+                ChromeFeatureList.CCT_PAGE_INSIGHTS_HUB,
+                PageInsightsSheetContent.PAGE_INSIGHTS_FULL_HEIGHT_RATIO_PARAM,
+                "0.123");
+        createSheetContent(testValues);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    mSheetContent.initContent(
+                            new View(sTestRule.getActivity()),
+                            /* isPrivacyNoticeRequired= */ true,
+                            /* shouldHavePeekState= */ true);
+                    int expectedHeight =
+                            (int) (mFullHeight * 0.123)
+                                    - sTestRule
+                                            .getActivity()
+                                            .getResources()
+                                            .getDimensionPixelSize(
+                                                    R.dimen.page_insights_toolbar_height);
+                    assertEquals(
+                            expectedHeight,
+                            getContentViewById(R.id.page_insights_content_container).getHeight());
+                    assertEquals(
+                            expectedHeight,
+                            mSheetContent
+                                    .getContentView()
+                                    .findViewById(R.id.page_insights_feed_content)
+                                    .getHeight());
                 });
     }
 
     @Test
     @MediumTest
     public void showChildPage() {
+        createSheetContent();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     String testChildPageText = "People also view";
@@ -222,8 +327,10 @@ public class PageInsightsSheetContentTest {
                             getToolbarViewById(R.id.page_insights_feed_header).getVisibility());
                     assertEquals(
                             View.VISIBLE,
-                            getToolbarViewById(R.id.page_insights_child_page_header)
-                                    .getVisibility());
+                            getToolbarViewById(R.id.page_insights_back_button).getVisibility());
+                    assertEquals(
+                            View.VISIBLE,
+                            getToolbarViewById(R.id.page_insights_child_title).getVisibility());
                     assertEquals(
                             View.GONE,
                             getContentViewById(R.id.page_insights_feed_content).getVisibility());
@@ -238,6 +345,7 @@ public class PageInsightsSheetContentTest {
     @Test
     @MediumTest
     public void showLoadingIndicator() {
+        createSheetContent();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mSheetContent.showLoadingIndicator();
@@ -254,8 +362,10 @@ public class PageInsightsSheetContentTest {
                             getContentViewById(R.id.page_insights_feed_content).getVisibility());
                     assertEquals(
                             View.GONE,
-                            getToolbarViewById(R.id.page_insights_child_page_header)
-                                    .getVisibility());
+                            getToolbarViewById(R.id.page_insights_back_button).getVisibility());
+                    assertEquals(
+                            View.GONE,
+                            getToolbarViewById(R.id.page_insights_child_title).getVisibility());
                     assertEquals(
                             View.GONE,
                             getContentViewById(R.id.page_insights_child_content).getVisibility());
@@ -265,16 +375,87 @@ public class PageInsightsSheetContentTest {
     @Test
     @MediumTest
     public void privacyNoticeShownForFirstTime() {
+        createSheetContent();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
+                    View testView = new View(sTestRule.getActivity());
+                    setPrivacyNoticePreferences(
+                            false, System.currentTimeMillis() - MILLIS_IN_ONE_DAY, 0);
+                    mSheetContent.initContent(
+                            testView,
+                            /* isPrivacyNoticeRequired= */ true,
+                            /* shouldHavePeekState= */ true);
                     mSheetContent.showFeedPage();
                     float ratio = ((float) mSheetContent.getPeekHeight()) / ((float) mFullHeight);
                     assertEquals(
-                            PageInsightsSheetContent.PEEK_HEIGHT_RATIO_WITH_PRIVACY_NOTICE,
+                            PageInsightsSheetContent.DEFAULT_PEEK_WITH_PRIVACY_HEIGHT_RATIO,
                             ratio,
                             ASSERTION_DELTA);
                     assertEquals(
                             View.VISIBLE,
+                            getContentViewById(R.id.page_insights_privacy_notice).getVisibility());
+
+                    int expectedFullContentHeight =
+                            (int) (mFullHeight * PageInsightsSheetContent.DEFAULT_FULL_HEIGHT_RATIO)
+                                    - sTestRule
+                                            .getActivity()
+                                            .getResources()
+                                            .getDimensionPixelSize(
+                                                    R.dimen.page_insights_toolbar_height);
+                    assertEquals(
+                            expectedFullContentHeight
+                                    - getContentViewById(R.id.page_insights_privacy_notice)
+                                            .getHeight(),
+                            getContentViewById(R.id.page_insights_feed_content).getHeight());
+                });
+    }
+
+    @Test
+    @MediumTest
+    public void privacyNoticeShownForFirstTime_peekHeightFromFlag() {
+        TestValues testValues = new TestValues();
+        testValues.addFeatureFlagOverride(ChromeFeatureList.CCT_PAGE_INSIGHTS_HUB, true);
+        testValues.addFieldTrialParamOverride(
+                ChromeFeatureList.CCT_PAGE_INSIGHTS_HUB,
+                PageInsightsSheetContent.PAGE_INSIGHTS_PEEK_WITH_PRIVACY_HEIGHT_RATIO_PARAM,
+                "0.123");
+        createSheetContent(testValues);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    View testView = new View(sTestRule.getActivity());
+                    setPrivacyNoticePreferences(
+                            false, System.currentTimeMillis() - MILLIS_IN_ONE_DAY, 0);
+                    mSheetContent.initContent(
+                            testView,
+                            /* isPrivacyNoticeRequired= */ true,
+                            /* shouldHavePeekState= */ true);
+                    mSheetContent.showFeedPage();
+                    float ratio = ((float) mSheetContent.getPeekHeight()) / ((float) mFullHeight);
+                    assertEquals(0.123, ratio, ASSERTION_DELTA);
+                });
+    }
+
+    @Test
+    @MediumTest
+    public void privacyNoticeNotShownWhenNotRequired() {
+        createSheetContent();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    View testView = new View(sTestRule.getActivity());
+                    setPrivacyNoticePreferences(
+                            false, System.currentTimeMillis() - MILLIS_IN_ONE_DAY, 0);
+                    mSheetContent.initContent(
+                            testView,
+                            /* isPrivacyNoticeRequired= */ false,
+                            /* shouldHavePeekState= */ true);
+                    mSheetContent.showFeedPage();
+                    float ratio = ((float) mSheetContent.getPeekHeight()) / ((float) mFullHeight);
+                    assertEquals(
+                            PageInsightsSheetContent.DEFAULT_PEEK_HEIGHT_RATIO,
+                            ratio,
+                            ASSERTION_DELTA);
+                    assertEquals(
+                            View.GONE,
                             getContentViewById(R.id.page_insights_privacy_notice).getVisibility());
                 });
     }
@@ -282,8 +463,13 @@ public class PageInsightsSheetContentTest {
     @Test
     @MediumTest
     public void privacyNoticeCloseButtonPressed() {
+        createSheetContent();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
+                    mSheetContent.initContent(
+                            new View(sTestRule.getActivity()),
+                            /* isPrivacyNoticeRequired= */ true,
+                            /* shouldHavePeekState= */ true);
                     mSheetContent.showFeedPage();
                     getContentViewById(R.id.page_insights_privacy_notice_close_button)
                             .performClick();
@@ -302,21 +488,320 @@ public class PageInsightsSheetContentTest {
     @Test
     @MediumTest
     public void sharedPreferenceSetTruePrivacyNoticeNotShown() {
+        createSheetContent();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    SharedPreferencesManager sharedPreferencesManager =
-                            ChromeSharedPreferences.getInstance();
-                    sharedPreferencesManager.writeBoolean(
-                            ChromePreferenceKeys.PIH_PRIVACY_NOTICE_CLOSED, true);
+                    setPrivacyNoticePreferences(
+                            true, System.currentTimeMillis() - MILLIS_IN_ONE_DAY, 1);
+                    mSheetContent.initContent(
+                            new View(sTestRule.getActivity()),
+                            /* isPrivacyNoticeRequired= */ true,
+                            /* shouldHavePeekState= */ true);
                     mSheetContent.showFeedPage();
                     float ratio = ((float) mSheetContent.getPeekHeight()) / ((float) mFullHeight);
                     assertEquals(
-                            PageInsightsSheetContent.PEEK_HEIGHT_RATIO_WITHOUT_PRIVACY_NOTICE,
+                            PageInsightsSheetContent.DEFAULT_PEEK_HEIGHT_RATIO,
                             ratio,
                             ASSERTION_DELTA);
                     assertEquals(
                             View.GONE,
                             getContentViewById(R.id.page_insights_privacy_notice).getVisibility());
+                });
+    }
+
+    @Test
+    @MediumTest
+    public void privacyNoticeOpenedFourTimesDifferentDayNotShownOnFourthDay() {
+        createSheetContent();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    View testView = new View(sTestRule.getActivity());
+                    SharedPreferencesManager sharedPreferencesManager =
+                            ChromeSharedPreferences.getInstance();
+                    sharedPreferencesManager.writeBoolean(
+                            ChromePreferenceKeys.PIH_PRIVACY_NOTICE_CLOSED, false);
+                    sharedPreferencesManager.writeInt(
+                            ChromePreferenceKeys.PIH_PRIVACY_NOTICE_SHOWN_TOTAL_COUNT, 0);
+
+                    for (int i = 1; i <= 4; i++) {
+                        sharedPreferencesManager.writeLong(
+                                ChromePreferenceKeys.PIH_PRIVACY_NOTICE_LAST_SHOWN_TIMESTAMP,
+                                System.currentTimeMillis() + i * MILLIS_IN_ONE_DAY);
+                        mSheetContent.initContent(
+                                testView,
+                                /* isPrivacyNoticeRequired= */ true,
+                                /* shouldHavePeekState= */ true);
+                        mSheetContent.showFeedPage();
+                        if (i <= 3) {
+                            assertEquals(
+                                    View.VISIBLE,
+                                    getContentViewById(R.id.page_insights_privacy_notice)
+                                            .getVisibility());
+                        }
+                    }
+
+                    assertEquals(
+                            View.GONE,
+                            getContentViewById(R.id.page_insights_privacy_notice).getVisibility());
+                });
+    }
+
+    @Test
+    @MediumTest
+    public void privacyNoticeShownOnceEachDay() {
+        createSheetContent();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    setPrivacyNoticePreferences(
+                            false, System.currentTimeMillis() - MILLIS_IN_ONE_DAY, 0);
+                    View testView = new View(sTestRule.getActivity());
+
+                    mSheetContent.initContent(
+                            testView,
+                            /* isPrivacyNoticeRequired= */ true,
+                            /* shouldHavePeekState= */ true);
+                    mSheetContent.showFeedPage();
+
+                    assertEquals(
+                            View.VISIBLE,
+                            getContentViewById(R.id.page_insights_privacy_notice).getVisibility());
+
+                    mSheetContent.initContent(
+                            testView,
+                            /* isPrivacyNoticeRequired= */ true,
+                            /* shouldHavePeekState= */ true);
+                    mSheetContent.showFeedPage();
+
+                    assertEquals(
+                            View.GONE,
+                            getContentViewById(R.id.page_insights_privacy_notice).getVisibility());
+                });
+    }
+
+    @Test
+    @MediumTest
+    public void nothingClicked_handlerNotCalled() {
+        createSheetContent();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    mSheetContent.initContent(
+                            new View(sTestRule.getActivity()),
+                            /* isPrivacyNoticeRequired= */ true,
+                            /* shouldHavePeekState= */ true);
+
+                    assertEquals(false, mTapHandlerCalled);
+                });
+    }
+
+    @Test
+    @MediumTest
+    public void contentContainerClicked_handlerCalled() {
+        createSheetContent();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    mSheetContent.initContent(
+                            new View(sTestRule.getActivity()),
+                            /* isPrivacyNoticeRequired= */ true,
+                            /* shouldHavePeekState= */ true);
+
+                    getContentViewById(R.id.page_insights_content_container).callOnClick();
+
+                    assertEquals(true, mTapHandlerCalled);
+                });
+    }
+
+    @Test
+    @MediumTest
+    public void toolbarViewClicked_handlerCalled() {
+        createSheetContent();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    mSheetContent.initContent(
+                            new View(sTestRule.getActivity()),
+                            /* isPrivacyNoticeRequired= */ true,
+                            /* shouldHavePeekState= */ true);
+
+                    mSheetContent.getToolbarView().callOnClick();
+
+                    assertEquals(true, mTapHandlerCalled);
+                });
+    }
+
+    @Test
+    @MediumTest
+    public void contentContainerOnInterceptTouchEvent_actionUp_handlerTrue_true() {
+        createSheetContent();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    mTapHandlerResult = true;
+                    mSheetContent.initContent(
+                            new View(sTestRule.getActivity()),
+                            /* isPrivacyNoticeRequired= */ true,
+                            /* shouldHavePeekState= */ true);
+
+                    assertEquals(
+                            true,
+                            ((LinearLayout)
+                                            getContentViewById(
+                                                    R.id.page_insights_content_container))
+                                    .onInterceptTouchEvent(
+                                            MotionEvent.obtain(
+                                                    0, 0, MotionEvent.ACTION_UP, 0, 0, 0)));
+                });
+    }
+
+    @Test
+    @MediumTest
+    public void contentContainerOnInterceptTouchEvent_actionUp_handlerFalse_false() {
+        createSheetContent();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    mTapHandlerResult = false;
+                    mSheetContent.initContent(
+                            new View(sTestRule.getActivity()),
+                            /* isPrivacyNoticeRequired= */ true,
+                            /* shouldHavePeekState= */ true);
+
+                    assertEquals(
+                            false,
+                            ((LinearLayout)
+                                            getContentViewById(
+                                                    R.id.page_insights_content_container))
+                                    .onInterceptTouchEvent(
+                                            MotionEvent.obtain(
+                                                    0, 0, MotionEvent.ACTION_DOWN, 0, 0, 0)));
+                });
+    }
+
+    @Test
+    @MediumTest
+    public void contentContainerOnInterceptTouchEvent_actionDown_handlerTrue_false() {
+        createSheetContent();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    mTapHandlerResult = true;
+                    mSheetContent.initContent(
+                            new View(sTestRule.getActivity()),
+                            /* isPrivacyNoticeRequired= */ true,
+                            /* shouldHavePeekState= */ true);
+
+                    assertEquals(
+                            false,
+                            ((LinearLayout)
+                                            getContentViewById(
+                                                    R.id.page_insights_content_container))
+                                    .onInterceptTouchEvent(
+                                            MotionEvent.obtain(
+                                                    0, 0, MotionEvent.ACTION_DOWN, 0, 0, 0)));
+                });
+    }
+
+    @Test
+    @MediumTest
+    public void getVerticalScrollOffset_noRecyclerView_returns1() {
+        createSheetContent();
+        assertEquals(1, mSheetContent.getVerticalScrollOffset());
+    }
+
+    @Test
+    @MediumTest
+    public void getVerticalScrollOffset_recyclerViewInFeedPage_returnsItsOffset() {
+        createSheetContent();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    FrameLayout feedPage = new FrameLayout(sTestRule.getActivity());
+                    FrameLayout recyclerViewContainer = new FrameLayout(sTestRule.getActivity());
+                    RecyclerView recyclerview = new RecyclerView(sTestRule.getActivity());
+                    feedPage.addView(recyclerViewContainer);
+                    recyclerViewContainer.addView(recyclerview);
+                    mSheetContent.initContent(
+                            feedPage,
+                            /* isPrivacyNoticeRequired= */ true,
+                            /* shouldHavePeekState= */ true);
+                    mSheetContent.showFeedPage();
+
+                    assertEquals(0, mSheetContent.getVerticalScrollOffset());
+                });
+    }
+
+    @Test
+    @MediumTest
+    public void getVerticalScrollOffset_recyclerViewInChildPage_returnsItsOffset() {
+        createSheetContent();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    FrameLayout feedPage = new FrameLayout(sTestRule.getActivity());
+                    mSheetContent.initContent(
+                            feedPage,
+                            /* isPrivacyNoticeRequired= */ true,
+                            /* shouldHavePeekState= */ true);
+                    mSheetContent.showFeedPage();
+
+                    FrameLayout childPage = new FrameLayout(sTestRule.getActivity());
+                    FrameLayout recyclerViewContainer = new FrameLayout(sTestRule.getActivity());
+                    RecyclerView recyclerview = new RecyclerView(sTestRule.getActivity());
+                    childPage.addView(recyclerViewContainer);
+                    recyclerViewContainer.addView(recyclerview);
+                    mSheetContent.showChildPage(childPage, "bladybla");
+
+                    assertEquals(0, mSheetContent.getVerticalScrollOffset());
+                });
+    }
+
+    @Test
+    @MediumTest
+    public void getPeekHeight_shouldHavePeekState() {
+        createSheetContent();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    mSheetContent.initContent(
+                            new FrameLayout(sTestRule.getActivity()),
+                            /* isPrivacyNoticeRequired= */ false,
+                            /* shouldHavePeekState= */ true);
+
+                    assertEquals(
+                            (int)
+                                    (mFullHeight
+                                            * PageInsightsSheetContent.DEFAULT_PEEK_HEIGHT_RATIO),
+                            mSheetContent.getPeekHeight());
+                });
+    }
+
+    @Test
+    @MediumTest
+    public void getPeekHeight_shouldHavePeekState_peekHeightFromFlag() {
+        TestValues testValues = new TestValues();
+        testValues.addFeatureFlagOverride(ChromeFeatureList.CCT_PAGE_INSIGHTS_HUB, true);
+        testValues.addFieldTrialParamOverride(
+                ChromeFeatureList.CCT_PAGE_INSIGHTS_HUB,
+                PageInsightsSheetContent.PAGE_INSIGHTS_PEEK_HEIGHT_RATIO_PARAM,
+                "0.123");
+        createSheetContent(testValues);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    mSheetContent.initContent(
+                            new FrameLayout(sTestRule.getActivity()),
+                            /* isPrivacyNoticeRequired= */ false,
+                            /* shouldHavePeekState= */ true);
+
+                    assertEquals((int) (mFullHeight * 0.123), mSheetContent.getPeekHeight());
+                });
+    }
+
+    @Test
+    @MediumTest
+    public void getPeekHeight_shouldNotHavePeekState() {
+        createSheetContent();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    mSheetContent.initContent(
+                            new FrameLayout(sTestRule.getActivity()),
+                            /* isPrivacyNoticeRequired= */ true,
+                            /* shouldHavePeekState= */ false);
+
+                    assertEquals(
+                            PageInsightsSheetContent.HeightMode.DISABLED,
+                            mSheetContent.getPeekHeight());
                 });
     }
 
@@ -326,5 +811,20 @@ public class PageInsightsSheetContentTest {
 
     private View getContentViewById(int viewId) {
         return mSheetContent.getContentView().findViewById(viewId);
+    }
+
+    private void setPrivacyNoticePreferences(
+            boolean privacyNoticeClosed,
+            long privacyNoticeLastShownTimestamp,
+            int numberOfTimesPrivacyNoticeShown) {
+        SharedPreferencesManager sharedPreferencesManager = ChromeSharedPreferences.getInstance();
+        sharedPreferencesManager.writeBoolean(
+                ChromePreferenceKeys.PIH_PRIVACY_NOTICE_CLOSED, privacyNoticeClosed);
+        sharedPreferencesManager.writeLong(
+                ChromePreferenceKeys.PIH_PRIVACY_NOTICE_LAST_SHOWN_TIMESTAMP,
+                privacyNoticeLastShownTimestamp);
+        sharedPreferencesManager.writeInt(
+                ChromePreferenceKeys.PIH_PRIVACY_NOTICE_SHOWN_TOTAL_COUNT,
+                numberOfTimesPrivacyNoticeShown);
     }
 }

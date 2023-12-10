@@ -100,7 +100,7 @@ class URLLoader::Context : public ResourceRequestClient {
                          int intra_priority_value);
   void Start(std::unique_ptr<network::ResourceRequest> request,
              scoped_refptr<const SecurityOrigin> top_frame_origin,
-             bool pass_response_pipe_to_client,
+             bool download_to_blob,
              bool no_mime_sniffing,
              base::TimeDelta timeout_interval,
              SyncLoadResponse* sync_load_response,
@@ -116,10 +116,9 @@ class URLLoader::Context : public ResourceRequestClient {
       FollowRedirectCallback follow_redirect_callback) override;
   void OnReceivedResponse(
       network::mojom::URLResponseHeadPtr head,
-      base::TimeTicks response_arrival_at_renderer,
-      absl::optional<mojo_base::BigBuffer> cached_metadata) override;
-  void OnStartLoadingResponseBody(
-      mojo::ScopedDataPipeConsumerHandle body) override;
+      mojo::ScopedDataPipeConsumerHandle body,
+      absl::optional<mojo_base::BigBuffer> cached_metadata,
+      base::TimeTicks response_arrival_at_renderer) override;
   void OnTransferSizeUpdated(int transfer_size_diff) override;
   void OnCompletedRequest(
       const network::URLLoaderCompletionStatus& status) override;
@@ -235,7 +234,7 @@ void URLLoader::Context::DidChangePriority(WebURLRequest::Priority new_priority,
 void URLLoader::Context::Start(
     std::unique_ptr<network::ResourceRequest> request,
     scoped_refptr<const SecurityOrigin> top_frame_origin,
-    bool pass_response_pipe_to_client,
+    bool download_to_blob,
     bool no_mime_sniffing,
     base::TimeDelta timeout_interval,
     SyncLoadResponse* sync_load_response,
@@ -272,7 +271,7 @@ void URLLoader::Context::Start(
     request->load_flags |= net::LOAD_IGNORE_LIMITS;
 
     mojo::PendingRemote<mojom::blink::BlobRegistry> download_to_blob_registry;
-    if (pass_response_pipe_to_client) {
+    if (download_to_blob) {
       Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
           download_to_blob_registry.InitWithNewPipeAndPassReceiver());
     }
@@ -330,22 +329,25 @@ void URLLoader::Context::OnReceivedRedirect(
 
   url_ = KURL(redirect_info.new_url);
   std::vector<std::string> removed_headers;
+  net::HttpRequestHeaders modified_headers;
   if (client_->WillFollowRedirect(
           url_, redirect_info.new_site_for_cookies,
           WebString::FromUTF8(redirect_info.new_referrer),
           ReferrerUtils::NetToMojoReferrerPolicy(
               redirect_info.new_referrer_policy),
           WebString::FromUTF8(redirect_info.new_method), response,
-          has_devtools_request_id_, &removed_headers,
+          has_devtools_request_id_, &removed_headers, modified_headers,
           redirect_info.insecure_scheme_was_upgraded)) {
-    std::move(follow_redirect_callback).Run(std::move(removed_headers));
+    std::move(follow_redirect_callback)
+        .Run(std::move(removed_headers), std::move(modified_headers));
   }
 }
 
 void URLLoader::Context::OnReceivedResponse(
     network::mojom::URLResponseHeadPtr head,
-    base::TimeTicks response_arrival_at_renderer,
-    absl::optional<mojo_base::BigBuffer> cached_metadata) {
+    mojo::ScopedDataPipeConsumerHandle body,
+    absl::optional<mojo_base::BigBuffer> cached_metadata,
+    base::TimeTicks response_arrival_at_renderer) {
   if (!client_) {
     return;
   }
@@ -364,24 +366,8 @@ void URLLoader::Context::OnReceivedResponse(
       url_, *head, has_devtools_request_id_, request_id_);
   response.SetArrivalTimeAtRenderer(response_arrival_at_renderer);
 
-  client_->DidReceiveResponse(response, std::move(cached_metadata));
-
-  // DidReceiveResponse() may have triggered a cancel, causing the |client_| to
-  // go away.
-  if (!client_) {
-    return;
-  }
-}
-
-void URLLoader::Context::OnStartLoadingResponseBody(
-    mojo::ScopedDataPipeConsumerHandle body) {
-  if (client_) {
-    client_->DidStartLoadingResponseBody(std::move(body));
-  }
-
-  TRACE_EVENT_WITH_FLOW0("loading",
-                         "URLLoader::Context::OnStartLoadingResponseBody", this,
-                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+  client_->DidReceiveResponse(response, std::move(body),
+                              std::move(cached_metadata));
 }
 
 void URLLoader::Context::OnTransferSizeUpdated(int transfer_size_diff) {
@@ -444,7 +430,7 @@ URLLoader::~URLLoader() {
 void URLLoader::LoadSynchronously(
     std::unique_ptr<network::ResourceRequest> request,
     scoped_refptr<const SecurityOrigin> top_frame_origin,
-    bool pass_response_pipe_to_client,
+    bool download_to_blob,
     bool no_mime_sniffing,
     base::TimeDelta timeout_interval,
     URLLoaderClient* client,
@@ -468,8 +454,8 @@ void URLLoader::LoadSynchronously(
 
   const bool has_devtools_request_id = request->devtools_request_id.has_value();
   context_->Start(std::move(request), std::move(top_frame_origin),
-                  pass_response_pipe_to_client, no_mime_sniffing,
-                  timeout_interval, &sync_load_response,
+                  download_to_blob, no_mime_sniffing, timeout_interval,
+                  &sync_load_response,
                   std::move(resource_load_info_notifier_wrapper),
                   /*code_cache_host=*/nullptr);
 
@@ -538,7 +524,7 @@ void URLLoader::LoadAsynchronously(
 
   context_->set_client(client);
   context_->Start(std::move(request), std::move(top_frame_origin),
-                  /*pass_response_pipe_to_client=*/false, no_mime_sniffing,
+                  /*download_to_blob=*/false, no_mime_sniffing,
                   base::TimeDelta(), /*sync_load_response=*/nullptr,
                   std::move(resource_load_info_notifier_wrapper),
                   code_cache_host);

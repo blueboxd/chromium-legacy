@@ -48,6 +48,7 @@ class GraphFeatures {
       bool node_impl_describers : 1;
       bool page_load_tracker_decorator : 1;
       bool process_hosted_content_types_aggregator : 1;
+      bool resource_attribution_scheduler : 1;
       bool site_data_recorder : 1;
       bool tab_connectedness_decorator : 1;
       bool tab_page_decorator : 1;
@@ -99,6 +100,11 @@ class GraphFeatures {
 
   constexpr GraphFeatures& EnableProcessHostedContentTypesAggregator() {
     flags_.process_hosted_content_types_aggregator = true;
+    return *this;
+  }
+
+  constexpr GraphFeatures& EnableResourceAttributionScheduler() {
+    flags_.resource_attribution_scheduler = true;
     return *this;
   }
 

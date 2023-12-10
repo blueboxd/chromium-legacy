@@ -9,6 +9,7 @@
 #include <memory>
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -16,6 +17,7 @@
 #include "components/privacy_sandbox/tracking_protection_onboarding.h"
 #include "components/user_education/common/feature_promo_controller.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/page.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -54,6 +56,23 @@ class TrackingProtectionNoticeService
       TrackingProtectionOnboarding* onboarding_service);
   ~TrackingProtectionNoticeService() override;
 
+  enum class TrackingProtectionMetricsNoticeEvent {
+    kNoticeObjectCreated = 0,
+    kActiveTabChanged = 1,
+    kNavigationFinished = 2,
+    kUpdateNoticeVisibility = 3,
+    kBrowserTypeNonNormal = 4,
+    kNoticeShowingButShouldnt = 5,
+    kInactiveWebcontentUpdated = 6,
+    kLocationIconNonSecure = 7,
+    kLocationIconNonVisible = 8,
+    kNoticeAlreadyShowing = 9,
+    kNoticeRequestedAndShown = 10,
+    kNoticeRequestedButNotShown = 11,
+    kPromoPreviouslyDismissed = 12,
+    kMaxValue = kPromoPreviouslyDismissed,
+  };
+
   class TabHelper : public content::WebContentsObserver,
                     public content::WebContentsUserData<TabHelper> {
    public:
@@ -73,6 +92,9 @@ class TrackingProtectionNoticeService
     // contents::WebContentsObserver:
     void DidFinishNavigation(
         content::NavigationHandle* navigation_handle) override;
+
+    // contents::WebContentsObserver:
+    void PrimaryPageChanged(content::Page& page) override;
 
     WEB_CONTENTS_USER_DATA_KEY_DECL();
   };
@@ -94,9 +116,11 @@ class TrackingProtectionNoticeService
         base::Time showed_when,
         user_education::FeaturePromoController* promo_controller);
 
+    bool WasPromoPreviouslyDismissed(Browser* browser);
     bool IsPromoShowing(Browser* browser);
     bool MaybeShowPromo(Browser* browser);
     void HidePromo(Browser* browser);
+    bool IsLocationBarEligible(Browser* browser);
 
     virtual TrackingProtectionOnboarding::NoticeType GetNoticeType() = 0;
     virtual const base::Feature& GetIPHFeature() = 0;
@@ -109,6 +133,16 @@ class TrackingProtectionNoticeService
    public:
     OnboardingNotice(Profile* profile,
                      TrackingProtectionOnboarding* onboarding_service);
+
+   private:
+    TrackingProtectionOnboarding::NoticeType GetNoticeType() override;
+    const base::Feature& GetIPHFeature() override;
+  };
+
+  class OffboardingNotice : public BaseIPHNotice {
+   public:
+    OffboardingNotice(Profile* profile,
+                      TrackingProtectionOnboarding* onboarding_service);
 
    private:
     TrackingProtectionOnboarding::NoticeType GetNoticeType() override;
@@ -139,13 +173,23 @@ class TrackingProtectionNoticeService
   // TrackingProtectionOnboarding::Observer
   void OnShouldShowNoticeUpdated() override;
 
+  // Runs the Hats Logic, which means could either Register the profile for a
+  // group if eligible, or trigger a survey.
+  void RunHatsLogic();
+
+  // Whether or not the Hats logic is required for the current client/profile.
+  bool IsHatsLogicRequired();
+
   raw_ptr<Profile> profile_;
   raw_ptr<TrackingProtectionOnboarding> onboarding_service_;
   std::unique_ptr<BaseIPHNotice> onboarding_notice_;
+  std::unique_ptr<BaseIPHNotice> offboarding_notice_;
   std::unique_ptr<BrowserTabStripTracker> tab_strip_tracker_;
   base::ScopedObservation<TrackingProtectionOnboarding,
                           TrackingProtectionOnboarding::Observer>
       onboarding_observation_{this};
+
+  bool has_opened_first_ntp_ = false;
 };
 
 }  // namespace privacy_sandbox

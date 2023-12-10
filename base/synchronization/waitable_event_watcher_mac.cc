@@ -30,7 +30,7 @@ bool WaitableEventWatcher::StartWatching(
     scoped_refptr<SequencedTaskRunner> task_runner) {
   DCHECK(task_runner->RunsTasksInCurrentSequence());
   DCHECK(!storage_->dispatch_source ||
-         dispatch_source_testcancel(storage_->dispatch_source));
+         dispatch_source_testcancel(storage_->dispatch_source.get()));
 
   // Keep a reference to the receive right, so that if the event is deleted
   // out from under the watcher, a signal can still be observed.
@@ -59,7 +59,7 @@ bool WaitableEventWatcher::StartWatching(
     dispatch_source_t source = storage_->dispatch_source.get();
     mach_port_t name = receive_right_->Name();
 
-    dispatch_source_set_event_handler(storage_->dispatch_source, ^{
+    dispatch_source_set_event_handler(storage_->dispatch_source.get(), ^{
       // For automatic-reset events, only fire the callback if this watcher
       // can claim/dequeue the event. For manual-reset events, all watchers can
       // be called back.
@@ -75,7 +75,7 @@ bool WaitableEventWatcher::StartWatching(
           FROM_HERE,
           BindOnce(&WaitableEventWatcher::InvokeCallback, weak_this));
     });
-    dispatch_resume(storage_->dispatch_source);
+    dispatch_resume(storage_->dispatch_source.get());
   } else {
     // The |event->watch_list_| closures can be run from any thread, so bind
     // the callback as an invocation of PostTask.
@@ -104,7 +104,7 @@ void WaitableEventWatcher::StopWatching() {
   callback_.Reset();
   receive_right_ = nullptr;
   if (storage_->dispatch_source) {
-    dispatch_source_cancel(storage_->dispatch_source);
+    dispatch_source_cancel(storage_->dispatch_source.get());
     storage_->dispatch_source.reset();
   }
 }

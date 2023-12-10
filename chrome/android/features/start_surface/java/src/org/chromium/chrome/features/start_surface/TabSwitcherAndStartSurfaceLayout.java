@@ -438,6 +438,7 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
             startHidingImpl(nextId, hintAtTabSelection);
         }
     }
+
     private void startHidingTabSwitcher(int nextId, boolean hintAtTabSelection) {
         try (TraceEvent e = TraceEvent.scoped(TRACE_HIDE_TAB_SWITCHER)) {
             mTransitionStartTime = SystemClock.elapsedRealtime();

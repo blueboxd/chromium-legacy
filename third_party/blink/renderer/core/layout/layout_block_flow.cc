@@ -43,14 +43,14 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
+#include "third_party/blink/renderer/core/layout/inline/inline_cursor.h"
+#include "third_party/blink/renderer/core/layout/inline/offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/layout_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_absolute_utils.h"
@@ -522,7 +522,7 @@ void LayoutBlockFlow::MakeChildrenNonInline(LayoutObject* insertion_point) {
   DCHECK(!insertion_point || insertion_point->Parent() == this);
 
   SetChildrenInline(false);
-  ClearNGInlineNodeData();
+  ClearInlineNodeData();
 
   LayoutObject* child = FirstChild();
   if (!child)
@@ -717,7 +717,7 @@ void LayoutBlockFlow::SetShouldDoFullPaintInvalidationForFirstLine() {
       // Mark all descendants of the first line if first-line style.
       for (InlineCursor descendants = first_line.CursorForDescendants();
            descendants; descendants.MoveToNext()) {
-        const NGFragmentItem* item = descendants.Current().Item();
+        const FragmentItem* item = descendants.Current().Item();
         if (UNLIKELY(item->IsLayoutObjectDestroyedOrMoved())) {
           descendants.MoveToNextSkippingChildren();
           continue;

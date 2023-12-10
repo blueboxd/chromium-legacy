@@ -33,7 +33,7 @@
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/sync/model/sync_setup_service.h"
 #import "ios/chrome/browser/sync/model/sync_setup_service_factory.h"
-#import "ios/chrome/browser/tabs/inactive_tabs/features.h"
+#import "ios/chrome/browser/tabs/model/inactive_tabs/features.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_edit_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_table_view_controller.h"
@@ -60,7 +60,6 @@
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_encryption_passphrase_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/tabs/inactive_tabs/inactive_tabs_settings_coordinator.h"
-#import "ios/chrome/browser/ui/settings/tabs/tab_pickup/tab_pickup_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/utils/password_utils.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
@@ -138,9 +137,6 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 @property(nonatomic, strong)
     InactiveTabsSettingsCoordinator* inactiveTabsSettingsCoordinator;
 
-// Coordinator for the tab pickup settings.
-@property(nonatomic, strong)
-    TabPickupSettingsCoordinator* tabPickupSettingsCoordinator;
 
 // Handler for Snackbar Commands.
 @property(nonatomic, weak) id<SnackbarCommands> snackbarCommandsHandler;
@@ -679,7 +675,6 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   [self stopPrivacySafeBrowsingCoordinator];
   [self stopPrivacySettingsCoordinator];
   [self stopInactiveTabSettingsCoordinator];
-  [self stopTabPickupSettingsCoordinator];
 
   // Reset the delegate to prevent any queued transitions from attempting to
   // close the settings.
@@ -776,9 +771,11 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 // Shows the Safety Check page and starts the Safety Check for `referrer`.
 - (void)showSafetyCheckAndStartSafetyCheck:
     (password_manager::PasswordCheckReferrer)referrer {
-  if ([self.topViewController isKindOfClass:[SafetyCheckCoordinator class]]) {
-    // The top view controller is already the Safety Check panel.
-    // No need to open it.
+  if ([self.topViewController isKindOfClass:[SafetyCheckCoordinator class]] ||
+      [self.safetyCheckCoordinator.baseViewController isBeingDismissed]) {
+    // Do not open the Safety Check panel if:
+    // [1] The top view controller is already the Safety Check panel, or
+    // [2] The Safety Check view controller is currently being dismissed.
     return;
   }
   DCHECK(!self.safetyCheckCoordinator);
@@ -804,21 +801,6 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
                                browser:self.browser];
   self.privacySafeBrowsingCoordinator.delegate = self;
   [self.privacySafeBrowsingCoordinator start];
-}
-
-// Shows the tab pickup settings screen.
-- (void)showTabPickup {
-  if ([self.topViewController
-          isKindOfClass:[TabPickupSettingsCoordinator class]]) {
-    // The top view controller is already the Safe Browsing panel.
-    // No need to open it.
-    return;
-  }
-  DCHECK(!self.tabPickupSettingsCoordinator);
-  self.tabPickupSettingsCoordinator = [[TabPickupSettingsCoordinator alloc]
-      initWithBaseNavigationController:self
-                               browser:self.browser];
-  [self.tabPickupSettingsCoordinator start];
 }
 
 // Stops the underlying Google services settings coordinator if it exists.
@@ -920,12 +902,6 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 - (void)stopInactiveTabSettingsCoordinator {
   [self.inactiveTabsSettingsCoordinator stop];
   self.inactiveTabsSettingsCoordinator = nil;
-}
-
-// Stops the underlying tab pickup settings coordinator if it exists.
-- (void)stopTabPickupSettingsCoordinator {
-  [self.tabPickupSettingsCoordinator stop];
-  self.tabPickupSettingsCoordinator = nil;
 }
 
 // Stops the underlying SafetyCheck coordinator if it exists.
@@ -1220,10 +1196,6 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 
 - (void)showPasswordSearchPage {
   [self showPasswordManagerSearchPage];
-}
-
-- (void)showTabPickupSettings {
-  [self showTabPickup];
 }
 
 - (void)showContentsSettingsFromViewController:

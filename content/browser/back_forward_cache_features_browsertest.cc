@@ -1812,39 +1812,26 @@ IN_PROC_BROWSER_TEST_F(
   // 4) Go back.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
 
-  if (AreStrictSiteInstancesEnabled()) {
-    // Both sticky and non-sticky features are recorded.
-    ExpectNotRestored(
-        {NotRestoredReason::kRelatedActiveContentsExist,
-         NotRestoredReason::kBlocklistedFeatures,
-         NotRestoredReason::kBrowsingInstanceNotSwapped},
-        {blink::scheduler::WebSchedulerTrackedFeature::kDummy,
-         blink::scheduler::WebSchedulerTrackedFeature::kBroadcastChannel},
-        {ShouldSwapBrowsingInstance::kNo_NotNeededForBackForwardCache}, {}, {},
-        FROM_HERE);
+  // Both sticky and non-sticky features are recorded.
+  ExpectNotRestored(
+      {NotRestoredReason::kBlocklistedFeatures,
+       NotRestoredReason::kBrowsingInstanceNotSwapped},
+      {blink::scheduler::WebSchedulerTrackedFeature::kDummy,
+       blink::scheduler::WebSchedulerTrackedFeature::kBroadcastChannel},
+      {ShouldSwapBrowsingInstance::kNo_NotNeededForBackForwardCache}, {}, {},
+      FROM_HERE);
 
-    ASSERT_TRUE(HistoryGoForward(web_contents()));
+  ASSERT_TRUE(HistoryGoForward(web_contents()));
 
-    ExpectBrowsingInstanceNotSwappedReason(
-        ShouldSwapBrowsingInstance::kNo_AlreadyHasMatchingBrowsingInstance,
-        FROM_HERE);
+  ExpectBrowsingInstanceNotSwappedReason(
+      ShouldSwapBrowsingInstance::kNo_AlreadyHasMatchingBrowsingInstance,
+      FROM_HERE);
 
-    ASSERT_TRUE(HistoryGoBack(web_contents()));
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
 
-    ExpectBrowsingInstanceNotSwappedReason(
-        ShouldSwapBrowsingInstance::kNo_AlreadyHasMatchingBrowsingInstance,
-        FROM_HERE);
-  } else {
-    ExpectNotRestored(
-        {
-            NotRestoredReason::kBlocklistedFeatures,
-            NotRestoredReason::kBrowsingInstanceNotSwapped,
-        },
-        {blink::scheduler::WebSchedulerTrackedFeature::kDummy,
-         blink::scheduler::WebSchedulerTrackedFeature::kBroadcastChannel},
-        {ShouldSwapBrowsingInstance::kNo_NotNeededForBackForwardCache}, {}, {},
-        FROM_HERE);
-  }
+  ExpectBrowsingInstanceNotSwappedReason(
+      ShouldSwapBrowsingInstance::kNo_AlreadyHasMatchingBrowsingInstance,
+      FROM_HERE);
 }
 
 // Tests which blocklisted features are tracked in the metrics when we used
@@ -4380,7 +4367,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WebLocksNotCached) {
                     {}, {}, {}, FROM_HERE);
 }
 
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WebMidiNotCached) {
+// TODO(https://crbug.com/1495476): Reenable. This is flaky because we block on
+// the permission request, not on API usage.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DISABLED_WebMidiNotCached) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a(embedded_test_server()->GetURL("/title1.html"));
   GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));

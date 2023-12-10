@@ -17,8 +17,8 @@
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_utils.h"
 #include "chrome/common/extensions/api/passwords_private.h"
-#include "components/password_manager/core/browser/bulk_leak_check_service.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
+#include "components/password_manager/core/browser/leak_detection/bulk_leak_check_service_interface.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 #include "components/password_manager/core/browser/ui/bulk_leak_check_service_adapter.h"
 #include "components/password_manager/core/browser/ui/credential_ui_entry.h"
@@ -106,6 +106,7 @@ class PasswordCheckDelegate
       password_manager::BulkLeakCheckService::State state) override;
   void OnCredentialDone(const password_manager::LeakCheckCredential& credential,
                         password_manager::IsLeaked is_leaked) override;
+  void OnBulkCheckServiceShutDown() override;
 
   // Starts the analyses of whether credentials are compromised and/or weak.
   // Assumes that `StartPasswordCheck()` was called prior.

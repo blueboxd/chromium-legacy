@@ -243,6 +243,11 @@ class MockNavigationHandle : public NavigationHandle {
 
   void SetContentSettings(
       blink::mojom::RendererContentSettingsPtr content_settings) override {}
+  blink::mojom::RendererContentSettingsPtr GetContentSettingsForTesting()
+      override {
+    return nullptr;
+  }
+  MOCK_METHOD(void, SetIsAdTagged, ());
 
   blink::RuntimeFeatureStateContext& GetMutableRuntimeFeatureStateContext()
       override {

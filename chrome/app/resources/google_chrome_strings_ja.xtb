@@ -25,6 +25,7 @@
 <translation id="1425903838053942728">{COUNT,plural, =0{Chrome の更新が完了しました。再起動すると最新バージョンをすぐに使用できます。その後、現在のタブが再度開きます。}=1{Chrome の更新が完了しました。再起動すると最新バージョンをすぐに使用できます。その後、現在のタブが再度開きます。シークレット ウィンドウは、再起動後は自動的には開きません。}other{Chrome の更新が完了しました。再起動すると最新バージョンをすぐに使用できます。その後、現在のタブが再度開きます。現在開いている # 個のシークレット ウィンドウは、再起動後は自動的には開きません。}}</translation>
 <translation id="1434626383986940139">Chrome Canary アプリ</translation>
 <translation id="1492280395845991349">Chrome の更新を完了するには再起動してください</translation>
+<translation id="1497802159252041924">インストール エラー: <ph name="INSTALL_ERROR" /></translation>
 <translation id="1507198376417198979">新しい Chrome プロフィールをカスタマイズ</translation>
 <translation id="1516530951338665275">Google Chrome でペアリングを続行するには、Bluetooth へのアクセスが必要です。<ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
 <translation id="1547295885616600893">Chrome OS は、追加の<ph name="BEGIN_LINK_CROS_OSS" />オープンソース ソフトウェア<ph name="END_LINK_CROS_OSS" />によって実現しました。</translation>
@@ -86,6 +87,7 @@
 <translation id="2467438592969358367">Google Chrome からパスワードをエクスポートするための許可を求められています。許可するには Windows のパスワードを入力してください。</translation>
 <translation id="2472092250898121027">この拡張機能にはマルウェアが含まれており、安全ではありません。アクセスしたサイトでユーザーデータ（個人情報を含む）が参照、変更されないように、Chrome からこの拡張機能を削除してください。</translation>
 <translation id="2485422356828889247">アンインストール</translation>
+<translation id="2534365042754120737">データを保護するため、最近アクセスしていないサイトから権限を自動で削除します。通知は停止されません。</translation>
 <translation id="2534507159460261402">Google Pay（Chrome にコピー）</translation>
 <translation id="2556847002339236023"><ph name="TIMEOUT_DURATION" /> 使用しなかったため、Chrome は組織によって終了されます。閲覧データは削除されました。これには、履歴、自動入力、ダウンロードが含まれます。</translation>
 <translation id="2559253115192232574">その後、アクセスしたサイトは、表示する広告をパーソナライズするために、Chrome にユーザーの興味 / 関心を提示するよう依頼できます。Chrome では、興味 / 関心を 3 つまで共有できます。</translation>
@@ -247,6 +249,7 @@
 <translation id="5139423532931106058">Chrome プロファイルをカスタマイズ</translation>
 <translation id="5163087008893166964">Chrome へようこそ。新しいブラウザ ウィンドウが開いています</translation>
 <translation id="5170938038195470297">バージョンが新しい Google Chrome のプロファイルは使用できません。一部の機能が利用できない可能性があります。別の場所のプロファイルを指定するか、新しいバージョンの Chrome をご使用ください。</translation>
+<translation id="5201744974236816379">Chrome の更新</translation>
 <translation id="521447420733633466">デバイスを共有している場合でも、友だちや家族はそれぞれ Chrome を自分専用のブラウザとして自分用の設定をして使うことができます</translation>
 <translation id="5239627039202700673">メッセージ、ドキュメント、他のアプリのリンクをクリックしたときに、常に Chrome で開くよう設定できます</translation>
 <translation id="5251420635869119124">ゲスト ユーザーは、記録を残さずに Chrome を使用できます。</translation>
@@ -255,13 +258,16 @@
 <translation id="5334487786912937552">ファイルをダウンロードするには、Chrome でストレージへのアクセスを許可する必要があります</translation>
 <translation id="5337648990166757586">任意: 診断と使用状況のデータを Google に自動送信して、Chrome OS の機能とパフォーマンスの改善に協力する。</translation>
 <translation id="5357889879764279201">ChromeOS Flex のヘルプを見る</translation>
+<translation id="5386118856456530849">Chrome のバージョン設定に移動</translation>
 <translation id="5386244825306882791">この拡張機能では、Chrome の起動時、またはアドレスバーからの検索時に表示されるページも制御されます。</translation>
 <translation id="5394833366792865639">Chrome タブの共有</translation>
 <translation id="5412485296464121825">サイトでは、ユーザーの興味 / 関心についての情報を Chrome に保存する場合があります。たとえば、マラソン用のシューズを購入するためにあるサイトにアクセスすると、そのサイトでは「ランニング」をユーザーの興味 / 関心として定義する可能性があります。その後、別のサイトにアクセスして競技に登録しようとすると、そのサイトでは、ユーザーの興味 / 関心に基づいてランニング用シューズの広告が表示される場合があります。</translation>
 <translation id="5430073640787465221">ユーザー設定ファイルが壊れているか無効です。設定を復元できません。</translation>
+<translation id="5468572406162360320">Chrome では、これらの機能を改善するため、ユーザーの操作内容を Google に送信します。このデータは人間のレビュアーによって読み取られ、処理され、注釈が付けられる可能性があります。</translation>
 <translation id="5524761631371622910">Chrome の試用期間がランダムに割り当てられた場合は、閲覧履歴が、表示される広告と以下の推定された興味 / 関心に影響します。プライバシーを保護するために、Chrome ではユーザーの興味 / 関心が毎月順番に削除されます。</translation>
 <translation id="5530733413481476019">Chrome を高速化する</translation>
 <translation id="5566025111015594046">Google Chrome（mDNS インバウンド）</translation>
+<translation id="5572786658631721382">オフにした場合も、ローカルで提供される検索候補は引き続き表示されます</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> は危険なファイルの可能性があるため、Chrome でブロックしました。</translation>
 <translation id="5678190148303298925">{COUNT,plural, =0{管理者が、このアップデートを適用するために Chrome を再起動するよう求めています}=1{管理者が、このアップデートを適用するために Chrome を再起動するよう求めています。シークレット ウィンドウは、再起動後は自動的には開きません。}other{管理者が、このアップデートを適用するために Chrome を再起動するよう求めています。現在開いている # 個のシークレット ウィンドウは、再起動後は自動的には開きません。}}</translation>
 <translation id="5686916850681061684">Google Chrome をカスタマイズ、制御します。確認の必要な項目があります。クリックして詳細をご覧ください。</translation>
@@ -272,6 +278,7 @@
 <translation id="5727531838415286053">Chrome の試用期間がランダムに割り当てられた場合は、閲覧履歴が、表示される広告と以下の推定された興味 / 関心に影響します。プライバシーを保護するために、Chrome ではユーザーの興味 / 関心が毎月順番に削除されます。ユーザーが削除しない限り、興味 / 関心は更新されます。</translation>
 <translation id="5736850870166430177">サイトがパスワードを不正に取得しようとしている場合や、ユーザーが安全でないファイルをダウンロードしようとした場合は、URL とページ コンテンツの一部をセーフ ブラウジングに送信することがあります</translation>
 <translation id="5756509061973259733">このアカウントの Chrome プロファイルは、このデバイスにすでに存在します</translation>
+<translation id="5779368197781401531">ログインすると、お使いのすべてのデバイスで Chrome の設定やデータを使用できます</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">Chrome を起動できませんでした。もう一度お試しください。</translation>
 <translation id="5809516625706423866">インターネットに接続できません。HTTP 401 認証エラーが発生しました。プロキシ設定をご確認ください。</translation>
@@ -354,6 +361,7 @@
 <translation id="7177959540995930968">これらの機能について詳しくは、Chrome の設定をご覧ください。</translation>
 <translation id="7193885263065350793"><ph name="TIMEOUT_DURATION" /> 使用しなかったため、Chrome は組織によって終了されます。</translation>
 <translation id="7242029209006116544">現在、管理対象アカウントでログインしており、あなたの Google Chrome プロファイルを管理者が制御できる状態になっています。あなたの Chrome データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME" /> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。新しいプロファイルを作成して、既存の Chrome データを別に保管することができます。<ph name="LEARN_MORE" /></translation>
+<translation id="7284878711178835966">入力を始めると、アドレスバーや検索ボックスの内容が既定の検索エンジンに送信されます</translation>
 <translation id="7295052994004373688">この言語が Google Chrome UI の表示に使用されます</translation>
 <translation id="7296210096911315575">使用と安全に関する重要事項</translation>
 <translation id="7308322188646931570">ファイルをダウンロードするには、Chrome でストレージへのアクセスを許可する必要があります</translation>
@@ -399,6 +407,7 @@
 <translation id="7962410387636238736">Windows XP と Windows Vista はサポートされなくなったため、このパソコンでは今後 Google Chrome のアップデートは受信されません</translation>
 <translation id="8005666035647241369">このデバイスの Google パスワード マネージャーに移動</translation>
 <translation id="8008534537613507642">Chrome を再インストール</translation>
+<translation id="8009904340233602924">アカウントなしで Chrome を使用する</translation>
 <translation id="8013993649590906847">画像に有効な説明が設定されていない場合に、Chrome で説明を自動的に生成できるよう Google に画像が送信されます。</translation>
 <translation id="8019103195866286235">この拡張機能はデベロッパーが非公開にしており、安全でない可能性があります。アクセスしたサイトでユーザーデータ（個人情報を含む）が参照、変更されないように、Chrome からこの拡張機能を削除してください。</translation>
 <translation id="80471789339884597">インストールいただきありがとうございます。<ph name="BUNDLE_NAME" /> を使用するにはすべてのブラウザを再起動してください。</translation>
@@ -440,9 +449,9 @@
 <translation id="8649026945479135076">多くのウェブサイトでは、アクセスしたユーザーの興味 / 関心を記録して、ユーザー体験をパーソナライズするのが一般的です。そうしたウェブサイトでは、ユーザーの興味 / 関心についての情報を Chrome に保存する場合があります。</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">この拡張機能では、Chrome の起動時に表示されるページも制御されます。</translation>
-<translation id="8684875378076460854">このファイルは危害を及ぼす可能性があるため、スキャンすることをおすすめします</translation>
 <translation id="8686817260976772516">Chrome プロファイルを使うと、Chrome のあらゆる項目や設定を個別に管理できます。友達や家族のプロファイルを作成したり、仕事とプライベートでプロファイルを使い分けたりできます。</translation>
 <translation id="8712767363896337380">アップデートが適用されました。更新を完了するには Chrome を再起動してください。</translation>
+<translation id="8727043961453758442">Chrome を最大限に活用</translation>
 <translation id="873133009373065397">Google Chrome では既定のブラウザを判定または設定できません</translation>
 <translation id="8765470054473112089">Chrome でアドレスバーや検索ボックスに入力を始めると、入力内容がデフォルトの検索エンジンに送信され、より関連性の高い検索候補が表示されます。シークレット モードの場合、この設定はオフになっています。</translation>
 <translation id="8821043148920470810">今後、Google Chrome のアップデートを受信するには、Windows 10 以降が必要となります。このパソコンでは Windows 7 が実行されています。</translation>

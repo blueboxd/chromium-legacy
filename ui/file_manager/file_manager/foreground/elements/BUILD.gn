@@ -71,7 +71,6 @@ js_unittest("files_xf_elements_unittest") {
     "//ash/webui/common/resources:load_time_data.m",
     "//chrome/test/data/webui/chromeos:chai_assert",
     "//ui/file_manager/file_manager/common/js:test_error_reporting",
-    "//ui/file_manager/file_manager/common/js:util",
   ]
 
   externs_list = [ "$externs_path/file_manager_private.js" ]
@@ -87,10 +86,7 @@ js_library("xf_circular_progress") {
 }
 
 js_library("xf_display_panel") {
-  deps = [
-    ":xf_panel_item",
-    "//ui/file_manager/file_manager/common/js:util",
-  ]
+  deps = [ ":xf_panel_item" ]
 }
 
 js_library("xf_panel_item") {
@@ -98,6 +94,5 @@ js_library("xf_panel_item") {
     ":xf_button",
     ":xf_circular_progress",
     "//ash/webui/common/resources:assert",
-    "//ui/file_manager/file_manager/common/js:util",
   ]
 }

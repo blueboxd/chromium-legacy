@@ -26,6 +26,7 @@
 <translation id="1448064542941920355">Diminuisci lo zoom</translation>
 <translation id="1510341833810331442">I siti non sono autorizzati a salvare dati sul dispositivo</translation>
 <translation id="1547123415014299762">Sono consentiti i cookie di terze parti</translation>
+<translation id="1568470248891039841">I siti visitati possono incorporare contenuti di altri siti, ad esempio immagini, annunci e testo. Questi altri siti possono chiedere l'autorizzazione a usare le informazioni su di te che hanno salvato durante la tua navigazione dei siti. <ph name="BEGIN_LINK" />Scopri di più sui contenuti incorporati<ph name="END_LINK" /></translation>
 <translation id="1593426485665524382">Nuove azioni disponibili vicino alla parte superiore dello schermo</translation>
 <translation id="1620510694547887537">Fotocamera</translation>
 <translation id="1633720957382884102">Siti correlati</translation>
@@ -80,6 +81,7 @@
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{Consentite: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> e <ph name="NUM_MORE" /> altra}other{Consentite: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> e altre <ph name="NUM_MORE" />}}</translation>
 <translation id="2410940059315936967">Un sito visitato può incorporare contenuti di altri siti, ad esempio immagini, annunci e testo. I cookie impostati da questi altri siti vengono chiamati cookie di terze parti.</translation>
 <translation id="2434158240863470628">Download completato: <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
+<translation id="2438120137003069591">Hai consentito temporaneamente a questo sito di utilizzare i cookie di terze parti, il che comporta una minore protezione della navigazione, ma è più probabile che le funzionalità del sito funzionino come previsto. <ph name="BEGIN_LINK" />Invia feedback<ph name="END_LINK" /></translation>
 <translation id="244264527810019436">Le funzionalità su alcuni siti potrebbero non essere disponibili in modalità di navigazione in incognito</translation>
 <translation id="2442870161001914531">Richiedi sempre sito desktop</translation>
 <translation id="2469312991797799607">Questa azione eliminerà tutti i dati e i cookie di <ph name="ORIGIN" /> e di tutti i siti secondari</translation>
@@ -114,6 +116,7 @@
 <translation id="2910701580606108292">Chiedi prima di consentire ai siti di riprodurre contenuti protetti</translation>
 <translation id="2932883381142163287">Segnala abuso</translation>
 <translation id="2968755619301702150">Visualizzatore certificati</translation>
+<translation id="2979365474350987274">I cookie di terze parti sono limitati</translation>
 <translation id="3008272652534848354">Reimposta le autorizzazioni</translation>
 <translation id="301521992641321250">Bloccata automaticamente</translation>
 <translation id="3069226013421428034">Consenti l'accesso di terze parti per un sito specifico.</translation>
@@ -169,6 +172,7 @@
 <translation id="3918378745482005425">Alcune funzionalità potrebbero non essere disponibili. I siti correlati possono comunque utilizzare i cookie di terze parti.</translation>
 <translation id="3955193568934677022">Consenti ai siti di riprodurre i contenuti protetti (opzione consigliata)</translation>
 <translation id="3967822245660637423">Download completato</translation>
+<translation id="3974105241379491420">I siti possono chiedere l'autorizzazione a usare le informazioni salvate su di te</translation>
 <translation id="3987993985790029246">Copia link</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> di ?</translation>
 <translation id="3992684624889376114">Informazioni su questa pagina</translation>
@@ -188,6 +192,7 @@
 <translation id="4278390842282768270">Autorizzazione consentita</translation>
 <translation id="429312253194641664">Un sito sta riproducendo contenuti multimediali</translation>
 <translation id="42981349822642051">Espandi</translation>
+<translation id="4336566011000459927">Chrome limiterà nuovamente i cookie oggi</translation>
 <translation id="4338831206024587507">Tutti i siti in <ph name="DOMAIN" /></translation>
 <translation id="4402755511846832236">Impedisci ai siti di sapere quando usi attivamente questo dispositivo</translation>
 <translation id="4412992751769744546">Consenti cookie di terze parti</translation>
@@ -243,6 +248,7 @@
 <translation id="5335288049665977812">Consenti l'esecuzione di JavaScript nei siti (opzione consigliata)</translation>
 <translation id="534295439873310000">Dispositivi NFC</translation>
 <translation id="5344522958567249764">Gestisci privacy per gli annunci</translation>
+<translation id="5389626883706033615">I siti non possono chiederti l'autorizzazione a usare le informazioni salvate su di te</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 altro)}other{(+ altri #)}}</translation>
 <translation id="5403592356182871684">Nomi</translation>
 <translation id="5438097262470833822">Questa selezione reimposterà le autorizzazioni per <ph name="WEBSITE" /></translation>
@@ -289,6 +295,8 @@
 <translation id="6177128806592000436">La tua connessione a questo sito non è sicura</translation>
 <translation id="6181444274883918285">Aggiungi eccezione per un sito</translation>
 <translation id="6192792657125177640">Eccezioni</translation>
+<translation id="6194967801833346599">{DAYS,plural, =1{Chrome bloccherà nuovamente i cookie domani}other{# giorni al nuovo blocco dei cookie}}</translation>
+<translation id="6195163219142236913">Cookie di terze parti limitati</translation>
 <translation id="6196640612572343990">Blocca cookie di terze parti</translation>
 <translation id="6205314730813004066">Privacy per gli annunci</translation>
 <translation id="6207207788774442484">Elimina dati e reimposta autorizzazioni</translation>
@@ -299,6 +307,7 @@
 <translation id="6270391203985052864">I siti possono chiedere di inviare notifiche</translation>
 <translation id="6295158916970320988">Tutti i siti</translation>
 <translation id="6320088164292336938">Vibrazione</translation>
+<translation id="6344622098450209924">Protezione dal monitoraggio</translation>
 <translation id="6367753977865761591">Blocca l'accesso di terze parti per un sito specifico.</translation>
 <translation id="6398765197997659313">Esci da schermo intero</translation>
 <translation id="640163077447496506">Scade oggi</translation>
@@ -350,6 +359,7 @@
 <translation id="7243308994586599757">Opzioni disponibili nella parte inferiore dello schermo</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> elementi selezionati</translation>
 <translation id="7260727271532453612">Autorizzazioni <ph name="PERMISSION_1" /> e <ph name="PERMISSION_2" /> consentite</translation>
+<translation id="7284451015630589124">Hai impedito ai siti di utilizzare i cookie di terze parti per monitorare la tua navigazione. Vai alle impostazioni per <ph name="BEGIN_LINK" />gestire le protezioni antitracciamento<ph name="END_LINK" />.</translation>
 <translation id="7302486331832100261">Di solito blocchi le notifiche. Per consentirle, tocca Dettagli.</translation>
 <translation id="7366415735885268578">Aggiunta di un sito</translation>
 <translation id="7368695150573390554">I dati offline verranno eliminati</translation>
@@ -358,6 +368,7 @@
 <translation id="7423098979219808738">Chiedi prima</translation>
 <translation id="7423538860840206698">Lettura degli appunti non consentita</translation>
 <translation id="7425915948813553151">Tema scuro per i siti</translation>
+<translation id="7474522811371247902">Chrome limita l'utilizzo dei cookie di terze parti per la maggior parte dei siti. Tuttavia, i cookie di terze parti sono consentiti su questo sito perché si basa su di questi cookie per fornire servizi di base.\n\nVai alle impostazioni per <ph name="BEGIN_LINK" />gestire le protezioni antitracciamento<ph name="END_LINK" />.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">Un sito sta utilizzando il microfono</translation>
 <translation id="7561196759112975576">Sempre</translation>
@@ -374,6 +385,7 @@
 <translation id="780301667611848630">No, grazie</translation>
 <translation id="7804248752222191302">Un sito sta utilizzando la fotocamera</translation>
 <translation id="7807060072011926525">Fornito da Google</translation>
+<translation id="7822573154188733812">Chrome impedisce ai siti di utilizzare i cookie di terze parti per monitorare la tua navigazione. Vai alle impostazioni per <ph name="BEGIN_LINK" />gestire le protezioni antitracciamento<ph name="END_LINK" />.</translation>
 <translation id="7835852323729233924">Riproduzione media</translation>
 <translation id="783819812427904514">Riattiva audio video</translation>
 <translation id="7846076177841592234">Annulla selezione</translation>
@@ -390,6 +402,7 @@
 <translation id="8077120325605624147">Qualsiasi sito visitato può mostrarti qualsiasi annuncio</translation>
 <translation id="8087000398470557479">Questi contenuti derivano da <ph name="DOMAIN_NAME" /> e sono offerti da Google.</translation>
 <translation id="8088603949666785339">Altre opzioni in <ph name="BANNER_TITLE" /></translation>
+<translation id="8113501330600751161">{DAYS,plural, =1{Chrome limiterà nuovamente i cookie domani}other{# giorni al nuovo limite dei cookie in Chrome}}</translation>
 <translation id="8116925261070264013">Con audio disattivato</translation>
 <translation id="813082847718468539">Visualizza informazioni sul sito</translation>
 <translation id="8131740175452115882">Conferma</translation>
@@ -428,6 +441,7 @@
 <translation id="8564613706851221529">{COUNT,plural, =1{Cookie consentiti per <ph name="FPS_MEMBERS_COUNT" /> sito <ph name="FPS_OWNER" />}other{Cookie consentiti per <ph name="FPS_MEMBERS_COUNT" /> siti <ph name="FPS_OWNER" />}}</translation>
 <translation id="857943718398505171">Consentita (opzione consigliata)</translation>
 <translation id="8609465669617005112">Sposta su</translation>
+<translation id="8649036394979866943">Chrome limita l'utilizzo dei cookie di terze parti per il monitoraggio della tua navigazione per la maggior parte dei siti. Vai alle impostazioni per <ph name="BEGIN_LINK" />gestire le protezioni antitracciamento<ph name="END_LINK" /></translation>
 <translation id="8676374126336081632">Cancella testo inserito</translation>
 <translation id="8681886425883659911">Gli annunci vengono bloccati sui siti noti che mostrano annunci invasivi o fuorvianti</translation>
 <translation id="868929229000858085">Cerca nei contatti</translation>
@@ -444,12 +458,14 @@
 <translation id="8816026460808729765">Impedisci ai siti di accedere ai sensori</translation>
 <translation id="8823559166155093873">Blocca i cookie</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8874790741333031443">Prova a consentire temporaneamente i cookie di terze parti. In questo modo avrai meno protezione durante la navigazione, ma è più probabile che le funzionalità del sito agiscano come previsto.</translation>
 <translation id="8889294078294184559">Mentre continui a navigare, i siti possono controllare su Chrome e verificare con un sito che hai visitato in precedenza che potresti essere una persona reale</translation>
 <translation id="8899807382908246773">Annunci invasivi</translation>
 <translation id="8903921497873541725">Aumenta lo zoom</translation>
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">Funzionalità NFC non attiva per questo dispositivo. Attivala nelle <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="8928445016601307354">Impedisci ai siti di vedere e modificare informazioni su dispositivi NFC</translation>
+<translation id="8944485226638699751">Limitati</translation>
 <translation id="8958424370300090006">Blocca i cookie per un sito specifico.</translation>
 <translation id="8959122750345127698">Navigazione inaccessibile: <ph name="URL" /></translation>
 <translation id="8986362086234534611">Elimina</translation>

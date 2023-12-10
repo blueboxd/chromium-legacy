@@ -393,10 +393,10 @@ public abstract class Layout {
 
     /**
      * To be called when the layout is starting a transition out of the view mode.
-     * @param nextTabId          The id of the next tab.
+     *
+     * @param nextTabId The id of the next tab.
      * @param hintAtTabSelection Whether or not the new tab selection should be broadcast as a hint
-     *                           potentially before this {@link Layout} is done hiding and the
-     *                           selection occurs.
+     *     potentially before this {@link Layout} is done hiding and the selection occurs.
      */
     public void startHiding(int nextTabId, boolean hintAtTabSelection) {
         mUpdateHost.startHiding(nextTabId, hintAtTabSelection);

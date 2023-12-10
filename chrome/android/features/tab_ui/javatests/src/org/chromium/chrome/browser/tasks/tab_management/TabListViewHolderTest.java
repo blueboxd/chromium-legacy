@@ -243,6 +243,7 @@ public class TabListViewHolderTest extends BlankUiTestActivityTestCase {
         super.setUpTest();
         getActivity().setTheme(R.style.Theme_BrowserUI_DayNight);
         MockitoAnnotations.initMocks(this);
+
         ViewGroup view = new LinearLayout(getActivity());
         FrameLayout.LayoutParams params =
                 new FrameLayout.LayoutParams(
@@ -348,7 +349,10 @@ public class TabListViewHolderTest extends BlankUiTestActivityTestCase {
                 .init(any(LevelDBPersistedDataStorage.class), any(BrowserContextHandle.class));
         doReturn(false).when(mProfile).isOffTheRecord();
         LevelDBPersistedDataStorage.setSkipNativeAssertionsForTesting(true);
+
         Profile.setLastUsedProfileForTesting(mProfile);
+        PriceTrackingFeatures.setPriceTrackingEnabledForTesting(false);
+
         mMocker.mock(UrlUtilitiesJni.TEST_HOOKS, mUrlUtilitiesJniMock);
         mMocker.mock(CurrencyFormatterJni.TEST_HOOKS, mCurrencyFormatterJniMock);
         doReturn(1L)
@@ -855,7 +859,7 @@ public class TabListViewHolderTest extends BlankUiTestActivityTestCase {
     @MediumTest
     @UiThreadTest
     public void testPriceStringPriceDrop() {
-        Tab tab = MockTab.createAndInitialize(1, false);
+        Tab tab = MockTab.createAndInitialize(1, mProfile);
         MockShoppingPersistedTabDataFetcher fetcher = new MockShoppingPersistedTabDataFetcher(tab);
         fetcher.setPriceStrings(EXPECTED_PRICE_STRING, EXPECTED_PREVIOUS_PRICE_STRING);
         testPriceString(
@@ -866,7 +870,7 @@ public class TabListViewHolderTest extends BlankUiTestActivityTestCase {
     @MediumTest
     @UiThreadTest
     public void testPriceStringNullPriceDrop() {
-        Tab tab = MockTab.createAndInitialize(1, false);
+        Tab tab = MockTab.createAndInitialize(1, mProfile);
         MockShoppingPersistedTabDataFetcher fetcher = new MockShoppingPersistedTabDataFetcher(tab);
         fetcher.setNullPriceDrop();
         testPriceString(
@@ -877,7 +881,7 @@ public class TabListViewHolderTest extends BlankUiTestActivityTestCase {
     @MediumTest
     @UiThreadTest
     public void testPriceStringPriceDropThenNull() {
-        Tab tab = MockTab.createAndInitialize(1, false);
+        Tab tab = MockTab.createAndInitialize(1, mProfile);
         MockShoppingPersistedTabDataFetcher fetcher = new MockShoppingPersistedTabDataFetcher(tab);
         fetcher.setPriceStrings(EXPECTED_PRICE_STRING, EXPECTED_PREVIOUS_PRICE_STRING);
         testPriceString(
@@ -891,7 +895,7 @@ public class TabListViewHolderTest extends BlankUiTestActivityTestCase {
     @MediumTest
     @UiThreadTest
     public void testPriceStringTurnFeatureOff() {
-        Tab tab = MockTab.createAndInitialize(1, false);
+        Tab tab = MockTab.createAndInitialize(1, mProfile);
         MockShoppingPersistedTabDataFetcher fetcher = new MockShoppingPersistedTabDataFetcher(tab);
         fetcher.setPriceStrings(EXPECTED_PRICE_STRING, EXPECTED_PREVIOUS_PRICE_STRING);
         testPriceString(
@@ -976,7 +980,7 @@ public class TabListViewHolderTest extends BlankUiTestActivityTestCase {
                     mockUrlUtilities();
                     mockOptimizationGuideResponse(
                             OptimizationGuideDecision.TRUE, ANY_PRICE_TRACKING_DATA);
-                    MockTab tab = MockTab.createAndInitialize(1, false);
+                    MockTab tab = MockTab.createAndInitialize(1, mProfile);
                     tab.setGurlOverrideForTesting(TEST_GURL);
                     tab.setIsInitialized(true);
                     tab.setTimestampMillis(System.currentTimeMillis());

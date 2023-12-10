@@ -506,8 +506,12 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
                     .setModalDialogManagerSupplier(getModalDialogManagerSupplier());
         }
         if (fragment instanceof BaseSiteSettingsFragment) {
-            ((BaseSiteSettingsFragment) fragment)
-                    .setSiteSettingsDelegate(new ChromeSiteSettingsDelegate(this, mProfile));
+            BaseSiteSettingsFragment baseSiteSettingsFragment =
+                    ((BaseSiteSettingsFragment) fragment);
+            baseSiteSettingsFragment.setSiteSettingsDelegate(
+                    new ChromeSiteSettingsDelegate(this, mProfile));
+            baseSiteSettingsFragment.setCustomTabIntentHelper(
+                    LaunchIntentDispatcher::createCustomTabActivityIntent);
         }
         if (fragment instanceof SafetyCheckSettingsFragment) {
             SafetyCheckCoordinator.create((SafetyCheckSettingsFragment) fragment,
@@ -586,8 +590,11 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
             AutofillOptionsCoordinator.createFor((AutofillOptionsFragment) fragment);
         }
         if (fragment instanceof TrackingProtectionSettings) {
-            ((TrackingProtectionSettings) fragment)
-                    .setTrackingProtectionDelegate(new ChromeTrackingProtectionDelegate(mProfile));
+            TrackingProtectionSettings tpFragment = ((TrackingProtectionSettings) fragment);
+            tpFragment.setTrackingProtectionDelegate(
+                    new ChromeTrackingProtectionDelegate(mProfile));
+            tpFragment.setCustomTabIntentHelper(
+                    LaunchIntentDispatcher::createCustomTabActivityIntent);
         }
     }
 

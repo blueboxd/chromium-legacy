@@ -310,6 +310,8 @@ void PasswordManager::RegisterProfilePrefs(
   registry->RegisterIntegerPref(
       prefs::kCurrentMigrationVersionToGoogleMobileServices, 0);
   registry->RegisterDoublePref(prefs::kTimeOfLastMigrationAttempt, 0.0);
+  registry->RegisterBooleanPref(prefs::kPasswordsUseUPMLocalAndSeparateStores,
+                                false);
   registry->RegisterBooleanPref(prefs::kRequiresMigrationAfterSyncStatusChange,
                                 false);
   registry->RegisterBooleanPref(
@@ -1161,7 +1163,8 @@ void PasswordManager::OnLoginSuccessful() {
     }
 
     if (submitted_manager->HasGeneratedPassword()) {
-      client_->AutomaticPasswordSave(MoveOwnedSubmittedManager());
+      client_->AutomaticPasswordSave(MoveOwnedSubmittedManager(),
+                                     /*is_update_confirmation=*/false);
     }
   }
   ResetSubmittedManager();

@@ -38,22 +38,22 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/inline/fragment_item.h"
+#include "third_party/blink/renderer/core/layout/inline/inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/list/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/list/list_marker.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
-#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_shape.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_tree_as_text.h"
+#include "third_party/blink/renderer/core/layout/table/layout_table_cell.h"
 #include "third_party/blink/renderer/core/page/print_context.h"
 #include "third_party/blink/renderer/core/paint/fragment_data_iterator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -254,7 +254,7 @@ void LayoutTreeAsText::WriteLayoutObject(WTF::TextStream& ts,
   }
 
   if (o.IsTableCell()) {
-    const auto& c = To<LayoutNGTableCell>(o);
+    const auto& c = To<LayoutTableCell>(o);
     ts << " [r=" << c.RowIndex() << " c=" << c.AbsoluteColumnIndex()
        << " rs=" << c.ResolvedRowSpan() << " cs=" << c.ColSpan() << "]";
   }
@@ -325,9 +325,9 @@ static void WriteTextFragment(WTF::TextStream& ts,
 
 static void WriteTextFragment(WTF::TextStream& ts, const InlineCursor& cursor) {
   DCHECK(cursor.CurrentItem());
-  const NGFragmentItem& item = *cursor.CurrentItem();
-  DCHECK(item.Type() == NGFragmentItem::kText ||
-         item.Type() == NGFragmentItem::kGeneratedText);
+  const FragmentItem& item = *cursor.CurrentItem();
+  DCHECK(item.Type() == FragmentItem::kText ||
+         item.Type() == FragmentItem::kGeneratedText);
   const LayoutUnit inline_size =
       item.IsHorizontal() ? item.Size().width : item.Size().height;
   WriteTextFragment(ts, item.RectInContainerFragment(),

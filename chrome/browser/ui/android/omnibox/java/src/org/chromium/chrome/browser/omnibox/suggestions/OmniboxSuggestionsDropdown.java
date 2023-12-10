@@ -13,6 +13,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewOutlineProvider;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -34,6 +35,7 @@ import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.RoundedCornerOutlineProvider;
+import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.ViewUtils;
 
@@ -50,6 +52,7 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
     private final int mIncognitoBgColor;
 
     private final SuggestionLayoutScrollListener mLayoutScrollListener;
+    private final RecyclerViewSelectionController mSelectionController;
 
     private @Nullable OmniboxSuggestionsDropdownAdapter mAdapter;
     private @Nullable OmniboxSuggestionsDropdownEmbedder mEmbedder;
@@ -222,13 +225,17 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
 
         mLayoutScrollListener = new SuggestionLayoutScrollListener(context);
         setLayoutManager(mLayoutScrollListener);
+        mSelectionController = new RecyclerViewSelectionController(mLayoutScrollListener);
+        addOnChildAttachStateChangeListener(mSelectionController);
 
         boolean shouldShowModernizeVisualUpdate =
                 OmniboxFeatures.shouldShowModernizeVisualUpdate(context);
         final Resources resources = context.getResources();
         int paddingBottom =
                 resources.getDimensionPixelOffset(R.dimen.omnibox_suggestion_list_padding_bottom);
-        ViewCompat.setPaddingRelative(this, 0, 0, 0, paddingBottom);
+        int paddingTop =
+                resources.getDimensionPixelOffset(R.dimen.omnibox_suggestion_list_padding_top);
+        ViewCompat.setPaddingRelative(this, 0, paddingTop, 0, paddingBottom);
 
         mStandardBgColor =
                 shouldShowModernizeVisualUpdate
@@ -300,8 +307,7 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
 
     /** Resets selection typically in response to changes to the list. */
     public void resetSelection() {
-        if (mAdapter == null) return;
-        mAdapter.resetSelection();
+        mSelectionController.resetSelection();
     }
 
     /** Resests the tracked keyboard shown state to properly respond to scroll events. */
@@ -394,6 +400,12 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
                             availableViewportHeight,
                             mEmbedder.isTablet() ? MeasureSpec.AT_MOST : MeasureSpec.EXACTLY);
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+            if (mEmbedder.isTablet()) {
+                setRoundBottomCorners(
+                        getMeasuredHeight() < availableViewportHeight
+                                || !KeyboardVisibilityDelegate.getInstance()
+                                        .isKeyboardShowing(getContext(), this));
+            }
         }
     }
 
@@ -442,16 +454,17 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (!isShown()) return false;
 
-        View selectedView = mAdapter.getSelectedView();
+        View selectedView = mSelectionController.getSelectedView();
         if (selectedView != null && selectedView.onKeyDown(keyCode, event)) {
             return true;
         }
 
-        int selectedPosition = mAdapter.getSelectedViewIndex();
         if (KeyNavigationUtil.isGoDown(event)) {
-            return mAdapter.setSelectedViewIndex(selectedPosition + 1);
+            mSelectionController.selectNextItem();
+            return true;
         } else if (KeyNavigationUtil.isGoUp(event)) {
-            return mAdapter.setSelectedViewIndex(selectedPosition - 1);
+            mSelectionController.selectPreviousItem();
+            return true;
         } else if (KeyNavigationUtil.isEnter(event)) {
             if (selectedView != null) return selectedView.performClick();
         }
@@ -539,6 +552,15 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
                     mOmniboxAlignment.paddingRight,
                     getPaddingBottom());
         }
+    }
+
+    private void setRoundBottomCorners(boolean roundBottomCorners) {
+        ViewOutlineProvider outlineProvider = getOutlineProvider();
+        if (!(outlineProvider instanceof RoundedCornerOutlineProvider)) return;
+
+        RoundedCornerOutlineProvider roundedCornerOutlineProvider =
+                (RoundedCornerOutlineProvider) outlineProvider;
+        roundedCornerOutlineProvider.setRoundingEdges(true, true, true, roundBottomCorners);
     }
 
     public void emitWindowContentChanged() {

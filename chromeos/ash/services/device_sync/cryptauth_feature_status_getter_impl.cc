@@ -32,13 +32,15 @@ namespace {
 constexpr base::TimeDelta kWaitingForBatchGetFeatureStatusesResponseTimeout =
     kMaxAsyncExecutionTime;
 
-constexpr std::array<multidevice::SoftwareFeature, 14> kAllSoftwareFeatures = {
+constexpr std::array<multidevice::SoftwareFeature, 16> kAllSoftwareFeatures = {
     multidevice::SoftwareFeature::kBetterTogetherHost,
     multidevice::SoftwareFeature::kBetterTogetherClient,
     multidevice::SoftwareFeature::kSmartLockHost,
     multidevice::SoftwareFeature::kSmartLockClient,
     multidevice::SoftwareFeature::kInstantTetheringHost,
     multidevice::SoftwareFeature::kInstantTetheringClient,
+    multidevice::SoftwareFeature::kMessagesForWebHost,
+    multidevice::SoftwareFeature::kMessagesForWebClient,
     multidevice::SoftwareFeature::kPhoneHubHost,
     multidevice::SoftwareFeature::kPhoneHubClient,
     multidevice::SoftwareFeature::kWifiSyncHost,
@@ -151,7 +153,8 @@ base::Time GetMaxLastModifiedTimeFromFeatureStatuses(
                                              max_last_modified_time_millis);
   }
 
-  return base::Time::FromJavaTime(max_last_modified_time_millis);
+  return base::Time::FromMillisecondsSinceUnixEpoch(
+      max_last_modified_time_millis);
 }
 
 void RecordGetFeatureStatusesMetrics(base::TimeDelta execution_time,

@@ -42,6 +42,8 @@ class AssertPageLoadMetricsObserver final
       const GURL& currently_committed_url) override;
   ObservePolicy OnPrerenderStart(content::NavigationHandle* navigation_handle,
                                  const GURL& currently_committed_url) override;
+  ObservePolicy OnPreviewStart(content::NavigationHandle* navigation_handle,
+                               const GURL& currently_committed_url) override;
   ObservePolicy OnRedirect(
       content::NavigationHandle* navigation_handle) override;
 
@@ -119,8 +121,7 @@ class AssertPageLoadMetricsObserver final
   void OnUserInput(
       const blink::WebInputEvent& event,
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
-  void OnPageInputTimingUpdate(uint64_t num_interactions,
-                               uint64_t num_input_events) override;
+  void OnPageInputTimingUpdate(uint64_t num_interactions) override;
   void OnInputTimingUpdate(
       content::RenderFrameHost* subframe_rfh,
       const page_load_metrics::mojom::InputTiming& input_timing_delta) override;
@@ -184,13 +185,19 @@ class AssertPageLoadMetricsObserver final
                                 bool is_display_none) override {}
   void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
                         const gfx::Size& frame_size) override {}
-  void OnCookiesRead(const GURL& url,
-                     const GURL& first_party_url,
-                     bool blocked_by_policy) override {}
-  void OnCookieChange(const GURL& url,
-                      const GURL& first_party_url,
-                      const net::CanonicalCookie& cookie,
-                      bool blocked_by_policy) override {}
+  void OnCookiesRead(
+      const GURL& url,
+      const GURL& first_party_url,
+      bool blocked_by_policy,
+      bool is_ad_tagged,
+      const net::CookieSettingOverrides& cookie_setting_overrides) override {}
+  void OnCookieChange(
+      const GURL& url,
+      const GURL& first_party_url,
+      const net::CanonicalCookie& cookie,
+      bool blocked_by_policy,
+      bool is_ad_tagged,
+      const net::CookieSettingOverrides& cookie_setting_overrides) override {}
   void OnStorageAccessed(const GURL& url,
                          const GURL& first_party_url,
                          bool blocked_by_policy,

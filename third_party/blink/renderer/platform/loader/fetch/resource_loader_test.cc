@@ -162,8 +162,8 @@ TEST_F(ResourceLoaderTest, LoadResponseBody) {
   ASSERT_EQ(result, MOJO_RESULT_OK);
 
   loader->DidReceiveResponse(WrappedResourceResponse(response),
+                             std::move(consumer),
                              /*cached_metadata=*/absl::nullopt);
-  loader->DidStartLoadingResponseBody(std::move(consumer));
   loader->DidFinishLoading(base::TimeTicks(), 0, 0, 0, false);
 
   uint32_t num_bytes = 2;
@@ -464,10 +464,11 @@ bool WillFollowRedirect(ResourceLoader* loader, KURL new_url) {
                              /*report_security_info=*/true, /*request_id=*/1);
   bool has_devtools_request_id = false;
   std::vector<std::string> removed_headers;
+  net::HttpRequestHeaders modified_headers;
   return loader->WillFollowRedirect(
       new_url, net::SiteForCookies(), /*new_referrer=*/String(),
       network::mojom::ReferrerPolicy::kAlways, "GET", response,
-      has_devtools_request_id, &removed_headers,
+      has_devtools_request_id, &removed_headers, modified_headers,
       /*insecure_scheme_was_upgraded=*/false);
 }
 
@@ -553,6 +554,7 @@ class ResourceLoaderSubresourceFilterCnameAliasTest
   void GiveResponseToLoader(ResourceResponse response, ResourceLoader* loader) {
     CreateMojoDataPipe();
     loader->DidReceiveResponse(WrappedResourceResponse(response),
+                               /*body=*/mojo::ScopedDataPipeConsumerHandle(),
                                /*cached_metadata=*/absl::nullopt);
   }
 

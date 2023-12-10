@@ -214,7 +214,13 @@ IN_PROC_BROWSER_TEST_F(SettingsTest, PaymentsSectionCardDialogs) {
 }
 
 IN_PROC_BROWSER_TEST_F(SettingsTest, PaymentsSectionCardRows) {
-  RunTest("settings/payments_section_card_rows_test.js", "mocha.run()");
+  RunTest("settings/payments_section_card_rows_test.js",
+          "runMochaSuite('PaymentsSectionCardRows')");
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsTest, PaymentsSectionEditCreditCardLink) {
+  RunTest("settings/payments_section_card_rows_test.js",
+          "runMochaSuite('PaymentsSectionEditCreditCardLink')");
 }
 
 IN_PROC_BROWSER_TEST_F(SettingsTest, PaymentsSectionIban) {
@@ -287,18 +293,6 @@ IN_PROC_BROWSER_TEST_F(SettingsTest, SafetyCheckPage) {
   RunTest("settings/safety_check_page_test.js", "mocha.run()");
 }
 
-IN_PROC_BROWSER_TEST_F(SettingsTest, SafetyHubCard) {
-  RunTest("settings/safety_hub_card_test.js", "mocha.run()");
-}
-
-IN_PROC_BROWSER_TEST_F(SettingsTest, SafetyHubModule) {
-  RunTest("settings/safety_hub_module_test.js", "mocha.run()");
-}
-
-IN_PROC_BROWSER_TEST_F(SettingsTest, SafetyHubPage) {
-  RunTest("settings/safety_hub_page_test.js", "mocha.run()");
-}
-
 IN_PROC_BROWSER_TEST_F(SettingsTest, Search) {
   RunTest("settings/search_settings_test.js", "mocha.run()");
 }
@@ -315,9 +309,21 @@ IN_PROC_BROWSER_TEST_F(SettingsTest, Section) {
   RunTest("settings/settings_section_test.js", "mocha.run()");
 }
 
-IN_PROC_BROWSER_TEST_F(SettingsTest, SecureDns) {
-  RunTest("settings/secure_dns_test.js", "mocha.run()");
+IN_PROC_BROWSER_TEST_F(SettingsTest, SecureDnsInput) {
+  RunTest("settings/secure_dns_test.js",
+          "runMochaSuite('SettingsSecureDnsInput')");
 }
+
+IN_PROC_BROWSER_TEST_F(SettingsTest, SecureDns) {
+  RunTest("settings/secure_dns_test.js", "runMochaSuite('SettingsSecureDns')");
+}
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+IN_PROC_BROWSER_TEST_F(SettingsTest, SecureDnsDialog) {
+  RunTest("settings/secure_dns_test.js",
+          "runMochaSuite('OsSettingsRevampSecureDnsDialog')");
+}
+#endif
 
 IN_PROC_BROWSER_TEST_F(SettingsTest, SecurityKeysBioEnrollment) {
   RunTest("settings/security_keys_bio_enrollment_test.js", "mocha.run()");
@@ -1082,8 +1088,20 @@ class SettingsSafetyHubTest : public SettingsBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_{features::kSafetyHub};
 };
 
+IN_PROC_BROWSER_TEST_F(SettingsSafetyHubTest, SafetyHubCard) {
+  RunTest("settings/safety_hub_card_test.js", "mocha.run()");
+}
+
 IN_PROC_BROWSER_TEST_F(SettingsSafetyHubTest, SafetyHubEntryPoint) {
   RunTest("settings/safety_hub_entry_point_test.js", "mocha.run()");
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsSafetyHubTest, SafetyHubModule) {
+  RunTest("settings/safety_hub_module_test.js", "mocha.run()");
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsSafetyHubTest, SafetyHubPage) {
+  RunTest("settings/safety_hub_page_test.js", "mocha.run()");
 }
 
 IN_PROC_BROWSER_TEST_F(SettingsSafetyHubTest, UnusedSitePermissionsModule) {
@@ -1119,6 +1137,12 @@ IN_PROC_BROWSER_TEST_F(SettingsSecurityPageTest, Main) {
 
 IN_PROC_BROWSER_TEST_F(SettingsSecurityPageTest, FlagsDisabled) {
   RunTest("settings/security_page_test.js", "runMochaSuite('FlagsDisabled')");
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsSecurityPageTest,
+                       SecurityPageHappinessTrackingSurveys) {
+  RunTest("settings/security_page_test.js",
+          "runMochaSuite('SecurityPageHappinessTrackingSurveys')");
 }
 
 // TODO(crbug.com/1403969): SafeBrowsing suite is flaky on Mac.

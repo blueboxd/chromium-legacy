@@ -12,22 +12,22 @@
 #include "third_party/blink/renderer/core/layout/geometry/box_strut.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
+#include "third_party/blink/renderer/core/layout/inline/fragment_item.h"
+#include "third_party/blink/renderer/core/layout/inline/inline_cursor.h"
+#include "third_party/blink/renderer/core/layout/inline/inline_item.h"
+#include "third_party/blink/renderer/core/layout/inline/physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_text_combine.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_disable_side_effects_scope.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
-#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
+#include "third_party/blink/renderer/core/layout/table/layout_table_cell.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_inline_paint_context.h"
 #include "third_party/blink/renderer/core/paint/outline_painter.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
@@ -162,7 +162,7 @@ const NGPhysicalBoxFragment* NGPhysicalBoxFragment::Create(
         builder->ConstraintSpace().HasBlockFragmentation(), borders, scrollbar,
         padding, physical_size, writing_direction);
 
-    if (NGFragmentItemsBuilder* items_builder = builder->ItemsBuilder()) {
+    if (FragmentItemsBuilder* items_builder = builder->ItemsBuilder()) {
       calculator.AddItems(builder->GetLayoutObject(),
                           items_builder->Items(physical_size));
     }
@@ -188,9 +188,9 @@ const NGPhysicalBoxFragment* NGPhysicalBoxFragment::Create(
   // differs from the fragment size.
   bool has_layout_overflow = layout_overflow != PhysicalRect({}, physical_size);
 
-  // Omit |NGFragmentItems| if there were no items; e.g., display-lock.
+  // Omit |FragmentItems| if there were no items; e.g., display-lock.
   bool has_fragment_items = false;
-  if (NGFragmentItemsBuilder* items_builder = builder->ItemsBuilder()) {
+  if (FragmentItemsBuilder* items_builder = builder->ItemsBuilder()) {
     if (items_builder->Size())
       has_fragment_items = true;
   }
@@ -286,7 +286,7 @@ constexpr void AccountSizeAndPadding(size_t& current_size) {
 size_t NGPhysicalBoxFragment::AdditionalByteSize(bool has_fragment_items) {
   size_t additional_size = 0;
   if (has_fragment_items) {
-    AccountSizeAndPadding<NGFragmentItems>(additional_size);
+    AccountSizeAndPadding<FragmentItems>(additional_size);
   }
   return additional_size;
 }
@@ -330,9 +330,8 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
   }
 
   if (HasItems()) {
-    NGFragmentItemsBuilder* items_builder = builder->ItemsBuilder();
-    NGFragmentItems* items =
-        const_cast<NGFragmentItems*>(ComputeItemsAddress());
+    FragmentItemsBuilder* items_builder = builder->ItemsBuilder();
+    auto* items = const_cast<FragmentItems*>(ComputeItemsAddress());
     DCHECK_EQ(items_builder->GetWritingMode(), block_or_line_writing_mode);
     DCHECK_EQ(items_builder->Direction(), builder->Direction());
     absl::optional<PhysicalSize> new_size =
@@ -365,7 +364,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
 
   bit_field_.set<IsFirstForNodeFlag>(builder->is_first_for_node_);
   is_fieldset_container_ = builder->is_fieldset_container_;
-  is_table_ng_part_ = builder->is_table_ng_part_;
+  is_table_part_ = builder->is_table_part_;
   is_painted_atomically_ = builder->space_.IsPaintedAtomically();
   PhysicalBoxSides sides_to_include(builder->sides_to_include_,
                                     builder->GetWritingMode());
@@ -418,9 +417,8 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
       children_(other.children_) {
   SetInkOverflowType(other.InkOverflowType());
   if (HasItems()) {
-    NGFragmentItems* items =
-        const_cast<NGFragmentItems*>(ComputeItemsAddress());
-    new (items) NGFragmentItems(*other.ComputeItemsAddress());
+    auto* items = const_cast<FragmentItems*>(ComputeItemsAddress());
+    new (items) FragmentItems(*other.ComputeItemsAddress());
   }
   if (other.rare_data_) {
     rare_data_ =
@@ -438,7 +436,7 @@ void NGPhysicalBoxFragment::Dispose() {
   if (HasInkOverflow())
     SetInkOverflowType(ink_overflow_.Reset(InkOverflowType()));
   if (HasItems())
-    ComputeItemsAddress()->~NGFragmentItems();
+    ComputeItemsAddress()->~FragmentItems();
 }
 
 // TODO(kojii): Move to ng_physical_fragment.cc
@@ -571,7 +569,7 @@ PhysicalOffset NGPhysicalBoxFragment::OffsetFromOwnerLayoutBox() const {
   const FragmentData* fragment_data =
       owner_box->FragmentDataFromPhysicalFragment(*this);
   DCHECK(fragment_data);
-  const FragmentData& last_fragment_data = fragment_data->LastFragment();
+  const FragmentData& last_fragment_data = owner_box->FragmentList().back();
   return fragment_data->PaintOffset() - last_fragment_data.PaintOffset();
 }
 
@@ -832,7 +830,7 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflowFromChildren(
     TextHeightType height_type) const {
   // TODO(kojii): See |ScrollableOverflow|.
   DCHECK(height_type == TextHeightType::kEmHeight || PostLayout() == this);
-  const NGFragmentItems* items = Items();
+  const FragmentItems* items = Items();
   if (Children().empty() && !items)
     return PhysicalRect();
 
@@ -849,8 +847,8 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflowFromChildren(
         : container(container),
           style(container.Style()),
           writing_direction(style.GetWritingDirection()),
-          border_inline_start(LayoutUnit(style.BorderStartWidth())),
-          border_block_start(LayoutUnit(style.BorderBeforeWidth())),
+          border_inline_start(LayoutUnit(style.BorderInlineStartWidth())),
+          border_block_start(LayoutUnit(style.BorderBlockStartWidth())),
           height_type(height_type) {
       DCHECK_EQ(&style, container.GetLayoutObject()->Style(
                             container.UsesFirstLineStyle()));
@@ -861,9 +859,10 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflowFromChildren(
                 container.GetLayoutObject()->HasNonVisibleOverflow());
       if (container.HasNonVisibleOverflow()) {
         const auto* layout_object = To<LayoutBox>(container.GetLayoutObject());
-        padding_strut = BoxStrut(LayoutUnit(), layout_object->PaddingEnd(),
-                                 LayoutUnit(), layout_object->PaddingAfter())
-                            .ConvertToPhysical(writing_direction);
+        padding_strut =
+            BoxStrut(LayoutUnit(), layout_object->PaddingInlineEnd(),
+                     LayoutUnit(), layout_object->PaddingBlockEnd())
+                .ConvertToPhysical(writing_direction);
       }
     }
 
@@ -894,7 +893,7 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflowFromChildren(
       AddChild(child_scrollable_overflow);
     }
 
-    void AddLineBoxChild(const NGPhysicalLineBoxFragment& child,
+    void AddLineBoxChild(const PhysicalLineBoxFragment& child,
                          const PhysicalOffset& child_offset) {
       if (padding_strut)
         AddLineBoxRect({child_offset, child.Size()});
@@ -904,13 +903,13 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflowFromChildren(
       AddChild(child_scrollable_overflow);
     }
 
-    void AddLineBoxChild(const NGFragmentItem& child,
+    void AddLineBoxChild(const FragmentItem& child,
                          const InlineCursor& cursor) {
       DCHECK_EQ(&child, cursor.CurrentItem());
-      DCHECK_EQ(child.Type(), NGFragmentItem::kLine);
+      DCHECK_EQ(child.Type(), FragmentItem::kLine);
       if (padding_strut)
         AddLineBoxRect(child.RectInContainerFragment());
-      const NGPhysicalLineBoxFragment* line_box = child.LineBoxFragment();
+      const PhysicalLineBoxFragment* line_box = child.LineBoxFragment();
       DCHECK(line_box);
       PhysicalRect child_scrollable_overflow =
           line_box->ScrollableOverflowForLine(container, style, child, cursor,
@@ -949,8 +948,8 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflowFromChildren(
   if (items) {
     for (InlineCursor cursor(*this, *items); cursor;
          cursor.MoveToNextSkippingChildren()) {
-      const NGFragmentItem* item = cursor.CurrentItem();
-      if (item->Type() == NGFragmentItem::kLine) {
+      const FragmentItem* item = cursor.CurrentItem();
+      if (item->Type() == FragmentItem::kLine) {
         context.AddLineBoxChild(*item, cursor);
         continue;
       }
@@ -977,7 +976,7 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflowFromChildren(
     if (child->IsFloatingOrOutOfFlowPositioned()) {
       context.AddFloatingOrOutOfFlowPositionedChild(*child, child.Offset());
     } else if (add_inline_children && child->IsLineBox()) {
-      context.AddLineBoxChild(To<NGPhysicalLineBoxFragment>(*child),
+      context.AddLineBoxChild(To<PhysicalLineBoxFragment>(*child),
                               child.Offset());
     } else if (height_type == TextHeightType::kEmHeight && IsRubyColumn()) {
       PhysicalRect r = child->ScrollableOverflow(*this, height_type);
@@ -1147,10 +1146,10 @@ PhysicalRect NGPhysicalBoxFragment::RecalcContentsInkOverflow() {
       !GetSelfOrContainerLayoutObject()->ChildPrePaintBlockedByDisplayLock());
 
   PhysicalRect contents_rect;
-  if (const NGFragmentItems* items = Items()) {
+  if (const FragmentItems* items = Items()) {
     InlineCursor cursor(*this, *items);
     NGInlinePaintContext child_inline_context;
-    contents_rect = NGFragmentItem::RecalcInkOverflowForCursor(
+    contents_rect = FragmentItem::RecalcInkOverflowForCursor(
         &cursor, &child_inline_context);
 
     // Add text decorations and emphasis mark ink over flow for combined
@@ -1208,15 +1207,16 @@ PhysicalRect NGPhysicalBoxFragment::ComputeSelfInkOverflow() const {
   const ComputedStyle& style = Style();
 
   PhysicalRect ink_overflow(LocalRect());
-  if (UNLIKELY(IsTableNGRow())) {
+  if (UNLIKELY(IsTableRow())) {
     // This is necessary because table-rows paints beyond border box if it
     // contains rowspanned cells.
     for (const NGLink& child : PostLayoutChildren()) {
       const auto& child_fragment = To<NGPhysicalBoxFragment>(*child);
-      if (!child_fragment.IsTableNGCell())
+      if (!child_fragment.IsTableCell()) {
         continue;
+      }
       const auto* child_layout_object =
-          To<LayoutNGTableCell>(child_fragment.GetLayoutObject());
+          To<LayoutTableCell>(child_fragment.GetLayoutObject());
       if (child_layout_object->ComputedRowSpan() == 1)
         continue;
       PhysicalRect child_rect;
@@ -1444,7 +1444,7 @@ PositionWithAffinity NGPhysicalBoxFragment::PositionForPoint(
           : point;
 
   if (!layout_object_->ChildPaintBlockedByDisplayLock()) {
-    if (const NGFragmentItems* items = Items()) {
+    if (const FragmentItems* items = Items()) {
       InlineCursor cursor(*this, *items);
       if (const PositionWithAffinity position =
               cursor.PositionForPointInInlineFormattingContext(
@@ -1739,7 +1739,7 @@ void NGPhysicalBoxFragment::CheckSameForSimplifiedLayout(
   DCHECK_EQ(IsFragmentationContextRoot(), other.IsFragmentationContextRoot());
 
   DCHECK_EQ(is_fieldset_container_, other.is_fieldset_container_);
-  DCHECK_EQ(is_table_ng_part_, other.is_table_ng_part_);
+  DCHECK_EQ(is_table_part_, other.is_table_part_);
   DCHECK_EQ(is_painted_atomically_, other.is_painted_atomically_);
   DCHECK_EQ(has_collapsed_borders_, other.has_collapsed_borders_);
 
@@ -1757,7 +1757,7 @@ void NGPhysicalBoxFragment::CheckSameForSimplifiedLayout(
   DCHECK(FirstBaseline() == other.FirstBaseline());
   DCHECK(LastBaseline() == other.LastBaseline());
 
-  if (IsTableNG()) {
+  if (IsTable()) {
     DCHECK_EQ(TableGridRect(), other.TableGridRect());
 
     if (TableColumnGeometries()) {
@@ -1778,8 +1778,9 @@ void NGPhysicalBoxFragment::CheckSameForSimplifiedLayout(
     }
   }
 
-  if (IsTableNGCell())
+  if (IsTableCell()) {
     DCHECK_EQ(TableCellColumnIndex(), other.TableCellColumnIndex());
+  }
 
   DCHECK(Borders() == other.Borders());
   DCHECK(Padding() == other.Padding());
@@ -1843,9 +1844,9 @@ void NGPhysicalBoxFragment::AssertFragmentTreeSelf() const {
 
 void NGPhysicalBoxFragment::AssertFragmentTreeChildren(
     bool allow_destroyed_or_moved) const {
-  if (const NGFragmentItems* items = Items()) {
+  if (const FragmentItems* items = Items()) {
     for (InlineCursor cursor(*this, *items); cursor; cursor.MoveToNext()) {
-      const NGFragmentItem& item = *cursor.Current();
+      const FragmentItem& item = *cursor.Current();
       if (item.IsLayoutObjectDestroyedOrMoved()) {
         DCHECK(allow_destroyed_or_moved);
         continue;

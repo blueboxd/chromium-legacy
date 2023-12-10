@@ -510,6 +510,7 @@ generate_jni("browser_jni_headers") {
     "java/src/org/chromium/android_webview/AwContentsClientBridge.java",
     "java/src/org/chromium/android_webview/AwContentsIoThreadClient.java",
     "java/src/org/chromium/android_webview/AwContentsLifecycleNotifier.java",
+    "java/src/org/chromium/android_webview/AwContentsOriginMatcher.java",
     "java/src/org/chromium/android_webview/AwContentsStatics.java",
     "java/src/org/chromium/android_webview/AwCookieManager.java",
     "java/src/org/chromium/android_webview/AwDarkMode.java",
@@ -562,6 +563,7 @@ android_library("browser_java") {
     "java/src/org/chromium/android_webview/AwContentsClientCallbackHelper.java",
     "java/src/org/chromium/android_webview/AwContentsIoThreadClient.java",
     "java/src/org/chromium/android_webview/AwContentsLifecycleNotifier.java",
+    "java/src/org/chromium/android_webview/AwContentsOriginMatcher.java",
     "java/src/org/chromium/android_webview/AwContentsStatics.java",
     "java/src/org/chromium/android_webview/AwCookieManager.java",
     "java/src/org/chromium/android_webview/AwDarkMode.java",
@@ -618,6 +620,7 @@ android_library("browser_java") {
     "java/src/org/chromium/android_webview/NoopSafeModeAction.java",
     "java/src/org/chromium/android_webview/NullAwViewMethods.java",
     "java/src/org/chromium/android_webview/OverScrollGlow.java",
+    "java/src/org/chromium/android_webview/PlatformServiceBridgeAwContentsWrapper.java",
     "java/src/org/chromium/android_webview/PopupTouchHandleDrawable.java",
     "java/src/org/chromium/android_webview/ScriptHandler.java",
     "java/src/org/chromium/android_webview/ScrollAccessibilityHelper.java",
@@ -681,6 +684,7 @@ android_library("browser_java") {
     "//components/content_capture/android:java",
     "//components/crash/android:handler_java",
     "//components/crash/android:java",
+    "//components/embedder_support/android:embedder_util_java",
     "//components/embedder_support/android:util_java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/embedder_support/android/metrics:java",
@@ -1135,9 +1139,11 @@ grit("generate_components_resources") {
 
   deps = [
     ":concatenate_resources_allowlists",
+    "//components/neterror/resources:bundle_js",
     "//components/resources:about_credits",
     "//components/resources/ssl/ssl_error_assistant:make_ssl_error_assistant_protobuf",
     "//components/security_interstitials/content/resources:build_ts",
+    "//components/security_interstitials/core/browser/resources:bundle_js",
   ]
 
   if (safe_browsing_mode != 0) {

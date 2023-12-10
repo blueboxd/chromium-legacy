@@ -40,6 +40,10 @@ absl::optional<gfx::Rect> PermissionPromptAndroid::GetViewBoundsInScreen()
   return absl::nullopt;
 }
 
+bool PermissionPromptAndroid::ShouldFinalizeRequestAfterDecided() const {
+  return true;
+}
+
 void PermissionPromptAndroid::Closing() {
   delegate_->Dismiss();
 }
@@ -99,8 +103,14 @@ static void CheckValidRequestGroup(
 
 int PermissionPromptAndroid::GetIconId() const {
   const std::vector<PermissionRequest*>& requests = delegate_->Requests();
-  if (requests.size() == 1)
+  if (requests.size() == 1) {
+    if (requests[0]->request_type() == RequestType::kStorageAccess &&
+        base::FeatureList::IsEnabled(
+            permissions::features::kPermissionStorageAccessAPI)) {
+      return IDR_ANDROID_GLOBE;
+    }
     return permissions::GetIconId(requests[0]->request_type());
+  }
   CheckValidRequestGroup(requests);
   return IDR_ANDROID_INFOBAR_MEDIA_STREAM_CAMERA;
 }
@@ -145,4 +155,18 @@ std::u16string PermissionPromptAndroid::GetMessageText() const {
           delegate_->GetRequestingOrigin(),
           url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
 }
+
+bool PermissionPromptAndroid::ShouldUseRequestingOriginFavicon() const {
+  const std::vector<PermissionRequest*>& requests = delegate_->Requests();
+  CHECK_GT(requests.size(), 0U);
+
+  return requests[0]->request_type() == RequestType::kStorageAccess &&
+         base::FeatureList::IsEnabled(
+             permissions::features::kPermissionStorageAccessAPI);
+}
+
+GURL PermissionPromptAndroid::GetRequestingOrigin() const {
+  return delegate_->GetRequestingOrigin();
+}
+
 }  // namespace permissions

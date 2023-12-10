@@ -220,7 +220,11 @@ void ClientSideDetectionService::SendModelToRenderers() {
   for (content::RenderProcessHost::iterator it(
            content::RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd(); it.Advance()) {
-    SetPhishingModel(it.GetCurrentValue());
+    SetPhishingModel(it.GetCurrentValue(), /*new_renderer_process_host=*/false);
+  }
+  if (client_side_phishing_model_) {
+    trigger_model_version_ =
+        client_side_phishing_model_->GetTriggerModelVersion();
   }
 }
 
@@ -442,7 +446,7 @@ void ClientSideDetectionService::AddPhishingReport(base::Time timestamp) {
 
   base::Value::List time_list;
   for (const base::Time& report_time : phishing_report_times_) {
-    time_list.Append(base::Value(report_time.ToDoubleT()));
+    time_list.Append(base::Value(report_time.InSecondsFSinceUnixEpoch()));
   }
   delegate_->GetPrefs()->SetList(prefs::kSafeBrowsingCsdPingTimestamps,
                                  std::move(time_list));
@@ -457,7 +461,7 @@ void ClientSideDetectionService::LoadPhishingReportTimesFromPrefs() {
   for (const base::Value& timestamp :
        delegate_->GetPrefs()->GetList(prefs::kSafeBrowsingCsdPingTimestamps)) {
     phishing_report_times_.push_back(
-        base::Time::FromDoubleT(timestamp.GetDouble()));
+        base::Time::FromSecondsSinceUnixEpoch(timestamp.GetDouble()));
   }
 }
 
@@ -508,11 +512,12 @@ void ClientSideDetectionService::SetURLLoaderFactoryForTesting(
 
 void ClientSideDetectionService::OnRenderProcessHostCreated(
     content::RenderProcessHost* rph) {
-  SetPhishingModel(rph);
+  SetPhishingModel(rph, /*new_renderer_process_host=*/true);
 }
 
 void ClientSideDetectionService::SetPhishingModel(
-    content::RenderProcessHost* rph) {
+    content::RenderProcessHost* rph,
+    bool new_renderer_process_host) {
   // We want to check if the trigger model has been sent. If we have received a
   // callback after sending the trigger models before and the models are now
   // unavailable, that means the OptimizationGuide server sent us a null model
@@ -549,9 +554,20 @@ void ClientSideDetectionService::SetPhishingModel(
             HasImageEmbeddingModel()) {
           base::UmaHistogramBoolean(
               "SBClientPhishing.ImageEmbeddingModelVersionMatch", true);
-          model_setter->SetImageEmbeddingAndPhishingFlatBufferModel(
-              GetModelSharedMemoryRegion(), GetVisualTfLiteModel().Duplicate(),
-              GetImageEmbeddingModel().Duplicate());
+          if (!new_renderer_process_host &&
+              trigger_model_version_ ==
+                  client_side_phishing_model_->GetTriggerModelVersion()) {
+            // If the trigger model version remains the same in the same
+            // renderer process host, we can just attach the complementary image
+            // embedding model to the current scorer.
+            model_setter->AttachImageEmbeddingModel(
+                GetImageEmbeddingModel().Duplicate());
+          } else {
+            model_setter->SetImageEmbeddingAndPhishingFlatBufferModel(
+                GetModelSharedMemoryRegion(),
+                GetVisualTfLiteModel().Duplicate(),
+                GetImageEmbeddingModel().Duplicate());
+          }
         } else {
           base::UmaHistogramBoolean(
               "SBClientPhishing.ImageEmbeddingModelVersionMatch", false);

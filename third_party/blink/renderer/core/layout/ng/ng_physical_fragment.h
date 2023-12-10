@@ -32,9 +32,9 @@ namespace blink {
 
 class ComputedStyle;
 class FragmentData;
+class FragmentItem;
 class Node;
 class NGFragmentBuilder;
-class NGFragmentItem;
 class PaintLayer;
 struct LogicalRect;
 struct NGFragmentedOutOfFlowData;
@@ -235,25 +235,23 @@ class CORE_EXPORT NGPhysicalFragment
   bool IsSvg() const { return layout_object_->IsSVG(); }
   bool IsSvgText() const { return layout_object_->IsSVGText(); }
 
-  bool IsTableNGPart() const { return is_table_ng_part_; }
+  bool IsTablePart() const { return is_table_part_; }
 
-  bool IsTableNG() const {
-    return IsTableNGPart() && layout_object_->IsTable();
+  bool IsTable() const { return IsTablePart() && layout_object_->IsTable(); }
+
+  bool IsTableRow() const {
+    return IsTablePart() && layout_object_->IsTableRow();
   }
 
-  bool IsTableNGRow() const {
-    return IsTableNGPart() && layout_object_->IsTableRow();
+  bool IsTableSection() const {
+    return IsTablePart() && layout_object_->IsTableSection();
   }
 
-  bool IsTableNGSection() const {
-    return IsTableNGPart() && layout_object_->IsTableSection();
+  bool IsTableCell() const {
+    return IsTablePart() && layout_object_->IsTableCell();
   }
 
-  bool IsTableNGCell() const {
-    return IsTableNGPart() && layout_object_->IsTableCell();
-  }
-
-  bool IsGridNG() const { return layout_object_->IsLayoutNGGrid(); }
+  bool IsGrid() const { return layout_object_->IsLayoutGrid(); }
 
   bool IsTextControlContainer() const;
   bool IsTextControlPlaceholder() const;
@@ -598,7 +596,7 @@ class CORE_EXPORT NGPhysicalFragment
      private:
       void SkipInvalidAndSetPostLayout() {
         for (; current_ != end_; ++current_) {
-          const NGPhysicalFragment* fragment = current_->fragment;
+          const NGPhysicalFragment* fragment = current_->fragment.Get();
           if (UNLIKELY(fragment->IsLayoutObjectDestroyedOrMoved()))
             continue;
           if (const NGPhysicalFragment* post_layout = fragment->PostLayout()) {
@@ -739,7 +737,7 @@ class CORE_EXPORT NGPhysicalFragment
   void AddScrollableOverflowForInlineChild(
       const NGPhysicalBoxFragment& container,
       const ComputedStyle& container_style,
-      const NGFragmentItem& line,
+      const FragmentItem& line,
       bool has_hanging,
       const InlineCursor& cursor,
       TextHeightType height_type,
@@ -791,7 +789,7 @@ class CORE_EXPORT NGPhysicalFragment
   uint8_t depends_on_percentage_block_size_ : 1;    // NOLINT
   mutable uint8_t children_valid_ : 1;              // NOLINT
 
-  // The following bitfields are only to be used by NGPhysicalLineBoxFragment
+  // The following bitfields are only to be used by PhysicalLineBoxFragment
   // (it's defined here to save memory, since that class has no bitfields).
   uint8_t has_propagated_descendants_ : 1;             // NOLINT
   uint8_t has_hanging_ : 1;                            // NOLINT
@@ -805,7 +803,7 @@ class CORE_EXPORT NGPhysicalFragment
   // The following are only used by NGPhysicalBoxFragment but are initialized
   // for all types to allow methods using them to be inlined.
   uint8_t is_fieldset_container_ : 1;                           // NOLINT
-  uint8_t is_table_ng_part_ : 1;                                // NOLINT
+  uint8_t is_table_part_ : 1;                                   // NOLINT
   uint8_t is_painted_atomically_ : 1;                           // NOLINT
   uint8_t has_collapsed_borders_ : 1;                           // NOLINT
   uint8_t has_first_baseline_ : 1;                              // NOLINT
@@ -815,7 +813,7 @@ class CORE_EXPORT NGPhysicalFragment
   const uint8_t has_out_of_flow_fragment_child_ : 1;            // NOLINT
   const uint8_t has_out_of_flow_in_fragmentainer_subtree_ : 1;  // NOLINT
 
-  // The following are only used by NGPhysicalLineBoxFragment.
+  // The following are only used by PhysicalLineBoxFragment.
   uint8_t base_direction_ : 1;  // NOLINT, TextDirection
 
   Member<const PropagatedData> propagated_data_;

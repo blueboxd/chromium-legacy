@@ -17,7 +17,6 @@
 #include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "ash/utility/haptics_util.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/legacy_desk_bar_view.h"
@@ -53,6 +52,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
+#include "chromeos/utils/haptics_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/devices/haptic_touchpad_effects.h"
@@ -534,7 +534,7 @@ void OverviewSession::UpdateDropTargetsBackgroundVisibilities(
     OverviewItemBase* dragged_item,
     const gfx::PointF& location_in_screen) {
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
-    if (grid->GetDropTarget()) {
+    if (grid->drop_target()) {
       grid->UpdateDropTargetBackgroundVisibility(dragged_item,
                                                  location_in_screen);
     }
@@ -623,8 +623,9 @@ void OverviewSession::RemoveItem(OverviewItemBase* overview_item,
 
 void OverviewSession::RemoveDropTargets() {
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
-    if (grid->GetDropTarget())
+    if (grid->drop_target()) {
       grid->RemoveDropTarget();
+    }
   }
 }
 
@@ -649,7 +650,7 @@ void OverviewSession::InitiateDrag(OverviewItemBase* item,
 
   // Fire a haptic event if necessary.
   if (!is_touch_dragging) {
-    haptics_util::PlayHapticTouchpadEffect(
+    chromeos::haptics_util::PlayHapticTouchpadEffect(
         ui::HapticTouchpadEffect::kTick,
         ui::HapticTouchpadEffectStrength::kMedium);
   }
@@ -890,7 +891,7 @@ void OverviewSession::OnWindowActivating(
     // Cancel overview session and do not restore activation when active window
     // is set to nullptr. This happens when removing a display.
     RestoreWindowActivation(false);
-    EndOverview(OverviewEndAction::kWindowActivating);
+    EndOverview(OverviewEndAction::kWindowDeactivating);
     return;
   }
 
@@ -904,22 +905,11 @@ void OverviewSession::OnWindowActivating(
     return;
   }
 
-  if (auto* split_view_overview_session =
-          RootWindowController::ForWindow(gained_active)
-              ->split_view_overview_session()) {
-    base::AutoReset<bool> ignore(&ignore_activations_, true);
-    if (auto* auto_snap_controller =
-            split_view_overview_session->auto_snap_controller();
-        auto_snap_controller &&
-        auto_snap_controller->OnWindowActivatingFromOverview(reason,
-                                                             gained_active)) {
-      // If `SplitViewOverviewSession` created `AutoSnapController`, let it
-      // handle `OnWindowActivatingFromOverview()` first in case it needs to
-      // auto snap the window, before we fall through to `EndOverview()`.
-      RestoreWindowActivation(false);
-      EndOverview(OverviewEndAction::kWindowActivating);
-      return;
-    }
+  if (RootWindowController::ForWindow(gained_active)
+          ->split_view_overview_session()) {
+    // Let `SplitViewOverviewSession` handle the window activation change.
+    RestoreWindowActivation(false);
+    return;
   }
 
   // Do not cancel overview mode if the window activation happens when split
@@ -943,8 +933,9 @@ void OverviewSession::OnWindowActivating(
   // dragged as evidenced by the presence of a drop target. (Dragging to close
   // does not count; canceling overview mode is okay then.)
   for (std::unique_ptr<OverviewGrid>& overview_grid : grid_list_) {
-    if (overview_grid->GetDropTarget())
+    if (overview_grid->drop_target()) {
       return;
+    }
   }
 
   auto* grid = GetGridWithRootWindow(gained_active->GetRootWindow());
@@ -1630,12 +1621,6 @@ void OverviewSession::OnItemAdded(aura::Window* window) {
   UpdateNoWindowsWidgetOnEachGrid(/*animate=*/true,
                                   /*is_continuous_enter=*/false);
 
-  OverviewGrid* grid = GetGridWithRootWindow(window->GetRootWindow());
-  // The drop target window is non-activatable, so no need to transfer focus.
-  if (grid && grid->IsDropTargetItem(grid->GetOverviewItemContaining(window))) {
-    return;
-  }
-
   // Transfer focus from `window` to `overview_focus_widget_` to match the
   // behavior of entering overview mode in the beginning.
   DCHECK(overview_focus_widget_);
@@ -1663,7 +1648,9 @@ void OverviewSession::UpdateFrameThrottling() {
       }
 
       for (auto& item : grid->window_list()) {
-        windows_to_throttle.push_back(item->GetWindow());
+        for (auto* window : item->GetWindows()) {
+          windows_to_throttle.push_back(window);
+        }
       }
     }
   }

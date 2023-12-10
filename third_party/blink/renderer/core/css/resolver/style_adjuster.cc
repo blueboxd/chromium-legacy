@@ -69,6 +69,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/style_intrinsic_length.h"
+#include "third_party/blink/renderer/core/style/style_svg_mask_reference_image.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
@@ -78,6 +79,8 @@
 #include "ui/base/ui_base_features.h"
 
 namespace blink {
+
+using mojom::blink::FormControlType;
 
 namespace {
 
@@ -117,10 +120,20 @@ bool HostIsInputFile(const Element* element) {
   }
   if (const Element* shadow_host = element->OwnerShadowHost()) {
     if (const auto* input = DynamicTo<HTMLInputElement>(shadow_host)) {
-      return input->type() == input_type_names::kFile;
+      return input->FormControlType() == FormControlType::kInputFile;
     }
   }
   return false;
+}
+
+StyleSVGResource* GetFirstMaskImageAsSVGResource(const SVGElement& element,
+                                                 FillLayer& first_layer) {
+  auto* svg_mask_reference =
+      DynamicTo<StyleSVGMaskReferenceImage>(first_layer.GetImage());
+  if (!svg_mask_reference) {
+    return nullptr;
+  }
+  return svg_mask_reference->CreateSVGResourceWrapper();
 }
 
 void AdjustStyleForSvgElement(const SVGElement& element,
@@ -136,6 +149,11 @@ void AdjustStyleForSvgElement(const SVGElement& element,
   builder.SetTextEmphasisMark(TextEmphasisMark::kNone);
   builder.SetTextUnderlineOffset(Length());  // crbug.com/1247912
   builder.SetTextUnderlinePosition(TextUnderlinePosition::kAuto);
+
+  if (RuntimeEnabledFeatures::CSSMaskingInteropEnabled()) {
+    builder.SetMaskerResource(
+        GetFirstMaskImageAsSVGResource(element, builder.AccessMaskLayers()));
+  }
 }
 
 bool ElementForcesStackingContext(Element* element) {
@@ -530,15 +548,13 @@ void StyleAdjuster::AdjustOverflow(ComputedStyleBuilder& builder,
                       WebFeature::kOverflowClipAlongEitherAxis);
   }
 
-  if (RuntimeEnabledFeatures::OverflowOverlayAliasesAutoEnabled()) {
-    // overlay is a legacy alias of auto.
-    // https://drafts.csswg.org/css-overflow-3/#valdef-overflow-auto
-    if (builder.OverflowY() == EOverflow::kOverlay) {
-      builder.SetOverflowY(EOverflow::kAuto);
-    }
-    if (builder.OverflowX() == EOverflow::kOverlay) {
-      builder.SetOverflowX(EOverflow::kAuto);
-    }
+  // overlay is a legacy alias of auto.
+  // https://drafts.csswg.org/css-overflow-3/#valdef-overflow-auto
+  if (builder.OverflowY() == EOverflow::kOverlay) {
+    builder.SetOverflowY(EOverflow::kAuto);
+  }
+  if (builder.OverflowX() == EOverflow::kOverlay) {
+    builder.SetOverflowX(EOverflow::kAuto);
   }
 }
 
@@ -620,7 +636,7 @@ bool StyleAdjuster::IsPasswordFieldWithUnrevealedPassword(Element* element) {
     return false;
   }
   if (auto* input = DynamicTo<HTMLInputElement>(element)) {
-    return (input->type() == input_type_names::kPassword) &&
+    return input->FormControlType() == FormControlType::kInputPassword &&
            !input->ShouldRevealPassword();
   }
   return false;

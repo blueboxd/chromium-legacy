@@ -161,6 +161,13 @@ BASE_FEATURE(kAutomaticLazyFrameLoadingToAds,
              "AutomaticLazyFrameLoadingToAds",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// https://crbug.com/1472970
+BASE_FEATURE(kAutoSpeculationRules,
+             "AutoSpeculationRules",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<std::string> kAutoSpeculationRulesConfig{
+    &kAutoSpeculationRules, "config", "{}"};
+
 // The timeout value that forces loading iframes that are lazy loaded by
 // LazyAds. After this timeout, the frame loading is triggered even when the
 // intersection observer does not trigger iframe loading.
@@ -753,9 +760,10 @@ const base::FeatureParam<double> kMinimumEntropyForLCP{
 // trials.
 BASE_FEATURE(kFencedFrames, "FencedFrames", base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enable the new fenced frame-related features in M119. (These are
+// Enable the new fenced frame-related features in M120. (These are
 // conditionally dependent on other fenced frame-related feature flags being
 // enabled.)
+// Part 1:
 // * Extra format for ad size macro substitution:
 //   ${AD_WIDTH} and ${AD_HEIGHT}, on top of the previous
 //   {%AD_WIDTH%} and {%AD_HEIGHT%}.
@@ -763,9 +771,33 @@ BASE_FEATURE(kFencedFrames, "FencedFrames", base::FEATURE_DISABLED_BY_DEFAULT);
 //   registerAdMacro keys and values.
 // * Send automatic beacons to all registered destinations without requiring
 //   event data to be in place.
-BASE_FEATURE(kFencedFramesM119Features,
-             "FencedFramesM119Features",
+BASE_FEATURE(kFencedFramesM120FeaturesPart1,
+             "FencedFramesM120FeaturesPart1",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enable the new fenced frame-related features in M120. (These are
+// conditionally dependent on other fenced frame-related feature flags being
+// enabled.)
+// Part 2:
+// * Support leaving interest group from ad components.
+// * Split off the `reserved.top_navigation` automatic beacon type into
+//   `reserved.top_navigation_start` and `reserved.top_navigation_commit.
+BASE_FEATURE(kFencedFramesM120FeaturesPart2,
+             "FencedFramesM120FeaturesPart2",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Relax the attestation requirement of post-impression beacons from Protected
+// Audience only to either Protected Audience or Attribution Reporting.
+BASE_FEATURE(kFencedFramesReportingAttestationsChanges,
+             "FencedFramesReportingAttestationsChanges",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Temporarily un-disable credentials on fenced frame automatic beacons until
+// third party cookie deprecation.
+// TODO(crbug.com/1496395): Remove this after 3PCD.
+BASE_FEATURE(kFencedFramesAutomaticBeaconCredentials,
+             "FencedFramesAutomaticBeaconCredentials",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // File handling icons. https://crbug.com/1218213
 BASE_FEATURE(kFileHandlingIcons,
@@ -978,7 +1010,7 @@ const base::FeatureParam<int> kInterestGroupStorageMaxOwners{
 const base::FeatureParam<int> kInterestGroupStorageMaxStoragePerOwner{
     &kInterestGroupStorage, "max_storage_per_owner", 10 * 1024 * 1024};
 const base::FeatureParam<int> kInterestGroupStorageMaxGroupsPerOwner{
-    &kInterestGroupStorage, "max_groups_per_owner", 1000};
+    &kInterestGroupStorage, "max_groups_per_owner", 2000};
 const base::FeatureParam<int> kInterestGroupStorageMaxNegativeGroupsPerOwner{
     &kInterestGroupStorage, "max_negative_groups_per_owner", 20000};
 const base::FeatureParam<int> kInterestGroupStorageMaxOpsBeforeMaintenance{
@@ -1014,6 +1046,10 @@ BASE_FEATURE(kKeepAliveInBrowserMigration,
              "KeepAliveInBrowserMigration",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kAttributionReportingInBrowserMigration,
+             "kAttributionReportingInBrowserMigration",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables reporting as LCP of the time the first frame of an animated image was
 // painted.
 BASE_FEATURE(kLCPAnimatedImagesReporting,
@@ -1029,6 +1065,16 @@ const base::FeatureParam<bool> kLCPCriticalPathPredictorDryRun{
 
 const base::FeatureParam<int> kLCPCriticalPathPredictorMaxElementLocatorLength{
     &kLCPCriticalPathPredictor, "lcpp_max_element_locator_length", 1024};
+
+const base::FeatureParam<LcppRecordedLcpElementTypes>::Option
+    lcpp_recorded_element_types[] = {
+        {LcppRecordedLcpElementTypes::kAll, "all"},
+        {LcppRecordedLcpElementTypes::kImageOnly, "image_only"},
+};
+const base::FeatureParam<LcppRecordedLcpElementTypes>
+    kLCPCriticalPathPredictorRecordedLcpElementTypes{
+        &kLCPCriticalPathPredictor, "lcpp_recorded_lcp_element_types",
+        LcppRecordedLcpElementTypes::kImageOnly, &lcpp_recorded_element_types};
 
 const base::FeatureParam<LcppResourceLoadPriority>::Option
     lcpp_resource_load_priorities[] = {
@@ -1443,6 +1489,12 @@ constexpr base::FeatureParam<bool> kPrivateAggregationApiDebugModeEnabledAtAll{
     &kPrivateAggregationApi, "debug_mode_enabled_at_all",
     /*default_value=*/true};
 
+// Allows for different aggregation coordinators to be set. If disabled, any
+// selection will be ignored and replaced with the default.
+BASE_FEATURE(kPrivateAggregationApiMultipleCloudProviders,
+             "PrivateAggregationApiMultipleCloudProviders",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kProcessHtmlDataImmediately,
              "ProcessHtmlDataImmediately",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1647,7 +1699,7 @@ BASE_FEATURE(kSetTimeoutWithoutClamp,
 // https://github.com/pythagoraskitty/shared-storage/blob/main/README.md
 BASE_FEATURE(kSharedStorageAPI,
              "SharedStorageAPI",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 const base::FeatureParam<int>
     kSharedStorageURLSelectionOperationInputURLSizeLimit{
         &kSharedStorageAPI, "url_selection_operation_input_url_size_limit", 8};
@@ -1807,10 +1859,6 @@ const base::FeatureParam<bool> kSpeculativeServiceWorkerWarmUpOnPointerover{
 const base::FeatureParam<bool> kSpeculativeServiceWorkerWarmUpOnPointerdown{
     &kSpeculativeServiceWorkerWarmUp, "sw_warm_up_on_pointerdown", true};
 
-BASE_FEATURE(kSplitUserMediaQueues,
-             "SplitUserMediaQueues",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kStartMediaStreamCaptureIndicatorInBrowser,
              "StartMediaStreamCaptureIndicatorInBrowser",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -1916,10 +1964,6 @@ BASE_FEATURE(kTimedHTMLParserBudget,
 BASE_FEATURE(kUACHOverrideBlank,
              "UACHOverrideBlank",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kURLSetPortCheckOverflow,
-             "URLSetPortCheckOverflow",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kUseBlinkSchedulerTaskRunnerWithCustomDeleter,
              "UseBlinkSchedulerTaskRunnerWithCustomDeleter",

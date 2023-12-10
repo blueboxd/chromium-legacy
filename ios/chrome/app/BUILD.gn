@@ -13,6 +13,7 @@ import("//ios/build/chrome_build.gni")
 import("//ios/build/config.gni")
 import("//ios/chrome/app/chrome_app.gni")
 import("//ios/chrome/features.gni")
+import("//ios/features.gni")
 import("//ios/public/provider/chrome/browser/build_config.gni")
 
 declare_args() {
@@ -115,7 +116,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/signin:fake_system_identity_manager",
     "//ios/chrome/browser/signin:signin_util",
     "//ios/chrome/browser/signin:test_support",
-    "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/tabs/model",
     "//ios/chrome/browser/ui/first_run:constants",
     "//ios/chrome/browser/ui/main",
     "//ios/chrome/browser/ui/safe_mode",
@@ -497,9 +498,9 @@ source_set("app_internal") {
     "//ios/chrome/browser/push_notification:push_notification_service",
     "//ios/chrome/browser/reading_list/model",
     "//ios/chrome/browser/screenshot/model",
-    "//ios/chrome/browser/search_engines",
-    "//ios/chrome/browser/search_engines:extension_search_engine_data_updater",
-    "//ios/chrome/browser/search_engines:search_engines_util",
+    "//ios/chrome/browser/search_engines/model",
+    "//ios/chrome/browser/search_engines/model:extension_search_engine_data_updater",
+    "//ios/chrome/browser/search_engines/model:search_engines_util",
     "//ios/chrome/browser/sessions:session_service",
     "//ios/chrome/browser/share_extension/model",
     "//ios/chrome/browser/shared/coordinator/scene",
@@ -637,6 +638,21 @@ source_set("multitasking_test_app_delegate") {
     "//ios/chrome/browser/shared/coordinator/scene",
     "//ios/third_party/material_components_ios",
   ]
+}
+
+if (ios_partition_alloc_enabled) {
+  ios_framework_bundle("early_partition_alloc_framework") {
+    output_name = "EarlyMallocZoneRegistration"
+    sources = [ "early_pa_registration.cc" ]
+    info_plist = "//ios/chrome/app/resources/ChromeMainInfo.plist"
+    extra_substitutions =
+        [ "BUNDLE_IDENTIFIER=$ios_app_bundle_id_prefix.$output_name" ]
+
+    deps = [
+      "//base/allocator:early_zone_registration_apple",
+      "//base/allocator/partition_allocator:buildflags",
+    ]
+  }
 }
 
 chrome_app("chrome") {

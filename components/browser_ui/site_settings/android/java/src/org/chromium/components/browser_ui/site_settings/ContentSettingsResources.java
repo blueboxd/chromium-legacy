@@ -279,9 +279,13 @@ public class ContentSettingsResources {
                         R.string.website_settings_category_sound_blocked);
 
             case ContentSettingsType.STORAGE_ACCESS:
-                return new ResourceItem(R.drawable.ic_storage_access_24,
-                        R.string.storage_access_permission_title, ContentSettingValues.ASK,
-                        ContentSettingValues.BLOCK, 0, 0);
+                return new ResourceItem(
+                        R.drawable.ic_storage_access_24,
+                        R.string.storage_access_permission_title,
+                        ContentSettingValues.ASK,
+                        ContentSettingValues.BLOCK,
+                        R.string.website_settings_category_storage_access_allowed,
+                        R.string.website_settings_category_storage_access_blocked);
 
             case ContentSettingsType.USB_CHOOSER_DATA:
                 return new ResourceItem(R.drawable.gm_filled_usb_24, 0, ContentSettingValues.ASK,
@@ -589,6 +593,13 @@ public class ContentSettingsResources {
         }
         assert false;
         return 0;
+    }
+
+    /** Returns the summary for the Tracking Protection setting to be displayed in site settings. */
+    public static int getTrackingProtectionListSummary(boolean blockAll) {
+        return blockAll
+                ? R.string.third_party_cookies_link_row_sub_label_disabled
+                : R.string.third_party_cookies_link_row_sub_label_limited;
     }
 
     /**

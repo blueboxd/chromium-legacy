@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.readaloud;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -16,10 +15,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import android.content.Context;
-import android.view.ViewStub;
+import android.app.Activity;
 
-import androidx.test.core.app.ApplicationProvider;
+import androidx.appcompat.app.AppCompatActivity;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,20 +29,23 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowLooper;
 
-import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.readaloud.player.PlayerCoordinator;
 import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.translate.FakeTranslateBridgeJni;
 import org.chromium.chrome.browser.translate.TranslateBridgeJni;
 import org.chromium.chrome.modules.readaloud.Playback;
 import org.chromium.chrome.modules.readaloud.PlaybackListener;
+import org.chromium.chrome.modules.readaloud.Player;
 import org.chromium.chrome.modules.readaloud.ReadAloudPlaybackHooks;
 import org.chromium.chrome.modules.readaloud.contentjs.Highlighter;
 import org.chromium.chrome.test.util.browser.Features;
@@ -66,18 +67,18 @@ public class ReadAloudControllerUnitTest {
 
     private MockTab mTab;
     private ReadAloudController mController;
-    private Context mContext;
+    private Activity mActivity;
 
     @Rule public JniMocker mJniMocker = new JniMocker();
     @Rule public TestRule mProcessor = new Features.JUnitProcessor();
 
     private FakeTranslateBridgeJni mFakeTranslateBridge;
-    @Mock private ObservableSupplier<Profile> mMockProfileSupplier;
+    private ObservableSupplierImpl<Profile> mProfileSupplier;
     @Mock private Profile mMockProfile;
+    @Mock private Profile mMockIncognitoProfile;
     @Mock private ReadAloudReadabilityHooksImpl mHooksImpl;
     @Mock private ReadAloudPlaybackHooks mPlaybackHooks;
-    @Mock private ViewStub mViewStub;
-    @Mock private PlayerCoordinator mPlayerCoordinator;
+    @Mock private Player mPlayerCoordinator;
     @Mock private BottomSheetController mBottomSheetController;
     @Mock private Highlighter mHighlighter;
     @Mock private PlaybackListener.PhraseTiming mPhraseTiming;
@@ -95,33 +96,42 @@ public class ReadAloudControllerUnitTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        doReturn(mMockProfile).when(mMockProfileSupplier).get();
+        mProfileSupplier = new ObservableSupplierImpl<>();
+        mProfileSupplier.set(mMockProfile);
+
+        mActivity = Robolectric.buildActivity(AppCompatActivity.class).setup().get();
+        mActivity.setTheme(R.style.Theme_BrowserUI_DayNight);
 
         when(mMockProfile.isOffTheRecord()).thenReturn(false);
+        when(mMockIncognitoProfile.isOffTheRecord()).thenReturn(true);
         UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(true);
 
-        mContext = ApplicationProvider.getApplicationContext();
+        PriceTrackingFeatures.setPriceTrackingEnabledForTesting(false);
+
         mFakeTranslateBridge = new FakeTranslateBridgeJni();
         mJniMocker.mock(TranslateBridgeJni.TEST_HOOKS, mFakeTranslateBridge);
         mTabModelSelector =
                 new MockTabModelSelector(
+                        mMockProfile,
+                        mMockIncognitoProfile,
                         /* tabCount= */ 2,
                         /* incognitoTabCount= */ 1,
                         (id, incognito) -> {
-                            MockTab tab = spy(MockTab.createAndInitialize(id, incognito));
+                            Profile profile = incognito ? mMockIncognitoProfile : mMockProfile;
+                            MockTab tab = spy(MockTab.createAndInitialize(id, profile));
                             return tab;
                         });
         when(mHooksImpl.isEnabled()).thenReturn(true);
-        ReadAloudController.setPlayerCoordinator(mPlayerCoordinator);
+        when(mPlaybackHooks.createPlayer(any())).thenReturn(mPlayerCoordinator);
         ReadAloudController.setReadabilityHooks(mHooksImpl);
         ReadAloudController.setPlaybackHooks(mPlaybackHooks);
         mController =
                 new ReadAloudController(
-                        mContext,
-                        mMockProfileSupplier,
+                        mActivity,
+                        mProfileSupplier,
                         mTabModelSelector.getModel(false),
-                        mViewStub,
                         mBottomSheetController);
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
 
         mTab = mTabModelSelector.getCurrentTab();
         mTab.setGurlOverrideForTesting(sTestGURL);
@@ -390,5 +400,21 @@ public class ReadAloudControllerUnitTest {
         mController.stopPlayback();
 
         verify(mHighlighter).clearHighlights(eq(mGlobalRenderFrameHostId), eq(mTab));
+    }
+
+    @Test
+    public void testUserDataStrippedFromReadabilityCheck() {
+        GURL tabUrl = new GURL("http://user:pass@example.com");
+        mTab.setGurlOverrideForTesting(tabUrl);
+
+        mController.maybeCheckReadability(tabUrl);
+
+        String sanitized = "http://example.com/";
+        verify(mHooksImpl, times(1)).isPageReadable(eq(sanitized), mCallbackCaptor.capture());
+        assertFalse(mController.isReadable(mTab));
+
+        mCallbackCaptor.getValue().onSuccess(sanitized, true, true);
+        assertTrue(mController.isReadable(mTab));
+        assertTrue(mController.timepointsSupported(mTab));
     }
 }

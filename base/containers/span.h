@@ -82,8 +82,8 @@ using IteratorHasConvertibleReferenceType =
 
 template <typename Iter, typename T>
 using EnableIfCompatibleContiguousIterator = std::enable_if_t<
-    std::conjunction<IsContiguousIterator<Iter>,
-                     IteratorHasConvertibleReferenceType<Iter, T>>::value>;
+    std::conjunction_v<IsContiguousIterator<Iter>,
+                       IteratorHasConvertibleReferenceType<Iter, T>>>;
 
 template <typename Container, typename T>
 using ContainerHasConvertibleData = IsLegalDataConversion<
@@ -164,8 +164,8 @@ constexpr size_t must_not_be_dynamic_extent() {
 // own the underlying memory, so care must be taken to ensure that a span does
 // not outlive the backing store.
 //
-// span is somewhat analogous to StringPiece, but with arbitrary element types,
-// allowing mutation if T is non-const.
+// span is somewhat analogous to std::string_view, but with arbitrary element
+// types, allowing mutation if T is non-const.
 //
 // span is implicitly convertible from C++ arrays, as well as most [1]
 // container-like types that provide a data() and size() method (such as

@@ -25,6 +25,7 @@
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/password_manager/core/browser/ui/password_check_referrer.h"
 #import "components/password_manager/core/common/password_manager_features.h"
+#import "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #import "components/prefs/pref_service.h"
 #import "components/previous_session_info/previous_session_info.h"
 #import "components/signin/public/base/signin_metrics.h"
@@ -960,7 +961,10 @@ void InjectNTP(Browser* browser) {
   AuthenticationService* authService =
       AuthenticationServiceFactory::GetForBrowserState(browserState);
 
-  if (IsUserPolicyNotificationNeeded(authService, prefService)) {
+  policy::UserCloudPolicyManager* userPolicyManager =
+      browserState->GetUserCloudPolicyManager();
+  if (IsUserPolicyNotificationNeeded(authService, prefService,
+                                     userPolicyManager)) {
     policy::UserPolicySigninService* userPolicyService =
         policy::UserPolicySigninServiceFactory::GetForBrowserState(
             browserState);
@@ -971,7 +975,8 @@ void InjectNTP(Browser* browser) {
                      applicationCommandsHandler:applicationCommandsHandler
                                     prefService:prefService
                                     mainBrowser:mainBrowser
-                                  policyService:userPolicyService]];
+                                  policyService:userPolicyService
+                              userPolicyManager:userPolicyManager]];
   }
 
   // Now that the main browser's command dispatcher is created and the newly
@@ -1009,7 +1014,8 @@ void InjectNTP(Browser* browser) {
                            initWithPromosManager:promosManager]];
 
   if (ios::provider::IsChoiceEnabled()) {
-    [sceneState addAgent:ios::provider::CreateChoiceSceneAgent(promosManager)];
+    [sceneState addAgent:ios::provider::CreateChoiceSceneAgent(promosManager,
+                                                               browserState)];
   }
 
   // Do not gate by feature flag so it can run for enabled -> disabled
@@ -1174,8 +1180,11 @@ void InjectNTP(Browser* browser) {
   AuthenticationService* authService =
       AuthenticationServiceFactory::GetForBrowserState(browserState);
 
+  policy::UserCloudPolicyManager* userPolicyManager =
+      browserState->GetUserCloudPolicyManager();
   if (self.sceneState.appState.startupInformation.isFirstRun ||
-      IsUserPolicyNotificationNeeded(authService, prefService) ||
+      IsUserPolicyNotificationNeeded(authService, prefService,
+                                     userPolicyManager) ||
       ![self potentiallyInterestedUser]) {
     // Don't show the default browser promo when either (1) the user is going
     // through the First Run screens, (2) the user MUST see the User Policy
@@ -2330,22 +2339,6 @@ void InjectNTP(Browser* browser) {
   self.settingsNavigationController = [SettingsNavigationController
       passwordManagerSearchControllerForBrowser:browser
                                        delegate:self];
-  [baseViewController presentViewController:self.settingsNavigationController
-                                   animated:YES
-                                 completion:nil];
-}
-
-- (void)showTabPickupSettings {
-  UIViewController* baseViewController = self.currentInterface.viewController;
-  if (self.settingsNavigationController) {
-    [self.settingsNavigationController showTabPickupSettings];
-    return;
-  }
-  self.settingsNavigationController = [[SettingsNavigationController alloc]
-      initWithRootViewController:nil
-                         browser:self.mainInterface.browser
-                        delegate:self];
-  [self.settingsNavigationController showTabPickupSettings];
   [baseViewController presentViewController:self.settingsNavigationController
                                    animated:YES
                                  completion:nil];

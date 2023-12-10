@@ -44,6 +44,12 @@ void RecordShownActionForConfidence(
   } else if (confidence == CookieControlsBreakageConfidenceLevel::kMedium) {
     base::RecordAction(
         base::UserMetricsAction("CookieControls.MediumConfidence.Shown"));
+  } else if (confidence == CookieControlsBreakageConfidenceLevel::kLow) {
+    base::RecordAction(
+        base::UserMetricsAction("CookieControls.LowConfidence.Shown"));
+  } else {
+    base::RecordAction(
+        base::UserMetricsAction("CookieControls.OtherConfidence.Shown"));
   }
 }
 
@@ -55,6 +61,12 @@ void RecordOpenedActionForConfidence(
   } else if (confidence == CookieControlsBreakageConfidenceLevel::kMedium) {
     base::RecordAction(
         base::UserMetricsAction("CookieControls.MediumConfidence.Opened"));
+  } else if (confidence == CookieControlsBreakageConfidenceLevel::kLow) {
+    base::RecordAction(
+        base::UserMetricsAction("CookieControls.LowConfidence.Opened"));
+  } else {
+    base::RecordAction(
+        base::UserMetricsAction("CookieControls.OtherConfidence.Opened"));
   }
 }
 
@@ -126,8 +138,7 @@ void CookieControlsIconView::UpdateImpl() {
                                               profile->GetOriginalProfile())
                                         : nullptr,
               HostContentSettingsMapFactory::GetForProfile(profile),
-              TrackingProtectionSettingsFactory::GetForProfile(
-                  profile->GetOriginalProfile()));
+              TrackingProtectionSettingsFactory::GetForProfile(profile));
       controller_observation_.Observe(controller_.get());
     }
     controller_->Update(web_contents);
@@ -173,13 +184,15 @@ void CookieControlsIconView::OnIPHClosed() {
 
 void CookieControlsIconView::SetLabelAndTooltip() {
   auto icon_label = GetLabelForStatus().value_or(IDS_COOKIE_CONTROLS_TOOLTIP);
-  if (blocking_status_ != CookieBlocking3pcdStatus::kNotIn3pcd) {
+  // Only use "Tracking Protection" and verbose accessibility description if the
+  // label is hidden.
+  if (blocking_status_ != CookieBlocking3pcdStatus::kNotIn3pcd &&
+      !label()->GetVisible()) {
     // Set the accessible description to whatever the 3PC blocking state is.
     SetAccessibleDescription(l10n_util::GetStringUTF16(icon_label));
-    // Don't show "Tracking Protection" if the label is visible.
-    if (!label()->GetVisible()) {
-      icon_label = IDS_TRACKING_PROTECTION_PAGE_ACTION_LABEL;
-    }
+    icon_label = IDS_TRACKING_PROTECTION_PAGE_ACTION_LABEL;
+  } else {
+    SetAccessibleDescription(u"");
   }
   SetTooltipText(l10n_util::GetStringUTF16(icon_label));
   SetLabel(l10n_util::GetStringUTF16(icon_label));
@@ -234,7 +247,11 @@ absl::optional<int> CookieControlsIconView::GetLabelForStatus() const {
     case CookieControlsStatus::kDisabled:  // Cookies are not blocked
       return IDS_COOKIE_CONTROLS_PAGE_ACTION_COOKIES_ALLOWED_LABEL;
     case CookieControlsStatus::kEnabled:  // Cookies are blocked
-      return IDS_COOKIE_CONTROLS_PAGE_ACTION_COOKIES_BLOCKED_LABEL;
+      if (blocking_status_ == CookieBlocking3pcdStatus::kNotIn3pcd) {
+        return IDS_COOKIE_CONTROLS_PAGE_ACTION_COOKIES_BLOCKED_LABEL;
+      } else {
+        return IDS_COOKIE_CONTROLS_PAGE_ACTION_COOKIES_LIMITED_LABEL;
+      }
     case CookieControlsStatus::kUninitialized:
       DLOG(ERROR) << "CookieControl status is not initialized";
       return absl::nullopt;
@@ -272,6 +289,7 @@ void CookieControlsIconView::OnFinishedPageReloadWithChangedSettings() {
   // it should have already been visible for the user to have changed the
   // setting.
   if (ShouldBeVisible()) {
+    SetAccessibleDescription(u"");
     AnimateIn(GetLabelForStatus());
   }
 }
@@ -340,6 +358,8 @@ const gfx::VectorIcon& CookieControlsIconView::GetVectorIcon() const {
              ? views::kEyeIcon
              : views::kEyeCrossedIcon;
 }
+
+void CookieControlsIconView::UpdateTooltipForFocus() {}
 
 BEGIN_METADATA(CookieControlsIconView, PageActionIconView)
 ADD_READONLY_PROPERTY_METADATA(bool, AssociatedBubble)

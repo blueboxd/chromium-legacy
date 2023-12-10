@@ -457,7 +457,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     }
   }
 
-  void SetTableRowData(const NGTableConstraintSpaceData* table_data,
+  void SetTableRowData(const TableConstraintSpaceData* table_data,
                        wtf_size_t row_index) {
 #if DCHECK_IS_ON()
     DCHECK(!is_table_row_data_set_);
@@ -467,7 +467,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   }
 
   void SetTableSectionData(
-      scoped_refptr<const NGTableConstraintSpaceData> table_data,
+      scoped_refptr<const TableConstraintSpaceData> table_data,
       wtf_size_t section_index) {
 #if DCHECK_IS_ON()
     DCHECK(!is_table_section_data_set_);
@@ -515,7 +515,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
         target_stretch_block_sizes);
   }
 
-  void SetGridLayoutSubtree(NGGridLayoutSubtree&& grid_layout_subtree) {
+  void SetGridLayoutSubtree(GridLayoutSubtree&& grid_layout_subtree) {
 #if DCHECK_IS_ON()
     DCHECK(!is_grid_layout_subtree_set_);
     is_grid_layout_subtree_set_ = true;

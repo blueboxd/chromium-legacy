@@ -130,7 +130,8 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
   };
 
   // AttributionStorage:
-  StoreSourceResult StoreSource(const StorableSource& source) override;
+  StoreSourceResult StoreSource(const StorableSource& source,
+                                bool debug_cookie_set) override;
   CreateReportResult MaybeCreateAndStoreReport(
       const AttributionTrigger& trigger) override;
   std::vector<AttributionReport> GetAttributionReports(
@@ -385,10 +386,6 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
   // Randomly assigns trigger verification data to the given reports.
   void AssignTriggerVerificationData(std::vector<AttributionReport>&,
                                      const AttributionTrigger&)
-      VALID_CONTEXT_REQUIRED(sequence_checker_);
-
-  uint64_t SanitizeTriggerData(uint64_t trigger_data,
-                               attribution_reporting::mojom::SourceType)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   // If set, database errors will not crash the client when run in debug mode.

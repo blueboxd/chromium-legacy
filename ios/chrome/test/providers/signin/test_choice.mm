@@ -24,12 +24,12 @@ ChromeCoordinator* CreateChoiceCoordinatorForFREWithNavigationController(
   NOTREACHED_NORETURN();
 }
 
-id<StandardPromoDisplayHandler> CreateChoiceDisplayHandler(
-    ChromeBrowserState* browserState) {
+id<StandardPromoDisplayHandler> CreateChoiceDisplayHandler() {
   NOTREACHED_NORETURN();
 }
 
-id<SceneAgent> CreateChoiceSceneAgent(PromosManager* promosManager) {
+id<SceneAgent> CreateChoiceSceneAgent(PromosManager* promosManager,
+                                      ChromeBrowserState* browserState) {
   NOTREACHED_NORETURN();
 }
 

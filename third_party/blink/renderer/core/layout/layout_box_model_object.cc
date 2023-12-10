@@ -34,15 +34,15 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
+#include "third_party/blink/renderer/core/layout/inline/inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
-#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_section.h"
+#include "third_party/blink/renderer/core/layout/table/layout_table_section.h"
 #include "third_party/blink/renderer/core/page/scrolling/sticky_position_scrolling_constraints.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_inline_paint_context.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
@@ -410,7 +410,7 @@ void LayoutBoxModelObject::AddOutlineRectsForDescendant(
 void LayoutBoxModelObject::RecalcVisualOverflow() {
   // |PaintLayer| calls this function when |HasSelfPaintingLayer|. When |this|
   // is an inline box or an atomic inline, its ink overflow is stored in
-  // |NGFragmentItem| in the inline formatting context.
+  // |FragmentItem| in the inline formatting context.
   if (IsInline() && IsInLayoutNGInlineFormattingContext()) {
     DCHECK(HasSelfPaintingLayer());
     InlineCursor cursor;

@@ -34,6 +34,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "cc/input/main_thread_scrolling_reason.h"
+#include "cc/input/scroll_snap_data.h"
 #include "cc/input/scroll_utils.h"
 #include "cc/input/scrollbar.h"
 #include "cc/input/snap_selection_strategy.h"
@@ -156,7 +157,7 @@ MacScrollbarAnimator* ScrollableArea::GetMacScrollbarAnimator() const {
         MacScrollbarAnimator::Create(const_cast<ScrollableArea*>(this));
   }
 #endif
-  return mac_scrollbar_animator_;
+  return mac_scrollbar_animator_.Get();
 }
 
 ScrollAnimatorBase& ScrollableArea::GetScrollAnimator() const {
@@ -480,13 +481,41 @@ void ScrollableArea::ScrollToScrollStartTarget(
       Behavior::kNoScroll, Behavior::kNoScroll, Behavior::kNoScroll);
   mojom::blink::ScrollAlignment align_y(
       Behavior::kNoScroll, Behavior::kNoScroll, Behavior::kNoScroll);
+  cc::ScrollSnapAlign snap_alignment =
+      scroll_start_target->Style()->GetScrollSnapAlign();
   if (axis == cc::SnapAxis::kY || axis == cc::SnapAxis::kBoth) {
-    align_y = GetLayoutBox()->HasTopOverflow() ? ScrollAlignment::BottomAlways()
-                                               : ScrollAlignment::TopAlways();
+    switch (snap_alignment.alignment_block) {
+      case cc::SnapAlignment::kStart:
+        align_y = ScrollAlignment::TopAlways();
+        break;
+      case cc::SnapAlignment::kCenter:
+        align_y = ScrollAlignment::CenterAlways();
+        break;
+      case cc::SnapAlignment::kEnd:
+        align_y = ScrollAlignment::BottomAlways();
+        break;
+      default:
+        align_y = GetLayoutBox()->HasTopOverflow()
+                      ? ScrollAlignment::BottomAlways()
+                      : ScrollAlignment::TopAlways();
+    }
   }
   if (axis == cc::SnapAxis::kX || axis == cc::SnapAxis::kBoth) {
-    align_x = GetLayoutBox()->HasLeftOverflow() ? ScrollAlignment::RightAlways()
-                                                : ScrollAlignment::LeftAlways();
+    switch (snap_alignment.alignment_inline) {
+      case cc::SnapAlignment::kStart:
+        align_x = ScrollAlignment::LeftAlways();
+        break;
+      case cc::SnapAlignment::kCenter:
+        align_x = ScrollAlignment::CenterAlways();
+        break;
+      case cc::SnapAlignment::kEnd:
+        align_x = ScrollAlignment::RightAlways();
+        break;
+      default:
+        align_x = GetLayoutBox()->HasLeftOverflow()
+                      ? ScrollAlignment::RightAlways()
+                      : ScrollAlignment::LeftAlways();
+    }
   }
   mojom::blink::ScrollIntoViewParamsPtr params =
       ScrollAlignment::CreateScrollIntoViewParams(align_x, align_y);
@@ -852,11 +881,19 @@ void ScrollableArea::SetScrollbarNeedsPaintInvalidation(
   // Invalidate the scrollbar directly if it's already composited.
   // GetLayoutBox() may be null in some unit tests.
   if (auto* box = GetLayoutBox()) {
-    auto* frame_view = box->GetFrameView();
-    if (auto* compositor = frame_view->GetPaintArtifactCompositor()) {
-      if (compositor->SetScrollbarNeedsDisplay(
-              GetScrollbarElementId(orientation))) {
-        if (auto* scrollbar = GetScrollbar(orientation)) {
+    if (auto* scrollbar = GetScrollbar(orientation)) {
+      if (auto* compositor =
+              box->GetFrameView()->GetPaintArtifactCompositor()) {
+        CompositorElementId element_id = GetScrollbarElementId(orientation);
+        if (scrollbar->IsSolidColor()) {
+          // This will call SetNeedsDisplay() if the color changes (which is
+          // the only reason for a SolidColorScrollbarLayer to update display).
+          if (compositor->SetScrollbarSolidColor(
+                  element_id, scrollbar->GetTheme().GetSolidColor(
+                                  scrollbar->ScrollbarThumbColor()))) {
+            scrollbar->ClearNeedsUpdateDisplay();
+          }
+        } else if (compositor->SetScrollbarNeedsDisplay(element_id)) {
           scrollbar->ClearNeedsUpdateDisplay();
         }
       }

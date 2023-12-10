@@ -21,7 +21,6 @@
 #include "base/scoped_observation_traits.h"
 #include "base/sequence_checker.h"
 #include "base/supports_user_data.h"
-#include "base/uuid.h"
 #include "components/commerce/core/account_checker.h"
 #include "components/commerce/core/commerce_types.h"
 #include "components/commerce/core/proto/commerce_subscription_db_content.pb.h"
@@ -90,11 +89,11 @@ extern const char kOgTypeProductItem[];
 extern const long kToMicroCurrency;
 
 extern const char kImageAvailabilityHistogramName[];
-extern const char kProductInfoJavascriptTime[];
+extern const char kProductInfoLocalExtractionTime[];
 
 // The amount of time to wait after the last "stopped loading" event to run the
 // on-page extraction for product info.
-extern const uint64_t kProductInfoJavascriptDelayMs;
+extern const uint64_t kProductInfoLocalExtractionDelayMs;
 
 // The availability of the product image for an offer. This needs to be kept in
 // sync with the ProductImageAvailability enum in enums.xml.
@@ -141,14 +140,14 @@ struct ProductInfoCacheEntry {
   // The number of pages that have the URL open.
   size_t pages_with_url_open{0};
 
-  // Whether the fallback javascript needs to run for page.
-  bool needs_javascript_run{false};
+  // Whether the fallback local extraction needs to run for page.
+  bool needs_local_extraction_run{false};
 
-  // The time that the javascript execution started. This is primarily used for
-  // metrics.
-  base::Time javascript_execution_start_time;
+  // The time that the local extraction execution started. This is primarily
+  // used for metrics.
+  base::Time local_extraction_execution_start_time;
 
-  std::unique_ptr<base::CancelableOnceClosure> run_javascript_task;
+  std::unique_ptr<base::CancelableOnceClosure> run_local_extraction_task;
 
   // The product info associated with the URL.
   std::unique_ptr<ProductInfo> product_info;
@@ -192,7 +191,7 @@ using DiscountsOptGuideCallback = base::OnceCallback<void(DiscountsPair)>;
 // A callback for getting updated ProductInfo for a bookmark. This provides the
 // bookmark ID being updated, the URL, and the product info.
 using BookmarkProductInfoUpdatedCallback = base::RepeatingCallback<
-    void(const base::Uuid&, const GURL&, absl::optional<ProductInfo>)>;
+    void(const int64_t, const GURL&, absl::optional<ProductInfo>)>;
 
 // Under Desktop browser test or interactive ui test, use
 // ShoppingServiceFactory::SetTestingFactory to create a
@@ -280,7 +279,7 @@ class ShoppingService : public KeyedService,
   // repeating callback that provides the bookmark's ID, URL, and product info.
   // Currently this API should only be used in the BookmarkUpdateManager.
   virtual void GetUpdatedProductInfoForBookmarks(
-      const std::vector<base::Uuid>& bookmark_uuids,
+      const std::vector<int64_t>& bookmark_ids,
       BookmarkProductInfoUpdatedCallback info_updated_callback);
 
   // Gets the maximum number of bookmarks that the backend will retrieve per
@@ -432,12 +431,12 @@ class ShoppingService : public KeyedService,
       GetParcelStatusCallback callback);
 
   // Gets the status of all parcel status stored in the db.
-  void GetAllParcelStatuses(GetParcelStatusCallback callback);
+  virtual void GetAllParcelStatuses(GetParcelStatusCallback callback);
 
   // Called to stop tracking a given parcel.
   // DEPRECATED: use StopTrackingParcels() below()
-  void StopTrackingParcel(const std::string& tracking_id,
-                          base::OnceCallback<void(bool)> callback);
+  virtual void StopTrackingParcel(const std::string& tracking_id,
+                                  base::OnceCallback<void(bool)> callback);
 
   // Called to stop tracking multiple parcels.
   void StopTrackingParcels(
@@ -489,14 +488,14 @@ class ShoppingService : public KeyedService,
   // frame.
   void DidFinishLoad(WebWrapper* web);
 
-  // Schedule (or reschedule) the on-page javascript execution. Calling this
-  // sequentially for the same web wrapper with the same URL will cancel the
-  // pending task and schedule a new one. The script will, at most, run once
+  // Schedule (or reschedule) the on-page local extraction execution. Calling
+  // this sequentially for the same web wrapper with the same URL will cancel
+  // the pending task and schedule a new one. The script will, at most, run once
   // per unique navigation.
-  void ScheduleProductInfoJavascript(WebWrapper* web);
+  void ScheduleProductInfoLocalExtraction(WebWrapper* web);
 
-  // Run the on-page, javascript info extraction if needed.
-  void TryRunningJavascriptForProductInfo(base::WeakPtr<WebWrapper> web);
+  // Run the on-page info extraction if needed.
+  void TryRunningLocalExtractionForProductInfo(base::WeakPtr<WebWrapper> web);
 
   // Whether APIs like |GetProductInfoForURL| are enabled and allowed to be
   // used.
@@ -524,7 +523,7 @@ class ShoppingService : public KeyedService,
   // info.
   void OnProductInfoUpdatedOnDemand(
       BookmarkProductInfoUpdatedCallback callback,
-      std::unordered_map<std::string, base::Uuid> url_to_uuid_map,
+      std::unordered_map<std::string, int64_t> url_to_id_map,
       const GURL& url,
       const base::flat_map<
           optimization_guide::proto::OptimizationType,
@@ -538,11 +537,12 @@ class ShoppingService : public KeyedService,
   std::unique_ptr<ProductInfo> OptGuideResultToProductInfo(
       const optimization_guide::OptimizationMetadata& metadata);
 
-  // Handle the result of running the javascript fallback for product info.
-  void OnProductInfoJavascriptResult(const GURL url, base::Value result);
+  // Handle the result of running the local extraction fallback for product
+  // info.
+  void OnProductInfoLocalExtractionResult(const GURL url, base::Value result);
 
-  // Handle the result of JSON parsing obtained from running javascript on the
-  // product info page.
+  // Handle the result of JSON parsing obtained from running local extraction on
+  // the product info page.
   void OnProductInfoJsonSanitizationCompleted(
       const GURL url,
       data_decoder::DataDecoder::ValueOrError result);

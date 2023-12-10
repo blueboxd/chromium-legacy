@@ -193,15 +193,16 @@
   #cornerNewTabPage {
     left: 12%;
     top: 15%;
+    width: 88%;
   }
 
   :host-context([chrome-refresh-2023]) #cornerNewTabPage {
     border-radius: 4px;
     box-shadow: var(--cr-elevation-2);
-    height: 128px;
-    width: 128px;
-    left: 20px;
-    top: 20px;
+    height: 100%;
+    width: 100%;
+    left: 15.5%;
+    top: 15.5%;
   }
 
   svg {
@@ -287,8 +288,10 @@
     </div>
     <template is="dom-if" if="[[wallpaperSearchEnabled_]]">
       <div class="tile" tabindex="0" id="wallpaperSearchTile"
-          role="button" on-click="onWallpaperSearchClick_">
-        <customize-chrome-check-mark-wrapper>
+          role="button" on-click="onWallpaperSearchClick_"
+          aria-current$="[[boolToString_(isWallpaperSearchSelected_)]]">
+        <customize-chrome-check-mark-wrapper
+            checked="[[isWallpaperSearchSelected_]]">
           <div class="image-container">
             <div id="wallpaperSearchIcon" class="cr-icon"></div>
           </div>

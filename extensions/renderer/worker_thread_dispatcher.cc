@@ -154,7 +154,9 @@ void WorkerThreadDispatcher::Init(content::RenderThread* render_thread) {
   DCHECK(!message_filter_);
   message_filter_ = render_thread->GetSyncMessageFilter();
   io_task_runner_ = render_thread->GetIOTaskRunner();
+#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
   main_thread_task_runner_ = base::SingleThreadTaskRunner::GetCurrentDefault();
+#endif
   render_thread->AddObserver(this);
 }
 
@@ -178,6 +180,7 @@ ServiceWorkerData* WorkerThreadDispatcher::GetServiceWorkerData() {
   return service_worker_data;
 }
 
+#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
 // static
 bool WorkerThreadDispatcher::HandlesMessageOnWorkerThread(
     const IPC::Message& message) {
@@ -193,19 +196,25 @@ void WorkerThreadDispatcher::ForwardIPC(int worker_thread_id,
   WorkerThreadDispatcher::Get()->OnMessageReceivedOnWorkerThread(
       worker_thread_id, message);
 }
+#endif
 
 // static
 void WorkerThreadDispatcher::UpdateBindingsOnWorkerThread(
-    const ExtensionId& extension_id) {
+    const absl::optional<ExtensionId>& extension_id) {
   DCHECK(worker_thread_util::IsWorkerThread());
-  DCHECK(!extension_id.empty());
+  DCHECK(!extension_id || !extension_id->empty())
+      << "If provided, `extension_id` must be non-empty.";
 
   ServiceWorkerData* data = WorkerThreadDispatcher::GetServiceWorkerData();
   // Bail out if the worker was destroyed.
-  if (!data)
+  if (!data || !data->bindings_system()) {
     return;
+  }
+
+  // NativeExtensionBindingsSystem::UpdateBindings() will update all bindings
+  // if the provided ExtensionId is empty.
   data->bindings_system()->UpdateBindings(
-      extension_id, true /* permissions_changed */,
+      extension_id.value_or(ExtensionId()), true /* permissions_changed */,
       Dispatcher::GetWorkerScriptContextSet());
 }
 
@@ -217,7 +226,6 @@ void WorkerThreadDispatcher::DispatchEventOnWorkerThread(
   auto* dispatcher = WorkerThreadDispatcher::Get();
   dispatcher->DispatchEventHelper(std::move(params), std::move(event_args));
 }
-#endif
 
 bool WorkerThreadDispatcher::OnControlMessageReceived(
     const IPC::Message& message) {
@@ -244,21 +252,15 @@ bool WorkerThreadDispatcher::OnControlMessageReceived(
   }
   return true;
 }
+#endif
 
 bool WorkerThreadDispatcher::UpdateBindingsForWorkers(
     const ExtensionId& extension_id) {
-  bool success = true;
-  base::AutoLock lock(task_runner_map_lock_);
-  for (const auto& task_runner_info : task_runner_map_) {
-    const int worker_thread_id = task_runner_info.first;
-    base::TaskRunner* runner = task_runner_map_[worker_thread_id];
-    bool posted = runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(&WorkerThreadDispatcher::UpdateBindingsOnWorkerThread,
-                       extension_id));
-    success &= posted;
-  }
-  return success;
+  return UpdateBindingsHelper(extension_id);
+}
+
+void WorkerThreadDispatcher::UpdateAllServiceWorkerBindings() {
+  UpdateBindingsHelper(absl::nullopt);
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
@@ -334,7 +336,6 @@ void WorkerThreadDispatcher::SendRemoveEventFilteredListener(
 void WorkerThreadDispatcher::PostTaskToMainThread(base::OnceClosure task) {
   main_thread_task_runner_->PostTask(FROM_HERE, std::move(task));
 }
-#endif
 
 void WorkerThreadDispatcher::OnMessageReceivedOnWorkerThread(
     int worker_thread_id,
@@ -344,8 +345,10 @@ void WorkerThreadDispatcher::OnMessageReceivedOnWorkerThread(
   // If the worker state was already destroyed via
   // Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread, then
   // drop this IPC. See https://crbug.com/1008143 for details.
-  if (!GetServiceWorkerData())
+  ServiceWorkerData* data = GetServiceWorkerData();
+  if (!data || !data->bindings_system()) {
     return;
+  }
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WorkerThreadDispatcher, message)
@@ -375,6 +378,7 @@ void WorkerThreadDispatcher::PostTaskToIOThread(base::OnceClosure task) {
   bool task_posted = io_task_runner_->PostTask(FROM_HERE, std::move(task));
   DCHECK(task_posted) << "Could not PostTask IPC to IO thread.";
 }
+#endif
 
 bool WorkerThreadDispatcher::Send(IPC::Message* message) {
   return message_filter_->Send(message);
@@ -453,15 +457,19 @@ void WorkerThreadDispatcher::DispatchEventHelper(
 }
 
 void WorkerThreadDispatcher::DispatchEvent(mojom::DispatchEventParamsPtr params,
-                                           base::Value::List event_args) {
+                                           base::Value::List event_args,
+                                           DispatchEventCallback callback) {
   DCHECK(!worker_thread_util::IsWorkerThread());
   const int worker_thread_id = params->worker_thread_id;
   PostTaskToWorkerThread(
       worker_thread_id,
       base::BindOnce(&WorkerThreadDispatcher::DispatchEventOnWorkerThread,
                      std::move(params), std::move(event_args)));
+  // Note that this will run right away on the IO thread and the worker thread
+  // will not have processed the event. The browser does not use this callback
+  // when ENABLE_EXTENSIONS_LEGACY_IPC is enabled so this is fine.
+  std::move(callback).Run();
 }
-#endif
 
 void WorkerThreadDispatcher::OnDispatchOnConnect(
     int worker_thread_id,
@@ -469,12 +477,13 @@ void WorkerThreadDispatcher::OnDispatchOnConnect(
   DCHECK_EQ(worker_thread_id, content::WorkerThread::GetCurrentId());
   WorkerThreadDispatcher::GetBindingsSystem()
       ->messaging_service()
-      ->DispatchOnConnect(
-          Dispatcher::GetWorkerScriptContextSet(), connect_data.target_port_id,
-          connect_data.channel_type, connect_data.channel_name,
-          connect_data.tab_source, connect_data.external_connection_info,
-          // Render frames do not matter.
-          nullptr);
+      ->DispatchOnConnect(Dispatcher::GetWorkerScriptContextSet(),
+                          connect_data.target_port_id,
+                          connect_data.channel_type, connect_data.channel_name,
+                          connect_data.tab_source,
+                          connect_data.external_connection_info, {}, {},
+                          // Render frames do not matter.
+                          nullptr, base::DoNothing());
 }
 
 void WorkerThreadDispatcher::OnValidateMessagePort(int worker_thread_id,
@@ -509,11 +518,12 @@ void WorkerThreadDispatcher::OnDispatchOnDisconnect(
                              // Render frames do not matter.
                              nullptr);
 }
+#endif
 
 void WorkerThreadDispatcher::AddWorkerData(
     blink::WebServiceWorkerContextProxy* proxy,
     int64_t service_worker_version_id,
-    base::UnguessableToken activation_sequence,
+    const absl::optional<base::UnguessableToken>& activation_sequence,
     ScriptContext* script_context,
     std::unique_ptr<NativeExtensionBindingsSystem> bindings_system) {
   if (!service_worker_data) {
@@ -586,7 +596,7 @@ void WorkerThreadDispatcher::DidStartContext(
                 service_worker_version_id, thread_id);
       },
       service_worker_data->context()->GetExtensionID(),
-      service_worker_data->activation_sequence(), service_worker_scope,
+      *service_worker_data->activation_sequence(), service_worker_scope,
       service_worker_version_id, thread_id));
 }
 
@@ -609,7 +619,7 @@ void WorkerThreadDispatcher::DidStopContext(const GURL& service_worker_scope,
         WorkerThreadDispatcher::Get()->UnbindEventDispatcher(thread_id);
       },
       service_worker_data->context()->GetExtensionID(),
-      service_worker_data->activation_sequence(), service_worker_scope,
+      *service_worker_data->activation_sequence(), service_worker_scope,
       service_worker_version_id, thread_id));
 }
 
@@ -683,6 +693,22 @@ void WorkerThreadDispatcher::UnbindEventDispatcher(int worker_thread_id) {
 
 ScriptContextSetIterable* WorkerThreadDispatcher::GetScriptContextSet() {
   return Dispatcher::GetWorkerScriptContextSet();
+}
+
+bool WorkerThreadDispatcher::UpdateBindingsHelper(
+    const absl::optional<ExtensionId>& extension_id) {
+  bool success = true;
+  base::AutoLock lock(task_runner_map_lock_);
+  for (const auto& task_runner_info : task_runner_map_) {
+    const int worker_thread_id = task_runner_info.first;
+    base::TaskRunner* runner = task_runner_map_[worker_thread_id];
+    bool posted = runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(&WorkerThreadDispatcher::UpdateBindingsOnWorkerThread,
+                       extension_id));
+    success &= posted;
+  }
+  return success;
 }
 
 }  // namespace extensions

@@ -109,8 +109,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kCrostiniAnsibleSoftwareManagement);
 COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kCrostiniArcSideload);
 COMPONENT_EXPORT(CHROME_FEATURES)
-BASE_DECLARE_FEATURE(kCrosWebAppShortcutUiUpdate);
-COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kCryptohomeDistributedModel);
 COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kCryptohomeUserDataAuth);
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -366,6 +364,15 @@ BASE_DECLARE_FEATURE(kHaTSDesktopDevToolsIssuesHeavyAd);
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kHaTSDesktopDevToolsIssuesCSP);
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+BASE_DECLARE_FEATURE(kHappinessTrackingSurveysForSecurityPage);
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<base::TimeDelta>
+    kHappinessTrackingSurveysForSecurityPageTime;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<std::string>
+    kHappinessTrackingSurveysForSecurityPageTriggerId;
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -404,6 +411,9 @@ BASE_DECLARE_FEATURE(kHappinessTrackingSystemArcGames);
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kHappinessTrackingSystemAudio);
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+BASE_DECLARE_FEATURE(kHappinessTrackingSystemBluetoothAudio);
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kHappinessTrackingPersonalizationAvatar);
@@ -710,6 +720,45 @@ BASE_DECLARE_FEATURE(kTreatUnsafeDownloadsAsActive);
 COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kInsecureDownloadWarnings);
 
+// TrackingProtectionSentimentSurvey
+#if !BUILDFLAG(IS_ANDROID)
+COMPONENT_EXPORT(CHROME_FEATURES)
+BASE_DECLARE_FEATURE(kTrackingProtectionSentimentSurvey);
+
+// Probability to pick "IMMEDIATE" over "DELAYED" surveying.
+// A value of 0.0 means Always choose "DELAYED"
+// A value of 1.0 means Always choose "IMMEDIATE"
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<double>
+    kTrackingProtectionSentimentSurveyImmediateOverDelayedProbability;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<double>
+    kTrackingProtectionSentimentSurveyControlImmediateProbability;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<double>
+    kTrackingProtectionSentimentSurveyTreatmentImmediateProbability;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<double>
+    kTrackingProtectionSentimentSurveyControlDelayedProbability;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<double>
+    kTrackingProtectionSentimentSurveyTreatmentDelayedProbability;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<std::string>
+    kTrackingProtectionSentimentSurveyControlImmediateTriggerId;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<std::string>
+    kTrackingProtectionSentimentSurveyTreatmentImmediateTriggerId;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<std::string>
+    kTrackingProtectionSentimentSurveyControlDelayedTriggerId;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<std::string>
+    kTrackingProtectionSentimentSurveyTreatmentDelayedTriggerId;
+#endif
+
 // TrustSafetySentimentSurvey
 #if !BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -966,13 +1015,6 @@ BASE_DECLARE_FEATURE(kWebAppSyncGeneratedIconUpdateFix);
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kWebAppManifestPolicyAppIdentityUpdate);
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-COMPONENT_EXPORT(CHROME_FEATURES)
-BASE_DECLARE_FEATURE(kChromeKioskEnableLacros);
-
-COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kWebKioskEnableLacros);
-#endif
 
 #if BUILDFLAG(IS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kWebKioskEnableIwaApis);

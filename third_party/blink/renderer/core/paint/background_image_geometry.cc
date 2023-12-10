@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
-#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
+#include "third_party/blink/renderer/core/layout/table/layout_table_cell.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -328,7 +328,7 @@ BackgroundImageGeometry::BackgroundImageGeometry(
     : BackgroundImageGeometry(&obj, &obj) {}
 
 // TablesNG background painting.
-BackgroundImageGeometry::BackgroundImageGeometry(const LayoutNGTableCell& cell,
+BackgroundImageGeometry::BackgroundImageGeometry(const LayoutTableCell& cell,
                                                  PhysicalOffset cell_offset,
                                                  const LayoutBox& table_part,
                                                  PhysicalSize table_part_size)
@@ -346,7 +346,7 @@ BackgroundImageGeometry::BackgroundImageGeometry(
           To<LayoutBoxModelObject>(fragment.GetLayoutObject())) {
   DCHECK(box_->IsBox());
 
-  if (fragment.IsTableNG()) {
+  if (fragment.IsTable()) {
     auto stitched_background_rect = ComputeStitchedTableGridRect(fragment);
     positioning_size_override_ = stitched_background_rect.size;
     element_positioning_area_offset_ = -stitched_background_rect.offset;
@@ -586,7 +586,21 @@ void BackgroundImageGeometry::ComputePositioningAreaAdjustments(
   }
 }
 
-void BackgroundImageGeometry::ComputePositioningArea(
+PhysicalRect BackgroundImageGeometry::ComputePositioningArea(
+    const PaintInfo& paint_info,
+    const FillLayer& fill_layer,
+    const PhysicalRect& paint_rect) const {
+  if (ShouldUseFixedAttachment(fill_layer)) {
+    return FixedAttachmentPositioningArea(paint_info);
+  }
+  if (painting_view_ || cell_using_container_background_ ||
+      box_has_multiple_fragments_) {
+    return {PhysicalOffset(), positioning_size_override_};
+  }
+  return paint_rect;
+}
+
+void BackgroundImageGeometry::AdjustPositioningArea(
     const PaintInfo& paint_info,
     const FillLayer& fill_layer,
     const PhysicalRect& paint_rect,
@@ -595,18 +609,10 @@ void BackgroundImageGeometry::ComputePositioningArea(
     PhysicalOffset& unsnapped_box_offset,
     PhysicalOffset& snapped_box_offset) {
   if (ShouldUseFixedAttachment(fill_layer)) {
-    // No snapping for fixed attachment.
-    unsnapped_positioning_area = FixedAttachmentPositioningArea(paint_info);
     unsnapped_dest_rect_ = snapped_dest_rect_ = snapped_positioning_area =
         unsnapped_positioning_area;
   } else {
     unsnapped_dest_rect_ = paint_rect;
-
-    if (painting_view_ || cell_using_container_background_ ||
-        box_has_multiple_fragments_)
-      unsnapped_positioning_area.size = positioning_size_override_;
-    else
-      unsnapped_positioning_area = unsnapped_dest_rect_;
 
     // Attempt to shrink the destination rect if possible while also ensuring
     // that it paints to the border:
@@ -797,6 +803,15 @@ void BackgroundImageGeometry::CalculateFillTileSize(
   return;
 }
 
+void BackgroundImageGeometry::SetGeometryForSVGMask(
+    const gfx::RectF& mask_area,
+    const PhysicalOffset& box_offset) {
+  unsnapped_dest_rect_ = PhysicalRect::EnclosingRect(mask_area);
+  unsnapped_dest_rect_.Move(box_offset);
+  snapped_dest_rect_ = PhysicalRect(ToPixelSnappedRect(unsnapped_dest_rect_));
+  tile_size_ = unsnapped_dest_rect_.size;
+}
+
 void BackgroundImageGeometry::Calculate(const PaintInfo& paint_info,
                                         const FillLayer& fill_layer,
                                         const PhysicalRect& paint_rect) {
@@ -806,7 +821,8 @@ void BackgroundImageGeometry::Calculate(const PaintInfo& paint_info,
   // Unsnapped positioning area is used to derive quantities
   // that reference source image maps and define non-integer values, such
   // as phase and position.
-  PhysicalRect unsnapped_positioning_area;
+  PhysicalRect unsnapped_positioning_area =
+      ComputePositioningArea(paint_info, fill_layer, paint_rect);
 
   // Snapped positioning area is used for sizing images based on the
   // background area (like cover and contain), and for setting the repeat
@@ -818,16 +834,16 @@ void BackgroundImageGeometry::Calculate(const PaintInfo& paint_info,
   PhysicalOffset snapped_box_offset;
 
   // This method also sets the destination rects.
-  ComputePositioningArea(paint_info, fill_layer, paint_rect,
-                         unsnapped_positioning_area, snapped_positioning_area,
-                         unsnapped_box_offset, snapped_box_offset);
+  AdjustPositioningArea(paint_info, fill_layer, paint_rect,
+                        unsnapped_positioning_area, snapped_positioning_area,
+                        unsnapped_box_offset, snapped_box_offset);
 
   // Sets the tile_size_.
   CalculateFillTileSize(fill_layer, unsnapped_positioning_area.size,
                         snapped_positioning_area.size);
 
-  EFillRepeat background_repeat_x = fill_layer.RepeatX();
-  EFillRepeat background_repeat_y = fill_layer.RepeatY();
+  EFillRepeat background_repeat_x = fill_layer.Repeat().x;
+  EFillRepeat background_repeat_y = fill_layer.Repeat().y;
 
   // Maintain both snapped and unsnapped available widths and heights.
   // Unsnapped values are used for most thing, but snapped are used

@@ -68,6 +68,7 @@ DEFINE_VARIATION_PARAM(kIPHAutoDarkUserEducationMessageFeature,
                        "IPH_AutoDarkUserEducationMessage");
 DEFINE_VARIATION_PARAM(kIPHAutoDarkUserEducationMessageOptInFeature,
                        "IPH_AutoDarkUserEducationMessageOptIn");
+DEFINE_VARIATION_PARAM(kIPHCCTMinimizedFeature, "IPH_CCTMinimized");
 DEFINE_VARIATION_PARAM(kIPHContextualPageActionsQuietVariantFeature,
                        "IPH_ContextualPageActions_QuietVariant");
 DEFINE_VARIATION_PARAM(kIPHContextualPageActionsActionChipFeature,
@@ -263,6 +264,8 @@ DEFINE_VARIATION_PARAM(kIPHiOSPromoPasswordManagerWidgetFeature,
                        "IPH_iOSPromoPasswordManagerWidget");
 DEFINE_VARIATION_PARAM(kIPHiOSChoiceScreenFeature,
                        "IPH_iOSChoiceScreenFeature");
+DEFINE_VARIATION_PARAM(kIPHiOSParcelTrackingFeature,
+                       "IPH_iOSParcelTrackingFeature");
 #endif  // BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
@@ -277,6 +280,8 @@ DEFINE_VARIATION_PARAM(kIPHDesktopCustomizeChromeFeature,
                        "IPH_DesktopCustomizeChrome");
 DEFINE_VARIATION_PARAM(kIPHDesktopCustomizeChromeRefreshFeature,
                        "IPH_DesktopCustomizeChromeRefresh");
+DEFINE_VARIATION_PARAM(kIPHDesktopNewTabPageModulesCustomizeFeature,
+                       "IPH_DesktopNewTabPageModulesCustomize");
 DEFINE_VARIATION_PARAM(kIPHDesktopTabGroupsNewGroupFeature,
                        "IPH_DesktopTabGroupsNewGroup");
 DEFINE_VARIATION_PARAM(kIPHDownloadToolbarButtonFeature,
@@ -301,6 +306,8 @@ DEFINE_VARIATION_PARAM(kIPHPasswordsWebAppProfileSwitchFeature,
                        "IPH_PasswordsWebAppProfileSwitch");
 DEFINE_VARIATION_PARAM(kIPHPasswordManagerShortcutFeature,
                        "IPH_PasswordManagerShortcut");
+DEFINE_VARIATION_PARAM(kIPHPasswordSharingFeature,
+                       "IPH_PasswordSharingFeature");
 DEFINE_VARIATION_PARAM(kIPHPowerBookmarksSidePanelFeature,
                        "IPH_PowerBookmarksSidePanel");
 DEFINE_VARIATION_PARAM(kIPHPriceInsightsPageActionIconLabelFeature,
@@ -458,6 +465,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHAutoDarkOptOutFeature),
         VARIATION_ENTRY(kIPHAutoDarkUserEducationMessageFeature),
         VARIATION_ENTRY(kIPHAutoDarkUserEducationMessageOptInFeature),
+        VARIATION_ENTRY(kIPHCCTMinimizedFeature),
         VARIATION_ENTRY(kIPHContextualPageActionsQuietVariantFeature),
         VARIATION_ENTRY(kIPHContextualPageActionsActionChipFeature),
         VARIATION_ENTRY(kIPHDataSaverDetailFeature),
@@ -557,6 +565,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHiOSPromoPostRestoreDefaultBrowserFeature),
         VARIATION_ENTRY(kIPHiOSPromoPasswordManagerWidgetFeature),
         VARIATION_ENTRY(kIPHiOSChoiceScreenFeature),
+        VARIATION_ENTRY(kIPHiOSParcelTrackingFeature),
 #elif BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
         VARIATION_ENTRY(kIPHBatterySaverModeFeature),
@@ -565,6 +574,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHComposeNewBadgeFeature),
         VARIATION_ENTRY(kIPHDesktopCustomizeChromeFeature),
         VARIATION_ENTRY(kIPHDesktopCustomizeChromeRefreshFeature),
+        VARIATION_ENTRY(kIPHDesktopNewTabPageModulesCustomizeFeature),
         VARIATION_ENTRY(kIPHDesktopTabGroupsNewGroupFeature),
         VARIATION_ENTRY(kIPHDownloadToolbarButtonFeature),
         VARIATION_ENTRY(kIPHExtensionsMenuFeature),
@@ -580,6 +590,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHPasswordsManagementBubbleDuringSigninFeature),
         VARIATION_ENTRY(kIPHPasswordsWebAppProfileSwitchFeature),
         VARIATION_ENTRY(kIPHPasswordManagerShortcutFeature),
+        VARIATION_ENTRY(kIPHPasswordSharingFeature),
         VARIATION_ENTRY(kIPHPowerBookmarksSidePanelFeature),
         VARIATION_ENTRY(kIPHPriceInsightsPageActionIconLabelFeature),
         VARIATION_ENTRY(kIPHPriceTrackingChipFeature),
@@ -612,6 +623,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHAutofillVirtualCardCVCSuggestionFeature),
         VARIATION_ENTRY(kIPHAutofillVirtualCardSuggestionFeature),
         VARIATION_ENTRY(kIPHCookieControlsFeature),
+        VARIATION_ENTRY(kIPH3pcdUserBypassFeature),
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) ||
         // BUILDFLAG(IS_FUCHSIA)

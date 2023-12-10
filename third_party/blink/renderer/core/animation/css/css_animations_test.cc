@@ -212,7 +212,7 @@ TEST_P(CSSAnimationsTest, CompositedBackgroundColorSnapshot) {
   ASSERT_TRUE(element);
   UpdateAllLifecyclePhasesForTest();
   ASSERT_TRUE(element->GetComputedStyle());
-  ASSERT_TRUE(element->parentNode());
+  ASSERT_TRUE(element->parentElement());
   EXPECT_TRUE(element->ComputedStyleRef().HasCurrentCompositableAnimation());
 
   ElementAnimations* animations = element->GetElementAnimations();
@@ -224,7 +224,7 @@ TEST_P(CSSAnimationsTest, CompositedBackgroundColorSnapshot) {
   CSSAnimationUpdate update;
   CSSAnimations::CalculateCompositorAnimationUpdate(
       update, *element, *element, element->ComputedStyleRef(),
-      element->parentNode()->GetComputedStyle(),
+      element->parentElement()->GetComputedStyle(),
       /* was_window_resized */ false, /* force update */ false);
 
   ASSERT_EQ(1u, update.UpdatedCompositorKeyframes().size());
@@ -818,7 +818,7 @@ class CSSAnimationsCompositorSyncTest : public CSSAnimationsTest {
     // persist the reference.
     ElementAnimations* element_animations = element_->GetElementAnimations();
     EXPECT_EQ(1u, element_animations->Animations().size());
-    return (*element_animations->Animations().begin()).key;
+    return (*element_animations->Animations().begin()).key.Get();
   }
 
   void NotifyStartTime() {
@@ -1103,6 +1103,37 @@ TEST_P(CSSAnimationsTest, DeferredTimelineUpdate) {
   target->SetInlineStyleProperty(CSSPropertyID::kTimelineScope, "none");
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(0u, DeferredTimelinesCount(target));
+}
+
+TEST_P(CSSAnimationsTest, OpacityUnchangedWhileDeferred) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      @keyframes fade {
+        to {
+          opacity: 0.5;
+        }
+      }
+      #target {
+          width: 100px;
+          height: 100px;
+          background-color: green;
+          animation-name: fade;
+          animation-duration: 3s;
+      }
+    </style>
+    <div id="target"></div>
+  )HTML");
+
+  Element* target = GetDocument().getElementById(AtomicString("target"));
+
+  // The animation must be waiting on a deferred start time.
+  ElementAnimations* animations = target->GetElementAnimations();
+  ASSERT_EQ(1u, animations->Animations().size());
+  Animation* animation = (*animations->Animations().begin()).key;
+  ASSERT_TRUE(animation->WaitingOnDeferredStartTime());
+
+  // Ensure the opacity doesn't change, since the animation hasn't started.
+  EXPECT_EQ(target->GetComputedStyle()->Opacity(), 1);
 }
 
 }  // namespace blink

@@ -191,7 +191,8 @@ void SyncLoadContext::OnReceivedRedirect(
   signals_->SignalRedirectOrResponseComplete();
 }
 
-void SyncLoadContext::FollowRedirect(std::vector<std::string> removed_headers) {
+void SyncLoadContext::FollowRedirect(std::vector<std::string> removed_headers,
+                                     net::HttpRequestHeaders modified_headers) {
   CHECK(follow_redirect_callback_);
   if (!signals_->RestartAfterRedirect()) {
     CancelRedirect();
@@ -200,7 +201,8 @@ void SyncLoadContext::FollowRedirect(std::vector<std::string> removed_headers) {
 
   response_->redirect_info = net::RedirectInfo();
   *context_for_redirect_ = nullptr;
-  std::move(follow_redirect_callback_).Run(std::move(removed_headers));
+  std::move(follow_redirect_callback_)
+      .Run(std::move(removed_headers), std::move(modified_headers));
 }
 
 void SyncLoadContext::CancelRedirect() {
@@ -213,14 +215,16 @@ void SyncLoadContext::CancelRedirect() {
 
 void SyncLoadContext::OnReceivedResponse(
     network::mojom::URLResponseHeadPtr head,
-    base::TimeTicks response_arrival_at_renderer,
-    absl::optional<mojo_base::BigBuffer> cached_metadata) {
+    mojo::ScopedDataPipeConsumerHandle body,
+    absl::optional<mojo_base::BigBuffer> cached_metadata,
+    base::TimeTicks response_arrival_at_renderer) {
   DCHECK(!Completed());
   response_->head = std::move(head);
-}
 
-void SyncLoadContext::OnStartLoadingResponseBody(
-    mojo::ScopedDataPipeConsumerHandle body) {
+  if (!body) {
+    return;
+  }
+
   if (mode_ == Mode::kBlob) {
     DCHECK(download_to_blob_registry_);
     DCHECK(!blob_response_started_);

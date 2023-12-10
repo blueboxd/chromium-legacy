@@ -8,11 +8,14 @@ import static org.chromium.components.optimization_guide.proto.HintsProto.Optimi
 
 import android.util.LruCache;
 
+import androidx.annotation.Nullable;
+
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridgeFactory;
+import org.chromium.chrome.browser.page_insights.proto.PageInsights;
 import org.chromium.chrome.browser.page_insights.proto.PageInsights.PageInsightsMetadata;
 import org.chromium.components.optimization_guide.OptimizationGuideDecision;
 import org.chromium.components.optimization_guide.proto.CommonTypesProto.RequestContext;
@@ -27,10 +30,20 @@ class PageInsightsDataLoader {
     private static final int LRU_CACHE_SIZE = 10;
     private LruCache<GURL, PageInsightsMetadata> mCache =
             new LruCache<GURL, PageInsightsMetadata>(LRU_CACHE_SIZE);
+    private boolean mIsDestroyed;
+    @Nullable private Callback<PageInsightsMetadata> mCurrentCallback;
 
     PageInsightsDataLoader() {}
 
-    void loadInsightsData(GURL url, Callback<PageInsightsMetadata> callback) {
+    /**
+     * Fetches insights data for the given {@code url}, or retrieves from cache if present, and runs
+     * {@code callback} with the retrieved data.
+     *
+     * <p>If called a second time, before first fetch has completed, first callback will not be run.
+     */
+    void loadInsightsData(
+            GURL url, boolean shouldAttachGaiaToRequest, Callback<PageInsightsMetadata> callback) {
+        mCurrentCallback = callback;
         if (url == null) {
             Log.e(TAG, "Error fetching Page Insights data: Url cannot be null.");
             return;
@@ -44,8 +57,11 @@ class PageInsightsDataLoader {
                 .canApplyOptimizationOnDemand(
                         List.of(url),
                         List.of(PAGE_INSIGHTS),
-                        RequestContext.CONTEXT_PAGE_INSIGHTS_HUB,
+                        shouldAttachGaiaToRequest
+                                ? RequestContext.CONTEXT_PAGE_INSIGHTS_HUB
+                                : RequestContext.CONTEXT_NON_PERSONALIZED_PAGE_INSIGHTS_HUB,
                         (gurl, optimizationType, decision, metadata) -> {
+                            if (mIsDestroyed) return;
                             try {
                                 if (decision != OptimizationGuideDecision.TRUE) {
                                     return;
@@ -53,7 +69,12 @@ class PageInsightsDataLoader {
                                 PageInsightsMetadata pageInsightsMetadata =
                                         PageInsightsMetadata.parseFrom(metadata.getValue());
                                 mCache.put(url, pageInsightsMetadata);
-                                callback.bind(pageInsightsMetadata).run();
+                                // There is never a case where we want to run an old callback when
+                                // a newer one has been provided, and doing so could lead to bugs
+                                // (e.g. peek is shown with insights for previous page).
+                                if (mCurrentCallback == callback) {
+                                    callback.bind(pageInsightsMetadata).run();
+                                }
                             } catch (InvalidProtocolBufferException e) {
                                 Log.e(
                                         TAG,
@@ -71,6 +92,10 @@ class PageInsightsDataLoader {
 
     void clearCacheForTesting() {
         mCache = new LruCache<GURL, PageInsightsMetadata>(LRU_CACHE_SIZE);
+    }
+
+    void destroy() {
+        mIsDestroyed = true;
     }
 
     // Lazy initialization of OptimizationGuideBridgeFactory

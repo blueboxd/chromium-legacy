@@ -53,16 +53,10 @@ TrackingProtectionSettings::TrackingProtectionSettings(
           base::Unretained(this)));
 
   if (onboarding_service_) {
+    // Onboarding status may change based on a flag before this service starts.
+    OnTrackingProtectionOnboardingUpdated(
+        onboarding_service_->GetOnboardingStatus());
     onboarding_observation_.Observe(onboarding_service_);
-
-    // It's possible the user was offboarded while profile was shut down.
-    // TODO(fmacintosh): Remove this if the behavior ends up being that
-    // we offboard only after seeing notice.
-    if (onboarding_service_->IsOffboarded() &&
-        IsTrackingProtection3pcdEnabled()) {
-      OnTrackingProtectionOnboardingUpdated(
-          onboarding_service_->GetOnboardingStatus());
-    }
   }
 
   // It's possible enterprise status changed while profile was shut down.
@@ -79,8 +73,9 @@ bool TrackingProtectionSettings::IsTrackingProtection3pcdEnabled() const {
 }
 
 bool TrackingProtectionSettings::AreAllThirdPartyCookiesBlocked() const {
-  return pref_service_->GetBoolean(prefs::kBlockAll3pcToggleEnabled) ||
-         is_incognito_;
+  return IsTrackingProtection3pcdEnabled() &&
+         (pref_service_->GetBoolean(prefs::kBlockAll3pcToggleEnabled) ||
+          is_incognito_);
 }
 
 bool TrackingProtectionSettings::IsDoNotTrackEnabled() const {

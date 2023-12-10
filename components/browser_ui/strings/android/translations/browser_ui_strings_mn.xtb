@@ -26,6 +26,7 @@
 <translation id="1448064542941920355">Томруулалтыг багасгах</translation>
 <translation id="1510341833810331442">Сайтуудад таны төхөөрөмжид өгөгдөл хадгалахыг зөвшөөрөөгүй</translation>
 <translation id="1547123415014299762">Гуравдагч талын күүкиг зөвшөөрдөг</translation>
+<translation id="1568470248891039841">Таны зочилсон сайтууд бусад сайтаас зураг, зар болон текст зэрэг контентыг оруулах боломжтой. Эдгээр бусад сайт танаас сайтыг үзэх явцад таны талаар хадгалсан мэдээллээ ашиглах зөвшөөрлийг хүсэх боломжтой. <ph name="BEGIN_LINK" />Оруулсан контентын талаар нэмэлт мэдээлэл авах<ph name="END_LINK" /></translation>
 <translation id="1593426485665524382">Дэлгэцийн дээд талын ойролцоо шинэ үйлдлүүд боломжтой</translation>
 <translation id="1620510694547887537">Камер</translation>
 <translation id="1633720957382884102">Холбоотой сайтууд</translation>
@@ -80,6 +81,7 @@
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> болон бусад <ph name="NUM_MORE" />-г зөвшөөрсөн}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> болон бусад <ph name="NUM_MORE" />-г зөвшөөрсөн}}</translation>
 <translation id="2410940059315936967">Таны зочилсон сайт бусад сайтаас зураг, зар болон текст зэрэг контентыг оруулах боломжтой. Эдгээр бусад сайтын тохируулсан күүкиг гуравдагч талын күүки гэж нэрлэдэг.</translation>
 <translation id="2434158240863470628">Татаж дууссан <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
+<translation id="2438120137003069591">Та энэ сайтад гуравдагч талын күүкинүүдийг ашиглахыг түр зуур зөвшөөрсөн. Энэ нь үзэх хамгаалалт багасах хэдий ч сайтын онцлогууд тооцоолсны дагуу ажиллах магадлал өндөр байна гэсэн үг юм. <ph name="BEGIN_LINK" />Санал хүсэлт илгээх<ph name="END_LINK" /></translation>
 <translation id="244264527810019436">Зарим сайт дээрх онцлогууд Нууцлалын горимд ажиллахгүй байж магадгүй</translation>
 <translation id="2442870161001914531">Үргэлж дэлгэцийн сайтын хүсэлт тавих</translation>
 <translation id="2469312991797799607">Энэ үйлдэл <ph name="ORIGIN" />-н болон үүний доорх бүх сайтын бүх өгөгдөл, күүкиг устгана</translation>
@@ -114,6 +116,7 @@
 <translation id="2910701580606108292">Сайтад хамгаалалттай контент тоглуулахыг зөвшөөрөхөөс өмнө асуух</translation>
 <translation id="2932883381142163287">Зөрчлийг мэдэгдэх</translation>
 <translation id="2968755619301702150">Сертификат харагч</translation>
+<translation id="2979365474350987274">Гуравдагч талын күүкинүүдийг хязгаарласан</translation>
 <translation id="3008272652534848354">Зөвшөөрлийг шинэчлэх</translation>
 <translation id="301521992641321250">Автоматаар блок хийсэн</translation>
 <translation id="3069226013421428034">Тодорхой сайтын гуравдагч талын нэвтрэлтийг зөвшөөрнө үү.</translation>
@@ -169,6 +172,7 @@
 <translation id="3918378745482005425">Зарим онцлог ажиллахгүй байж магадгүй. Холбоотой сайтууд гуравдагч талын күүки ашиглах боломжтой хэвээр байна.</translation>
 <translation id="3955193568934677022">Сайтад хамгаалсан агуулгыг тоглохыг зөвшөөрөх (санал болгосон)</translation>
 <translation id="3967822245660637423">Татаж авч дууслаа</translation>
+<translation id="3974105241379491420">Сайтууд таны талаар хадгалсан мэдээллээ ашиглахыг хүсэх боломжтой</translation>
 <translation id="3987993985790029246">Холбоосыг хуулах</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="3992684624889376114">Энэ хуудасны тухай</translation>
@@ -188,6 +192,7 @@
 <translation id="4278390842282768270">Зөвшөөрөгдсөн</translation>
 <translation id="429312253194641664">Сайт медиа тоглуулж байна</translation>
 <translation id="42981349822642051">Өргөтгөх</translation>
+<translation id="4336566011000459927">Chrome күүкинүүдийг өнөөдөр дахин хязгаарлана</translation>
 <translation id="4338831206024587507"><ph name="DOMAIN" />-н доорх бүх сайт</translation>
 <translation id="4402755511846832236">Сайтуудыг таныг энэ төхөөрөмжийг хэзээ идэвхтэй ашиглаж буйг мэдэхийг нь блоклоно</translation>
 <translation id="4412992751769744546">Гуравдагч этгээдийн cookies-г зөвшөөрөх</translation>
@@ -243,6 +248,7 @@
 <translation id="5335288049665977812">Сайтад JavaScript-г ажиллуулахыг зөвшөөрөх (санал болгосон)</translation>
 <translation id="534295439873310000">NFC төхөөрөмжүүд</translation>
 <translation id="5344522958567249764">Зарын нууцлалыг удирдах</translation>
+<translation id="5389626883706033615">Сайтуудыг танаас таны талаар хадгалсан мэдээллээ ашиглахыг хүсэхийг блоклосон</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(бусад + 1)}other{(бусад + #)}}</translation>
 <translation id="5403592356182871684">Нэр</translation>
 <translation id="5438097262470833822">Энэ сонголт <ph name="WEBSITE" />-н зөвшөөрлийг шинэчилнэ</translation>
@@ -289,6 +295,8 @@
 <translation id="6177128806592000436">Энэ сайтын холболт аюултай байна</translation>
 <translation id="6181444274883918285">Сайтын онцгой тохиолдол нэмэх</translation>
 <translation id="6192792657125177640">Гажих нөхцлүүд</translation>
+<translation id="6194967801833346599">{DAYS,plural, =1{Chrome күүкинүүдийг маргааш дахин блоклоно}other{Күүкинүүдийг дахин блоклох хүртэл # хоног үлдсэн}}</translation>
+<translation id="6195163219142236913">Гуравдагч талын күүкинүүдийг хязгаарласан</translation>
 <translation id="6196640612572343990">Гуравдагч талын күүкиг блоклох</translation>
 <translation id="6205314730813004066">Зарын нууцлал</translation>
 <translation id="6207207788774442484">Өгөгдлийг устгаж, зөвшөөрлүүдийг шинэчлэх</translation>
@@ -299,6 +307,7 @@
 <translation id="6270391203985052864">Сайтууд нь танд мэдэгдэл илгээх зөвшөөрөл асуух боломжтой</translation>
 <translation id="6295158916970320988">Бүх сайт</translation>
 <translation id="6320088164292336938">Чичиргэх</translation>
+<translation id="6344622098450209924">Хяналтын хамгаалалт</translation>
 <translation id="6367753977865761591">Тодорхой сайтын гуравдагч талын нэвтрэлтийг блоклоно уу.</translation>
 <translation id="6398765197997659313">Дэлгэц дүүрэн харах горимоос гарах</translation>
 <translation id="640163077447496506">Өнөөдөр хугацаа нь дуусна</translation>
@@ -329,6 +338,7 @@
 <translation id="6864395892908308021">Энэ төхөөрөмж NFC-г унших боломжгүй байна</translation>
 <translation id="6912998170423641340">Сайтыг түр санах ойн текст болон зургийг уншихыг хориглох</translation>
 <translation id="6945221475159498467">Сонгох</translation>
+<translation id="6950072572526089586">Таны зочилсон сайт таны юу хийж байгаа талаарх мэдээллийг хадгалах боломжтой бөгөөд ингэснээр энэ нь таны бодож байсны дагуу ажиллана. Үүнд таныг сайтад нэвтэрсэн хэвээр байлгах эсвэл таны худалдан авалтын сагсан дахь зүйлсийг хадгалах зэрэг багтана. Сайтууд ихэвчлэн энэ мэдээллийг таны төхөөрөмжид түр зуур хадгалдаг.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6981982820502123353">Хандалт</translation>
 <translation id="6992289844737586249">Сайтууд микрофон ашиглах зөвшөөрөл авах (санал болгосон)</translation>
@@ -349,6 +359,7 @@
 <translation id="7243308994586599757">Дэлгэцийн доод хэсэгт сонголт боломжтой</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" />-г сонгосон</translation>
 <translation id="7260727271532453612"><ph name="PERMISSION_1" /> болон <ph name="PERMISSION_2" />-г зөвшөөрсөн</translation>
+<translation id="7284451015630589124">Таныг үзэх үед хянахын тулд гуравдагч талын күүкиг ашиглахыг сайтуудаас блоклосон. <ph name="BEGIN_LINK" />Хяналтын хамгаалалтаа удирдахын<ph name="END_LINK" /> тулд тохиргоонд зочилно уу.</translation>
 <translation id="7302486331832100261">Та ихэвчлэн мэдэгдлийг хориглодог. Зөвшөөрөхийн тулд Дэлгэрэнгүй мэдээлэл дээр товшино уу.</translation>
 <translation id="7366415735885268578">Сайт нэмэх</translation>
 <translation id="7368695150573390554">Аливаа офлайн өгөгдлийг устгана</translation>
@@ -357,6 +368,7 @@
 <translation id="7423098979219808738">Эхлээд асуу</translation>
 <translation id="7423538860840206698">Түр санах ойгоос уншихыг хориглосон</translation>
 <translation id="7425915948813553151">Сайтуудад зориулсан бараан загвар</translation>
+<translation id="7474522811371247902">Chrome ихэнх сайтыг гуравдагч талын күүкинүүдийг ашиглахыг хязгаарлана. Гэхдээ энэ сайт үндсэн үйлчилгээнүүдээр хангахад гуравдагч талын күүкинүүдэд тулгуурладаг тул түүнд эдгээрийг зөвшөөрдөг.\n\n<ph name="BEGIN_LINK" />Хяналтын хамгаалалтаа удирдах<ph name="END_LINK" /> бол тохиргоонд зочилно уу.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">Сайт таны микрофоныг ашиглаж байна</translation>
 <translation id="7561196759112975576">Үргэлж</translation>
@@ -373,6 +385,7 @@
 <translation id="780301667611848630">Үгүй, баярлалаа</translation>
 <translation id="7804248752222191302">Сайт таны камерыг ашиглаж байна</translation>
 <translation id="7807060072011926525">Google-с олгосон</translation>
+<translation id="7822573154188733812">Chrome сайтуудыг таныг үзэхэд хянах гуравдагч талын күүкинүүдийг ашиглахыг блоклоно. <ph name="BEGIN_LINK" />Хяналтын хамгаалалтаа удирдахын<ph name="END_LINK" /> тулд тохиргоонд зочилно уу.</translation>
 <translation id="7835852323729233924">Медиаг тоглуулж байна</translation>
 <translation id="783819812427904514">Видеоны дууг нээх</translation>
 <translation id="7846076177841592234">Сонголтыг цуцлах</translation>
@@ -389,6 +402,7 @@
 <translation id="8077120325605624147">Таны зочилсон ямар ч сайт танд ямар ч зар харуулах боломжтой</translation>
 <translation id="8087000398470557479"><ph name="DOMAIN_NAME" />-н энэ агуулгыг Google танд хүргэж байна.</translation>
 <translation id="8088603949666785339"><ph name="BANNER_TITLE" />-н бусад сонголт</translation>
+<translation id="8113501330600751161">{DAYS,plural, =1{Chrome күүкинүүдийг маргааш дахин хязгаарлана}other{Chrome күүкинүүдийг дахин хязгаарлах хүртэл # хоног үлдсэн}}</translation>
 <translation id="8116925261070264013">Дууг хаасан</translation>
 <translation id="813082847718468539">Сайтын мэдээллийг үзэх</translation>
 <translation id="8131740175452115882">Батлах</translation>
@@ -427,6 +441,7 @@
 <translation id="8564613706851221529">{COUNT,plural, =1{<ph name="FPS_OWNER" />-н <ph name="FPS_MEMBERS_COUNT" /> сайтад күүкиг зөвшөөрсөн}other{<ph name="FPS_OWNER" />-н <ph name="FPS_MEMBERS_COUNT" /> сайтад күүкиг зөвшөөрсөн}}</translation>
 <translation id="857943718398505171">Зөвшөөрөгдсөн (санал болгосон)</translation>
 <translation id="8609465669617005112">Дээш зөөх</translation>
+<translation id="8649036394979866943">Chrome таныг үзэх үед хянахын тулд ихэнх сайтыг гуравдагч талын күүкиг ашиглахыг хязгаарлана. <ph name="BEGIN_LINK" />Хяналтын хамгаалалтаа удирдахын<ph name="END_LINK" /> тулд тохиргоонд зочилно уу</translation>
 <translation id="8676374126336081632">Оролтыг цэвэрлэх</translation>
 <translation id="8681886425883659911">Төвөгтэй эсвэл төөрөгдүүлсэн зар үзүүлдэг сайтууд дээр зарыг блоклосон</translation>
 <translation id="868929229000858085">Харилцагчдаа хайх</translation>
@@ -443,12 +458,14 @@
 <translation id="8816026460808729765">Сайтуудыг мэдрэгчид хандахыг хориглох</translation>
 <translation id="8823559166155093873">Күүкиг блоклох</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8874790741333031443">Гуравдагч талын күүкинүүдийг түр зуур зөвшөөрч үзнэ үү. Энэ нь үзэх хамгаалалт багасах хэдий ч сайтын онцлогууд тооцоолсны дагуу ажиллах магадлал өндөр байна гэсэн үг юм.</translation>
 <translation id="8889294078294184559">Таныг үргэлжлүүлэн үзэж байхад сайтууд Chrome-с шалгаж, таныг жинхэнэ хүн эсэхийг таны өмнө нь зочилсон сайтаас баталгаажуулах боломжтой</translation>
 <translation id="8899807382908246773">Төвөгтэй зар</translation>
 <translation id="8903921497873541725">Томруулж харах</translation>
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">Энэ төхөөрөмж дээр NFC унтраалттай байна. Үүнийг <ph name="BEGIN_LINK" />Android-н тохиргоо<ph name="END_LINK" /> хэсэгт асаана уу.</translation>
 <translation id="8928445016601307354">Сайтуудыг NFC төхөөрөмжүүд дээрх мэдээллийг харах болон өөрчлөхийг блоклох</translation>
+<translation id="8944485226638699751">Хязгаарлагдсан</translation>
 <translation id="8958424370300090006">Күүкиг тодорхой сайтад хориглоно уу.</translation>
 <translation id="8959122750345127698">Навигацтай холбогдох боломжгүй байна: <ph name="URL" /></translation>
 <translation id="8986362086234534611">Мартах</translation>

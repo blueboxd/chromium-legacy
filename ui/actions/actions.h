@@ -15,6 +15,7 @@
 #include "base/containers/flat_map.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/actions/action_id.h"
@@ -95,10 +96,48 @@ class COMPONENT_EXPORT(ACTIONS) ScopedActionUpdate {
   raw_ptr<ActionItem> action_item_;
 };
 
+// Context object designed to allow any class property to be attached to it.
+// This allows invoking the action with any additional contextual information
+// without requiring the action item itself have any knowledge of that
+// information.
+class COMPONENT_EXPORT(ACTIONS) ActionInvocationContext
+    : public ui::PropertyHandler {
+ public:
+  ActionInvocationContext();
+  ActionInvocationContext(ActionInvocationContext&&);
+  ActionInvocationContext& operator=(ActionInvocationContext&&);
+  ~ActionInvocationContext() override;
+
+  class COMPONENT_EXPORT(ACTIONS) ContextBuilder {
+   public:
+    ContextBuilder(ContextBuilder&&);
+    ContextBuilder& operator=(ContextBuilder&&);
+    ~ContextBuilder();
+
+    template <typename T>
+    ContextBuilder&& SetProperty(const ui::ClassProperty<T>* property,
+                                 ui::metadata::ArgType<T> value) && {
+      context_->SetProperty(property, value);
+      return std::move(*this);
+    }
+
+    [[nodiscard]] ActionInvocationContext Build() &&;
+
+   private:
+    friend class ActionInvocationContext;
+    ContextBuilder();
+    std::unique_ptr<ActionInvocationContext> context_ =
+        std::make_unique<ActionInvocationContext>();
+  };
+
+  static ContextBuilder Builder();
+};
+
 class COMPONENT_EXPORT(ACTIONS) ActionItem : public BaseAction {
  public:
   using ActionChangedCallback = ui::metadata::PropertyChangedCallback;
-  using InvokeActionCallback = base::RepeatingCallback<void(ActionItem*)>;
+  using InvokeActionCallback =
+      base::RepeatingCallback<void(ActionItem*, ActionInvocationContext)>;
 
   class COMPONENT_EXPORT(ACTIONS) ActionItemBuilder {
    public:
@@ -127,6 +166,15 @@ class COMPONENT_EXPORT(ACTIONS) ActionItem : public BaseAction {
     template <typename ActionPtr>
     ActionItemBuilder&& CopyAddressTo(ActionPtr* action_address) && {
       return std::move(this->CopyAddressTo(action_address));
+    }
+    template <typename Action>
+    ActionItemBuilder& CopyWeakPtrTo(base::WeakPtr<Action>* weak_ptr) & {
+      *weak_ptr = action_item_->GetAsWeakPtr();
+      return *this;
+    }
+    template <typename Action>
+    ActionItemBuilder&& CopyWeakPtrTo(base::WeakPtr<Action>* weak_ptr) && {
+      return std::move(this->CopyWeakPtrTo(weak_ptr));
     }
 
     template <typename T>
@@ -229,11 +277,14 @@ class COMPONENT_EXPORT(ACTIONS) ActionItem : public BaseAction {
   [[nodiscard]] ScopedActionUpdate BeginUpdate();
 
   // Invoke an action.
-  void InvokeAction();
+  void InvokeAction(
+      ActionInvocationContext context = ActionInvocationContext());
 
   // Get action metrics.
   int GetInvokeCount() const;
   absl::optional<base::TimeTicks> GetLastInvokeTime() const;
+
+  base::WeakPtr<ActionItem> GetAsWeakPtr();
 
  protected:
   // ActionList::Delegate override.
@@ -264,6 +315,7 @@ class COMPONENT_EXPORT(ACTIONS) ActionItem : public BaseAction {
   InvokeActionCallback callback_;
   int invoke_count_ = 0;
   absl::optional<base::TimeTicks> last_invoke_time_;
+  base::WeakPtrFactory<ActionItem> weak_ptr_factory_{this};
 };
 
 class COMPONENT_EXPORT(ACTIONS) ActionManager
@@ -301,7 +353,9 @@ class COMPONENT_EXPORT(ACTIONS) ActionManager
   // Resets the current `initializer_list_`.
   void ResetActionItemInitializerList();
 
-  // Appends `initializer` to the end of the current `initializer_list_`.
+  // Appends `initializer` to the end of the current `initializer_list_`. If the
+  // initializers have already been run or actions have already been added to
+  // the manager, the initializer will be run immediately.
   [[nodiscard]] base::CallbackListSubscription AppendActionItemInitializer(
       ActionItemInitializerList::CallbackType initializer);
 

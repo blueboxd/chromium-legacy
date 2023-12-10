@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_COMPOSE_COMPOSE_SESSION_H_
 
 #include <memory>
+#include <stack>
 #include <string>
 
+#include "base/check_op.h"
 #include "chrome/common/compose/compose.mojom.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/optimization_guide/core/optimization_guide_model_executor.h"
@@ -36,8 +38,13 @@ class WebContents;
 //  constructor, and the `executor` MUST outlive that WebContents.
 class ComposeSession : public compose::mojom::ComposeDialogPageHandler {
  public:
+  // The callback to Autofill. When run, it fills the passed string into the
+  // form field on which it was triggered.
+  using ComposeCallback = base::OnceCallback<void(const std::u16string&)>;
+
   ComposeSession(content::WebContents* web_contents,
-                 optimization_guide::OptimizationGuideModelExecutor* executor);
+                 optimization_guide::OptimizationGuideModelExecutor* executor,
+                 ComposeCallback callback = base::NullCallback());
   ~ComposeSession() override;
 
   // Binds this to a Compose webui.
@@ -61,9 +68,32 @@ class ComposeSession : public compose::mojom::ComposeDialogPageHandler {
   // disk or processed by the Browser Process at all.
   void SaveWebUIState(const std::string& webui_state) override;
 
+  // Undo to the last state with an kOk status and valid response text.
+  void Undo(UndoCallback callback) override;
+
+  // Indicates that the compose result should be accepted by Autofill.
+  // Callback<bool> indicates if the accept was successful.
+  void AcceptComposeResult(
+      AcceptComposeResultCallback success_callback) override;
+
+  // Opens the Compose bug reporting page in a new tab when the dialog Thumbs
+  // Down button is clicked. This implementation is designed for Fishfood only.
+  void OpenBugReportingLink() override;
+
+  // Non-ComposeDialogPageHandler Methods
+
+  // Saves the last OK response state to the undo stack.
+  void SaveLastOKStateToUndoStack();
+
+  void set_compose_callback(ComposeCallback callback) {
+    callback_ = std::move(callback);
+  }
+
+  // Sets an initial input value for the session given by the renderer.
+  void set_initial_input(const std::string input) { initial_input_ = input; }
+
  private:
-  void ProcessError(const std::string& message);
-  void SaveNewComposeRequest(compose::mojom::StyleModifiersPtr style);
+  void ProcessError(compose::mojom::ComposeStatus status);
   void ModelExecutionCallback(
       optimization_guide::OptimizationGuideModelExecutionResult result);
 
@@ -75,11 +105,23 @@ class ComposeSession : public compose::mojom::ComposeDialogPageHandler {
 
   // Initialized during construction, and always remains valid during the
   // lifetime of ComposeSession.
-  compose::mojom::ComposeStatePtr state_;
+  compose::mojom::ComposeStatePtr current_state_;
+
+  // The last state that received a kOk status and valid response text.
+  compose::mojom::ComposeStatePtr last_ok_state_;
+
+  // The state returned when user clicks undo.
+  std::stack<compose::mojom::ComposeStatePtr> undo_states_;
+
+  // Renderer provided text selection.
+  std::string initial_input_;
 
   // ComposeSession is owned by WebContentsUserData, so `web_contents_` outlives
   // `this`.
   raw_ptr<content::WebContents> web_contents_;
+
+  // A callback to Autofill that triggers filling the field.
+  ComposeCallback callback_;
 
   base::WeakPtrFactory<ComposeSession> weak_ptr_factory_;
 };

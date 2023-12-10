@@ -22,9 +22,11 @@
 #include "base/time/time.h"
 #include "content/browser/fenced_frame/fenced_frame_reporter.h"
 #include "content/browser/interest_group/auction_worklet_manager.h"
+#include "content/browser/interest_group/interest_group_caching_storage.h"
 #include "content/browser/interest_group/interest_group_storage.h"
 #include "content/browser/interest_group/subresource_url_authorizations.h"
 #include "content/browser/private_aggregation/private_aggregation_manager.h"
+#include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/common/content_export.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
 #include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom.h"
@@ -93,6 +95,27 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
     kMaxValue = kNotStarted
   };
 
+  // Key used to group Private aggregation signals.
+  struct CONTENT_EXPORT PrivateAggregationKey {
+    PrivateAggregationKey(
+        url::Origin reporting_origin,
+        absl::optional<url::Origin> aggregation_coordinator_origin);
+    PrivateAggregationKey(const PrivateAggregationKey&);
+    PrivateAggregationKey& operator=(const PrivateAggregationKey&);
+    PrivateAggregationKey(PrivateAggregationKey&&);
+    PrivateAggregationKey& operator=(PrivateAggregationKey&&);
+    ~PrivateAggregationKey();
+
+    bool operator<(const PrivateAggregationKey& other) const {
+      return std::tie(reporting_origin, aggregation_coordinator_origin) <
+             std::tie(other.reporting_origin,
+                      other.aggregation_coordinator_origin);
+    }
+
+    url::Origin reporting_origin;
+    absl::optional<url::Origin> aggregation_coordinator_origin;
+  };
+
   using PrivateAggregationRequests =
       std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr>;
 
@@ -149,11 +172,12 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
 
   // Information about the winning bit that is not specific to a seller.
   struct CONTENT_EXPORT WinningBidInfo {
-    WinningBidInfo();
+    explicit WinningBidInfo(
+        const SingleStorageInterestGroup& storage_interest_group);
     WinningBidInfo(WinningBidInfo&&);
     ~WinningBidInfo();
 
-    std::unique_ptr<StorageInterestGroup> storage_interest_group;
+    const SingleStorageInterestGroup storage_interest_group;
 
     GURL render_url;
     std::vector<GURL> ad_components;
@@ -232,7 +256,7 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
       std::vector<GURL> debug_win_report_urls,
       std::vector<GURL> debug_loss_report_urls,
       base::flat_set<std::string> k_anon_keys_to_join,
-      std::map<url::Origin, PrivateAggregationRequests>
+      std::map<PrivateAggregationKey, PrivateAggregationRequests>
           private_aggregation_requests_reserved,
       std::map<std::string, PrivateAggregationRequests>
           private_aggregation_requests_non_reserved);
@@ -264,7 +288,7 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   // navigated to the winning ad. May be invoked multiple times, safe to invoke
   // after destruction. `this` will not invoke the callback passed to Start()
   // until the callback this method returns has been invoked at least once.
-  base::RepeatingClosure OnNavigateToWinningAdCallback();
+  base::RepeatingClosure OnNavigateToWinningAdCallback(int frame_tree_node_id);
 
   const std::vector<std::string>& errors() const { return errors_; }
 
@@ -297,7 +321,7 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
       PrivateAggregationManager* private_aggregation_manager,
       const url::Origin& main_frame_origin,
       std::map<
-          url::Origin,
+          PrivateAggregationKey,
           std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr>>
           private_aggregation_requests);
 
@@ -347,6 +371,7 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   // function from OnSellerReportResultComplete since this is also called by
   // `InitializeFromServerResponse()`.
   bool AddReportResultResult(
+      const url::Origin& seller_origin,
       const absl::optional<GURL>& seller_report_url,
       const base::flat_map<std::string, GURL>& seller_ad_beacon_map,
       blink::FencedFrame::ReportingDestination destination,
@@ -386,6 +411,7 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   // `InitializeFromServerResponse()` since macro expanded reporting is not
   // supported from server auction.
   bool AddReportWinResult(
+      const url::Origin& bidder_origin,
       const absl::optional<GURL>& bidder_report_url,
       const base::flat_map<std::string, GURL>& bidder_ad_beacon_map,
       const absl::optional<base::flat_map<std::string, std::string>>&
@@ -399,7 +425,7 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   // Invoked when the winning ad has been navigated to. If
   // `navigated_to_winning_ad_` is false, sets it to true and invokes
   // MaybeInvokeCallback(). Otherwise, does nothing.
-  void OnNavigateToWinningAd();
+  void OnNavigateToWinningAd(int frame_tree_node_id);
 
   // Invokes callback passed in to Start() if both OnReportingComplete() and
   // OnNavigateToWinningAd() have been invoked.
@@ -428,7 +454,9 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   void MaybeSendPrivateAggregationReports();
 
   // Checks that `url` is attested for reporting. On success, returns true. On
-  // failure, return false, and appends an error to `errors_`.
+  // failure, return false, and appends an error to `errors_`. The `url` passed
+  // to this function should be the report url of either `reportWin()` or
+  // `reportResult()`. They are not post-impression beacons.
   bool CheckReportUrl(const GURL& url);
 
   // For each url in `urls`, erases that url iff CheckReportUrl(url) returns
@@ -483,7 +511,7 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   // Stores all pending Private Aggregation API report requests until they have
   // been flushed. Keyed by the origin of the script that issued the request
   // (i.e. the reporting origin).
-  std::map<url::Origin, PrivateAggregationRequests>
+  std::map<PrivateAggregationKey, PrivateAggregationRequests>
       private_aggregation_requests_reserved_;
   std::map<std::string, PrivateAggregationRequests>
       private_aggregation_requests_non_reserved_;

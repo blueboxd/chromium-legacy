@@ -128,11 +128,9 @@ BASE_DECLARE_FEATURE(kWebAuthnCableViaCredMan);
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthnLinkingExperimentation);
 
-#if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_ANDROID)
 // Enable use of a cloud enclave authenticator service.
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthnEnclaveAuthenticator);
-#endif
 
 // Serialize WebAuthn requests to JSON on the desktop. Useful for future
 // projects but only concretely used for better logging at the time of writing.
@@ -187,6 +185,16 @@ BASE_DECLARE_FEATURE(kWebAuthnPRFEvalDuringCreate);
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kChromeOsPasskeys);
 #endif
+
+// A webauthn UI mode that detects screen readers and makes the dialog title
+// focusable.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnScreenReaderMode);
+
+// Update the minimum, maximum, and default timeout values for webauthn requests
+// to be more generous and meet https://www.w3.org/TR/WCAG21/#enough-time.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnAccessibleTimeouts);
 
 }  // namespace device
 

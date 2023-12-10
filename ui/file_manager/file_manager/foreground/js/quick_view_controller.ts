@@ -13,9 +13,10 @@ import {LoadImageRequest, LoadImageResponse, LoadImageResponseStatus} from 'chro
 import {assert} from 'chrome://resources/js/assert.js';
 
 import {DialogType, isModal} from '../../common/js/dialog_type.js';
+import {isSameEntry} from '../../common/js/entry_utils.js';
 import {parseActionId} from '../../common/js/file_tasks.js';
 import {FileType} from '../../common/js/file_type.js';
-import {str, util} from '../../common/js/util.js';
+import {getEntryLabel, str} from '../../common/js/translations.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {CommandHandlerDeps} from '../../externs/command_handler_deps.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
@@ -371,7 +372,7 @@ export class QuickViewController {
     if (this.quickView_ && this.quickView_.isOpened() &&
         this.entries_[this.currentSelection_]) {
       const entry = this.entries_[this.currentSelection_]!;
-      if (!util.isSameEntry(entry, this.quickViewModel_.getSelectedEntry()!)) {
+      if (!isSameEntry(entry, this.quickViewModel_.getSelectedEntry()!)) {
         this.updateQuickView_();
       }
     }
@@ -468,7 +469,7 @@ export class QuickViewController {
     const typeInfo = FileType.getType(entry, firstItem?.contentMimeType);
     const type = typeInfo.type;
     const locationInfo = this.volumeManager_.getLocationInfo(entry);
-    const label = util.getEntryLabel(locationInfo, entry);
+    const label = getEntryLabel(locationInfo, entry);
     const entryIsOnDrive = locationInfo && locationInfo.isDriveBased;
     const thumbnailUrl = firstItem ? firstItem.thumbnailUrl : undefined;
     const modificationTime = firstItem ? firstItem.modificationTime : undefined;

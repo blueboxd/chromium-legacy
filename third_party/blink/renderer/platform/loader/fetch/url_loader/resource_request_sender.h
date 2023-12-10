@@ -21,6 +21,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
+#include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/fetch_api.mojom-forward.h"
@@ -141,19 +142,16 @@ class BLINK_PLATFORM_EXPORT ResourceRequestSender {
 
   // Called when response headers are available.
   virtual void OnReceivedResponse(
-      network::mojom::URLResponseHeadPtr,
-      base::TimeTicks response_arrival_timing_at_renderer,
-      absl::optional<mojo_base::BigBuffer> cached_metadata);
+      network::mojom::URLResponseHeadPtr response_head,
+      mojo::ScopedDataPipeConsumerHandle body,
+      absl::optional<mojo_base::BigBuffer> cached_metadata,
+      base::TimeTicks response_arrival_timing_at_renderer);
 
   // Called when a redirect occurs.
   virtual void OnReceivedRedirect(
       const net::RedirectInfo& redirect_info,
       network::mojom::URLResponseHeadPtr response_head,
       scoped_refptr<base::SequencedTaskRunner> task_runner);
-
-  // Called when the response body becomes available.
-  virtual void OnStartLoadingResponseBody(
-      mojo::ScopedDataPipeConsumerHandle body);
 
   // Called when the response is complete.
   virtual void OnRequestComplete(
@@ -196,7 +194,15 @@ class BLINK_PLATFORM_EXPORT ResourceRequestSender {
     std::unique_ptr<MojoURLLoaderClient> url_loader_client;
 
     // The Client Hints headers that need to be removed from a redirect.
+    //
+    // May also include the `Shared-Storage-Writable` header in the case that
+    // permission has been revoked on a redirect.
     WebVector<WebString> removed_headers;
+
+    // Headers that need to be added or updated, e.g. the
+    // `Shared-Storage-Writable` header in the case that permission has been
+    // restored on a redirect.
+    net::HttpRequestHeaders modified_headers;
 
     // Used to notify the loading stats.
     std::unique_ptr<ResourceLoadInfoNotifierWrapper>
@@ -208,7 +214,8 @@ class BLINK_PLATFORM_EXPORT ResourceRequestSender {
       const net::RedirectInfo& redirect_info,
       network::mojom::URLResponseHeadPtr response_head,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
-      std::vector<std::string> removed_headers);
+      std::vector<std::string> removed_headers,
+      net::HttpRequestHeaders modified_headers);
 
   // Follows redirect, if any, for the given request.
   void FollowPendingRedirect(PendingRequestInfo* request_info);

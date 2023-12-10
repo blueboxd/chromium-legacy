@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "third_party/blink/renderer/core/layout/exclusions/exclusion_space.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/inline/line_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_column_spanner_path.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -111,9 +111,9 @@ NGLayoutResult::NGLayoutResult(NGBoxFragmentBuilderPassKey passkey,
   }
 }
 
-NGLayoutResult::NGLayoutResult(NGLineBoxFragmentBuilderPassKey passkey,
+NGLayoutResult::NGLayoutResult(LineBoxFragmentBuilderPassKey passkey,
                                const NGPhysicalFragment* physical_fragment,
-                               NGLineBoxFragmentBuilder* builder)
+                               LineBoxFragmentBuilder* builder)
     : NGLayoutResult(std::move(physical_fragment),
                      static_cast<NGFragmentBuilder*>(builder)) {
   DCHECK_EQ(builder->bfc_block_offset_.has_value(),

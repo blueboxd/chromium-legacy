@@ -40,9 +40,9 @@
 #import "ios/chrome/browser/default_browser/model/utils_test_support.h"
 #import "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/ntp/features.h"
-#import "ios/chrome/browser/search_engines/search_engines_util.h"
-#import "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
+#import "ios/chrome/browser/search_engines/model/search_engines_util.h"
+#import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
+#import "ios/chrome/browser/sessions/session_restoration_util.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
@@ -191,10 +191,9 @@ NSString* SerializedValue(const base::Value* value) {
 }
 
 + (void)saveSessionImmediately {
+  SaveSessionForBrowser(chrome_test_util::GetMainBrowser());
+
   if (!web::features::UseSessionSerializationOptimizations()) {
-    SessionRestorationBrowserAgent::FromBrowser(
-        chrome_test_util::GetMainBrowser())
-        ->SaveSession(/*immediately=*/true);
     dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
     ProceduralBlock completionBlock = ^{
       dispatch_semaphore_signal(semaphore);
@@ -1225,15 +1224,15 @@ NSString* SerializedValue(const base::Value* value) {
 
 #pragma mark - Default Utilities (EG2)
 
-+ (void)setUserDefaultObject:(id)value forKey:(NSString*)defaultName {
++ (void)setUserDefaultsObject:(id)value forKey:(NSString*)defaultName {
   [[NSUserDefaults standardUserDefaults] setObject:value forKey:defaultName];
 }
 
-+ (void)removeUserDefaultObjectForKey:(NSString*)key {
++ (void)removeUserDefaultsObjectForKey:(NSString*)key {
   [[NSUserDefaults standardUserDefaults] removeObjectForKey:key];
 }
 
-+ (id)userDefaultObjectForKey:(NSString*)key {
++ (id)userDefaultsObjectForKey:(NSString*)key {
   return [[NSUserDefaults standardUserDefaults] objectForKey:key];
 }
 
@@ -1263,6 +1262,12 @@ NSString* SerializedValue(const base::Value* value) {
   std::string path = base::SysNSStringToUTF8(prefName);
   PrefService* prefService = GetApplicationContext()->GetLocalState();
   prefService->SetString(path, UTF8Value);
+}
+
++ (void)setBoolValue:(BOOL)value forLocalStatePref:(NSString*)prefName {
+  std::string path = base::SysNSStringToUTF8(prefName);
+  PrefService* prefService = GetApplicationContext()->GetLocalState();
+  prefService->SetBoolean(path, value);
 }
 
 + (NSString*)userPrefValue:(NSString*)prefName {

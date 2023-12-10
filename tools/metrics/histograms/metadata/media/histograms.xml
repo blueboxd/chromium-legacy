@@ -976,30 +976,13 @@ chromium-metrics-reviews@google.com.
     Duration of the interval between the moment OutputDeviceMixer started mixed
     playback (referece playback signal is requested by at least one listener and
     there is at least one stream managed by the mixer playing) and the moment
-    OutputDeviceMixer stopped mixed playback (there are no more listeners). It
-    may include intervals recorded by
-    Media.Audio.OutputDeviceMixer.NoopMixingDuration histogram.
+    OutputDeviceMixer stopped mixed playback (there are no more listeners).
   </summary>
   <token key="Device">
     <variant name="" summary="All"/>
     <variant name=".Default" summary="Default device mixer"/>
     <variant name=".NonDefault" summary="Non-default device mixer"/>
   </token>
-</histogram>
-
-<histogram name="Media.Audio.OutputDeviceMixer.NoopMixingDuration" units="ms"
-    expires_after="2024-09-01">
-  <owner>olka@chromium.org</owner>
-  <owner>tguilbert@chromium.org</owner>
-  <owner>webrtc-audio-uma@google.com</owner>
-  <summary>
-    Duration of the interval when there are no output streams to mix but there
-    are reference signal listeners present, so OutputDeviceMixer renders silence
-    and feeds it to the listeners as well. Recorded when an output stream starts
-    playing (and thus playback is not empty any more) or when all listeners are
-    gone (and thus mixing stops). There may be multiple such intervals during an
-    interval recorded by Media.Audio.OutputDeviceMixer.MixingDuration.
-  </summary>
 </histogram>
 
 <histogram name="Media.Audio.OutputDeviceMixer.OvertimeCount" units="count"
@@ -1014,32 +997,6 @@ chromium-metrics-reviews@google.com.
     100 (1/10 of all callbacks). Not logged if the mixer was called less than
     1000 times.
   </summary>
-</histogram>
-
-<histogram
-    name="Media.Audio.OutputDeviceMixer.StreamDuration.{MixingStatus}.{LatencyTag}"
-    units="ms" expires_after="2024-09-01">
-  <owner>olka@chromium.org</owner>
-  <owner>tguilbert@chromium.org</owner>
-  <owner>webrtc-audio-uma@google.com</owner>
-  <summary>
-    Duration of the interval when an output stream managed by OutputDeviceMixer
-    is playing independently (Unmixed) or as a part of the mix (Mixed). Measured
-    between the moment the stream starts playing or its playback mode
-    (Mixed/Unmixed) changes, and the moment the stream stops playing or its
-    playback mode changes.
-  </summary>
-  <token key="MixingStatus">
-    <variant name="Mixed" summary="Stream is played as a part of the mix"/>
-    <variant name="Unmixed" summary="Stream is played independently"/>
-  </token>
-  <token key="LatencyTag">
-    <variant name="LatencyExactMs"/>
-    <variant name="LatencyInteractive"/>
-    <variant name="LatencyPlayback"/>
-    <variant name="LatencyRtc"/>
-    <variant name="LatencyUnknown"/>
-  </token>
 </histogram>
 
 <histogram name="Media.Audio.OutputDeviceMixer.StreamStatus"
@@ -1165,8 +1122,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.Audio.Render.GetSourceDataTime.WebRTC"
-    units="microseconds" expires_after="2023-12-04">
-  <owner>guidou@chromium.org</owner>
+    units="microseconds" expires_after="2024-10-01">
+  <owner>fhernqvist@google.com</owner>
   <owner>olka@chromium.org</owner>
   <owner>webrtc-audio-uma@google.com</owner>
   <summary>
@@ -1183,8 +1140,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.Audio.Render.GetSourceDataTimeMax.WebRTC"
-    units="microseconds" expires_after="2023-11-12">
-  <owner>guidou@chromium.org</owner>
+    units="microseconds" expires_after="2024-10-01">
+  <owner>fhernqvist@google.com</owner>
   <owner>olka@chromium.org</owner>
   <owner>webrtc-audio-uma@google.com</owner>
   <summary>
@@ -1792,14 +1749,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.AudioOutputStreamProxy.StreamFormat"
-    enum="AudioOutputProxyStreamFormat" expires_after="2023-12-04">
+    enum="AudioOutputProxyStreamFormat" expires_after="2024-10-01">
   <owner>olka@chromium.org</owner>
   <owner>tguilbert@chromium.org</owner>
   <owner>webrtc-audio-uma@google.com</owner>
   <summary>
     Records format used by AudioManager to create audio output stream proxy. If
-    a fake stream is created it results in muted audio playback. Warning: this
-    histogram was expired from 2021-01-01 to 2022-01-21; data may be missing.
+    a fake stream is created it results in muted audio playback.
   </summary>
 </histogram>
 
@@ -1953,6 +1909,18 @@ chromium-metrics-reviews@google.com.
     the hang monitor has been initialized. If the thread is detected as hung
     later, a value of &quot;hung&quot; is emitted. If the hung thread later
     recovers a value of &quot;recovered&quot; is emitted.
+  </summary>
+</histogram>
+
+<histogram name="Media.AutoPictureInPicture.PromptResult"
+    enum="MediaAutoPictureInPicturePromptResult" expires_after="2024-04-30">
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev-uma@chromium.org</owner>
+  <summary>
+    Recorded when the user either selects an option from the Automatic
+    picture-in-picture permission prompt, or when the user manually closes the
+    picture-in-picture window without responding to the prompt. Records their
+    selection (or &quot;Ignored&quot; if they did not select an option).
   </summary>
 </histogram>
 
@@ -2369,6 +2337,30 @@ chromium-metrics-reviews@google.com.
     When RestrictionTarget.fromElement() is called for the first time on a given
     Element, a new Promise is produced. This histogram tracks the result of this
     Promise - whether it was resolved or rejected.
+  </summary>
+</histogram>
+
+<histogram name="Media.ElementCapture.RestrictTo.Latency" units="ms"
+    expires_after="2024-09-20">
+  <owner>eladalon@chromium.org</owner>
+  <owner>jophba@chromium.org</owner>
+  <owner>mfoltz@chromium.org</owner>
+  <summary>
+    Duration in milliseconds of the time it takes for a
+    BrowserCaptureMediaStreamTrack.restrictTo() call to resolve (either
+    successfully or with an error). Note a call which never resolves won't be
+    counted in this metric.
+  </summary>
+</histogram>
+
+<histogram name="Media.ElementCapture.RestrictTo.Result"
+    enum="ApplySubCaptureTargetResult" expires_after="2024-09-20">
+  <owner>eladalon@chromium.org</owner>
+  <owner>jophba@chromium.org</owner>
+  <owner>mfoltz@chromium.org</owner>
+  <summary>
+    Tracks the result of calls to BrowserCaptureMediaStreamTrack.restrictTo().
+    Recorded when resolving the promise produced by restrictTo().
   </summary>
 </histogram>
 
@@ -2799,6 +2791,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     The number of pre-provisioned origin IDs available shortly after startup on
     devices that support per-application provisioning.
+  </summary>
+</histogram>
+
+<histogram name="Media.EME.MediaDrm.Provisioning"
+    enum="MediaDrmProvisioningResult" expires_after="2023-12-31">
+  <owner>jrummell@chromium.org</owner>
+  <owner>media-dev-uma@chromium.org</owner>
+  <summary>
+    Result of trying to provision an origin using MediaDrm. Called every time
+    provisioning is attempted, once per origin.
   </summary>
 </histogram>
 
@@ -3286,68 +3288,6 @@ chromium-metrics-reviews@google.com.
   <token key="EmeApi" variants="EmeApi"/>
 </histogram>
 
-<histogram name="Media.Engagement.ScoreAtPlayback" units="%"
-    expires_after="M82">
-  <owner>beccahughes@chromium.org</owner>
-  <owner>media-dev-uma@chromium.org</owner>
-  <summary>
-    The media engagement score recorded at the time of playback. It is converted
-    to a percentage so should be divided by 100 to get the actual score. It is
-    only recorded for playback that is either lacking an audio track or not
-    muted.
-  </summary>
-</histogram>
-
-<histogram
-    name="Media.Engagement.SignificantPlayers.PlayerNotAdded.AfterFirstTime"
-    enum="InsignificantPlaybackReason" expires_after="M82">
-  <owner>beccahughes@chromium.org</owner>
-  <owner>media-dev-uma@chromium.org</owner>
-  <summary>
-    Recorded when the Media Engagement service doesn't determine a player to be
-    significant. If a player is not significant the reasons why will be
-    individually recorded to this histogram each time except for the first time
-    which is recorded to a different histogram.
-
-    The significant state of a player is reevaluated any time the state of the
-    player changes (e.g. muted, playing/paused). If the player was not
-    considered signficiant and still is not then we will record the reasons why
-    in this histogram.
-  </summary>
-</histogram>
-
-<histogram name="Media.Engagement.SignificantPlayers.PlayerNotAdded.FirstTime"
-    enum="InsignificantPlaybackReason" expires_after="M82">
-  <owner>beccahughes@chromium.org</owner>
-  <owner>media-dev-uma@chromium.org</owner>
-  <summary>
-    Recorded when the Media Engagement service doesn't determine a player to be
-    significant. If a player is not significant the reasons why will be
-    individually recorded to this histogram the first time only.
-
-    The significant state of a player is reevaluated any time the state of the
-    player changes (e.g. muted, playing/paused). If the player was not
-    considered signficiant and still is not then we will record the reasons why
-    in this histogram.
-  </summary>
-</histogram>
-
-<histogram name="Media.Engagement.SignificantPlayers.PlayerRemoved"
-    enum="InsignificantPlaybackReason" expires_after="M77">
-  <owner>beccahughes@chromium.org</owner>
-  <owner>media-dev-uma@chromium.org</owner>
-  <summary>
-    Recorded when the Media Engagement service no longer determines a player to
-    be significant. If a player is no longer significant, the reasons why will
-    be individually recorded to this histogram.
-
-    The significant state of a player is re-evaluted any time the state of the
-    player changes (e.g. muted, playing/paused). If the player was previously
-    considered significant and is no longer considered that we will record the
-    reasons why in this histogram.
-  </summary>
-</histogram>
-
 <histogram name="Media.FallbackToHighLatencyAudioPath"
     enum="BooleanDidFallBack" expires_after="never">
 <!-- expires-never: Media pipeline health metric. -->
@@ -3734,12 +3674,15 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.HardwareKeyPressed" enum="MediaHardwareKeyAction"
-    expires_after="2021-08-29">
+    expires_after="2024-01-31">
   <owner>steimel@chromium.org</owner>
   <owner>media-dev-uma@chromium.org</owner>
   <summary>
     Records media key presses that are handled by the
     HardwareKeyMediaController.
+
+    Warning: this histogram was expired from 2021-08-29 to 2023-10-24; data may
+    be missing.
   </summary>
 </histogram>
 
@@ -4176,7 +4119,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.Midi.SendReceiveUsage" enum="MidiSendReceiveUsage"
-    expires_after="2023-12-01">
+    expires_after="2024-12-01">
   <owner>hongchan@chromium.org</owner>
   <owner>mjwilson@chromium.org</owner>
   <owner>src/third_party/blink/renderer/modules/webaudio/OWNERS</owner>
@@ -4191,7 +4134,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.Midi.SysExMessageSizeUpTo1MB" units="bytes"
-    expires_after="2023-12-01">
+    expires_after="2024-12-01">
   <owner>hongchan@chromium.org</owner>
   <owner>mjwilson@chromium.org</owner>
   <owner>src/third_party/blink/renderer/modules/webaudio/OWNERS</owner>
@@ -4202,7 +4145,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Media.Midi.Usage" enum="MidiUsage" expires_after="2023-12-01">
+<histogram name="Media.Midi.Usage" enum="MidiUsage" expires_after="2024-12-01">
   <owner>hongchan@chromium.org</owner>
   <owner>mjwilson@chromium.org</owner>
   <owner>src/third_party/blink/renderer/modules/webaudio/OWNERS</owner>
@@ -4442,17 +4385,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Media.Notification.ArtworkPresent" enum="Boolean"
-    expires_after="2021-10-25">
-  <owner>beccahughes@chromium.org</owner>
-  <owner>media-dev-uma@chromium.org</owner>
-  <summary>
-    Whether the media notification (including ones for Cast sessions) is
-    displaying artwork. This is recorded when the artwork is updated by the
-    underlying media session.
-  </summary>
-</histogram>
-
 <histogram name="Media.Notification.Cast.Count" units="count"
     expires_after="2024-03-17">
   <owner>takumif@chromium.org</owner>
@@ -4504,17 +4436,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     The page where the media notification is displayed to users. This is
     recorded when a media notification starts being displayed.
-  </summary>
-</histogram>
-
-<histogram name="Media.Notification.MetadataPresent"
-    enum="MediaNotificationMetadata" expires_after="2021-10-25">
-  <owner>beccahughes@chromium.org</owner>
-  <owner>media-dev-uma@chromium.org</owner>
-  <summary>
-    Whether the media notification (including ones for Cast sessions) is
-    displaying certain types of metadata. This is recorded when the metadata is
-    updated by the underlying media session.
   </summary>
 </histogram>
 
@@ -4712,19 +4633,20 @@ chromium-metrics-reviews@google.com.
   <owner>mfoltz@chromium.org</owner>
   <summary>
     Duration in milliseconds of the time it takes for a
-    BrowserCaptureMediaStreamTrack.cropTo() call to resolve(either successfully
+    BrowserCaptureMediaStreamTrack.cropTo() call to resolve (either successfully
     or with an error). Note a call which never resolves won't be counted in this
     metric.
   </summary>
 </histogram>
 
-<histogram name="Media.RegionCapture.CropTo.Result" enum="CropToResult"
-    expires_after="2024-03-17">
+<histogram name="Media.RegionCapture.CropTo.Result2"
+    enum="ApplySubCaptureTargetResult" expires_after="2024-03-17">
   <owner>eladalon@chromium.org</owner>
   <owner>jophba@chromium.org</owner>
   <owner>mfoltz@chromium.org</owner>
   <summary>
     Tracks the result of calls to BrowserCaptureMediaStreamTrack.cropTo().
+    Recorded when resolving the promise produced by cropTo().
   </summary>
 </histogram>
 
@@ -5872,36 +5794,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Counts the pixel formats requested by the VideoCaptureDevice on Mac. This is
     recorded when the first video frame is captured.
-  </summary>
-</histogram>
-
-<histogram name="Media.VideoCapture.MacBook.AttemptCountWhenNoCamera"
-    units="attempts" expires_after="2020-03-15">
-  <owner>chfremer@chromium.org</owner>
-  <summary>
-    Indicates how many times Chrome has asked AVFoundation to enumerate devices
-    since the process start when zero devices are returned. This event is only
-    emitted for the first time that zero devices are returned since the process
-    start. This is used in the context of investigating http://crbug.com/582931.
-  </summary>
-</histogram>
-
-<histogram name="Media.VideoCapture.MacBook.HardwareVersionWhenNoCamera"
-    enum="MacBookVersions" expires_after="M82">
-  <owner>perkj@chromium.org</owner>
-  <summary>
-    MacBook hardware version used when Chrome cannot enumerate a video device.
-    This is used for tracking http://crbug.com/582931.
-  </summary>
-</histogram>
-
-<histogram name="Media.VideoCapture.MacBook.NumberOfDevices" units="devices"
-    expires_after="M82">
-  <owner>perkj@chromium.org</owner>
-  <summary>
-    Number of video capture devices detected by Chrome during device
-    enumeration. Zero devices indicate a problem since all MacBooks should have
-    a built-in camera. This is used for tracking http://crbug.com/582931.
   </summary>
 </histogram>
 

@@ -26,6 +26,7 @@
 <translation id="1448064542941920355">زوم آؤٹ کریں</translation>
 <translation id="1510341833810331442">سائٹس کو آپ کے آلے پر ڈیٹا محفوظ کرنے کی اجازت نہیں ہے</translation>
 <translation id="1547123415014299762">فریق ثالث کوکیز کی اجازت ہے</translation>
+<translation id="1568470248891039841">آپ کی ملاحظہ کی جانے والی سائٹس دوسری سائٹس سے مواد کو سرایت کر سکتی ہیں، مثال کے طور پر تصاویر، اشتہارات اور ٹیکسٹ۔ یہ دوسری سائٹس سائٹ کو براؤز کرتے وقت آپ کے بارے میں محفوظ کردہ معلومات کو استعمال کرنے کی اجازت طلب کر سکتی ہیں۔ <ph name="BEGIN_LINK" />سرایت کردہ مواد کے بارے میں مزید جانیں<ph name="END_LINK" /></translation>
 <translation id="1593426485665524382">اسکرین کے اوپری حصے کے قریب نئے ایکشنز دستیاب ہیں</translation>
 <translation id="1620510694547887537">کیمرا</translation>
 <translation id="1633720957382884102">متعلقہ سائٹس</translation>
@@ -80,6 +81,7 @@
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{<ph name="PERMISSION_1" />، <ph name="PERMISSION_2" /> اور <ph name="NUM_MORE" /> مزید کی اجازت دی گئی}other{<ph name="PERMISSION_1" />، <ph name="PERMISSION_2" /> اور <ph name="NUM_MORE" /> مزید کی اجازت دی گئی}}</translation>
 <translation id="2410940059315936967">آپ کی ملاحظہ کی جانے والی سائٹ دوسری سائٹس سے مواد کو سرایت کر سکتی ہے، مثال کے طور پر تصاویر، اشتہارات اور ٹیکسٹ۔ ان دیگر سائٹس کے ذریعے سیٹ کردہ کوکیز کو فریق ثالث کوکیز کہا جاتا ہے۔</translation>
 <translation id="2434158240863470628">ڈاؤن لوڈ مکمل ہو گیا <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
+<translation id="2438120137003069591">آپ نے عارضی طور پر اس سائٹ کو فریق ثالث کوکیز استعمال کرنے کی اجازت دی ہے، جس کا مطلب ہے کہ براؤزنگ کا تحفظ کم ہے لیکن سائٹ کی خصوصیات کے توقع کے مطابق کام کرنے کا زیادہ امکان ہے۔ <ph name="BEGIN_LINK" />تاثرات بھیجیں<ph name="END_LINK" /></translation>
 <translation id="244264527810019436">ہو سکتا ہے کہ کچھ سائٹس پر خصوصیات پوشیدگی وضع میں کام نہ کریں</translation>
 <translation id="2442870161001914531">ہمیشہ ڈیسک ٹاپ سائٹ کی درخواست کریں</translation>
 <translation id="2469312991797799607">اس کارروائی سے <ph name="ORIGIN" /> کے سبھی ڈیٹا اور کوکیز اور اس کے تحت سبھی سائٹس حذف ہو جائیں گی</translation>
@@ -114,6 +116,7 @@
 <translation id="2910701580606108292">سائٹس کو محفوظ مواد چلانے کی اجازت دینے سے پہلے پوچھیں</translation>
 <translation id="2932883381142163287">بیجا استعمال کی اطلاع دیں</translation>
 <translation id="2968755619301702150">سرٹیفیکیٹ ناظر</translation>
+<translation id="2979365474350987274">فریق ثالث کوکیز محدود ہیں</translation>
 <translation id="3008272652534848354">اجازتیں دوبارہ ترتیب دیں</translation>
 <translation id="301521992641321250">خود کار طور پر مسدود ہو گيا</translation>
 <translation id="3069226013421428034">کسی مخصوص سائٹ کیلئے فریق ثالث سائن ان کی اجازت دیں۔</translation>
@@ -169,6 +172,7 @@
 <translation id="3918378745482005425">ہو سکتا ہے کچھ خصوصیات کام نہ کریں۔ متعلقہ سائٹس اب بھی فریق ثالث کوکیز استعمال کر سکتی ہیں۔</translation>
 <translation id="3955193568934677022">سائٹس کو محفوظ کردہ مواد چلانے کی اجازت دیں (تجویز کردہ)</translation>
 <translation id="3967822245660637423">ڈاؤن لوڈ مکمل ہوگیا ہے</translation>
+<translation id="3974105241379491420">سائٹس ان معلومات کو استعمال کرنے کے لیے کہہ سکتی ہیں جو انہوں نے آپ کے بارے میں محفوظ کی ہیں</translation>
 <translation id="3987993985790029246">لنک کاپی کریں</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="3992684624889376114">اس صفحہ کے بارے میں</translation>
@@ -188,6 +192,7 @@
 <translation id="4278390842282768270">اجازت یافتہ</translation>
 <translation id="429312253194641664">سائٹ پر میڈیا چل رہا ہے</translation>
 <translation id="42981349822642051">پھیلائیں</translation>
+<translation id="4336566011000459927">‏Chrome آج دوبارہ کوکیز کو محدود کر دے گا</translation>
 <translation id="4338831206024587507"><ph name="DOMAIN" /> کے ماتحت سبھی سائٹس</translation>
 <translation id="4402755511846832236">کب آپ فعال طور پر اس آلہ کا استعمال کر رہے ہیں اس کا پتہ لگانے سے سائٹس کو مسدود کریں</translation>
 <translation id="4412992751769744546">فریق ثالث کی کوکیز کی اجازت دیں</translation>
@@ -243,6 +248,7 @@
 <translation id="5335288049665977812">‏سائٹس کو JavaScript چلانے کی اجازت دیں (تجویز کردہ)</translation>
 <translation id="534295439873310000">‏NFC آلات</translation>
 <translation id="5344522958567249764">اشتہارات کی رازداری کا نظم کریں</translation>
+<translation id="5389626883706033615">سائٹس کو آپ سے متعلق محفوظ کردہ معلومات استعمال کرنے کے لیے اجازت طلب کرنے سے مسدود کر دیا گیا ہے</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{‏(‎+1 مزید)}other{(# + مزید)}}</translation>
 <translation id="5403592356182871684">نام</translation>
 <translation id="5438097262470833822">یہ انتخاب <ph name="WEBSITE" /> کے لیے اجازتوں کو ری سیٹ کرے گا</translation>
@@ -289,6 +295,8 @@
 <translation id="6177128806592000436">اس سائٹ سے آپ کا کنکشن محفوظ نہیں ہے</translation>
 <translation id="6181444274883918285">سائٹ کا استثناء شامل کریں</translation>
 <translation id="6192792657125177640">استثناء</translation>
+<translation id="6194967801833346599">{DAYS,plural, =1{‏Chrome کل کوکیز کو دوبارہ مسدود کر دے گا}other{# دنوں میں کوکیز کو دوبارہ مسدود کر دیا جائے گا}}</translation>
+<translation id="6195163219142236913">فریق ثالث کوکیز محدود ہیں</translation>
 <translation id="6196640612572343990">فریق ثالث کوکیز کو مسدود کریں</translation>
 <translation id="6205314730813004066">اشتہارات کی رازداری</translation>
 <translation id="6207207788774442484">ڈیٹا حذف اور اجازتیں ری سیٹ کریں</translation>
@@ -299,6 +307,7 @@
 <translation id="6270391203985052864">سائٹس اطلاعات بھیجنے کے لیے کہہ سکتی ہیں</translation>
 <translation id="6295158916970320988">سبھی سائٹس</translation>
 <translation id="6320088164292336938">وائبریٹ کریں</translation>
+<translation id="6344622098450209924">ٹریکنگ کے خلاف تحفظ</translation>
 <translation id="6367753977865761591">کسی مخصوص سائٹ کیلئے فریق ثالث سائن ان کو مسدود کریں۔</translation>
 <translation id="6398765197997659313">پوری سکرین سے خارج ہوں</translation>
 <translation id="640163077447496506">میعاد آج ختم ہوگی</translation>
@@ -329,6 +338,7 @@
 <translation id="6864395892908308021">‏یہ آلہ NFC کو نہیں پڑھ سکتا</translation>
 <translation id="6912998170423641340">سائٹس کو کلپ بورڈ سے ٹیکسٹ اور تصاویر پڑھنے سے مسدود کریں</translation>
 <translation id="6945221475159498467">منتخب کریں</translation>
+<translation id="6950072572526089586">آپ جو بھی سائٹ ملاحظہ کرتے ہیں، وہ اس بارے میں معلومات کو محفوظ کر سکتی ہے کہ آپ کیا کر رہے ہیں تاکہ وہ آپ کی توقع کے مطابق کام کرے — مثال کے طور پر، آپ کو کسی سائٹ میں سائن ان رکھنے یا آپ کے شاپنگ کارٹ میں آئٹمز کو محفوظ کرنے کیلئے۔ اکثر سائٹس اس معلومات کو آپ کے آلے پر عارضی طور پر محفوظ کرتی ہیں۔</translation>
 <translation id="6965382102122355670">ٹھیک ہے</translation>
 <translation id="6981982820502123353">ایکسیسبیلٹی</translation>
 <translation id="6992289844737586249">سائٹس کو آپ کا مائیکروفون استعمال کرنے کی اجازت دینے سے پہلے پوچھیں (تجویز کردہ)</translation>
@@ -349,6 +359,7 @@
 <translation id="7243308994586599757">اسکرین کے نچلے حصہ کے قریب اختیارات دستیاب ہیں</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> منتخب ہو گئے</translation>
 <translation id="7260727271532453612"><ph name="PERMISSION_1" /> اور <ph name="PERMISSION_2" /> کی اجازت دی گئی</translation>
+<translation id="7284451015630589124">آپ نے سائٹس کو فریق ثالث کوکیز کا استعمال کرنے سے مسدود کر دیا ہے تاکہ آپ کے براؤز کرتے وقت وہ آپ کو ٹریک نہ کر سکیں۔ <ph name="BEGIN_LINK" />اپنے ٹریکنگ کے تحفظات کا نظم<ph name="END_LINK" /> کرنے کے لیے ترتیبات پر جائیں۔</translation>
 <translation id="7302486331832100261">آپ عام طور پر اطلاعات کو مسدود کرتے ہیں۔ اجازت دینے کے لیے، تفصیلات پر تھپتھپائیں۔</translation>
 <translation id="7366415735885268578">ایک سائٹ شامل کریں</translation>
 <translation id="7368695150573390554">کوئی بھی آف لائن ڈیٹا حذف کر دیا جائے گا</translation>
@@ -357,6 +368,7 @@
 <translation id="7423098979219808738">پہلے پوچھیں</translation>
 <translation id="7423538860840206698">کلپ بورڈ پڑھنے سے مسدود کیا گیا</translation>
 <translation id="7425915948813553151">سائٹس کیلئے گہری تھیم</translation>
+<translation id="7474522811371247902">‏Chrome زیادہ تر سائٹس کو فریق ثالث کوکیز استعمال کرنے سے روکتا ہے۔ لیکن اس سائٹ پر فریق ثالث کوکیز کی اجازت ہے کیونکہ یہ بنیادی سروسز فراہم کرنے کے لیے ان پر انحصار کرتی ہے۔\n\n<ph name="BEGIN_LINK" />اپنے ٹریکنگ کے تحفظات کا نظم<ph name="END_LINK" /> کرنے کے لیے ترتیبات پر جائیں۔</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">سائٹ آپ کا مائیکروفون استعمال کر رہی ہے</translation>
 <translation id="7561196759112975576">ہمیشہ</translation>
@@ -373,6 +385,7 @@
 <translation id="780301667611848630">نہیں شکریہ</translation>
 <translation id="7804248752222191302">ایک سائٹ آپ کا کیمرا استعمال کر رہی ہے</translation>
 <translation id="7807060072011926525">‏Google کے ذریعے فراہم کردہ</translation>
+<translation id="7822573154188733812">‏Chrome سائٹس کو فریق ثالث کوکیز کا استعمال کرنے سے مسدود کرتا ہے تاکہ آپ کے براؤز کرتے وقت وہ آپ کو ٹریک نہ کر سکیں۔ <ph name="BEGIN_LINK" />اپنے ٹریکنگ کے تحفظات کا نظم<ph name="END_LINK" /> کرنے کے لیے ترتیبات پر جائیں۔</translation>
 <translation id="7835852323729233924">میڈیا کو چلایا جا رہا ہے</translation>
 <translation id="783819812427904514">ویڈیو کی آواز چلائیں</translation>
 <translation id="7846076177841592234">انتخاب منسوخ کریں</translation>
@@ -389,6 +402,7 @@
 <translation id="8077120325605624147">آپ کی ملاحظہ کردہ کوئی بھی سائٹ آپ کو کوئی بھی اشتہار دکھا سکتی ہے</translation>
 <translation id="8087000398470557479">‏یہ مواد <ph name="DOMAIN_NAME" /> کی جانب سے ہے، جسے Google نے ڈیلیور کیا ہے۔</translation>
 <translation id="8088603949666785339"><ph name="BANNER_TITLE" /> میں مزید اختیارات</translation>
+<translation id="8113501330600751161">{DAYS,plural, =1{‏Chrome کل دوبارہ کوکیز کو محدود کر دے گا}other{‏# دنوں میں Chrome کوکیز کو دوبارہ محدود کر دے گا}}</translation>
 <translation id="8116925261070264013">‏خاموش کردہ</translation>
 <translation id="813082847718468539">سائٹ کی معلومات دیکھیں</translation>
 <translation id="8131740175452115882">تصدیق کریں</translation>
@@ -427,6 +441,7 @@
 <translation id="8564613706851221529">{COUNT,plural, =1{<ph name="FPS_MEMBERS_COUNT" /> <ph name="FPS_OWNER" /> سائٹ کے لیے کوکیز کی اجازت ہے}other{<ph name="FPS_MEMBERS_COUNT" /> <ph name="FPS_OWNER" /> سائٹس کے لیے کوکیز کی اجازت ہے}}</translation>
 <translation id="857943718398505171">اجازت یافتہ (تجویز کردہ)</translation>
 <translation id="8609465669617005112">اوپر منتقل کریں</translation>
+<translation id="8649036394979866943">‏Chrome بیشتر سائٹس کو فریق ثالث کوکیز کا استعمال کرنے سے روکتا ہے تاکہ آپ کے براؤز کرتے وقت وہ آپ کو ٹریک نہ کر سکیں۔ <ph name="BEGIN_LINK" />اپنے ٹریکنگ کے تحفظات کا نظم<ph name="END_LINK" /> کرنے کے لیے ترتیبات پر جائیں</translation>
 <translation id="8676374126336081632">ان پٹ صاف کریں</translation>
 <translation id="8681886425883659911">اشتہارات دخل انداز یا گمراہ کن اشتہارات دکھانے کے لیے جانی جانے والی سائٹس پر مسدود ہیں</translation>
 <translation id="868929229000858085">اپنے رابطوں کو تلاش کریں</translation>
@@ -443,12 +458,14 @@
 <translation id="8816026460808729765">سینسرز تک رسائی حاصل کرنے سے سائٹس کو مسدود کریں</translation>
 <translation id="8823559166155093873">کوکیز کو مسدود کریں</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8874790741333031443">فریق ثالث کوکیز کو عارضی طور پر اجازت دے کر آزمائیں، جس کا مطلب براؤزنگ کا کم تحفظ ہے لیکن سائٹ کی خصوصیات کے توقع کے مطابق کام کرنے کا زیادہ امکان ہے۔</translation>
 <translation id="8889294078294184559">‏چونکہ آپ براؤز کرتے رہتے ہیں، اس لیے سائٹس Chrome سے رابطہ کر کے آپ کی ملاحظہ کردہ گزشتہ سائٹ سے یہ تصدیق کر سکتی ہیں کہ آپ ممکنہ طور پر ایک حقیقی شخص ہیں</translation>
 <translation id="8899807382908246773">دخل انداز اشتہارات</translation>
 <translation id="8903921497873541725">زوم ان کریں</translation>
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">‏اس آلہ کے لیے NFC آف ہے۔ اسے <ph name="BEGIN_LINK" />Android ترتیبات<ph name="END_LINK" /> میں آن کریں۔</translation>
 <translation id="8928445016601307354">‏سائٹس کو NFC آلات پر معلومات دیکھنے اور تبدیل کرنے سے مسدود کریں</translation>
+<translation id="8944485226638699751">محدود</translation>
 <translation id="8958424370300090006">کسی مخصوص سائٹ کے لیے کوکیز مسدود کریں۔</translation>
 <translation id="8959122750345127698">نیویگیشن ناقابل رسائی ہے: <ph name="URL" /></translation>
 <translation id="8986362086234534611">بھول جائیں</translation>

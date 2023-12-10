@@ -78,6 +78,7 @@ import org.chromium.chrome.browser.toolbar.menu_button.MenuButton;
 import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonCoordinator;
 import org.chromium.chrome.browser.toolbar.optional_button.OptionalButtonCoordinator;
 import org.chromium.chrome.browser.toolbar.top.ToolbarPhone.NtpSearchBoxDrawable;
+import org.chromium.chrome.browser.toolbar.top.ToolbarPhone.VisualState;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -303,11 +304,12 @@ public class ToolbarPhoneTest {
                             toolbarBackgroundDrawable.getColor(),
                             Matchers.is(
                                     locationBarCoordinator.getDropdownBackgroundColor(
-                                            false /*isIncognito*/)));
+                                            /* isIncognito= */ false)));
                 });
         verify(mLocationbarBackgroundDrawable)
                 .setTint(
-                        locationBarCoordinator.getSuggestionBackgroundColor(false /*isIncognito*/));
+                        locationBarCoordinator.getSuggestionBackgroundColor(
+                                /* isIncognito= */ false));
         verify(mLocationbarBackgroundDrawable, atLeastOnce()).setCornerRadius(focusedRadius);
 
         // Clear focus on the Omnibox
@@ -321,7 +323,7 @@ public class ToolbarPhoneTest {
                             toolbarBackgroundDrawable.getColor(),
                             Matchers.not(
                                     locationBarCoordinator.getDropdownBackgroundColor(
-                                            false /*isIncognito*/)));
+                                            /* isIncognito= */ false)));
                 });
         verify(mLocationbarBackgroundDrawable, atLeastOnce()).setTint(anyInt());
         verify(mLocationbarBackgroundDrawable, atLeastOnce()).setCornerRadius(nonFocusedRadius);
@@ -349,10 +351,12 @@ public class ToolbarPhoneTest {
                             toolbarBackgroundDrawable.getColor(),
                             Matchers.is(
                                     locationBarCoordinator.getDropdownBackgroundColor(
-                                            false /*isIncognito*/)));
+                                            /* isIncognito= */ false)));
                 });
         verify(mLocationbarBackgroundDrawable)
-                .setTint(locationBarCoordinator.getDropdownBackgroundColor(false /*isIncognito*/));
+                .setTint(
+                        locationBarCoordinator.getDropdownBackgroundColor(
+                                /* isIncognito= */ false));
         verify(mLocationbarBackgroundDrawable, never()).setCornerRadius(anyInt());
 
         // Clear focus on the Omnibox
@@ -366,7 +370,7 @@ public class ToolbarPhoneTest {
                             toolbarBackgroundDrawable.getColor(),
                             Matchers.not(
                                     locationBarCoordinator.getDropdownBackgroundColor(
-                                            false /*isIncognito*/)));
+                                            /* isIncognito= */ false)));
                 });
         verify(mLocationbarBackgroundDrawable, atLeastOnce()).setTint(anyInt());
         verify(mLocationbarBackgroundDrawable, never()).setCornerRadius(anyInt());
@@ -396,10 +400,12 @@ public class ToolbarPhoneTest {
                             toolbarBackgroundDrawable.getColor(),
                             Matchers.is(
                                     locationBarCoordinator.getDropdownBackgroundColor(
-                                            false /*isIncognito*/)));
+                                            /* isIncognito= */ false)));
                 });
         verify(mLocationbarBackgroundDrawable)
-                .setTint(locationBarCoordinator.getDropdownBackgroundColor(false /*isIncognito*/));
+                .setTint(
+                        locationBarCoordinator.getDropdownBackgroundColor(
+                                /* isIncognito= */ false));
         assertEquals(statusViewBackground.getVisibility(), View.INVISIBLE);
 
         // Scroll the dropdown
@@ -420,7 +426,9 @@ public class ToolbarPhoneTest {
                     mToolbar.onSuggestionDropdownOverscrolledToTop();
                 });
         verify(mLocationbarBackgroundDrawable, atLeastOnce())
-                .setTint(locationBarCoordinator.getDropdownBackgroundColor(false /*isIncognito*/));
+                .setTint(
+                        locationBarCoordinator.getDropdownBackgroundColor(
+                                /* isIncognito= */ false));
         assertEquals(statusViewBackground.getVisibility(), View.INVISIBLE);
 
         // Clear focus on the Omnibox
@@ -434,7 +442,7 @@ public class ToolbarPhoneTest {
                             toolbarBackgroundDrawable.getColor(),
                             Matchers.not(
                                     locationBarCoordinator.getDropdownBackgroundColor(
-                                            false /*isIncognito*/)));
+                                            /* isIncognito= */ false)));
                 });
         verify(mLocationbarBackgroundDrawable, atLeastOnce()).setTint(anyInt());
         verify(mLocationbarBackgroundDrawable, never()).setCornerRadius(anyInt());
@@ -1027,25 +1035,47 @@ public class ToolbarPhoneTest {
     @EnableFeatures({ChromeFeatureList.SURFACE_POLISH})
     @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
     public void testRealSearchBoxAppearanceChange(boolean nightModeEnabled) {
+        LocationBarCoordinator locationBarCoordinator =
+                (LocationBarCoordinator) mToolbar.getLocationBar();
         View iconBackground = mToolbar.findViewById(R.id.location_bar_status_icon_bg);
+        int expectedEndMarginAfterPolish =
+                mToolbar.getResources()
+                        .getDimensionPixelOffset(R.dimen.location_bar_url_action_offset_polish);
+        int expectedEndMarginBeforePolish =
+                mToolbar.getResources()
+                        .getDimensionPixelOffset(R.dimen.location_bar_url_action_offset);
 
         assertEquals(false, mToolbar.isLocationBarShownInNTP());
         assertEquals(View.INVISIBLE, iconBackground.getVisibility());
+        assertEquals(
+                expectedEndMarginBeforePolish,
+                locationBarCoordinator.getUrlActionContainerEndMarginForTesting());
 
         // Load the new tab page.
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
         NewTabPageTestUtils.waitForNtpLoaded(tab);
         assertEquals(true, mToolbar.isLocationBarShownInNTP());
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    mToolbar.setNtpSearchBoxScrollFractionForTesting(1);
+                    mToolbar.updateLocationBarForSurfacePolish(VisualState.NEW_TAB_NORMAL, false);
+                });
         if (nightModeEnabled) {
             assertEquals(View.INVISIBLE, iconBackground.getVisibility());
         } else {
             assertEquals(View.VISIBLE, iconBackground.getVisibility());
         }
+        assertEquals(
+                expectedEndMarginAfterPolish,
+                locationBarCoordinator.getUrlActionContainerEndMarginForTesting());
 
         // Focus on the Omnibox.
         mOmnibox.requestFocus();
         assertEquals(View.INVISIBLE, iconBackground.getVisibility());
+        assertEquals(
+                expectedEndMarginBeforePolish,
+                locationBarCoordinator.getUrlActionContainerEndMarginForTesting());
     }
 
     private static class TestControlsVisibilityDelegate

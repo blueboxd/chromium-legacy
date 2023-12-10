@@ -1173,22 +1173,45 @@ MLActivation* MLGraphBuilder::leakyRelu(const MLLeakyReluOptions* options,
       this, MLOperator::OperatorKind::kLeakyRelu, options);
 }
 
+MLOperand* MLGraphBuilder::matmul(const MLOperand* a,
+                                  const MLOperand* b,
+                                  ExceptionState& exception_state) {
+  auto validated_output = webnn::ValidateMatmulAndInferOutput(
+      ConvertToComponentOperand(a), ConvertToComponentOperand(b));
+  if (!validated_output.has_value()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kDataError,
+        WTF::String::FromUTF8(validated_output.error()));
+    return nullptr;
+  }
+  // Create matmul operator and its output operand. Connect the matmul operator
+  // to its input and output operands.
+  auto* matmul =
+      MakeGarbageCollected<MLOperator>(this, MLOperator::OperatorKind::kMatmul);
+  auto output = MLOperand::ValidateAndCreateOutput(
+      this, ComponentOperandTypeToBlink(validated_output.value().data_type),
+      Vector<uint32_t>(validated_output.value().dimensions), matmul);
+  if (!output.has_value()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
+                                      output.error());
+    return nullptr;
+  }
+  HeapVector<Member<const MLOperand>> inputs = {a, b};
+  matmul->Connect(std::move(inputs), {output.value()});
+  return output.value();
+}
+
 MLOperand* MLGraphBuilder::pad(const MLOperand* input,
                                const Vector<uint32_t>& beginning_padding,
                                const Vector<uint32_t>& ending_padding,
                                const MLPadOptions* options,
                                ExceptionState& exception_state) {
-  const auto input_rank = input->Dimensions().size();
-  if (beginning_padding.size() != input_rank) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
-                                      "The length of beginningPadding must be "
-                                      "equal to the rank of the input tensor.");
-    return nullptr;
-  }
-  if (ending_padding.size() != input_rank) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
-                                      "The length of endingPadding must be "
-                                      "equal to the rank of the input tensor.");
+  auto validated_output = webnn::ValidatePadAndInferOutput(
+      ConvertToComponentOperand(input), beginning_padding, ending_padding);
+  if (!validated_output.has_value()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kDataError,
+        String::FromUTF8(validated_output.error()));
     return nullptr;
   }
 
@@ -1199,28 +1222,13 @@ MLOperand* MLGraphBuilder::pad(const MLOperand* input,
         "constant.");
   }
 
-  // Each dimension of the output tensor can be calculated as follow:
-  // output_size = beginning_padding + input_size + ending_padding.
-  Vector<uint32_t> output_shape(input_rank);
-  for (wtf_size_t i = 0; i < input_rank; i++) {
-    auto checked_output_size =
-        base::MakeCheckedNum<uint32_t>(input->Dimensions()[i]) +
-        beginning_padding[i] + ending_padding[i];
-    if (!checked_output_size.AssignIfValid(&output_shape[i])) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kDataError,
-          String::Format("The padding of dimension (%u) is too large.", i));
-      return nullptr;
-    }
-  }
-
   auto* pad = MakeGarbageCollected<MLPadOperator>(this, beginning_padding,
                                                   ending_padding, options);
   // According to WebNN spec
   // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-pad, the output
   // tensor of pad has the same type as its input.
   auto output = MLOperand::ValidateAndCreateOutput(
-      this, input->Type(), std::move(output_shape), pad);
+      this, input->Type(), Vector<uint32_t>(validated_output->dimensions), pad);
   if (!output.has_value()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
                                       output.error());
@@ -1247,30 +1255,20 @@ MLOperand* MLGraphBuilder::maxPool2d(const MLOperand* input,
 MLOperand* MLGraphBuilder::prelu(const MLOperand* input,
                                  const MLOperand* slope,
                                  ExceptionState& exception_state) {
-  if (input->Type() != slope->Type()) {
+  auto validated_output = webnn::ValidatePreluAndInferOutput(
+      ConvertToComponentOperand(input), ConvertToComponentOperand(slope));
+  if (!validated_output.has_value()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kDataError,
-        "The type of slope doesn't match the type of input.");
+        String::FromUTF8(validated_output.error()));
     return nullptr;
   }
-  if (!IsFloatingPointType(input->Type())) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kDataError,
-        "The type of input and slope must be one of the floating point types.");
-    return nullptr;
-  }
-  // BroadcastShape unidirectionally broadcasts the slope->Dimensions() to the
-  // input->Dimensions().
-  if (!BroadcastShapes(slope->Dimensions(), input->Dimensions(), false)) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kDataError,
-        "The shape of slope is not broadcastable to the shape of input.");
-    return nullptr;
-  }
+
   auto* prelu =
       MakeGarbageCollected<MLOperator>(this, MLOperator::OperatorKind::kPRelu);
-  auto output = MLOperand::ValidateAndCreateOutput(this, input->Type(),
-                                                   input->Dimensions(), prelu);
+  auto output = MLOperand::ValidateAndCreateOutput(
+      this, ComponentOperandTypeToBlink(validated_output->data_type),
+      Vector<uint32_t>(validated_output->dimensions), prelu);
   if (!output.has_value()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
                                       output.error());
@@ -1739,8 +1737,7 @@ ScriptPromise MLGraphBuilder::build(ScriptState* script_state,
   }
 
 #if BUILDFLAG(BUILD_WEBNN_WITH_XNNPACK)
-  if (ml_context_->GetDevicePreference() == V8MLDevicePreference::Enum::kAuto ||
-      ml_context_->GetDevicePreference() == V8MLDevicePreference::Enum::kCpu) {
+  if (ml_context_->GetDeviceType() == V8MLDeviceType::Enum::kCpu) {
     MLGraphXnnpack::ValidateAndBuildAsync(ml_context_, named_outputs, resolver);
     return promise;
   }
@@ -1748,8 +1745,7 @@ ScriptPromise MLGraphBuilder::build(ScriptState* script_state,
 
 #if BUILDFLAG(BUILD_WEBNN_ON_CROS)
   // On ChromeOS, ML model inferencing is off-loaded to ModelLoader service.
-  if (ml_context_->GetDevicePreference() == V8MLDevicePreference::Enum::kAuto ||
-      ml_context_->GetDevicePreference() == V8MLDevicePreference::Enum::kCpu) {
+  if (ml_context_->GetDeviceType() == V8MLDeviceType::Enum::kCpu) {
     MLGraphCrOS::ValidateAndBuildAsync(ml_context_, named_outputs, resolver);
     return promise;
   }
@@ -1759,7 +1755,8 @@ ScriptPromise MLGraphBuilder::build(ScriptState* script_state,
   // The runtime enable feature is used to disable the cross process hardware
   // acceleration by default.
   if (base::FeatureList::IsEnabled(
-          webnn::features::kEnableMachineLearningNeuralNetworkService)) {
+          webnn::features::kEnableMachineLearningNeuralNetworkService) &&
+      ml_context_->GetDeviceType() == V8MLDeviceType::Enum::kGpu) {
     // Reject unsupported error on unimplemented platform when getting
     // `WebNNContext` mojo interface with BrowserInterfaceBroker's
     // GetInterface() method before creating `WebNNGraph` message pipe.
@@ -1784,8 +1781,7 @@ MLGraph* MLGraphBuilder::buildSync(const MLNamedOperands& named_outputs,
   }
 
 #if BUILDFLAG(BUILD_WEBNN_WITH_XNNPACK)
-  if (ml_context_->GetDevicePreference() == V8MLDevicePreference::Enum::kAuto ||
-      ml_context_->GetDevicePreference() == V8MLDevicePreference::Enum::kCpu) {
+  if (ml_context_->GetDeviceType() == V8MLDeviceType::Enum::kCpu) {
     return MLGraphXnnpack::ValidateAndBuildSync(ml_context_, named_outputs,
                                                 exception_state);
   }

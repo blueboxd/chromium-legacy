@@ -18,6 +18,7 @@
 #include "base/rand_util.h"
 #include "base/task/bind_post_task.h"
 #include "base/time/time.h"
+#include "base/types/expected.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
@@ -52,10 +53,6 @@ using ::policy::CloudPolicyClient;
 using ::policy::CloudPolicyCore;
 
 namespace reporting {
-
-BASE_FEATURE(kEnableEncryptedReportingClientForUpload,
-             "EnableEncryptedReportingClientForUpload",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // TODO(b/281905099): remove after rolling out reporting managed user events
 // from unmanaged devices
@@ -219,25 +216,9 @@ void ReportingServerConnector::UploadEncryptedReportInternal(
     base::Value::Dict merging_payload,
     absl::optional<base::Value::Dict> context,
     ResponseCallback callback) {
-  if (base::FeatureList::IsEnabled(kEnableEncryptedReportingClientForUpload)) {
-    encrypted_reporting_client_->UploadReport(std::move(merging_payload),
-                                              std::move(context), client_,
-                                              std::move(callback));
-    return;
-  }
-  // Deprecated: uses cloud policy client.
-  auto cb = base::BindOnce(
-      [](ResponseCallback callback,
-         absl::optional<base::Value::Dict> client_result) {
-        if (!client_result.has_value()) {
-          std::move(callback).Run(Status(error::DATA_LOSS, "Failed to upload"));
-          return;
-        }
-        std::move(callback).Run(std::move(client_result.value()));
-      },
-      std::move(callback));
-  client_->UploadEncryptedReport(std::move(merging_payload), std::move(context),
-                                 std::move(cb));
+  encrypted_reporting_client_->UploadReport(std::move(merging_payload),
+                                            std::move(context), client_,
+                                            std::move(callback));
 }
 
 // static
@@ -266,18 +247,18 @@ void ReportingServerConnector::UploadEncryptedReport(
     // Initialize the cloud policy client
     auto client_status = connector->EnsureUsableClient();
     if (!client_status.ok()) {
-      std::move(callback).Run(client_status);
+      std::move(callback).Run(base::unexpected(std::move(client_status)));
       return;
     }
     if (connector->client_->dm_token().empty()) {
-      std::move(callback).Run(
-          Status(error::UNAVAILABLE, "Device DM token not set"));
+      std::move(callback).Run(base::unexpected(
+          Status(error::UNAVAILABLE, "Device DM token not set")));
       return;
     }
     context.SetByDottedPath("device.dmToken", connector->client_->dm_token());
   }
 
-  // Forward the `UploadEncryptedReport` to the cloud policy client.
+  // Forward the `UploadEncryptedReport` to `encrypted_reporting_client_`.
   absl::optional<int> request_payload_size;
   if (PayloadSizeComputationRateLimiterForUma::Get().ShouldDo()) {
     request_payload_size = GetPayloadSize(merging_payload);
@@ -291,7 +272,7 @@ void ReportingServerConnector::UploadEncryptedReport(
                  payload_size_per_hour_uma_reporter,
              StatusOr<base::Value::Dict> result) {
             DCHECK_CURRENTLY_ON(::content::BrowserThread::UI);
-            if (!result.ok()) {
+            if (!result.has_value()) {
               std::move(callback).Run(std::move(result));
               return;
             }
@@ -303,8 +284,7 @@ void ReportingServerConnector::UploadEncryptedReport(
             if (request_payload_size.has_value()) {
               // Request payload has already been computed at the time of
               // request.
-              const int response_payload_size =
-                  GetPayloadSize(result.ValueOrDie());
+              const int response_payload_size = GetPayloadSize(result.value());
 
               // Let UMA report the request and response payload sizes.
               if (PayloadSizeUmaReporter::ShouldReport()) {
@@ -322,7 +302,7 @@ void ReportingServerConnector::UploadEncryptedReport(
               }
             }
 
-            std::move(callback).Run(std::move(result.ValueOrDie()));
+            std::move(callback).Run(std::move(result.value()));
           },
           std::move(callback), std::move(request_payload_size),
           connector->payload_size_per_hour_uma_reporter_.GetWeakPtr())));
@@ -336,8 +316,9 @@ ReportingServerConnector::GetUserCloudPolicyManager() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (!g_browser_process || !g_browser_process->platform_part() ||
       !g_browser_process->platform_part()->browser_policy_connector_ash()) {
-    return Status(error::UNAVAILABLE,
-                  "Browser process not fit to retrieve CloudPolicyManager");
+    return base::unexpected(
+        Status(error::UNAVAILABLE,
+               "Browser process not fit to retrieve CloudPolicyManager"));
   }
   return g_browser_process->platform_part()
       ->browser_policy_connector_ash()
@@ -346,14 +327,16 @@ ReportingServerConnector::GetUserCloudPolicyManager() {
   // Android doesn't have access to a device level CloudPolicyClient, so get
   // the PrimaryUserProfile CloudPolicyClient.
   if (!ProfileManager::GetPrimaryUserProfile()) {
-    return Status(error::UNAVAILABLE,
-                  "PrimaryUserProfile not fit to retrieve CloudPolicyManager");
+    return base::unexpected(Status(error::UNAVAILABLE,
+                                   "PrimaryUserProfile not fit to retrieve "
+                                   "CloudPolicyManager"));
   }
   return ProfileManager::GetPrimaryUserProfile()->GetUserCloudPolicyManager();
 #else
   if (!g_browser_process || !g_browser_process->browser_policy_connector()) {
-    return Status(error::UNAVAILABLE,
-                  "Browser process not fit to retrieve CloudPolicyManager");
+    return base::unexpected(Status(error::UNAVAILABLE,
+                                   "Browser process not fit to retrieve "
+                                   "CloudPolicyManager"));
   }
   return g_browser_process->browser_policy_connector()
       ->machine_level_user_cloud_policy_manager();
@@ -388,7 +371,7 @@ Status ReportingServerConnector::EnsureUsableClient() {
   // The `policy::CloudPolicyClient` object is retrieved in two different ways
   // for ChromeOS and non-ChromeOS browsers.
   if (!client_) {
-    RETURN_IF_ERROR(EnsureUsableCore());
+    RETURN_IF_ERROR_STATUS(EnsureUsableCore());
 
     if (core_->client() == nullptr) {
       return Status(error::NOT_FOUND, "No usable CloudPolicyClient found");

@@ -42,10 +42,10 @@ namespace crosapi {
 
 class ArcAsh;
 class AudioServiceAsh;
-class AuthenticationAsh;
 class AutomationAsh;
 class BrowserServiceHostAsh;
 class BrowserVersionServiceAsh;
+class GuestOsSkForwarderFactoryAsh;
 class CertDatabaseAsh;
 class CertProvisioningAsh;
 class ChromeAppKioskServiceAsh;
@@ -157,8 +157,6 @@ class CrosapiAsh : public mojom::Crosapi {
   void BindArc(mojo::PendingReceiver<mojom::Arc> receiver) override;
   void BindAudioService(
       mojo::PendingReceiver<mojom::AudioService> receiver) override;
-  void BindAuthentication(
-      mojo::PendingReceiver<mojom::Authentication> receiver) override;
   void BindAutomationDeprecated(
       mojo::PendingReceiver<mojom::Automation> receiver) override;
   void BindAutomationFactory(
@@ -390,11 +388,16 @@ class CrosapiAsh : public mojom::Crosapi {
       mojo::PendingReceiver<mojom::WebKioskService> receiver) override;
   void BindWebPageInfoFactory(
       mojo::PendingReceiver<mojom::WebPageInfoFactory> receiver) override;
+  void BindGuestOsSkForwarderFactory(
+      mojo::PendingReceiver<mojom::GuestOsSkForwarderFactory> receiver)
+      override;
   void OnBrowserStartup(mojom::BrowserInfoPtr browser_info) override;
   void REMOVED_29(
       mojo::PendingReceiver<mojom::SystemDisplayDeprecated> receiver) override;
   void REMOVED_105(mojo::PendingReceiver<mojom::FirewallHoleServiceDeprecated>
                        receiver) override;
+  void REMOVED_62(
+      mojo::PendingReceiver<mojom::AuthenticationDeprecated> receiver) override;
 
   AutomationAsh* automation_ash() { return automation_ash_.get(); }
 
@@ -574,10 +577,11 @@ class CrosapiAsh : public mojom::Crosapi {
 
   std::unique_ptr<ArcAsh> arc_ash_;
   std::unique_ptr<AudioServiceAsh> audio_service_ash_;
-  std::unique_ptr<AuthenticationAsh> authentication_ash_;
   std::unique_ptr<AutomationAsh> automation_ash_;
   std::unique_ptr<BrowserServiceHostAsh> browser_service_host_ash_;
   std::unique_ptr<BrowserVersionServiceAsh> browser_version_service_ash_;
+  std::unique_ptr<GuestOsSkForwarderFactoryAsh>
+      guest_os_sk_forwarder_factory_ash_;
   std::unique_ptr<CertDatabaseAsh> cert_database_ash_;
   std::unique_ptr<CertProvisioningAsh> cert_provisioning_ash_;
   std::unique_ptr<ChromeAppKioskServiceAsh> chrome_app_kiosk_service_ash_;

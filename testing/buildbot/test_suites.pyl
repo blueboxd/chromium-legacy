@@ -10,19 +10,15 @@
     'android_12_fieldtrial_webview_tests': {
       'webview_trichrome_64_cts_tests_no_field_trial': {
         'test': 'webview_trichrome_64_cts_tests',
+        'mixins': [
+          'webview_cts_archive',
+        ],
         'args': [
           '--disable-field-trial-config',
         ],
         'ci_only': True,
         'swarming': {
           'shards': 2,
-          'cipd_packages': [
-            {
-              'cipd_package': 'chromium/android_webview/tools/cts_archive',
-              'location': 'android_webview/tools/cts_archive',
-              'revision': 'akIIr4yAFQwo3j5WYo2PQvy6z8XI51UiwiikPYzI4tUC',
-            },
-          ],
         },
       },
       'webview_ui_test_app_test_apk_no_field_trial': {
@@ -86,21 +82,9 @@
           'skia_gold_test',
           'emulator-8-cores',
         ],
-        'args': [
-          '--gtest_filter=-org.chromium.chrome.browser.contextualsearch.ContextualSearchManagerTest.test*ExternalNavigationWithUserGesture*:org.chromium.shape_detection.*',
-        ],
         'swarming': {
           'shards': 20,
         },
-      },
-      'chrome_public_test_apk_with_playstore': {
-        'test': 'chrome_public_test_apk',
-        'mixins': [
-          'skia_gold_test',
-        ],
-        'args': [
-          '--gtest_filter=org.chromium.chrome.browser.contextualsearch.ContextualSearchManagerTest.test*ExternalNavigationWithUserGesture*:org.chromium.shape_detection.*',
-        ],
       },
       'chrome_public_unit_test_apk': {
         'mixins': [
@@ -2202,11 +2186,7 @@
       'courgette_unittests': {},
       'crypto_unittests': {},
       'filesystem_service_unittests': {},
-      'web_engine_integration_tests': {
-        'args': [
-          '--test-arg=--vmodule=test_navigation_listener=1',
-        ],
-      },
+      'web_engine_integration_tests': {},
       'web_engine_unittests': {},
     },
 
@@ -4172,7 +4152,7 @@
         'test': 'browser_tests',
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/linux-chromeos.browser_tests.require_lacros.filter',
-          '--lacros-chrome-path=lacros_clang_x64',
+          '--lacros-chrome-path=lacros_clang_x64/test_lacros_chrome',
         ],
         'swarming': {
           'shards': 8,
@@ -4250,6 +4230,15 @@
         ],
         'swarming': {
           'shards': 8,
+        },
+      },
+      'interactive_ui_tests': {
+        'args': [
+          '--force-renderer-accessibility',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/accessibility-linux.interactive_ui_tests.filter',
+        ],
+        'swarming': {
+          'shards': 6,
         },
       },
     },
@@ -4608,19 +4597,6 @@
         'mixins': [
           'skia_gold_test',
         ],
-      },
-    },
-
-    'oop_network_service_tests': {
-      'oop_network_service_content_browsertests': {
-        'test': 'content_browsertests',
-        'args': [
-          '--enable-features=NetworkServiceOutOfProcessMemoryThreshold:network_service_oop_threshold_mb/1077',
-          '--disable-features=NetworkServiceInProcess2',
-        ],
-        'swarming': {
-          'shards': 25,
-        },
       },
     },
 
@@ -5223,11 +5199,7 @@
       'cast_runner_integration_tests': {},
       'cast_runner_unittests': {},
       'web_engine_browsertests': {},
-      'web_engine_integration_tests': {
-        'args': [
-          '--test-arg=--vmodule=test_navigation_listener=1',
-        ],
-      },
+      'web_engine_integration_tests': {},
       'web_engine_unittests': {},
     },
 
@@ -5347,15 +5319,11 @@
 
     'webview_64_cts_tests_gtest': {
       'webview_64_cts_tests': {
+        'mixins': [
+          'webview_cts_archive',
+        ],
         'swarming': {
           'shards': 2,
-          'cipd_packages': [
-            {
-              'cipd_package': 'chromium/android_webview/tools/cts_archive',
-              'location': 'android_webview/tools/cts_archive',
-              'revision': 'akIIr4yAFQwo3j5WYo2PQvy6z8XI51UiwiikPYzI4tUC',
-            },
-          ],
         },
       },
     },
@@ -5389,15 +5357,11 @@
 
     'webview_cts_tests_gtest': {
       'webview_cts_tests': {
+        'mixins': [
+          'webview_cts_archive',
+        ],
         'swarming': {
           'shards': 2,
-          'cipd_packages': [
-            {
-              'cipd_package': 'chromium/android_webview/tools/cts_archive',
-              'location': 'android_webview/tools/cts_archive',
-              'revision': 'akIIr4yAFQwo3j5WYo2PQvy6z8XI51UiwiikPYzI4tUC',
-            },
-          ],
         },
       },
     },
@@ -5405,51 +5369,39 @@
     'webview_cts_tests_gtest_no_field_trial': {
       'webview_cts_tests_no_field_trial': {
         'test': 'webview_cts_tests',
+        'mixins': [
+          'webview_cts_archive',
+        ],
         'args': [
           '--disable-field-trial-config',
         ],
         'swarming': {
           'shards': 2,
-          'cipd_packages': [
-            {
-              'cipd_package': 'chromium/android_webview/tools/cts_archive',
-              'location': 'android_webview/tools/cts_archive',
-              'revision': 'akIIr4yAFQwo3j5WYo2PQvy6z8XI51UiwiikPYzI4tUC',
-            },
-          ],
         },
       },
     },
 
     'webview_trichrome_64_cts_field_trial_tests': {
       'webview_trichrome_64_cts_tests': {
+        'mixins': [
+          'webview_cts_archive',
+        ],
         'args': [
           '--store-data-dependencies-in-temp',
         ],
         'swarming': {
           'shards': 2,
-          'cipd_packages': [
-            {
-              'cipd_package': 'chromium/android_webview/tools/cts_archive',
-              'location': 'android_webview/tools/cts_archive',
-              'revision': 'akIIr4yAFQwo3j5WYo2PQvy6z8XI51UiwiikPYzI4tUC',
-            },
-          ],
         },
       },
     },
 
     'webview_trichrome_64_cts_tests': {
       'webview_trichrome_64_cts_tests': {
+        'mixins': [
+          'webview_cts_archive',
+        ],
         'swarming': {
           'shards': 2,
-          'cipd_packages': [
-            {
-              'cipd_package': 'chromium/android_webview/tools/cts_archive',
-              'location': 'android_webview/tools/cts_archive',
-              'revision': 'akIIr4yAFQwo3j5WYo2PQvy6z8XI51UiwiikPYzI4tUC',
-            },
-          ],
         },
       },
     },
@@ -5457,33 +5409,23 @@
     'webview_trichrome_64_cts_tests_no_field_trial': {
       'webview_trichrome_64_cts_tests_no_field_trial': {
         'test': 'webview_trichrome_64_cts_tests',
+        'mixins': [
+          'webview_cts_archive',
+        ],
         'args': [
           '--disable-field-trial-config',
         ],
         'swarming': {
           'shards': 2,
-          'cipd_packages': [
-            {
-              'cipd_package': 'chromium/android_webview/tools/cts_archive',
-              'location': 'android_webview/tools/cts_archive',
-              'revision': 'akIIr4yAFQwo3j5WYo2PQvy6z8XI51UiwiikPYzI4tUC',
-            },
-          ],
         },
       },
     },
 
     'webview_trichrome_cts_tests': {
       'webview_trichrome_cts_tests': {
-        'swarming': {
-          'cipd_packages': [
-            {
-              'cipd_package': 'chromium/android_webview/tools/cts_archive',
-              'location': 'android_webview/tools/cts_archive',
-              'revision': 'akIIr4yAFQwo3j5WYo2PQvy6z8XI51UiwiikPYzI4tUC',
-            },
-          ],
-        },
+        'mixins': [
+          'webview_cts_archive',
+        ],
       },
     },
 
@@ -5865,6 +5807,11 @@
     ],
 
     'chromeos_vm_gtests': [
+      'chromeos_system_friendly_gtests',
+      'chromeos_integration_tests',
+    ],
+
+    'chromeos_vm_gtests_and_tast': [
       'chromeos_browser_all_tast_tests',
       'chromeos_browser_integration_tests',
       'chromeos_system_friendly_gtests',
@@ -6671,10 +6618,6 @@
       'webview_ui_instrumentation_tests': {},
     },
 
-    'android_12_emulator_fyi_gtests': {
-      'oop_network_service_tests': {},
-    },
-
     'android_12_emulator_gtests': {
       'android_12_fieldtrial_webview_tests': {},
       'android_emulator_specific_chrome_public_tests': {},
@@ -7144,12 +7087,10 @@
           'xcode_parallelization',
         ],
         'variants': [
-          'SIM_IPHONE_13_15_5',
           'SIM_IPHONE_14_16_4',
           'SIM_IPHONE_14_17_0',
           'SIM_IPAD_AIR_5TH_GEN_16_4',
           'SIM_IPAD_AIR_5TH_GEN_17_0',
-          'SIM_IPAD_PRO_5TH_GEN_15_5',
           'SIM_IPAD_PRO_6TH_GEN_16_4',
           'SIM_IPAD_PRO_6TH_GEN_17_0',
         ],
@@ -7159,27 +7100,16 @@
           'xcode_parallelization',
         ],
         'variants': [
-          'SIM_IPHONE_13_15_5',
           'SIM_IPHONE_14_16_4',
           'SIM_IPHONE_14_17_0',
-          'SIM_IPAD_AIR_5TH_GEN_16_4',
-          'SIM_IPAD_AIR_5TH_GEN_17_0',
-          'SIM_IPAD_PRO_5TH_GEN_15_5',
           'SIM_IPAD_PRO_6TH_GEN_16_4',
           'SIM_IPAD_PRO_6TH_GEN_17_0',
         ],
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPHONE_13_15_5',
           'SIM_IPHONE_14_16_4',
           'SIM_IPHONE_14_17_0',
-          'SIM_IPHONE_SE_3RD_GEN_15_5',
-          'SIM_IPHONE_SE_3RD_GEN_16_4',
-          'SIM_IPHONE_SE_3RD_GEN_17_0',
-          'SIM_IPAD_AIR_5TH_GEN_16_4',
-          'SIM_IPAD_AIR_5TH_GEN_17_0',
-          'SIM_IPAD_PRO_5TH_GEN_15_5',
           'SIM_IPAD_PRO_6TH_GEN_16_4',
           'SIM_IPAD_PRO_6TH_GEN_17_0',
         ],
@@ -7600,6 +7530,15 @@
           'CROS_PUFF_RELEASE_DEV',
           'CROS_PUFF_RELEASE_BETA',
           'CROS_PUFF_RELEASE_STABLE',
+        ],
+      },
+      'lacros_skylab_tests_with_gtests': {
+        'variants': [
+          'CROS_BRYA_RELEASE_LKGM',
+          'CROS_DEDEDE_RELEASE_LKGM',
+          'CROS_FIZZ_RELEASE_LKGM',
+          'CROS_GUYBRUSH_RELEASE_LKGM',
+          'CROS_PUFF_RELEASE_LKGM',
         ],
       },
     },

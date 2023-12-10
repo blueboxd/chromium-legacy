@@ -141,13 +141,22 @@ bool HTMLAnchorElement::ShouldHaveFocusAppearance() const {
          HTMLElement::SupportsFocus();
 }
 
-bool HTMLAnchorElement::IsFocusable() const {
-  if (!IsFocusableStyleAfterUpdate())
-    return false;
-  if (IsLink())
+bool HTMLAnchorElement::IsFocusable(
+    bool disallow_layout_updates_for_accessibility_only) const {
+  if (disallow_layout_updates_for_accessibility_only) {
+    if (!IsFocusableStyleNeverLayoutForAccessibilityOnly()) {
+      return false;
+    }
+  } else {
+    if (!IsFocusableStyleAfterUpdate()) {
+      return false;
+    }
+  }
+  if (IsLink()) {
     return SupportsFocus();
-
-  return HTMLElement::IsFocusable();
+  }
+  return HTMLElement::IsFocusable(
+      disallow_layout_updates_for_accessibility_only);
 }
 
 bool HTMLAnchorElement::IsKeyboardFocusable() const {
@@ -357,8 +366,7 @@ void HTMLAnchorElement::SetHref(const AtomicString& value) {
 
 KURL HTMLAnchorElement::Url() const {
   KURL href = Href();
-  if (RuntimeEnabledFeatures::AnchorHrefCheckInvalidURLEnabled() &&
-      !href.IsValid()) {
+  if (!href.IsValid()) {
     return KURL();
   }
   return href;

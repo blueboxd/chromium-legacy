@@ -132,10 +132,11 @@ class WebAppUiManager {
   virtual void AddAppToQuickLaunchBar(const webapps::AppId& app_id) = 0;
   virtual bool IsAppInQuickLaunchBar(const webapps::AppId& app_id) const = 0;
 
-  // Returns whether |web_contents| is in a web app window belonging to
-  // |app_id|, or any web app window if |app_id| is nullptr.
-  virtual bool IsInAppWindow(content::WebContents* web_contents,
-                             const webapps::AppId* app_id = nullptr) const = 0;
+  // Returns whether |web_contents| is in a web app window or popup window
+  // created from a web app window.
+  virtual bool IsInAppWindow(content::WebContents* web_contents) const = 0;
+  virtual const webapps::AppId* GetAppIdForWindow(
+      content::WebContents* web_contents) const = 0;
   virtual void NotifyOnAssociatedAppChanged(
       content::WebContents* web_contents,
       const absl::optional<webapps::AppId>& previous_app_id,
@@ -174,11 +175,12 @@ class WebAppUiManager {
   // windows if configured by the launch handlers, etc. See
   // `web_app::LaunchWebApp` and `WebAppLaunchProcess` for more info.
   // If the app_id is invalid, an empty browser window is opened.
-  virtual base::Value LaunchWebApp(apps::AppLaunchParams params,
-                                   LaunchWebAppWindowSetting launch_setting,
-                                   Profile& profile,
-                                   LaunchWebAppCallback callback,
-                                   AppLock& lock) = 0;
+  virtual void WaitForFirstRunAndLaunchWebApp(
+      apps::AppLaunchParams params,
+      LaunchWebAppWindowSetting launch_setting,
+      Profile& profile,
+      LaunchWebAppCallback callback,
+      AppLock& lock) = 0;
 
 #if BUILDFLAG(IS_CHROMEOS)
   // Migrates launcher state, such as parent folder id, position in App Launcher

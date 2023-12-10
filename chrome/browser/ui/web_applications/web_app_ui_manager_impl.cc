@@ -51,6 +51,7 @@
 #include "components/webapps/browser/uninstall_result_code.h"
 #include "content/public/browser/clear_site_data_utils.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_system.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-shared.h"
@@ -82,6 +83,7 @@
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/ui/startup/first_run_service.h"
 #include "chromeos/crosapi/mojom/web_app_service.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -151,6 +153,37 @@ void UninstallWebAppWithDialogFromStartupSwitch(const webapps::AppId& app_id,
 }
 
 #endif  // BUILDFLAG(IS_WIN)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+void OnFirstRunCompleted(apps::AppLaunchParams params,
+                         LaunchWebAppWindowSetting launch_setting,
+                         Profile* profile,
+                         LaunchWebAppCallback callback,
+                         bool proceed) {
+  CHECK(profile);
+
+  if (!proceed) {
+    return;
+  }
+
+  WebAppProvider* provider = WebAppProvider::GetForWebApps(profile);
+  CHECK(provider);
+
+  provider->scheduler().ScheduleCallbackWithLock<web_app::AppLock>(
+      "WebAppUiManagerImpl::OnFirstRunCompleted",
+      std::make_unique<web_app::AppLockDescription>(params.app_id),
+      base::BindOnce(
+          [](apps::AppLaunchParams params,
+             LaunchWebAppWindowSetting launch_setting, Profile* profile,
+             LaunchWebAppCallback callback, web_app::AppLock& lock) {
+            CHECK(profile);
+            ::web_app::LaunchWebApp(
+                std::move(params), launch_setting, *profile, lock.registrar(),
+                lock.os_integration_manager(), std::move(callback));
+          },
+          std::move(params), launch_setting, profile, std::move(callback)));
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 }  // namespace
 
@@ -266,13 +299,19 @@ bool WebAppUiManagerImpl::IsAppInQuickLaunchBar(
   return false;
 }
 
-bool WebAppUiManagerImpl::IsInAppWindow(content::WebContents* web_contents,
-                                        const webapps::AppId* app_id) const {
+bool WebAppUiManagerImpl::IsInAppWindow(
+    content::WebContents* web_contents) const {
   Browser* browser = chrome::FindBrowserWithTab(web_contents);
-  if (app_id) {
-    return AppBrowserController::IsForWebApp(browser, *app_id);
-  }
   return AppBrowserController::IsWebApp(browser);
+}
+
+const webapps::AppId* WebAppUiManagerImpl::GetAppIdForWindow(
+    content::WebContents* web_contents) const {
+  Browser* browser = chrome::FindBrowserWithTab(web_contents);
+  if (AppBrowserController::IsWebApp(browser)) {
+    return &browser->app_controller()->app_id();
+  }
+  return nullptr;
 }
 
 void WebAppUiManagerImpl::NotifyOnAssociatedAppChanged(
@@ -345,14 +384,27 @@ void WebAppUiManagerImpl::ShowWebAppSettings(const webapps::AppId& app_id) {
   chrome::ShowSiteSettings(profile_, start_url);
 }
 
-base::Value WebAppUiManagerImpl::LaunchWebApp(
+// TODO(b/307951776): Evaluate refactoring.
+void WebAppUiManagerImpl::WaitForFirstRunAndLaunchWebApp(
     apps::AppLaunchParams params,
     LaunchWebAppWindowSetting launch_setting,
     Profile& profile,
     LaunchWebAppCallback callback,
     AppLock& lock) {
-  return ::web_app::LaunchWebApp(std::move(params), launch_setting, profile,
-                                 std::move(callback), lock);
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  FirstRunService* first_run_service =
+      FirstRunServiceFactory::GetForBrowserContextIfExists(&profile);
+  if (first_run_service) {
+    first_run_service->OpenFirstRunIfNeeded(
+        FirstRunService::EntryPoint::kWebAppLaunch,
+        base::BindOnce(&OnFirstRunCompleted, std::move(params), launch_setting,
+                       &profile, std::move(callback)));
+    return;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+  ::web_app::LaunchWebApp(std::move(params), launch_setting, profile,
+                          lock.registrar(), lock.os_integration_manager(),
+                          std::move(callback));
 }
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -406,15 +458,14 @@ content::WebContents* WebAppUiManagerImpl::CreateNewTab() {
 bool WebAppUiManagerImpl::IsWebContentsActiveTabInBrowser(
     content::WebContents* web_contents) {
   Browser* browser = chrome::FindBrowserWithTab(web_contents);
-  return browser &&
-         browser->tab_strip_model() &&
+  return browser && browser->tab_strip_model() &&
          browser->tab_strip_model()->GetActiveWebContents() == web_contents;
 }
 
 void WebAppUiManagerImpl::TriggerInstallDialog(
     content::WebContents* web_contents) {
   web_app::CreateWebAppFromManifest(
-      web_contents, /*bypass_service_worker_check=*/true,
+      web_contents,
       // TODO(issuetracker.google.com/283034487): Consider passing in the
       // install source from the caller.
       webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON, base::DoNothing());

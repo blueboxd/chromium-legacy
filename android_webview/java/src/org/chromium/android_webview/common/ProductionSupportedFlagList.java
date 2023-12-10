@@ -181,6 +181,9 @@ public final class ProductionSupportedFlagList {
                 "Uses GooglePlayService's 'connectionless' APIs for Safe Browsing "
                         + "security checks."),
         Flag.baseFeature(
+                AwFeatures.WEBVIEW_APPS_PACKAGE_NAMES_SERVER_SIDE_ALLOWLIST,
+                "Enables usage of server-side allowlist filtering of" + " app package names."),
+        Flag.baseFeature(
                 AwFeatures.WEBVIEW_BROTLI_SUPPORT,
                 "Enables brotli compression support in WebView."),
         Flag.baseFeature(NetFeatures.PRIORITY_HEADER, "Enables the HTTP priority header."),
@@ -490,6 +493,7 @@ public final class ProductionSupportedFlagList {
         Flag.baseFeature(BlinkFeatures.HIT_TEST_OPAQUENESS),
         Flag.baseFeature(BlinkFeatures.INTERSECTION_OPTIMIZATION),
         Flag.baseFeature(BlinkFeatures.SOLID_COLOR_LAYERS),
+        Flag.baseFeature(BlinkFeatures.SCROLLBAR_COLOR),
         Flag.baseFeature(
                 BlinkFeatures.DELAY_OUT_OF_VIEWPORT_LAZY_IMAGES,
                 "Delays out-of-viewport lazy loaded images."),
@@ -541,6 +545,10 @@ public final class ProductionSupportedFlagList {
                 "Controls whether to perform histogram delta snapshots in a background "
                         + "thread (in contrast to snapshotting unlogged samples in the "
                         + "background, then marking them as logged on the main thread)."),
+        Flag.baseFeature(
+                MetricsFeatures.REPORTING_SERVICE_ALWAYS_FLUSH,
+                "Determines whether to always flush Local State immediately after an UMA/UKM "
+                        + "log upload."),
         Flag.baseFeature(
                 ContentFeatures.MAIN_THREAD_COMPOSITING_PRIORITY,
                 "When enabled runs the main thread at compositing priority."),
@@ -596,6 +604,10 @@ public final class ProductionSupportedFlagList {
         Flag.baseFeature(
                 "SafeBrowsingSkipSubResources2",
                 "When enabled, Safe Browsing will skip WebTransport and WebSockets"),
+        Flag.baseFeature(
+                "AddWarningShownTSToClientSafeBrowsingReport",
+                "When enabled, client reports will include a timestamp of when the warning was "
+                        + "shown to the user"),
         Flag.baseFeature("SafeBrowsingOnUIThread"),
         Flag.baseFeature(
                 BlinkFeatures.ANDROID_EXTENDED_KEYBOARD_SHORTCUTS,
@@ -753,6 +765,13 @@ public final class ProductionSupportedFlagList {
                 CcFeatures.USE_MAP_RECT_FOR_PIXEL_MOVEMENT,
                 "Enables the usage of MapRect for computing filter pixel movement."),
         Flag.baseFeature("UseRustJsonParser"),
+        Flag.baseFeature("V8FlushCodeBasedOnTime"),
+        Flag.baseFeature("V8FlushCodeBasedOnTabVisibility"),
+        Flag.baseFeature("V8SingleThreadedGCInBackground"),
+        Flag.baseFeature("V8MemoryReducer"),
+        Flag.baseFeature(
+                AwFeatures.WEBVIEW_INJECT_PLATFORM_JS_APIS,
+                "Inject platform-specific Javascript APIs.")
         // Add new commandline switches and features above. The final entry should have a
         // trailing comma for cleaner diffs.
     };

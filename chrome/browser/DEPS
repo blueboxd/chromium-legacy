@@ -418,6 +418,7 @@ include_rules = [
   "+media/base",  # For media switches
   "+media/capabilities", # For InMemoryVideoDecodeStatsDB
   "+media/cdm",
+  "+media/gpu/buildflags.h",
   "+media/remoting/device_capability_checker.h",
   "+media/capture",
   "+media/midi",  # For midi switches
@@ -608,7 +609,6 @@ specific_include_rules = {
     "+components/services/storage/shared_storage/shared_storage_manager.h",
   ],
   "render_view_context_menu_browsertest.cc" : [
-    "+components/compose/buildflags.h",
     "+third_party/libwebp/src/src/webp/decode.h",
   ],
   "webauth_interactive_uitest.cc": [

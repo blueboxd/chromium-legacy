@@ -11,8 +11,8 @@
 # tags: [ android-nexus-5x android-pixel-2 android-pixel-4
 #             android-pixel-6 android-shield-android-tv android-sm-a135m
 #             android-sm-a235m
-#         chromeos-board-amd64-generic chromeos-board-kevin chromeos-board-eve
-#             chromeos-board-jacuzzi chromeos-board-octopus
+#         chromeos-board-amd64-generic chromeos-board-eve chromeos-board-jacuzzi
+#             chromeos-board-octopus
 #         fuchsia-board-astro fuchsia-board-nelson fuchsia-board-sherlock
 #             fuchsia-board-qemu-x64 ]
 # Platform
@@ -223,11 +223,6 @@ crbug.com/1473838 [ chromeos chromeos-board-amd64-generic passthrough ] WebglExt
 crbug.com/1473838 [ chromeos chromeos-board-amd64-generic passthrough ] WebglExtension_WEBGL_polygon_mode [ Skip ]
 crbug.com/1473838 [ chromeos chromeos-board-amd64-generic angle-opengles passthrough ] WebglExtension_WEBGL_render_shared_exponent [ Skip ]
 
-# Unsupported on this config.
-crbug.com/1429756 [ chromeos chromeos-board-kevin passthrough ] WebglExtension_EXT_disjoint_timer_query_webgl2 [ Skip ]
-crbug.com/1429756 [ chromeos chromeos-board-kevin passthrough ] WebglExtension_WEBGL_clip_cull_distance [ Skip ]
-crbug.com/1429756 [ chromeos chromeos-board-kevin ] WebglExtension_WEBGL_provoking_vertex [ Skip ]
-
 # Extensions not available on jacuzzi ChromeOS devices.
 crbug.com/1486664 [ chromeos cros-chrome chromeos-board-jacuzzi passthrough ] WebglExtension_EXT_blend_func_extended [ Skip ]
 crbug.com/1486664 [ chromeos cros-chrome chromeos-board-jacuzzi passthrough ] WebglExtension_EXT_clip_control [ Skip ]
@@ -390,8 +385,6 @@ crbug.com/1473838 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] 
 # the default 15 second heartbeat timeout because of that.
 crbug.com/1426916 [ chromeos chromeos-board-amd64-generic passthrough ] deqp/functional/gles3/uniformapi/random.html [ Slow ]
 
-crbug.com/1441710 [ chromeos chromeos-board-kevin ] conformance/glsl/bugs/temp-expressions-should-not-crash.html [ Slow ]
-
 ###################
 # Failures/Flakes #
 ###################
@@ -492,7 +485,6 @@ crbug.com/1159539 [ win amd-0x7340 angle-d3d11 passthrough ] deqp/functional/gle
 ## Metal Common ##
 # Common to all GPU types (both AMD and Intel, at least)
 
-crbug.com/angleproject/7079 [ angle-metal mac mac-x86_64 passthrough ] deqp/functional/gles3/fboinvalidate/sub.html [ Failure ]
 crbug.com/angleproject/7079 [ angle-metal mac mac-x86_64 passthrough ] deqp/functional/gles3/fboinvalidate/whole.html [ Failure ]
 
 ## Metal AMD ##
@@ -661,7 +653,6 @@ crbug.com/1450355 [ amd angle-opengl mac ] deqp/functional/gles3/occlusionquery_
 ## Mac Intel ##
 
 crbug.com/679692 [ angle-metal intel mac no-asan ] conformance2/textures/misc/angle-stuck-depth-textures.html [ Failure ]
-crbug.com/641209 [ angle-metal intel mac no-asan ] deqp/functional/gles3/fbomultisample* [ Failure ]
 crbug.com/606074 [ angle-opengl intel mac ] deqp/functional/gles3/texturefiltering/2d_combinations_01.html [ Failure ]
 crbug.com/606074 [ angle-opengl intel mac ] deqp/functional/gles3/texturefiltering/cube_combinations_01.html [ Failure ]
 crbug.com/606074 [ angle-opengl intel mac ] deqp/functional/gles3/texturefiltering/2d_array_combinations_01.html [ Failure ]
@@ -784,8 +775,6 @@ crbug.com/1473838 [ android android-pixel-2 passthrough ] conformance/extensions
 # Failing test when experiment DrDc is enabled via fieldtrial_testing_config.json.
 crbug.com/1289303 [ android-pixel-4 android-r ] conformance/textures/misc/texture-video-transparent.html [ Failure ] # finder:disable-narrowing
 
-# Observed flaky on Pixel 4 with validating command decoder.
-crbug.com/1493157 [ android-pixel-4 android-r angle-disabled ] deqp/functional/gles3/texturefiltering/3d_formats_00.html [ RetryOnFailure ]
 
 crbug.com/1175232 [ android android-pixel-4 angle-opengles passthrough ] conformance2/reading/read-pixels-from-fbo-test.html [ Failure ]
 

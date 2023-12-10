@@ -24,6 +24,8 @@
 #include "components/metrics/structured/storage.pb.h"
 #include "components/metrics/structured/structured_metrics_features.h"
 #include "components/metrics/structured/structured_metrics_validator.h"
+#include "event_validator.h"
+#include "project_validator.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
 
 namespace metrics::structured {
@@ -259,7 +261,7 @@ void StructuredMetricsRecorder::OnEventRecord(const Event& event) {
 
   // One more state for the EventRecordingState exists: kMetricsProviderMissing.
   // This is recorded in Recorder::Record.
-  if (!recording_enabled_) {
+  if (!recording_enabled_ && !CanForceRecord(event)) {
     // Events should be ignored if recording is disabled.
     LogEventRecordingState(EventRecordingState::kRecordingDisabled);
     return;
@@ -280,30 +282,6 @@ void StructuredMetricsRecorder::OnEventRecord(const Event& event) {
   test_callback_on_record_.Run();
 }
 
-absl::optional<int> StructuredMetricsRecorder::LastKeyRotation(
-    const uint64_t project_name_hash) {
-  DCHECK(base::CurrentUIThread::IsSet());
-  if (init_state_ != InitState::kInitialized) {
-    return absl::nullopt;
-  }
-
-  KeyData* device_key_data = key_data_provider_->GetDeviceKeyData();
-  KeyData* profile_key_data = key_data_provider_->GetProfileKeyData();
-
-  DCHECK(IsDeviceKeyDataInitialized());
-  DCHECK(IsProfileKeyDataInitialized());
-
-  // |project_name_hash| could store its keys in either the profile or device
-  // key data, so check both. As they cannot both contain the same name hash,
-  // at most one will return a non-nullopt value.
-  absl::optional<int> profile_day =
-      profile_key_data->LastKeyRotation(project_name_hash);
-  absl::optional<int> device_day =
-      device_key_data->LastKeyRotation(project_name_hash);
-  DCHECK(!(profile_day && device_day));
-  return profile_day ? profile_day : device_day;
-}
-
 void StructuredMetricsRecorder::OnReportingStateChanged(bool enabled) {
   DCHECK(base::CurrentUIThread::IsSet());
 
@@ -311,6 +289,11 @@ void StructuredMetricsRecorder::OnReportingStateChanged(bool enabled) {
   // handle enabling.
   if (enabled) {
     return;
+  }
+
+  // Clean up any events that were recording during the pre-user.
+  if (!recording_enabled_ && !enabled) {
+    Purge();
   }
 
   // When reporting is disabled, OnRecordingDisabled is also called. Disabling
@@ -392,22 +375,13 @@ void StructuredMetricsRecorder::RecordEvent(const Event& event) {
 
   // Validates the event. If valid, retrieve the metadata associated
   // with the event.
-  auto maybe_project_validator =
-      Recorder::GetInstance()->GetValidator()->GetProjectValidator(
-          event.project_name());
+  const auto validators = GetEventValidators(event);
+  if (!validators) {
+    return;
+  }
 
-  DCHECK(maybe_project_validator.has_value());
-  if (!maybe_project_validator.has_value()) {
-    return;
-  }
-  const auto* project_validator = maybe_project_validator.value();
-  const auto maybe_event_validator =
-      project_validator->GetEventValidator(event.event_name());
-  DCHECK(maybe_event_validator.has_value());
-  if (!maybe_event_validator.has_value()) {
-    return;
-  }
-  const auto* event_validator = maybe_event_validator.value();
+  const auto* project_validator = validators->first;
+  const auto* event_validator = validators->second;
 
   if (!CanUploadProject(project_validator->project_hash())) {
     LogEventRecordingState(EventRecordingState::kProjectDisallowed);
@@ -450,11 +424,10 @@ void StructuredMetricsRecorder::RecordEvent(const Event& event) {
     event_sequence_metadata->set_event_unique_id(
         base::HashMetricName(event.event_sequence_metadata().event_unique_id));
 
-    int days_since_rotation =
-        profile_key_data->LastKeyRotation(project_validator->project_hash())
+    const int rotation_age =
+        profile_key_data->GetKeyAgeInWeeks(project_validator->project_hash())
             .value_or(0);
-    event_sequence_metadata->set_client_id_rotation_weeks(days_since_rotation /
-                                                          7);
+    event_sequence_metadata->set_client_id_rotation_weeks(rotation_age);
 
     event_proto->set_device_project_id(
         device_key_data->Id(project_validator->project_hash(),
@@ -635,6 +608,34 @@ void StructuredMetricsRecorder::UpdateAndCheckInitState() {
 void StructuredMetricsRecorder::SetEventRecordCallbackForTest(
     base::RepeatingClosure callback) {
   test_callback_on_record_ = std::move(callback);
+}
+
+bool StructuredMetricsRecorder::CanForceRecord(const Event& event) const {
+  const auto validators = GetEventValidators(event);
+  if (!validators) {
+    return false;
+  }
+  return validators->second->can_force_record();
+}
+
+absl::optional<std::pair<const ProjectValidator*, const EventValidator*>>
+StructuredMetricsRecorder::GetEventValidators(const Event& event) const {
+  auto maybe_project_validator =
+      validator::Validators::Get()->GetProjectValidator(event.project_name());
+
+  DCHECK(maybe_project_validator.has_value());
+  if (!maybe_project_validator.has_value()) {
+    return {};
+  }
+  const auto* project_validator = maybe_project_validator.value();
+  const auto maybe_event_validator =
+      project_validator->GetEventValidator(event.event_name());
+  DCHECK(maybe_event_validator.has_value());
+  if (!maybe_event_validator.has_value()) {
+    return {};
+  }
+  const auto* event_validator = maybe_event_validator.value();
+  return std::make_pair(project_validator, event_validator);
 }
 
 }  // namespace metrics::structured

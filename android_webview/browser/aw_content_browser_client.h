@@ -263,6 +263,9 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   bool ShouldPreconnectNavigation(
       content::BrowserContext* browser_context) override;
   void OnDisplayInsecureContent(content::WebContents* web_contents) override;
+  network::mojom::AttributionSupport GetAttributionSupport(
+      AttributionReportingOsApiState state,
+      content::WebContents* web_contents) override;
   // Allows the embedder to control if Attribution Reporting API operations can
   // happen in a given context.
   // For WebView Browser Attribution is explicitly disabled.
@@ -272,8 +275,8 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       content::RenderFrameHost* rfh,
       const url::Origin* source_origin,
       const url::Origin* destination_origin,
-      const url::Origin* reporting_origin) override;
-  bool IsWebAttributionReportingAllowed() override;
+      const url::Origin* reporting_origin,
+      bool* can_bypass) override;
   bool ShouldUseOsWebSourceAttributionReporting(
       content::RenderFrameHost* rfh) override;
   bool ShouldUseOsWebTriggerAttributionReporting(

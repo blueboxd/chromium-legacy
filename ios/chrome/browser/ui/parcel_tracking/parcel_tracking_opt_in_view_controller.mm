@@ -24,10 +24,12 @@ namespace {
 NSString* const kOptInIcon = @"parcel_tracking_icon_new";
 // Radius size of the table view.
 CGFloat const kTableViewCornerRadius = 10;
-// Estimated row height for each cell in the table view.
-CGFloat const kTableViewEstimatedRowHeight = 48;
-// Margin for the options view.
-CGFloat const kOptionsViewMargin = 17;
+// Horizontal margin for the view.
+CGFloat const kHorizontalMargin = 24;
+// Spacing before the image.
+CGFloat const kSpacingBeforeImage = 23;
+// Size of the radio buttons.
+CGFloat const kRadioButtonSize = 20;
 }  // namespace
 
 @interface ParcelTrackingOptInViewController () <UITableViewDelegate,
@@ -39,6 +41,7 @@ CGFloat const kOptionsViewMargin = 17;
 @implementation ParcelTrackingOptInViewController {
   UITableView* _tableView;
   IOSParcelTrackingOptInStatus _selection;
+  NSLayoutConstraint* _optionsViewHeightConstraint;
 }
 
 - (void)viewDidLoad {
@@ -58,21 +61,26 @@ CGFloat const kOptionsViewMargin = 17;
   self.image = [UIImage imageNamed:kOptInIcon];
   self.imageHasFixedSize = true;
   self.topAlignedLayout = YES;
-  self.sheetPresentationController.detents = @[
-    UISheetPresentationControllerDetent.largeDetent
-  ];
-
+  self.customSpacingAfterImage = 0;
+  self.customSpacingBeforeImageIfNoNavigationBar = kSpacingBeforeImage;
   [super viewDidLoad];
 
   // Assign table view's width anchor now that it is in the same hierarchy as
   // the top view.
   [NSLayoutConstraint activateConstraints:@[
     [optionsView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor
-                                              constant:kOptionsViewMargin],
+                                              constant:kHorizontalMargin],
     [optionsView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor
-                                               constant:-kOptionsViewMargin],
+                                               constant:-kHorizontalMargin],
   ]];
   [self updateButtonForState:UIControlStateDisabled];
+}
+
+- (void)viewWillLayoutSubviews {
+  [super viewWillLayoutSubviews];
+  [self updateOptionsViewHeightConstraint];
+  self.view.directionalLayoutMargins =
+      NSDirectionalEdgeInsetsMake(0, kHorizontalMargin, 0, kHorizontalMargin);
 }
 
 #pragma mark - ConfirmationAlertViewController
@@ -87,13 +95,14 @@ CGFloat const kOptionsViewMargin = 17;
         [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline],
     NSParagraphStyleAttributeName : paragraphStyle,
   };
-  NSDictionary* linkAttributes =
-      @{NSLinkAttributeName : net::NSURLWithGURL(GURL("chrome://settings"))};
+  NSDictionary* linkAttributes = @{
+    NSLinkAttributeName : net::NSURLWithGURL(GURL("chrome://settings")),
+    NSUnderlineStyleAttributeName : @(NSUnderlineStyleSingle)
+  };
   subtitle.attributedText = AttributedStringFromStringWithLink(
       l10n_util::GetNSString(IDS_IOS_PARCEL_TRACKING_OPT_IN_SUBTITLE),
       textAttributes, linkAttributes);
   subtitle.delegate = self;
-  subtitle.editable = YES;
   subtitle.selectable = YES;
 }
 
@@ -134,6 +143,10 @@ CGFloat const kOptionsViewMargin = 17;
   return 2;
 }
 
+- (NSInteger)numberOfSectionsInTableView:(UITableView*)tableView {
+  return 1;
+}
+
 - (UITableViewCell*)tableView:(UITableView*)tableView
         cellForRowAtIndexPath:(NSIndexPath*)indexPath {
   TableViewTextCell* cell =
@@ -148,11 +161,21 @@ CGFloat const kOptionsViewMargin = 17;
   cell.backgroundColor = [UIColor colorNamed:kSecondaryBackgroundColor];
   cell.userInteractionEnabled = YES;
   cell.textLabel.text = title;
+  cell.isAccessibilityElement = YES;
+  cell.accessibilityLabel = cell.textLabel.text;
+  cell.accessibilityTraits =
+      [self accessibilityTraitsForButton:/*selected=*/NO];
 
-  cell.accessoryView = [[UIImageView alloc]
-      initWithImage:DefaultSymbolTemplateWithPointSize(
-                        kCircleSymbol, kSymbolAccessoryPointSize)];
+  cell.accessoryView =
+      [[UIImageView alloc] initWithImage:DefaultSymbolTemplateWithPointSize(
+                                             kCircleSymbol, kRadioButtonSize)];
   cell.accessoryView.tintColor = [UIColor colorNamed:kGrey500Color];
+
+  // Make separator invisible on second cell.
+  if (indexPath.row > 0) {
+    cell.separatorInset =
+        UIEdgeInsetsMake(0.f, tableView.frame.size.width, 0.f, 0.f);
+  }
 
   return cell;
 }
@@ -175,6 +198,8 @@ CGFloat const kOptionsViewMargin = 17;
   cell.accessoryView = [[UIImageView alloc] initWithImage:icon];
   cell.accessoryView.tintColor = [UIColor colorNamed:kBlueColor];
   [self updateButtonForState:UIControlStateNormal];
+  cell.accessibilityTraits =
+      [self accessibilityTraitsForButton:/*selected=*/YES];
 }
 
 - (void)tableView:(UITableView*)tableView
@@ -184,6 +209,8 @@ CGFloat const kOptionsViewMargin = 17;
       initWithImage:DefaultSymbolTemplateWithPointSize(
                         kCircleSymbol, kSymbolAccessoryPointSize)];
   cell.accessoryView.tintColor = [UIColor colorNamed:kGrey500Color];
+  cell.accessibilityTraits =
+      [self accessibilityTraitsForButton:/*selected=*/NO];
 }
 
 #pragma mark - Private
@@ -193,7 +220,7 @@ CGFloat const kOptionsViewMargin = 17;
   _tableView = [[UITableView alloc] initWithFrame:CGRectZero
                                             style:UITableViewStylePlain];
   _tableView.layer.cornerRadius = kTableViewCornerRadius;
-  _tableView.estimatedRowHeight = kTableViewEstimatedRowHeight;
+  _tableView.estimatedRowHeight = UITableViewAutomaticDimension;
   _tableView.scrollEnabled = NO;
   _tableView.showsVerticalScrollIndicator = NO;
   _tableView.delegate = self;
@@ -203,11 +230,9 @@ CGFloat const kOptionsViewMargin = 17;
   _tableView.separatorInset = UIEdgeInsetsZero;
   [_tableView registerClass:TableViewTextCell.class
       forCellReuseIdentifier:@"cell"];
-
-  [NSLayoutConstraint activateConstraints:@[
-    [_tableView.heightAnchor
-        constraintEqualToConstant:kTableViewEstimatedRowHeight * 2],
-  ]];
+  _optionsViewHeightConstraint =
+      [_tableView.heightAnchor constraintEqualToConstant:0];
+  _optionsViewHeightConstraint.active = YES;
 
   return _tableView;
 }
@@ -219,15 +244,34 @@ CGFloat const kOptionsViewMargin = 17;
   UIButton* button = self.primaryActionButton;
   if (state == UIControlStateDisabled) {
     button.userInteractionEnabled = NO;
-    [button setBackgroundColor:[UIColor colorNamed:kDisabledTintColor]];
-    [button setTitleColor:[UIColor colorNamed:kTextPrimaryColor]
-                 forState:UIControlStateDisabled];
+    [button setBackgroundColor:[UIColor colorNamed:kGrey200Color]];
+    [button setTitleColor:[UIColor colorNamed:kGrey600Color]
+                 forState:UIControlStateNormal];
   } else if (state == UIControlStateNormal) {
     button.userInteractionEnabled = YES;
     [button setBackgroundColor:[UIColor colorNamed:kBlueColor]];
     [button setTitleColor:[UIColor colorNamed:kBackgroundColor]
                  forState:UIControlStateNormal];
   }
+}
+
+// Updates the optionsView's height constraint.
+- (void)updateOptionsViewHeightConstraint {
+  CGFloat totalCellHeight = 0;
+  for (UITableViewCell* cell in _tableView.visibleCells) {
+    totalCellHeight += cell.frame.size.height;
+  }
+  _optionsViewHeightConstraint.constant = totalCellHeight;
+}
+
+// Returns the accessibility traits for the radio button options. `selected`
+// should be true if the radio button is selected.
+- (UIAccessibilityTraits)accessibilityTraitsForButton:(BOOL)selected {
+  UIAccessibilityTraits accessibilityTraits = UIAccessibilityTraitButton;
+  if (selected) {
+    accessibilityTraits |= UIAccessibilityTraitSelected;
+  }
+  return accessibilityTraits;
 }
 
 @end

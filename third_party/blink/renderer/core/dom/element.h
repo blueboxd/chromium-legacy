@@ -79,7 +79,6 @@ class ContainerQueryEvaluator;
 class CSSPropertyName;
 class CSSPropertyValueSet;
 class CSSStyleDeclaration;
-class CSSToggleMap;
 class CustomElementDefinition;
 class CustomElementRegistry;
 class DOMRect;
@@ -121,6 +120,8 @@ class StylePropertyMap;
 class StylePropertyMapReadOnly;
 class StyleRecalcContext;
 class StyleRequest;
+class StyleScopeData;
+class TextVisitor;
 class V8UnionBooleanOrScrollIntoViewOptions;
 class ComputedStyleBuilder;
 class StyleAdjuster;
@@ -399,8 +400,12 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   gfx::RectF GetBoundingClientRectNoLifecycleUpdate() const;
   DOMRect* getBoundingClientRect();
 
+  // Call the NoLifecycleUpdate variants if you are sure that the lifcycle is
+  // already updated to at least pre-paint clean.
   const AtomicString& computedRole();
+  const AtomicString& ComputedRoleNoLifecycleUpdate();
   String computedName();
+  String ComputedNameNoLifecycleUpdate();
 
   AccessibleNode* ExistingAccessibleNode() const;
   AccessibleNode* accessibleNode();
@@ -571,8 +576,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // attributes in a start tag were added to the element.
   virtual void ParseAttribute(const AttributeModificationParams&);
 
-  void DefaultEventHandler(Event&) override;
-
   virtual bool HasLegalLinkAttribute(const QualifiedName&) const;
 
   // Only called by the parser immediately after element construction.
@@ -598,6 +601,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // NOTE: This shadows Node::GetComputedStyle().
   // The definition is in node_computed_style.h.
   inline const ComputedStyle* GetComputedStyle() const;
+  inline const ComputedStyle& ComputedStyleRef() const;
 
   using Node::DetachLayoutTree;
   void AttachLayoutTree(AttachContext&) override;
@@ -770,7 +774,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   virtual bool IsLiveLink() const { return false; }
   KURL HrefURL() const;
 
-  KURL GetURLAttribute(const QualifiedName&) const;
+  String GetURLAttribute(const QualifiedName&) const;
+  KURL GetURLAttributeAsKURL(const QualifiedName&) const;
 
   KURL GetNonEmptyURLAttribute(const QualifiedName&) const;
 
@@ -797,6 +802,13 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void Focus();
   void Focus(const FocusOptions*);
 
+  virtual void SetFocused(bool received, mojom::blink::FocusType);
+  void SetHasFocusWithinUpToAncestor(bool, Element* ancestor);
+  void FocusStateChanged();
+  void FocusVisibleStateChanged();
+  void FocusWithinStateChanged();
+  void SetDragged(bool) override;
+
   void UpdateSelectionOnFocus(SelectionBehaviorOnFocus);
   // This function is called after SetFocused(true) before dispatching 'focus'
   // event, or is called just after a layout after changing <input> type.
@@ -808,7 +820,11 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // focusable (using the mouse). This method can be called when layout is not
   // clean, but the method might trigger a lifecycle update in that case. This
   // method will not trigger a lifecycle update if layout is already clean.
-  virtual bool IsFocusable() const;
+  // If the |disallow_layout_updates_for_accessibility_only| argument is true,
+  // which should only be used by a11y code, layout updates will never be
+  // performed.
+  virtual bool IsFocusable(
+      bool disallow_layout_updates_for_accessibility_only = false) const;
 
   // IsKeyboardFocusable is true for the subset of mouse focusable elements (for
   // which IsFocusable() is true) that are in the tab cycle. This method
@@ -847,8 +863,12 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   // The implementations of |innerText()| and |GetInnerTextWithoutUpdate()| are
   // found in "element_inner_text.cc".
-  String GetInnerTextWithoutUpdate();  // Avoids layout update.
-  String innerText();
+  // Avoids layout update.
+  String GetInnerTextWithoutUpdate(TextVisitor* visitor = nullptr);
+  // `visitor` is called as each node is considered. Note that this is not
+  // called for nodes that are not considered in generating the text. For
+  // example, all descendants of hidden nodes are not considered.
+  String innerText(TextVisitor* visitor = nullptr);
   String outerText();
 
   Element* insertAdjacentElement(const String& where,
@@ -1133,6 +1153,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   ContainerQueryEvaluator& EnsureContainerQueryEvaluator();
   bool SkippedContainerStyleRecalc() const;
 
+  StyleScopeData& EnsureStyleScopeData();
+  StyleScopeData* GetStyleScopeData() const;
+
   // See PostStyleUpdateScope::PseudoData::AddPendingBackdrop
   void ApplyPendingBackdropPseudoElementUpdate();
 
@@ -1215,11 +1238,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   bool IsDocumentElement() const;
 
   bool IsReplacedElementRespectingCSSOverflow() const;
-
-  CSSToggleMap* toggles() { return &EnsureToggleMap(); }
-
-  CSSToggleMap* GetToggleMap();
-  CSSToggleMap& EnsureToggleMap();
 
   void RemovePopoverData();
   PopoverData* EnsurePopoverData();
@@ -1315,6 +1333,11 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // Similar to IsFocusableStyle, except that it will ensure that any deferred
   // work to create layout objects is completed (e.g. in display-locked trees).
   bool IsFocusableStyleAfterUpdate() const;
+  // This method should only be used by a11y code. It performs roughly the same
+  // focusability check as IsFocusableStyle(), but will never trigger a layout
+  // update. In some cases (e.g. in the presence of display locked trees),
+  // stale layout information may be used.
+  bool IsFocusableStyleNeverLayoutForAccessibilityOnly() const;
 
   // Is the node descendant of this in something clickable/activatable, such
   // that we shouldn't handle events targeting it?

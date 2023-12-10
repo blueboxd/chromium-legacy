@@ -26,6 +26,19 @@
 
 namespace content {
 
+namespace {
+
+BrowserContext* GetBrowserContext(uint32_t render_process_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderProcessHost* host = RenderProcessHost::FromID(render_process_id);
+  if (host) {
+    return host->GetBrowserContext();
+  }
+  return nullptr;
+}
+
+}  // namespace
+
 VideoCaptureHost::RenderProcessHostDelegate::~RenderProcessHostDelegate() =
     default;
 
@@ -43,33 +56,43 @@ class VideoCaptureHost::RenderProcessHostDelegateImpl
       const RenderProcessHostDelegateImpl&) = delete;
 
   ~RenderProcessHostDelegateImpl() override {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
   }
 
   // Helper functions that are used for notifying Browser-side RenderProcessHost
   // if renderer is currently consuming video capture. This information is then
   // used to determine if the renderer process should be backgrounded or not.
   void NotifyStreamAdded() override {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    RenderProcessHost* host = RenderProcessHost::FromID(render_process_id_);
-    if (host)
-      host->OnMediaStreamAdded();
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(
+                       [](uint32_t render_process_id) {
+                         RenderProcessHost* host =
+                             RenderProcessHost::FromID(render_process_id);
+                         if (host) {
+                           host->OnMediaStreamAdded();
+                         }
+                       },
+                       render_process_id_));
   }
 
   void NotifyStreamRemoved() override {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    RenderProcessHost* host = RenderProcessHost::FromID(render_process_id_);
-    if (host)
-      host->OnMediaStreamRemoved();
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(
+                       [](uint32_t render_process_id) {
+                         RenderProcessHost* host =
+                             RenderProcessHost::FromID(render_process_id);
+                         if (host) {
+                           host->OnMediaStreamRemoved();
+                         }
+                       },
+                       render_process_id_));
   }
 
-  content::BrowserContext* GetBrowserContext() override {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    RenderProcessHost* host = RenderProcessHost::FromID(render_process_id_);
-    if (host) {
-      return host->GetBrowserContext();
-    }
-    return nullptr;
+  uint32_t GetRenderProcessId() const override {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    return render_process_id_;
   }
 
  private:
@@ -123,8 +146,6 @@ VideoCaptureHost::~VideoCaptureHost() {
   }
 
   NotifyAllStreamsRemoved();
-  GetUIThreadTaskRunner({})->DeleteSoon(
-      FROM_HERE, render_process_host_delegate_.release());
 }
 
 void VideoCaptureHost::OnError(const VideoCaptureControllerID& controller_id,
@@ -277,15 +298,10 @@ void VideoCaptureHost::Start(
   }
 
   controllers_[controller_id] = base::WeakPtr<VideoCaptureController>();
-  // base::Unretained() usage is safe because `render_process_host_delegate_`
-  // is destroyed on UI thread via `DeleteSoon()` in `~VideoCaptureHost`. Since
-  // this line can't run after the destructor the UI thread
-  // `SequencedTaskRunner` guarantees that `render_process_host_delegate_` will
-  // live long enough for this task to execute.
   GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
       FROM_HERE,
-      base::BindOnce(&RenderProcessHostDelegate::GetBrowserContext,
-                     base::Unretained(render_process_host_delegate_.get())),
+      base::BindOnce(&GetBrowserContext,
+                     render_process_host_delegate_->GetRenderProcessId()),
       base::BindOnce(&VideoCaptureHost::ConnectClient,
                      weak_factory_.GetWeakPtr(), session_id, params,
                      controller_id,
@@ -420,8 +436,9 @@ void VideoCaptureHost::GetDeviceFormatsInUse(
   std::move(callback).Run(formats_in_use);
 }
 
-void VideoCaptureHost::OnNewCropVersion(const base::UnguessableToken& device_id,
-                                        uint32_t crop_version) {
+void VideoCaptureHost::OnNewSubCaptureTargetVersion(
+    const base::UnguessableToken& device_id,
+    uint32_t sub_capture_target_version) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   const VideoCaptureControllerID controller_id(device_id);
@@ -430,7 +447,8 @@ void VideoCaptureHost::OnNewCropVersion(const base::UnguessableToken& device_id,
     return;
   }
 
-  device_id_to_observer_map_[controller_id]->OnNewCropVersion(crop_version);
+  device_id_to_observer_map_[controller_id]->OnNewSubCaptureTargetVersion(
+      sub_capture_target_version);
 }
 
 void VideoCaptureHost::OnLog(const base::UnguessableToken& device_id,
@@ -529,12 +547,7 @@ void VideoCaptureHost::DeleteVideoCaptureController(
 void VideoCaptureHost::NotifyStreamAdded() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ++number_of_active_streams_;
-  // base::Unretained() usage is safe because |render_process_host_delegate_|
-  // is destroyed on UI thread.
-  GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(&RenderProcessHostDelegate::NotifyStreamAdded,
-                     base::Unretained(render_process_host_delegate_.get())));
+  render_process_host_delegate_->NotifyStreamAdded();
 }
 
 void VideoCaptureHost::NotifyStreamRemoved() {
@@ -546,12 +559,7 @@ void VideoCaptureHost::NotifyStreamRemoved() {
   if (number_of_active_streams_ == 0)
     return;
   --number_of_active_streams_;
-  // base::Unretained() usage is safe because |render_process_host_delegate_| is
-  // destroyed on UI thread.
-  GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(&RenderProcessHostDelegate::NotifyStreamRemoved,
-                     base::Unretained(render_process_host_delegate_.get())));
+  render_process_host_delegate_->NotifyStreamRemoved();
 }
 
 void VideoCaptureHost::NotifyAllStreamsRemoved() {

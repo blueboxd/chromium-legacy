@@ -117,6 +117,7 @@
 #include "components/viz/common/traced_value.h"
 #include "components/viz/common/transition_utils.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/client/client_shared_image.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
@@ -2487,6 +2488,16 @@ absl::optional<LayerTreeHostImpl::SubmitInfo> LayerTreeHostImpl::DrawLayers(
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NoDamage", TRACE_EVENT_SCOPE_THREAD);
     active_tree()->BreakSwapPromises(SwapPromise::SWAP_FAILS);
     active_tree()->ResetAllChangeTracking();
+
+    // Drop pending event metrics for UI when the frame has no damage because
+    // it could leave the event metrics pending indefinitely and also breaks the
+    // association between input events and screen updates.
+    // See b/297940877.
+    if (settings_.is_layer_tree_for_ui) {
+      std::ignore = active_tree()->TakeEventsMetrics();
+      std::ignore = events_metrics_manager_.TakeSavedEventsMetrics();
+    }
+
     return absl::nullopt;
   }
 
@@ -4629,10 +4640,12 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
       viz::RasterContextProvider* context_provider =
           layer_tree_frame_sink_->context_provider();
       auto* sii = context_provider->SharedImageInterface();
-      mailbox = sii->CreateSharedImage(
+      auto client_shared_image = sii->CreateSharedImage(
           format, upload_size, color_space, kTopLeft_GrSurfaceOrigin,
           kPremul_SkAlphaType, shared_image_usage, "LayerTreeHostUIResource",
           base::span<const uint8_t>(bitmap.GetPixels(), bitmap.SizeInBytes()));
+      CHECK(client_shared_image);
+      mailbox = client_shared_image->mailbox();
     } else {
       DCHECK_EQ(bitmap.GetFormat(), UIResourceBitmap::RGBA8);
       SkImageInfo src_info =
@@ -4696,12 +4709,14 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
       viz::RasterContextProvider* context_provider =
           layer_tree_frame_sink_->context_provider();
       auto* sii = context_provider->SharedImageInterface();
-      mailbox = sii->CreateSharedImage(
+      auto client_shared_image = sii->CreateSharedImage(
           format, upload_size, color_space, kTopLeft_GrSurfaceOrigin,
           kPremul_SkAlphaType, shared_image_usage, "LayerTreeHostUIResource",
           base::span<const uint8_t>(
               reinterpret_cast<const uint8_t*>(pixmap.addr()),
               pixmap.computeByteSize()));
+      CHECK(client_shared_image);
+      mailbox = client_shared_image->mailbox();
     }
   }
 

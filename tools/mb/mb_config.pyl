@@ -34,7 +34,6 @@
       'chromeos-brya-chrome-skylab': 'chromeos_brya_include_unwind_tables_official_skylab_reclient',
       'chromeos-eve-arc-r-chrome': 'chromeos_eve-arc-r_include_unwind_tables_official_reclient',
       'chromeos-eve-chrome': 'chromeos_eve_include_unwind_tables_official_dchecks_reclient',
-      'chromeos-jacuzzi-chrome': 'chromeos_jacuzzi_include_unwind_tables_official_reclient',
       'chromeos-jacuzzi-chrome-skylab': 'chromeos_jacuzzi_include_unwind_tables_official_skylab_reclient',
       'chromeos-octopus-chrome': 'chromeos_octopus_include_unwind_tables_official_dchecks_reclient',
       'chromeos-octopus-chrome-skylab': 'chromeos_octopus_include_unwind_tables_official_skylab',
@@ -236,6 +235,7 @@
       'chromeos-amd64-generic-dbg': 'chromeos_amd64-generic_dbg_reclient',
       'chromeos-amd64-generic-lacros-dbg': 'chromeos_amd64-generic_lacros_dbg_reclient',
       'chromeos-amd64-generic-rel': 'chromeos_amd64-generic-vm_use_fake_dbus_clients_reclient',
+      'chromeos-amd64-generic-rel-renamed': 'chromeos_amd64-generic-vm_use_fake_dbus_clients_reclient',
       'chromeos-arm-generic-dbg': 'chromeos_arm-generic_dbg_reclient',
       'chromeos-arm-generic-rel': 'chromeos_arm-generic_reclient',
       'chromeos-arm64-generic-rel': 'chromeos_arm64-generic_dchecks_reclient',
@@ -251,8 +251,8 @@
       'linux-cfm-rel': 'linux_cfm_release_bot_reclient',
       'linux-chromeos-dbg': 'chromeos_with_codecs_debug_bot_reclient',
       'linux-chromeos-rel': 'chromeos_with_codecs_with_lacros_release_bot_reclient',
-      'linux-lacros-builder-rel': 'lacros_on_linux_release_bot_reclient',
-      'linux-lacros-dbg': 'lacros_on_linux_debug_bot_reclient',
+      'linux-lacros-builder-rel': 'lacros_on_linux_release_bot_reclient_with_cups',
+      'linux-lacros-dbg': 'lacros_on_linux_debug_bot_reclient_with_cups',
       'linux-lacros-tester-rel': 'lacros_on_linux_release_bot',
     },
 
@@ -287,8 +287,11 @@
       'ToTMac': 'clang_tot_minimal_symbols_shared_release',
       'ToTMac (dbg)': 'clang_tot_shared_debug',
       'ToTMacASan': 'asan_disable_nacl_clang_tot_minimal_symbols_static_release',
+      'ToTMacArm64': 'clang_tot_minimal_symbols_release_arm64',
+      'ToTMacArm64PGO': 'clang_tot_official_pgo_arm64',
       'ToTMacCoverage': 'clang_tot_coverage_minimal_symbols_release',
       'ToTMacOfficial': 'mac_clang_tot_official',
+      'ToTMacPGO': 'clang_tot_official_pgo_x64',
       'ToTWin': 'clang_tot_minimal_symbols_static_release_x86',
       'ToTWin(dbg)': 'clang_tot_shared_debug_x86',
       'ToTWin(dll)': 'clang_tot_minimal_symbols_shared_release_x86_dcheck',
@@ -516,22 +519,22 @@
       'linux-rel-no-external-ip': 'gpu_tests_release_bot_do_typecheck_reclient',
       'linux-upload-perfetto': 'release_bot_perfetto_zlib_reclient',
       'linux-wpt-content-shell-asan-fyi-rel': 'asan_lsan_release_trybot_reclient',
-      'linux-wpt-content-shell-fyi-rel': 'release_trybot_minimal_symbols_reclient',
-      'linux-wpt-content-shell-leak-detection': 'release_trybot_minimal_symbols_reclient',
-      'linux-wpt-fyi-rel': 'release_trybot_minimal_symbols_reclient',
+      'linux-wpt-content-shell-fyi-rel': 'release_bot_blink_minimal_symbols_reclient',
+      'linux-wpt-content-shell-leak-detection': 'release_bot_blink_minimal_symbols_reclient',
+      'linux-wpt-fyi-rel': 'release_bot_blink_minimal_symbols_reclient',
       'linux-wpt-identity-fyi-rel': 'release_bot_minimal_symbols_reclient',
       'linux-wpt-input-fyi-rel': 'release_bot_minimal_symbols_reclient',
       'mac-cr23-rel': 'release_bot_minimal_symbols_reclient',
       'mac-osxbeta-rel': 'gpu_tests_debug_trybot_reclient',
       'mac-perfetto-rel': 'perfetto_release_bot_reclient',
       'mac-upload-perfetto': 'release_bot_perfetto_zlib_reclient',
-      'mac10.15-wpt-content-shell-fyi-rel': 'release_trybot_minimal_symbols_reclient',
-      'mac11-arm64-wpt-content-shell-fyi-rel': 'mac_arm64_release_bot_reclient',
-      'mac11-wpt-content-shell-fyi-rel': 'release_trybot_minimal_symbols_reclient',
-      'mac12-arm64-wpt-content-shell-fyi-rel': 'mac_arm64_release_bot_reclient',
-      'mac12-wpt-content-shell-fyi-rel': 'release_trybot_minimal_symbols_reclient',
-      'mac13-arm64-wpt-content-shell-fyi-rel': 'mac_arm64_release_bot_reclient',
-      'mac13-wpt-content-shell-fyi-rel': 'release_trybot_minimal_symbols_reclient',
+      'mac10.15-wpt-content-shell-fyi-rel': 'release_bot_blink_minimal_symbols_reclient',
+      'mac11-arm64-wpt-content-shell-fyi-rel': 'release_bot_blink_arm64_minimal_symbols_reclient',
+      'mac11-wpt-content-shell-fyi-rel': 'release_bot_blink_minimal_symbols_reclient',
+      'mac12-arm64-wpt-content-shell-fyi-rel': 'release_bot_blink_arm64_minimal_symbols_reclient',
+      'mac12-wpt-content-shell-fyi-rel': 'release_bot_blink_minimal_symbols_reclient',
+      'mac13-arm64-wpt-content-shell-fyi-rel': 'release_bot_blink_arm64_minimal_symbols_reclient',
+      'mac13-wpt-content-shell-fyi-rel': 'release_bot_blink_minimal_symbols_reclient',
       'win-annotator-rel': 'release_bot_reclient',
       'win-celab-builder-rel': 'release_bot_minimal_symbols_reclient',
       'win-cr23-rel': 'release_bot_minimal_symbols_reclient',
@@ -539,8 +542,8 @@
       'win-perfetto-rel': 'perfetto_release_bot_reclient',
       'win-upload-perfetto': 'release_bot_perfetto_zlib_reclient',
       'win10-rel-no-external-ip': 'gpu_tests_release_bot_minimal_symbols_reclient',
-      'win10-wpt-content-shell-fyi-rel': 'release_trybot_minimal_symbols_reclient',
-      'win11-wpt-content-shell-fyi-rel': 'release_trybot_minimal_symbols_reclient',
+      'win10-wpt-content-shell-fyi-rel': 'release_bot_blink_minimal_symbols_reclient',
+      'win11-wpt-content-shell-fyi-rel': 'release_bot_blink_minimal_symbols_reclient',
       'win32-archive-rel-goma-rbe-canary': 'release_bot_x86_minimal_symbols',
       'win32-archive-rel-goma-rbe-latest': 'release_bot_x86_minimal_symbols',
       'win32-arm64-rel': 'win32_arm64_release_bot_reclient',
@@ -553,7 +556,6 @@
       'Chromium Mac Goma RBE Staging': 'release_bot',
       'Chromium Mac Goma RBE Staging (dbg)': 'debug_bot',
 
-      'Chromium Win Goma RBE ATS Staging': 'release_bot_x86_minimal_symbols',
       'Chromium Win Goma RBE Staging': 'release_bot_x86_minimal_symbols',
 
       'chromeos-amd64-generic-rel-goma-rbe-staging': 'chromeos_amd64-generic_use_fake_dbus_clients_vm_optimized_goma',
@@ -565,9 +567,7 @@
       'Mac Builder (dbg) Goma RBE Canary (clobber)': 'gpu_tests_debug_bot',
       'Mac M1 Builder (dbg) Goma RBE Canary (clobber)': 'gpu_tests_debug_bot_arm64',
 
-      'Win Builder (dbg) Goma RBE ATS Canary': 'gpu_tests_debug_bot_x86_no_symbols',
       'Win Builder (dbg) Goma RBE Canary': 'gpu_tests_debug_bot_x86_no_symbols',
-      'Win Builder Goma RBE ATS Canary': 'gpu_tests_release_bot_x86_minimal_symbols',
       'Win Builder Goma RBE Canary': 'gpu_tests_release_bot_x86_minimal_symbols',
 
       'chromeos-amd64-generic-rel-goma-rbe-canary': 'chromeos_amd64-generic_use_fake_dbus_clients_vm_optimized_goma',
@@ -717,7 +717,6 @@
       'android_arm64-cfi-builder-perf-fyi': 'official_reclient_minimal_symbols_android_thin_lto_opt_arm64',
       'chromeos-kevin-builder-perf-fyi': 'chromeos_kevin_include_unwind_tables_official_reclient',
       'fuchsia-builder-perf-arm64': 'official_reclient_fuchsia_arm64_perf',
-      'fuchsia-builder-perf-x64': 'official_reclient_fuchsia_x64_perf',
     },
 
     'chromium.perf.pinpoint': {
@@ -925,6 +924,7 @@
       'chromeos-betty-pi-arc-chrome-dchecks': 'chromeos_betty-pi-arc_dchecks_reclient',
       'chromeos-betty-pi-arc-finch-smoke-chrome': 'chromeos_betty-pi-arc_dchecks_reclient',
       'chromeos-brya-chrome-dchecks-skylab': 'chromeos_brya_include_unwind_tables_official_dchecks_skylab_reclient',
+      'chromeos-jacuzzi-chrome': 'chromeos_jacuzzi_include_unwind_tables_official_reclient',
       'chromeos-jacuzzi-chrome-dchecks-skylab': 'chromeos_jacuzzi_include_unwind_tables_official_dchecks_skylab_reclient',
       'chromeos-octopus-chrome-skylab-fyi': 'chromeos_octopus_include_unwind_tables_official_skylab_reclient',
       'chromeos-trogdor-chrome-skylab-fyi': 'chromeos_trogdor_include_unwind_tables_official_skylab_reclient',
@@ -1077,6 +1077,7 @@
       'android-cronet-riscv64-rel': 'android_cronet_release_bot_minimal_symbols_riscv64_reclient',
       'android-cronet-x64-dbg-12-tests': 'android_cronet_debug_static_bot_x64_reclient',
       'android-cronet-x64-dbg-13-tests': 'android_cronet_debug_static_bot_x64_reclient',
+      'android-cronet-x64-dbg-14-tests': 'android_cronet_debug_static_bot_x64_reclient',
       'android-cronet-x86-dbg': 'android_cronet_debug_static_bot_x86_reclient',
       'android-cronet-x86-dbg-10-tests': 'android_cronet_debug_static_bot_x86_reclient_use_dummy_lastchange',
       'android-cronet-x86-dbg-11-tests': 'android_cronet_debug_static_bot_x86_reclient',
@@ -1149,8 +1150,10 @@
       'chromeos-amd64-generic-dbg': 'chromeos_amd64-generic_dbg_reclient_use_dummy_lastchange',
       'chromeos-amd64-generic-lacros-dbg': 'chromeos_amd64-generic_lacros_dbg_reclient',
       'chromeos-amd64-generic-rel': 'chromeos_amd64-generic_use_fake_dbus_clients_vm_optimized_dchecks_reclient',
+      'chromeos-amd64-generic-rel-gtest': 'chromeos_amd64-generic_use_fake_dbus_clients_vm_optimized_dchecks_reclient',
+      'chromeos-amd64-generic-rel-renamed': 'chromeos_amd64-generic_use_fake_dbus_clients_vm_optimized_dchecks_reclient',
       'chromeos-amd64-generic-siso-rel': 'chromeos_amd64-generic_use_fake_dbus_clients_vm_optimized_dchecks_reclient',
-      'chromeos-arm-generic-dbg': 'chromeos_arm-generic_dbg_try_reclient',
+      'chromeos-arm-generic-dbg': 'chromeos_arm-generic_dbg_reclient',
       'chromeos-arm-generic-rel': 'chromeos_arm-generic_dcheck_always_on_reclient',
       'chromeos-arm64-generic-rel': 'chromeos_arm64-generic_dchecks_reclient',
       'chromeos-jacuzzi-rel': 'chromeos_jacuzzi_dchecks_reclient',
@@ -1158,6 +1161,8 @@
       'gpu-fyi-try-chromeos-amd64-generic': 'gpu_tests_chromeos_amd64_release_trybot_dcheck_off_no_symbols_reclient',
       'lacros-amd64-generic-rel': 'chromeos_amd64-generic_lacros_rel_dchecks_skylab_reclient_use_dummy_lastchange',
       'lacros-amd64-generic-rel-non-skylab': 'chromeos_amd64-generic_lacros_rel_dchecks_reclient',
+      # TODO (crbug.com/1287228): Remove when orchestrator is verified
+      'lacros-amd64-generic-rel-orchestrator': 'chromeos_amd64-generic_lacros_rel_dchecks_skylab_reclient_use_dummy_lastchange',
       'lacros-arm-generic-rel': 'chromeos_arm-generic_lacros_rel_dchecks_reclient',
       'lacros-arm-generic-rel-skylab': 'chromeos_arm-generic_lacros_rel_skylab_reclient',
       'lacros-arm64-generic-rel': 'chromeos_arm64-generic_lacros_rel_dchecks_reclient',
@@ -1169,8 +1174,8 @@
       'linux-chromeos-dbg': 'chromeos_with_codecs_debug_trybot_reclient',
       'linux-chromeos-inverse-fieldtrials-fyi-rel': 'chromeos_with_codecs_release_trybot_invert_fieldtrials_reclient',
       'linux-chromeos-rel': 'chromeos_with_codecs_release_trybot_code_coverage_reclient',
-      'linux-lacros-dbg': 'lacros_on_linux_debug_bot_reclient',
-      'linux-lacros-rel': 'lacros_on_linux_release_trybot_reclient_code_coverage',
+      'linux-lacros-dbg': 'lacros_on_linux_debug_bot_reclient_with_cups',
+      'linux-lacros-rel': 'lacros_on_linux_release_trybot_reclient_code_coverage_with_cups',
     },
 
     'tryserver.chromium.codesearch': {
@@ -1311,9 +1316,9 @@
       'linux-wayland-siso-rel': 'gpu_tests_wayland_release_trybot_no_symbols_use_dummy_lastchange_code_coverage_reclient',
       'linux-webkit-asan-rel': 'asan_lsan_release_bot_blink',
       'linux-webkit-msan-rel': 'msan_release_bot_reclient',
-      'linux-wpt-content-shell-fyi-rel': 'release_trybot_reclient',
-      'linux-wpt-content-shell-leak-detection': 'release_trybot_reclient',
-      'linux-wpt-fyi-rel': 'release_trybot_reclient',
+      'linux-wpt-content-shell-fyi-rel': 'release_bot_blink_minimal_symbols_reclient',
+      'linux-wpt-content-shell-leak-detection': 'release_bot_blink_minimal_symbols_reclient',
+      'linux-wpt-fyi-rel': 'release_bot_blink_minimal_symbols_reclient',
       'linux-wpt-identity-fyi-rel': 'release_trybot_reclient',
       'linux-wpt-input-fyi-rel': 'release_trybot_reclient',
       'linux-x64-castos': 'cast_release_trybot_reclient',
@@ -1394,19 +1399,19 @@
       'mac-perfetto-rel': 'perfetto_release_trybot_reclient',
       'mac-rel': 'gpu_tests_release_trybot_no_symbols_mac_code_coverage_x64_reclient',
       'mac-siso-rel': 'gpu_tests_release_trybot_no_symbols_mac_code_coverage_x64_reclient',
-      'mac10.15-wpt-content-shell-fyi-rel': 'release_trybot_minimal_symbols_reclient',
+      'mac10.15-wpt-content-shell-fyi-rel': 'release_bot_blink_minimal_symbols_reclient',
       'mac11-arm64-rel': 'mac_arm64_gpu_tests_release_trybot_no_symbols_reclient',
-      'mac11-arm64-wpt-content-shell-fyi-rel': 'mac_arm64_release_trybot_reclient',
-      'mac11-wpt-content-shell-fyi-rel': 'release_trybot_minimal_symbols_reclient',
+      'mac11-arm64-wpt-content-shell-fyi-rel': 'release_bot_blink_arm64_minimal_symbols_reclient',
+      'mac11-wpt-content-shell-fyi-rel': 'release_bot_blink_minimal_symbols_reclient',
       'mac12-arm64-rel': 'mac_arm64_gpu_tests_release_trybot_no_symbols_reclient',
-      'mac12-arm64-wpt-content-shell-fyi-rel': 'mac_arm64_release_trybot_reclient',
+      'mac12-arm64-wpt-content-shell-fyi-rel': 'release_bot_blink_arm64_minimal_symbols_reclient',
       'mac12-tests': 'release_trybot_reclient',
-      'mac12-wpt-content-shell-fyi-rel': 'release_trybot_minimal_symbols_reclient',
+      'mac12-wpt-content-shell-fyi-rel': 'release_bot_blink_minimal_symbols_reclient',
       'mac13-arm64-rel': 'mac_arm64_gpu_tests_release_trybot_no_symbols_reclient',
       'mac13-arm64-siso-rel': 'mac_arm64_gpu_tests_release_trybot_no_symbols_reclient',
-      'mac13-arm64-wpt-content-shell-fyi-rel': 'mac_arm64_release_trybot_reclient',
+      'mac13-arm64-wpt-content-shell-fyi-rel': 'release_bot_blink_arm64_minimal_symbols_reclient',
       'mac13-tests': 'release_trybot_reclient',
-      'mac13-wpt-content-shell-fyi-rel': 'release_trybot_minimal_symbols_reclient',
+      'mac13-wpt-content-shell-fyi-rel': 'release_bot_blink_minimal_symbols_reclient',
       'mac_chromium_10.15_rel_ng': 'release_trybot_no_nacl_reclient',
       'mac_chromium_11.0_rel_ng': 'release_trybot_reclient',
       'mac_chromium_asan_rel_ng': 'asan_dcheck_disable_nacl_release_bot_reclient',
@@ -1504,11 +1509,11 @@
       'win-rel': 'gpu_tests_release_trybot_resource_allowlisting_code_coverage_reclient',
       'win-siso-rel': 'gpu_tests_release_trybot_resource_allowlisting_code_coverage_reclient',
       'win10-code-coverage': 'clang_code_coverage_reclient',
-      'win10-wpt-content-shell-fyi-rel': 'release_trybot_reclient',
+      'win10-wpt-content-shell-fyi-rel': 'release_bot_blink_minimal_symbols_reclient',
       'win10_chromium_inverse_fieldtrials_x64_fyi_rel_ng': 'gpu_tests_release_trybot_resource_allowlisting_invert_fieldtrials',
       'win10_chromium_x64_dbg_ng': 'gpu_tests_debug_bot_reclient',
       'win10_chromium_x64_rel_ng_exp': 'release_trybot',
-      'win11-wpt-content-shell-fyi-rel': 'release_trybot_reclient',
+      'win11-wpt-content-shell-fyi-rel': 'release_bot_blink_minimal_symbols_reclient',
       'win11-x64-fyi-rel': 'gpu_tests_release_trybot_resource_allowlisting_code_coverage_reclient',
       'win32-clobber-rel': 'release_trybot_x86_reclient',
       'win_chromium_compile_dbg_ng': 'gpu_tests_debug_bot_x86_no_symbols_reclient_use_dummy_lastchange',
@@ -2254,11 +2259,6 @@
       'chromeos_device_reclient', 'arm-generic', 'debug', 'ozone_headless'
     ],
 
-    'chromeos_arm-generic_dbg_try_reclient': [
-      'chromeos_device_reclient', 'arm-generic', 'debug',
-      'also_build_lacros_chrome_for_architecture_arm', 'ozone_headless'
-    ],
-
     'chromeos_arm-generic_dcheck_always_on_reclient': [
       'chromeos_device_reclient', 'arm-generic', 'dcheck_always_on', 'ozone_headless', 'use_dummy_lastchange',
     ],
@@ -2398,6 +2398,7 @@
     ],
     'chromeos_jacuzzi_include_unwind_tables_official_dchecks_skylab_reclient': [
       'chromeos_device_reclient', 'jacuzzi', 'include_unwind_tables', 'official', 'dcheck_always_on', 'is_skylab',
+      'also_build_lacros_chrome_for_architecture_arm',
     ],
     'chromeos_jacuzzi_include_unwind_tables_official_reclient': [
       'chromeos_device_reclient', 'jacuzzi', 'include_unwind_tables', 'official',
@@ -2408,6 +2409,7 @@
     ],
     'chromeos_jacuzzi_include_unwind_tables_official_skylab_reclient': [
       'chromeos_device_reclient', 'jacuzzi', 'include_unwind_tables', 'official', 'is_skylab',
+      'also_build_lacros_chrome_for_architecture_arm',
     ],
 
     'chromeos_js_coverage_reclient': [
@@ -2459,9 +2461,11 @@
 
     'chromeos_trogdor_include_unwind_tables_official_skylab': [
       'chromeos_device', 'trogdor', 'include_unwind_tables', 'official', 'is_skylab',
+      'also_build_lacros_chrome_for_architecture_arm64',
     ],
     'chromeos_trogdor_include_unwind_tables_official_skylab_reclient': [
-      'chromeos_device_reclient', 'trogdor', 'include_unwind_tables', 'official', 'is_skylab', 'ozone_headless'
+      'chromeos_device_reclient', 'trogdor', 'include_unwind_tables', 'official', 'is_skylab', 'ozone_headless',
+      'also_build_lacros_chrome_for_architecture_arm64',
     ],
 
     'chromeos_volteer_include_unwind_tables_official_skylab': [
@@ -2474,11 +2478,11 @@
     ],
 
     'chromeos_with_codecs_debug_bot_reclient': [
-      'chromeos_with_codecs', 'debug_bot_reclient',
+      'chromeos_with_codecs', 'debug_bot_reclient', 'use_cups',
     ],
 
     'chromeos_with_codecs_debug_trybot_reclient': [
-      'chromeos_with_codecs', 'debug_bot_reclient', 'use_dummy_lastchange',
+      'chromeos_with_codecs', 'debug_bot_reclient', 'use_cups', 'use_dummy_lastchange',
     ],
 
     'chromeos_with_codecs_release_bot_coverage_reclient': [
@@ -2486,13 +2490,13 @@
     ],
 
     'chromeos_with_codecs_release_bot_reclient': [
-      'chromeos_with_codecs', 'release_bot_reclient',
+      'chromeos_with_codecs', 'release_bot_reclient', 'use_cups',
     ],
 
     # Keep in sync with chromeos_with_codecs_release_trybot_reclient_cxx17.
     'chromeos_with_codecs_release_trybot_code_coverage_reclient': [
       'chromeos_with_codecs', 'release_trybot_reclient', 'no_symbols', 'also_build_lacros_chrome',
-      'use_clang_coverage', 'partial_code_coverage_instrumentation',
+      'use_clang_coverage', 'use_cups', 'partial_code_coverage_instrumentation',
       'enable_dangling_raw_ptr_feature_flag', 'enable_backup_ref_ptr_feature_flag',
     ],
 
@@ -2504,7 +2508,7 @@
     ],
 
     'chromeos_with_codecs_release_trybot_invert_fieldtrials_reclient': [
-      'chromeos_with_codecs', 'release_trybot_reclient', 'no_symbols', 'invert_fieldtrials',
+      'chromeos_with_codecs', 'release_trybot_reclient', 'no_symbols', 'use_cups', 'invert_fieldtrials',
     ],
 
     'chromeos_with_codecs_release_trybot_reclient': [
@@ -2512,7 +2516,7 @@
     ],
 
     'chromeos_with_codecs_with_lacros_release_bot_reclient': [
-      'chromeos_with_codecs', 'release_bot_reclient', 'also_build_lacros_chrome'
+      'chromeos_with_codecs', 'release_bot_reclient', 'use_cups', 'also_build_lacros_chrome'
     ],
 
     'clang_code_coverage_ios_xctest_reclient': [
@@ -2545,6 +2549,10 @@
       'clang_tot', 'full_symbols', 'shared', 'release',
     ],
 
+    'clang_tot_minimal_symbols_release_arm64': [
+      'clang_tot', 'minimal_symbols', 'arm64', 'release',
+    ],
+
     'clang_tot_minimal_symbols_shared_release': [
       'clang_tot', 'minimal_symbols', 'shared', 'release',
     ],
@@ -2575,6 +2583,10 @@
 
     'clang_tot_official_pgo_arm64': [
       'clang_tot', 'official_optimize', 'no_symbols', 'pgo_phase_1', 'arm64',
+    ],
+
+    'clang_tot_official_pgo_x64': [
+      'clang_tot', 'official_optimize', 'no_symbols', 'pgo_phase_1', 'x64',
     ],
 
     'clang_tot_shared_debug': [
@@ -2618,7 +2630,7 @@
     ],
 
     'codesearch_gen_chromium_chromiumos_bot_reclient': [
-      'codesearch_reclient', 'chromeos',
+      'codesearch_reclient', 'chromeos', 'use_cups',
     ],
 
     'codesearch_gen_chromium_cronet_bot_reclient': [
@@ -2638,7 +2650,7 @@
     # Lacros uses different gn args to build for chromeOS device vs. Linux. For
     # simplicity, we only generate codesearch x-refs for lacros on Linux.
     'codesearch_gen_chromium_lacros_bot_reclient': [
-      'codesearch_reclient', 'lacros_on_linux',
+      'codesearch_reclient', 'lacros_on_linux', 'use_cups',
     ],
 
     'codesearch_gen_chromium_mac_bot_reclient': [
@@ -3159,12 +3171,20 @@
       'lacros_on_linux', 'debug_bot_reclient', 'also_build_ash_chrome',
     ],
 
+    'lacros_on_linux_debug_bot_reclient_with_cups': [
+      'lacros_on_linux', 'debug_bot_reclient', 'also_build_ash_chrome', 'use_cups',
+    ],
+
     'lacros_on_linux_release_bot': [
       'lacros_on_linux', 'release_bot', 'also_build_ash_chrome',
     ],
 
     'lacros_on_linux_release_bot_reclient': [
       'lacros_on_linux', 'release_bot_reclient', 'also_build_ash_chrome',
+    ],
+
+    'lacros_on_linux_release_bot_reclient_with_cups': [
+      'lacros_on_linux', 'release_bot_reclient', 'also_build_ash_chrome', 'use_cups',
     ],
 
     'lacros_on_linux_release_not_build_ash_bot_reclient': [
@@ -3175,8 +3195,8 @@
       'lacros_on_linux_release_trybot_reclient',
     ],
 
-    'lacros_on_linux_release_trybot_reclient_code_coverage': [
-      'lacros_on_linux_release_trybot_reclient', 'clang', 'use_clang_coverage', 'partial_code_coverage_instrumentation', 'use_dummy_lastchange',
+    'lacros_on_linux_release_trybot_reclient_code_coverage_with_cups': [
+      'lacros_on_linux_release_trybot_reclient', 'clang', 'use_clang_coverage', 'use_cups', 'partial_code_coverage_instrumentation', 'use_dummy_lastchange',
     ],
 
     'lacros_on_linux_tot_debug': [
@@ -3462,10 +3482,6 @@
 
     'official_reclient_fuchsia_arm64_perf': [
       'cast_receiver_size_optimized_internal', 'official', 'reclient', 'minimal_symbols', 'fuchsia', 'fuchsia_include_sd_images', 'arm64', 'ffmpeg_branding_chrome', 'proprietary_codecs', 'test_isolate_no_emulator',
-    ],
-
-    'official_reclient_fuchsia_x64_perf': [
-      'official', 'reclient', 'minimal_symbols', 'fuchsia', 'x64', 'ffmpeg_branding_chrome', 'proprietary_codecs', 'test_isolate_no_emulator',
     ],
 
     'official_reclient_linux_perf_pgo': [
@@ -3945,6 +3961,10 @@
 
     'also_build_lacros_chrome_for_architecture_arm': {
       'gn_args': 'also_build_lacros_chrome_for_architecture="arm"',
+    },
+
+    'also_build_lacros_chrome_for_architecture_arm64': {
+      'gn_args': 'also_build_lacros_chrome_for_architecture="arm64"',
     },
 
     'amd64-generic': {
@@ -4936,6 +4956,10 @@
 
     'use_clang_coverage': {
       'gn_args': 'use_clang_coverage=true',
+    },
+
+    'use_cups': {
+      'gn_args': 'use_cups=true',
     },
 
     # TODO(crbug.com/869348): Remove this if we set this by default or don't use

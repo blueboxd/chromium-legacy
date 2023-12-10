@@ -85,13 +85,13 @@
 #include "chrome/browser/ui/toolbar/chrome_labs_prefs.h"
 #include "chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_pref_names.h"
-#include "chrome/browser/ui/user_education/browser_feature_promo_storage_service.h"
 #include "chrome/browser/ui/webui/bookmarks/bookmark_prefs.h"
 #include "chrome/browser/ui/webui/flags/flags_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/policy/policy_ui.h"
 #include "chrome/browser/ui/webui/print_preview/policy_settings.h"
 #include "chrome/browser/updates/announcement_notification/announcement_notification_service.h"
+#include "chrome/browser/user_education/browser_feature_promo_storage_service.h"
 #include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 #include "chrome/browser/webauthn/webauthn_pref_names.h"
 #include "chrome/common/buildflags.h"
@@ -220,6 +220,7 @@
 #include "chrome/browser/ui/ash/projector/projector_app_client_impl.h"
 #include "chrome/browser/ui/webui/ash/edu_coexistence/edu_coexistence_login_handler.h"
 #include "chrome/browser/ui/webui/signin/ash/inline_login_handler_impl.h"
+#include "chromeos/ash/components/carrier_lock/carrier_lock_manager.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
@@ -432,7 +433,7 @@
 #include "chrome/browser/metrics/structured/chrome_structured_metrics_recorder.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_prefs.h"
 #include "chrome/browser/ui/webui/ash/login/enable_debugging_screen_handler.h"
-#include "chrome/browser/ui/webui/settings/ash/os_settings_ui.h"
+#include "chrome/browser/ui/webui/ash/settings/os_settings_ui.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector_chromeos.h"
 #include "chromeos/ash/components/audio/audio_devices_pref_handler_impl.h"
 #include "chromeos/ash/components/local_search_service/search_metrics_reporter.h"
@@ -935,12 +936,20 @@ const char kDownloadLastCompleteTime[] = "download.last_complete_time";
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const char kLastSuccessfulDomainPref[] = "android_sms.last_successful_domain";
 const char kShouldAttemptReenable[] = "android_sms.should_attempt_reenable";
+const char kAudioVolumePercent[] = "settings.audio.volume_percent";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Deprecated 10/2023.
 #if BUILDFLAG(IS_CHROMEOS)
 const char kSupportedLinksAppPrefsKey[] = "supported_links_infobar.apps";
 #endif  // BUILDFLAG(IS_CHROMEOS)
+
+// Deprecated 10/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+constexpr char kNightLightCachedLatitude[] = "ash.night_light.cached_latitude";
+constexpr char kNightLightCachedLongitude[] =
+    "ash.night_light.cached_longitude";
+#endif
 
 // Register local state used only for migration (clearing or moving to a new
 // key).
@@ -1319,6 +1328,7 @@ void RegisterProfilePrefsForMigration(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   registry->RegisterStringPref(kLastSuccessfulDomainPref, std::string());
   registry->RegisterBooleanPref(kShouldAttemptReenable, true);
+  registry->RegisterDoublePref(kAudioVolumePercent, 0);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   registry->RegisterTimePref(kDownloadLastCompleteTime, base::Time());
 
@@ -1326,6 +1336,12 @@ void RegisterProfilePrefsForMigration(
 #if BUILDFLAG(IS_CHROMEOS)
   registry->RegisterDictionaryPref(kSupportedLinksAppPrefsKey);
 #endif  // BUILDFLAG(IS_CHROMEOS)
+
+// Deprecated 10/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  registry->RegisterDoublePref(kNightLightCachedLatitude, 0.0);
+  registry->RegisterDoublePref(kNightLightCachedLongitude, 0.0);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void ClearSyncRequestedPrefAndMaybeMigrate(PrefService* profile_prefs) {
@@ -1466,6 +1482,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ChromeOSMetricsProvider::RegisterPrefs(registry);
   ash::ArcKioskAppManager::RegisterPrefs(registry);
   ash::AudioDevicesPrefHandlerImpl::RegisterPrefs(registry);
+  ash::carrier_lock::CarrierLockManager::RegisterLocalPrefs(registry);
   ash::cert_provisioning::RegisterLocalStatePrefs(registry);
   ash::CellularESimProfileHandlerImpl::RegisterLocalStatePrefs(registry);
   ash::ManagedCellularPrefHandler::RegisterLocalStatePrefs(registry);
@@ -1597,6 +1614,15 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 #if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
   SearchEngineChoiceService::RegisterLocalStatePrefs(registry);
+#endif
+
+  // Platform-specific and compile-time conditional individual preferences.
+  // If you have multiple preferences that should clearly be grouped together,
+  // please group them together into a helper function called above. Please
+  // keep this list alphabetized.
+
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
+  registry->RegisterBooleanPref(prefs::kOopPrintDriversAllowedByPolicy, true);
 #endif
 
   // This is intentionally last.
@@ -1820,6 +1846,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   policy::PolicyCertService::RegisterProfilePrefs(registry);
   quickoffice::RegisterProfilePrefs(registry);
   registry->RegisterBooleanPref(prefs::kDeskAPIThirdPartyAccessEnabled, false);
+  registry->RegisterBooleanPref(prefs::kDeskAPIDeskSaveAndShareEnabled, false);
   registry->RegisterListPref(prefs::kDeskAPIThirdPartyAllowlist);
   registry->RegisterBooleanPref(prefs::kInsightsExtensionEnabled, false);
   // By default showing Sync Consent is set to true. It can changed by policy.
@@ -1999,7 +2026,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   registry->RegisterTimePref(prefs::kDIPSTimerLastUpdate, base::Time());
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-  registry->RegisterBooleanPref(prefs::kAccessibilityPdfOcrAlwaysActive, false);
+  registry->RegisterBooleanPref(prefs::kAccessibilityPdfOcrAlwaysActive, true);
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -2007,10 +2034,17 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 #endif
 
   registry->RegisterBooleanPref(prefs::kBlockTruncatedCookies, true);
+  registry->RegisterBooleanPref(
+      prefs::kManagedPrivateNetworkAccessRestrictionsEnabled, false);
 
 #if BUILDFLAG(ENTERPRISE_DATA_CONTROLS)
   data_controls::RegisterProfilePrefs(registry);
 #endif  // BUILDFLAG(ENTERPRISE_DATA_CONTROLS)
+
+#if BUILDFLAG(IS_WIN)
+  registry->RegisterBooleanPref(prefs::kNativeHostsExecutablesLaunchDirectly,
+                                false);
+#endif  // BUILDFLAG(IS_WIN)
 }
 
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -2485,11 +2519,18 @@ void MigrateObsoleteProfilePrefs(PrefService* profile_prefs) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   profile_prefs->ClearPref(kLastSuccessfulDomainPref);
   profile_prefs->ClearPref(kShouldAttemptReenable);
+  profile_prefs->ClearPref(kAudioVolumePercent);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Added 10/2023.
 #if BUILDFLAG(IS_CHROMEOS)
   profile_prefs->ClearPref(kSupportedLinksAppPrefsKey);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Added 10/2023.
+  profile_prefs->ClearPref(kNightLightCachedLatitude);
+  profile_prefs->ClearPref(kNightLightCachedLongitude);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.

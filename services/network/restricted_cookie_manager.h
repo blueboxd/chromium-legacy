@@ -134,6 +134,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
                     const url::Origin& top_frame_origin,
                     bool has_storage_access,
                     mojom::CookieManagerGetOptionsPtr options,
+                    bool is_ad_tagged,
                     GetAllForUrlCallback callback) override;
 
   void SetCanonicalCookie(const net::CanonicalCookie& cookie,
@@ -164,6 +165,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
                         const url::Origin& top_frame_origin,
                         bool has_storage_access,
                         bool get_version_shared_memory,
+                        bool is_ad_tagged,
                         GetCookiesStringCallback callback) override;
   void CookiesEnabledFor(const GURL& url,
                          const net::SiteForCookies& site_for_cookies,
@@ -220,7 +222,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
       const GURL& url,
       const net::SiteForCookies& site_for_cookies,
       const url::Origin& top_frame_origin,
-      bool has_storage_access,
+      const url::Origin& isolated_top_frame_origin,
+      bool is_ad_tagged,
+      const net::CookieSettingOverrides& cookie_setting_overrides,
       const net::CookieOptions& net_options,
       mojom::CookieManagerGetOptionsPtr options,
       GetAllForUrlCallback callback,
@@ -229,12 +233,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
 
   // Reports the result of setting the cookie to |network_context_client_|, and
   // invokes the user callback.
-  void SetCanonicalCookieResult(const GURL& url,
-                                const net::SiteForCookies& site_for_cookies,
-                                const net::CanonicalCookie& cookie,
-                                const net::CookieOptions& net_options,
-                                SetCanonicalCookieCallback user_callback,
-                                net::CookieAccessResult access_result);
+  void SetCanonicalCookieResult(
+      const GURL& url,
+      const url::Origin& isolated_top_frame_origin,
+      const net::CookieSettingOverrides& cookie_setting_overrides,
+      const net::SiteForCookies& site_for_cookies,
+      const net::CanonicalCookie& cookie,
+      const net::CookieOptions& net_options,
+      SetCanonicalCookieCallback user_callback,
+      net::CookieAccessResult access_result);
 
   // Called when the Mojo pipe associated with a listener is closed.
   void RemoveChangeListener(Listener* listener);
@@ -280,7 +287,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
 
   // Computes the CookieSettingOverrides to be used by this instance.
   net::CookieSettingOverrides GetCookieSettingOverrides(
-      bool has_storage_access) const;
+      bool has_storage_access,
+      bool is_ad_tagged) const;
 
   void OnCookiesAccessed(network::mojom::CookieAccessDetailsPtr details);
 

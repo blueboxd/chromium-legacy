@@ -470,6 +470,38 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ads.InterestGroup.Auction.AdditionalBids.DecodeLatency"
+    units="ms" expires_after="2024-06-20">
+  <owner>orrb@google.com</owner>
+  <owner>privacy-sandbox-dev@chromium.org</owner>
+  <summary>
+    Latency of each successfully decoded additional bid. This includes
+    additional bids that were suppressed by negative targeting and those that
+    were sent for scoring, but not additional bids that encountered an error
+    during decoding.
+
+    See https://github.com/WICG/turtledove/blob/main/FLEDGE.md for the latest
+    version of the FLEDGE explainer.
+  </summary>
+</histogram>
+
+<histogram name="Ads.InterestGroup.Auction.AdditionalBids.Result"
+    enum="AdditionalBidResult" expires_after="2024-06-20">
+  <owner>orrb@google.com</owner>
+  <owner>privacy-sandbox-dev@chromium.org</owner>
+  <summary>
+    Result of the decoding of each additional bid. This includes both error
+    outcomes - additional bids rejected because, e.g., the base64 from the
+    Ad-Auction-Additional-Bid response header was invalid, or the JSON of the
+    signed additional bid couldn't be parsed - and non-error outcomes -
+    additional bids that were suppressed because of negative targeting, and
+    those that were sent for scoring.
+
+    See https://github.com/WICG/turtledove/blob/main/FLEDGE.md for the latest
+    version of the FLEDGE explainer.
+  </summary>
+</histogram>
+
 <histogram name="Ads.InterestGroup.Auction.BidFiltered" enum="Boolean"
     expires_after="2024-06-20">
   <owner>pauljensen@chromium.org</owner>
@@ -479,6 +511,44 @@ chromium-metrics-reviews@google.com.
     priorityVector whose sparse dot product with the browser generated
     prioritySignals was negative, indicating the generateBid() should not be
     invoked.
+
+    See https://github.com/WICG/turtledove/blob/main/FLEDGE.md for the latest
+    version of the FLEDGE explainer.
+  </summary>
+</histogram>
+
+<histogram name="Ads.InterestGroup.Auction.ConfigPromises.CriticalPathLatency"
+    units="ms" expires_after="2024-06-20">
+  <owner>orrb@chromium.org</owner>
+  <owner>privacy-sandbox-dev@chromium.org</owner>
+  <summary>
+    Time between the start of the BiddingAndScoring phase and when configs
+    promises are resolved. In a single-seller auction, this is only recorded if
+    the auction has config promises; in a multi-seller auction, this is only
+    recorded for component auctions and the top-level auction for those that
+    have config promises. In auctions for which the config promises are resolved
+    before the bidding and auction phase, a critical path latency of zero is
+    recorded. This shows how long additional bids would have had to wait for the
+    config promises to be resolved, since they couldn't be processed until the
+    BiddingAndScoring phase anyway.
+
+    See https://github.com/WICG/turtledove/blob/main/FLEDGE.md for the latest
+    version of the FLEDGE explainer.
+  </summary>
+</histogram>
+
+<histogram name="Ads.InterestGroup.Auction.ConfigPromises.Latency" units="ms"
+    expires_after="2024-06-20">
+  <owner>orrb@chromium.org</owner>
+  <owner>privacy-sandbox-dev@chromium.org</owner>
+  <summary>
+    Time between the auction start time and when config promises are resolved.
+    In a single-seller auction, this is only recorded if the auction has config
+    promises; in a multi-seller auction, this is only recorded for component
+    auctions and the top-level auction for those that have config promises. This
+    is not the same as how long the auction needed to wait for a config promise,
+    since other work happened simultaneously. That's better captured by
+    Ads.InterestGroup.Auction.ConfigPromises.CriticalPathLatency.
 
     See https://github.com/WICG/turtledove/blob/main/FLEDGE.md for the latest
     version of the FLEDGE explainer.
@@ -663,6 +733,27 @@ chromium-metrics-reviews@google.com.
     number whose scripts are successfully loaded or that make bids. Recorded
     after all matching interest groups have been retrieved from storage at the
     start of an auction.
+
+    See https://github.com/WICG/turtledove/blob/main/FLEDGE.md for the latest
+    version of the FLEDGE explainer.
+  </summary>
+</histogram>
+
+<histogram name="Ads.InterestGroup.Auction.NumNegativeInterestGroups"
+    units="groups" expires_after="2024-06-20">
+  <owner>orrb@google.com</owner>
+  <owner>privacy-sandbox-dev@chromium.org</owner>
+  <summary>
+    The number of a user's negative interest group loaded into a FLEDGE auction.
+    This is the number of negative interest groups matching the auction
+    configuration, not the number used for negative targeting. For a
+    multi-seller auction, this is the total number of negative interest groups
+    loaded across all component auctions, so that the negative interest groups
+    of a buyer that participates in multiple component auctions will be counted
+    multiple times. This is only recorded for auctions that may have additional
+    bids, i.e. those for which the additionalBids promise was provided on the
+    auction config. However, it's recorded whether or not additional bids are
+    eventually provided to the auction.
 
     See https://github.com/WICG/turtledove/blob/main/FLEDGE.md for the latest
     version of the FLEDGE explainer.
@@ -1064,16 +1155,6 @@ chromium-metrics-reviews@google.com.
     overall duration may not be known when loading starts). Because the duration
     will generally increase as more video gets buffered, this histogram may skew
     low.
-  </summary>
-</histogram>
-
-<histogram name="Ads.Media.LoadType" enum="MediaLoadType"
-    expires_after="2021-08-09">
-  <owner>johnidel@chromium.org</owner>
-  <owner>jkarlin@chromium.org</owner>
-  <summary>
-    Load type of HTML5 media in ad subframes such as URL, MediaSource and
-    MediaStream.
   </summary>
 </histogram>
 
@@ -3004,6 +3085,27 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="ComponentUpdater.ClientHealth.AvailableStorage" units="MB"
+    expires_after="2024-05-01">
+  <owner>noahrose@google.com</owner>
+  <owner>src/components/component_updater/OWNERS</owner>
+  <summary>
+    The amount of available storage for component updates. Recorded each time a
+    network quality esitmate is delivered to the component updater.
+  </summary>
+</histogram>
+
+<histogram name="ComponentUpdater.ClientHealth.DownstreamThroughput"
+    units="kbps" expires_after="2024-05-01">
+  <owner>noahrose@google.com</owner>
+  <owner>src/components/component_updater/OWNERS</owner>
+  <summary>
+    Downstream throughput in kilobytes per second of clients who have ample
+    storage (20gb or more) available for component updates. Recorded each time a
+    network quality estimate is delivered to the component updater.
+  </summary>
+</histogram>
+
 <histogram name="ComponentUpdater.UpdateCompleteError"
     enum="UpdateClientErrors" expires_after="2024-03-17">
   <owner>sorin@chromium.org</owner>
@@ -3604,6 +3706,31 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Conversions.AttributionBehavior"
+    enum="ConversionAttributionBehavior" expires_after="2024-10-24">
+  <owner>jdeabreu@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records the Attribution Behavior for WebView set via the androidx.webkit
+    WebSettingsCompat#setAttributionRegistrationBehavior method. This setting
+    allows developers to configure whether Attribution sources and triggers are
+    registered as coming from the app itself or coming from the web content in
+    the WebView, or if Attribution should be disabled.
+  </summary>
+</histogram>
+
+<histogram name="Conversions.AttributionOsLevelApiState"
+    enum="ConversionAttributionOsLevelApiState" expires_after="2024-10-24">
+  <owner>linnan@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Records whether OS-level attribution is supported on the device. Only
+    recorded on Android when the AttributionReportingCrossAppWeb feature is
+    enabled. Recorded once per browser session when the browser starts up.
+  </summary>
+</histogram>
+
 <histogram name="Conversions.AttributionSrcRequestStatus"
     enum="ConversionAttributionSrcRequestStatus" expires_after="2024-03-10">
   <owner>linnan@chromium.org</owner>
@@ -3612,18 +3739,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records the status of the attributionsrc requests. Recorded when the request
     started and finished.
-  </summary>
-</histogram>
-
-<histogram name="Conversions.AttributionSupport"
-    enum="ConversionAttributionSupport" expires_after="2024-03-10">
-  <owner>linnan@chromium.org</owner>
-  <owner>johnidel@chromium.org</owner>
-  <owner>measurement-api-dev+metrics@google.com</owner>
-  <summary>
-    Records whether web or OS-level attribution is supported on the device. Only
-    recorded on Android when the AttributionReportingCrossAppWeb feature is
-    enabled. Recorded once per browser session when the browser starts up.
   </summary>
 </histogram>
 
@@ -3649,7 +3764,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Conversions.CreateReportStatus8"
+<histogram name="Conversions.CreateReportStatus9"
     enum="ConversionStorageCreateReportStatus" expires_after="2024-03-10">
   <owner>tquintanilla@chromium.org</owner>
   <owner>apaseltiner@chromium.org</owner>
@@ -3747,6 +3862,18 @@ chromium-metrics-reviews@google.com.
 
     When processing a deferred attribution data host registration, this metric
     records if it's due to a timeout.
+  </summary>
+</histogram>
+
+<histogram name="Conversions.DelayOnAttestationsLoaded" units="ms"
+    expires_after="2024-03-10">
+  <owner>linnan@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Records the time it took for the attribution manager to be ready upon
+    attestations loading. Recorded once per storage partition when the
+    attribution manager was created.
   </summary>
 </histogram>
 
@@ -4160,7 +4287,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Conversions.SentVerboseDebugReportType3"
+<histogram name="Conversions.SentVerboseDebugReportType4"
     enum="ConversionVerboseDebugReportType" expires_after="2024-02-20">
   <owner>tquintanilla@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
@@ -4173,7 +4300,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Conversions.SourceRegistrationError5"
+<histogram name="Conversions.SourceRegistrationError7"
     enum="ConversionSourceRegistrationError" expires_after="2024-03-24">
   <owner>tquintanilla@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
@@ -4184,8 +4311,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Conversions.SourcesPerSourceOrigin.{Position}" units="sources"
-    expires_after="M121">
+<histogram name="Conversions.SourcesPerSourceOrigin2.{Position}"
+    units="sources" expires_after="2024-04-28">
   <owner>anthonygarant@chromium.org</owner>
   <owner>johnidel@chromium.org</owner>
   <owner>measurement-api-dev+metrics@google.com</owner>
@@ -4203,7 +4330,7 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="Conversions.SourceStoredStatus7"
+<histogram name="Conversions.SourceStoredStatus8"
     enum="ConversionStorageSourceStatus" expires_after="2024-03-10">
   <owner>tquintanilla@chromium.org</owner>
   <owner>anthonygarant@chromium.org</owner>
@@ -4249,7 +4376,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Conversions.Storage.Sql.FileSize" units="KB"
+<histogram name="Conversions.Storage.Sql.FileSize2" units="KB"
     expires_after="2024-03-24">
   <owner>tquintanilla@chromium.org</owner>
   <owner>johnidel@chromium.org</owner>
@@ -4261,7 +4388,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Conversions.Storage.Sql.FileSize.PerSource" units="bytes"
+<histogram name="Conversions.Storage.Sql.FileSize2.PerSource" units="bytes"
     expires_after="M121">
   <owner>anthonygarant@chromium.org</owner>
   <owner>johnidel@chromium.org</owner>
@@ -4273,7 +4400,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Conversions.Storage.Sql.FileSizeSourcesPerOriginLimitReached"
+<histogram name="Conversions.Storage.Sql.FileSizeSourcesPerOriginLimitReached2"
     units="KB" expires_after="2024-03-31">
   <owner>tquintanilla@chromium.org</owner>
   <owner>johnidel@chromium.org</owner>
@@ -4286,7 +4413,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
-    name="Conversions.Storage.Sql.FileSizeSourcesPerOriginLimitReached.PerSource"
+    name="Conversions.Storage.Sql.FileSizeSourcesPerOriginLimitReached2.PerSource"
     units="bytes" expires_after="2024-03-31">
   <owner>anthonygarant@chromium.org</owner>
   <owner>johnidel@chromium.org</owner>
@@ -4789,6 +4916,18 @@ chromium-metrics-reviews@google.com.
     the first user activity to the last user activity. This metric rounds the
     duration to the nearest second and uses exponential bucketing capped at 1
     hour.
+  </summary>
+</histogram>
+
+<histogram name="DemoMode.GMSCoreDialogShown" enum="Boolean"
+    expires_after="2024-05-01">
+  <owner>llin@chromium.org</owner>
+  <owner>xiqiruan@chromium.org</owner>
+  <owner>yilkal@chromium.org</owner>
+  <owner>cros-demo-mode-eng@google.com</owner>
+  <summary>
+    Records whether a window associated with GMSCore has been created during the
+    demo session.
   </summary>
 </histogram>
 
@@ -8650,7 +8789,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NativeSmbFileShare.GetSharesResult"
-    enum="NativeSmbFileShare_MountResult" expires_after="2023-12-01">
+    enum="NativeSmbFileShare_MountResult" expires_after="2024-10-23">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/chrome/browser/ash/smb_client/OWNERS</owner>
   <summary>
@@ -8660,7 +8799,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NativeSmbFileShare.MountCount" units="Active Mounts"
-    expires_after="2023-12-01">
+    expires_after="2024-10-23">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/chrome/browser/ash/smb_client/OWNERS</owner>
   <summary>
@@ -8670,7 +8809,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NativeSmbFileShare.MountResult"
-    enum="NativeSmbFileShare_MountResult" expires_after="2023-12-01">
+    enum="NativeSmbFileShare_MountResult" expires_after="2024-10-23">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/chrome/browser/ash/smb_client/OWNERS</owner>
   <summary>
@@ -9634,25 +9773,6 @@ chromium-metrics-reviews@google.com.
     Time taken to execute a batch of periodicsync events. A batch is defined as
     the set of `periodicsync` events dispatched at the same time by the
     BackgroundSyncManager. Periodic syncs often run in a batch.
-  </summary>
-</histogram>
-
-<histogram name="PictureInPictureWindow.ButtonPressed"
-    enum="OverlayWindowControl" expires_after="M85">
-  <owner>fbeaufort@chromium.org</owner>
-  <owner>media-dev-uma@chromium.org</owner>
-  <summary>
-    Records Picture-in-Picture window control buttons pressed by user (basically
-    everything except user tap gestures).
-  </summary>
-</histogram>
-
-<histogram name="PictureInPictureWindow.TapGesture" enum="OverlayWindowControl"
-    expires_after="M85">
-  <owner>fbeaufort@chromium.org</owner>
-  <owner>media-dev-uma@chromium.org</owner>
-  <summary>
-    Records Picture-in-Picture window control user tap gestures.
   </summary>
 </histogram>
 
@@ -11297,23 +11417,6 @@ should be kept until we remove incident reporting. -->
   </summary>
 </histogram>
 
-<histogram name="SBIRS.EnvCollectionTime" units="ms" expires_after="2018-08-30">
-  <owner>caitkp@google.com</owner>
-  <summary>
-    The elapsed time to collect environmental data for a safe browsing incident
-    report.
-  </summary>
-</histogram>
-
-<histogram name="SBIRS.FindDownloadedBinaryTime" units="ms"
-    expires_after="2018-08-30">
-  <owner>caitkp@google.com</owner>
-  <summary>
-    The elapsed time to find the most recent binary download from all loaded
-    profiles when creating a safe browsing incident report.
-  </summary>
-</histogram>
-
 <histogram name="SBIRS.Incident" enum="IncidentType" expires_after="never">
 <!-- expires-never: This tracks health of the incident reporting feature and
 should be kept until we remove incident reporting. -->
@@ -11323,14 +11426,6 @@ should be kept until we remove incident reporting. -->
   <summary>
     The type of incident included in an incident report by the safe browsing
     incident reporting service.
-  </summary>
-</histogram>
-
-<histogram name="SBIRS.InterIncidentTime" units="ms" expires_after="2018-08-30">
-  <owner>caitkp@google.com</owner>
-  <summary>
-    The elapsed time between two successive incidents collated into the same
-    incident report by the safe browsing incident reporting service.
   </summary>
 </histogram>
 
@@ -11388,38 +11483,6 @@ should be kept until we remove incident reporting. -->
   <summary>
     The result of an attempted report upload by the safe browsing incident
     reporting service.
-  </summary>
-</histogram>
-
-<histogram name="SBIRS.VerifyBinaryIntegrity.0" units="ms"
-    expires_after="2018-08-30">
-  <owner>caitkp@google.com</owner>
-  <summary>
-    The elapsed time to verify the binary integrity of chrome.exe.
-  </summary>
-</histogram>
-
-<histogram name="SBIRS.VerifyBinaryIntegrity.1" units="ms"
-    expires_after="2018-08-30">
-  <owner>caitkp@google.com</owner>
-  <summary>
-    The elapsed time to verify the binary integrity of chrome.dll.
-  </summary>
-</histogram>
-
-<histogram name="SBIRS.VerifyBinaryIntegrity.2" units="ms"
-    expires_after="2018-08-30">
-  <owner>caitkp@google.com</owner>
-  <summary>
-    The elapsed time to verify the binary integrity of chrome_child.dll.
-  </summary>
-</histogram>
-
-<histogram name="SBIRS.VerifyBinaryIntegrity.3" units="ms"
-    expires_after="2018-08-30">
-  <owner>caitkp@google.com</owner>
-  <summary>
-    The elapsed time to verify the binary integrity of chrome_elf.dll.
   </summary>
 </histogram>
 
@@ -13277,7 +13340,13 @@ should be kept until we use this API.  -->
 </histogram>
 
 <histogram name="Toolbar.ChromeLabs.{State}LabAction"
-    enum="ChromeLabsSelectedLab" expires_after="M122">
+    enum="ChromeLabsSelectedLab" expires_after="never">
+<!-- expires-never: Chrome Labs is a feature that allows teams to add their
+experiemntal features for users to try out and give feedback on before it is
+fully rolled out. We want teams that add their features to Chrome Labs to
+continue to have access to metrics on how many users enable (or disable) their
+features through Chrome Labs. -->
+
   <owner>elainechien@chromium.org</owner>
   <owner>robliao@chromium.org</owner>
   <summary>
@@ -13658,6 +13727,114 @@ should be kept until we use this API.  -->
   </summary>
 </histogram>
 
+<histogram
+    name="UpdateClient.BackgroundDownloaderMac.DownloadResultRequestorKnown"
+    enum="Boolean" expires_after="2024-05-01">
+  <owner>noahrose@google.com</owner>
+  <owner>sorin@chromium.org</owner>
+  <owner>waffles@chromium.org</owner>
+  <summary>
+    Whether the requestor of a background download was known. Recorded each time
+    a download completes.
+  </summary>
+</histogram>
+
+<histogram name="UpdateClient.BackgroundDownloaderMac.StartDownloadOutcome"
+    enum="UpdateClientBackgroundDownloaderMacStartDownloadOutcome"
+    expires_after="2024-05-01">
+  <owner>noahrose@google.com</owner>
+  <owner>sorin@chromium.org</owner>
+  <owner>waffles@chromium.org</owner>
+  <summary>
+    The outcome of a download start request. Recorded once each time a download
+    is requested.
+  </summary>
+</histogram>
+
+<histogram name="UpdateClient.BackgroundDownloaderWin.ExistingJobUsed"
+    enum="Boolean" expires_after="2024-05-01">
+  <owner>noahrose@google.com</owner>
+  <owner>sorin@chromium.org</owner>
+  <owner>waffles@chromium.org</owner>
+  <summary>
+    Whether an existing BITS task was reused or created when a download was
+    requested.
+  </summary>
+</histogram>
+
+<histogram name="UpdateClient.BackgroundDownloaderWin.StaleDownloadAge"
+    units="hours" expires_after="2024-05-01">
+  <owner>noahrose@google.com</owner>
+  <owner>sorin@chromium.org</owner>
+  <owner>waffles@chromium.org</owner>
+  <summary>
+    The age of unclaimed downloads when they were removed from the cache.
+  </summary>
+</histogram>
+
+<histogram name="UpdateClient.BackgroundDownloaderWin.StaleJobsCleaned"
+    units="count" expires_after="2024-05-01">
+  <owner>noahrose@google.com</owner>
+  <owner>sorin@chromium.org</owner>
+  <owner>waffles@chromium.org</owner>
+  <summary>
+    Counts the number of stale jobs that were cleaned each time a new download
+    starts.
+  </summary>
+</histogram>
+
+<histogram name="UpdateClient.Component.CanUpdateResult"
+    enum="UpdateClientCanUpdateResult" expires_after="2024-05-01">
+  <owner>noahrose@google.com</owner>
+  <owner>sorin@chromium.org</owner>
+  <owner>waffles@chromium.org</owner>
+  <summary>
+    The result of a CanUpdate check when a component update is offered. Recorded
+    once per check per component.
+  </summary>
+</histogram>
+
+<histogram name="UpdateClient.Component.UpdateCheckResult"
+    enum="UpdateClientUpdateCheckResult" expires_after="2024-05-01">
+  <owner>noahrose@google.com</owner>
+  <owner>sorin@chromium.org</owner>
+  <owner>waffles@chromium.org</owner>
+  <summary>
+    The result of a component update check. Recorded once per component per
+    update check.
+  </summary>
+</histogram>
+
+<histogram name="UpdateClient.Component.Updated" enum="Boolean"
+    expires_after="2024-05-01">
+  <owner>noahrose@google.com</owner>
+  <owner>sorin@chromium.org</owner>
+  <owner>waffles@chromium.org</owner>
+  <summary>Records when the update client has updated a component.</summary>
+</histogram>
+
+<histogram name="UpdateClient.CrxDownloader.DownloadCompleteSuccess"
+    enum="Boolean" expires_after="2024-05-01">
+  <owner>noahrose@google.com</owner>
+  <owner>sorin@chromium.org</owner>
+  <owner>waffles@chromium.org</owner>
+  <summary>
+    Whether a download completed with an error or not. Recorded once for every
+    completed download.
+  </summary>
+</histogram>
+
+<histogram name="UpdateClient.CrxDownloader.Fallback" enum="Boolean"
+    expires_after="2024-05-01">
+  <owner>noahrose@google.com</owner>
+  <owner>sorin@chromium.org</owner>
+  <owner>waffles@chromium.org</owner>
+  <summary>
+    Records when the CRX Downloader falls back to a different downloader
+    implementation due to errors.
+  </summary>
+</histogram>
+
 <histogram name="UpgradeDetector.DaysBeforeUpgrade" units="days"
     expires_after="2024-05-01">
   <owner>emshack@chromium.org</owner>
@@ -13867,46 +14044,6 @@ should be kept until we use this API.  -->
     Each escaped character is recorded separately, but only once for any
     invocation of DoSimpleHost(). This can potentially be recorded every time a
     URL hostname is parsed, but only if parsing escaped at least one character.
-  </summary>
-</histogram>
-
-<histogram name="URL.Path.UnescapeEscapedChar" enum="Boolean"
-    expires_after="2024-02-01">
-  <owner>hayato@chromium.org</owner>
-  <owner>src/url/OWNERS</owner>
-  <summary>
-    Measures whether DoPartialPathInternal() in url_canon_path unescaped any
-    percent-encoded characters. The measurement is not specific to any
-    particular use case.
-
-    For example, this is recored to parse the following URL:
-
-    new URL(&quot;https://example.com/%61&quot;)
-
-    This can potentially be recorded every time a URL path is parsed, but only
-    if unescaping at least one percent-encoded character.
-
-    Eventually, we will add other metrics for each use case to better understand
-    the usage.
-  </summary>
-</histogram>
-
-<histogram name="URL.Scheme.SetNonSpecialSchemeOnSpecialScheme" enum="Boolean"
-    expires_after="2024-02-01">
-  <owner>hayato@chromium.org</owner>
-  <owner>src/url/OWNERS</owner>
-  <summary>
-    This metrics is recorded each time when KRUL.SetProtocol is called on a
-    special scheme URL. The value is whether a new scheme is a non-special
-    scheme or not.
-
-    The measurement is not specific to any particular use case. For example,
-    this is recorded in the following:
-
-    const url = new URL(&quot;https://example.com/&quot;); url.protocol =
-    &quot;non-special&quot;;
-
-    See https://crbug.com/1416018 for details.
   </summary>
 </histogram>
 
@@ -14615,6 +14752,18 @@ regressions. -->
   <summary>
     The success or failure of all extension installs from the webstore. This
     includes those initiated by sync.
+  </summary>
+</histogram>
+
+<histogram name="WebUI.ColorsStylesheetServingDuration" units="ms"
+    expires_after="2024-01-31">
+  <owner>skau@chromium.org</owner>
+  <owner>tluk@chromium.org</owner>
+  <improvement direction="LOWER_IS_BETTER"/>
+  <summary>
+    The time in milliseconds to generate chrome://theme/colors.css and queue it
+    to be sent to the renderer for WebUI. Does not include url parsing time.
+    Recorded for every request for colors.css. Lower is better.
   </summary>
 </histogram>
 

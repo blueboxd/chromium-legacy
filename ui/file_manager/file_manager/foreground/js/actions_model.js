@@ -6,8 +6,10 @@ import {assert} from 'chrome://resources/ash/common/assert.js';
 import {dispatchSimpleEvent} from 'chrome://resources/ash/common/cr_deprecated.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/ash/common/event_target.js';
 
+import {isSameVolume, unwrapEntry} from '../../common/js/entry_utils.js';
 import {recordBoolean} from '../../common/js/metrics.js';
-import {strf, util} from '../../common/js/util.js';
+import {strf} from '../../common/js/translations.js';
+import {visitURL} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
 
@@ -114,7 +116,7 @@ class DriveShareAction {
     chrome.fileManagerPrivate.getEntryProperties(
         // @ts-ignore: error TS2322: Type 'FileSystemEntry | FilesAppEntry' is
         // not assignable to type 'FileSystemEntry'.
-        [util.unwrapEntry(this.entry_)], ['shareUrl'], results => {
+        [unwrapEntry(this.entry_)], ['shareUrl'], results => {
           if (chrome.runtime.lastError) {
             console.error(chrome.runtime.lastError.message);
             return;
@@ -131,7 +133,7 @@ class DriveShareAction {
             return;
           }
           // @ts-ignore: error TS2532: Object is possibly 'undefined'.
-          util.visitURL(assert(results[0].shareUrl));
+          visitURL(assert(results[0].shareUrl));
         });
   }
 
@@ -621,7 +623,7 @@ class DriveManageAction {
     chrome.fileManagerPrivate.getEntryProperties(
         // @ts-ignore: error TS2322: Type 'FileSystemEntry | FilesAppEntry' is
         // not assignable to type 'FileSystemEntry'.
-        [util.unwrapEntry(this.entry_)], ['alternateUrl'], results => {
+        [unwrapEntry(this.entry_)], ['alternateUrl'], results => {
           if (chrome.runtime.lastError) {
             console.error(chrome.runtime.lastError.message);
             return;
@@ -638,7 +640,7 @@ class DriveManageAction {
             return;
           }
           // @ts-ignore: error TS2532: Object is possibly 'undefined'.
-          util.visitURL(assert(results[0].alternateUrl));
+          visitURL(assert(results[0].alternateUrl));
         });
   }
 
@@ -719,7 +721,7 @@ class CustomAction {
         // @ts-ignore: error TS2345: Argument of type '(FileSystemEntry |
         // FilesAppEntry)[]' is not assignable to parameter of type
         // 'FileSystemEntry[]'.
-        this.entries_.map(e => util.unwrapEntry(e)), this.id_, () => {
+        this.entries_.map(e => unwrapEntry(e)), this.id_, () => {
           if (chrome.runtime.lastError) {
             console.error(
                 'Failed to execute a custom action because of: ' +
@@ -850,7 +852,7 @@ export class ActionsModel extends EventTarget {
           // All entries need to be on the same volume to execute ActionsModel
           // commands.
           if (!volumeInfo ||
-              !util.isSameVolume(this.entries_, this.volumeManager_)) {
+              !isSameVolume(this.entries_, this.volumeManager_)) {
             fulfill({});
             return;
           }
@@ -935,8 +937,7 @@ export class ActionsModel extends EventTarget {
                   // @ts-ignore: error TS2345: Argument of type
                   // '(FileSystemEntry | FilesAppEntry)[]' is not assignable to
                   // parameter of type 'FileSystemEntry[]'.
-                  this.entries_.map(e => util.unwrapEntry(e)),
-                  customActions => {
+                  this.entries_.map(e => unwrapEntry(e)), customActions => {
                     if (chrome.runtime.lastError) {
                       console.error(
                           'Failed to fetch custom actions because of: ' +

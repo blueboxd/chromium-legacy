@@ -26,6 +26,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_ash.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app.h"
+#include "chrome/browser/apps/app_service/promise_apps/promise_app_metrics.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_registry_cache.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/ash/app_list/app_list_client_impl.h"
@@ -50,6 +51,7 @@
 #include "components/sync/test/fake_sync_change_processor.h"
 #include "components/sync/test/sync_change_processor_wrapper_for_test.h"
 #include "content/public/test/browser_test.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/models/menu_model.h"
 
 namespace apps {
@@ -383,6 +385,7 @@ IN_PROC_BROWSER_TEST_F(AppServicePromiseAppItemBrowserTest, SetToSyncPosition) {
   ChromeAppListItem* app_item = GetChromeAppListItem(app_id);
   ASSERT_TRUE(app_item);
   EXPECT_EQ(app_item->position(), ordinal_after_sync);
+  EXPECT_FALSE(app_item->is_new_install());
 }
 
 IN_PROC_BROWSER_TEST_F(AppServicePromiseAppItemBrowserTest,
@@ -430,6 +433,7 @@ IN_PROC_BROWSER_TEST_F(AppServicePromiseAppItemBrowserTest,
   ChromeAppListItem* app_item = GetChromeAppListItem(app_id);
   ASSERT_TRUE(app_item);
   EXPECT_EQ(app_item->position(), app_ordinal);
+  EXPECT_TRUE(app_item->is_new_install());
 }
 
 IN_PROC_BROWSER_TEST_F(AppServicePromiseAppItemBrowserTest, SetToSyncParent) {
@@ -494,6 +498,7 @@ IN_PROC_BROWSER_TEST_F(AppServicePromiseAppItemBrowserTest, SetToSyncParent) {
   ChromeAppListItem* app_item = GetChromeAppListItem(app_id);
   ASSERT_TRUE(app_item);
   EXPECT_EQ(app_item->folder_id(), "");
+  EXPECT_FALSE(app_item->is_new_install());
 }
 
 IN_PROC_BROWSER_TEST_F(AppServicePromiseAppItemBrowserTest,
@@ -552,6 +557,7 @@ IN_PROC_BROWSER_TEST_F(AppServicePromiseAppItemBrowserTest,
   ChromeAppListItem* app_item = GetChromeAppListItem(app_id);
   ASSERT_TRUE(app_item);
   EXPECT_EQ(app_item->folder_id(), kFolderItemId);
+  EXPECT_TRUE(app_item->is_new_install());
 }
 
 IN_PROC_BROWSER_TEST_F(AppServicePromiseAppItemBrowserTest,
@@ -604,8 +610,8 @@ IN_PROC_BROWSER_TEST_F(AppServicePromiseAppItemBrowserTest,
 
   // Register (i.e. "install") an app with a matching package ID. This should
   // trigger removal of the promise app.
-  std::string app_id = "test.com.example.activity";
-  AddArcPackageWithApps(identifier, {app_id});
+  std::string app_activity = "test.com.example.activity";
+  AddArcPackageWithApps(identifier, {app_activity});
 
   // Promise app item should no longer exist in the model.
   item = GetAppListItem(package_id.ToString());
@@ -613,11 +619,17 @@ IN_PROC_BROWSER_TEST_F(AppServicePromiseAppItemBrowserTest,
   EXPECT_FALSE(IsItemPinned(package_id.ToString()));
 
   // Verify that the app installed in place of the promise app is pinned.
-  EXPECT_TRUE(IsItemPinned(ArcAppListPrefs::GetAppId(identifier, app_id)));
+  const std::string installed_app_id =
+      ArcAppListPrefs::GetAppId(identifier, app_activity);
+  EXPECT_TRUE(IsItemPinned(installed_app_id));
+
+  ash::AppListItem* app_item = GetAppListItem(installed_app_id);
+  ASSERT_TRUE(app_item);
+  EXPECT_TRUE(app_item->is_new_install());
 }
 
 IN_PROC_BROWSER_TEST_F(AppServicePromiseAppItemBrowserTest,
-                       PromiseAppPinnnedIfLinkedToAPinnedSyncedApp) {
+                       PromiseAppPinnedIfLinkedToAPinnedSyncedApp) {
   syncer::StringOrdinal ordinal = syncer::StringOrdinal::CreateInitialOrdinal();
   syncer::StringOrdinal pin_ordinal = ordinal.CreateAfter();
 
@@ -660,8 +672,14 @@ IN_PROC_BROWSER_TEST_F(AppServicePromiseAppItemBrowserTest,
   ASSERT_FALSE(item);
   EXPECT_FALSE(IsItemPinned(promise_app_id));
 
+  const std::string installed_app_id =
+      ArcAppListPrefs::GetAppId(kTestPackageId.identifier(), app_activity);
   // Verify that the app installed in place of the promise app is pinned.
-  EXPECT_TRUE(IsItemPinned(app_id));
+  EXPECT_TRUE(IsItemPinned(installed_app_id));
+
+  ash::AppListItem* app_item = GetAppListItem(installed_app_id);
+  ASSERT_TRUE(app_item);
+  EXPECT_FALSE(app_item->is_new_install());
 }
 
 IN_PROC_BROWSER_TEST_F(AppServicePromiseAppItemBrowserTest,
@@ -727,11 +745,13 @@ IN_PROC_BROWSER_TEST_F(AppServicePromiseAppItemBrowserTest,
       GetAppListItem(app_id_in_sync);
   ASSERT_TRUE(old_installed_item);
   EXPECT_EQ(promise_app_ordinal, old_installed_item->position());
+  EXPECT_FALSE(old_installed_item->is_new_install());
 
   const ash::AppListItem* const new_installed_item =
       GetAppListItem(extra_app_id);
   ASSERT_TRUE(new_installed_item);
   EXPECT_NE(promise_app_ordinal, new_installed_item->position());
+  EXPECT_TRUE(new_installed_item->is_new_install());
 }
 
 IN_PROC_BROWSER_TEST_F(AppServicePromiseAppItemBrowserTest,
@@ -790,6 +810,81 @@ IN_PROC_BROWSER_TEST_F(AppServicePromiseAppItemBrowserTest,
   const ash::AppListItem* const installed_item = GetAppListItem(app_id);
   ASSERT_TRUE(installed_item);
   EXPECT_EQ(promise_app_ordinal, installed_item->position());
+  EXPECT_FALSE(installed_item->is_new_install());
+}
+
+IN_PROC_BROWSER_TEST_F(AppServicePromiseAppItemBrowserTest,
+                       MainLabelAndAccessibleLabelAreCorrect) {
+  std::string app_name = "Long Name";
+
+  // Register a promise app in the promise app registry cache.
+  apps::PromiseAppPtr promise_app =
+      std::make_unique<PromiseApp>(kTestPackageId);
+  promise_app->status = PromiseStatus::kPending;
+  promise_app->name = app_name;
+  promise_app->should_show = true;
+  cache()->OnPromiseApp(std::move(promise_app));
+
+  // Promise app item should exist in the model.
+  ChromeAppListItem* item = GetChromeAppListItem(kTestPackageId);
+  ASSERT_TRUE(item);
+  EXPECT_EQ(item->app_status(), ash::AppStatus::kPending);
+  ASSERT_EQ(item->name(), "waiting…");
+  ASSERT_EQ(item->accessible_name(), "Long Name, waiting");
+
+  // Update the promise app in the promise app registry cache.
+  apps::PromiseAppPtr update = std::make_unique<PromiseApp>(kTestPackageId);
+  update->progress = 0.3;
+  update->status = PromiseStatus::kInstalling;
+  cache()->OnPromiseApp(std::move(update));
+
+  // Promise app item should have updated fields.
+  EXPECT_EQ(item->app_status(), ash::AppStatus::kInstalling);
+  EXPECT_EQ(item->name(), "installing…");
+  ASSERT_EQ(item->accessible_name(), "Long Name, installing");
+}
+
+IN_PROC_BROWSER_TEST_F(AppServicePromiseAppItemBrowserTest,
+                       PlaceholderAccessibleLabelUsedWhenNoNameAvailable) {
+  // Register a promise app in the promise app registry cache.
+  apps::PromiseAppPtr promise_app =
+      std::make_unique<PromiseApp>(kTestPackageId);
+  promise_app->should_show = true;
+  cache()->OnPromiseApp(std::move(promise_app));
+
+  // Promise app item should exist in the model.
+  ChromeAppListItem* item = GetChromeAppListItem(kTestPackageId);
+  ASSERT_TRUE(item);
+  EXPECT_EQ(item->app_status(), ash::AppStatus::kPending);
+  ASSERT_EQ(item->accessible_name(), "An app, waiting");
+
+  // Update the promise app in the promise app registry cache.
+  apps::PromiseAppPtr update = std::make_unique<PromiseApp>(kTestPackageId);
+  update->status = PromiseStatus::kInstalling;
+  cache()->OnPromiseApp(std::move(update));
+
+  // Promise app item should have updated fields.
+  EXPECT_EQ(item->app_status(), ash::AppStatus::kInstalling);
+  ASSERT_EQ(item->accessible_name(), "An app, installing");
+}
+
+IN_PROC_BROWSER_TEST_F(AppServicePromiseAppItemBrowserTest,
+                       LauncherItemCreationUpdatesMetrics) {
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectBucketCount(
+      kPromiseAppLifecycleEventHistogram,
+      apps::PromiseAppLifecycleEvent::kCreatedInLauncher, 0);
+
+  apps::PromiseAppPtr promise_app =
+      std::make_unique<PromiseApp>(kTestPackageId);
+  promise_app->should_show = true;
+  cache()->OnPromiseApp(std::move(promise_app));
+
+  ChromeAppListItem* item = GetChromeAppListItem(kTestPackageId);
+  ASSERT_TRUE(item);
+  histogram_tester.ExpectBucketCount(
+      kPromiseAppLifecycleEventHistogram,
+      apps::PromiseAppLifecycleEvent::kCreatedInLauncher, 1);
 }
 
 }  // namespace apps

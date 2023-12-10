@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/html/html_marquee_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/box_layout_extra_input.h"
+#include "third_party/blink/renderer/core/layout/flex/layout_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
@@ -52,7 +53,6 @@
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/mathml/layout_mathml_block.h"
-#include "third_party/blink/renderer/core/layout/ng/flex/layout_ng_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
@@ -224,7 +224,7 @@ void LayoutBlock::AddChildBeforeDescendant(LayoutObject* new_child,
     if (new_child->IsInline() ||
         (new_child->IsFloatingOrOutOfFlowPositioned() &&
          (StyleRef().IsDeprecatedFlexboxUsingFlexLayout() ||
-          (!IsFlexibleBoxIncludingNG() && !IsLayoutNGGrid()))) ||
+          (!IsFlexibleBox() && !IsLayoutGrid()))) ||
         before_descendant->Parent()->SlowFirstChild() != before_descendant) {
       before_descendant_container->AddChild(new_child, before_descendant);
     } else {
@@ -268,7 +268,7 @@ void LayoutBlock::AddChild(LayoutObject* new_child,
   if (new_child->IsInline() ||
       (new_child->IsFloatingOrOutOfFlowPositioned() &&
        (StyleRef().IsDeprecatedFlexboxUsingFlexLayout() ||
-        (!IsFlexibleBoxIncludingNG() && !IsLayoutNGGrid())))) {
+        (!IsFlexibleBox() && !IsLayoutGrid())))) {
     // If we're inserting an inline child but all of our children are blocks,
     // then we have to make sure it is put into an anomyous block box. We try to
     // use an existing anonymous box if possible, otherwise a new one is created
@@ -790,9 +790,9 @@ LayoutBlock* LayoutBlock::CreateAnonymousWithParentAndDisplay(
   LayoutBlock* layout_block;
   if (new_display == EDisplay::kFlex) {
     layout_block =
-        MakeGarbageCollected<LayoutNGFlexibleBox>(/* element */ nullptr);
+        MakeGarbageCollected<LayoutFlexibleBox>(/* element */ nullptr);
   } else if (new_display == EDisplay::kGrid) {
-    layout_block = MakeGarbageCollected<LayoutNGGrid>(/* element */ nullptr);
+    layout_block = MakeGarbageCollected<LayoutGrid>(/* element */ nullptr);
   } else if (new_display == EDisplay::kBlockMath) {
     layout_block =
         MakeGarbageCollected<LayoutMathMLBlock>(/* element */ nullptr);

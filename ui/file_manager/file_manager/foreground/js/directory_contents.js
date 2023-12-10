@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assert} from 'chrome://resources/ash/common/assert.js';
 import {dispatchSimpleEvent} from 'chrome://resources/ash/common/cr_deprecated.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/ash/common/event_target.js';
 
 import {mountGuest} from '../../common/js/api.js';
 import {AsyncQueue, ConcurrentQueue} from '../../common/js/async_util.js';
 import {createDOMError} from '../../common/js/dom_utils.js';
-import {isEntryInsideDrive} from '../../common/js/entry_utils.js';
+import {isEntryInsideDrive, isFakeEntry, readEntriesRecursively} from '../../common/js/entry_utils.js';
 import {FileType} from '../../common/js/file_type.js';
 import {EntryList} from '../../common/js/files_app_entry_types.js';
 import {recordInterval, recordMediumCount, startInterval} from '../../common/js/metrics.js';
 import {getEarliestTimestamp} from '../../common/js/recent_date_bucket.js';
 import {createTrashReaders} from '../../common/js/trash.js';
-import {util} from '../../common/js/util.js';
+import {FileErrorToDomError} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {FakeEntry, FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
 import {SearchLocation, SearchOptions} from '../../externs/ts/state.js';
@@ -93,7 +92,8 @@ export class DirectoryContentScanner extends ContentScanner {
     if (!this.entry_ || !this.entry_.createReader) {
       // If entry is not specified or if entry doesn't implement createReader,
       // we cannot read it.
-      errorCallback(createDOMError(util.FileError.INVALID_MODIFICATION_ERR));
+      errorCallback(
+          createDOMError(FileErrorToDomError.INVALID_MODIFICATION_ERR));
       return;
     }
 
@@ -102,7 +102,7 @@ export class DirectoryContentScanner extends ContentScanner {
     const readEntries = () => {
       reader.readEntries(entries => {
         if (this.cancelled_) {
-          errorCallback(createDOMError(util.FileError.ABORT_ERR));
+          errorCallback(createDOMError(FileErrorToDomError.ABORT_ERR));
           return;
         }
 
@@ -189,7 +189,7 @@ export class SearchV2ContentScanner extends ContentScanner {
         // @ts-ignore: error TS2769: No overload matches this call.
         /** @type {EntryList} */ (dirEntry).getUIChildren());
     return allRoots
-        .filter(entry => !util.isFakeEntry(entry))
+        .filter(entry => !isFakeEntry(entry))
         // @ts-ignore: error TS18047: 'entry.filesystem' is possibly 'null'.
         .map(entry => entry.filesystem.root);
   }
@@ -274,10 +274,10 @@ export class SearchV2ContentScanner extends ContentScanner {
            */
           (entries) => {
             if (this.cancelled_) {
-              reject(createDOMError(util.FileError.ABORT_ERR));
+              reject(createDOMError(FileErrorToDomError.ABORT_ERR));
             } else if (chrome.runtime.lastError) {
               reject(createDOMError(
-                  util.FileError.NOT_READABLE_ERR,
+                  FileErrorToDomError.NOT_READABLE_ERR,
                   chrome.runtime.lastError.message));
             } else {
               recordInterval(`Search.${metricVariant}.Latency`);
@@ -324,7 +324,7 @@ export class SearchV2ContentScanner extends ContentScanner {
       // type 'any[]' in some locations where its type cannot be determined.
       const collectedEntries = [];
       let workLeft = 1;
-      util.readEntriesRecursively(
+      readEntriesRecursively(
           folder,
           // More entries found callback.
           (entries) => {
@@ -532,12 +532,13 @@ export class SearchV2ContentScanner extends ContentScanner {
           (results) => {
             if (chrome.runtime.lastError) {
               reject(createDOMError(
-                  util.FileError.NOT_READABLE_ERR,
+                  FileErrorToDomError.NOT_READABLE_ERR,
                   chrome.runtime.lastError.message));
             } else if (this.cancelled_) {
-              reject(createDOMError(util.FileError.ABORT_ERR));
+              reject(createDOMError(FileErrorToDomError.ABORT_ERR));
             } else if (!results) {
-              reject(createDOMError(util.FileError.INVALID_MODIFICATION_ERR));
+              reject(
+                  createDOMError(FileErrorToDomError.INVALID_MODIFICATION_ERR));
             } else {
               recordInterval('Search.Drive.Latency');
               resolve(results.map(r => r.entry));
@@ -689,14 +690,14 @@ export class DriveMetadataSearchContentScanner extends ContentScanner {
             console.error(chrome.runtime.lastError.message);
           }
           if (this.cancelled_) {
-            errorCallback(createDOMError(util.FileError.ABORT_ERR));
+            errorCallback(createDOMError(FileErrorToDomError.ABORT_ERR));
             return;
           }
 
           if (!results) {
             console.warn('Drive search encountered an error.');
             errorCallback(
-                createDOMError(util.FileError.INVALID_MODIFICATION_ERR));
+                createDOMError(FileErrorToDomError.INVALID_MODIFICATION_ERR));
             return;
           }
 
@@ -753,9 +754,6 @@ export class RecentContentScanner extends ContentScanner {
       // 'any' type.
       entriesCallback, successCallback, errorCallback,
       invalidateCache = false) {
-    /** @type {function(!Entry): boolean} */
-    const isMatchQuery = (entry) =>
-        entry.name.toLowerCase().indexOf(this.query_) >= 0;
     /**
      * Files app launched with "volumeFilter" launch parameter will filter out
      * some volumes. Before returning the recent entries, we need to check if
@@ -765,18 +763,16 @@ export class RecentContentScanner extends ContentScanner {
     const isAllowedVolume = (entry) =>
         this.volumeManager_.getVolumeInfo(entry) !== null;
     chrome.fileManagerPrivate.getRecentFiles(
-        this.sourceRestriction_, this.fileCategory_, invalidateCache,
-        entries => {
+        this.sourceRestriction_, this.query_, this.fileCategory_,
+        invalidateCache, entries => {
           if (chrome.runtime.lastError) {
             console.error(chrome.runtime.lastError.message);
             errorCallback(
-                createDOMError(util.FileError.INVALID_MODIFICATION_ERR));
+                createDOMError(FileErrorToDomError.INVALID_MODIFICATION_ERR));
             return;
           }
           if (entries.length > 0) {
-            entriesCallback(entries.filter(
-                entry =>
-                    isMatchQuery(assert(entry)) && isAllowedVolume(entry)));
+            entriesCallback(entries.filter(entry => isAllowedVolume(entry)));
           }
           successCallback();
         });
@@ -816,7 +812,7 @@ export class MediaViewContentScanner extends ContentScanner {
       invalidateCache = false) {
     // To provide flatten view of files, this media-view scanner retrieves files
     // in directories inside the media's root entry recursively.
-    util.readEntriesRecursively(
+    readEntriesRecursively(
         this.rootEntry_,
         entries => entriesCallback(entries.filter(entry => !entry.isDirectory)),
         successCallback, errorCallback, () => false);
@@ -940,7 +936,7 @@ export class TrashContentScanner extends ContentScanner {
       // @ts-ignore: error TS2532: Object is possibly 'undefined'.
       this.readers_[idx].readEntries(entries => {
         if (this.cancelled_) {
-          errorCallback(createDOMError(util.FileError.ABORT_ERR));
+          errorCallback(createDOMError(FileErrorToDomError.ABORT_ERR));
           return;
         }
 

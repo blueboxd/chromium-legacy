@@ -807,7 +807,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Navigation.IsLockedProcess" enum="NavigationIsLockedProcess"
-    expires_after="2023-11-10">
+    expires_after="2024-11-10">
   <owner>alexmos@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <summary>
@@ -818,7 +818,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Navigation.IsLockedProcess.HTTPOrHTTPS"
-    enum="NavigationIsLockedProcess" expires_after="2023-11-10">
+    enum="NavigationIsLockedProcess" expires_after="2024-11-10">
   <owner>alexmos@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <summary>
@@ -1840,18 +1840,6 @@ chromium-metrics-reviews@google.com.
     speculation rules.
   </summary>
   <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
-</histogram>
-
-<histogram
-    name="Prerender.Experimental.DefaultSearchEngine.SearchTermExtractorCorrectness"
-    enum="Boolean" expires_after="2023-10-31">
-  <owner>lingqi@chromium.org</owner>
-  <owner>chrome-prerendering@google.com</owner>
-  <summary>
-    Records whether the search terms obtained via the search_terms_args are the
-    same as the search terms extracted from the URLs. This is recorded when
-    PrerenderManager attempts to start a new prerender.
-  </summary>
 </histogram>
 
 <histogram name="Prerender.Experimental.PredictionStatus.DefaultSearchEngine"

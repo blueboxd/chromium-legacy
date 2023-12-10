@@ -31,8 +31,8 @@
 <translation id="1129510026454351943">詳細: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1142732900304639782">これらのサイトを翻訳するか尋ねない</translation>
 <translation id="1145536944570833626">既存のデータを削除します。</translation>
-<translation id="1149401351239820326">有効期限（月）</translation>
 <translation id="1150263420752757504">Chrome で <ph name="APP_NAME" /> を開きます。続行すると、<ph name="BEGIN_LINK1" />Google 利用規約<ph name="END_LINK1" />と <ph name="BEGIN_LINK2" />Google Chrome および Chrome OS 追加利用規約<ph name="END_LINK2" />に同意したものと見なされます。</translation>
+<translation id="115483310321669804">パスワード <ph name="PASSWORD" /> を使用</translation>
 <translation id="1173894706177603556">名前を変更</translation>
 <translation id="1174479719160874822">画面が小さい場合、Chrome はモバイルサイトをリクエストします</translation>
 <translation id="1177863135347784049">カスタム</translation>
@@ -126,7 +126,6 @@
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{選択された 1 件のアイテムを削除します}other{選択された # 件のアイテムを削除します}}</translation>
 <translation id="1633659023549081553">Chrome のホームページで新しいコンテンツにアクセスできます</translation>
 <translation id="1641113438599504367">セーフ ブラウジング</translation>
-<translation id="1642309806724967937">設定によっては、Chrome から Cookie や現在の URL が送信されることもあります</translation>
 <translation id="164269334534774161">このページの <ph name="CREATION_TIME" /> のオフライン コピーを表示しています</translation>
 <translation id="1644574205037202324">履歴</translation>
 <translation id="1657932388559784161">ページの関連情報のボトムシートは閉じています
@@ -136,6 +135,7 @@
 <translation id="1672586136351118594">次回から表示しない</translation>
 <translation id="1680919990519905526">Google レンズで画像を購入 <ph name="BEGIN_NEW" />New<ph name="END_NEW" /></translation>
 <translation id="1687482373098770139">まもなく、[フォロー中] に <ph name="SITE_NAME" /> のコンテンツや関連するコンテンツが表示されるようになります。フォローするサイトや検索は Google アカウントに保存されます。フォローはいつでも設定で管理できます。</translation>
+<translation id="1696555181932908973"><ph name="SITE_ETLD_PLUS_ONE" /> で続行するには、別の方法をお試しください。</translation>
 <translation id="1702543251015153180">ダークモードの設定を変更しますか？</translation>
 <translation id="1702907158640575240">管理対象ブラウザ</translation>
 <translation id="1710099199314114079">タブを切り替える、または閉じる</translation>
@@ -150,8 +150,10 @@
 <translation id="1779766957982586368">ウィンドウを閉じる</translation>
 <translation id="1791662854739702043">インストール先</translation>
 <translation id="1792959175193046959">デフォルトのダウンロード保存先はいつでも変更できます</translation>
+<translation id="1796666869097395659">後で戻るにはタブを最小化します</translation>
 <translation id="1807246157184219062">明</translation>
 <translation id="1810845389119482123">最初の同期設定が終了していません</translation>
+<translation id="1812027881030482584"><ph name="SITE_ETLD_PLUS_ONE" /> は <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> の使用を続行できません</translation>
 <translation id="1829244130665387512">ページ内検索</translation>
 <translation id="1832459821645506983">同意する</translation>
 <translation id="185383612275551373">同期すると、最も関連性の高いコンテンツを表示できます</translation>
@@ -192,6 +194,7 @@
 <translation id="204321170514947529">Chrome にも <ph name="APP_NAME" /> のデータがあります</translation>
 <translation id="2046634576464120978">登録できませんでした</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2051669996101374349">可能な限り HTTPS を使用し、HTTPS をサポートしていないサイトは読み込む前に警告を表示します。高度な保護機能が有効になっているため、この設定は変更できません。</translation>
 <translation id="2053105195397337973">Google では、サイトが広告のスパムと不正行為を防止できるようにしながら、トラッキングを制限する方法を模索しています。</translation>
 <translation id="2056878612599315956">サイト一時停止中</translation>
 <translation id="2065944887543506430">{FILE_COUNT,plural, =1{1 件のダウンロードが失敗しました}other{# 件のダウンロードが失敗しました}}</translation>
@@ -215,13 +218,13 @@
 <translation id="2158408438301413340">Chrome ですべてのパスワードを確認できませんでした</translation>
 <translation id="2172688499998841696">画像の説明をオフにしました</translation>
 <translation id="2172905120685242547">ウィンドウを閉じますか？</translation>
+<translation id="2173302385160625112">インターネット接続を確認してください</translation>
 <translation id="2175927920773552910">QR コード</translation>
 <translation id="218608176142494674">共有</translation>
 <translation id="2194856509914051091">留意事項</translation>
 <translation id="2200113223741723867">使用状況データの共有の管理</translation>
 <translation id="22091350895006575">ユーザー名を追加</translation>
 <translation id="221494669172414749">プロフィールのロックを設定せずに Chrome を開くと、保存したパスワードとお支払い方法が車から削除されます。プロフィールのロックを使用すると、このデータを安全に保護できます。</translation>
-<translation id="2218567645332692482">移動先を HTTPS にアップグレードし、HTTPS をサポートしていないサイトは読み込む前に警告を表示します</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> として続行</translation>
 <translation id="2230777942707397948">空のウィンドウ</translation>
 <translation id="223356358902285214">ウェブとアプリのアクティビティ</translation>
@@ -317,6 +320,7 @@
 <translation id="2718846868787000099">ご希望の言語でコンテンツを表示するため、アクセス先のサイトには設定内容が伝えられます</translation>
 <translation id="2722945394406572875">プライバシー サンドボックスに関するメッセージを閉じました</translation>
 <translation id="2723001399770238859">音声</translation>
+<translation id="2742373789128106053"><ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> は現在使用できません。</translation>
 <translation id="2760805590727089264">MM/YY</translation>
 <translation id="2760989362628427051">デバイスのダークモードまたはバッテリー セーバーがオンのときにダークモードをオンにする</translation>
 <translation id="2762000892062317888">たった今</translation>
@@ -475,6 +479,7 @@
 <translation id="3509330069915219067">オフラインです。Chrome でアップデートを確認できません。</translation>
 <translation id="3513704683820682405">拡張現実（AR）</translation>
 <translation id="3518985090088779359">同意して続行</translation>
+<translation id="3521388823983121502"><ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> で続行できません</translation>
 <translation id="3522247891732774234">アップデートが見つかりました。その他のオプション</translation>
 <translation id="3524138585025253783">デベロッパー管理画面</translation>
 <translation id="3524334353996115845"><ph name="ORIGIN" /> で本人確認を行います</translation>
@@ -555,6 +560,7 @@
 <translation id="3985022125189960801">あなたの興味 / 関心を推測することを許可するには、サイトをプールに戻します</translation>
 <translation id="3985215325736559418"><ph name="FILE_NAME" /> をもう一度ダウンロードしますか？</translation>
 <translation id="3987993985790029246">リンクのコピー</translation>
+<translation id="3991055816270226534">サードパーティ Cookie とトラッキング防止機能を管理します</translation>
 <translation id="3999683152997576765">サイトでの広告表示に使用される興味 / 関心のトピックを表示、削除できます。Chrome では最近の閲覧履歴に基づいてユーザーの興味 / 関心を推定します。</translation>
 <translation id="4000212216660919741">オフライン ホーム</translation>
 <translation id="4016425174436051808">フォローできません。エラーが発生しました。</translation>
@@ -627,6 +633,7 @@
 <translation id="4355272626458588338">重要なページは、ブックマークに追加しておくとすぐにアクセスできます</translation>
 <translation id="4369735607080757018">広告効果を測定するため、測定の対象となる広告が表示された時刻など、限定的な種類のデータが関係するウェブサイト間で共有されます</translation>
 <translation id="4378154925671717803">電話</translation>
+<translation id="4380055775103003110">この問題がまだ解消しない場合は、<ph name="SITE_ETLD_PLUS_ONE" /> で続行するための別の方法をお試しください。</translation>
 <translation id="438319986296050901">カードのみ共有</translation>
 <translation id="4384468725000734951">検索に Sogou を使用します</translation>
 <translation id="4387647248986092471">車のプロフィールのロックを作成</translation>
@@ -699,7 +706,6 @@
 <translation id="4738836084190194332">最終同期: <ph name="WHEN" /></translation>
 <translation id="4741753828624614066">アドレスバーにより関連性の高い候補が表示されます</translation>
 <translation id="4742970037960872810">テキストの選択を解除</translation>
-<translation id="4743664893327841597">アドレスバーまたは検索ボックスに入力した内容は、デフォルトの検索エンジンに送信されます</translation>
 <translation id="4749960740855309258">新しいタブを開く</translation>
 <translation id="4750356170202299988">若者向けのコンテンツ</translation>
 <translation id="4758061975920522644">画像のみ共有</translation>
@@ -733,6 +739,7 @@
 <translation id="4864369630010738180">ログインしています...</translation>
 <translation id="4866368707455379617">Chrome 用の <ph name="MODULE" /> をインストールできません</translation>
 <translation id="4871568871368204250">同期の無効化</translation>
+<translation id="4874961007154620743">オフにした場合も、ローカルで提供される検索候補は引き続き表示されます</translation>
 <translation id="4875775213178255010">おすすめのコンテンツ</translation>
 <translation id="4877678010818027629">シークレット モードを開始</translation>
 <translation id="4878404682131129617">プロキシ サーバー経由のトンネルを確立できませんでした</translation>
@@ -885,6 +892,7 @@
 <translation id="569435661099256888">アクセスしたページを確認したり履歴から消去したりできます</translation>
 <translation id="569536719314091526">[その他のオプション] から、このページを任意の言語に翻訳できます</translation>
 <translation id="5696597120588531049">Chrome でデータ侵害や安全でないウェブサイトなどの脅威から保護されているか確認します</translation>
+<translation id="5698878456427040674">選択したアカウントがサポートされているかどうかを確認してください。</translation>
 <translation id="570347048394355941">タブを切り替え</translation>
 <translation id="572328651809341494">最近使ったタブ</translation>
 <translation id="5726692708398506830">ページ上のすべての要素を拡大する</translation>
@@ -895,6 +903,7 @@
 <translation id="5753139477036638699">Chrome で声を使って検索できます</translation>
 <translation id="5754350196967618083">おすすめの記事を更新できません</translation>
 <translation id="5755162682436943950">ログアウトしています。ログインして同期をオンにするダイアログを開きます。</translation>
+<translation id="5759897675466110265">サイトが動作していない場合 サードパーティ Cookie を一時的に許可してみてください</translation>
 <translation id="5763382633136178763">シークレット タブ</translation>
 <translation id="5763514718066511291">タップすると、このアプリの URL がコピーされます</translation>
 <translation id="5765517223145864268">ご意見、ご感想をぜひお聞かせください。<ph name="BEGIN_LINK" />設定を変更する<ph name="END_LINK" />こともできます。</translation>
@@ -963,6 +972,7 @@
 <translation id="6108923351542677676">設定しています...</translation>
 <translation id="6112702117600201073">ページを更新しています</translation>
 <translation id="6122831415929794347">セーフ ブラウジングをオフにしますか？</translation>
+<translation id="6125864963080902918"><ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">アイテムを削除しました</translation>
 <translation id="6130303040046284160">タブを最小化</translation>
 <translation id="6137022273846704445"><ph name="APP_NAME" /> の言語</translation>
@@ -1004,6 +1014,7 @@
 <translation id="6342069812937806050">たった今</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 他 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 件}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 他 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 件}}</translation>
 <translation id="6345878117466430440">既読にする</translation>
+<translation id="6356893102071098867">正しいアカウントを選択していることを確認する</translation>
 <translation id="6357653805084533597">この QR コードが表示されているデバイスに、このスマートフォンを使用してログインできます。</translation>
 <translation id="6363990818884053551">同期を開始するには、本人確認を行ってください</translation>
 <translation id="6364438453358674297">履歴から候補を削除しますか？</translation>
@@ -1022,7 +1033,7 @@
 <translation id="6412673304250309937">Chrome に保存されている安全でないサイトのリストと URL を照合します。サイトがパスワードを不正に取得しようとしている場合や、ユーザーが安全でないファイルをダウンロードしようとした場合は、URL とページ コンテンツの一部をセーフ ブラウジングに送信することがあります。</translation>
 <translation id="641643625718530986">印刷...</translation>
 <translation id="6422857128426228781">トラッキングしている商品がここに表示されます</translation>
-<translation id="6433501201775827830">検索エンジンを選択</translation>
+<translation id="6433501201775827830">検索エンジンの選択</translation>
 <translation id="6434309073475700221">破棄</translation>
 <translation id="6437478888915024427">ページ情報</translation>
 <translation id="6440291723980579689">ページは開いてから読み込まれます</translation>
@@ -1136,6 +1147,7 @@
 <translation id="6908998565271542516">ウェブサイトを承認するかどうかを決定するオプション（最大の高さで表示）</translation>
 <translation id="6909589135458168665">ページをプリロードする</translation>
 <translation id="6910211073230771657">削除済み</translation>
+<translation id="6918398787259831832">この問題がまだ解消しない場合は、<ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> の<ph name="BEGIN_LINK" />詳細をご覧ください<ph name="END_LINK" />。</translation>
 <translation id="6942665639005891494">デフォルトのダウンロード保存先は [設定] メニューでいつでも変更できます</translation>
 <translation id="694267552845942083">同期の設定をカスタマイズしています。同期を有効にしたら、画面の下部にある [確認] をタップしてください。上へ移動</translation>
 <translation id="6945221475159498467">選択</translation>
@@ -1172,6 +1184,7 @@
 <translation id="7138678301420049075">その他</translation>
 <translation id="7140829094791862589">手動で並べ替え</translation>
 <translation id="7146622961999026732">以下のサイトやアプリは重要な可能性があります。</translation>
+<translation id="7148400116894863598"><ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> の<ph name="BEGIN_LINK" />詳細をご覧ください<ph name="END_LINK" />。</translation>
 <translation id="7149893636342594995">過去 24 時間</translation>
 <translation id="7168323970702333693"><ph name="USER_NAME" /> としてログインしています。設定を開きます。</translation>
 <translation id="7173114856073700355">設定を開く</translation>
@@ -1197,13 +1210,16 @@
 <translation id="727288900855680735"><ph name="ONE_TIME_CODE" /> を <ph name="ORIGIN" /> に送信しますか？</translation>
 <translation id="7274013316676448362">ブロック中のサイト</translation>
 <translation id="7276100255011548441">Chrome では、4 週間以上経過したトピックは自動削除されます。閲覧を続けていると、トピックがリストに再度表示される場合もあります。ウェブサイトと共有したくないトピックはブロックできます。詳しくは、<ph name="BEGIN_LINK" />Chrome で広告のプライバシーを管理する<ph name="END_LINK" />をご確認ください。</translation>
+<translation id="7284878711178835966">入力を始めると、アドレスバーや検索ボックスの内容が既定の検索エンジンに送信されます</translation>
 <translation id="7286703216224610554">リアクションのみ共有</translation>
+<translation id="7289303553784750393">オンラインであるにもかかわらず、この問題がまだ解消しない場合は、<ph name="SITE_ETLD_PLUS_ONE" /> で続行するための別の方法をお試しください。</translation>
 <translation id="7290209999329137901">名前の変更はできません</translation>
 <translation id="7291910923717764901">このページの画像の説明が追加されました</translation>
 <translation id="7293429513719260019">言語を選択</translation>
 <translation id="729975465115245577">お使いのデバイスにはパスワード ファイルを保存するためのアプリがインストールされていません。</translation>
 <translation id="7304072650267745798">お使いの Android デバイスにも、同様の設定が含まれていることがあります。Chrome と Android デバイスでこの設定が有効になっている場合、ユーザーが利用するウェブサイトやアプリ間で広告の効果が測定される可能性があります。</translation>
 <translation id="7304873321153398381">オフラインです。Chrome でパスワードを確認できません。</translation>
+<translation id="7313094438430838513">トラッキングから保護します</translation>
 <translation id="7313188324932846546">タップして同期を設定する</translation>
 <translation id="7324354302972299151">「トラッキング拒否」リクエストを送信する</translation>
 <translation id="7332075081379534664">ログインが完了しました</translation>
@@ -1252,6 +1268,7 @@
 <translation id="750228856503700085">アップデートを利用できません</translation>
 <translation id="7507207699631365376">このプロバイダの<ph name="BEGIN_LINK" />プライバシー ポリシー<ph name="END_LINK" />をご覧ください</translation>
 <translation id="7514365320538308">ダウンロード</translation>
+<translation id="7518079994230200553">このオプションは現在使用できません。</translation>
 <translation id="751961395872307827">サイトに接続できません</translation>
 <translation id="752220631458524187">完了したら取り外してください</translation>
 <translation id="7523960634226602883">Google レンズを使ってカメラで検索します</translation>
@@ -1295,7 +1312,6 @@
 <translation id="7702388902581909985">閲覧データを削除しても、Google アカウントからはログアウトされません。ログアウトするには、<ph name="BEGIN_LINK1" />Chrome からログアウト<ph name="END_LINK1" />する手順を行います。</translation>
 <translation id="7707922173985738739">モバイルデータを使用します</translation>
 <translation id="7709918231054955894">使用したすべてのタブを表示</translation>
-<translation id="772434085369393266">移動先を HTTPS にアップグレードし、HTTPS をサポートしていないサイトは読み込む前に警告を表示します。高度な保護機能が有効になっているため、この設定は変更できません。</translation>
 <translation id="7725024127233776428">ブックマークしたページがここに表示されます</translation>
 <translation id="7733878270780732638">デバイスに十分な容量がありません。</translation>
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" /> からテキストが共有されました</translation>
@@ -1333,6 +1349,7 @@
 <translation id="7887174313503389866">ガイドに沿って、プライバシーとセキュリティに関する重要な設定を確認します。その他のオプションについては、それぞれの設定で行います。</translation>
 <translation id="7896724475402191389">若者向けのコンテンツ - オフ</translation>
 <translation id="7903184275147100332">1 分ほどかかる場合があります</translation>
+<translation id="7907478394153853634">Lorem Ipsum</translation>
 <translation id="7914399737746719723">アプリをインストールしました</translation>
 <translation id="7919123827536834358">これらの言語を自動的に翻訳する</translation>
 <translation id="7926975587469166629">カードのニックネーム</translation>
@@ -1368,7 +1385,6 @@
 <translation id="804335162455518893">SD カードが見つかりません</translation>
 <translation id="8048533522416101084">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> 個のシークレット タブ}other{<ph name="TAB_COUNT_NORMAL" /> 個のシークレット タブ}}</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB 利用可</translation>
-<translation id="8058655154417507695">有効期限（年）</translation>
 <translation id="8058746566562539958">新しい Chrome タブで開く</translation>
 <translation id="8062594758852531064">拡張プリロード:</translation>
 <translation id="8063895661287329888">ブックマークを追加できませんでした。</translation>
@@ -1424,6 +1440,7 @@
 <translation id="831192587911042850">現在のウェブサイトを、フォローしているウェブサイトのリストに追加します。</translation>
 <translation id="8333340769932050274">ユーザーはウェブサイトと共有したくないトピックをブロックできます。また、4 週間以上経過したトピックは自動削除されます。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="834313815369870491">翻訳しないサイト</translation>
+<translation id="8348430946834215779">可能な限り HTTPS を使用し、HTTPS をサポートしていないサイトは読み込む前に警告を表示します</translation>
 <translation id="8349795646647783032"><ph name="BEGIN_BOLD" />このデータの利用方法:<ph name="END_BOLD" /> サイトでは、ユーザーの興味 / 関心に関する情報を Chrome に保存できます。たとえば、マラソン用のシューズを購入するためにあるサイトにアクセスすると、そのサイトでは「ランニング」をユーザーの興味 / 関心として定義する可能性があります。その後、別のサイトにアクセスして競技に登録しようとすると、そのサイトでは、ユーザーの興味 / 関心に基づいてランニング用シューズの広告が表示される場合があります。</translation>
 <translation id="8354977102499939946">音声ですばやく検索します。このショートカットは [設定] で編集できます。</translation>
 <translation id="835847953965672673"><ph name="NUMBER_OF_DOWNLOADS" /> 件のダウンロードが復元されました</translation>
@@ -1502,7 +1519,7 @@
 <translation id="8683039184091909753">画像</translation>
 <translation id="869891660844655955">有効期限</translation>
 <translation id="8699120352855309748">これらの言語を翻訳するか尋ねない</translation>
-<translation id="8712637175834984815">理解した</translation>
+<translation id="8712637175834984815">OK</translation>
 <translation id="8723453889042591629">このページをすばやく翻訳します。このショートカットを編集するには、長押ししてください。</translation>
 <translation id="8725066075913043281">やり直し</translation>
 <translation id="8731268612289859741">セキュリティ コード</translation>
@@ -1542,6 +1559,7 @@
 <translation id="8924575305646776101"><ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="892496902842311796"><ph name="LANG" /> を使用できるようになりました</translation>
 <translation id="8937772741022875483">Chrome のアクティビティを Digital Wellbeing から削除しますか？</translation>
+<translation id="893938492099608175">設定によっては、Chrome から Cookie、現在の URL、位置情報が送信されることもあります</translation>
 <translation id="8942627711005830162">別のウィンドウで開く</translation>
 <translation id="8945143127965743188"><ph name="LANG" /> - この言語をダウンロードできませんでした。しばらくしてからもう一度お試しください。</translation>
 <translation id="8955719471735800169">トップへ戻る</translation>

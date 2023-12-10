@@ -42,6 +42,7 @@
 <translation id="1290331692326790741">Начар сигнал</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1308754910631152188">Жаңырууда (<ph name="PERCENTAGE_VALUE" />% аткарылды)</translation>
+<translation id="1309341072016605398"><ph name="MINUTES" /> мүнөт</translation>
 <translation id="1310380015393971138"><ph name="NETWORK_NAME" /> тармагы жок</translation>
 <translation id="131421566576084655">Трафиктин колдонулушу жөнүндө маалымат акыркы жолу качан баштапкы абалга келтирилгени белгисиз</translation>
 <translation id="1314565355471455267">Android VPN</translation>
@@ -86,6 +87,7 @@
 <translation id="1572585716423026576">Тушкагаз катары коюу</translation>
 <translation id="1578784163189013834">Көшөгөнүн фонун тандоо</translation>
 <translation id="160633243685262989">Сүрөттү алдын ала көрүү</translation>
+<translation id="1611649489706141841">багыттоо</translation>
 <translation id="1615335640928990664"><ph name="FRIENDLY_DATE" /> бери колдонулган трафик</translation>
 <translation id="1621067168122174824">Кубатталышын сыноо</translation>
 <translation id="1639239467298939599">Жүктөлүүдө</translation>
@@ -187,6 +189,7 @@
 <translation id="2236746079896696523">Баскычтоптун жарыгын өчүрүү/күйгүзүү</translation>
 <translation id="2240366984605217732">Баскычтоптун калыбын которгуч</translation>
 <translation id="225692081236532131">Жандыруу абалы</translation>
+<translation id="2267285889943769271">Скриншот кошуу</translation>
 <translation id="2271469253353559191">Караңгы теманын графиги</translation>
 <translation id="2276999893457278469">Пайдалуу материалдар</translation>
 <translation id="2279051792571591988">Демейкилерди калыбына келтирүү</translation>
@@ -288,6 +291,7 @@
 <translation id="3226405216343213872">Сканерлер изделүүдө</translation>
 <translation id="3226657629376379887">Калып боюнча аракеттер менюсу</translation>
 <translation id="3246869037381808805">1 күндөн мурунку басып чыгаруу тапшырмалары өчүрүлөт</translation>
+<translation id="324961752321393509">Администраторуңуз бул колдонмону жабууга тыюу салган</translation>
 <translation id="3268178239013324452">Басылып чыгарылган жок - Принтердин эшиги ачык</translation>
 <translation id="3275729367986477355">Аватардын сүрөтү</translation>
 <translation id="3283504360622356314">{0,plural, =1{Файлды түзөтүү}other{Файлдарды түзөтүү}}</translation>
@@ -429,6 +433,7 @@
 <translation id="4297501883039923494">Токтоду – Белгисиз ката</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> сүрөт</translation>
 <translation id="4333390807948134856"><ph name="KEY_NAME" /> баскычы басылды</translation>
+<translation id="4354430579665871434">баскыч</translation>
 <translation id="435692326371619097">Тармактын APN параметрлерин тескеңиз. APN'дер мобилдик тармак менен Интернеттин ортосундагы байланышты түзүшөт. <ph name="BEGIN_LINK" />Кеңири маалымат<ph name="END_LINK" /></translation>
 <translation id="437294888293595148">Бардык ыкчам баскычтарды баштапкы абалга келтирүү</translation>
 <translation id="4378373042927530923">Иштетилген жок</translation>
@@ -691,9 +696,11 @@
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">Караңгы теманы күйгүзүү</translation>
 <translation id="628726841779494414">Принтерлерди алардын параметрлеринен тескеңиз</translation>
+<translation id="6292095526077353682">Кубатталып жатканда көшөгөнү көрсөтүү</translation>
 <translation id="629550705077076970">баскычтопту күңүрт кылуу</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" /> сыноосу жокко чыгарылды</translation>
 <translation id="631063167932043783">Мүмкүнчүлүктөр колдонмосу</translation>
+<translation id="6318437367327684789">ар дайым</translation>
 <translation id="6319207335391420837"><ph name="DEVICE_NAME" /> түзмөгүндө орнотулган программаны жаңыртуу</translation>
 <translation id="6321407676395378991">Көшөгөнү күйгүзүү</translation>
 <translation id="6324916366299863871">Кыска жолду түзөтүү</translation>
@@ -943,6 +950,7 @@
 <translation id="8227119283605456246">Файл тиркөө</translation>
 <translation id="8230672074305416752">Демейки тармактын шлюзуна ping сурамы жөнөтүлгөн жок</translation>
 <translation id="8246209727385807362">Белгисиз байланыш оператору</translation>
+<translation id="8262870577632766028">1 саат</translation>
 <translation id="827422111966801947">Индиго</translation>
 <translation id="8286154143153872371">Тушкагазды көрүү үчүн тармакка туташып, баракты кайра жүктөңүз.</translation>
 <translation id="8291967909914612644">Баштапкы жабдуучу өлкө</translation>
@@ -1007,6 +1015,7 @@
 <translation id="8747900814994928677">Өзгөртүүнү ырастоо</translation>
 <translation id="8764414543112028321">WireGuard</translation>
 <translation id="87646919272181953">Google Фотодогу альбом</translation>
+<translation id="8775713578693478175">Модемдин APN'ни</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8789196995628578448">"<ph name="CONFLICT_ACCEL_NAME" />" үчүн колдонулган ыкчам баскыч. Жаңы ыкчам баскычты басыңыз. Баштапкы ыкчам баскычты алмаштыруу үчүн жаңысын кайра басыңыз.</translation>
 <translation id="879568662008399081">Бул тармактын кирүү бети болушу мүмкүн</translation>

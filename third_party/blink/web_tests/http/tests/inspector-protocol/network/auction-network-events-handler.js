@@ -1,13 +1,26 @@
 (async function (testRunner) {
   const base = 'https://a.test:8443/inspector-protocol/resources/'
   const { session, dp } = await testRunner.startBlank(
-    'Verifying the events that go through the auction network event handler are accurate.',
-    { url: base + 'fledge_join.html?10' });
+    'Verifying the events that go through the auction network event handler are accurate.\nNote: There are two bidding requests because we reload the bidding worklet when we are reporting. ',
+    { url: base + 'fledge_join.html?1' });
 
   await dp.Network.enable();
   await dp.Network.setCacheDisabled({ cacheDisabled: true });
 
   await dp.Emulation.setUserAgentOverride({ userAgent: 'Vending Machine', acceptLanguage: 'ar' });
+
+  let finishedLoadingRequests = 0;
+  let finishedReceivingExtraInfo = 0;
+  let resolveAllRequestsCompleted = null;
+  const allRequestsCompleted = new Promise((resolve) => {
+    resolveAllRequestsCompleted = resolve;
+  });
+
+  function checkIfAllRequestsCompleted() {
+    if (finishedLoadingRequests > 4 && finishedReceivingExtraInfo > 4) {
+      resolveAllRequestsCompleted(true);
+    }
+  }
 
   const requestsById = new Map();
 
@@ -46,22 +59,39 @@
   dp.Network.onResponseReceivedExtraInfo(async event => {
     const requestId = event.params.requestId;
     requestsById[requestId].responseExtraInfoReceived = true;
+    finishedReceivingExtraInfo++;
+    checkIfAllRequestsCompleted();
+
   });
 
   dp.Network.onLoadingFinished(async event => {
     const requestId = event.params.requestId;
     requestsById[requestId].finished = true;
+    finishedLoadingRequests++;
+    checkIfAllRequestsCompleted();
   });
+
   const auctionJs = `
-    navigator.runAdAuction({
-      decisionLogicURL: "${base}fledge_decision_logic.js.php",
-      seller: "https://a.test:8443",
-      interestGroupBuyers: ["https://a.test:8443"]})`;
+  async function runAdAuction() {
+      const result = await navigator.runAdAuction({
+        decisionLogicURL: "${base}fledge_decision_logic.js.php",
+        seller: "https://a.test:8443",
+        interestGroupBuyers: ["https://a.test:8443"],
+        resolveToConfig: true
+      });
+
+      const fencedFrame = document.createElement('fencedframe');
+      fencedFrame.mode = "opaque-ads";
+      fencedFrame.config = result;
+      document.body.appendChild(fencedFrame);
+    };
+    runAdAuction();
+      `;
 
   await session.evaluateAsync(auctionJs);
+  await allRequestsCompleted;
 
   const requests = Object.values(requestsById).sort((a, b) => a.url.localeCompare(b.url, "en"));
   testRunner.log(requests);
-
   testRunner.completeTest();
 })

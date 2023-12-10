@@ -457,6 +457,35 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, SamlUI) {
   test::OobeJS().ExpectHiddenPath(kSamlNoticeContainer);
 }
 
+// This test is run with both new API Create Account enable or disable.
+using SamlWithCreateAccountAPITestParams = std::tuple<bool, bool>;
+class SamlWithCreateAccountAPITest
+    : public SamlTestBase,
+      public testing::WithParamInterface<SamlWithCreateAccountAPITestParams> {
+ public:
+  SamlWithCreateAccountAPITest() {
+    std::vector<base::test::FeatureRef> enabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
+
+    // Handle Gaia's create account message
+    if (IsRecordCreateAccountFeatureEnabled()) {
+      enabled_features.push_back(features::kGaiaRecordAccountCreation);
+    } else {
+      disabled_features.push_back(features::kGaiaRecordAccountCreation);
+    }
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
+  }
+
+ protected:
+  bool IsRecordCreateAccountFeatureEnabled() const {
+    return std::get<0>(GetParam());
+  }
+  bool IsNewAccountSignedUp() const { return std::get<1>(GetParam()); }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
 // The SAML IdP requires HTTP Protocol-level authentication (Basic in this
 // case).
 IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, IdpRequiresHttpAuth) {
@@ -1010,6 +1039,54 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, MetaRefreshToHTTPDisallowed) {
   WaitForSigninScreen();
 }
 
+// Tests the sign-in flow when the credentials passing API is used.
+IN_PROC_BROWSER_TEST_P(SamlWithCreateAccountAPITest,
+                       CredentialPassingAPIWithNewAccount) {
+  base::HistogramTester histogram_tester;
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_api_login.html");
+  std::string login_auth_template = "saml_api_login_auth.html";
+  if (IsNewAccountSignedUp()) {
+    login_auth_template = "saml_api_login_auth_with_new_account.html";
+  }
+  fake_saml_idp()->SetLoginAuthHTMLTemplate(login_auth_template);
+  StartSamlAndWaitForIdpPageLoad(
+      saml_test_users::kFirstUserCorpExampleComEmail);
+
+  // Fill-in the SAML IdP form and submit.
+  SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
+  SigninFrameJS().TypeIntoPath("not_the_password", {"Dummy"});
+  SigninFrameJS().TypeIntoPath("actual_password", {"Password"});
+
+  SigninFrameJS().TapOn("Submit");
+
+  // Login should finish login and a session should start.
+  test::WaitForPrimaryUserSessionStart();
+
+  // TODO (b/308176681): add test case for first user/non first user on the
+  // device.
+  if (IsNewAccountSignedUp() && IsRecordCreateAccountFeatureEnabled()) {
+    histogram_tester.ExpectUniqueSample(
+        "ChromeOS.Gaia.CreateAccount.IsFirstUser", 1, 1);
+  } else {
+    histogram_tester.ExpectTotalCount("ChromeOS.Gaia.CreateAccount.IsFirstUser",
+                                      0);
+  }
+
+  histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 1, 1);
+  histogram_tester.ExpectUniqueSample("ChromeOS.SAML.Provider", 1, 1);
+  histogram_tester.ExpectTotalCount("OOBE.GaiaLoginTime", 0);
+
+  histogram_tester.ExpectBucketCount("ChromeOS.Gaia.Message.Saml.UserInfo", 0,
+                                     0);
+  histogram_tester.ExpectBucketCount("ChromeOS.Gaia.Message.Saml.UserInfo", 1,
+                                     1);
+
+  histogram_tester.ExpectBucketCount("ChromeOS.Gaia.Message.Saml.CloseView", 0,
+                                     0);
+  histogram_tester.ExpectBucketCount("ChromeOS.Gaia.Message.Saml.CloseView", 1,
+                                     1);
+}
+
 class SAMLEnrollmentTest : public SamlTestBase {
  public:
   SAMLEnrollmentTest();
@@ -1104,6 +1181,7 @@ class SAMLPolicyTest : public SamlTestBase {
   void EnableTransferSAMLCookiesPolicy();
   void SetLoginBehaviorPolicyToSAMLInterstitial();
   void SetLoginVideoCaptureAllowedUrls(const std::vector<GURL>& allowed);
+  void SetPolicyToHideUserPods();
   // SSO_profile in device policy blob is responsible for per-OU IdP
   // configuration.
   void SetSSOProfile(const std::string& sso_profile);
@@ -1236,6 +1314,13 @@ void SAMLPolicyTest::SetLoginVideoCaptureAllowedUrls(
   em::ChromeDeviceSettingsProto& proto(*device_policy_update->policy_payload());
   for (const GURL& url : allowed)
     proto.mutable_login_video_capture_allowed_urls()->add_urls(url.spec());
+}
+
+void SAMLPolicyTest::SetPolicyToHideUserPods() {
+  std::unique_ptr<ScopedDevicePolicyUpdate> device_policy_update =
+      device_state_.RequestDevicePolicyUpdate();
+  em::ChromeDeviceSettingsProto& proto(*device_policy_update->policy_payload());
+  proto.mutable_show_user_names()->set_show_user_names(false);
 }
 
 void SAMLPolicyTest::SetSSOProfile(const std::string& sso_profile) {
@@ -1700,12 +1785,41 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, TestLockMediaPermission) {
 }
 
 // Tests that we land on 3P IdP page corresponding to sso_profile from the
+// device policy blob during online auth with hidden user pods.
+IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SsoProfileInHiddenUserPodsFlow) {
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
+
+  // Set wrong redirect url for domain-based SAML redirection. This ensures that
+  // for test to finish successfully it should perform redirection based on SSO
+  // profile.
+  const GURL wrong_redirect_url("https://wrong.com");
+  fake_gaia_.fake_gaia()->RegisterSamlDomainRedirectUrl(
+      fake_saml_idp()->GetIdpDomain(), wrong_redirect_url);
+
+  SetLoginBehaviorPolicyToSAMLInterstitial();
+  SetSSOProfile(fake_saml_idp()->GetIdpSsoProfile());
+  SetPolicyToHideUserPods();
+
+  // Wait for online authentication screen to show up.
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+  test::OobeJS().CreateVisibilityWaiter(true, kSigninFrameDialog)->Wait();
+  test::OobeJS().CreateVisibilityWaiter(false, kGaiaLoading)->Wait();
+
+  // Expect that we are in the SAML flow.
+  test::OobeJS().ExpectVisiblePath(kSamlNoticeContainer);
+  // Expect email field to be visible on IdP page - this guarantees that we've
+  // navigated to the IdP page based on SSO profile since we've set domain-based
+  // redirection to not work above.
+  SigninFrameJS().ExpectVisible("Email");
+}
+
+// Tests that we land on 3P IdP page corresponding to sso_profile from the
 // device policy blob during "add user" flow.
 IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SsoProfileInAddNewUserFlow) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
 
-  // Set wrong redirect url for domain-based saml redirection. This ensures that
-  // for test to finish successfully it should perform redirection based on sso
+  // Set wrong redirect url for domain-based SAML redirection. This ensures that
+  // for test to finish successfully it should perform redirection based on SSO
   // profile.
   const GURL wrong_redirect_url("https://wrong.com");
   fake_gaia_.fake_gaia()->RegisterSamlDomainRedirectUrl(
@@ -1717,11 +1831,12 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SsoProfileInAddNewUserFlow) {
   // Launch "add user" flow.
   ShowSAMLLoginForm();
 
-  SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
-  SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
-
-  SigninFrameJS().TapOn("Submit");
-  test::WaitForPrimaryUserSessionStart();
+  // Expect that we are in the SAML flow.
+  test::OobeJS().ExpectVisiblePath(kSamlNoticeContainer);
+  // Expect email field to be visible on IdP page - this guarantees that we've
+  // navigated to the IdP page based on SSO profile since we've set domain-based
+  // redirection to not work above.
+  SigninFrameJS().ExpectVisible("Email");
 }
 
 IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLBlocklistNavigationDisallowed) {
@@ -1844,8 +1959,10 @@ IN_PROC_BROWSER_TEST_P(SAMLPasswordAttributesTest, LoginSucceeded) {
 
   if (in_session_pw_change_policy_enabled()) {
     // These values are extracted from saml_with_password_attributes.xml
-    EXPECT_EQ(base::Time::FromJsTime(1550836258421L), attrs.modified_time());
-    EXPECT_EQ(base::Time::FromJsTime(1551873058421L), attrs.expiration_time());
+    EXPECT_EQ(base::Time::FromMillisecondsSinceUnixEpoch(1550836258421L),
+              attrs.modified_time());
+    EXPECT_EQ(base::Time::FromMillisecondsSinceUnixEpoch(1551873058421L),
+              attrs.expiration_time());
     EXPECT_EQ("https://" + fake_saml_idp()->GetIdpDomain() +
                   "/adfs/portal/updatepassword/",
               attrs.password_change_url());
@@ -2321,5 +2438,7 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceTrustEnrolledTest, PolicyTwoEntriesSuccess) {
 }
 
 INSTANTIATE_TEST_SUITE_P(All, SamlTestWithFeatures, ::testing::Bool());
-
+INSTANTIATE_TEST_SUITE_P(All,
+                         SamlWithCreateAccountAPITest,
+                         testing::Combine(testing::Bool(), testing::Bool()));
 }  // namespace ash

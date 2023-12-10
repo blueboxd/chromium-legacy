@@ -69,7 +69,7 @@
           'chromeos-betty',
         ],
         'test_suites': {
-          'gtest_tests': 'chromeos_vm_gtests',
+          'gtest_tests': 'chromeos_vm_gtests_and_tast',
           'isolated_scripts': 'chromeos_isolated_scripts',
         },
       },
@@ -110,23 +110,6 @@
           'dimensions': {
             'os': 'ChromeOS',
             'device_type': 'eve',
-            'pool': 'chrome.tests',
-          },
-        },
-        'os_type': 'chromeos'
-      },
-      'chromeos-jacuzzi-chrome': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-        # TODO(crbug.com/1342987): All DUTs are dead.
-        # 'test_suites': {
-        #  'gtest_tests': 'chromeos_device_gtests',
-        #},
-        'swarming': {
-          'dimensions': {
-            'os': 'ChromeOS',
-            'device_type': 'jacuzzi',
             'pool': 'chrome.tests',
           },
         },
@@ -916,6 +899,19 @@
           'gtest_tests': 'cronet_gtests',
         },
       },
+      'android-cronet-x64-dbg-14-tests': {
+        'mixins': [
+          '14-x64-emulator',
+          'emulator-8-cores',
+          'has_native_resultdb_integration',
+          'linux-jammy',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'cronet_gtests',
+        },
+      },
       'android-cronet-x64-rel': {
         'additional_compile_targets': [
           'cronet_package',
@@ -1155,7 +1151,7 @@
       },
       'android-12-x64-fyi-rel': {
         'mixins': [
-          '12-x64-emulator',
+          '12-google-atd-x64-emulator',
           'emulator-8-cores',
           'has_native_resultdb_integration',
           'linux-jammy',
@@ -1163,12 +1159,12 @@
         ],
         'os_type': 'android',
         'test_suites': {
-          'gtest_tests': 'android_12_emulator_fyi_gtests',
+          'gtest_tests': 'android_12_emulator_gtests',
         }
       },
       'android-12l-x64-fyi-dbg': {
         'mixins': [
-          '12l-x64-emulator-experimental',
+          '12l-google-atd-x64-emulator',
           'emulator-8-cores',
           'has_native_resultdb_integration',
           'linux-jammy',
@@ -1181,7 +1177,7 @@
       },
       'android-13-x64-fyi-rel': {
         'mixins': [
-          '13-x64-emulator-experimental',
+          '13-google-atd-x64-emulator',
           'emulator-8-cores',
           'has_native_resultdb_integration',
           'linux-jammy',
@@ -1540,6 +1536,8 @@
         'additional_compile_targets': [
           'chromiumos_preflight',
         ],
+      },
+      'chromeos-amd64-generic-rel-gtest': {
         'browser_config': 'cros-chrome',
         'mixins': [
           'chromeos-amd64-generic',
@@ -1548,6 +1546,21 @@
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_chromeos_telemetry_tests',
           'gtest_tests': 'chromeos_vm_gtests',
+          'isolated_scripts': 'chromeos_isolated_scripts',
+        },
+      },
+      'chromeos-amd64-generic-rel-renamed': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'browser_config': 'cros-chrome',
+        'mixins': [
+          'chromeos-amd64-generic',
+        ],
+        'os_type': 'chromeos',
+        'test_suites': {
+          'gpu_telemetry_tests': 'gpu_chromeos_telemetry_tests',
+          'gtest_tests': 'chromeos_vm_gtests_and_tast',
           'isolated_scripts': 'chromeos_isolated_scripts',
         },
       },
@@ -1999,6 +2012,22 @@
           'chromium_builder_asan',
         ],
       },
+      'ToTMacArm64': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'mixins': [
+          'mac_x64',
+        ],
+      },
+      'ToTMacArm64PGO': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'mixins': [
+          'mac_x64',
+        ],
+      },
       # Used on an internal builder.
       'ToTMacOfficial': {
         'mixins': [
@@ -2013,6 +2042,17 @@
         'additional_compile_targets': [
           'all',
         ],
+      },
+      'ToTMacPGO': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'mixins': [
+          'mac_x64',
+        ],
+        'test_suites': {
+          'gtest_tests': 'clang_tot_gtests',
+        },
       },
       'ToTWin': {
         'mixins': [
@@ -3378,7 +3418,7 @@
         'os_type': 'chromeos',
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_chromeos_telemetry_tests',
-          'gtest_tests': 'chromeos_vm_gtests',
+          'gtest_tests': 'chromeos_vm_gtests_and_tast',
           'isolated_scripts': 'chromeos_isolated_scripts',
         },
       },
@@ -6679,7 +6719,7 @@
           'chromeos-betty',
         ],
         'test_suites': {
-          'gtest_tests': 'chromeos_vm_gtests',
+          'gtest_tests': 'chromeos_vm_gtests_and_tast',
           'isolated_scripts': 'chromeos_isolated_scripts',
         },
       },
@@ -6701,6 +6741,21 @@
         'test_suites': {
           'skylab_tests': 'chromeos_brya_skylab_tests',
         }
+      },
+      'chromeos-jacuzzi-chrome': {
+        # This builder is obsolete. It will be replaced with chromeos-jacuzzi-chrome-skylab.
+        # TODO(b:303196819): Remove this builder after removing or replacing referring code.
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'swarming': {
+          'dimensions': {
+            'os': 'ChromeOS',
+            'device_type': 'jacuzzi',
+            'pool': 'chrome.tests',
+          },
+        },
+        'os_type': 'chromeos'
       },
       'chromeos-jacuzzi-chrome-dchecks-skylab': {
         'additional_compile_targets': [
@@ -6849,7 +6904,7 @@
       },
       'optimization_guide-win32': {
         'mixins': [
-          'chrome-swarming-pool',
+          'chrome-intelligence-swarming-pool',
           'win10',
         ],
         'test_suites': {
@@ -6962,7 +7017,8 @@
       },
       'win11-arm64-blink-rel': {
         'mixins': [
-            'win_arm64',
+            'win11',
+            'arm64'
         ],
         'swarming': {
           'hard_timeout': 900,

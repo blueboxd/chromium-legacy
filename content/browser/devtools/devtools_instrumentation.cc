@@ -325,6 +325,14 @@ FederatedAuthRequestResultToProtocol(
     case FederatedAuthRequestResult::kErrorFetchingIdTokenInvalidResponse: {
       return FederatedAuthRequestIssueReasonEnum::IdTokenInvalidResponse;
     }
+    case FederatedAuthRequestResult::kErrorFetchingIdTokenIdpErrorResponse: {
+      return FederatedAuthRequestIssueReasonEnum::IdTokenIdpErrorResponse;
+    }
+    case FederatedAuthRequestResult::
+        kErrorFetchingIdTokenCrossSiteIdpErrorResponse: {
+      return FederatedAuthRequestIssueReasonEnum::
+          IdTokenCrossSiteIdpErrorResponse;
+    }
     case FederatedAuthRequestResult::kErrorFetchingIdTokenInvalidContentType: {
       return FederatedAuthRequestIssueReasonEnum::IdTokenInvalidContentType;
     }
@@ -1426,6 +1434,9 @@ void OnAuctionWorkletNetworkRequestWillBeSent(
   if (frame_tree_node_id != FrameTreeNode::kFrameTreeNodeInvalidId) {
     FrameTreeNode* ftn = FrameTreeNode::GloballyFindByID(frame_tree_node_id);
 
+    if (ftn == nullptr) {
+      return;
+    }
     const absl::optional<base::UnguessableToken>& devtools_navigation_token =
         ftn->current_frame_host()->GetDevToolsNavigationToken();
 
@@ -1885,12 +1896,13 @@ void OnWebTransportHandshakeFailed(
     text += net::WebTransportErrorToString(*error);
   }
   text += ".";
-  auto entry = protocol::Log::LogEntry::Create()
-                   .SetSource(protocol::Log::LogEntry::SourceEnum::Network)
-                   .SetLevel(protocol::Log::LogEntry::LevelEnum::Error)
-                   .SetText(text)
-                   .SetTimestamp(base::Time::Now().ToDoubleT() * 1000.0)
-                   .Build();
+  auto entry =
+      protocol::Log::LogEntry::Create()
+          .SetSource(protocol::Log::LogEntry::SourceEnum::Network)
+          .SetLevel(protocol::Log::LogEntry::LevelEnum::Error)
+          .SetText(text)
+          .SetTimestamp(base::Time::Now().InMillisecondsFSinceUnixEpoch())
+          .Build();
   DispatchToAgents(ftn, &protocol::LogHandler::EntryAdded, entry.get());
 }
 
@@ -1923,12 +1935,13 @@ void OnServiceWorkerMainScriptFetchingFailed(
     return;
   }
 
-  auto entry = protocol::Log::LogEntry::Create()
-                   .SetSource(protocol::Log::LogEntry::SourceEnum::Network)
-                   .SetLevel(protocol::Log::LogEntry::LevelEnum::Error)
-                   .SetText(error)
-                   .SetTimestamp(base::Time::Now().ToDoubleT() * 1000.0)
-                   .Build();
+  auto entry =
+      protocol::Log::LogEntry::Create()
+          .SetSource(protocol::Log::LogEntry::SourceEnum::Network)
+          .SetLevel(protocol::Log::LogEntry::LevelEnum::Error)
+          .SetText(error)
+          .SetTimestamp(base::Time::Now().InMillisecondsFSinceUnixEpoch())
+          .Build();
   DispatchToAgents(ftn, &protocol::LogHandler::EntryAdded, entry.get());
 
   ServiceWorkerDevToolsAgentHost* agent_host =
@@ -2104,12 +2117,13 @@ void LogWorkletMessage(RenderFrameHostImpl& frame_host,
 
   DCHECK(!log_level_string.empty());
 
-  auto entry = protocol::Log::LogEntry::Create()
-                   .SetSource(protocol::Log::LogEntry::SourceEnum::Other)
-                   .SetLevel(log_level_string)
-                   .SetText(message)
-                   .SetTimestamp(base::Time::Now().ToDoubleT() * 1000.0)
-                   .Build();
+  auto entry =
+      protocol::Log::LogEntry::Create()
+          .SetSource(protocol::Log::LogEntry::SourceEnum::Other)
+          .SetLevel(log_level_string)
+          .SetText(message)
+          .SetTimestamp(base::Time::Now().InMillisecondsFSinceUnixEpoch())
+          .Build();
   DispatchToAgents(ftn, &protocol::LogHandler::EntryAdded, entry.get());
 
   // Manually trigger RenderFrameHostImpl::DidAddMessageToConsole, so that the

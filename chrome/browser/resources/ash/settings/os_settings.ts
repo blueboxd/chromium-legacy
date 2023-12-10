@@ -57,7 +57,6 @@ import './os_apps_page/app_management_page/app_management_cros_shared_style.css.
 import './os_apps_page/app_management_page/app_management_cros_shared_vars.css.js';
 import './os_apps_page/app_notifications_page/mojo_interface_provider.js';
 import './os_apps_page/os_apps_page.js';
-import './os_bluetooth_page/os_bluetooth_device_detail_subpage.js';
 import './os_bluetooth_page/os_bluetooth_saved_devices_subpage.js';
 import './os_bluetooth_page/os_remove_saved_device_dialog.js';
 import './os_bluetooth_page/os_bluetooth_forget_device_dialog.js';
@@ -140,7 +139,7 @@ export {FakeInputDeviceSettingsProvider} from './device_page/fake_input_device_s
 export {FkeyRowElement} from './device_page/fkey_row.js';
 export {SettingsGraphicsTabletSubpageElement} from './device_page/graphics_tablet_subpage.js';
 export {getInputDeviceSettingsProvider, setInputDeviceSettingsProviderForTesting, setupFakeInputDeviceSettingsProvider} from './device_page/input_device_mojo_interface_provider.js';
-export {Fkey, GraphicsTablet, InputDeviceSettingsPolicy, Keyboard, KeyEvent, MetaKey, ModifierKey, Mouse, PolicyStatus, SimulateRightClickModifier, SixPackKey, SixPackKeyInfo, SixPackShortcutModifier, TopRowActionKey, Vkey} from './device_page/input_device_settings_types.js';
+export {Fkey, GraphicsTablet, InputDeviceSettingsPolicy, Keyboard, KeyEvent, MetaKey, ModifierKey, Mouse, PolicyStatus, ShortcutInputProviderInterface, SimulateRightClickModifier, SixPackKey, SixPackKeyInfo, SixPackShortcutModifier, TopRowActionKey, Vkey} from './device_page/input_device_settings_types.js';
 export {KeyboardRemapModifierKeyRowElement} from './device_page/keyboard_remap_modifier_key_row.js';
 export {KeyboardSixPackKeyRowElement, sixPackKeyProperties} from './device_page/keyboard_six_pack_key_row.js';
 export {SettingsPerDeviceKeyboardElement} from './device_page/per_device_keyboard.js';
@@ -152,6 +151,7 @@ export {SettingsPerDevicePointingStickElement} from './device_page/per_device_po
 export {SettingsPerDevicePointingStickSubsectionElement} from './device_page/per_device_pointing_stick_subsection.js';
 export {SettingsPerDeviceTouchpadElement} from './device_page/per_device_touchpad.js';
 export {SettingsPerDeviceTouchpadSubsectionElement} from './device_page/per_device_touchpad_subsection.js';
+export {getShortcutInputProvider} from './device_page/shortcut_input_mojo_interface_provider.js';
 export {ensureLazyLoaded} from './ensure_lazy_loaded.js';
 export {OsSettingsCellularSetupDialogElement} from './internet_page/cellular_setup_dialog.js';
 export {EsimRenameDialogElement} from './internet_page/esim_rename_dialog.js';

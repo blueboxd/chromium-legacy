@@ -9,6 +9,7 @@ module compose.mojom;
 interface ComposeDialogPageHandlerFactory {
   // Called from dialog compose JS to set up native handler.
   CreateComposeDialogPageHandler(
+      pending_receiver<ComposeDialogClosePageHandler> close_handler,
       pending_receiver<ComposeDialogPageHandler> handler,
       pending_remote<ComposeDialog> dialog);
 };
@@ -30,7 +31,18 @@ enum Length {
 // Status code used in compose responses.
 enum ComposeStatus {
   kOk,
+  // Generic error, not specified.
   kError,
+  // Request was unable to be processed.
+  kNotSuccessful,
+  // Server may have not responded.
+  kTryAgain,
+  // Server is likely overloaded, cannot handle a response right now.
+  kTryAgainLater,
+  // If the feature is somehow disabled.
+  kMisconfiguration,
+  // If permission is denied (e.g. user is not logged in.)
+  kPermissionDenied,
 };
 
 // Configuration parameters used in compose requests.
@@ -44,6 +56,8 @@ struct StyleModifiers {
 struct ComposeResponse {
   ComposeStatus status;
   string result;
+  // Whether undo is possible to a prior state before this response.
+  bool undo_available;
 };
 
 // Snapshot of state that can describe current state or be used to
@@ -69,9 +83,18 @@ struct ComposeState {
 // Information needed by the WebUI to show a new or restored
 // compose dialog.
 struct OpenMetadata {
+  // Renderer provided text selection.
+  string initial_input;
   ComposeState compose_state;
 };
 
+// The trigger for dismissing the compose dialog.
+enum CloseReason {
+  // The X button on the upper-right of the dialog.
+  kCloseButton,
+  // The Insert button of the dialog.
+  kInsertButton,
+};
 
 // Interface for calls from Compose dialog JS into the Browser process.
 interface ComposeDialogPageHandler {
@@ -87,9 +110,34 @@ interface ComposeDialogPageHandler {
   // unsafe to parse in the browser process.
   SaveWebUIState(string webui_state);
 
+  // Inform the Browser that the response has been accepted by the user.
+  // Should only be called if the ComposeResponse received is valid.
+  // Boolean success indicates if the result was accepted successfully.
+  AcceptComposeResult() => (bool success);
+
   // Asks the native handler for state information needed for opening the
   // compose dialog for the last field the user selected compose on.
   RequestInitialState() => (OpenMetadata initial_state);
+
+  // Asks the native handler to return the `last_state`. A null return means
+  // that there are no undoable states remaining. Calling `Undo()` and
+  // simultaneously closing the dialog (i.e., disconnecting the IPC pipe) may
+  // result in the state being undone, or remaining the same. This depends on
+  // which action executes first. If the IPC pipe disconnects, the Promise will
+  // reject/fail, which should not be confused with a null return. In that case,
+  // an undoable state may exist, but the call failed due to the broken pipe.
+  Undo() => (ComposeState? last_state);
+
+  // Asks the Browser to open a new tab navigated to the Compose bug report
+  // Buganizer.
+  OpenBugReportingLink();
+};
+
+// Interface for calls from Compose dialog JS into the Browser process.
+interface ComposeDialogClosePageHandler {
+  // Asks the receiver to close the compose dialog. `reason` describes
+  // the user action that triggered the close.
+  CloseUI(CloseReason reason);
 };
 
 // Interface for calls from the Browser process into Compose dialog JS.

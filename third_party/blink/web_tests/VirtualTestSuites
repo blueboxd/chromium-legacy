@@ -1151,18 +1151,6 @@
     "expires": "Feb 1, 2024"
   },
   {
-    "prefix": "optimized-node-cloning-disabled",
-    "owners": ["masonf@chromium.org", "dom-dev@chromium.org"],
-    "platforms": ["Linux"],
-    "bases": [
-      "external/wpt/dom/nodes/Node-cloneNode.html",
-      "external/wpt/dom/parts/basic-dom-part-objects.tentative.html"
-    ],
-    "args": ["--disable-features=OptimizedNodeCloneOrder",
-             "--disable-threaded-compositing", "--disable-threaded-animation"],
-    "expires": "Feb 1, 2024"
-  },
-  {
     "prefix": "details-styling-disabled",
     "owners": ["dbaron@chromium.org", "dom-dev@chromium.org"],
     "platforms": ["Linux"],
@@ -1175,6 +1163,90 @@
     "args": ["--disable-blink-features=DetailsStyling",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
     "expires": "Apr 1, 2024"
+  },
+  {
+    "prefix": "dir-pseudo-disabled",
+    "owners": ["dbaron@chromium.org", "dom-dev@chromium.org"],
+    "platforms": ["Linux"],
+    "bases": [
+      "external/wpt/css/selectors/dir-pseudo-on-bdi-element.html",
+      "external/wpt/css/selectors/dir-pseudo-on-input-element.html",
+      "external/wpt/css/selectors/dir-selector-auto.html",
+      "external/wpt/css/selectors/dir-selector-querySelector.html",
+      "external/wpt/html/dom/elements/global-attributes/dir-assorted.window.js",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-contained-bdi-L.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-contained-bdi-R.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-contained-dir_auto-L.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-contained-dir_auto-R.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-contained-dir-L.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-contained-dir-R.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-contained-L.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-contained-R.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-contained-script-L.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-contained-script-R.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-contained-style-L.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-contained-style-R.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-contained-textarea-L.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-contained-textarea-R.html",
+      "external/wpt/html/dom/elements/global-attributes/dir-auto-div-append-child.html",
+      "external/wpt/html/dom/elements/global-attributes/dir-auto-dynamic-changes.window.js",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-EN-R.html",
+      "external/wpt/html/dom/elements/global-attributes/dir-auto-form-associated.window.js",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-input-EN-L.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-input-EN-R.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-input-L.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-input-N-EN.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-input-N-EN-L.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-input-N-EN-R.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-input-N-L.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-input-N-R.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-input-R.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-input-script-EN-L.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-input-script-EN-R.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-input-script-L.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-input-script-N-EN.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-input-script-N-EN-L.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-input-script-N-EN-R.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-input-script-N-L.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-input-script-N-R.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-input-script-R.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-isolate.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-L.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-N-EN.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-N-EN-L.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-N-EN-R.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-N-L.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-N-R.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-pre-mixed.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-pre-N-between-Rs.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-pre-N-EN.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-R.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-textarea-mixed.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-textarea-N-between-Rs.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-textarea-N-EN.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-textarea-script-mixed.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-textarea-script-N-between-Rs.html",
+      "external/wpt/html/dom/elements/global-attributes/dir_auto-textarea-script-N-EN.html",
+      "external/wpt/html/dom/elements/global-attributes/dir-bdi-script.html",
+      "external/wpt/html/dom/elements/global-attributes/dir-slots-directionality.html",
+      "external/wpt/html/dom/elements/global-attributes/document-dir.html",
+      "external/wpt/html/dom/elements/global-attributes/lang-attribute-shadow.window.js",
+      "external/wpt/html/dom/elements/global-attributes/lang-attribute.window.js",
+      "external/wpt/html/dom/elements/global-attributes/the-lang-attribute-002.html",
+      "external/wpt/html/dom/elements/global-attributes/the-lang-attribute-003.html",
+      "external/wpt/html/dom/elements/global-attributes/the-lang-attribute-004.html",
+      "external/wpt/html/dom/elements/global-attributes/the-lang-attribute-005.html",
+      "external/wpt/html/dom/elements/global-attributes/the-lang-attribute-006.html",
+      "external/wpt/html/dom/elements/global-attributes/the-lang-attribute-007.html",
+      "external/wpt/html/dom/elements/global-attributes/the-lang-attribute-008.html",
+      "external/wpt/html/dom/elements/global-attributes/the-lang-attribute-009.html",
+      "external/wpt/html/dom/elements/global-attributes/the-lang-attribute-010.html"
+    ],
+    "args": ["--disable-blink-features=CSSPseudoDir",
+             "--disable-blink-features=HTMLLangNewInheritance",
+             "--disable-threaded-compositing", "--disable-threaded-animation"],
+    "expires": "Feb 1, 2024"
   },
   {
     "prefix": "backface-visibility-interop",
@@ -1478,6 +1550,16 @@
     "expires": "May 1, 2024"
   },
   {
+    "prefix": "view-transition-types",
+    "platforms": ["Linux", "Mac", "Win"],
+    "owners": ["view-transitions-api@chromium.org"],
+    "bases": ["wpt_internal/view-transition-types"],
+    "exclusive_tests": "ALL",
+    "args": ["--enable-threaded-compositing",
+             "--enable-blink-features=ViewTransitionTypes"],
+    "expires": "May 1, 2024"
+  },
+  {
     "prefix": "mutation-events-disabled",
     "platforms": ["Linux"],
     "bases": [],
@@ -1665,7 +1747,7 @@
     "platforms": ["Linux", "Mac", "Win"],
     "exclusive_tests": "ALL",
     "bases": ["http/tests/low-priority-async-script-execution"],
-    "args": ["--enable-features=LCPCriticalPathPredictor,LCPScriptObserver,LowPriorityAsyncScriptExecution:low_pri_async_exec_timeout/100ms/low_pri_async_exec_exclude_lcp_influencers/true",
+    "args": ["--enable-features=LCPScriptObserver,LowPriorityAsyncScriptExecution:low_pri_async_exec_timeout/100ms/low_pri_async_exec_exclude_lcp_influencers/true",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
     "owners": [
       "alexnj@chromium.org",
@@ -1714,7 +1796,7 @@
     "args": [
       "--enable-privacy-sandbox-ads-apis",
       "--private-aggregation-developer-mode",
-      "--enable-features=FencedFramesDefaultMode,AggregationServiceMultipleCloudProviders:aws_cloud/https%3A%2F%2Fweb-platform.test%3A8444,PrivateAggregationApiBundledEnhancements",
+      "--enable-features=FencedFramesDefaultMode,AggregationServiceMultipleCloudProviders:aws_cloud/https%3A%2F%2Fweb-platform.test%3A8444/gcp_cloud/https%3A%2F%2Fwww1.web-platform.test%3A8444,PrivateAggregationApiBundledEnhancements,PrivateAggregationApiMultipleCloudProviders",
       "--disable-threaded-compositing", "--disable-threaded-animation"
     ],
     "expires": "Jan 1, 2024"
@@ -1781,7 +1863,7 @@
       "external/wpt/fetch/private-network-access/fenced-frame.tentative.https.window.js",
       "external/wpt/fetch/private-network-access/fenced-frame-no-preflight-required.tentative.https.window.js"
     ],
-    "args": ["--enable-features=FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,SharedStorageAPI,NoncedPartitionedCookies,Fledge,InterestGroupStorage,AdInterestGroupAPI,AllowURNsInIframes,BiddingAndScoringDebugReportingAPI,ComputePressure,FencedFramesEnforceFocus,FencedFramesM119Features",
+    "args": ["--enable-features=FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,SharedStorageAPI,NoncedPartitionedCookies,Fledge,InterestGroupStorage,AdInterestGroupAPI,AllowURNsInIframes,BiddingAndScoringDebugReportingAPI,ComputePressure,FencedFramesEnforceFocus,FencedFramesM120FeaturesPart1,FencedFramesM120FeaturesPart2",
              "--enable-blink-features=FencedFramesAPIChanges,FencedFramesDefaultMode",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
     "expires": "Dec 31, 2023"
@@ -1818,6 +1900,7 @@
     "bases": [
       "dom/domparsing/document-render-blocking-no-block.html",
       "external/wpt/css/css-transitions/render-blocking",
+      "external/wpt/html/browsers/browsing-the-web/history-traversal/pagereveal",
       "external/wpt/html/dom/render-blocking"
     ],
     "exclusive_tests": "ALL",
@@ -2004,6 +2087,20 @@
     "expires": "Jul 1, 2024"
   },
   {
+    "prefix": "speculation-rules-prerender-target-hint",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "http/tests/inspector-protocol/prerender/prerender-failure-status-update-with-target-hint.js",
+      "http/tests/inspector-protocol/prerender/prerender-status-update-with-target-hint.js"
+    ],
+    "exclusive_tests": "ALL",
+    "args": [
+      "--enable-features=Prerender2InNewTab"
+    ],
+    "owners": ["nhiroki@chromium.org"],
+    "expires": "Jul 1, 2024"
+  },
+  {
     "prefix": "cookie-reject-domain-non-ascii",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
@@ -2041,13 +2138,12 @@
   },
 
   "---------------------------- Close watchers -------------------------------",
-  "These cannot be run in the normal web platform tests environment because of",
+  "TODO(https://crbug.com/1495208): These cannot be run in the normal web ",
+  "platform tests environment because of",
   "https://github.com/web-platform-tests/wpt/issues/23364#issuecomment-1661452441.",
   "If we figure out how to properly reset user activation and history-action",
   "activation between tests, then we can remove ",
   "--reset-browsing-instance-between-tests and remove this virtual test suite.",
-  "(Also, the feature is currently behind the CloseWatcher Blink feature, but ",
-  "hopefully that is temporary.)",
   {
     "prefix": "close-watcher",
     "owners": ["jarhar@chromium.org", "dom-dev@chromium.org"],
@@ -2059,7 +2155,6 @@
       "external/wpt/close-watcher"
     ],
     "args": [
-      "--enable-blink-features=CloseWatcher",
       "--reset-browsing-instance-between-tests",
       "--disable-threaded-compositing", "--disable-threaded-animation"
     ],
@@ -2104,6 +2199,7 @@
     "bases": ["external/wpt/credential-management/fedcm-login-status/"],
     "exclusive_tests": "ALL",
     "args": ["--enable-features=FedCmIdpSigninStatusEnabled",
+             "--enable-features=FencedFramesDefaultMode",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
     "owners": ["cbiesinger@chromium.org", "npm@chromium.org"],
     "expires": "Mar 1, 2024"
@@ -2123,16 +2219,6 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/custom-elements/scoped-registry"],
     "args": ["--disable-blink-features=ScopedCustomElementRegistry",
-             "--disable-threaded-compositing", "--disable-threaded-animation"],
-    "expires": "Jul 1, 2023"
-  },
-  {
-    "prefix": "split-user-media-queues",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": [
-      "external/wpt/mediacapture-streams/parallel-capture-requests.https.html"
-    ],
-    "args": ["--enable-features=SplitUserMediaQueues",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
     "expires": "Jul 1, 2023"
   },
@@ -2409,7 +2495,7 @@
     ],
     "exclusive_tests": "ALL",
     "args": [
-      "--enable-features=LCPCriticalPathPredictor,LCPPFontURLPredictor"
+      "--enable-features=LCPPFontURLPredictor"
     ],
     "expires": "Oct 16, 2024",
     "owners": [
@@ -2429,7 +2515,7 @@
     ],
     "exclusive_tests": "ALL",
     "args": [
-      "--enable-features=LCPCriticalPathPredictor,LCPScriptObserver"
+      "--enable-features=LCPScriptObserver"
     ],
     "expires": "Sep 10, 2024",
     "owners": [
@@ -2438,25 +2524,10 @@
     ]
   },
   {
-    "prefix": "fetch-later",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": [
-      "external/wpt/fetch/fetch-later",
-      "http/tests/origin_trials/webexposed/fetch-later-origin-trial-interfaces.html"
-    ],
-    "exclusive_tests": "ALL",
-    "args": [
-      "--enable-features=FetchLaterAPI",
-      "--enable-blink-features=FetchLaterAPI",
-      "--disable-threaded-compositing", "--disable-threaded-animation"
-    ],
-    "expires": "Jul 24, 2024",
-    "owners": ["mych@chromium.org"]
-  },
-  {
     "prefix": "deprecated-css-appearance-values-enabled",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
+      "css-parser/deprecated-css-appearance-values.html",
       "css-parser/deprecated-css-appearance-values-warning/appearance-warning-cssom-usecounter.html",
       "css-parser/deprecated-css-appearance-values-warning/appearance-warning-usecounter.html",
       "css-parser/deprecated-css-appearance-values-warning/webkit-appearance-warning-cssom-usecounter.html",
@@ -2522,5 +2593,38 @@
     ],
     "args": ["--enable-features=RegisterJSSourceLocationBlockingBFCache"],
     "expires": "Feb 1, 2024"
+  },
+  {
+    "prefix": "saa-beyond-cookies-disabled",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/storage-access-api",
+      "wpt_internal/storage-access-api"
+    ],
+    "args": ["--disable-blink-features=StorageAccessAPIBeyondCookies"],
+    "expires": "Jul 1, 2024",
+    "owners": ["arichiv@chromium.org"]
+  },
+
+  "The GenericSensorExtraClasses feature is controlled by a flag, which has ",
+  "an expiration date. |expires| below is set to 'never' to avoid having to ",
+  "manage the expiration date in two locations.",
+  "",
+  "N.B. skip_base_tests is needed only because of https://crbug.com/1471996",
+  {
+    "prefix": "generic-sensor-extra-classes",
+    "owners": ["raphael.kubo.da.costa@intel.com", "reillyg@chromium.org"],
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/ambient-light",
+      "external/wpt/magnetometer",
+      "wpt_internal/generic-sensor/reference-frame-tests.https.window.js"
+    ],
+    "exclusive_tests": "ALL",
+    "skip_base_tests": [
+      "wpt_internal/generic-sensor/reference-frame-tests.https.window.html"
+    ],
+    "args": ["--enable-features=GenericSensorExtraClasses"],
+    "expires": "never"
   }
 ]

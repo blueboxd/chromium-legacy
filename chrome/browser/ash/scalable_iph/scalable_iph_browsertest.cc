@@ -203,6 +203,7 @@ class ScalableIphBrowserTestFeatureOffDebugOn : public ScalableIphBrowserTest {
  public:
   ScalableIphBrowserTestFeatureOffDebugOn() {
     enable_scalable_iph_ = false;
+    setup_scalable_iph_ = false;
     CHECK(enable_scalable_iph_debug_)
         << "Debug feature is on by default for ScalableIphBrowserTest";
   }
@@ -242,6 +243,18 @@ class ScalableIphBrowserTestHelpApp
 
     ash::SystemWebAppManager::GetForTest(browser()->profile())
         ->InstallSystemAppsForTesting();
+  }
+};
+
+class ScalableIphBrowserTestHelpAppParameterized
+    : public ScalableIphBrowserTestHelpApp,
+      public testing::WithParamInterface<TestEnvironment> {
+ public:
+  void SetUp() override {
+    SetTestEnvironment(GetParam());
+    setup_scalable_iph_ = false;
+
+    ScalableIphBrowserTestHelpApp::SetUp();
   }
 };
 
@@ -322,6 +335,17 @@ class ScalableIphBrowserTestCustomConditionBase
   }
 
   virtual void AppendCustomCondition(base::FieldTrialParams& params) = 0;
+};
+
+class ScalableIphBrowserTestTriggerEvent
+    : public ScalableIphBrowserTestCustomConditionBase {
+ protected:
+  void AppendCustomCondition(base::FieldTrialParams& params) override {
+    params[FullyQualified(
+        TestIphFeature(),
+        scalable_iph::kCustomConditionTriggerEventParamName)] =
+        scalable_iph::kEventNameUnlocked;
+  }
 };
 
 class ScalableIphBrowserTestNetworkConnection
@@ -1055,6 +1079,31 @@ IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestVersionNumberInvalid, Invalid) {
   testing::Mock::VerifyAndClearExpectations(mock_tracker());
 }
 
+// `ScalableIphBrowserTestTriggerEvent` is set up with
+// x_CustomConditionTriggerEvent: ScalableIphUnlocked.
+IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestTriggerEvent, TriggerEvent) {
+  EnableTestIphFeature();
+
+  scalable_iph::ScalableIph* scalable_iph =
+      ScalableIphFactory::GetForBrowserContext(browser()->profile());
+
+  // Record an uninterested event. Confirm that this won't trigger an IPH
+  // trigger condition check.
+  EXPECT_CALL(*mock_tracker(),
+              ShouldTriggerHelpUI(::testing::Ref(TestIphFeature())))
+      .Times(0);
+  scalable_iph->RecordEvent(scalable_iph::ScalableIph::Event::kFiveMinTick);
+  testing::Mock::VerifyAndClearExpectations(mock_tracker());
+
+  // Record an unlocked event, which is an interested event. Confirm that this
+  // triggers an IPH trigger condition check.
+  EXPECT_CALL(*mock_tracker(),
+              ShouldTriggerHelpUI(::testing::Ref(TestIphFeature())))
+      .Times(1);
+  scalable_iph->RecordEvent(scalable_iph::ScalableIph::Event::kUnlocked);
+  testing::Mock::VerifyAndClearExpectations(mock_tracker());
+}
+
 IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestNetworkConnection, Online) {
   EnableTestIphFeature();
 
@@ -1578,4 +1627,24 @@ IN_PROC_BROWSER_TEST_P(ScalableIphBrowserTestParameterized,
                        ScalableIphNotAvailable) {
   EXPECT_EQ(nullptr,
             ScalableIphFactory::GetForBrowserContext(browser()->profile()));
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    NoHelpAppPin,
+    ScalableIphBrowserTestHelpAppParameterized,
+    testing::Values(
+        TestEnvironment(
+            ash::DeviceStateMixin::State::OOBE_COMPLETED_CONSUMER_OWNED,
+            UserSessionType::kGuest),
+        TestEnvironment(
+            ash::DeviceStateMixin::State::OOBE_COMPLETED_CONSUMER_OWNED,
+            UserSessionType::kManaged),
+        TestEnvironment(
+            ash::DeviceStateMixin::State::OOBE_COMPLETED_CONSUMER_OWNED,
+            UserSessionType::kRegularNonOwner)),
+    &TestEnvironment::GenerateTestName);
+
+IN_PROC_BROWSER_TEST_P(ScalableIphBrowserTestHelpAppParameterized,
+                       HelpAppNotPinnedToShelf) {
+  EXPECT_FALSE(ash::ShelfModel::Get()->IsAppPinned(web_app::kHelpAppId));
 }

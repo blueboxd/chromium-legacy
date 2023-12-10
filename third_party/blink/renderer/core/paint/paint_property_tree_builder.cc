@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/layout/fragmentainer_iterator.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
+#include "third_party/blink/renderer/core/layout/inline/fragment_item.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
@@ -34,19 +35,18 @@
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
-#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
-#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_row.h"
-#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_section.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_masker.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_viewport_container.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/transform_helper.h"
+#include "third_party/blink/renderer/core/layout/table/layout_table.h"
+#include "third_party/blink/renderer/core/layout/table/layout_table_row.h"
+#include "third_party/blink/renderer/core/layout/table/layout_table_section.h"
 #include "third_party/blink/renderer/core/page/link_highlight.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
@@ -3278,7 +3278,7 @@ void PaintPropertyTreeBuilder::InitPaintProperties() {
         fragment_context.absolute_position.paint_offset_root =
             fragment_context.fixed_position.paint_offset_root = &object_;
 
-    object_.GetMutableForPainting().FirstFragment().ClearNextFragment();
+    object_.GetMutableForPainting().FragmentList().Shrink(1);
   }
 
   if (object_.HasLayer()) {
@@ -3301,7 +3301,8 @@ void PaintPropertyTreeBuilder::UpdateFragmentData() {
     context_.fragment_context.current.fragmentainer_idx =
         pre_paint_info_->fragmentainer_idx;
   } else {
-    fragment.ClearNextFragment();
+    DCHECK_EQ(&fragment, &object_.FirstFragment());
+    object_.GetMutableForPainting().FragmentList().Shrink(1);
 
     if (context_.fragment_context.current.fragmentainer_idx == WTF::kNotFound) {
       // We're not fragmented, but we may have been previously. Reset the

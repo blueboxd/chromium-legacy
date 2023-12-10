@@ -27,6 +27,7 @@
 #include "components/viz/common/resources/shared_image_format.h"
 #include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/client/client_shared_image.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/raster_interface.h"
@@ -46,7 +47,7 @@ const int kMaxBytesPerCopyOperation = 1024 * 1024 * 4;
 
 BASE_FEATURE(kAlwaysUseMappableSIForOneCopyRaster,
              "AlwaysUseMappableSIForOneCopyRaster",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace
 
@@ -355,16 +356,16 @@ bool OneCopyRasterBufferProvider::PlaybackToStagingBuffer(
 
     // Allocate MappableSharedImage if necessary.
     if (staging_buffer->mailbox.IsZero()) {
-      staging_buffer->mailbox = sii->CreateSharedImage(
+      auto client_shared_image = sii->CreateSharedImage(
           format, staging_buffer->size, dst_color_space,
           kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
           gpu::SHARED_IMAGE_USAGE_CPU_WRITE, "OneCopyRasterStaging",
           gpu::kNullSurfaceHandle, gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
-    }
-
-    if (staging_buffer->mailbox.IsZero()) {
-      LOG(ERROR) << "Creation of MappableSharedImage failed.";
-      return false;
+      if (!client_shared_image) {
+        LOG(ERROR) << "Creation of MappableSharedImage failed.";
+        return false;
+      }
+      staging_buffer->mailbox = client_shared_image->mailbox();
     }
 
     mapping = sii->MapSharedImage(staging_buffer->mailbox);
@@ -468,10 +469,12 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
   // Create staging shared image.
   if (staging_buffer->mailbox.IsZero()) {
     const uint32_t usage = gpu::SHARED_IMAGE_USAGE_CPU_WRITE;
-    staging_buffer->mailbox = sii->CreateSharedImage(
+    auto client_shared_image = sii->CreateSharedImage(
         format, resource_size, color_space, kTopLeft_GrSurfaceOrigin,
         kPremul_SkAlphaType, usage, "OneCopyRasterStaging",
         staging_buffer->gpu_memory_buffer.get()->CloneHandle());
+    CHECK(client_shared_image);
+    staging_buffer->mailbox = client_shared_image->mailbox();
   } else {
     sii->UpdateSharedImage(staging_buffer->sync_token, staging_buffer->mailbox);
   }

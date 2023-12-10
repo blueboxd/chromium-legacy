@@ -190,9 +190,9 @@ extension-event based interface in M119. The interface is described in
 | runBatteryDischargeRoutine | (params: RunBatteryDischargeRoutineRequest) => Promise<RunRoutineResponse\> | `os.diagnostics` | M96 |
 | runBatteryChargeRoutine | (params: RunBatteryChargeRoutineRequest) => Promise<RunRoutineResponse\> | `os.diagnostics` | M96 |
 | runBluetoothDiscoveryRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M118 |
-| runBluetoothPairingRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M118 |
+| runBluetoothPairingRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics`, `os.bluetooth_peripherals_info` | M118 |
 | runBluetoothPowerRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M117 |
-| runBluetoothScanningRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M118 |
+| runBluetoothScanningRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics`, `os.bluetooth_peripherals_info` | M118 |
 | runCpuCacheRoutine | (params: RunCpuRoutineRequest) => Promise<RunRoutineResponse\> | `os.diagnostics` | M96 |
 | runCpuFloatingPointAccuracyRoutine | (params: RunCpuRoutineRequest) => Promise<RunRoutineResponse\> | `os.diagnostics` | M99 |
 | runCpuPrimeSearchRoutine | (params: RunCpuRoutineRequest) => Promise<RunRoutineResponse\> | `os.diagnostics` | M99 |
@@ -201,7 +201,6 @@ extension-event based interface in M119. The interface is described in
 | runDnsResolutionRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M108 |
 | runDnsResolverPresentRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M108 |
 | runEmmcLifetimeRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M110 |
-| runFanRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M120 |
 | runFingerprintAliveRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M110 |
 | runGatewayCanBePingedRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M108 |
 | runLanConnectivityRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M102 |
@@ -306,10 +305,10 @@ extension-event based interface in M119. The interface is described in
 ------------ | ------- | ----------- |
 | maxTestingMemKib | number | An optional field to indicate how much memory should be tested. If the value is null, memory test will run with as much memory as possible |
 
-### CreateMemoryRoutineResponse
+### CreateRoutineResponse
 | Property Name | Type | Description |
 ------------ | ------- | ----------- |
-| uuid | string | UUID of the memory routine that was just created  |
+| uuid | string | UUID of the routine that was just created  |
 
 ### RoutineSupportStatusInfo
 | Property Name | Type | Description |
@@ -332,7 +331,7 @@ extension-event based interface in M119. The interface is described in
 ------------ | ------------- | ------------- | ------------- |
 | startRoutine | (params: StartRoutineRequest) => Promise<void\> | `os.diagnostics` | M119 |
 | cancelRoutine | (params: CancelRoutineRequest) => Promise<void\> | `os.diagnostics` | M119 |
-| createMemoryRoutine | (args: RunMemoryRoutineArguments) => Promise<CreateMemoryRoutineResponse\> | `os.diagnostics` | M119 |
+| createMemoryRoutine | (args: RunMemoryRoutineArguments) => Promise<CreateRoutineResponse\> | `os.diagnostics` | M119 |
 | isMemoryRoutineArgumentSupported | (args: RunMemoryRoutineArguments) => Promise<RoutineSupportStatusInfo\> | `os.diagnostics` | M119 |
 
 ## Events

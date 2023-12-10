@@ -62,7 +62,8 @@ enum class PageLoadTrackerPageType {
   kPrimaryPage = 0,
   kPrerenderPage = 1,
   kFencedFramesPage = 2,
-  kMaxValue = kFencedFramesPage,
+  kPreviewPrimaryPage = 3,  // Primary page in the preview mode
+  kMaxValue = kPreviewPrimaryPage,
 };
 
 extern const char kErrorEvents[];
@@ -225,8 +226,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // PageLoadMetricsUpdateDispatcher::Client implementation:
   bool IsPageMainFrame(content::RenderFrameHost* rfh) const override;
   void OnTimingChanged() override;
-  void OnPageInputTimingChanged(uint64_t num_interactions,
-                                uint64_t num_input_events) override;
+  void OnPageInputTimingChanged(uint64_t num_interactions) override;
   void OnSubFrameTimingChanged(content::RenderFrameHost* rfh,
                                const mojom::PageLoadTiming& timing) override;
   void OnSubFrameInputTimingChanged(
@@ -308,6 +308,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   bool IsFirstNavigationInWebContents() const override;
   bool IsOriginVisit() const override;
   bool IsTerminalVisit() const override;
+  int64_t GetNavigationId() const override;
 
   void Redirect(content::NavigationHandle* navigation_handle);
   void WillProcessNavigationResponse(
@@ -349,14 +350,20 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
                         const gfx::Size& frame_size);
 
-  void OnCookiesRead(const GURL& url,
-                     const GURL& first_party_url,
-                     bool blocked_by_policy);
+  void OnCookiesRead(
+      const GURL& url,
+      const GURL& first_party_url,
+      bool blocked_by_policy,
+      bool is_ad_tagged,
+      const net::CookieSettingOverrides& cookie_setting_overrides);
 
-  void OnCookieChange(const GURL& url,
-                      const GURL& first_party_url,
-                      const net::CanonicalCookie& cookie,
-                      bool blocked_by_policy);
+  void OnCookieChange(
+      const GURL& url,
+      const GURL& first_party_url,
+      const net::CanonicalCookie& cookie,
+      bool blocked_by_policy,
+      bool is_ad_tagged,
+      const net::CookieSettingOverrides& cookie_setting_overrides);
 
   void OnStorageAccessed(const GURL& url,
                          const GURL& first_party_url,
@@ -498,6 +505,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // stop tracking a navigation if it doesn't meet the criteria for tracking
   // metrics in DidFinishNavigation.
   bool did_stop_tracking_;
+
+  int64_t navigation_id_;
 
   // The navigation start in TimeTicks, not the wall time reported by Blink.
   const base::TimeTicks navigation_start_;

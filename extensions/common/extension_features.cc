@@ -29,7 +29,7 @@ BASE_FEATURE(kApiSidePanelOpen,
 // Controls the availability of the userScripts API.
 BASE_FEATURE(kApiUserScripts,
              "ApiUserScripts",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls the availability of navigation to file URLs.
 BASE_FEATURE(kRestrictFileURLNavigation,
@@ -95,7 +95,7 @@ BASE_FEATURE(kExtensionSourceUrlEnforcement,
 // File Handlers.
 BASE_FEATURE(kExtensionWebFileHandlers,
              "ExtensionWebFileHandlers",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, only manifest v3 extensions is allowed while v2 will be disabled.
 // Note that this feature is now only checked by `ExtensionManagement` which
@@ -149,7 +149,7 @@ BASE_FEATURE(kReportKeepaliveUkm,
 // user is in the developer mode.
 BASE_FEATURE(kRestrictDeveloperModeAPIs,
              "RestrictDeveloperModeAPIs",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Reports Extensions.WebRequest.KeepaliveRequestFinished when enabled.
 // Automatically disable extensions not included in the Safe Browsing CRX

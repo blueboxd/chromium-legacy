@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_federated_credential_request_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_identity_credential_request_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_identity_provider_config.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_identity_provider_request_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_otp_credential_request_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_creation_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_descriptor.h"
@@ -538,7 +539,7 @@ void OnRequestToken(ScriptPromiseResolver* resolver,
                     const absl::optional<KURL>& selected_idp_config_url,
                     const WTF::String& token,
                     mojom::blink::TokenErrorPtr error,
-                    bool is_identity_credential_auto_selected) {
+                    bool is_auto_selected) {
   switch (status) {
     case RequestTokenStatus::kErrorTooManyRequests: {
       resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -571,8 +572,8 @@ void OnRequestToken(ScriptPromiseResolver* resolver,
       return;
     }
     case RequestTokenStatus::kSuccess: {
-      IdentityCredential* credential = IdentityCredential::Create(
-          token, is_identity_credential_auto_selected);
+      IdentityCredential* credential =
+          IdentityCredential::Create(token, is_auto_selected);
       resolver->Resolve(credential);
       return;
     }
@@ -1657,7 +1658,7 @@ ScriptPromise CredentialsContainer::store(ScriptState* script_state,
         credential->IsPasswordCredential())) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotSupportedError,
-        "Store operation not permitted for PublicKey credentials."));
+        "Store operation not permitted for this credential type."));
     return promise;
   }
 

@@ -66,10 +66,30 @@ std::string TreeToStringWithMarkedObjectHelper(const AXObject* obj,
     return tree_str;
   }
 
+  if (!marked_object) {
+    return tree_str;
+  }
   return std::string("**** ERROR: Found marked objects was found ") +
          String::Number(marked_object_found_count).Utf8() +
          " times, should have been found exactly once.\n* Marked object: " +
          marked_object->ToString(true, cached).Utf8() + "\n\n" + tree_str;
+}
+
+std::string ParentChainToStringHelper(const AXObject* obj) {
+  AXObject::AXObjectVector ancestors;
+  for (AXObject::AncestorsIterator iter = obj->UnignoredAncestorsBegin();
+       iter != obj->UnignoredAncestorsEnd(); iter++) {
+    ancestors.push_back(*iter);
+  }
+
+  size_t indent = 0;
+  std::string builder;
+  for (auto iter = ancestors.rbegin(); iter != ancestors.rend(); iter++) {
+    builder = builder + std::string(2 * indent, ' ') +
+              (*iter)->ToString(true, true).Utf8() + '\n';
+    ++indent;
+  }
+  return builder;
 }
 
 }  // namespace blink

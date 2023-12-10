@@ -11,16 +11,6 @@ import {FakeTask} from './tasks.js';
 import {BASIC_DRIVE_ENTRY_SET, FILE_MANAGER_EXTENSIONS_ID, OFFLINE_ENTRY_SET, SHARED_WITH_ME_ENTRY_SET} from './test_data.js';
 
 /**
- * Expected autocomplete results for 'hello'.
- * @type {Array<string>}
- * @const
- */
-const EXPECTED_AUTOCOMPLETE_LIST = [
-  '\'hello\' - search Drive',
-  'hello.txt',
-];
-
-/**
  * Expected files shown in the search results for 'hello'
  *
  * @type {!Array<!TestEntryInfo>}
@@ -39,9 +29,6 @@ const SEARCH_RESULTS_ENTRY_SET = [
 const ENABLE_DOCS_OFFLINE_MESSAGE =
     'Enable Google Docs Offline to make Docs, Sheets and Slides ' +
     'available offline.';
-
-/** The query selector for the search box input field. */
-const searchBox = '#search-box cr-input';
 
 /** The id attribute of the dismiss button in the educational banner. */
 async function getDismissButtonId(appId) {
@@ -113,7 +100,7 @@ testcase.driveOpenSidebarOffline = async () => {
 
   // Click the icon of the Offline volume.
   const directoryTree = await DirectoryTreePageObject.create(appId, remoteCall);
-  await directoryTree.selectItemByType('drive_offline');
+  await directoryTree.selectItemByLabel('Offline');
 
   // Check: the file list should display the offline file set.
   await remoteCall.waitForFiles(
@@ -136,7 +123,7 @@ testcase.driveOpenSidebarSharedWithMe = async () => {
   // Click the icon of the Shared With Me volume.
   // Use the icon for a click target.
   const directoryTree = await DirectoryTreePageObject.create(appId, remoteCall);
-  await directoryTree.selectItemByType('drive_shared_with_me');
+  await directoryTree.selectItemByLabel('Shared with me');
 
   // Wait until the breadcrumb path is updated.
   await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/Shared with me');
@@ -891,7 +878,7 @@ testcase.driveInlineSyncStatusSingleFile = async () => {
     mimeType: 'video/ogg',
     lastModifiedTime: 'Jul 4, 2012, 10:35 AM',
     nameText: 'toBeUploaded.ogv',
-    sizeText: '59 KB',
+    sizeText: '56 KB',
     typeText: 'OGG video',
     availableOffline: true,
   });
@@ -958,7 +945,7 @@ testcase.driveInlineSyncStatusParentFolder = async () => {
     mimeType: 'video/ogg',
     lastModifiedTime: 'Jul 4, 2012, 10:35 AM',
     nameText: 'toBeUploaded.ogv',
-    sizeText: '59 KB',
+    sizeText: '56 KB',
     typeText: 'OGG video',
     availableOffline: true,
   });
@@ -971,7 +958,7 @@ testcase.driveInlineSyncStatusParentFolder = async () => {
     mimeType: 'video/ogg',
     lastModifiedTime: 'Jul 4, 2012, 10:35 AM',
     nameText: 'toFailUploading.ogv',
-    sizeText: '59 KB',
+    sizeText: '56 KB',
     typeText: 'OGG video',
     availableOffline: true,
   });
@@ -1046,7 +1033,7 @@ testcase.driveInlineSyncStatusSingleFileProgressEvents = async () => {
     mimeType: 'video/ogg',
     lastModifiedTime: 'Jul 4, 2012, 10:35 AM',
     nameText: 'toBeUploaded.ogv',
-    sizeText: '59 KB',
+    sizeText: '56 KB',
     typeText: 'OGG video',
     availableOffline: true,
   });
@@ -1103,7 +1090,7 @@ testcase.driveInlineSyncStatusParentFolderProgressEvents = async () => {
     mimeType: 'video/ogg',
     lastModifiedTime: 'Jul 4, 2012, 10:35 AM',
     nameText: 'toBeUploaded.ogv',
-    sizeText: '59 KB',
+    sizeText: '56 KB',
     typeText: 'OGG video',
     availableOffline: true,
   });
@@ -1116,7 +1103,7 @@ testcase.driveInlineSyncStatusParentFolderProgressEvents = async () => {
     mimeType: 'video/ogg',
     lastModifiedTime: 'Jul 4, 2012, 10:35 AM',
     nameText: 'toFailUploading.ogv',
-    sizeText: '59 KB',
+    sizeText: '56 KB',
     typeText: 'OGG video',
     availableOffline: true,
   });
@@ -1551,7 +1538,7 @@ testcase.drivePinToggleIsEnabledInSharedWithMeWhenBulkPinningEnabled =
   // Click the Shared with me volume, it has no children so navigating using the
   // directory tree doesn't work.
   const directoryTree = await DirectoryTreePageObject.create(appId, remoteCall);
-  await directoryTree.selectItemByType('drive_shared_with_me');
+  await directoryTree.selectItemByLabel('Shared with me');
 
   // Wait until the breadcrumb path is updated.
   await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/Shared with me');

@@ -42,6 +42,7 @@
 <translation id="1290331692326790741">Zəif siqnal</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1308754910631152188">Güncəllənir (<ph name="PERCENTAGE_VALUE" />% tamamlanıb)</translation>
+<translation id="1309341072016605398"><ph name="MINUTES" /> dəqiqə</translation>
 <translation id="1310380015393971138"><ph name="NETWORK_NAME" /> şəbəkəsi əlçatan deyil</translation>
 <translation id="131421566576084655">Sonuncu data sıfırlama tarixi əlçatan deyil</translation>
 <translation id="1314565355471455267">Android VPN</translation>
@@ -86,6 +87,7 @@
 <translation id="1572585716423026576">Divar kağızı kimi ayarlayın</translation>
 <translation id="1578784163189013834">Ekran qoruyucusu üçün arxa fon seçin</translation>
 <translation id="160633243685262989">Şəkli Önizləyin</translation>
+<translation id="1611649489706141841">irəli</translation>
 <translation id="1615335640928990664"><ph name="FRIENDLY_DATE" /> tarixindən bəri data istifadəsi</translation>
 <translation id="1621067168122174824">Şarj testini icra edin</translation>
 <translation id="1639239467298939599">Yüklənir</translation>
@@ -187,6 +189,7 @@
 <translation id="2236746079896696523">Klaviaturanın arxa işığının keçiricisi</translation>
 <translation id="2240366984605217732">Düzən keçiricisi</translation>
 <translation id="225692081236532131">Aktivləşdirmə statusu</translation>
+<translation id="2267285889943769271">Skrinşot əlavə edin</translation>
 <translation id="2271469253353559191">Qaranlıq rejim cədvəli</translation>
 <translation id="2276999893457278469">Populyar yardım məzmunu</translation>
 <translation id="2279051792571591988">Defolt halına qaytarın</translation>
@@ -288,6 +291,7 @@
 <translation id="3226405216343213872">Skanerlər axtarılır</translation>
 <translation id="3226657629376379887">Tərtibat üzrə əməliyyatlar menyusu</translation>
 <translation id="3246869037381808805">1 gündən köhnə çap işləri silinəcək</translation>
+<translation id="324961752321393509">Administrator bu tətbiqi bağlamağa icazə vermir</translation>
 <translation id="3268178239013324452">Alınmadı - Qapı açıqdır</translation>
 <translation id="3275729367986477355">Avatar şəkli</translation>
 <translation id="3283504360622356314">{0,plural, =1{Faylı redaktə edin}other{Faylları redaktə edin}}</translation>
@@ -429,6 +433,7 @@
 <translation id="4297501883039923494">Dayanıb - Naməlum xəta</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> şəkil</translation>
 <translation id="4333390807948134856"><ph name="KEY_NAME" /> düyməsi basılıb</translation>
+<translation id="4354430579665871434">düymə</translation>
 <translation id="435692326371619097">Şəbəkə APN ayarlarını idarə edin. APN-lər mobil şəbəkə ilə internet arasında əlaqə yaradır. <ph name="BEGIN_LINK" />Ətraflı məlumat<ph name="END_LINK" /></translation>
 <translation id="437294888293595148">Qısayolları sıfırlayın</translation>
 <translation id="4378373042927530923">İşə salınmayıb</translation>
@@ -691,9 +696,11 @@
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">Qaranlıq temanı aktiv edin</translation>
 <translation id="628726841779494414">Printer ayarlarında printerləri idarə edin</translation>
+<translation id="6292095526077353682">Şarj zamanı ekran qoruyucusu göstərilsin</translation>
 <translation id="629550705077076970">klaviaturanın qaraldılması</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" /> testi ləğv edilib</translation>
 <translation id="631063167932043783">Tətbiqi araşdırın</translation>
+<translation id="6318437367327684789">həmişə</translation>
 <translation id="6319207335391420837"><ph name="DEVICE_NAME" /> cihazında proqramı güncəlləyin</translation>
 <translation id="6321407676395378991">Ekran qoruyucusunu aktiv edin</translation>
 <translation id="6324916366299863871">Qısayola düzəliş edin</translation>
@@ -943,6 +950,7 @@
 <translation id="8227119283605456246">Fayl qoşun</translation>
 <translation id="8230672074305416752">Defolt şəbəkə girişini yoxlamaq alınmadı</translation>
 <translation id="8246209727385807362">Naməlum operator</translation>
+<translation id="8262870577632766028">1 saat</translation>
 <translation id="827422111966801947">İndiqo</translation>
 <translation id="8286154143153872371">Divar kağızı görmək üçün şəbəkəyə qoşulun və səhifəni yenidən yükləyin.</translation>
 <translation id="8291967909914612644">Əsas səhifə provayder ölkəsi</translation>
@@ -1007,6 +1015,7 @@
 <translation id="8747900814994928677">Dəyişikliyi təsdiqləyin</translation>
 <translation id="8764414543112028321">WireGuard</translation>
 <translation id="87646919272181953">Google Foto albomu</translation>
+<translation id="8775713578693478175">Modem APN-i</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8789196995628578448">Qısayol "<ph name="CONFLICT_ACCEL_NAME" />" üçün istifadə edilir. Yeni qısayolu basın. Orijinal qısayolu əvəzləmək üçün qısayolu yenidən basın.</translation>
 <translation id="879568662008399081">Bu şəbəkənin avtorizasiya portalı ola bilər</translation>

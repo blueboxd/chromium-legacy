@@ -1633,6 +1633,12 @@ void StyleResolver::ApplyBaseStyle(
     // (see the function comment).
     state.SetStyle(*element->GetComputedStyle());
 
+    // This is always false when creating a new style, but is not reset
+    // when copying the style, so it needs to happen here. After us,
+    // Element::StyleForLayoutObject() will call AdjustElementStyle(),
+    // which sets it to true if applicable.
+    state.StyleBuilder().ResetSkipsContents();
+
     const CSSPropertyValueSet* inline_style = element->InlineStyle();
     if (inline_style) {
       int num_properties = inline_style->PropertyCount();
@@ -1728,20 +1734,21 @@ CompositorKeyframeValue* StyleResolver::CreateCompositorKeyframeValueSnapshot(
 const ComputedStyle* StyleResolver::StyleForPage(
     uint32_t page_index,
     const AtomicString& page_name) {
-  const ComputedStyle* initial_style = InitialStyleForElement();
-  if (!GetDocument().documentElement()) {
-    return initial_style;
+  // The page context inherits from the root element.
+  Element* root_element = GetDocument().documentElement();
+  if (!root_element) {
+    return InitialStyleForElement();
   }
-
-  const ComputedStyle* document_style = GetDocument().GetComputedStyle();
-  StyleResolverState state(GetDocument(), *GetDocument().documentElement(),
+  DCHECK(!GetDocument().NeedsLayoutTreeUpdateForNode(*root_element));
+  const ComputedStyle* parent_style = root_element->EnsureComputedStyle();
+  StyleResolverState state(GetDocument(), *root_element,
                            nullptr /* StyleRecalcContext */,
-                           StyleRequest(initial_style));
-  state.CreateNewStyle(*initial_style, *document_style);
+                           StyleRequest(parent_style));
+  state.CreateNewStyle(*parent_style, *parent_style);
 
   STACK_UNINITIALIZED StyleCascade cascade(state);
 
-  PageRuleCollector collector(document_style, page_index, page_name,
+  PageRuleCollector collector(parent_style, page_index, page_name,
                               cascade.MutableMatchResult());
 
   collector.MatchPageRules(
@@ -1819,8 +1826,8 @@ ComputedStyleBuilder StyleResolver::InitialStyleBuilderForElement() const {
 
 const ComputedStyle* StyleResolver::StyleForText(Text* text_node) {
   DCHECK(text_node);
-  if (Node* parent_node = LayoutTreeBuilderTraversal::Parent(*text_node)) {
-    const ComputedStyle* style = parent_node->GetComputedStyle();
+  if (Element* parent = LayoutTreeBuilderTraversal::ParentElement(*text_node)) {
+    const ComputedStyle* style = parent->GetComputedStyle();
     if (style && !style->IsEnsuredInDisplayNone()) {
       return style;
     }

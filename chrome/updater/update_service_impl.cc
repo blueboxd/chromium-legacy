@@ -27,6 +27,8 @@
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
@@ -57,7 +59,12 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_WIN)
-#include "chrome/updater/win/installer_api.h"
+#include <winhttp.h>
+
+#include "chrome/updater/util/win_util.h"
+#include "chrome/updater/win/ui/l10n_util.h"
+#include "chrome/updater/win/ui/resources/resources.grh"
+#include "chrome/updater/win/ui/resources/updater_installer_strings.h"
 #endif  // BUILDFLAG(IS_WIN)
 
 namespace updater {
@@ -176,6 +183,197 @@ void GetComponents(
   }
 }
 
+#if BUILDFLAG(IS_WIN)
+namespace {
+
+std::wstring GetTextForUpdateClientInstallError(int error_code) {
+#define INSTALL_SWITCH_ENTRY(error_code) \
+  case static_cast<int>(error_code):     \
+    return GetLocalizedStringF(IDS_GENERIC_INSTALL_ERROR_BASE, L#error_code)
+
+  switch (error_code) {
+    INSTALL_SWITCH_ENTRY(update_client::InstallError::NONE);
+    INSTALL_SWITCH_ENTRY(update_client::InstallError::FINGERPRINT_WRITE_FAILED);
+    INSTALL_SWITCH_ENTRY(update_client::InstallError::BAD_MANIFEST);
+    INSTALL_SWITCH_ENTRY(update_client::InstallError::GENERIC_ERROR);
+    INSTALL_SWITCH_ENTRY(update_client::InstallError::MOVE_FILES_ERROR);
+    INSTALL_SWITCH_ENTRY(update_client::InstallError::SET_PERMISSIONS_FAILED);
+    INSTALL_SWITCH_ENTRY(update_client::InstallError::INVALID_VERSION);
+    INSTALL_SWITCH_ENTRY(update_client::InstallError::VERSION_NOT_UPGRADED);
+    INSTALL_SWITCH_ENTRY(update_client::InstallError::NO_DIR_COMPONENT_USER);
+    INSTALL_SWITCH_ENTRY(update_client::InstallError::CLEAN_INSTALL_DIR_FAILED);
+    INSTALL_SWITCH_ENTRY(
+        update_client::InstallError::INSTALL_VERIFICATION_FAILED);
+    INSTALL_SWITCH_ENTRY(update_client::InstallError::MISSING_INSTALL_PARAMS);
+    INSTALL_SWITCH_ENTRY(update_client::InstallError::LAUNCH_PROCESS_FAILED);
+    INSTALL_SWITCH_ENTRY(update_client::InstallError::CUSTOM_ERROR_BASE);
+    default:
+      return GetLocalizedStringF(IDS_GENERIC_INSTALL_ERROR_BASE,
+                                 GetTextForSystemError(error_code));
+  }
+#undef INSTALL_SWITCH_ENTRY
+}
+
+std::wstring GetTextForDownloadError(int error) {
+#define DOWNLOAD_SWITCH_ENTRY(error_code) \
+  case static_cast<int>(error_code):      \
+    return GetLocalizedStringF(IDS_GENERIC_DOWNLOAD_ERROR_BASE, L#error_code)
+
+  switch (error) {
+    DOWNLOAD_SWITCH_ENTRY(update_client::CrxDownloaderError::NO_URL);
+    DOWNLOAD_SWITCH_ENTRY(update_client::CrxDownloaderError::NO_HASH);
+    DOWNLOAD_SWITCH_ENTRY(
+        update_client::CrxDownloaderError::BITS_TOO_MANY_JOBS);
+    DOWNLOAD_SWITCH_ENTRY(update_client::CrxDownloaderError::GENERIC_ERROR);
+
+    case static_cast<int>(update_client::CrxDownloaderError::BAD_HASH):
+      return GetLocalizedString(IDS_DOWNLOAD_HASH_MISMATCH_BASE);
+
+    default:
+      return GetLocalizedStringF(IDS_GENERIC_DOWNLOAD_ERROR_BASE,
+                                 GetTextForSystemError(error));
+  }
+#undef DOWNLOAD_SWITCH_ENTRY
+}
+
+std::wstring GetTextForUnpackError(int error) {
+#define UNPACK_SWITCH_ENTRY(error_code) \
+  case static_cast<int>(error_code):    \
+    return GetLocalizedStringF(IDS_GENERIC_UNPACK_ERROR_BASE, L#error_code)
+#define UNPACK_CACHING_SWITCH_ENTRY(error_code) \
+  case static_cast<int>(error_code):            \
+    return GetLocalizedStringF(IDS_UNPACK_CACHING_ERROR_BASE, L#error_code)
+
+  switch (error) {
+    UNPACK_SWITCH_ENTRY(update_client::UnpackerError::kInvalidParams);
+    UNPACK_SWITCH_ENTRY(update_client::UnpackerError::kInvalidFile);
+    UNPACK_SWITCH_ENTRY(update_client::UnpackerError::kUnzipPathError);
+    UNPACK_SWITCH_ENTRY(update_client::UnpackerError::kUnzipFailed);
+    UNPACK_SWITCH_ENTRY(update_client::UnpackerError::kBadManifest);
+    UNPACK_SWITCH_ENTRY(update_client::UnpackerError::kBadExtension);
+    UNPACK_SWITCH_ENTRY(update_client::UnpackerError::kIoError);
+    UNPACK_SWITCH_ENTRY(
+        update_client::UnpackerError::kDeltaVerificationFailure);
+    UNPACK_SWITCH_ENTRY(update_client::UnpackerError::kDeltaBadCommands);
+    UNPACK_SWITCH_ENTRY(update_client::UnpackerError::kDeltaUnsupportedCommand);
+    UNPACK_SWITCH_ENTRY(update_client::UnpackerError::kDeltaOperationFailure);
+    UNPACK_SWITCH_ENTRY(
+        update_client::UnpackerError::kDeltaPatchProcessFailure);
+    UNPACK_SWITCH_ENTRY(
+        update_client::UnpackerError::kDeltaMissingExistingFile);
+    UNPACK_SWITCH_ENTRY(
+        update_client::UnpackerError::kPuffinMissingPreviousCrx);
+    UNPACK_SWITCH_ENTRY(update_client::UnpackerError::kCrxCacheNotProvided);
+
+    UNPACK_CACHING_SWITCH_ENTRY(
+        update_client::UnpackerError::kFailedToAddToCache);
+    UNPACK_CACHING_SWITCH_ENTRY(
+        update_client::UnpackerError::kFailedToCreateCacheDir);
+
+    default:
+      return GetLocalizedStringF(IDS_GENERIC_UNPACK_ERROR_BASE,
+                                 GetTextForSystemError(error));
+  }
+#undef UNPACK_SWITCH_ENTRY
+#undef UNPACK_CACHING_SWITCH_ENTRY
+}
+
+std::wstring GetTextForServiceError(int error) {
+#define SERVICE_SWITCH_ENTRY(error_code) \
+  case static_cast<int>(error_code):     \
+    return GetLocalizedStringF(IDS_GENERIC_SERVICE_ERROR_BASE, L#error_code)
+
+  switch (error) {
+    SERVICE_SWITCH_ENTRY(update_client::ServiceError::SERVICE_WAIT_FAILED);
+    SERVICE_SWITCH_ENTRY(update_client::ServiceError::UPDATE_DISABLED);
+    SERVICE_SWITCH_ENTRY(update_client::ServiceError::CANCELLED);
+    SERVICE_SWITCH_ENTRY(update_client::ServiceError::CHECK_FOR_UPDATE_ONLY);
+    default:
+      return GetLocalizedStringF(IDS_GENERIC_SERVICE_ERROR_BASE,
+                                 GetTextForSystemError(error));
+  }
+#undef SERVICE_SWITCH_ENTRY
+}
+
+std::wstring GetTextForUpdateCheckError(int error) {
+#define UPDATE_CHECK_SWITCH_ENTRY(error_code)                       \
+  case static_cast<int>(error_code):                                \
+    return GetLocalizedStringF(IDS_GENERIC_UPDATE_CHECK_ERROR_BASE, \
+                               L#error_code)
+
+  switch (error) {
+    UPDATE_CHECK_SWITCH_ENTRY(
+        update_client::ProtocolError::RESPONSE_NOT_TRUSTED);
+    UPDATE_CHECK_SWITCH_ENTRY(update_client::ProtocolError::MISSING_PUBLIC_KEY);
+    UPDATE_CHECK_SWITCH_ENTRY(update_client::ProtocolError::MISSING_URLS);
+    UPDATE_CHECK_SWITCH_ENTRY(update_client::ProtocolError::PARSE_FAILED);
+    UPDATE_CHECK_SWITCH_ENTRY(
+        update_client::ProtocolError::UPDATE_RESPONSE_NOT_FOUND);
+    UPDATE_CHECK_SWITCH_ENTRY(update_client::ProtocolError::URL_FETCHER_FAILED);
+    UPDATE_CHECK_SWITCH_ENTRY(update_client::ProtocolError::INVALID_APPID);
+
+    case static_cast<int>(update_client::ProtocolError::UNKNOWN_APPLICATION):
+      return GetLocalizedString(IDS_UNKNOWN_APPLICATION_BASE);
+
+    case static_cast<int>(update_client::ProtocolError::RESTRICTED_APPLICATION):
+      return GetLocalizedString(IDS_RESTRICTED_RESPONSE_FROM_SERVER_BASE);
+
+    // Http Status Code `401` Unauthorized.
+    case 401:
+      return GetLocalizedString(IDS_ERROR_HTTPSTATUS_UNAUTHORIZED_BASE);
+
+    // Http Status Code `403` Forbidden.
+    case 403:
+      return GetLocalizedString(IDS_ERROR_HTTPSTATUS_FORBIDDEN_BASE);
+
+    // Http Status Code `407` Proxy Authentication Required.
+    case 407:
+      return GetLocalizedString(IDS_ERROR_HTTPSTATUS_PROXY_AUTH_REQUIRED_BASE);
+
+    case HRESULT_FROM_WIN32(ERROR_WINHTTP_NAME_NOT_RESOLVED):
+      return GetLocalizedStringF(IDS_NO_NETWORK_PRESENT_ERROR_BASE,
+                                 GetExecutableRelativePath().value());
+    default:
+      return GetLocalizedStringF(
+          IDS_GENERIC_UPDATE_CHECK_ERROR_BASE,
+          error >= 400 && error < 600
+              ? base::UTF8ToWide(base::StringPrintf("HTTP %d", error))
+              : GetTextForSystemError(error));
+  }
+#undef UPDATE_CHECK_SWITCH_ENTRY
+}
+
+}  // namespace
+
+std::string GetInstallerText(UpdateService::ErrorCategory error_category,
+                             int error_code,
+                             bool is_installer_error) {
+  if (!error_code) {
+    return {};
+  }
+  return base::WideToUTF8([&]() -> std::wstring {
+    switch (error_category) {
+      case UpdateService::ErrorCategory::kInstall:
+        return is_installer_error
+                   ? GetLocalizedStringF(IDS_GENERIC_INSTALL_ERROR_BASE,
+                                         GetTextForSystemError(error_code))
+                   : GetTextForUpdateClientInstallError(error_code);
+      case UpdateService::ErrorCategory::kDownload:
+        return GetTextForDownloadError(error_code);
+      case UpdateService::ErrorCategory::kUnpack:
+        return GetTextForUnpackError(error_code);
+      case UpdateService::ErrorCategory::kService:
+        return GetTextForServiceError(error_code);
+      case UpdateService::ErrorCategory::kUpdateCheck:
+        return GetTextForUpdateCheckError(error_code);
+      default:
+        LOG(ERROR) << "Unknown error category: " << error_category;
+        return {};
+    }
+  }());
+}
+#endif  // BUILDFLAG(IS_WIN)
+
 }  // namespace internal
 
 namespace {
@@ -274,6 +472,12 @@ MakeUpdateClientCrxStateChangeCallback(
               crx_update_item.installer_result->installer_cmd_line;
           update_state.installer_text =
               crx_update_item.installer_result->installer_text;
+#if BUILDFLAG(IS_WIN)
+          if (update_state.installer_text.empty())
+            update_state.installer_text = internal::GetInstallerText(
+                update_state.error_category, update_state.error_code,
+                /*is_installer_error=*/true);
+#endif  // BUILDFLAG(IS_WIN)
         }
 
         if (update_state.state == UpdateService::UpdateState::State::kUpdated ||
@@ -281,6 +485,12 @@ MakeUpdateClientCrxStateChangeCallback(
                 UpdateService::UpdateState::State::kUpdateError ||
             update_state.state ==
                 UpdateService::UpdateState::State::kNoUpdate) {
+#if BUILDFLAG(IS_WIN)
+          if (update_state.installer_text.empty())
+            update_state.installer_text = internal::GetInstallerText(
+                update_state.error_category, update_state.error_code);
+#endif  // BUILDFLAG(IS_WIN)
+
           // If a new install encounters an error, the AppId registered in
           // `UpdateServiceImpl::Install` needs to be removed here. Otherwise
           // the updater may remain installed even if there are no other apps to

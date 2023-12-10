@@ -16,6 +16,7 @@ import "chromeos/crosapi/mojom/authentication.mojom";
 import "chromeos/crosapi/mojom/automation.mojom";
 import "chromeos/crosapi/mojom/browser_app_instance_registry.mojom";
 import "chromeos/crosapi/mojom/browser_version.mojom";
+import "chromeos/crosapi/mojom/guest_os_sk_forwarder.mojom";
 import "chromeos/crosapi/mojom/cert_database.mojom";
 import "chromeos/crosapi/mojom/cert_provisioning.mojom";
 import "chromeos/crosapi/mojom/chrome_app_kiosk_service.mojom";
@@ -148,8 +149,8 @@ struct BrowserInfo {
 // please note the milestone when you added it, to help us reason about
 // compatibility between the client applications and older ash-chrome binaries.
 //
-// Next version: 121
-// Next method id: 123
+// Next version: 122
+// Next method id: 124
 [Stable, Uuid="8b79c34f-2bf8-4499-979a-b17cac522c1e",
  RenamedFrom="crosapi.mojom.AshChromeService"]
 interface Crosapi {
@@ -162,11 +163,10 @@ interface Crosapi {
   [MinVersion=82] BindAudioService@85(
       pending_receiver<AudioService> receiver);
 
-  // Binds the authenticate profile handler service which allows authentication
-  // of profiles by Ash.
+  // Deprecated.
   // Added in M97.
-  [MinVersion=58] BindAuthentication@62(
-      pending_receiver<Authentication> receiver);
+  [MinVersion=58] REMOVED_62@62(
+      pending_receiver<AuthenticationDeprecated> receiver);
 
   // Binds the automation factory interface which allows ash to enableautomation
   // for Lacros and Lacros to send automation data to Ash.
@@ -776,6 +776,11 @@ interface Crosapi {
   // Binds the service to allow lacros-chrome to set the chromeos wallpaper.
   [MinVersion=84] BindWallpaper@87(pending_receiver<Wallpaper> receiver);
 
+  // Binds the GuestOS security key forwarding service.
+  // Added in M120.
+  [MinVersion=121] BindGuestOsSkForwarderFactory@123(
+      pending_receiver<GuestOsSkForwarderFactory> receiver);
+
   // Passes generic browser information such as version, etc into ash in
   // |browser_info| during startup.
   // Added in M87.
@@ -921,6 +926,23 @@ struct DeviceProperties {
   bool? has_stylus_enabled_touchscreen@9;
 };
 
+// Entropy variables which need to be kept in sync between Ash and Lacros
+// throughout a session.
+//
+// Next version: 1
+// Next id: 3
+[Stable]
+struct EntropySource {
+  // Metrics service low entropy source of ash chrome.
+  int32 low_entropy@0;
+
+  // Metrics service old low entropy source of ash chrome.
+  int32 old_low_entropy@1;
+
+  // Metrics service pseudo low entropy source of ash chrome.
+  int32 pseudo_low_entropy@2;
+};
+
 [Stable, Extensible]
 enum ExoImeSupport {
   kUnsupported = 0,
@@ -1039,8 +1061,8 @@ enum OpenUrlFrom {
 // parameters here. If a new parameter is added and its value is only known
 // after the user has logged in, please update BrowserPostLoginParams as well.
 //
-// Next version: 72
-// Next id: 72
+// Next version: 74
+// Next id: 74
 [Stable, RenamedFrom="crosapi.mojom.LacrosInitParams"]
 struct BrowserInitParams {
   // This is ash-chrome's version of the Crosapi interface. This is used by
@@ -1430,8 +1452,12 @@ struct BrowserInitParams {
 
   // When this flag is set to true, frames can be scheduled with variable
   // refresh rate timing.
-  [MinVersion=62]
-  bool is_variable_refresh_rate_enabled@62;
+  //
+  // NOTE: If the lacros version is skewed later than the ash on M120, this flag
+  // may have a false-positive state. The resulting behavior would regress as
+  // though the lacros version matches the current ash version.
+  [MinVersion=62, RenamedFrom="is_variable_refresh_rate_enabled"]
+  bool is_variable_refresh_rate_always_on@62;
 
   // Tells lacros whether the currently logged in user is ephemeral.
   [MinVersion=63]
@@ -1473,6 +1499,16 @@ struct BrowserInitParams {
   // Tells if the desk profiles feature is enabled.
   [MinVersion=71]
   bool is_desk_profiles_enabled@71;
+
+  // If true, the shortcuts in web app system will be published as shortcuts to
+  // app service and displayed with updated UI in ash.
+  [MinVersion=72]
+  bool is_cros_web_app_shortcut_ui_update_enabled@72;
+
+  // Metrics service low entropy source of ash chrome.
+  // Lacros needs to use the same entropy values to be trustworthy for UMA data.
+  [MinVersion=73]
+  EntropySource? entropy_source@73;
 };
 
 // BrowserPostLoginParams is the subset of parameters in BrowserInitParams

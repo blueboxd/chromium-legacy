@@ -21,6 +21,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Promise;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.Supplier;
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.merchant_viewer.MerchantTrustSignalsCoordinator;
 import org.chromium.chrome.browser.omnibox.LocationBarDataProvider;
 import org.chromium.chrome.browser.omnibox.R;
@@ -31,6 +32,7 @@ import org.chromium.chrome.browser.omnibox.status.StatusProperties.StatusIconRes
 import org.chromium.chrome.browser.omnibox.status.StatusView.IconTransitionType;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.page_info.ChromePageInfoHighlight;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.theme.ThemeUtils;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
@@ -39,14 +41,19 @@ import org.chromium.components.browser_ui.site_settings.ContentSettingsResources
 import org.chromium.components.browser_ui.site_settings.SiteSettingsUtil;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.components.content_settings.CookieBlocking3pcdStatus;
 import org.chromium.components.content_settings.CookieControlsBreakageConfidenceLevel;
 import org.chromium.components.content_settings.CookieControlsBridge;
 import org.chromium.components.content_settings.CookieControlsObserver;
+import org.chromium.components.content_settings.CookieControlsStatus;
+import org.chromium.components.feature_engagement.FeatureConstants;
+import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.page_info.PageInfoController;
 import org.chromium.components.permissions.PermissionDialogController;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.BrowserContextHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
@@ -111,7 +118,9 @@ public class StatusMediator
     private int mPermissionIconDisplayTimeoutMs = PERMISSION_ICON_DEFAULT_DISPLAY_TIMEOUT_MS;
 
     private CookieControlsBridge mCookieControlsBridge;
-    private boolean mShouldAnimateCookieControlsIcon;
+    private boolean mHighConfidenceBreakageReceived;
+    private int mCookieBlockingStatus;
+    private int mBlockingStatus3pcd;
 
     /**
      * @param model The {@link PropertyModel} for this mediator.
@@ -663,10 +672,17 @@ public class StatusMediator
     // CookieControlsObserver interface
     @Override
     public void onBreakageConfidenceLevelChanged(int level) {
-        mShouldAnimateCookieControlsIcon = level == CookieControlsBreakageConfidenceLevel.HIGH;
+        if (mHighConfidenceBreakageReceived) return;
+        mHighConfidenceBreakageReceived = level == CookieControlsBreakageConfidenceLevel.HIGH;
     }
 
-    private void animateCookieControlsIcon() {
+    @Override
+    public void onStatusChanged(int status, int enforcement, int blockingStatus, long expiration) {
+        mCookieBlockingStatus = status;
+        mBlockingStatus3pcd = blockingStatus;
+    }
+
+    private void animateCookieControlsIcon(Runnable onAnimationFinished) {
         resetCustomIconsStatus();
 
         boolean isIncognito = mLocationBarDataProvider.isIncognito();
@@ -683,11 +699,10 @@ public class StatusMediator
         permissionIconResource.setTransitionType(IconTransitionType.ROTATE);
         permissionIconResource.setAnimationFinishedCallback(
                 () -> {
-                    mPageInfoIPHController.showCookieControlsIPH(
-                            getIPHTimeout(), R.string.cookie_controls_iph_message);
                     if (mCookieControlsBridge != null) {
                         mCookieControlsBridge.onEntryPointAnimated();
                     }
+                    onAnimationFinished.run();
                 });
 
         // Set the timer to switch the icon back afterwards.
@@ -824,9 +839,35 @@ public class StatusMediator
     }
 
     public void onPageLoadStopped() {
-        if (mShouldAnimateCookieControlsIcon) {
-            animateCookieControlsIcon();
-            mShouldAnimateCookieControlsIcon = false;
+        Profile profile = mProfileSupplier.get();
+        if (profile == null) {
+            return;
+        }
+        if (mPageSecurityLevel != ConnectionSecurityLevel.SECURE) {
+            return;
+        }
+        if (mBlockingStatus3pcd != CookieBlocking3pcdStatus.NOT_IN3PCD) {
+            if (mCookieBlockingStatus != CookieControlsStatus.ENABLED) return;
+
+            if (UserPrefs.get(profile).getInteger(Pref.TRACKING_PROTECTION_ONBOARDING_ACK_ACTION)
+                    == 0) {
+                return;
+            }
+
+            Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
+            if (!tracker.wouldTriggerHelpUI(FeatureConstants.COOKIE_CONTROLS_3PCD_FEATURE)) return;
+
+            animateCookieControlsIcon(
+                    () ->
+                            mPageInfoIPHController.showCookieControlsReminderIPH(
+                                    getIPHTimeout(),
+                                    R.string.cookie_controls_reminder_iph_message));
+        } else if (mHighConfidenceBreakageReceived) {
+            animateCookieControlsIcon(
+                    () ->
+                            mPageInfoIPHController.showCookieControlsIPH(
+                                    getIPHTimeout(), R.string.cookie_controls_iph_message));
+            mHighConfidenceBreakageReceived = false;
         }
     }
 }

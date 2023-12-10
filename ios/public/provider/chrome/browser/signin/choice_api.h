@@ -33,11 +33,11 @@ ChromeCoordinator* CreateChoiceCoordinatorForFREWithNavigationController(
     id<FirstRunScreenDelegate> first_run_delegate);
 
 // Creates a new ChoiceDisplayHandler instance.
-id<StandardPromoDisplayHandler> CreateChoiceDisplayHandler(
-    ChromeBrowserState* browserState);
+id<StandardPromoDisplayHandler> CreateChoiceDisplayHandler();
 
 // Creates a new ChoiceSceneAgent instance.
-id<SceneAgent> CreateChoiceSceneAgent(PromosManager* promosManager);
+id<SceneAgent> CreateChoiceSceneAgent(PromosManager* promosManager,
+                                      ChromeBrowserState* browserState);
 
 // Whether the feature is enabled
 bool IsChoiceEnabled();

@@ -213,6 +213,10 @@ const char kIosParcelTrackingOptInStatus[] =
 const char kIosParcelTrackingOptInPromptSwipedDown[] =
     "ios.parcel_tracking.opt_in_prompt_swiped_down";
 
+// Boolean to represent if Parcel Tracking is enabled for enterprise users.
+const char kIosParcelTrackingPolicyEnabled[] =
+    "ios.parcel_tracking.policy_enabled";
+
 // The number of consecutive times the user dismissed the password bottom sheet.
 // This gets reset to 0 whenever the user selects a password from the bottom
 // sheet or from the keyboard accessory.
@@ -267,6 +271,11 @@ const char kIosSaveToPhotosDefaultGaiaId[] =
 // saves an image to Google Photos.
 const char kIosSaveToPhotosSkipAccountPicker[] =
     "ios.save_to_photos.skip_account_picker";
+
+// Integer preference indicating whether Save to Photos is enabled by enterprise
+// policy.
+const char kIosSaveToPhotosContextMenuPolicySettings[] =
+    "ios.save_to_photos.context_menu_policy";
 
 // Time preference containing the last run time of the Safety Check (via
 // Settings).

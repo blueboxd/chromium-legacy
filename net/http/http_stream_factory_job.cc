@@ -345,7 +345,7 @@ bool HttpStreamFactory::Job::TargettedSocketGroupHasActiveSocket() const {
   DCHECK(!using_quic_);
   DCHECK(!is_websocket_);
   ClientSocketPool* pool = session_->GetSocketPool(
-      HttpNetworkSession::NORMAL_SOCKET_POOL, proxy_info_.proxy_server());
+      HttpNetworkSession::NORMAL_SOCKET_POOL, proxy_info_.proxy_chain());
   DCHECK(pool);
   ClientSocketPool::GroupId connection_group(
       destination_, request_info_.privacy_mode,
@@ -426,15 +426,15 @@ SpdySessionKey HttpStreamFactory::Job::GetSpdySessionKey(
   // In the case that we're using an HTTPS proxy for an HTTP url, look for a
   // HTTP/2 proxy session *to* the proxy, instead of to the origin server.
   if (proxy_server.is_https() && origin_url.SchemeIs(url::kHttpScheme)) {
-    return SpdySessionKey(proxy_server.host_port_pair(), ProxyServer::Direct(),
+    return SpdySessionKey(proxy_server.host_port_pair(), ProxyChain::Direct(),
                           PRIVACY_MODE_DISABLED,
                           SpdySessionKey::IsProxySession::kTrue, socket_tag,
                           network_anonymization_key, secure_dns_policy);
   }
-  return SpdySessionKey(HostPortPair::FromURL(origin_url), proxy_server,
-                        privacy_mode, SpdySessionKey::IsProxySession::kFalse,
-                        socket_tag, network_anonymization_key,
-                        secure_dns_policy);
+  return SpdySessionKey(HostPortPair::FromURL(origin_url),
+                        ProxyChain(proxy_server), privacy_mode,
+                        SpdySessionKey::IsProxySession::kFalse, socket_tag,
+                        network_anonymization_key, secure_dns_policy);
 }
 
 bool HttpStreamFactory::Job::CanUseExistingSpdySession() const {
@@ -746,12 +746,12 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
     return ERR_NO_SUPPORTED_PROXIES;
   }
 
-  DCHECK(proxy_info_.proxy_server().is_valid());
+  DCHECK(proxy_info_.proxy_chain().IsValid());
   next_state_ = STATE_INIT_CONNECTION_COMPLETE;
 
   if (proxy_info_.is_secure_http_like()) {
     // Disable network fetches for HTTPS proxies, since the network requests
-    // are probably going to need to go through the proxy too.
+    // are probably going to need to go through the proxy chain too.
     proxy_ssl_config_.disable_cert_verification_network_fetches = true;
   }
   if (using_ssl_) {

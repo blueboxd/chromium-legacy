@@ -353,7 +353,7 @@ bool Animation::Limited(absl::optional<AnimationTimeDelta> current_time) const {
 }
 
 Document* Animation::GetDocument() const {
-  return document_;
+  return document_.Get();
 }
 
 absl::optional<AnimationTimeDelta> Animation::TimelineTime() const {
@@ -3178,7 +3178,7 @@ void Animation::commitStyles(ExceptionState& exception_state) {
       !To<KeyframeEffect>(effect())->pseudoElement().empty()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNoModificationAllowedError,
-        "Animation not associated with a styled taemptyement");
+        "Animation not associated with a styled element");
     return;
   }
   // 2. If, after applying any pending style changes, target is not being

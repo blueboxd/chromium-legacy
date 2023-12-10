@@ -115,7 +115,9 @@ void ThirdPartyMetricsObserver::OnLoadedResource(
 void ThirdPartyMetricsObserver::OnCookiesRead(
     const GURL& url,
     const GURL& first_party_url,
-    bool blocked_by_policy) {
+    bool blocked_by_policy,
+    bool is_ad_tagged,
+    const net::CookieSettingOverrides& cookie_setting_overrides) {
   OnCookieOrStorageAccess(url, first_party_url, blocked_by_policy,
                           AccessType::kCookieRead);
 }
@@ -124,7 +126,9 @@ void ThirdPartyMetricsObserver::OnCookieChange(
     const GURL& url,
     const GURL& first_party_url,
     const net::CanonicalCookie& cookie,
-    bool blocked_by_policy) {
+    bool blocked_by_policy,
+    bool is_ad_tagged,
+    const net::CookieSettingOverrides& cookie_setting_overrides) {
   OnCookieOrStorageAccess(url, first_party_url, blocked_by_policy,
                           AccessType::kCookieWrite);
 }

@@ -92,6 +92,7 @@ BASE_FEATURE(kAutofillContentEditables,
 
 // Crowdsourcing already prefers PHONE_HOME_CITY_AND_NUMBER over
 // PHONE_HOME_WHOLE_NUMBER. With this feature, local heuristics do the same.
+// TODO(crbug.com/1474308): Clean up when launched.
 BASE_FEATURE(kAutofillDefaultToCityAndNumber,
              "AutofillDefaultToCityAndNumber",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -331,6 +332,13 @@ BASE_FEATURE(kAutofillExtractAllDatalists,
 // Enables support to submit feedback on Autofill. Used only in Desktop.
 BASE_FEATURE(kAutofillFeedback,
              "AutofillFeedback",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Replaces cached web elements in AutofillAgent and FormTracker by their
+// renderer ids.
+// DONOTSUMBIT: Disable.
+BASE_FEATURE(kAutofillReplaceCachedWebElementsByRendererIds,
+             "AutofillReplaceCachedWebElementsByRendererIds",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Makes AutofillProfile::IsSubsetOfForFieldSet stop ignoring street address
@@ -456,6 +464,11 @@ BASE_FEATURE(kAutofillOverridePredictions,
 // The override specification in string form.
 const base::FeatureParam<std::string> kAutofillOverridePredictionsSpecification{
     &kAutofillOverridePredictions, "spec", "[]"};
+
+// The override specification using alternative_form_signature in string form.
+const base::FeatureParam<std::string>
+    kAutofillOverridePredictionsForAlternativeFormSignaturesSpecification{
+        &kAutofillOverridePredictions, "alternative_signature_spec", "[]"};
 
 // If enabled, Autofill will first look at field labels and then at field
 // attributes when classifying address fields in Mexico.
@@ -609,6 +622,13 @@ BASE_FEATURE(kAutofillShowAutocompleteDeleteButton,
 // TODO(crbug.com/1459990): Clean up when launched.
 BASE_FEATURE(kAutofillGranularFillingAvailable,
              "AutofillGranularFillingAvailable",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether field filling through the context menu will be available for
+// the unclassified fields.
+// TODO(crbug.com/1493361): Clean up when launched.
+BASE_FEATURE(kAutofillForUnclassifiedFieldsAvailable,
+             "AutofillForUnclassifiedFieldsAvailable",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether testing forms using devtools will be available.

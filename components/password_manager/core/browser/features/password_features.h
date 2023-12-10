@@ -15,6 +15,10 @@ namespace password_manager::features {
 // All features in alphabetical order. The features should be documented
 // alongside the definition of their values in the .cc file.
 
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+BASE_DECLARE_FEATURE(kAttachLogsToAutofillRaterExtensionReport);
+#endif
+
 BASE_DECLARE_FEATURE(kAutoApproveSharedPasswordUpdatesFromSameSender);
 BASE_DECLARE_FEATURE(kBiometricTouchToFill);
 BASE_DECLARE_FEATURE(kClearUndecryptablePasswordsOnSync);
@@ -27,6 +31,10 @@ BASE_DECLARE_FEATURE(kFillingAcrossAffiliatedWebsitesAndroid);
 
 BASE_DECLARE_FEATURE(kFillingAcrossGroupedSites);
 BASE_DECLARE_FEATURE(kFillOnAccountSelect);
+
+#if BUILDFLAG(IS_IOS)
+BASE_DECLARE_FEATURE(kIOSPasswordSignInUff);
+#endif
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 BASE_DECLARE_FEATURE(kNewConfirmationBubbleForGeneratedPasswords);
@@ -51,8 +59,15 @@ BASE_DECLARE_FEATURE(kUseExtensionListForPSLMatching);
 BASE_DECLARE_FEATURE(kUseServerPredictionsOnSaveParsing);
 BASE_DECLARE_FEATURE(kUsernameFirstFlowFallbackCrowdsourcing);
 BASE_DECLARE_FEATURE(kUsernameFirstFlowHonorAutocomplete);
+
 BASE_DECLARE_FEATURE(kUsernameFirstFlowStoreSeveralValues);
+// If |kUsernameFirstFlowWithIntermediateValues| is enabled, the size of LRU
+// cache that stores all username candidates outside the form.
+extern const base::FeatureParam<int> kMaxSingleUsernameFieldsToStore;
+
 BASE_DECLARE_FEATURE(kUsernameFirstFlowWithIntermediateValues);
+BASE_DECLARE_FEATURE(kUsernameFirstFlowWithIntermediateValuesPredictions);
+BASE_DECLARE_FEATURE(kUsernameFirstFlowWithIntermediateValuesVoting);
 
 // All features parameters in alphabetical order.
 

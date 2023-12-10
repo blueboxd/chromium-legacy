@@ -86,7 +86,7 @@ class MockBrowserAutofillManager : public TestBrowserAutofillManager {
               (const FormData& form, const FormFieldData& field),
               (override));
   MOCK_METHOD(void,
-              FillCreditCardFormImpl,
+              FillCreditCardForm,
               (const FormData& form,
                const FormFieldData& field,
                const CreditCard& credit_card,
@@ -114,6 +114,9 @@ class MockBrowserAutofillManager : public TestBrowserAutofillManager {
                const FormFieldData& field),
               (override));
   MOCK_METHOD(bool, CanShowAutofillUi, (), (const, override));
+  MOCK_METHOD(AutofillField*,
+              GetAutofillField,
+              (const FormData& form, const FormFieldData& field));
 };
 
 }  // namespace
@@ -186,15 +189,26 @@ class TouchToFillDelegateAndroidImplUnitTest : public testing::Test {
     form_.fields[0].is_focusable = true;
   }
 
+  void OnFormsSeen() {
+    if (!browser_autofill_manager_->FindCachedFormById(form_.global_id())) {
+      browser_autofill_manager_->OnFormsSeen({form_}, {});
+    }
+  }
+
+  void IntendsToShowTouchToFill(bool expected_success) {
+    OnFormsSeen();
+    EXPECT_EQ(expected_success,
+              touch_to_fill_delegate_->IntendsToShowTouchToFill(
+                  form_.global_id(), form_.fields[0].global_id(), form_));
+  }
+
   void TryToShowTouchToFill(bool expected_success) {
     EXPECT_CALL(autofill_client_,
                 HideAutofillPopup(
                     PopupHidingReason::kOverlappingWithTouchToFillSurface))
         .Times(expected_success ? 1 : 0);
 
-    if (!browser_autofill_manager_->FindCachedFormById(form_.global_id())) {
-      browser_autofill_manager_->OnFormsSeen({form_}, {});
-    }
+    OnFormsSeen();
     EXPECT_EQ(expected_success, touch_to_fill_delegate_->TryToShowTouchToFill(
                                     form_, form_.fields[0]));
     EXPECT_EQ(expected_success,
@@ -670,7 +684,7 @@ TEST_F(TouchToFillDelegateAndroidImplUnitTest, ScanCreditCardIsCalled) {
   touch_to_fill_delegate_->ScanCreditCard();
 
   CreditCard credit_card = autofill::test::GetCreditCard();
-  EXPECT_CALL(*browser_autofill_manager_, FillCreditCardFormImpl);
+  EXPECT_CALL(*browser_autofill_manager_, FillCreditCardForm);
   touch_to_fill_delegate_->OnCreditCardScanned(credit_card);
   EXPECT_EQ(touch_to_fill_delegate_->IsShowingTouchToFill(), false);
 }
@@ -735,6 +749,17 @@ TEST_F(TouchToFillDelegateAndroidImplUnitTest,
   histogram_tester_.ExpectUniqueSample(
       "Autofill.TouchToFill.CreditCard.AutofillUsedAfterTouchToFillDismissal",
       true, 1);
+}
+
+TEST_F(TouchToFillDelegateAndroidImplUnitTest,
+       IsFormPrefilledHandlesNullAutofillField) {
+  // `IntendsToShowTouchToFill()` invokes `DryRun()` that checks if form_ is
+  // prefilled. `IsFormPrefilled()` calls
+  // BrowserAutofillManager::GetAutofillField(). This tests the scenario where
+  // `GetAutofillField()` returns a nullptr does not crash.
+  ON_CALL(*browser_autofill_manager_, GetAutofillField(_, _))
+      .WillByDefault(Return(nullptr));
+  IntendsToShowTouchToFill(/*expected_success=*/true);
 }
 
 }  // namespace autofill

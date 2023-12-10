@@ -225,10 +225,6 @@
       base_feature: "none",
     },
     {
-      name: "AccessibilityEagerAXTreeUpdate",
-      status: "stable",
-    },
-    {
       name: "AccessibilityExposeDisplayNone",
       status: "test",
       base_feature: "none",
@@ -296,10 +292,6 @@
     {
       name: "AllowURNsInIframes",
       base_feature: "none",
-    },
-    {
-      name: "AnchorHrefCheckInvalidURL",
-      status: "stable",
     },
     {
       name: "AndroidDownloadableFontsMatching",
@@ -509,6 +501,11 @@
       status: "experimental",
     },
     {
+      // crbug.com/880802
+      name: "BlockRubyConsoleMessage",
+      status: "stable",
+    },
+    {
       name: "BrowserVerifiedUserActivationKeyboard",
       base_feature: "none",
       public: true,
@@ -627,6 +624,10 @@
       status: "stable",
     },
     {
+      name: "ClipboardSupportedTypes",
+      status: "experimental",
+    },
+    {
       name: "ClipboardSvg",
       status: "experimental",
       base_feature: "none",
@@ -655,7 +656,9 @@
       status: "stable",
     },
     {
+      // https://html.spec.whatwg.org/multipage/interaction.html#close-requests-and-close-watchers
       name: "CloseWatcher",
+      status: "stable",
     },
     {
       name: "CoepReflection",
@@ -885,7 +888,7 @@
     },
     {
       name: "CSSExponentialFunctions",
-      status: "experimental",
+      status: "stable",
     },
     {
       // crbug.com/1447058
@@ -976,7 +979,7 @@
       // Tracking bug: https://crbug.com/1418401
       // Spec: https://drafts.fxtf.org/css-masking/#the-mask
       name: "CSSMaskingInterop",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSMixBlendModePlusLighter",
@@ -1169,6 +1172,7 @@
       status: "stable",
     },
     {
+      // The AccentColor And AccentColorText CSS system color keywords
       name: "CSSSystemAccentColor",
       status: "experimental",
     },
@@ -1196,12 +1200,6 @@
     {
       name: "CSSTextWrapPretty",
       status: "stable",
-    },
-    // Support for CSS Toggles, https://tabatkins.github.io/css-toggle/
-    {
-      name: "CSSToggles",
-      status: "experimental",
-      base_feature: "none",
     },
     {
       // Support for transitioning top layer elements out of the top layer by
@@ -1257,7 +1255,7 @@
     // <transform-function> syntax.
     {
       name: "CSSVariables2TransformValues",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSVideoDynamicRangeMediaQueries",
@@ -1291,6 +1289,7 @@
       status: "experimental",
       base_feature: "none",
       origin_trial_feature_name: "WebSQL",
+      origin_trial_allows_third_party: true,
       origin_trial_type: "deprecation",
     },
     {
@@ -1312,6 +1311,9 @@
       status: "stable",
     },
     {
+      // TODO(crbug.com/1396384) This is being disabled, very slowly, via
+      // Finch over 119 and 120. For now, it is enabled in code, and will be
+      // removed from code starting in M121, assuming things go well.
       name: "DeprecatedNonStreamingDeclarativeShadowDOM",
       status: "stable",
     },
@@ -1440,9 +1442,37 @@
       browser_process_read_write_access: true,
     },
     {
+      // `kHidden` and `kHiddenButPainting` visibility states are treated as
+      // hidden in the sense of `document.visibilityState`.  However, they are
+      // handled differently internally.  For example, video playback should
+      // continue in `kHiddenButPainting`, such as when the page is being
+      // background captured.  When enabled, this feature causes blink to
+      // notify internal observers about visibility changes between the two
+      // hidden states, in addition to transitions to/from `kVisible`.
+      //
+      // Since the two hidden states are exposed to the web identically, there
+      // is no `visibilitychanged` event fired when switching between them.
+      //
+      // When this feature is disabled, blink reverts to its original behavior
+      // of eliding transitions between the two hidden states, including to
+      // internal observers.  This behavior causes problems with capture and
+      // picture-in-picture, but is preserved as a safe fallback.
+      name: "DispatchHiddenVisibilityTransitions",
+      status: "stable",
+      base_feature: "DispatchHiddenVisibilityTransitions",
+    },
+    {
       name: "DisplayCutoutAPI",
       base_feature: "none",
       public: true,
+    },
+    {
+      // Makes document's fallback base URL use about:blank instead of the base
+      // URL of whatever execution context created it in order to match the
+      // HTML spec and the behavior already shipped in all other browsers. This
+      // behavior is reflected by document.baseURI.
+      name: "DocumentBaseURIFix",
+      status: "stable",
     },
     {
       name: "DocumentCookie",
@@ -1621,11 +1651,6 @@
       // Not enabled due to a RTL issue. crbug.com/1421016.
     },
     {
-      name: "FeaturePolicyReporting",
-      status: "experimental",
-      base_feature: "none",
-    },
-    {
       name: "FedCm",
       public: true,
       status: "stable",
@@ -1639,24 +1664,24 @@
       base_feature: "none",
     },
     {
+      name: "FedCmAutoSelectedFlag",
+      depends_on: ["FedCm"],
+      public: true,
+      status: "stable",
+      base_feature: "none",
+    },
+    {
+      name: "FedCmDomainHint",
+      depends_on: ["FedCm"],
+      public: true,
+      status: "test",
+      base_feature: "none",
+    },
+    {
       name: "FedCmError",
       depends_on: ["FedCm"],
       public: true,
-      status: "test",
-      base_feature: "none",
-    },
-    {
-      name: "FedCmHostedDomain",
-      depends_on: ["FedCm"],
-      public: true,
-      status: "test",
-      base_feature: "none",
-    },
-    {
-      name: "FedCmIdentityCredentialAutoSelectedFlag",
-      depends_on: ["FedCm"],
-      public: true,
-      status: "test",
+      status: "stable",
       base_feature: "none",
     },
     {
@@ -1670,10 +1695,8 @@
       name: "FedCmIdpSigninStatus",
       depends_on: ["FedCm"],
       public: true,
-      status: "test",
+      status: "stable",
       base_feature: "none",
-      origin_trial_feature_name: "FedCmIdpSigninStatus",
-      origin_trial_allows_third_party: true,
       browser_process_read_access: true,
     },
     {
@@ -1685,6 +1708,12 @@
     },
     {
       name: "FedCmMultipleIdentityProviders",
+      depends_on: ["FedCm"],
+      base_feature: "none",
+      public: true,
+    },
+    {
+      name: "FedCmRevoke",
       depends_on: ["FedCm"],
       base_feature: "none",
       public: true,
@@ -1726,7 +1755,15 @@
       // The Blink runtime-enabled feature name for the API's IDL.
       name: "FetchLaterAPI",
       status: "experimental",
-      public: true,
+      origin_trial_feature_name: "FetchLaterAPI",
+      base_feature: "FetchLaterAPI",
+      // base_feature is meant as kill-switch. This runtime-enabled feature
+      // should follow the Origin Trial unless explicitly overriden by Finch or
+      // commandline flags.
+      base_feature_status: "enabled",
+      // Enables the Blink feature only when the base::Feature is overridden by
+      // field trial or command line.
+      copied_from_base_feature_if: "overridden",
     },
     {
       name: "FetchUploadStreaming",
@@ -2068,6 +2105,19 @@
       status: "stable",
       base_feature: "none",
     },
+    // Adds support for the experimental `invoketarget` and `invokeaction`
+    // attributes, as specified in the open-ui "Invokers" explainer.
+    // https://open-ui.org/components/invokers.explainer/
+    {
+      name: "HTMLInvokeTargetAttribute",
+      status: "experimental",
+    },
+    {
+      // Shipping in M120.  Flag should be removed after M120 has been
+      // shipping to stable for a few weeks.
+      name: "HTMLLangNewInheritance",
+      status: "stable",
+    },
     {
       // A flag, just for local testing to make the
       // HTML parser yield more often and take longer to resume.
@@ -2186,10 +2236,16 @@
       name: "InterruptComposedScrollbarDisappearance",
       status: "stable",
     },
+    // A killswitch for the change. Will remove after M120 or M121 becomes
+    // stable without no blocking bugs.
+    {
+      name: "IntersectionObserverIgnoreFilters",
+      status: "stable",
+    },
     {
       // If enabled, IntersectionObserverScrollMargin will be parsed.
       name: "IntersectionObserverScrollMargin",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "IntersectionOptimization",
@@ -2215,7 +2271,7 @@
     },
     {
       name: "KeyboardFocusableScrollers",
-      status: "stable",
+      status: "test",
     },
     {
       name: "LangAttributeAwareFormControlUI",
@@ -2425,6 +2481,11 @@
       base_feature: "none",
     },
     {
+      // This uses media::VideoEncoder implementation in MediaRecorder API
+      // instead of using MediaRecorder own video encoder implementation.
+      name: "MediaRecorderUseMediaVideoEncoder",
+    },
+    {
       name: "MediaSession",
       public: true,
       status: "stable",
@@ -2454,11 +2515,6 @@
     {
       name: "MediaSourceNewAbortAndDuration",
       status: "experimental",
-      base_feature: "none",
-    },
-    {
-      name: "MediaStreamTrackGetFrameStats",
-      status: "stable",
       base_feature: "none",
     },
     {
@@ -2649,13 +2705,6 @@
       status: {"Android": "", "default": "stable"},
       base_feature: "none",
     },
-    // This is an optimization that should not be observable, but just in case,
-    // this is a killswitch. This can be removed once M117 ships to stable and
-    // no regressions are reported.
-    {
-      name: "OptimizedNodeCloneOrder",
-      status: "stable",
-    },
     // This flag is a killswitch. It was only exists as a way for us to turn
     // the feature off in the emergency that it breaks websites.
     // TODO(http://crbug.com/1473340): Delete internal web_tests which are
@@ -2792,10 +2841,6 @@
       base_feature: "none",
       origin_trial_feature_name: "FrobulateThirdParty",
       origin_trial_allows_third_party: true,
-    },
-    {
-      name: "OverflowOverlayAliasesAuto",
-      status: "stable",
     },
     {
       name: "OverscrollCustomization",
@@ -2954,6 +2999,10 @@
       base_feature: "none",
     },
     {
+      name: "PermissionsPolicyReporting",
+      status: "stable",
+    },
+    {
       name: "PermissionsRequestRevoke",
       status: "experimental",
       base_feature: "none",
@@ -3067,6 +3116,10 @@
     },
     {
       name: "PrivateNetworkAccessPermissionPrompt",
+      origin_trial_feature_name: "PrivateNetworkAccessPermissionPrompt",
+      origin_trial_os: ["win", "mac", "linux", "fuchsia", "chromeos"],
+      status: "experimental",
+      public: true,
       base_feature: "none",
     },
     {
@@ -3280,6 +3333,7 @@
     {
       name: "SchedulerYield",
       origin_trial_feature_name: "SchedulerYield",
+      origin_trial_allows_third_party: true,
       depends_on: ["AbortSignalComposition"],
       status: "experimental",
     },
@@ -3389,7 +3443,9 @@
       // Allows the HTML parser to put <hr> tags inside <select> tags.
       // https://chromestatus.com/feature/6198448366026752
       name: "SelectHr",
-      status: "stable",
+      // Android currently renders <hr>s as empty selectable options:
+      // http://crbug.com/1494927
+      status: {"Android": "", "default": "stable"},
     },
     {
       name: "SendBeaconThrowForBlobWithNonSimpleType",
@@ -3667,6 +3723,12 @@
       status: "stable",
     },
     {
+      name: "StorageAccessAPIBeyondCookies",
+      status: "experimental",
+      base_feature: "none",
+      origin_trial_feature_name: "StorageAccessAPIBeyondCookies",
+    },
+    {
       name: "StorageAccessAPIForOriginExtension",
       public: true,
       status: "stable",
@@ -3715,10 +3777,6 @@
     },
     {
       name: "SvgTextFixHittestAfterScale",
-      status: "stable",
-    },
-    {
-      name: "SvgTextSkipZeroLengthItems",
       status: "stable",
     },
     {
@@ -3912,8 +3970,15 @@
       origin_trial_os: ["win", "mac", "linux", "fuchsia", "chromeos"],
     },
     {
+      // This flag makes IDL reflected attributes with the "URL" IDL attribute
+      // return the original string of the attribute when a complete URL can't
+      // be created instead of an empty string.
+      name: "URLAttributeFix",
+      status: "stable",
+    },
+    {
       name: "URLCanParse",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "URLPatternCompareComponent",
@@ -4011,6 +4076,10 @@
       name: "ViewTransitionOnNavigation",
     },
     {
+      // https://chromestatus.com/feature/5089552511533056
+      name: "ViewTransitionTypes",
+    },
+    {
       name: "VisibilityCollapseColumn",
       base_feature: "none",
     },
@@ -4071,6 +4140,13 @@
       // required for using the "implied_by" behaviour.
       origin_trial_feature_name: "WebAppLaunchQueue",
       implied_by: ["WebAppLaunchHandler", "FileHandling"],
+      base_feature: "none",
+    },
+    {
+      name: "WebAppScopeExtensions",
+      origin_trial_feature_name: "WebAppScopeExtensions",
+      origin_trial_os: ["win", "mac", "linux", "chromeos"],
+      status: "experimental",
       base_feature: "none",
     },
     {
@@ -4205,19 +4281,8 @@
       base_feature: "none",
     },
     {
-      name: "WebCodecs",
-      status: "stable",
-      base_feature: "none",
-      origin_trial_feature_name: "WebCodecs"
-    },
-    {
       name: "WebCodecsContentHint",
       status: "experimental",
-    },
-    {
-      name: "WebCodecsDequeueEvent",
-      status: "stable",
-      base_feature: "none",
     },
     {
       name: "WebCryptoCurve25519",

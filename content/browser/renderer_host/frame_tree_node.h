@@ -13,6 +13,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/safe_ref.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -592,6 +593,7 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   // Called from the currently active document via the
   // `Fence.setReportEventDataForAutomaticBeacons` JS API.
   void SetFencedFrameAutomaticBeaconReportEventData(
+      blink::mojom::AutomaticBeaconType event_type,
       const std::string& event_data,
       const std::vector<blink::FencedFrame::ReportingDestination>& destinations,
       network::AttributionReportingRuntimeFeatures
@@ -601,7 +603,8 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   // Helper function to clear out automatic beacon data after one automatic
   // beacon if `once` was set to true when calling
   // `setReportEventDataForAutomaticBeacons()`.
-  void MaybeResetFencedFrameAutomaticBeaconReportEventData();
+  void MaybeResetFencedFrameAutomaticBeaconReportEventData(
+      blink::mojom::AutomaticBeaconType event_type);
 
   // Returns the number of fenced frame boundaries above this frame. The
   // outermost main frame's frame tree has fenced frame depth 0, a topmost
@@ -735,6 +738,10 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   // navigation is run, or until that NavigationRequest gets deleted (which
   // cancels the task).
   void CancelRestartingBackForwardCacheNavigation();
+
+  base::SafeRef<FrameTreeNode> GetSafeRef() {
+    return weak_factory_.GetSafeRef();
+  }
 
  private:
   friend class CSPEmbeddedEnforcementUnitTest;

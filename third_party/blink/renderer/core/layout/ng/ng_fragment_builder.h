@@ -25,11 +25,11 @@
 
 namespace blink {
 
+class FragmentItemsBuilder;
+class InlineBreakToken;
 class LayoutObject;
 class NGColumnSpannerPath;
 class NGEarlyBreak;
-class NGFragmentItemsBuilder;
-class NGInlineBreakToken;
 
 class CORE_EXPORT NGFragmentBuilder {
   STACK_ALLOCATED();
@@ -160,12 +160,12 @@ class CORE_EXPORT NGFragmentBuilder {
 
   const ChildrenVector& Children() const { return children_; }
 
-  // True if |this| has |NGFragmentItemsBuilder|; i.e., if |this| is an inline
+  // True if |this| has |FragmentItemsBuilder|; i.e., if |this| is an inline
   // formatting context.
   bool HasItems() const { return items_builder_; }
-  // The |NGFragmentItemsBuilder| for the inline formatting context of this box.
-  NGFragmentItemsBuilder* ItemsBuilder() { return items_builder_; }
-  void SetItemsBuilder(NGFragmentItemsBuilder* builder) {
+  // The |FragmentItemsBuilder| for the inline formatting context of this box.
+  FragmentItemsBuilder* ItemsBuilder() { return items_builder_; }
+  void SetItemsBuilder(FragmentItemsBuilder* builder) {
     items_builder_ = builder;
   }
 
@@ -568,12 +568,12 @@ class CORE_EXPORT NGFragmentBuilder {
 
   ChildrenVector children_;
 
-  NGFragmentItemsBuilder* items_builder_ = nullptr;
+  FragmentItemsBuilder* items_builder_ = nullptr;
 
   // Only used by the NGBoxFragmentBuilder subclass, but defined here to avoid
   // a virtual function call.
   NGBreakTokenVector child_break_tokens_;
-  const NGInlineBreakToken* last_inline_break_token_ = nullptr;
+  const InlineBreakToken* last_inline_break_token_ = nullptr;
 
   HeapVector<NGLogicalOutOfFlowPositionedNode> oof_positioned_candidates_;
   HeapVector<NGLogicalOOFNodeForFragmentation>
@@ -631,7 +631,7 @@ class CORE_EXPORT NGFragmentBuilder {
   bool is_may_have_descendant_above_block_start_explicitly_set_ = false;
 #endif
 
-  friend class NGInlineLayoutStateStack;
+  friend class InlineLayoutStateStack;
   friend class NGLayoutResult;
   friend class NGPhysicalFragment;
 };

@@ -462,8 +462,8 @@ void AddFeatureFlagsToCommandLine(
     const chromeos::BrowserParamsProxy& init_params) {
   base::ScopedAddFeatureFlags flags(base::CommandLine::ForCurrentProcess());
 
-  if (init_params.IsVariableRefreshRateEnabled()) {
-    flags.EnableIfNotSet(features::kEnableVariableRefreshRate);
+  if (init_params.IsVariableRefreshRateAlwaysOn()) {
+    flags.EnableIfNotSet(features::kEnableVariableRefreshRateAlwaysOn);
   }
 
   if (init_params.IsPdfOcrEnabled()) {
@@ -570,6 +570,12 @@ struct MainFunction {
 
 // Initializes the user data dir. Must be called before InitializeLocalState().
 void InitializeUserDataDir(base::CommandLine* command_line) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS) && DCHECK_IS_ON()
+  // In debug builds of Lacros, we keep track of when the user data dir
+  // is initialized, to ensure the cryptohome is not accessed before login
+  // when prelaunching at login screen.
+  chromeos::lacros_paths::SetInitializedUserDataDir();
+#endif
 #if BUILDFLAG(IS_WIN)
   // Reach out to chrome_elf for the truth on the user data directory.
   // Note that in tests, this links to chrome_elf_test_stubs.
@@ -1080,7 +1086,12 @@ void ChromeMainDelegate::SetupTracing() {
   // sampler profiler because it can support java frames which is essential for
   // the main thread.
   base::RepeatingCallback tracing_factory =
+#if BUILDFLAG(IS_ANDROID)
+      base::BindRepeating(&CreateCoreUnwindersFactory,
+                          /*is_java_name_hashing_enabled=*/false);
+#else
       base::BindRepeating(&CreateCoreUnwindersFactory);
+#endif  // BUILDFLAG(IS_ANDROID)
   tracing::TracingSamplerProfiler::UnwinderType unwinder_type =
       tracing::TracingSamplerProfiler::UnwinderType::kCustomAndroid;
 #if BUILDFLAG(IS_ANDROID)
@@ -1398,6 +1409,9 @@ void ChromeMainDelegate::PreSandboxStartup() {
 
     // NOTE: When launching Lacros at login screen, after this point,
     // the user should have logged in. The cryptohome is now accessible.
+    if (chrome::ProcessNeedsProfileDir(process_type)) {
+      InitializeUserDataDir(base::CommandLine::ForCurrentProcess());
+    }
 
     // Redirect logs from system directory to cryptohome.
     RedirectLacrosLogging();
@@ -1424,8 +1438,16 @@ void ChromeMainDelegate::PreSandboxStartup() {
 #endif
 
   // Initialize the user data dir for any process type that needs it.
-  if (chrome::ProcessNeedsProfileDir(process_type))
+  bool initialize_user_data_dir = chrome::ProcessNeedsProfileDir(process_type);
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // In Lacros, when prelaunching at login screen, we postpone the
+  // initialization of the user data directory.
+  // We verify that no access happens before login via DCHECKs.
+  initialize_user_data_dir &= !chromeos::IsLaunchedWithPostLoginParams();
+#endif
+  if (initialize_user_data_dir) {
     InitializeUserDataDir(base::CommandLine::ForCurrentProcess());
+  }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // Generate shared resource file only on browser process. This is to avoid

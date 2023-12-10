@@ -44,10 +44,12 @@ BoundSessionCookieRefreshServiceImpl::~BoundSessionCookieRefreshServiceImpl() =
     default;
 
 void BoundSessionCookieRefreshServiceImpl::Initialize() {
-  absl::optional<bound_session_credentials::BoundSessionParams>
-      bound_session_params = session_params_storage_->ReadParams();
-  if (bound_session_params.has_value()) {
-    InitializeBoundSession(bound_session_params.value());
+  std::vector<bound_session_credentials::BoundSessionParams>
+      bound_session_params = session_params_storage_->ReadAllParams();
+  if (!bound_session_params.empty()) {
+    // Only a single bound session is currently supported.
+    // TODO(http://b/274774185): support multiple parallel bound sessions.
+    InitializeBoundSession(bound_session_params.front());
   }
 }
 
@@ -58,7 +60,11 @@ void BoundSessionCookieRefreshServiceImpl::RegisterNewBoundSession(
     return;
   }
   // New session should override an existing one.
-  cookie_controller_.reset();
+  if (cookie_controller_) {
+    session_params_storage_->ClearParams(cookie_controller_->url().spec(),
+                                         cookie_controller_->session_id());
+    cookie_controller_.reset();
+  }
   InitializeBoundSession(params);
 }
 
@@ -162,7 +168,9 @@ void BoundSessionCookieRefreshServiceImpl::
 
 void BoundSessionCookieRefreshServiceImpl::TerminateSession() {
   cookie_controller_.reset();
-  session_params_storage_->ClearParams();
+  // TODO(b/300627729): stop clearing all params once multiple sessions are
+  // supported.
+  session_params_storage_->ClearAllParams();
   UpdateAllRenderers();
 }
 
@@ -202,25 +210,18 @@ void BoundSessionCookieRefreshServiceImpl::OnStorageKeyDataCleared(
 
 std::unique_ptr<BoundSessionCookieController>
 BoundSessionCookieRefreshServiceImpl::CreateBoundSessionCookieController(
-    const bound_session_credentials::BoundSessionParams& bound_session_params,
-    const base::flat_set<std::string>& cookie_names) {
+    const bound_session_credentials::BoundSessionParams& bound_session_params) {
   return controller_factory_for_testing_.is_null()
              ? std::make_unique<BoundSessionCookieControllerImpl>(
                    key_service_.get(), storage_partition_,
-                   network_connection_tracker_, bound_session_params,
-                   cookie_names, this)
-             : controller_factory_for_testing_.Run(bound_session_params,
-                                                   cookie_names, this);
+                   network_connection_tracker_, bound_session_params, this)
+             : controller_factory_for_testing_.Run(bound_session_params, this);
 }
 
 void BoundSessionCookieRefreshServiceImpl::InitializeBoundSession(
     const bound_session_credentials::BoundSessionParams& bound_session_params) {
   CHECK(!cookie_controller_);
-  constexpr char k1PSIDTSCookieName[] = "__Secure-1PSIDTS";
-  constexpr char k3PSIDTSCookieName[] = "__Secure-3PSIDTS";
-
-  cookie_controller_ = CreateBoundSessionCookieController(
-      bound_session_params, {k1PSIDTSCookieName, k3PSIDTSCookieName});
+  cookie_controller_ = CreateBoundSessionCookieController(bound_session_params);
   cookie_controller_->Initialize();
   UpdateAllRenderers();
 }

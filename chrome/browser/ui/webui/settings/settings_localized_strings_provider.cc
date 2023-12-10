@@ -807,6 +807,8 @@ void AddPerformanceStrings(content::WebUIDataSource* html_source) {
                          chrome::kHighEfficiencyModeLearnMoreUrl);
   html_source->AddString("batterySaverLearnMoreUrl",
                          chrome::kBatterySaverModeLearnMoreUrl);
+  html_source->AddString("preloadingLearnMoreUrl",
+                         chrome::kPreloadingLearnMoreUrl);
 
 #if BUILDFLAG(IS_CHROMEOS)
   html_source->AddString(
@@ -1132,6 +1134,8 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
     {"managePasskeysSubTitle", IDS_AUTOFILL_MANAGE_PASSKEYS_SUB_TITLE_WIN},
 #endif
     {"plusAddressSettings", IDS_PLUS_ADDRESS_SETTINGS_LABEL},
+    {"cvcTagForCreditCardListEntry",
+     IDS_AUTOFILL_SETTINGS_PAGE_CVC_TAG_FOR_CREDIT_CARD_LIST_ENTRY},
   };
 
   GURL google_password_manager_url = GetGooglePasswordManagerURL(
@@ -1141,8 +1145,12 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
                          autofill::payments::GetManageAddressesUrl().spec());
   html_source->AddString(
       "manageCreditCardsLabel",
-      l10n_util::GetStringFUTF16(IDS_SETTINGS_PAYMENTS_MANAGE_CREDIT_CARDS,
-                                 chrome::kPaymentMethodsURL));
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_PAYMENTS_MANAGE_CREDIT_CARDS,
+          base::FeatureList::IsEnabled(
+              autofill::features::kAutofillUpdateChromeSettingsLinkToGPayWeb)
+              ? chrome::kPaymentMethodsURLForGPayWeb
+              : chrome::kPaymentMethodsURL));
   html_source->AddString("managePaymentMethodsUrl",
                          autofill::payments::GetManageInstrumentsUrl().spec());
   html_source->AddString("addressesAndPaymentMethodsLearnMoreURL",
@@ -1230,6 +1238,11 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean("syncDecoupleAddressPaymentSettings",
                           base::FeatureList::IsEnabled(
                               syncer::kSyncDecoupleAddressPaymentSettings));
+
+  html_source->AddBoolean(
+      "updateChromeSettingsLinkToGPayWebEnabled",
+      base::FeatureList::IsEnabled(
+          autofill::features::kAutofillUpdateChromeSettingsLinkToGPayWeb));
 }
 
 void AddSignOutDialogStrings(content::WebUIDataSource* html_source,
@@ -1360,6 +1373,8 @@ void AddPersonalizationOptionsStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_PAGE_CONTENT_THINGS_TO_CONSIDER_BULLET_ONE},
     {"pageContentThingsToConsiderBulletTwo",
      IDS_SETTINGS_PAGE_CONTENT_THINGS_TO_CONSIDER_BULLET_TWO},
+    {"pageContentThingsToConsiderBulletThree",
+     IDS_SETTINGS_PAGE_CONTENT_THINGS_TO_CONSIDER_BULLET_THREE},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }
@@ -2244,11 +2259,13 @@ void AddPrivacyGuideStrings(content::WebUIDataSource* html_source) {
     {"privacyGuideSearchSuggestionsCardHeader",
      IDS_SETTINGS_PRIVACY_GUIDE_SEARCH_SUGGESTIONS_CARD_HEADER},
     {"privacyGuideSearchSuggestionsFeatureDescription1",
-     IDS_SETTINGS_PRIVACY_SEARCH_SUGGESTIONS_FEATURE_DESCRIPTION1},
+     IDS_SETTINGS_PRIVACY_GUIDE_SEARCH_SUGGESTIONS_FEATURE_DESCRIPTION1},
     {"privacyGuideSearchSuggestionsPrivacyDescription1",
-     IDS_SETTINGS_PRIVACY_SEARCH_SUGGESTIONS_PRIVACY_DESCRIPTION1},
+     IDS_SETTINGS_PRIVACY_GUIDE_SEARCH_SUGGESTIONS_PRIVACY_DESCRIPTION1},
     {"privacyGuideSearchSuggestionsPrivacyDescription2",
-     IDS_SETTINGS_PRIVACY_SEARCH_SUGGESTIONS_PRIVACY_DESCRIPTION2},
+     IDS_SETTINGS_PRIVACY_GUIDE_SEARCH_SUGGESTIONS_PRIVACY_DESCRIPTION2},
+    {"privacyGuideSearchSuggestionsPrivacyDescription3",
+     IDS_SETTINGS_PRIVACY_GUIDE_SEARCH_SUGGESTIONS_PRIVACY_DESCRIPTION3},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }
@@ -2394,7 +2411,7 @@ void AddSafetyHubStrings(content::WebUIDataSource* html_source) {
       "safetyHubUserEduSafeBrowsingSubheader",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_SAFETY_HUB_USER_EDU_SAFE_BROWSING_SUBHEADER,
-          chrome::kSafeBrowsingPTourURL));
+          chrome::kSafeBrowsingUseInChromeURL));
 }
 
 void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
@@ -2413,13 +2430,23 @@ void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
 
 void AddSearchStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"searchEnginesManage", IDS_SETTINGS_SEARCH_MANAGE_SEARCH_ENGINES},
-      {"searchEnginesManageSiteSearch",
-       IDS_SETTINGS_SEARCH_MANAGE_SEARCH_ENGINES_AND_SITE_SEARCH},
-      {"searchPageTitle", IDS_SETTINGS_SEARCH},
-      {"searchExplanation", IDS_SETTINGS_SEARCH_EXPLANATION},
-      {"searchExplanationLearnMoreA11yLabel",
-       IDS_SETTINGS_SEARCH_EXPLANATION_ACCESSIBILITY_LABEL},
+    {"searchEnginesManage", IDS_SETTINGS_SEARCH_MANAGE_SEARCH_ENGINES},
+    {"searchEnginesManageSiteSearch",
+     IDS_SETTINGS_SEARCH_MANAGE_SEARCH_ENGINES_AND_SITE_SEARCH},
+    {"searchPageTitle", IDS_SETTINGS_SEARCH},
+    {"searchExplanation", IDS_SETTINGS_SEARCH_EXPLANATION},
+    {"searchExplanationLearnMoreA11yLabel",
+     IDS_SETTINGS_SEARCH_EXPLANATION_ACCESSIBILITY_LABEL},
+#if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
+    {"searchEngineChoiceEntryPointSubtitle",
+     IDS_SEARCH_ENGINE_CHOICE_SETTINGS_ENTRY_POINT_SUBTITLE},
+    {"searchEnginesChange",
+     IDS_SEARCH_ENGINE_CHOICE_SETTINGS_CHANGE_DEFAULT_ENGINE},
+    {"searchEnginesSettingsDialogSubtitle",
+     IDS_SEARCH_ENGINE_CHOICE_SETTINGS_SUBTITLE},
+    {"searchEnginesSetAsDefaultButton", IDS_SEARCH_ENGINE_CHOICE_BUTTON_TITLE},
+    {"searchEnginesCancelButton", IDS_CANCEL},
+#endif
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 

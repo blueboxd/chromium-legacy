@@ -577,10 +577,12 @@ void LocalDOMWindow::ReportPermissionsPolicyViolation(
         feature, UseCounterImpl::PermissionsPolicyUsageType::kViolation);
   }
 
-  if (!RuntimeEnabledFeatures::FeaturePolicyReportingEnabled(this))
+  if (!RuntimeEnabledFeatures::PermissionsPolicyReportingEnabled(this)) {
     return;
-  if (!GetFrame())
+  }
+  if (!GetFrame()) {
     return;
+  }
 
   // Construct the permissions policy violation report.
   const String& feature_name = GetNameForFeature(feature);
@@ -693,7 +695,7 @@ void LocalDOMWindow::AddConsoleMessageImpl(ConsoleMessage* console_message,
     absl::optional<mojom::blink::ConsoleMessageCategory> category =
         console_message->Category();
     console_message = MakeGarbageCollected<ConsoleMessage>(
-        console_message->Source(), console_message->Level(),
+        console_message->GetSource(), console_message->GetLevel(),
         console_message->Message(),
         std::make_unique<SourceLocation>(Url().GetString(), String(),
                                          line_number, 0, nullptr));

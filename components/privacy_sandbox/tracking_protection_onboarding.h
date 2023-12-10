@@ -5,13 +5,20 @@
 #ifndef COMPONENTS_PRIVACY_SANDBOX_TRACKING_PROTECTION_ONBOARDING_H_
 #define COMPONENTS_PRIVACY_SANDBOX_TRACKING_PROTECTION_ONBOARDING_H_
 
+#include <optional>
+#include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/version_info/channel.h"
 
 class PrefService;
+
+namespace tpcd::experiment {
+class EligibilityServiceTest;
+}  // namespace tpcd::experiment
 
 namespace privacy_sandbox {
 
@@ -30,6 +37,26 @@ class TrackingProtectionOnboarding : public KeyedService {
     kMaxValue = kOffboarded,
   };
 
+  // Enum used for interfacing with the onboarding service to indicate the HaTS
+  // group the profile belongs to.
+  enum class SentimentSurveyGroup {
+    kNotSet = 0,
+    kControlImmediate = 1,
+    kTreatmentImmediate = 2,
+    kControlDelayed = 3,
+    kTreatmentDelayed = 4,
+  };
+
+  // Enum used for emitting metrics during the process of the Sentiment Survey
+  // given to users.
+  enum class SentimentSurveyGroupMetrics {
+    kControlImmediate = 0,
+    kTreatmentImmediate = 1,
+    kControlDelayed = 2,
+    kTreatmentDelayed = 3,
+    kMaxValue = kTreatmentDelayed,
+  };
+
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.privacy_sandbox
   enum class NoticeAction {
     // Other action taken - notice dismissed due to other actions.
@@ -45,6 +72,7 @@ class TrackingProtectionOnboarding : public KeyedService {
     kMaxValue = kClosed,
   };
 
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.privacy_sandbox
   enum class NoticeType {
     kNone,
     // The notice in question is an Onboarding Notice.
@@ -133,15 +161,39 @@ class TrackingProtectionOnboarding : public KeyedService {
   // the user.
   bool ShouldShowOnboardingNotice();
 
+  // HaTS
+  // TODO(b:308320418) These should ideally live in a separate Tracking
+  // Protection HaTS service, and not be tied to the onboarding one.
+
+  // Returns whether or not the profile requires a fresh survey registration.
+  bool RequiresSentimentSurveyGroup();
+
+  // Registers the profile in the requested group, and optionally sets its start
+  // and end survey time.
+  void RegisterSentimentSurveyGroup(SentimentSurveyGroup group);
+
+  // Computes HaTS eligibility for the profile. Will return kNotSet if the
+  // profile isn't to be shown a survey.
+  SentimentSurveyGroup GetEligibleSurveyGroup();
+
+  // Returns the time delta from Onboarded to Acknowledged.
+  std::optional<base::TimeDelta> OnboardedToAcknowledged();
+
  private:
+  friend class tpcd::experiment::EligibilityServiceTest;
+  FRIEND_TEST(TrackingProtectionOnboardingNoticeBrowserTest,
+              TreatsAsShownIfPreviouslyDismissed);
+
   // Called when the underlying onboarding pref is changed.
   virtual void OnOnboardingPrefChanged() const;
   // Called when the notice has been acked.
   virtual void OnOnboardingAckedChanged() const;
+  // Called when the underlying offboarding pref is changed.
+  virtual void OnOffboardingPrefChanged() const;
   base::ObserverList<Observer>::Unchecked observers_;
   raw_ptr<PrefService> pref_service_;
   PrefChangeRegistrar pref_change_registrar_;
-  const version_info::Channel channel_;
+  version_info::Channel channel_;
 };
 
 }  // namespace privacy_sandbox

@@ -310,10 +310,6 @@ Style notes:
         <ph name="hotspot">$1<ex>Hotspot on, no devices connected</ex></ph>,
         <ph name="network">$2<ex>Connected to Google-A, Median signal</ex></ph>
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_PRIVACY_ACCESSIBLE_DESCRIPTION" is_accessibility_with_no_ui="true" desc="The accessible description of privacy in the status tray and the information on it.">
-        <ph name="mic">$1<ex>A virtual machine is using your microphone</ex></ph>,
-        <ph name="camera">$2<ex>A virtual machine is using your camera</ex></ph>
-      </message>
       <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the quick settings bubble and the information in it.">
         Quick Settings, Press search + left to access the notification center.
       </message>
@@ -804,7 +800,7 @@ Style notes:
         Focusing
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_TIME_SUBLABEL" translateable="false" desc="The text used for the sublabel of the toggle row in the focus mode detailed view.">
-        <ph name="TIME_REMAINING_EXPRESSION">$1<ex>30 min</ex></ph> ⋅ Until <ph name="END_TIME_EXPRESSION">$2<ex>1:00 PM</ex></ph>
+        Until <ph name="END_TIME_EXPRESSION">$1<ex>1:00 PM</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_START_BUTTON" translateable="false" desc="The text used for the label of the toggle button in the focus mode toggle row in the focus mode detailed view when focus mode is not active.">
         Start
@@ -1368,7 +1364,7 @@ Style notes:
         Go to a text field to use Dictation
       </message>
       <message name="IDS_ASH_ACCESSIBILITY_NUDGE_DICTATION_MIC_MUTED" desc="Displayed in a nudge when Dictation cannot start because the active microphone is muted.">
-        Can't start dictation because the microphone is muted
+        Can't start dictation. Your mic is off.
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD" desc="The label used in the accessibility menu of the system tray to toggle on/off the onscreen keyboard.">
@@ -4804,6 +4800,12 @@ Some features are limited to increase battery life.
       <message name="IDS_ASH_LOGIN_PIN_REQUEST_NEXT_NUMBER_PROMPT" desc="Accessible prompt read when next access code input field has been focused. Asks user to enter next piece of the access code.">
         Next number
       </message>
+      <message name="IDS_ASH_LOGIN_LOCAL_AUTHENTICATION_REQUEST_TITLE" desc="Title of the local authentication input dialog that allows the user to login during the reauthenticate session.">
+        Finish verifying your identity
+      </message>
+      <message name="IDS_ASH_LOGIN_LOCAL_AUTHENTICATION_REQUEST_DESCRIPTION" desc="Description shown on the local authentication input dialog. Explains local authentication credentials should be used to unlock the device.">
+        Enter device password for <ph name="EMAIL">$1<ex>john.doe@example.com</ex></ph>
+      </message>
       <message name="IDS_ASH_LOGIN_SECURITY_TOKEN_REQUEST_DIALOG_TITLE" desc="Title of the PIN dialog to unlock the device with a smart card.">
         Smart card PIN
       </message>
@@ -4852,16 +4854,22 @@ Some features are limited to increase battery life.
         Settings
       </message>
       <message name="IDS_FAST_PAIR_DOWNLOAD_NOTIFICATION_APP_TITLE" desc="Notification title shown to direct users to download companion app on Fast Pair device">
-        Install the app for <ph name="NAME">$1<ex>JBLTools</ex></ph> from Google Play to see all available features
+        <ph name="NAME">$1<ex>Pixel Buds</ex></ph> connected
+      </message>
+      <message name="IDS_FAST_PAIR_DOWNLOAD_NOTIFICATION_APP_MESSAGE" desc="Notification message shown to direct users to download companion app on Fast Pair device">
+        Customize this device in app
       </message>
       <message name="IDS_FAST_PAIR_DOWNLOAD_APP_BUTTON" desc="Button title shown to direct users to app store to download companion app on Fast Pair device">
-        Install
+        Install app
       </message>
       <message name="IDS_FAST_PAIR_SETUP_APP_NOTIFICATION_TITLE" desc="Notification title shown to direct users to setup their Fast Pair device with the companion app">
-        Open <ph name="NAME">$1<ex>JBLTools</ex></ph> to set up and customize your device
+        <ph name="NAME">$1<ex>Pixel Buds</ex></ph> connected
+      </message>
+      <message name="IDS_FAST_PAIR_SETUP_APP_NOTIFICATION_MESSAGE" desc="Notification message shown to direct users to setup their Fast Pair device with the companion app">
+        Customize this device in app
       </message>
       <message name="IDS_FAST_PAIR_SETUP_APP_BUTTON" desc="Button title shown to direct users to setup their Fast Pair device with the companion app">
-        Open
+        Open app
       </message>
       <message name="IDS_FAST_PAIR_CONNECT_BUTTON" desc="Message on button to tell users to connect bluetooth device with Fast Pair.">
         Connect
@@ -5143,6 +5151,11 @@ Some features are limited to increase battery life.
         Undo
       </message>
 
+      <!-- Nudges -->
+      <message name="IDS_ASH_SYSTEM_NUDGE_CLOSE_BUTTON_TOOLTIP" desc="The close button tooltip for system nudges.">
+        Close nudge
+      </message>
+
       <message name="IDS_ASH_DIALOG_DONT_SHOW_AGAIN" desc="Label for checkbox dismissing show of a dialog.">
         Don't show again
       </message>
@@ -5257,19 +5270,12 @@ Some features are limited to increase battery life.
         Event <ph name="event_position">$1<ex>1</ex></ph> of <ph name="event_total_count">$2<ex>2</ex></ph>
       </message>
 
-      <message name="IDS_ASH_CALENDAR_EVENT_ENTRY_ACCESSIBLE_DESCRIPTION_JELLY" desc="The accessible label of a calendar event list item jelly entry.">
+      <message name="IDS_ASH_CALENDAR_EVENT_ENTRY_ACCESSIBLE_DESCRIPTION" desc="The accessible label of a calendar event list item entry.">
         <ph name="event_position">$1<ex>Event 1 of 2</ex></ph>
         <ph name="event_summary">$2<ex>Lunch break</ex></ph>,
         <ph name="start_time">$3<ex>12 PM</ex></ph> to
         <ph name="end_time">$4<ex>1 PM</ex></ph>,
         <ph name="time_zone">$5<ex>Pacific time</ex></ph>. Select for more details in Google Calendar.
-      </message>
-
-      <message name="IDS_ASH_CALENDAR_EVENT_ENTRY_ACCESSIBLE_DESCRIPTION" desc="The accessible label of a calendar event entry.">
-        <ph name="start_time">$1<ex>12 PM</ex></ph> to
-        <ph name="end_time">$2<ex>1 PM</ex></ph>,
-        <ph name="time_zone">$3<ex>Pacific time</ex></ph>,
-        <ph name="event_summary">$4<ex>Lunch break</ex></ph>. Select for more details in Google Calendar.
       </message>
 
       <message name="IDS_ASH_CALENDAR_EVENT_ENTRY_TOOL_TIP" desc="The tool tip label of a calendar event entry.">
@@ -5551,17 +5557,6 @@ Here are some things you can try to get started.
       <!-- For ScreenCaptureTrayItemView -->
       <message name="IDS_ASH_ADMIN_SCREEN_CAPTURE" desc="Tooltip message shown at the systray screen capture indicator when an administrator is capturing the screens.">
         Your system administrator is monitoring your screens
-      </message>
-
-      <!-- For CameraMicTrayItemView -->
-      <message name="IDS_ASH_CAMERA_MIC_VM_USING_CAMERA" desc="Tooltip message shown at the systray camera indicator when a VM is using the camera">
-        An application is using your camera
-      </message>
-      <message name="IDS_ASH_CAMERA_MIC_VM_USING_CAMERA_AND_MIC" desc="Tooltip message shown at the systray camera indicator when a VM is using both the camera and mic">
-        An application is using your camera and microphone
-      </message>
-      <message name="IDS_ASH_CAMERA_MIC_VM_USING_MIC" desc="Tooltip message shown at the systray microphone indicator when a VM is using the microphone">
-        An application is using your microphone
       </message>
 
       <!-- For privacy indicators notification -->
@@ -7067,6 +7062,9 @@ New install
       <message name="IDS_GLANCEABLES_CLASSROOM_FETCH_ERROR" desc="A glanceables classroom bubble displays a notification with an error message when an error occurs while fetching data. This is the text that describes the error to the user and appears on the notification.">
         Can't show items. Try reopening this panel.
       </message>
+      <message name="IDS_GLANCEABLES_OVERVIEW_REMOVE_CHIP" desc="The text shown on the removing glanceable chip panel in Overview">
+        Remove this suggestion
+      </message>
 
       <!-- Do Not Disturb notification -->
       <message name="IDS_ASH_DO_NOT_DISTURB_NOTIFICATION_TITLE" desc="Label used for the notification that shows up when the 'Do Not Disturb' feature is enabled.">
@@ -7304,6 +7302,24 @@ To shut down the device, press and hold the power button on the device again.
       </message>
       <message name="IDS_ASH_DEVICE_SETTINGS_LEARN_MORE_BUTTON" desc="Button shown for device settings notifications which opens an article with helpful information related to the notification.">
         Learn more
+      </message>
+        <message name="IDS_SETTINGS_CUSTOMIZATION_MIDDLE_BUTTON_DEFAULT_NAME" desc="The name of the middle mouse button on a mouse">
+    Middle Button
+  </message>
+  <message name="IDS_SETTINGS_CUSTOMIZATION_OTHER_BUTTON_DEFAULT_NAME" desc="The default name to give additional buttons on a mouse or graphics tablet">
+    Other Button <ph name="BUTTON_NUMBER">$1<ex>1</ex></ph>
+  </message>
+
+
+      <!-- Compat Mode Resize States-->
+      <message name="IDS_ARC_COMPAT_MODE_RESIZE_TOGGLE_MENU_PHONE" desc="Item in a list of possible sizes for the app. Makes the app in a portrait, phone size.">
+        Phone
+      </message>
+      <message name="IDS_ARC_COMPAT_MODE_RESIZE_TOGGLE_MENU_TABLET" desc="Item in a list of possible sizes for the app. Makes the app bigger and wider in a tablet size.">
+        Tablet
+      </message>
+      <message name="IDS_ARC_COMPAT_MODE_RESIZE_TOGGLE_MENU_RESIZABLE" desc="Item in a list of possible sizes for the app. Makes the app resizable.">
+        Resizable
       </message>
      </messages>
     </release>

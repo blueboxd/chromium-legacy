@@ -15,11 +15,16 @@
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 class Browser;
+class TabOrganizationService;
 
 class TabOrganizationSession {
  public:
+  // TODO(dpenning): make this a base::Token.
+  using ID = int;
+
   TabOrganizationSession();
   explicit TabOrganizationSession(
+      const TabOrganizationService* service,
       std::unique_ptr<TabOrganizationRequest> request);
   ~TabOrganizationSession();
 
@@ -27,9 +32,11 @@ class TabOrganizationSession {
   const std::vector<TabOrganization>& tab_organizations() const {
     return tab_organizations_;
   }
+  ID session_id() const { return session_id_; }
 
   static std::unique_ptr<TabOrganizationSession> CreateSessionForBrowser(
-      const Browser* browser);
+      const Browser* browser,
+      const TabOrganizationService* service);
 
   const TabOrganization* GetNextTabOrganization() const;
   TabOrganization* GetNextTabOrganization();
@@ -52,8 +59,10 @@ class TabOrganizationSession {
   // completes.
   void PopulateOrganizations(const TabOrganizationResponse* response);
 
+  raw_ptr<const TabOrganizationService> service_;
   std::unique_ptr<TabOrganizationRequest> request_;
   std::vector<TabOrganization> tab_organizations_;
+  ID session_id_;
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_ORGANIZATION_TAB_ORGANIZATION_SESSION_H_

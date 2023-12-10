@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="or">
+<translation id="1001716830750249114">Chromium ଭର୍ସନର ସେଟିଂସକୁ ଯାଆନ୍ତୁ</translation>
 <translation id="1026101648481255140">ଇନଷ୍ଟଲେସନକୁ ପୁଣି ଆରମ୍ଭ କରନ୍ତୁ</translation>
 <translation id="1029669172902658969">&amp;ChromiumOSକୁ ଅପଡେଟ କରିବା ପାଇଁ ପୁଣି ଲଞ୍ଚ କରନ୍ତୁ</translation>
 <translation id="1040916596585577953">Chromium ଆପଣଙ୍କୁ ଏହି ଏକ୍ସଟେନସନର ସମୀକ୍ଷା କରିବାକୁ ସୁପାରିଶ କରେ</translation>
@@ -23,6 +24,7 @@
 <translation id="1342274909142618978">Chromium (<ph name="URL" />)ରୁ ମଧ୍ୟ ଡାଟା ଡିଲିଟ କରନ୍ତୁ</translation>
 <translation id="1414495520565016063">ଆପଣ Chromium‍ରେ ସାଇନ୍-ଇନ୍ କରିଛନ୍ତି!</translation>
 <translation id="1478370723027452770">Chrome for Testing ସହ ସାହାଯ୍ୟ ପାଆନ୍ତୁ</translation>
+<translation id="1497802159252041924">ଇନଷ୍ଟଲ କରିବାରେ ତ୍ରୁଟି: <ph name="INSTALL_ERROR" /></translation>
 <translation id="1524282610922162960">ଗୋଟିଏ Chromium ଟାବ୍ ସେୟାର୍ କରନ୍ତୁ</translation>
 <translation id="1553461853655228091">Chromium ଆପଣଙ୍କ ପରିପାର୍ଶ୍ୱର ଏକ 3D ମ୍ୟାପ୍ ତିଆରି କରିବା ପାଇଁ ଆପଣଙ୍କ କ୍ୟାମେରା ଆକ୍ସେସ୍ କରିବାକୁ ଅନୁମତି ଆବଶ୍ୟକ କରେ</translation>
 <translation id="1574377791422810894">Chromiumର ସୁରକ୍ଷା ଟୁଲ</translation>
@@ -33,6 +35,7 @@
 ଆପଣ ୱେବସାଇଟ ଏବଂ ଆପ୍ସକୁ ପୂର୍ବରୁ ଦେଇଥିବା ଅନୁମତିଗୁଡ଼ିକ ଏହି ଆକାଉଣ୍ଟରେ ଲାଗୁ ହୋଇପାରେ। ଆପଣ <ph name="SETTINGS_LINK_BEGIN" />ସେଟିଂସ<ph name="SETTINGS_LINK_END" />ରେ ଆପଣଙ୍କ Google ଆକାଉଣ୍ଟଗୁଡ଼ିକୁ ପରିଚାଳନା କରିପାରିବେ।</translation>
 <translation id="1640672724030957280">ଡାଉନଲୋଡ ହେଉଛି…</translation>
 <translation id="1708666629004767631">Chromiumର ଏକ ନୂଆ, ସୁରକ୍ଷିତ ସଂସ୍କରଣ ଉପଲବ୍ଧ ଅଛି।</translation>
+<translation id="1715127912119967311">ଏହି ଫିଚରଗୁଡ଼ିକୁ ଉନ୍ନତ କରିବା ପାଇଁ, Chromium ସେଗୁଡ଼ିକ ସହିତ ଆପଣଙ୍କ ଇଣ୍ଟରାକ୍ସନ Googleକୁ ପଠାଏ। ଏହି ଡାଟାକୁ ମାନବ ସମୀକ୍ଷକମାନଙ୍କ ଦ୍ୱାରା ପଢ଼ାଯାଇପାରେ, ପ୍ରକ୍ରିୟାନ୍ୱିତ କରାଯାଇପାରେ କିମ୍ବା ଏନୋଟେଟ କରାଯାଇପାରେ।</translation>
 <translation id="17264556997921157">ଆପଣଙ୍କୁ ବିଜ୍ଞାପନଗୁଡ଼ିକ ଦେଖାଇବା ପାଇଁ ସାଇଟଗୁଡ଼ିକ ବ୍ୟବହାର କରୁଥିବା ରୁଚିପୂର୍ଣ୍ଣ ବିଷୟଗୁଡ଼ିକୁ ଆପଣ ଦେଖିପାରିବେ ଏବଂ କାଢ଼ି ଦେଇପାରିବେ। Chromium ଆପଣଙ୍କ ବର୍ତ୍ତମାନର ବ୍ରାଉଜିଂ ଇତିହାସ ଆଧାରରେ ଆପଣଙ୍କ ରୁଚିଗୁଡ଼ିକର ଆକଳନ କରିବ।</translation>
 <translation id="1733725117201708356">Chromium ବ୍ରାଉଜିଂ ଡାଟାକୁ ଶୀଘ୍ର ଡିଲିଟ କରିବ</translation>
 <translation id="1745121272106313518">Chromium <ph name="REMAINING_TIME" />ରେ ରିଷ୍ଟାର୍ଟ ହେବ</translation>
@@ -157,12 +160,13 @@
 <translation id="390528597099634151"><ph name="EXISTING_USER" /> ଏହି Chromium ପ୍ରୋଫାଇଲରେ ପୂର୍ବରୁ ସାଇନ୍ ଇନ୍ କରିସାରିଛନ୍ତି। ଆପଣଙ୍କ ବ୍ରାଉଜିଂକୁ ଅଲଗା ରଖିବା ପାଇଁ, Chromium ଆପଣଙ୍କ ପାଇଁ ଆପଣଙ୍କର ନିଜର ପ୍ରୋଫାଇଲ୍ ତିଆରି କରିପାରିବ।</translation>
 <translation id="3909353120217047026">ଏହି ଏକ୍ସଟେନସନ Chrome Web Store ନୀତିକୁ ଉଲ୍ଲଙ୍ଘନ କରେ ଏବଂ ଏହା ଅସୁରକ୍ଷିତ ହୋଇପାରେ। Chromiumରୁ ଏହାକୁ କାଢ଼ି ଦିଅନ୍ତୁ ଯାହା ଫଳରେ ଏହା ଆପଣଙ୍କ ବ୍ୟକ୍ତିଗତ ସୂଚନା ସମେତ ଆପଣ ଭିଜିଟ କରୁଥିବା ସାଇଟଗୁଡ଼ିକରେ ଆପଣଙ୍କ ଡାଟାକୁ ଆଉ ଦେଖିପାରିବ ନାହିଁ ଏବଂ ପରିବର୍ତ୍ତନ କରିପାରିବ ନାହିଁ।</translation>
 <translation id="391789666908693569">ଆପଣଙ୍କ ଆକାଉଣ୍ଟ <ph name="MANAGER_NAME" />ଙ୍କ ଦ୍ୱାରା ପରିଚାଳନା କରାଯାଉଛି। ଆପଣଙ୍କ ଆଡମିନିଷ୍ଟ୍ରେଟର ଏହି Chromium ବ୍ରାଉଜର ପ୍ରୋଫାଇଲ ଏବଂ ଏହାର ବୁକମାର୍କ, ଇତିହାସ ଏବଂ ପାସୱାର୍ଡଗୁଡ଼ିକ ପରି ଡାଟାକୁ ଦେଖିପାରିବେ ଓ ଏଡିଟ କରିପାରିବେ।</translation>
+<translation id="3922825997980843979">ଆପଣ ଟାଇପ କରିବା ସମୟରେ, Chromium ଠିକଣା ବାର କିମ୍ବା ସର୍ଚ୍ଚ ବାକ୍ସର ବିଷୟବସ୍ତୁକୁ ଆପଣଙ୍କ ଡିଫଲ୍ଟ ସର୍ଚ୍ଚ ଇଞ୍ଜିନକୁ ପଠାଏ</translation>
 <translation id="3945058413678539331">Chromium ପାସୱାର୍ଡଗୁଡ଼ିକ କପି କରିବାକୁ ଚେଷ୍ଟା କରୁଛି। ଏହାକୁ ଅନୁମତି ଦେବା ପାଇଁ ଆପଣଙ୍କର Windows ପାସୱାର୍ଡ ଟାଇପ୍ କରନ୍ତୁ।</translation>
-<translation id="3962623956404948996">ଏହି ଫାଇଲଟି ବିପଦଜନକ ହୋଇଥାଇପାରେ ବୋଲି Chromium ଏହାକୁ ସ୍କାନ କରିବାକୁ ସୁପାରିଶ କରୁଛି</translation>
 <translation id="3962647064319009959">Chromium ଆପଣଙ୍କୁ କିପରି ସୁରକ୍ଷିତ ରଖେ ତାହା ଜାଣନ୍ତୁ</translation>
 <translation id="3975724895399328945">&amp;Google Chrome for Testing ବିଷୟରେ</translation>
 <translation id="3997429360543082038">ChromiumOS ବିଷୟରେ</translation>
 <translation id="4019629340646866719">ChromiumOS <ph name="BEGIN_LINK_LINUX_OSS" />Linux ଡେଭେଲପମେଣ୍ଟ ପରିବେଶ<ph name="END_LINK_LINUX_OSS" /> ପରି ଅତିରିକ୍ତ <ph name="BEGIN_LINK_CROS_OSS" />ଓପନ ସୋର୍ସ ସଫ୍ଟୱେର<ph name="END_LINK_CROS_OSS" /> ଦ୍ୱାରା ସମ୍ଭବପର ହୋଇଛି।</translation>
+<translation id="4028143804911941282">ବନ୍ଦ ଥିବା ସମୟରେ, ଆପଣ ଏବେ ବି Chromium ସ୍ଥାନୀୟ ଭାବେ ପ୍ରଦାନ କରୁଥିବା ପରାମର୍ଶଗୁଡ଼ିକୁ ଦେଖିବେ</translation>
 <translation id="4036079820698952681"><ph name="BEGIN_LINK" />ସାମ୍ପ୍ରତିକ ସେଟିଂସ୍‍<ph name="END_LINK" />ର ରିପୋର୍ଟ କରି Chromiumକୁ ଉନ୍ନତ କରିବାରେ ସାହାଯ୍ୟ କରନ୍ତୁ</translation>
 <translation id="4050175100176540509">ନବୀନତମ ସଂସ୍କରଣରେ ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ସୁରକ୍ଷା ଉନ୍ନୟନ ଏବଂ ନୂତନ ବୈଶିଷ୍ଟ୍ୟ ଉପଲବ୍ଧ ଅଛି।</translation>
 <translation id="4055805654398742145">P&amp;assword Manager</translation>
@@ -206,6 +210,7 @@
 <translation id="4765210420921718862">Chromium ସେଟିଂସରେ ଆପଣ ଯେ କୌଣସି ସମୟରେ ଆପଣଙ୍କ ମନ ପରିବର୍ତ୍ତନ କରିପାରିବେ। ବିଜ୍ଞାପନଗୁଡ଼ିକୁ ବର୍ତ୍ତମାନ ଯେପରି ପରିବେଷଣ କରାଯାଉଛି ସେହିପରି ଟ୍ରାଏଲ ଚାଲିଥାଏ, ତେଣୁ ଆପଣ ପରିବର୍ତ୍ତନଗୁଡ଼ିକୁ ତୁରନ୍ତ ଦେଖିବେ ନାହିଁ।</translation>
 <translation id="4788777615168560705">Chromium ଆପଣଙ୍କ ପାସୱାର୍ଡଗୁଡ଼ିକୁ ଯାଞ୍ଚ କରିପାରିବ ନାହିଁ। 24 ଘଣ୍ଟା ପରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ କିମ୍ବା <ph name="BEGIN_LINK" />ଆପଣଙ୍କ Google ଆକାଉଣ୍ଟରେ ପାସୱାର୍ଡଗୁଡ଼ିକୁ ଯାଞ୍ଚ କରନ୍ତୁ<ph name="END_LINK" />।</translation>
 <translation id="479167709087336770">ଏହା Google ସନ୍ଧାନରେ ବ୍ୟବହୃତ ହେଉଥିବା ସମାନବନାନ ଯାଞ୍ଚକାରୀ ବ୍ୟବହାର କରେ। ବ୍ରାଉଜର୍‌ରେ ଆପଣ ଟାଇପ୍ କରିଥିବା ଟେକ୍ସଟ୍ Googleକୁ ପଠାଯାଏ। ଆପଣ ସର୍ବଦା ସେଟିଂସ୍‌ରେ ଏହି ଆଚରଣ ପରିବର୍ତ୍ତନ କରିପାରିବେ।</translation>
+<translation id="4814736265800133385">ଏକ ଆକାଉଣ୍ଟ ବିନା Chromium ବ୍ୟବହାର କରନ୍ତୁ</translation>
 <translation id="4888717733111232871">Chromium ପାଇଁ mDNS ଟ୍ରାଫିକ୍‍କୁ ଅନୁମତି ଦେବା Chromiumରେ ଅନ୍ତର୍ନିହିତ ଥିବା ନିୟମ।</translation>
 <translation id="4893347770495441059">&amp;Chromium ଅପଡେଟ୍ କରିବା ପାଇଁ ପୁଣି ଲଞ୍ଚ କରନ୍ତୁ</translation>
 <translation id="4943838377383847465">Chromium ପୃଷ୍ଠପଟ ମୋଡ୍‌ରେ ଅଛି।</translation>
@@ -230,6 +235,7 @@
 <translation id="549669000822060376">Chromium ନବୀନତମ ସିଷ୍ଟମ୍ ଅପ୍‌ଡେଟ୍ ଇନ୍‌ଷ୍ଟଲ୍ କରିବା ସମୟରେ ଦୟାକରି ଅପେକ୍ଷା କରନ୍ତୁ।</translation>
 <translation id="5496810170689441661">Chromium ପାସୱାର୍ଡଗୁଡ଼ିକୁ ଏଡିଟ୍ କରିବାକୁ ଚେଷ୍ଟା କରୁଛି। ଏହାକୁ ଅନୁମତି ଦେବା ପାଇଁ ଆପଣଙ୍କ Windows ପାସୱାର୍ଡ ଟାଇପ୍ କରନ୍ତୁ।</translation>
 <translation id="5527463683072221100">Chromiumରେ PDFଗୁଡ଼ିକୁ ଖୋଲନ୍ତୁ</translation>
+<translation id="555273495373124701">ଆପଣଙ୍କ ସମଗ୍ର ଡିଭାଇସରେ ଆପଣଙ୍କ Chromium ଷ୍ଟଫଗୁଡ଼ିକ ପାଇବା ପାଇଁ ସାଇନ ଇନ କରନ୍ତୁ</translation>
 <translation id="5614091477838198795">ଚାଲୁ ଥିବା ସମୟରେ, ଆପଣ Chromiumରୁ ମଧ୍ୟ ସାଇନ ଆଉଟ ହୋଇଯିବେ</translation>
 <translation id="5623402015214259806">{0,plural, =0{ଏକ Chromium ଅପ୍‌ଡେଟ୍‍ ଉପଲବ୍ଧ ଅଛି}=1{ଏକ Chromium ଅପ୍‌ଡେଟ୍‍ ଉପଲବ୍ଧ ଅଛି}other{# ଦିନ ପାଇଁ ଏକ Chromium ଅପ୍‌ଡେଟ୍‌ ଉପଲବ୍ଧ ଅଛି}}</translation>
 <translation id="5643865575100044307">ଆପଣ Chromiumକୁ ବନ୍ଦ କରିବା ସମୟରେ ସର୍ବଦା ଆପଣଙ୍କ ଡିଭାଇସରୁ ସାଇଟ ଡାଟାକୁ ଡିଲିଟ କରନ୍ତୁ</translation>
@@ -252,6 +258,7 @@
 <translation id="6003112304606738118">ଡାଉନଲୋଡ ହେଉଛି… <ph name="HOURS" /> ଘଣ୍ଟା ବାକି ଅଛି</translation>
 <translation id="6040143037577758943">ବନ୍ଦ</translation>
 <translation id="6055895534982063517">Chromiumର ଏକ ନୂଆ ସଂସ୍କରଣ ଉପଲବ୍ଧ ଅଛି, ଏବଂ ଏହା ସବୁଠୁ ଦ୍ରୁତ ଅଟେ।</translation>
+<translation id="6058380562449900225">ଆପଣଙ୍କ ଡାଟାକୁ ସୁରକ୍ଷିତ ରଖିବା ପାଇଁ Chromiumକୁ ଆପଣ ବର୍ତ୍ତମାନ ଭିଜିଟ କରିନଥିବା ସାଇଟଗୁଡ଼ିକରୁ ଅନୁମତି କାଢ଼ି ଦେବାକୁ ଦିଅନ୍ତୁ। ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକୁ ବନ୍ଦ କରେ ନାହିଁ।</translation>
 <translation id="6063093106622310249">&amp;Chromiumରେ ଖୋଲନ୍ତୁ</translation>
 <translation id="6072279588547424923"><ph name="EXTENSION_NAME" /> Chromiumରେ ଯୋଗ କରାଯାଇଛି</translation>
 <translation id="6072463441809498330">Chromiumକୁ ଆହୁରି ଦ୍ରୁତ କରନ୍ତୁ</translation>
@@ -367,6 +374,7 @@ Chromium ଆପଣଙ୍କ ସେଟିଂସ୍‌କୁ ପୁନରୁଦ୍
 <translation id="7682601070171973634">ଆପଣଙ୍କର କମ୍ ଡାଟା ବ୍ୟବହାର କରି ସମାନ ବ୍ରାଉଜିଂ ଅନୁଭୂତି ଡେଲିଭର କରିବା ପାଇଁ ସାଇଟଗୁଡ଼ିକୁ ଅନୁମତି ଦେଉଥିବା ନୂଆ ଫିଚରଗୁଡ଼ିକୁ Chromium ଏକ୍ସପ୍ଲୋର କରୁଛି</translation>
 <translation id="7686590090926151193">Chromium ଆପଣଙ୍କର ଡିଫଲ୍ଟ ବ୍ରାଉଜର୍ ନୁହେଁ</translation>
 <translation id="7689606757190482937">ଆପଣଙ୍କର ଡିଭାଇସ୍‍ଗୁଡ଼ିକରେ Chromium‍କୁ ସିଙ୍କ୍ ଓ ବ୍ୟକ୍ତିଗତକୃତ କରନ୍ତୁ</translation>
+<translation id="7699779824407626136">Chromium ଅପଡେଟ</translation>
 <translation id="7745317241717453663">ଏହା, ଏହି ଡିଭାଇସ୍‍ରୁ ଆପଣଙ୍କର ବ୍ରାଉଜିଂ ଡାଟା ଖାଲି କରିଦେବେ। ପରେ ଆପଣଙ୍କ ଡାଟାକୁ ପୁନଃପ୍ରାପ୍ତ କରିବା ନିମନ୍ତେ, Chromiumକୁ <ph name="USER_EMAIL" />ରେ ସାଇନ୍ ଇନ୍ କରନ୍ତୁ।</translation>
 <translation id="7747138024166251722">ସଂସ୍ଥାପକ ଏକ ଅସ୍ଥାୟୀ ଡିରେକ୍ଟୋରୀ ସୃଷ୍ଟି କରିପାରିବ ନାହିଁ । ଦୟାକରି ମୁକ୍ତ ଡିସ୍କ ସ୍ଥାନ ପାଇଁ ଯାଞ୍ଚ କରନ୍ତୁ ଏବଂ ସଂସ୍ଥାପନ ସଫ୍ଟୱେୟାରକୁ ଅନୁମତି କରନ୍ତୁ ।</translation>
 <translation id="7786760609782648049">Chromiumକୁ ଅଧିକ ଦ୍ରୁତ କରନ୍ତୁ</translation>
@@ -380,6 +388,7 @@ Chromium ଆପଣଙ୍କ ସେଟିଂସ୍‌କୁ ପୁନରୁଦ୍
 <translation id="7937630085815544518">ଆପଣ <ph name="USER_EMAIL_ADDRESS" />ରେ Chromiumକୁ ସାଇନ୍ ଇନ୍ କରିଛନ୍ତି। ଦୟାକରି ସାଇନ୍ ଇନ୍ କରିବା ଏହି ସମାନ ଆକାଉଣ୍ଟକୁ ବ୍ୟବହାର କରନ୍ତୁ।</translation>
 <translation id="7975919845073681630">ଏହା Chromiumର ଏକ ସେକେଣ୍ଡାରୀ ଇନ୍‍ଷ୍ଟଲେସନ୍‌ ଏବଂ ଏହାକୁ ଆପଣଙ୍କ ଡିଫଲ୍ଟ ବ୍ରାଉଜର୍‌ କରାଯାଇପାରିବ ନାହିଁ।</translation>
 <translation id="7997934263947464652">ଅଜଣା ସୋର୍ସରୁ ଏକ୍ସଟେନସନ, ଆପ ଏବଂ ଥିମଗୁଡ଼ିକ ଆପଣଙ୍କ ଡିଭାଇସକୁ କ୍ଷତି ପହଞ୍ଚାଇପାରିବ। କେବଳ <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />ରୁ ସେଗୁଡ଼ିକୁ ଇନଷ୍ଟଲ କରିବା ପାଇଁ Chromium ସୁପାରିଶ କରେ</translation>
+<translation id="800195749539500647">Chromiumରୁ ସବୁଠୁ ଅଧିକ ସୁବିଧା ପାଆନ୍ତୁ।</translation>
 <translation id="8013436988911883588">ଥରେ Chromiumର ଆକ୍ସେସ୍ ହେବା ପରେ, ୱେବ୍‌ସାଇଟ୍ ଆପଣଙ୍କୁ ଆକ୍ସେସ୍ ପାଇଁ ପଚାରିବାରେ ସକ୍ଷମ ହେବେ।</translation>
 <translation id="80471789339884597">ଇନଷ୍ଟଲ କରିଥିବା ଯୋଗୁଁ ଧନ୍ୟବାଦ । ଆପଣ <ph name="BUNDLE_NAME" /> ବ୍ୟବହାର କରିବା ପୂର୍ବରୁ ଆପଣଙ୍କ ସମସ୍ତ ବ୍ରାଉଜରକୁ ରିଷ୍ଟାର୍ଟ କରିବା ଆବଶ୍ୟକ।</translation>
 <translation id="8105840573057009683">ଏହି ସାଇଟ୍ ପାଇଁ Chromium ଲୋକେସନ୍ ଅନୁମତି ଆବଶ୍ୟକ କରେ</translation>

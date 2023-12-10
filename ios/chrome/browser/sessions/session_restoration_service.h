@@ -5,12 +5,20 @@
 #ifndef IOS_CHROME_BROWSER_SESSIONS_SESSION_RESTORATION_SERVICE_H_
 #define IOS_CHROME_BROWSER_SESSIONS_SESSION_RESTORATION_SERVICE_H_
 
+#include <memory>
 #include <string>
 
 #include "components/keyed_service/core/keyed_service.h"
 
 class Browser;
 class SessionRestorationObserver;
+
+namespace web {
+namespace proto {
+class WebStateStorage;
+}  // namespace proto
+class WebState;
+}  // namespace web
 
 // Service responsible for session saving and restoration.
 //
@@ -31,6 +39,10 @@ class SessionRestorationService : public KeyedService {
   // session restoration events.
   virtual void RemoveObserver(SessionRestorationObserver* observer) = 0;
 
+  // Requests that all pending changes to be saved to storage as soon as
+  // possible. Can be called at any time.
+  virtual void SaveSessions() = 0;
+
   // Sets the `identifier` used to save/load the session for `browser`. The
   // identifier is used to derive the location of the file on storage, thus
   // must be consistent across application restart.
@@ -50,6 +62,16 @@ class SessionRestorationService : public KeyedService {
   // Must be called before the `browser` is destroyed if `SetSessionID()`
   // has been called for it.
   virtual void Disconnect(Browser* browser) = 0;
+
+  // Creates an unrealized WebState from `storage` that will be inserted
+  // in `browser` at a later point. It is required to use this method to
+  // create those WebState as the service cannot retrieve the state from
+  // an unrealized WebState.
+  //
+  // Must be called after `SetSessionID()` and before `Disconnect()`.
+  virtual std::unique_ptr<web::WebState> CreateUnrealizedWebState(
+      Browser* browser,
+      web::proto::WebStateStorage storage) = 0;
 };
 
 #endif  // IOS_CHROME_BROWSER_SESSIONS_SESSION_RESTORATION_SERVICE_H_

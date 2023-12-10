@@ -17,7 +17,6 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase_map.h"
-#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
@@ -50,11 +49,11 @@
 #include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_prefs.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/app_constants/constants.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
@@ -299,8 +298,9 @@ AppListSyncableService::SetScopedModelUpdaterFactoryForTest(
 
 AppListSyncableService::SyncItem::SyncItem(
     const std::string& id,
-    sync_pb::AppListSpecifics::AppListItemType type)
-    : item_id(id), item_type(type) {}
+    sync_pb::AppListSpecifics::AppListItemType type,
+    bool is_new)
+    : item_id(id), item_type(type), is_new(is_new) {}
 
 AppListSyncableService::SyncItem::~SyncItem() = default;
 
@@ -478,8 +478,8 @@ void AppListSyncableService::InitFromLocalStorage() {
     }
 
     SyncItem* sync_item = CreateSyncItem(
-        item_id,
-        static_cast<sync_pb::AppListSpecifics::AppListItemType>(*type));
+        item_id, static_cast<sync_pb::AppListSpecifics::AppListItemType>(*type),
+        /*is_new=*/false);
 
     const std::string* maybe_item_name = item_dict->FindString(kNameKey);
     if (maybe_item_name)
@@ -551,7 +551,7 @@ void AppListSyncableService::BuildModel() {
     app_service_promise_apps_builder_ =
         std::make_unique<AppServicePromiseAppModelBuilder>(controller);
   }
-  if (base::FeatureList::IsEnabled(features::kCrosWebAppShortcutUiUpdate)) {
+  if (chromeos::features::IsCrosWebAppShortcutUiUpdateEnabled()) {
     app_service_shortcuts_builder_ =
         std::make_unique<AppServiceShortcutModelBuilder>(controller);
   }
@@ -564,7 +564,7 @@ void AppListSyncableService::BuildModel() {
     app_service_promise_apps_builder_->Initialize(this, profile_,
                                                   model_updater_.get());
   }
-  if (base::FeatureList::IsEnabled(features::kCrosWebAppShortcutUiUpdate)) {
+  if (chromeos::features::IsCrosWebAppShortcutUiUpdateEnabled()) {
     app_service_shortcuts_builder_->Initialize(this, profile_,
                                                model_updater_.get());
   }
@@ -617,8 +617,8 @@ const AppListSyncableService::SyncItem* AppListSyncableService::GetSyncItem(
 void AppListSyncableService::AppListSyncableService::AddPageBreakItem(
     const std::string& id,
     const syncer::StringOrdinal& position) {
-  SyncItem* page_break =
-      CreateSyncItem(id, sync_pb::AppListSpecifics::TYPE_PAGE_BREAK);
+  SyncItem* page_break = CreateSyncItem(
+      id, sync_pb::AppListSpecifics::TYPE_PAGE_BREAK, /*is_new=*/true);
   page_break->item_ordinal = position;
   ProcessNewSyncItem(page_break);
   UpdateSyncItemInLocalStorage(profile_, page_break);
@@ -635,7 +635,7 @@ bool AppListSyncableService::TransferItemAttributes(
   }
 
   auto attributes = std::make_unique<SyncItem>(
-      from_app_id, sync_pb::AppListSpecifics::TYPE_APP);
+      from_app_id, sync_pb::AppListSpecifics::TYPE_APP, /*is_new=*/false);
   attributes->promise_package_id = from_item->promise_package_id;
   attributes->parent_id = from_item->parent_id;
   attributes->item_ordinal = from_item->item_ordinal;
@@ -796,7 +796,7 @@ AppListSyncableService::CreateSyncItemFromAppItem(
   sync_pb::AppListSpecifics::AppListItemType type =
       GetAppListItemType(app_item);
   VLOG(2) << this << " CreateSyncItemFromAppItem:" << app_item->ToDebugString();
-  SyncItem* sync_item = CreateSyncItem(app_item->id(), type);
+  SyncItem* sync_item = CreateSyncItem(app_item->id(), type, /*is_new=*/true);
   DCHECK(app_item->position().IsValid());
   UpdateSyncItemFromAppItem(app_item, sync_item);
   UpdateSyncItemInLocalStorage(profile_, sync_item);
@@ -826,7 +826,11 @@ void AppListSyncableService::SetPinPosition(
   if (sync_item) {
     sync_change_type = SyncChange::ACTION_UPDATE;
   } else {
-    sync_item = CreateSyncItem(app_id, sync_pb::AppListSpecifics::TYPE_APP);
+    // Pin position for apps that don't have a sync item can be set for
+    // installed/pinned by default apps. Don't mark those apps as new, as they
+    // are considered internally installed.
+    sync_item = CreateSyncItem(app_id, sync_pb::AppListSpecifics::TYPE_APP,
+                               /*is_new=*/false);
     sync_change_type = SyncChange::ACTION_ADD;
     // Prevent item ordinal from getting set by "fixing empty ordinals" until
     // the app gets installed, and item ordinal gets set to its default value.
@@ -879,7 +883,8 @@ void AppListSyncableService::CopyPromiseItemAttributesToItem(
     sync_change_type = SyncChange::ACTION_UPDATE;
   } else {
     changed = true;
-    sync_item = CreateSyncItem(target_id, sync_pb::AppListSpecifics::TYPE_APP);
+    sync_item = CreateSyncItem(target_id, sync_pb::AppListSpecifics::TYPE_APP,
+                               /*is_new=*/true);
     sync_change_type = SyncChange::ACTION_ADD;
   }
 
@@ -1128,8 +1133,8 @@ AppListSyncableService::CreateLinkedPromiseSyncItemIfAvailable(
     return absl::nullopt;
   }
 
-  SyncItem* sync_item =
-      CreateSyncItem(promise_package_id, linked_sync_item->item_type);
+  SyncItem* sync_item = CreateSyncItem(
+      promise_package_id, linked_sync_item->item_type, /*is_new=*/false);
   sync_item->is_ephemeral = true;
   CopyAttributesToSyncItem(linked_sync_item, sync_item);
 
@@ -1430,7 +1435,7 @@ void AppListSyncableService::Shutdown() {
   if (ash::features::ArePromiseIconsEnabled()) {
     app_service_promise_apps_builder_.reset();
   }
-  if (base::FeatureList::IsEnabled(features::kCrosWebAppShortcutUiUpdate)) {
+  if (chromeos::features::IsCrosWebAppShortcutUiUpdateEnabled()) {
     app_service_shortcuts_builder_.reset();
   }
 }
@@ -1453,7 +1458,7 @@ void AppListSyncableService::SetAppListPreferredOrder(
       reorder::GenerateReorderParamsForSyncItems(order, sync_items_);
   for (const auto& reorder_param : reorder_params) {
     sync_pb::AppListSpecifics specifics;
-    const SyncItem* sync_item = GetSyncItem(reorder_param.sync_item_id);
+    SyncItem* sync_item = FindSyncItem(reorder_param.sync_item_id);
     const syncer::StringOrdinal& old_ordinal = sync_item->item_ordinal;
     const syncer::StringOrdinal& new_ordinal = reorder_param.ordinal;
 
@@ -1463,9 +1468,9 @@ void AppListSyncableService::SetAppListPreferredOrder(
     // The new ordinal should be valid.
     DCHECK(new_ordinal.IsValid());
 
-    GetSyncSpecificsFromSyncItem(sync_item, &specifics);
-    specifics.set_item_ordinal(new_ordinal.ToInternalValue());
-    ProcessSyncItemSpecifics(specifics);
+    sync_item->item_ordinal = new_ordinal;
+    ProcessExistingSyncItem(sync_item);
+    UpdateSyncItemInLocalStorage(profile_, sync_item);
     SendSyncChange(FindSyncItem(reorder_param.sync_item_id),
                    SyncChange::ACTION_UPDATE);
   }
@@ -1528,7 +1533,7 @@ bool AppListSyncableService::ProcessSyncItemSpecifics(
     sync_items_.erase(item_id);
   }
 
-  sync_item = CreateSyncItem(item_id, specifics.item_type());
+  sync_item = CreateSyncItem(item_id, specifics.item_type(), /*is_new=*/false);
   UpdateSyncItemFromSync(specifics, sync_item);
   ProcessNewSyncItem(sync_item);
   UpdateSyncItemInLocalStorage(profile_, sync_item);
@@ -1650,9 +1655,10 @@ AppListSyncableService::SyncItem* AppListSyncableService::FindSyncItem(
 
 AppListSyncableService::SyncItem* AppListSyncableService::CreateSyncItem(
     const std::string& item_id,
-    sync_pb::AppListSpecifics::AppListItemType item_type) {
+    sync_pb::AppListSpecifics::AppListItemType item_type,
+    bool is_new) {
   DCHECK(!base::Contains(sync_items_, item_id));
-  sync_items_[item_id] = std::make_unique<SyncItem>(item_id, item_type);
+  sync_items_[item_id] = std::make_unique<SyncItem>(item_id, item_type, is_new);
 
   // In case we have pending attributes to apply, process it asynchronously.
   if (base::Contains(pending_transfer_map_, item_id)) {

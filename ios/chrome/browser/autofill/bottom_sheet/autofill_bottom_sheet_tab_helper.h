@@ -14,6 +14,7 @@
 #import "ios/web/public/web_state_user_data.h"
 
 namespace autofill {
+class AutofillBottomSheetObserver;
 struct FormActivityParams;
 }  // namespace autofill
 
@@ -40,6 +41,10 @@ class AutofillBottomSheetTabHelper
       delete;
 
   ~AutofillBottomSheetTabHelper() override;
+
+  // Observer registration methods.
+  void AddObserver(autofill::AutofillBottomSheetObserver* observer);
+  void RemoveObserver(autofill::AutofillBottomSheetObserver* observer);
 
   // Handler for JavaScript messages. Dispatch to more specific handler.
   void OnFormMessageReceived(const web::ScriptMessage& message);
@@ -100,13 +105,12 @@ class AutofillBottomSheetTabHelper
   void AttachListeners(
       const std::vector<autofill::FieldRendererId>& renderer_ids,
       std::set<autofill::FieldRendererId>& registered_renderer_ids,
-      const std::string& frame_id,
-      bool must_be_empty);
+      const std::string& frame_id);
 
   // Detach listeners, which will deactivate the associated bottom sheet.
-  void DetachListenersForAllFrames(
+  void DetachListenersForFrame(
+      const std::string& frame_id,
       const std::set<autofill::FieldRendererId>& renderer_ids,
-      bool must_be_empty,
       bool refocus);
 
   // Send command to show the Password Bottom Sheet.
@@ -136,16 +140,18 @@ class AutofillBottomSheetTabHelper
                                      autofill::AutofillManager::Observer>
       autofill_manager_observations_{this};
 
-  // List of password bottom sheet related renderer ids.
+  // List of password bottom sheet related renderer ids, mapped to a frame id.
   // TODO(crbug.com/1441921): Maybe migrate to FieldGlobalIds.
-  std::set<autofill::FieldRendererId> registered_password_renderer_ids_;
+  std::map<std::string, std::set<autofill::FieldRendererId>>
+      registered_password_renderer_ids_;
 
-  // List of payments bottom sheet related renderer ids.
+  // List of payments bottom sheet related renderer ids, mapped to a frame id.
   // TODO(crbug.com/1441921): Migrate to FieldGlobalIds.
-  std::set<autofill::FieldRendererId> registered_payments_renderer_ids_;
+  std::map<std::string, std::set<autofill::FieldRendererId>>
+      registered_payments_renderer_ids_;
 
-  // List of frames on which listeners have been attached.
-  std::set<std::string> web_frames_ids_;
+  base::ObserverList<autofill::AutofillBottomSheetObserver>::Unchecked
+      observers_;
 
   WEB_STATE_USER_DATA_KEY_DECL();
 };

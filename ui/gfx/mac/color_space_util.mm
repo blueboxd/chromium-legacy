@@ -64,18 +64,20 @@ const std::vector<CVImagePrimary>& GetSupportedImagePrimaries() {
             {kCVImageBufferColorPrimaries_SMPTE_C,
              kCMFormatDescriptionColorPrimaries_SMPTE_C,
              gfx::ColorSpace::PrimaryID::SMPTE170M});
-        supported_primaries.push_back(
-            {kCVImageBufferColorPrimaries_ITU_R_2020,
-             kCMFormatDescriptionColorPrimaries_ITU_R_2020,
-             gfx::ColorSpace::PrimaryID::BT2020});
-        supported_primaries.push_back(
-            {kCVImageBufferColorPrimaries_DCI_P3,
-             kCMFormatDescriptionColorPrimaries_DCI_P3,
-             gfx::ColorSpace::PrimaryID::SMPTEST431_2});
-        supported_primaries.push_back(
-            {kCVImageBufferColorPrimaries_P3_D65,
-             kCMFormatDescriptionColorPrimaries_P3_D65,
-             gfx::ColorSpace::PrimaryID::P3});
+        if(@available(macOS 10.11, *)) {
+          supported_primaries.push_back(
+              {kCVImageBufferColorPrimaries_ITU_R_2020,
+               kCMFormatDescriptionColorPrimaries_ITU_R_2020,
+               gfx::ColorSpace::PrimaryID::BT2020});
+          supported_primaries.push_back(
+              {kCVImageBufferColorPrimaries_DCI_P3,
+               kCMFormatDescriptionColorPrimaries_DCI_P3,
+               gfx::ColorSpace::PrimaryID::SMPTEST431_2});
+          supported_primaries.push_back(
+              {kCVImageBufferColorPrimaries_P3_D65,
+               kCMFormatDescriptionColorPrimaries_P3_D65,
+               gfx::ColorSpace::PrimaryID::P3});
+        }
         return supported_primaries;
       }());
   return *kSupportedPrimaries;
@@ -120,10 +122,12 @@ const std::vector<CVImageTransferFn>& GetSupportedImageTransferFn() {
             {kCVImageBufferTransferFunction_UseGamma,
              kCMFormatDescriptionTransferFunction_UseGamma,
              gfx::ColorSpace::TransferID::CUSTOM});
-        supported_transfer_funcs.push_back(
-            {kCVImageBufferTransferFunction_ITU_R_2020,
-             kCMFormatDescriptionTransferFunction_ITU_R_2020,
-             gfx::ColorSpace::TransferID::BT2020_10});
+        if (@available(macOS 10.11, *)) {
+          supported_transfer_funcs.push_back(
+              {kCVImageBufferTransferFunction_ITU_R_2020,
+               kCMFormatDescriptionTransferFunction_ITU_R_2020,
+               gfx::ColorSpace::TransferID::BT2020_10});
+        }
         if (@available(macos 10.12, *)) {
           supported_transfer_funcs.push_back(
               {kCVImageBufferTransferFunction_SMPTE_ST_428_1,
@@ -139,9 +143,9 @@ const std::vector<CVImageTransferFn>& GetSupportedImageTransferFn() {
               {kCVImageBufferTransferFunction_ITU_R_2100_HLG,
                kCMFormatDescriptionTransferFunction_ITU_R_2100_HLG,
                gfx::ColorSpace::TransferID::HLG});
-          supported_transfer_funcs.push_back({kCVImageBufferTransferFunction_sRGB,
-                                              nullptr,
-                                              gfx::ColorSpace::TransferID::SRGB});
+          supported_transfer_funcs.push_back(
+              {kCVImageBufferTransferFunction_sRGB, nullptr,
+               gfx::ColorSpace::TransferID::SRGB});
         }
         if (@available(macos 10.14, *)) {
           supported_transfer_funcs.push_back(
@@ -221,10 +225,12 @@ const std::vector<CVImageMatrix>& GetSupportedImageMatrix() {
             {kCVImageBufferYCbCrMatrix_SMPTE_240M_1995,
              kCMFormatDescriptionYCbCrMatrix_SMPTE_240M_1995,
              gfx::ColorSpace::MatrixID::SMPTE240M});
-        supported_matrices.push_back(
-            {kCVImageBufferYCbCrMatrix_ITU_R_2020,
-             kCMFormatDescriptionYCbCrMatrix_ITU_R_2020,
-             gfx::ColorSpace::MatrixID::BT2020_NCL});
+        if (@available(macOS 10.11, *)) {
+          supported_matrices.push_back(
+              {kCVImageBufferYCbCrMatrix_ITU_R_2020,
+               kCMFormatDescriptionYCbCrMatrix_ITU_R_2020,
+               gfx::ColorSpace::MatrixID::BT2020_NCL});
+        }
         return supported_matrices;
       }());
   return *kSupportedMatrices;
@@ -306,9 +312,11 @@ bool ColorSpaceToCVImageBufferKeys(const gfx::ColorSpace& color_space,
       break;
     }
   }
-  if (found_transfer && prefer_srgb_trfn) {
-    if (*out_transfer == kCVImageBufferTransferFunction_ITU_R_709_2) {
-      *out_transfer = kCVImageBufferTransferFunction_sRGB;
+  if (@available(macOS 10.13, *)) {
+    if (found_transfer && prefer_srgb_trfn) {
+      if (*out_transfer == kCVImageBufferTransferFunction_ITU_R_709_2) {
+        *out_transfer = kCVImageBufferTransferFunction_sRGB;
+      }
     }
   }
 

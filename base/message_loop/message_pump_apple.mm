@@ -195,10 +195,10 @@ void MessagePumpCFRunLoopBase::ScheduleDelayedWork(
     if (CFRunLoopTimerSetToleranceFuncPtr) {
       if (!next_work_info.leeway.is_zero()) {
         // Specify slack based on |next_work_info|.
-        CFRunLoopTimerSetTolerance(delayed_work_timer_.get(),
+        CFRunLoopTimerSetToleranceFuncPtr(delayed_work_timer_.get(),
                                    next_work_info.leeway.InSecondsF());
       } else {
-        CFRunLoopTimerSetTolerance(delayed_work_timer_.get(), 0);
+        CFRunLoopTimerSetToleranceFuncPtr(delayed_work_timer_.get(), 0);
       }
     }
     delayed_work_leeway_ = next_work_info.leeway;

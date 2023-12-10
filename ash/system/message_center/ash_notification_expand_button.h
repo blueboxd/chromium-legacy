@@ -5,6 +5,8 @@
 #ifndef ASH_SYSTEM_MESSAGE_CENTER_ASH_NOTIFICATION_EXPAND_BUTTON_H_
 #define ASH_SYSTEM_MESSAGE_CENTER_ASH_NOTIFICATION_EXPAND_BUTTON_H_
 
+#include <string>
+
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/views/controls/button/button.h"
@@ -51,7 +53,8 @@ class AshNotificationExpandButton : public views::Button {
   void OnThemeChanged() override;
   gfx::Size CalculatePreferredSize() const override;
 
-  void SetExpandCollapseEnabled(bool enabled);
+  void SetNotificationTitleForButtonTooltip(
+      const std::u16string& notification_title);
 
   void set_label_fading_out(bool label_fading_out) {
     label_fading_out_ = label_fading_out;
@@ -94,7 +97,9 @@ class AshNotificationExpandButton : public views::Button {
   // True if `label_` is in its fade out animation.
   bool label_fading_out_ = false;
 
-  bool disable_expand_collapse_ = false;
+  // Cache of the notification title. Used this to display in the button
+  // tooltip.
+  std::u16string notification_title_;
 
   base::WeakPtrFactory<AshNotificationExpandButton> weak_factory_{this};
 };

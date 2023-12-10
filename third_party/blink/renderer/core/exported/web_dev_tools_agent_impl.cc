@@ -64,6 +64,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_dom_debugger_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_dom_snapshot_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_emulation_agent.h"
+#include "third_party/blink/renderer/core/inspector/inspector_event_breakpoints_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_io_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_layer_tree_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_log_agent.h"
@@ -85,6 +86,7 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -236,6 +238,9 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
     // 0. Flush pending frontend messages.
     WebDevToolsAgentImpl* agent = frame->DevToolsAgentImpl();
     agent->FlushProtocolNotifications();
+    agent->MainThreadDebuggerPaused();
+    CHECK(!paused_frame_);
+    paused_frame_ = WrapWeakPersistent(frame);
 
     // 1. Disable input events.
     CHECK(!input_events_disabler_);
@@ -269,6 +274,12 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
     message_loop_->QuitNow();
     page_pauser_.reset();
     input_events_disabler_.reset();
+
+    CHECK(paused_frame_);
+    if (paused_frame_->GetFrame()) {
+      paused_frame_->DevToolsAgentImpl()->MainThreadDebuggerResumed();
+    }
+    paused_frame_ = nullptr;
   }
 
   absl::optional<MessageLoopKind> running_for_debug_break_kind_;
@@ -276,6 +287,7 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
   std::unique_ptr<Platform::NestedMessageLoopRunner> message_loop_;
   std::unique_ptr<ScopedInputEventsDisabler> input_events_disabler_;
   std::unique_ptr<WebScopedPagePauser> page_pauser_;
+  WeakPersistent<WebLocalFrameImpl> paused_frame_;
   scoped_refptr<InspectorTaskRunner>
       inspector_task_runner_for_instrumentation_pause_;
   static ClientMessageLoopAdapter* instance_;
@@ -316,6 +328,9 @@ void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
   InspectorDOMDebuggerAgent* dom_debugger_agent =
       session->CreateAndAppend<InspectorDOMDebuggerAgent>(isolate, dom_agent,
                                                           session->V8Session());
+
+  session->CreateAndAppend<InspectorEventBreakpointsAgent>(
+      session->V8Session());
 
   session->CreateAndAppend<InspectorPerformanceAgent>(inspected_frames);
 
@@ -585,6 +600,14 @@ String WebDevToolsAgentImpl::NavigationInitiatorInfo(LocalFrame* frame) {
 
 void WebDevToolsAgentImpl::FlushProtocolNotifications() {
   agent_->FlushProtocolNotifications();
+}
+
+void WebDevToolsAgentImpl::MainThreadDebuggerPaused() {
+  agent_->DebuggerPaused();
+}
+
+void WebDevToolsAgentImpl::MainThreadDebuggerResumed() {
+  agent_->DebuggerResumed();
 }
 
 void WebDevToolsAgentImpl::WillProcessTask(

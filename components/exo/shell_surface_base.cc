@@ -217,8 +217,9 @@ class CustomFrameView : public ash::NonClientFrameViewAsh {
     return client_bounds;
   }
   int NonClientHitTest(const gfx::Point& point) override {
-    if (GetFrameEnabled() || shell_surface_->server_side_resize())
+    if (GetFrameEnabled() || shell_surface_->server_side_resize()) {
       return ash::NonClientFrameViewAsh::NonClientHitTest(point);
+    }
     return GetWidget()->client_view()->NonClientHitTest(point);
   }
   void GetWindowMask(const gfx::Size& size, SkPath* window_mask) override {
@@ -403,6 +404,14 @@ ShellSurfaceBase::ShellSurfaceBase(Surface* surface,
 }
 
 ShellSurfaceBase::~ShellSurfaceBase() {
+  // For overlapped frames, a relationship is created between the host window
+  // layer and the frame header layer. We need to notify frame header to remove
+  // the relationship before host window to destroyed.
+  if (frame_overlapped()) {
+    auto* frame_header = chromeos::FrameHeader::Get(widget_);
+    frame_header->RemoveLayerBeneath();
+  }
+
   // If the surface was TrustedPinned, we have to unpin first as this might have
   // locked down some system functions.
   if (current_pinned_state_ == chromeos::WindowPinType::kTrustedPinned) {
@@ -423,6 +432,10 @@ ShellSurfaceBase::~ShellSurfaceBase() {
   surface_destroyed_callback_.Reset();
 
   if (widget_) {
+    if (has_grab_) {
+      widget_->ReleaseCapture();
+      WMHelper::GetInstance()->GetCaptureClient()->RemoveObserver(this);
+    }
     widget_->GetNativeWindow()->RemoveObserver(this);
     widget_->RemoveObserver(this);
     // Remove transient children which are shell surfaces so they are not
@@ -436,8 +449,6 @@ ShellSurfaceBase::~ShellSurfaceBase() {
     parent_->RemoveObserver(this);
   if (root_surface())
     root_surface()->RemoveSurfaceObserver(this);
-  if (has_grab_)
-    WMHelper::GetInstance()->GetCaptureClient()->RemoveObserver(this);
   WMHelper::GetInstance()->RemoveTooltipObserver(this);
   CHECK(!views::WidgetObserver::IsInObserverList());
 }
@@ -1124,6 +1135,7 @@ void ShellSurfaceBase::OnSetFrame(SurfaceFrameType frame_type) {
     case SurfaceFrameType::NORMAL:
     case SurfaceFrameType::AUTOHIDE:
     case SurfaceFrameType::OVERLAY:
+    case SurfaceFrameType::OVERLAP:
     case SurfaceFrameType::SHADOW:
       // Initialize the shadow if it didn't exist. Do not reset if
       // the frame type just switched from another enabled type or
@@ -1142,11 +1154,22 @@ void ShellSurfaceBase::OnSetFrame(SurfaceFrameType frame_type) {
   if (widget_->non_client_view()) {
     CustomFrameView* frame_view =
         static_cast<CustomFrameView*>(widget_->non_client_view()->frame_view());
-    if (frame_view->GetFrameEnabled() == frame_enabled())
+    if (frame_view->GetFrameEnabled() == frame_enabled() &&
+        frame_view->GetFrameOverlapped() == frame_overlapped()) {
       return;
+    }
 
     frame_view->SetFrameEnabled(frame_enabled());
     frame_view->SetShouldPaintHeader(frame_enabled());
+
+    frame_view->SetFrameOverlapped(frame_overlapped());
+
+    auto* frame_header = chromeos::FrameHeader::Get(widget_);
+    if (frame_overlapped()) {
+      frame_header->AddLayerBeneath(host_window());
+    } else {
+      frame_header->RemoveLayerBeneath();
+    }
   }
 
   widget_->GetRootView()->Layout();
@@ -1465,7 +1488,7 @@ void ShellSurfaceBase::OnWindowDestroying(aura::Window* window) {
   if (window == parent_)
     SetParentInternal(nullptr);
   window->RemoveObserver(this);
-  if (widget_ && window == widget_->GetNativeWindow() && root_surface()) {
+  if (IsShellSurfaceWindow(window) && root_surface()) {
     root_surface()->ThrottleFrameRate(false);
   }
 }
@@ -1473,19 +1496,21 @@ void ShellSurfaceBase::OnWindowDestroying(aura::Window* window) {
 void ShellSurfaceBase::OnWindowPropertyChanged(aura::Window* window,
                                                const void* key,
                                                intptr_t old_value) {
-  if (IsShellSurfaceWindow(window)) {
-    if (key == aura::client::kSkipImeProcessing) {
-      SetSkipImeProcessingToDescendentSurfaces(
-          window, window->GetProperty(aura::client::kSkipImeProcessing));
-    } else if (key == chromeos::kFrameRestoreLookKey) {
-      root_surface()->SetFrameLocked(
-          window->GetProperty(chromeos::kFrameRestoreLookKey));
-    } else if (key == aura::client::kWindowWorkspaceKey) {
-      root_surface()->OnDeskChanged(GetWindowDeskStateChanged(window));
-    } else if (key == ash::kFrameRateThrottleKey) {
-      root_surface()->ThrottleFrameRate(
-          window->GetProperty(ash::kFrameRateThrottleKey));
-    }
+  if (!IsShellSurfaceWindow(window) || !root_surface()) {
+    return;
+  }
+
+  if (key == aura::client::kSkipImeProcessing) {
+    SetSkipImeProcessingToDescendentSurfaces(
+        window, window->GetProperty(aura::client::kSkipImeProcessing));
+  } else if (key == chromeos::kFrameRestoreLookKey) {
+    root_surface()->SetFrameLocked(
+        window->GetProperty(chromeos::kFrameRestoreLookKey));
+  } else if (key == aura::client::kWindowWorkspaceKey) {
+    root_surface()->OnDeskChanged(GetWindowDeskStateChanged(window));
+  } else if (key == ash::kFrameRateThrottleKey) {
+    root_surface()->ThrottleFrameRate(
+        window->GetProperty(ash::kFrameRateThrottleKey));
   }
 }
 
@@ -1498,7 +1523,7 @@ void ShellSurfaceBase::OnWindowAddedToRootWindow(aura::Window* window) {
 
 void ShellSurfaceBase::OnWindowParentChanged(aura::Window* window,
                                              aura::Window* parent) {
-  if (!IsShellSurfaceWindow(window)) {
+  if (!IsShellSurfaceWindow(window) || !root_surface()) {
     return;
   }
   root_surface()->OnDeskChanged(GetWindowDeskStateChanged(window));
@@ -2041,10 +2066,12 @@ gfx::Rect ShellSurfaceBase::GetVisibleBounds() const {
 }
 
 gfx::Rect ShellSurfaceBase::GetClientViewBounds() const {
-  return widget_->non_client_view()
+  return (widget_->non_client_view() && !frame_overlapped())
              ? widget_->non_client_view()
                    ->frame_view()
                    ->GetBoundsForClientView()
+             // When frame is overlapped with client area, window bounds is the
+             // same as client bounds.
              : gfx::Rect(widget_->GetWindowBoundsInScreen().size());
 }
 

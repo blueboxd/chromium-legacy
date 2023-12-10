@@ -20,10 +20,6 @@ BASE_FEATURE(kMergeSubprocessMetricsOnBgAndFg,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_ANDROID)
 
-BASE_FEATURE(kRestoreUmaClientIdIndependentLogs,
-             "RestoreUmaClientIdIndependentLogs",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kSubprocessMetricsAsync,
              "SubprocessMetricsAsync",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -36,10 +32,6 @@ const base::FeatureParam<bool> kDeregisterAsync{&kSubprocessMetricsAsync,
 
 const base::FeatureParam<bool> kDeregisterSequenced{
     &kSubprocessMetricsAsync, "DeregisterSequenced", false};
-
-BASE_FEATURE(kMetricsServiceAsyncIndependentLogs,
-             "MetricsServiceAsyncIndependentLogs",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kFlushPersistentSystemProfileOnWrite,
              "FlushPersistentSystemProfileOnWrite",

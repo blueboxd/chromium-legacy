@@ -83,7 +83,7 @@
 #import "ios/chrome/browser/sync/model/device_info_sync_service_factory.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/tabs/tab_parenting_global_observer.h"
-#import "ios/chrome/browser/translate/translate_ranker_metrics_provider.h"
+#import "ios/chrome/browser/translate/model/translate_ranker_metrics_provider.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/common/channel_info.h"
 #import "ios/public/provider/chrome/browser/app_distribution/app_distribution_api.h"
@@ -351,15 +351,18 @@ void IOSChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
           std::make_unique<metrics::ChromeBrowserStateClient>(),
           metrics::MetricsLogUploader::MetricServiceType::UMA));
 
+  // TODO(crbug.com/1491396): Avoid using GetLastUsedBrowserState().
+  ChromeBrowserState* browser_state = GetApplicationContext()
+                                          ->GetChromeBrowserStateManager()
+                                          ->GetLastUsedBrowserState();
+
   metrics_service_->RegisterMetricsProvider(
-      std::make_unique<IOSFeedActivityMetricsProvider>());
+      std::make_unique<IOSFeedActivityMetricsProvider>(
+          browser_state->GetPrefs()));
 
   metrics_service_->RegisterMetricsProvider(
       CreateIOSProfileSessionMetricsProvider());
 
-  ChromeBrowserState* browser_state = GetApplicationContext()
-                                          ->GetChromeBrowserStateManager()
-                                          ->GetLastUsedBrowserState();
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<IOSFeedEnabledMetricsProvider>(
           browser_state->GetPrefs()));

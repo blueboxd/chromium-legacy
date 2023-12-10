@@ -71,9 +71,6 @@ bool ShouldIgnorePermissionRequest(
 }
 
 bool ShouldUseChip(permissions::PermissionPrompt::Delegate* delegate) {
-  if (!base::FeatureList::IsEnabled(permissions::features::kPermissionChip))
-    return false;
-
   // Permission request chip should not be shown if `delegate->Requests()` were
   // requested without a user gesture.
   if (!permissions::PermissionUtil::HasUserGesture(delegate))
@@ -97,11 +94,6 @@ bool IsLocationBarDisplayed(Browser* browser) {
 
 bool ShouldCurrentRequestUseQuietChip(
     permissions::PermissionPrompt::Delegate* delegate) {
-  if (!base::FeatureList::IsEnabled(
-          permissions::features::kPermissionQuietChip)) {
-    return false;
-  }
-
   std::vector<permissions::PermissionRequest*> requests = delegate->Requests();
   return base::ranges::all_of(
       requests, [](permissions::PermissionRequest* request) {
@@ -187,7 +179,7 @@ std::unique_ptr<permissions::PermissionPrompt> CreateQuietPrompt(
 std::unique_ptr<permissions::PermissionPrompt> CreatePermissionPrompt(
     content::WebContents* web_contents,
     permissions::PermissionPrompt::Delegate* delegate) {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  Browser* browser = chrome::FindBrowserWithTab(web_contents);
   if (!browser) {
     DLOG(WARNING) << "Permission prompt suppressed because the WebContents is "
                      "not attached to any Browser window.";

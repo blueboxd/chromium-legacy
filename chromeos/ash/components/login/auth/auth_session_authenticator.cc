@@ -13,6 +13,7 @@
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/notreached.h"
+#include "base/time/default_clock.h"
 #include "chromeos/ash/components/cryptohome/auth_factor.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_util.h"
@@ -56,7 +57,8 @@ AuthSessionAuthenticator::AuthSessionAuthenticator(
       auth_factor_editor_(
           std::make_unique<AuthFactorEditor>(UserDataAuthClient::Get())),
       auth_performer_(
-          std::make_unique<AuthPerformer>(UserDataAuthClient::Get())),
+          std::make_unique<AuthPerformer>(UserDataAuthClient::Get(),
+                                          base::DefaultClock::GetInstance())),
       mount_performer_(std::make_unique<MountPerformer>()),
       local_state_(local_state) {
   DCHECK(safe_mode_delegate_);
@@ -243,7 +245,8 @@ void AuthSessionAuthenticator::DoCompleteLogin(
   }
   DCHECK(!user_exists || !ephemeral);
   LOGIN_LOG(EVENT) << "Regular user CompleteLogin " << user_exists;
-  bool challenge_response_auth = !context->GetChallengeResponseKeys().empty();
+  const bool challenge_response_auth =
+      !context->GetChallengeResponseKeys().empty();
   const bool has_password = !context->GetKey()->GetSecret().empty();
   std::vector<AuthOperation> steps;
   if (!user_exists) {
@@ -278,7 +281,7 @@ void AuthSessionAuthenticator::DoCompleteLogin(
           base::BindOnce(&AuthFactorEditor::AddContextChallengeResponseKey,
                          auth_factor_editor_->AsWeakPtr()));
     } else {
-      if (!ash::switches::AreEmptyPasswordsAllowedForForTesting()) {
+      if (ash::switches::AreEmptyPasswordsAllowedForForTesting()) {
         // Empty passwords are currently not supported in ChromeOS, and
         // upcoming work on local passwords would significantly change code
         // behavior if empty password is used during initial login.
@@ -287,20 +290,31 @@ void AuthSessionAuthenticator::DoCompleteLogin(
         // If such fix requires non-trivial changes, the following flag
         // can be used as a short-term solution:
         // `--allow-empty-passwords-in-tests`
+        steps.push_back(
+            base::BindOnce(&AuthFactorEditor::AddContextKnowledgeKey,
+                           auth_factor_editor_->AsWeakPtr()));
+        steps.push_back(base::BindOnce(
+            &AuthSessionAuthenticator::RecordFirstAuthFactorAdded,
+            weak_factory_.GetWeakPtr()));
+      } else if (!ash::features::AreLocalPasswordsEnabledForConsumers()) {
         CHECK(has_password)
             << "Empty passwords are not supported during user creation";
+        steps.push_back(
+            base::BindOnce(&AuthFactorEditor::AddContextKnowledgeKey,
+                           auth_factor_editor_->AsWeakPtr()));
+        steps.push_back(base::BindOnce(
+            &AuthSessionAuthenticator::RecordFirstAuthFactorAdded,
+            weak_factory_.GetWeakPtr()));
+      } else {
+        // If Local passwords are enabled, password setup would
+        // happen later in OOBE flow.
       }
-      steps.push_back(base::BindOnce(&AuthFactorEditor::AddContextKnowledgeKey,
-                                     auth_factor_editor_->AsWeakPtr()));
-    }
     // In addition to factors suitable for authentication, fetch a set of
     // supported factor types for new users.
     steps.push_back(
         base::BindOnce(&AuthFactorEditor::GetAuthFactorsConfiguration,
                        auth_factor_editor_->AsWeakPtr()));
-    steps.push_back(
-        base::BindOnce(&AuthSessionAuthenticator::RecordFirstAuthFactorAdded,
-                       weak_factory_.GetWeakPtr()));
+    }       // challenge-response
   } else {  // existing user
     if (!challenge_response_auth) {
       // We are sure that password is correct, so intercept authentication
@@ -1011,9 +1025,10 @@ void AuthSessionAuthenticator::NotifyAuthSuccess(
   LOGIN_LOG(EVENT) << "Logged in successfully";
 
   if (HibernateManager::IsHibernateSupported()) {
-    // Pass the AuthSessionID to HibernateManager so once the user's profile is
-    // created we can notify hiberman.
-    HibernateManager::Get()->SetAuthSessionID(context->GetAuthSessionId());
+    // Pass the AccountID and AuthSessionID to HibernateManager so once the
+    // user's profile is created we can notify hiberman.
+    HibernateManager::Get()->SetAuthInfo(context->GetAccountId().GetUserEmail(),
+                                         context->GetAuthSessionId());
   }
 
   if (consumer_)

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.compositor.overlays.strip;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -18,6 +19,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Robolectric.buildActivity;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
 import android.content.Context;
@@ -26,6 +28,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.util.Size;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView.ScaleType;
 import android.widget.TextView;
 
@@ -43,18 +46,22 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 import org.chromium.base.Callback;
+import org.chromium.base.SysUtils;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.compositor.overlays.strip.StripTabHoverCardViewUnitTest.ShadowSysUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tasks.tab_management.TabGridThumbnailView;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementFieldTrial;
+import org.chromium.chrome.browser.tasks.tab_management.TabThumbnailView;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.styles.ChromeColors;
@@ -64,10 +71,25 @@ import org.chromium.url.JUnitTestGURLs;
 
 /** Unit tests for {@link StripTabHoverCardView}. */
 @RunWith(BaseRobolectricTestRunner.class)
-@EnableFeatures({ChromeFeatureList.TAB_STRIP_REDESIGN,
-        ChromeFeatureList.ADVANCED_PERIPHERALS_SUPPORT_TAB_STRIP})
-@Config(manifest = Config.NONE, qualifiers = "sw600dp")
+@EnableFeatures({
+    ChromeFeatureList.TAB_STRIP_REDESIGN,
+    ChromeFeatureList.ADVANCED_PERIPHERALS_SUPPORT_TAB_STRIP
+})
+@Config(
+        manifest = Config.NONE,
+        qualifiers = "sw600dp",
+        shadows = {ShadowSysUtils.class})
 public class StripTabHoverCardViewUnitTest {
+    @Implements(SysUtils.class)
+    static class ShadowSysUtils {
+        public static boolean sIsLowEndDevice;
+
+        @Implementation
+        public static boolean isLowEndDevice() {
+            return sIsLowEndDevice;
+        }
+    }
+
     @Rule
     public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
     @Rule
@@ -79,8 +101,6 @@ public class StripTabHoverCardViewUnitTest {
     @Mock
     private Tab mHoveredTab;
     @Mock
-    private StripLayoutTab mHoveredStripTab;
-    @Mock
     private TabModelSelector mTabModelSelector;
     @Mock
     private ObservableSupplier<TabContentManager> mTabContentManagerSupplier;
@@ -88,9 +108,11 @@ public class StripTabHoverCardViewUnitTest {
     private TabContentManager mTabContentManager;
 
     private static final float STRIP_STACK_HEIGHT = 500.f;
+    private static final float TAB_WIDTH = 100f;
 
     private StripTabHoverCardView mTabHoverCardView;
-    private TabGridThumbnailView mThumbnailView;
+    private ViewGroup mContentView;
+    private TabThumbnailView mThumbnailView;
     private TextView mTitleView;
     private TextView mUrlView;
     private Context mContext;
@@ -103,6 +125,7 @@ public class StripTabHoverCardViewUnitTest {
         activity.setTheme(R.style.Theme_BrowserUI_DayNight);
         mTabHoverCardView = (StripTabHoverCardView) activity.getLayoutInflater().inflate(
                 R.layout.tab_hover_card_holder, null);
+        mContentView = mTabHoverCardView.findViewById(R.id.content_view);
         mThumbnailView = mTabHoverCardView.findViewById(R.id.thumbnail);
         mTitleView = mTabHoverCardView.findViewById(R.id.title);
         mUrlView = mTabHoverCardView.findViewById(R.id.url);
@@ -120,6 +143,8 @@ public class StripTabHoverCardViewUnitTest {
                 R.dimen.tab_hover_card_thumbnail_height);
         mThumbnailView.measure(mHoverCardWidth, thumbnailHeight);
         mThumbnailView.layout(0, 0, mHoverCardWidth, thumbnailHeight);
+
+        ShadowSysUtils.sIsLowEndDevice = false;
     }
 
     @Test
@@ -131,7 +156,7 @@ public class StripTabHoverCardViewUnitTest {
         when(mHoveredTab.getId()).thenReturn(1);
 
         StripTabHoverCardView cardViewSpy = spy(mTabHoverCardView);
-        cardViewSpy.show(mHoveredTab, mHoveredStripTab, false, STRIP_STACK_HEIGHT);
+        cardViewSpy.show(mHoveredTab, false, 10, 20, STRIP_STACK_HEIGHT);
 
         assertEquals("Card title text is incorrect.", mHoveredTab.getTitle(), mTitleView.getText());
         assertEquals(
@@ -164,7 +189,7 @@ public class StripTabHoverCardViewUnitTest {
         when(mHoveredTab.getUrl()).thenReturn(url);
 
         StripTabHoverCardView cardViewSpy = spy(mTabHoverCardView);
-        cardViewSpy.show(mHoveredTab, mHoveredStripTab, false, STRIP_STACK_HEIGHT);
+        cardViewSpy.show(mHoveredTab, false, 10, 20, STRIP_STACK_HEIGHT);
 
         assertEquals("Card title text is incorrect.", mHoveredTab.getTitle(), mTitleView.getText());
         // Verify chrome:// tab hover card display text.
@@ -185,7 +210,7 @@ public class StripTabHoverCardViewUnitTest {
         when(mHoveredTab.isIncognito()).thenReturn(false);
 
         StripTabHoverCardView cardViewSpy = spy(mTabHoverCardView);
-        cardViewSpy.show(mHoveredTab, mHoveredStripTab, false, STRIP_STACK_HEIGHT);
+        cardViewSpy.show(mHoveredTab, false, 10, 20, STRIP_STACK_HEIGHT);
         verify(mTabContentManager)
                 .getTabThumbnailWithCallback(anyInt(),
                         refEq(new Size(mThumbnailView.getWidth(), mThumbnailView.getHeight())),
@@ -204,7 +229,7 @@ public class StripTabHoverCardViewUnitTest {
         when(mHoveredTab.getId()).thenReturn(1);
 
         StripTabHoverCardView cardViewSpy = spy(mTabHoverCardView);
-        cardViewSpy.show(mHoveredTab, mHoveredStripTab, false, STRIP_STACK_HEIGHT);
+        cardViewSpy.show(mHoveredTab, false, 10, 20, STRIP_STACK_HEIGHT);
         // Assume that the hovered tab has changed before the thumbnail is fetched.
         when(mHoveredTab.getId()).thenReturn(2);
 
@@ -225,7 +250,7 @@ public class StripTabHoverCardViewUnitTest {
         when(mHoveredTab.getUrl()).thenReturn(url);
 
         StripTabHoverCardView cardViewSpy = spy(mTabHoverCardView);
-        cardViewSpy.show(mHoveredTab, mHoveredStripTab, false, STRIP_STACK_HEIGHT);
+        cardViewSpy.show(mHoveredTab, false, 10, 20, STRIP_STACK_HEIGHT);
         // Assume that the hover card is hidden before the thumbnail is fetched.
         cardViewSpy.hide();
         // Verify state is reset on hide.
@@ -248,11 +273,8 @@ public class StripTabHoverCardViewUnitTest {
     public void getHoverCardPosition() {
         // Use TSR detached treatment for additional coverage that includes position adjustments.
         TabManagementFieldTrial.TAB_STRIP_REDESIGN_ENABLE_DETACHED.setForTesting(true);
-        // Set simulated hovered StripLayoutTab drawX for expected hover card position.
-        when(mHoveredStripTab.getDrawX()).thenReturn(10f);
-
-        float[] position =
-                mTabHoverCardView.getHoverCardPosition(mHoveredStripTab, false, STRIP_STACK_HEIGHT);
+        // Set simulated hovered tab drawX for expected hover card position.
+        float[] position = mTabHoverCardView.getHoverCardPosition(false, 10, 0, STRIP_STACK_HEIGHT);
         float detachedCardOffset =
                 mContext.getResources().getDimension(R.dimen.tsr_no_feet_tab_hover_card_x_offset);
         assertEquals("Card x position is incorrect.", 10f + detachedCardOffset, position[0], 0f);
@@ -265,14 +287,13 @@ public class StripTabHoverCardViewUnitTest {
     public void getHoverCardPosition_CardWidthExceedsWindowWidth() {
         // Set window width to be slightly smaller than the default card width.
         mContext.getResources().getDisplayMetrics().widthPixels = (int) (mHoverCardWidth - 1);
-        // Set simulated hovered StripLayoutTab drawX for expected hover card position.
-        when(mHoveredStripTab.getDrawX()).thenReturn(10f);
         var originalLayoutParams = new LayoutParams((int) mHoverCardWidth, 200);
         StripTabHoverCardView cardViewSpy = spy(mTabHoverCardView);
         when(cardViewSpy.getLayoutParams()).thenReturn(originalLayoutParams);
 
+        // Set simulated hovered tab drawX for expected hover card position.
         float[] position =
-                cardViewSpy.getHoverCardPosition(mHoveredStripTab, false, STRIP_STACK_HEIGHT);
+                cardViewSpy.getHoverCardPosition(false, 10f, TAB_WIDTH, STRIP_STACK_HEIGHT);
         ArgumentCaptor<LayoutParams> captor = ArgumentCaptor.forClass(LayoutParams.class);
         verify(cardViewSpy).setLayoutParams(captor.capture());
         assertEquals("Card width is incorrect.", Math.round(0.9f * (mHoverCardWidth - 1)),
@@ -287,17 +308,16 @@ public class StripTabHoverCardViewUnitTest {
                 R.dimen.tab_hover_card_window_horizontal_margin);
 
         // Assume that the tab's hover card is positioned beyond the left edge of the app window.
-        when(mHoveredStripTab.getDrawX()).thenReturn(-1f);
         float[] position =
-                mTabHoverCardView.getHoverCardPosition(mHoveredStripTab, false, STRIP_STACK_HEIGHT);
+                mTabHoverCardView.getHoverCardPosition(false, -1f, TAB_WIDTH, STRIP_STACK_HEIGHT);
         assertEquals("Card should maintain a minimum margin from the left edge of the app window.",
                 windowHorizontalMargin, position[0], 0f);
 
         // Assume that the tab's hover card extends beyond the right edge of the app window.
         int windowWidth = mContext.getResources().getDisplayMetrics().widthPixels;
-        when(mHoveredStripTab.getDrawX()).thenReturn(windowWidth - mHoverCardWidth + 1f);
         position =
-                mTabHoverCardView.getHoverCardPosition(mHoveredStripTab, false, STRIP_STACK_HEIGHT);
+                mTabHoverCardView.getHoverCardPosition(
+                        false, windowWidth - mHoverCardWidth + 1f, TAB_WIDTH, STRIP_STACK_HEIGHT);
         assertEquals("Card should maintain a minimum margin from the right edge of the app window.",
                 windowWidth - mHoverCardWidth - windowHorizontalMargin, position[0], 0f);
     }
@@ -308,15 +328,39 @@ public class StripTabHoverCardViewUnitTest {
         TabManagementFieldTrial.TAB_STRIP_REDESIGN_ENABLE_DETACHED.setForTesting(true);
         LocalizationUtils.setRtlForTesting(true);
 
-        // Set simulated hovered StripLayoutTab drawX and width for expected hover card position.
-        when(mHoveredStripTab.getDrawX()).thenReturn(28f);
-        when(mHoveredStripTab.getWidth()).thenReturn(mHoverCardWidth - 2f);
-
+        // Set simulated hovered tab drawX and width for expected hover card position.
         float[] position =
-                mTabHoverCardView.getHoverCardPosition(mHoveredStripTab, false, STRIP_STACK_HEIGHT);
+                mTabHoverCardView.getHoverCardPosition(
+                        false, 28, mHoverCardWidth - 2f, STRIP_STACK_HEIGHT);
         float detachedCardOffset =
                 mContext.getResources().getDimension(R.dimen.tsr_no_feet_tab_hover_card_x_offset);
         assertEquals("Card x position is incorrect.", 26f - detachedCardOffset, position[0], 0f);
+    }
+
+    @Test
+    public void getHoverCardPosition_LowEndDevice() {
+        // Use TSR detached treatment for additional coverage that includes position adjustments.
+        TabManagementFieldTrial.TAB_STRIP_REDESIGN_ENABLE_DETACHED.setForTesting(true);
+        ShadowSysUtils.sIsLowEndDevice = true;
+
+        float[] position =
+                mTabHoverCardView.getHoverCardPosition(false, 10f, TAB_WIDTH, STRIP_STACK_HEIGHT);
+        float detachedCardOffset =
+                mContext.getResources().getDimension(R.dimen.tsr_no_feet_tab_hover_card_x_offset);
+        float cardShadowLength =
+                mContext.getResources().getDimension(R.dimen.tab_hover_card_elevation);
+        assertEquals(
+                "Card x position is incorrect.",
+                10f + detachedCardOffset - cardShadowLength,
+                position[0],
+                0f);
+        assertEquals(
+                "Card y position is incorrect.",
+                STRIP_STACK_HEIGHT
+                        + StripLayoutHelper.FOLIO_DETACHED_BOTTOM_MARGIN_DP
+                        - cardShadowLength,
+                position[1],
+                0f);
     }
 
     @Test
@@ -386,5 +430,17 @@ public class StripTabHoverCardViewUnitTest {
         tabModelSelectorObserver.onTabModelSelected(standardTabModel, incognitoTabModel);
         // Invoked once in #onInflate(), subsequently in #onTabModelSelected().
         verify(cardViewSpy, times(2)).updateHoverCardColors(false);
+    }
+
+    @Test
+    public void maybeUpdateBackgroundOnLowEndDevice() {
+        ShadowSysUtils.sIsLowEndDevice = true;
+        mTabHoverCardView.maybeUpdateBackgroundOnLowEndDevice();
+
+        assertEquals(
+                "Content view background resource is incorrect.",
+                R.drawable.popup_bg_8dp,
+                shadowOf(mContentView.getBackground()).getCreatedFromResId());
+        assertNull("Container background should be null.", mTabHoverCardView.getBackground());
     }
 }

@@ -108,7 +108,6 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/common/origin_trials/origin_trial_feature.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-test-utils.h"
@@ -244,7 +243,7 @@ class RenderFrameHostImplBrowserTest : public ContentBrowserTest {
   // Return an URL for loading a local test file.
   GURL GetFileURL(const base::FilePath::CharType* file_path) {
     base::FilePath path;
-    CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &path));
+    CHECK(base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &path));
     path = path.Append(GetTestDataFilePath());
     path = path.Append(file_path);
     return GURL("file:" + path.AsUTF8Unsafe());
@@ -1022,7 +1021,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplWithTokensBrowserTest,
   // Before ApplyFeatureDiffForOriginTrial() is called, we expect that the
   // feature overrides will be empty.
   auto expected_overrides =
-      base::flat_map<blink::mojom::RuntimeFeatureState, bool>();
+      base::flat_map<blink::mojom::RuntimeFeature, bool>();
   RuntimeFeatureStateDocumentData* actual_document_data =
       RuntimeFeatureStateDocumentData::GetForCurrentDocument(
           web_contents()->GetPrimaryMainFrame());
@@ -1032,19 +1031,20 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplWithTokensBrowserTest,
 
   // Simulate receiving a feature diff from the renderer process.
   auto overrides_with_tokens =
-      base::flat_map<blink::mojom::RuntimeFeatureState,
+      base::flat_map<blink::mojom::RuntimeFeature,
                      blink::mojom::OriginTrialFeatureStatePtr>();
   std::string raw_token(kValidFirstPartyToken);
   std::vector<std::string> raw_tokens_vector{raw_token};
-  overrides_with_tokens[blink::mojom::RuntimeFeatureState::
-                            kDisableThirdPartyStoragePartitioning] =
-      blink::mojom::OriginTrialFeatureState::New(true, raw_tokens_vector);
+  overrides_with_tokens
+      [blink::mojom::RuntimeFeature::kDisableThirdPartyStoragePartitioning] =
+          blink::mojom::OriginTrialFeatureState::New(true, raw_tokens_vector);
   origin_trial_state_host_remote.get()->ApplyFeatureDiffForOriginTrial(
       std::move(overrides_with_tokens));
 
   // Create the set of expected overrides without the corresponding tokens.
-  expected_overrides[blink::mojom::RuntimeFeatureState::
-                         kDisableThirdPartyStoragePartitioning] = true;
+  expected_overrides
+      [blink::mojom::RuntimeFeature::kDisableThirdPartyStoragePartitioning] =
+          true;
 
   // Verify that the document data was altered with the correct overrides.
   origin_trial_state_host_remote.FlushForTesting();
@@ -1073,7 +1073,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplWithTokensBrowserTest,
   // Before ApplyFeatureDiffForOriginTrial() is called, we expect that the
   // feature overrides will be empty.
   auto expected_overrides =
-      base::flat_map<blink::mojom::RuntimeFeatureState, bool>();
+      base::flat_map<blink::mojom::RuntimeFeature, bool>();
   RuntimeFeatureStateDocumentData* actual_document_data =
       RuntimeFeatureStateDocumentData::GetForCurrentDocument(
           web_contents()->GetPrimaryMainFrame());
@@ -1083,13 +1083,13 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplWithTokensBrowserTest,
 
   // Simulate receiving a feature diff from the renderer process.
   auto overrides_with_tokens =
-      base::flat_map<blink::mojom::RuntimeFeatureState,
+      base::flat_map<blink::mojom::RuntimeFeature,
                      blink::mojom::OriginTrialFeatureStatePtr>();
   std::string raw_token(kInvalidToken);
   std::vector<std::string> raw_tokens_vector{raw_token};
-  overrides_with_tokens[blink::mojom::RuntimeFeatureState::
-                            kDisableThirdPartyStoragePartitioning] =
-      blink::mojom::OriginTrialFeatureState::New(true, raw_tokens_vector);
+  overrides_with_tokens
+      [blink::mojom::RuntimeFeature::kDisableThirdPartyStoragePartitioning] =
+          blink::mojom::OriginTrialFeatureState::New(true, raw_tokens_vector);
   origin_trial_state_host_remote.get()->ApplyFeatureDiffForOriginTrial(
       std::move(overrides_with_tokens));
 
@@ -1124,7 +1124,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplWithTokensBrowserTest,
   url::Origin trial_origin = url::Origin::Create(GURL(kOriginTrialUrl));
   EXPECT_TRUE(delegate->IsFeaturePersistedForOrigin(
       /*origin=*/trial_origin, /*partition_origin=*/trial_origin,
-      blink::OriginTrialFeature::kOriginTrialsSampleAPIPersistentFeature,
+      blink::mojom::OriginTrialFeature::kOriginTrialsSampleAPIPersistentFeature,
       validTime));
 }
 
@@ -1179,7 +1179,7 @@ IN_PROC_BROWSER_TEST_F(
   url::Origin trial_origin = url::Origin::Create(GURL(kThirdPartyScriptUrl));
   EXPECT_TRUE(delegate->IsFeaturePersistedForOrigin(
       /*origin=*/trial_origin, /*partition_origin=*/main_origin,
-      blink::OriginTrialFeature::
+      blink::mojom::OriginTrialFeature::
           kOriginTrialsSampleAPIPersistentThirdPartyDeprecationFeature,
       validTime));
 }
@@ -2097,7 +2097,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   // 1) Send an xhr request, but do not send its response for the moment.
-  const char* send_slow_xhr =
+  static constexpr char kSendSlowXhr[] =
       "var request = new XMLHttpRequest();"
       "request.addEventListener('abort', () => document.title = 'xhr aborted');"
       "request.addEventListener('load', () => document.title = 'xhr loaded');"
@@ -2105,7 +2105,7 @@ IN_PROC_BROWSER_TEST_F(
       "request.send();";
   const GURL slow_url = embedded_test_server()->GetURL("/xhr_request");
   EXPECT_TRUE(ExecJs(
-      shell(), base::StringPrintf(send_slow_xhr, slow_url.spec().c_str())));
+      shell(), base::StringPrintf(kSendSlowXhr, slow_url.spec().c_str())));
   xhr_response.WaitForRequest();
 
   // 2) In the meantime, create a renderer-initiated navigation. It will be

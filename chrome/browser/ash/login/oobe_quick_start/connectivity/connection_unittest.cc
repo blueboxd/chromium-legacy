@@ -146,11 +146,13 @@ class ConnectionTest : public testing::Test {
   }
 
   void CallParseBootstrapConfigurationsResponse(
-      base::OnceClosure callback,
-      std::string cryptauth_device_id) {
-    connection_->ParseBootstrapConfigurationsResponse(
-        *mojom::BootstrapConfigurations::New(cryptauth_device_id));
-    std::move(callback).Run();
+      absl::optional<std::string> instance_id) {
+    if (instance_id.has_value()) {
+      connection_->ParseBootstrapConfigurationsResponse(
+          *mojom::BootstrapConfigurations::New(instance_id.value()));
+    } else {
+      connection_->ParseBootstrapConfigurationsResponse(absl::nullopt);
+    }
   }
 
   void SendBytesAndReadResponse(std::vector<uint8_t>&& bytes,
@@ -406,11 +408,10 @@ TEST_F(ConnectionTest, RequestAccountTransferAssertion) {
   EXPECT_EQ(*bootstrap_options.FindInt(kDeviceTypeKey), kDeviceTypeChrome);
 
   // Emulate a BootstrapConfigurations response.
-  std::vector<uint8_t> cryptauth_device_id = {0x01, 0x02, 0x03};
-  std::string expected_cryptauth_device_id(cryptauth_device_id.begin(),
-                                           cryptauth_device_id.end());
+  std::vector<uint8_t> instance_id = {0x01, 0x02, 0x03};
+  std::string expected_instance_id(instance_id.begin(), instance_id.end());
   fake_quick_start_decoder_->SetBootstrapConfigurationsResponse(
-      expected_cryptauth_device_id, absl::nullopt);
+      expected_instance_id, absl::nullopt);
   fake_nearby_connection_->AppendReadableData(kTestBytes);
 
   TestMessageMetrics(/*should_succeed=*/true, /*message_type=*/
@@ -785,22 +786,27 @@ TEST_F(ConnectionTest,
 
 TEST_F(ConnectionTest, GetPhoneInstanceId) {
   MarkConnectionAuthenticated();
-  base::RunLoop run_loop;
 
   // Phone instance ID is initially empty.
   EXPECT_TRUE(authenticated_connection_->get_phone_instance_id().empty());
 
-  // Arbitrary CryptAuth ID.
-  std::vector<uint8_t> cryptauth_device_id = {0x01, 0x02, 0x03};
-  std::string expected_cryptauth_device_id(cryptauth_device_id.begin(),
-                                           cryptauth_device_id.end());
+  // Arbitrary instance ID.
+  std::vector<uint8_t> instance_id = {0x01, 0x02, 0x03};
+  std::string expected_instance_id(instance_id.begin(), instance_id.end());
 
-  CallParseBootstrapConfigurationsResponse(run_loop.QuitClosure(),
-                                           expected_cryptauth_device_id);
+  CallParseBootstrapConfigurationsResponse(expected_instance_id);
 
-  run_loop.Run();
   EXPECT_EQ(authenticated_connection_->get_phone_instance_id(),
-            expected_cryptauth_device_id);
+            expected_instance_id);
+}
+
+TEST_F(ConnectionTest, ParseBootstrapConfigurationsHandlesNull) {
+  MarkConnectionAuthenticated();
+  ASSERT_TRUE(authenticated_connection_->get_phone_instance_id().empty());
+
+  CallParseBootstrapConfigurationsResponse(absl::nullopt);
+
+  EXPECT_TRUE(authenticated_connection_->get_phone_instance_id().empty());
 }
 
 TEST_F(ConnectionTest, MetricsEmittedOnEmptyResponse) {

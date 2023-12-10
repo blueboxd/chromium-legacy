@@ -91,6 +91,7 @@
 #include "third_party/blink/renderer/core/dom/dataset_dom_string_map.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
+#include "third_party/blink/renderer/core/dom/document_part_root.h"
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/element_data_cache.h"
 #include "third_party/blink/renderer/core/dom/element_rare_data_vector.h"
@@ -168,7 +169,9 @@
 #include "third_party/blink/renderer/core/html/html_table_rows_collection.h"
 #include "third_party/blink/renderer/core/html/html_template_element.h"
 #include "third_party/blink/renderer/core/html/nesting_level_incrementer.h"
+#include "third_party/blink/renderer/core/html/parser/html_element_stack.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/html_element_type_helpers.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
@@ -221,7 +224,9 @@
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/region_capture_crop_id.h"
+#include "third_party/blink/renderer/platform/restriction_target_id.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/text/bidi_paragraph.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/hash_functions.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -603,11 +608,9 @@ bool Element::IsFocusableStyle() const {
   // following DCHECK can be removed.
   DCHECK(
       !GetDocument().IsActive() || GetDocument().InStyleRecalc() ||
-      !GetDocument().NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(*this));
-  return IsBaseElementFocusableStyle();
-}
+      !GetDocument().NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(*this))
+      << *this;
 
-bool Element::IsBaseElementFocusableStyle() const {
   if (LayoutObject* layout_object = GetLayoutObject()) {
     return layout_object->StyleRef().IsFocusable();
   }
@@ -695,7 +698,7 @@ Element& Element::CloneWithChildren(
 
   clone.CloneAttributesFrom(*this);
   clone.CloneNonAttributePropertiesFrom(*this, data);
-  clone.ClonePartsFrom(*this, data);
+  PartRoot::CloneParts(*this, clone, data);
 
   // - (With OptimizedNodeCloneOrder enabled) Append the clone to its parent
   //   first, before cloning children. If this is done in the reverse order,
@@ -729,7 +732,7 @@ Element& Element::CloneWithoutChildren(NodeCloningData& data,
 
   clone.CloneAttributesFrom(*this);
   clone.CloneNonAttributePropertiesFrom(*this, data);
-  clone.ClonePartsFrom(*this, data);
+  PartRoot::CloneParts(*this, clone, data);
   return clone;
 }
 
@@ -2185,28 +2188,11 @@ const AtomicString& Element::computedRole() {
   if (!document.IsActive() || !document.View()) {
     return g_null_atom;
   }
-  AXContext ax_context(document, ui::kAXModeBasic);
-  document.View()->UpdateAllLifecyclePhasesExceptPaint(
-      DocumentUpdateReason::kJavaScript);
-  ax_context.GetAXObjectCache().ProcessDeferredAccessibilityEvents(document);
-  return ax_context.GetAXObjectCache().ComputedRoleForNode(this);
-}
-
-const AtomicString& Element::ComputedRoleNoLifecycleUpdate() {
-  Document& document = GetDocument();
-  if (!document.IsActive() || !document.View()) {
-    return g_null_atom;
-  }
-  // TODO(chrishtr) this should never happen. Possibly changes already in
-  // InspectorOverlayAgent already make this unnecessary.
   if (document.Lifecycle().GetState() < DocumentLifecycle::kPrePaintClean) {
-    DCHECK(false);
-    return g_null_atom;
+    document.View()->UpdateAllLifecyclePhasesExceptPaint(
+        DocumentUpdateReason::kJavaScript);
   }
   AXContext ax_context(document, ui::kAXModeBasic);
-  // Allocating the AXContext needs to not change lifecycle states.
-  DCHECK_GE(document.Lifecycle().GetState(), DocumentLifecycle::kPrePaintClean)
-      << " State was: " << document.Lifecycle().GetState();
   ax_context.GetAXObjectCache().ProcessDeferredAccessibilityEvents(document);
   return ax_context.GetAXObjectCache().ComputedRoleForNode(this);
 }
@@ -2216,28 +2202,11 @@ String Element::computedName() {
   if (!document.IsActive() || !document.View()) {
     return String();
   }
-  AXContext ax_context(document, ui::kAXModeBasic);
-  document.View()->UpdateAllLifecyclePhasesExceptPaint(
-      DocumentUpdateReason::kJavaScript);
-  ax_context.GetAXObjectCache().ProcessDeferredAccessibilityEvents(document);
-  return ax_context.GetAXObjectCache().ComputedNameForNode(this);
-}
-
-String Element::ComputedNameNoLifecycleUpdate() {
-  Document& document = GetDocument();
-  if (!document.IsActive() || !document.View()) {
-    return String();
-  }
-  // TODO(chrishtr) this should never happen. Possibly changes already in
-  // InspectorOverlayAgent already make this unnecessary.
   if (document.Lifecycle().GetState() < DocumentLifecycle::kPrePaintClean) {
-    DCHECK(false);
-    return g_null_atom;
+    document.View()->UpdateAllLifecyclePhasesExceptPaint(
+        DocumentUpdateReason::kJavaScript);
   }
   AXContext ax_context(document, ui::kAXModeBasic);
-  // Allocating the AXContext needs to not change lifecycle states.
-  DCHECK_GE(document.Lifecycle().GetState(), DocumentLifecycle::kPrePaintClean)
-      << " State was: " << document.Lifecycle().GetState();
   ax_context.GetAXObjectCache().ProcessDeferredAccessibilityEvents(document);
   return ax_context.GetAXObjectCache().ComputedNameForNode(this);
 }
@@ -3540,14 +3509,7 @@ static bool LayoutViewCanHaveChildren(Element& element) {
 
 void Element::NotifyAXOfAttachedSubtree() {
   if (auto* ax_cache = GetDocument().ExistingAXObjectCache()) {
-    // NodeIsAttached is normally called when a node becomes connected, but if
-    // this subtree is display:none or content-visibility:hidden/auto, there's
-    // no guarantee that AttachLayoutTree will be called.
-    Node* node = this;
-    do {
-      ax_cache->NodeIsAttached(node);
-      node = FlatTreeTraversal::Next(*node, this);
-    } while (node);
+    ax_cache->SubtreeIsAttached(this);
   }
 }
 
@@ -4080,12 +4042,428 @@ void Element::RecomputeDirectionFromParent() {
   // direction from a parent or shadow host.
   //
   // It should match the computation done in
-  // HTMLElement::UpdateDirectionalityAndDescendant that applies an inherited
+  // Element::UpdateDirectionalityAndDescendant that applies an inherited
   // direction change to the descendants that need updating.
   if (GetDocument().HasDirAttribute() &&
       RuntimeEnabledFeatures::CSSPseudoDirEnabled() &&
       HTMLElement::ElementInheritsDirectionality(this)) {
     SetCachedDirectionality(ParentDirectionality());
+  }
+}
+
+void Element::UpdateDirectionalityAndDescendant(TextDirection direction) {
+  if (!RuntimeEnabledFeatures::CSSPseudoDirEnabled()) {
+    SetCachedDirectionality(direction);
+    if (HTMLElement* html_element = DynamicTo<HTMLElement>(this)) {
+      html_element->UpdateDescendantDirectionality(direction);
+    }
+  } else {
+    // This code applies a direction change to an element and to any elements
+    // that inherit from it.  It should match the code in
+    // Element::RecomputeDirectionFromParent that determines whether a single
+    // element should inherit direction and recomputes it if it does.
+    Element* element = this;
+    do {
+      if (element != this &&
+          (ToHTMLSlotElementIfSupportsAssignmentOrNull(element) ||
+           !HTMLElement::ElementInheritsDirectionality(element) ||
+           element->CachedDirectionality() == direction)) {
+        element = ElementTraversal::NextSkippingChildren(*element, this);
+        continue;
+      }
+
+      element->SetCachedDirectionality(direction);
+      element->PseudoStateChanged(CSSSelector::kPseudoDir);
+
+      if (ShadowRoot* shadow_root = element->GetShadowRoot()) {
+        for (Node& child : ElementTraversal::ChildrenOf(*shadow_root)) {
+          if (Element* child_element = DynamicTo<Element>(child)) {
+            if (HTMLElement::ElementInheritsDirectionality(child_element) &&
+                child_element->CachedDirectionality() != direction) {
+              child_element->UpdateDirectionalityAndDescendant(direction);
+            }
+          }
+        }
+        if (shadow_root->HasSlotAssignment()) {
+          for (HTMLSlotElement* slot :
+               shadow_root->GetSlotAssignment().Slots()) {
+            if (HTMLElement::ElementInheritsDirectionality(slot) &&
+                slot->CachedDirectionality() != direction) {
+              slot->UpdateDirectionalityAndDescendant(direction);
+            }
+          }
+        }
+      }
+      element = ElementTraversal::Next(*element, this);
+    } while (element);
+  }
+}
+
+// Because the self-or-ancestor has dir=auto state could come from either a
+// node tree ancestor, a slot, or an input, we have a method to
+// recalculate it (just for this element) based on all three sources.
+bool Element::RecalcSelfOrAncestorHasDirAuto() {
+  CHECK(RuntimeEnabledFeatures::CSSPseudoDirEnabled());
+  if (IsHTMLElement()) {
+    AtomicString dir_attribute_value = FastGetAttribute(html_names::kDirAttr);
+    if (HTMLElement::IsValidDirAttribute(dir_attribute_value)) {
+      return EqualIgnoringASCIICase(dir_attribute_value, "auto");
+    }
+  }
+  Node* parent = parentNode();
+  if (parent && parent->SelfOrAncestorHasDirAutoAttribute()) {
+    return true;
+  }
+  if (HTMLSlotElement* slot = AssignedSlot()) {
+    if (slot->HasDirectionAuto()) {
+      return true;
+    }
+  }
+  if (ShadowRoot* shadow_root = DynamicTo<ShadowRoot>(parent)) {
+    if (TextControlElement* text_element =
+            HTMLElement::ElementIfAutoDirShouldUseValueOrNull(
+                &shadow_root->host())) {
+      if (text_element->HasDirectionAuto()) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+void Element::UpdateDescendantHasDirAutoAttribute(bool has_dir_auto) {
+  if (RuntimeEnabledFeatures::CSSPseudoDirEnabled()) {
+    if (ToHTMLSlotElementIfSupportsAssignmentOrNull(this) ||
+        HTMLElement::ElementIfAutoDirShouldUseValueOrNull(this)) {
+      for (Node& node : FlatTreeTraversal::ChildrenOf(*this)) {
+        if (Element* element = DynamicTo<Element>(node)) {
+          if (!element->IsHTMLElement() ||
+              !HTMLElement::IsValidDirAttribute(
+                  element->FastGetAttribute(html_names::kDirAttr))) {
+            if (!has_dir_auto) {
+              if (!element->SelfOrAncestorHasDirAutoAttribute() ||
+                  element->RecalcSelfOrAncestorHasDirAuto()) {
+                continue;
+              }
+              element->ClearSelfOrAncestorHasDirAutoAttribute();
+            } else {
+              if (element->SelfOrAncestorHasDirAutoAttribute()) {
+                continue;
+              }
+              element->SetSelfOrAncestorHasDirAutoAttribute();
+            }
+            element->UpdateDescendantHasDirAutoAttribute(has_dir_auto);
+          }
+        }
+      }
+    } else {
+      Element* element = ElementTraversal::FirstChild(*this);
+      while (element) {
+        if (element->IsHTMLElement()) {
+          AtomicString dir_attribute_value =
+              element->FastGetAttribute(html_names::kDirAttr);
+          if (HTMLElement::IsValidDirAttribute(dir_attribute_value)) {
+            element = ElementTraversal::NextSkippingChildren(*element, this);
+            continue;
+          }
+        }
+
+        if (!has_dir_auto) {
+          if (!element->SelfOrAncestorHasDirAutoAttribute() ||
+              element->RecalcSelfOrAncestorHasDirAuto()) {
+            element = ElementTraversal::NextSkippingChildren(*element, this);
+            continue;
+          }
+          element->ClearSelfOrAncestorHasDirAutoAttribute();
+        } else {
+          if (element->SelfOrAncestorHasDirAutoAttribute()) {
+            element = ElementTraversal::NextSkippingChildren(*element, this);
+            continue;
+          }
+          element->SetSelfOrAncestorHasDirAutoAttribute();
+        }
+        element = ElementTraversal::Next(*element, this);
+      }
+    }
+  } else {
+    Node* node = FlatTreeTraversal::FirstChild(*this);
+    while (node) {
+      if (auto* element = DynamicTo<Element>(node)) {
+        AtomicString dir_attribute_value =
+            element->FastGetAttribute(html_names::kDirAttr);
+        if (HTMLElement::IsValidDirAttribute(dir_attribute_value)) {
+          node = FlatTreeTraversal::NextSkippingChildren(*node, this);
+          continue;
+        }
+
+        if (auto* slot = ToHTMLSlotElementIfSupportsAssignmentOrNull(node)) {
+          ShadowRoot* root = slot->ContainingShadowRoot();
+          // Defer to adjust the directionality to avoid recalcuating slot
+          // assignment in FlatTreeTraversal when updating slot.
+          // Slot and its children will be updated after recalculating children.
+          if (root->NeedsSlotAssignmentRecalc()) {
+            root->SetNeedsDirAutoAttributeUpdate(true);
+            node = FlatTreeTraversal::NextSkippingChildren(*node, this);
+            continue;
+          }
+        }
+
+        if (!has_dir_auto) {
+          if (!element->SelfOrAncestorHasDirAutoAttribute()) {
+            node = FlatTreeTraversal::NextSkippingChildren(*node, this);
+            continue;
+          }
+          element->ClearSelfOrAncestorHasDirAutoAttribute();
+        } else {
+          if (element->SelfOrAncestorHasDirAutoAttribute()) {
+            node = FlatTreeTraversal::NextSkippingChildren(*node, this);
+            continue;
+          }
+          element->SetSelfOrAncestorHasDirAutoAttribute();
+        }
+      }
+      node = FlatTreeTraversal::Next(*node, this);
+    }
+  }
+}
+
+// TODO(https://crbug.com/576815): Once the CSSPseudoDir flag is
+// removed, this function no longer needs to be templatized over
+// Traversal since it can always use NodeTraversal.
+template <typename Traversal>
+absl::optional<TextDirection> Element::ResolveAutoDirectionality(
+    bool& is_deferred,
+    Node* stay_within) const {
+  // TODO(https://crbug.com/576815): Once the CSSPseudoDir flag is
+  // removed, we can remove the stay_within argument.
+  CHECK(!RuntimeEnabledFeatures::CSSPseudoDirEnabled() || this == stay_within);
+
+  is_deferred = false;
+  if (const TextControlElement* text_element =
+          HTMLElement::ElementIfAutoDirShouldUseValueOrNull(this)) {
+    return BidiParagraph::BaseDirectionForStringOrLtr(text_element->Value());
+  }
+
+  if (RuntimeEnabledFeatures::CSSPseudoDirEnabled()) {
+    if (const HTMLSlotElement* slot_this =
+            ToHTMLSlotElementIfSupportsAssignmentOrNull(this)) {
+      auto& assigned_nodes = slot_this->AssignedNodes();
+      // Use the assigned nodes if there are any.  Otherwise, the <slot>
+      // represents its content and we should fall back to the regular codepath.
+      if (!assigned_nodes.empty()) {
+        for (Node* slotted_node : assigned_nodes) {
+          if (slotted_node->IsTextNode()) {
+            if (const absl::optional<TextDirection> text_direction =
+                    BidiParagraph::BaseDirectionForString(
+                        slotted_node->textContent(true))) {
+              return *text_direction;
+            }
+          } else if (Element* slotted_element =
+                         DynamicTo<Element>(slotted_node)) {
+            absl::optional<TextDirection> slotted_child_result =
+                slotted_element->ResolveAutoDirectionality<NodeTraversal>(
+                    is_deferred, slotted_element);
+            if (slotted_child_result) {
+              return slotted_child_result;
+            }
+          }
+        }
+        return absl::nullopt;
+      }
+    }
+  }
+
+  Node* node;
+  if (RuntimeEnabledFeatures::CSSPseudoDirEnabled()) {
+    node = Traversal::FirstChild(*this);
+  } else {
+    node = (IsA<HTMLTextAreaElement>(*this) || IsA<HTMLSlotElement>(*this))
+               ? FlatTreeTraversal::FirstChild(*this)
+               : Traversal::FirstChild(*this);
+  }
+  while (node) {
+    // Skip bdi, script, style and text form controls.
+    auto* element = DynamicTo<Element>(node);
+    if (EqualIgnoringASCIICase(node->nodeName(), "bdi") ||
+        IsA<HTMLScriptElement>(*node) || IsA<HTMLStyleElement>(*node) ||
+        (element && element->IsTextControl()) ||
+        (element && element->ShadowPseudoId() ==
+                        shadow_element_names::kPseudoInputPlaceholder)) {
+      node = Traversal::NextSkippingChildren(*node, stay_within);
+      continue;
+    }
+
+    auto* slot = ToHTMLSlotElementIfSupportsAssignmentOrNull(node);
+    if (slot && !RuntimeEnabledFeatures::CSSPseudoDirEnabled()) {
+      ShadowRoot* root = slot->ContainingShadowRoot();
+      // Defer to adjust the directionality to avoid recalcuating slot
+      // assignment in FlatTreeTraversal when updating slot.
+      // ResolveAutoDirectionality will be adjusted after recalculating its
+      // children.
+      if (root->NeedsSlotAssignmentRecalc()) {
+        is_deferred = true;
+        return TextDirection::kLtr;
+      }
+    }
+
+    // Skip elements with valid dir attribute
+    if (element && (element->IsHTMLElement() ||
+                    !RuntimeEnabledFeatures::CSSPseudoDirEnabled())) {
+      AtomicString dir_attribute_value =
+          element->FastGetAttribute(html_names::kDirAttr);
+      if (HTMLElement::IsValidDirAttribute(dir_attribute_value)) {
+        node = Traversal::NextSkippingChildren(*node, stay_within);
+        continue;
+      }
+    }
+
+    if (slot && RuntimeEnabledFeatures::CSSPseudoDirEnabled()) {
+      ShadowRoot* root = slot->ContainingShadowRoot();
+      return root->host().CachedDirectionality();
+    }
+
+    if (node->IsTextNode()) {
+      if (const absl::optional<TextDirection> text_direction =
+              BidiParagraph::BaseDirectionForString(node->textContent(true))) {
+        return *text_direction;
+      }
+    }
+
+    if (slot) {
+      absl::optional<TextDirection> text_direction =
+          slot->ResolveAutoDirectionality<FlatTreeTraversal>(is_deferred,
+                                                             stay_within);
+      if (text_direction.has_value()) {
+        return text_direction;
+      }
+    }
+
+    node = Traversal::Next(*node, stay_within);
+  }
+  return absl::nullopt;
+}
+
+// explicitly instantiate for use in html_element.cc
+template absl::optional<TextDirection>
+Element::ResolveAutoDirectionality<NodeTraversal>(bool& is_deferred,
+                                                  Node* stay_within) const;
+
+void Element::AdjustDirectionalityIfNeededAfterChildrenChanged(
+    const ChildrenChange& change) {
+  if (!SelfOrAncestorHasDirAutoAttribute()) {
+    return;
+  }
+
+  if (!IsHTMLElement() && !RuntimeEnabledFeatures::CSSPseudoDirEnabled()) {
+    return;
+  }
+
+  Node* stay_within = nullptr;
+  if (change.type == ChildrenChangeType::kTextChanged) {
+    CHECK(change.old_text);
+    absl::optional<TextDirection> old_text_direction =
+        BidiParagraph::BaseDirectionForString(*change.old_text);
+    auto* character_data = DynamicTo<CharacterData>(change.sibling_changed);
+    DCHECK(character_data);
+    absl::optional<TextDirection> new_text_direction =
+        BidiParagraph::BaseDirectionForString(character_data->data());
+    if (old_text_direction == new_text_direction) {
+      return;
+    }
+    stay_within = change.sibling_changed;
+  } else if (change.IsChildInsertion()) {
+    if (change.sibling_changed->IsTextNode()) {
+      const absl::optional<TextDirection> new_text_direction =
+          BidiParagraph::BaseDirectionForString(
+              change.sibling_changed->textContent(true));
+      if (!new_text_direction ||
+          (*new_text_direction == CachedDirectionality() &&
+           !DirAutoInheritsFromParent())) {
+        return;
+      }
+    }
+    stay_within = change.sibling_changed;
+  }
+
+  UpdateDescendantHasDirAutoAttribute(true /* has_dir_auto */);
+
+  // We have some fixes to dir=auto calculation behind the
+  // CSSPseudoDirEnabled() flag.  This code has two branches to account
+  // for *both* those fixes *and* for the :dir() pseudo-class itself.
+  if (RuntimeEnabledFeatures::CSSPseudoDirEnabled()) {
+    this->UpdateAncestorWithDirAuto(UpdateAncestorTraversal::IncludeSelf);
+  } else {
+    for (Element* element_to_adjust = this; element_to_adjust;
+         element_to_adjust =
+             FlatTreeTraversal::ParentElement(*element_to_adjust)) {
+      if (HTMLElement::ElementAffectsDirectionality(element_to_adjust)) {
+        if (To<HTMLElement>(element_to_adjust)
+                ->CalculateAndAdjustAutoDirectionality(
+                    stay_within ? stay_within : element_to_adjust)) {
+          SetNeedsStyleRecalc(kLocalStyleChange,
+                              StyleChangeReasonForTracing::Create(
+                                  style_change_reason::kPseudoClass));
+        }
+        return;
+      }
+    }
+  }
+}
+
+void Element::UpdateAncestorWithDirAuto(UpdateAncestorTraversal traversal) {
+  CHECK(RuntimeEnabledFeatures::CSSPseudoDirEnabled());
+
+  bool skip = traversal == UpdateAncestorTraversal::ExcludeSelf;
+
+  for (Element* element_to_adjust = this; element_to_adjust;
+       element_to_adjust = element_to_adjust->parentElement()) {
+    if (!skip) {
+      if (HTMLElement::ElementAffectsDirectionality(element_to_adjust)) {
+        HTMLElement* html_element_to_adjust =
+            To<HTMLElement>(element_to_adjust);
+        if (html_element_to_adjust->HasDirectionAuto() &&
+            html_element_to_adjust->CalculateAndAdjustAutoDirectionality(
+                element_to_adjust)) {
+          SetNeedsStyleRecalc(kLocalStyleChange,
+                              StyleChangeReasonForTracing::Create(
+                                  style_change_reason::kPseudoClass));
+          element_to_adjust->PseudoStateChanged(CSSSelector::kPseudoDir);
+        }
+        return;
+      }
+      if (!element_to_adjust->SelfOrAncestorHasDirAutoAttribute()) {
+        return;
+      }
+    }
+    skip = false;
+    // Directionality mostly operates on the node tree rather than the
+    // flat tree.  However, a <slot>'s dir=auto is affected by its
+    // assigned nodes.
+    if (HTMLSlotElement* slot = element_to_adjust->AssignedSlot()) {
+      if (slot->HasDirectionAuto() &&
+          slot->CalculateAndAdjustAutoDirectionality(slot)) {
+        SetNeedsStyleRecalc(kLocalStyleChange,
+                            StyleChangeReasonForTracing::Create(
+                                style_change_reason::kPseudoClass));
+        slot->PseudoStateChanged(CSSSelector::kPseudoDir);
+      }
+    }
+    // And the values of many text form controls influence dir=auto on
+    // the control.
+    if (ShadowRoot* shadow_root =
+            DynamicTo<ShadowRoot>(element_to_adjust->parentNode())) {
+      if (TextControlElement* text_control =
+              HTMLElement::ElementIfAutoDirShouldUseValueOrNull(
+                  &shadow_root->host())) {
+        if (text_control->HasDirectionAuto() &&
+            text_control->CalculateAndAdjustAutoDirectionality(text_control)) {
+          SetNeedsStyleRecalc(kLocalStyleChange,
+                              StyleChangeReasonForTracing::Create(
+                                  style_change_reason::kPseudoClass));
+          text_control->PseudoStateChanged(CSSSelector::kPseudoDir);
+        }
+      }
+    }
   }
 }
 
@@ -4323,12 +4701,15 @@ Element::HighlightRecalc Element::CalculateHighlightRecalc(
 
 bool Element::ShouldRecalcHighlightPseudoStyle(
     HighlightRecalc highlight_recalc,
-    const ComputedStyle* highlight_parent) {
+    const ComputedStyle* highlight_parent,
+    const ComputedStyle& originating_style) {
   if (highlight_recalc == HighlightRecalc::kFull) {
     return true;
   }
   DCHECK(highlight_recalc == HighlightRecalc::kFontRelative);
-  return (highlight_parent && highlight_parent->HasFontRelativeUnits());
+  return (highlight_parent && highlight_parent->HasFontRelativeUnits() &&
+          originating_style.SpecifiedFontSize() !=
+              highlight_parent->SpecifiedFontSize());
 }
 
 void Element::RecalcCustomHighlightPseudoStyle(
@@ -4348,7 +4729,8 @@ void Element::RecalcCustomHighlightPseudoStyle(
     const ComputedStyle* highlight_parent =
         parent_highlights ? parent_highlights->CustomHighlight(highlight_name)
                           : nullptr;
-    if (ShouldRecalcHighlightPseudoStyle(highlight_recalc, highlight_parent)) {
+    if (ShouldRecalcHighlightPseudoStyle(highlight_recalc, highlight_parent,
+                                         originating_style)) {
       const ComputedStyle* highlight_style = StyleForHighlightPseudoElement(
           style_recalc_context, highlight_parent, originating_style,
           kPseudoIdHighlight, highlight_name);
@@ -4385,7 +4767,8 @@ const ComputedStyle* Element::RecalcHighlightStyles(
       new_style.HasPseudoElementStyle(kPseudoIdSelection)) {
     const ComputedStyle* highlight_parent =
         parent_highlights ? parent_highlights->Selection() : nullptr;
-    if (ShouldRecalcHighlightPseudoStyle(highlight_recalc, highlight_parent)) {
+    if (ShouldRecalcHighlightPseudoStyle(highlight_recalc, highlight_parent,
+                                         new_style)) {
       builder.AccessHighlightData().SetSelection(
           StyleForHighlightPseudoElement(style_recalc_context, highlight_parent,
                                          new_style, kPseudoIdSelection));
@@ -4396,7 +4779,8 @@ const ComputedStyle* Element::RecalcHighlightStyles(
       new_style.HasPseudoElementStyle(kPseudoIdTargetText)) {
     const ComputedStyle* highlight_parent =
         parent_highlights ? parent_highlights->TargetText() : nullptr;
-    if (ShouldRecalcHighlightPseudoStyle(highlight_recalc, highlight_parent)) {
+    if (ShouldRecalcHighlightPseudoStyle(highlight_recalc, highlight_parent,
+                                         new_style)) {
       builder.AccessHighlightData().SetTargetText(
           StyleForHighlightPseudoElement(style_recalc_context, highlight_parent,
                                          new_style, kPseudoIdTargetText));
@@ -4407,7 +4791,8 @@ const ComputedStyle* Element::RecalcHighlightStyles(
       new_style.HasPseudoElementStyle(kPseudoIdSpellingError)) {
     const ComputedStyle* highlight_parent =
         parent_highlights ? parent_highlights->SpellingError() : nullptr;
-    if (ShouldRecalcHighlightPseudoStyle(highlight_recalc, highlight_parent)) {
+    if (ShouldRecalcHighlightPseudoStyle(highlight_recalc, highlight_parent,
+                                         new_style)) {
       builder.AccessHighlightData().SetSpellingError(
           StyleForHighlightPseudoElement(style_recalc_context, highlight_parent,
                                          new_style, kPseudoIdSpellingError));
@@ -4418,7 +4803,8 @@ const ComputedStyle* Element::RecalcHighlightStyles(
       new_style.HasPseudoElementStyle(kPseudoIdGrammarError)) {
     const ComputedStyle* highlight_parent =
         parent_highlights ? parent_highlights->GrammarError() : nullptr;
-    if (ShouldRecalcHighlightPseudoStyle(highlight_recalc, highlight_parent)) {
+    if (ShouldRecalcHighlightPseudoStyle(highlight_recalc, highlight_parent,
+                                         new_style)) {
       builder.AccessHighlightData().SetGrammarError(
           StyleForHighlightPseudoElement(style_recalc_context, highlight_parent,
                                          new_style, kPseudoIdGrammarError));
@@ -4494,31 +4880,48 @@ void Element::SetRegionCaptureCropId(
   ElementRareDataVector& rare_data = EnsureElementRareData();
   CHECK(!rare_data.GetRegionCaptureCropId());
 
-  LayoutObject* layout_object = GetLayoutObject();
-  const bool should_force_stacking_context =
-      layout_object && !layout_object->IsStackingContext();
-
   // Propagate efficient form through the rendering pipeline.
   rare_data.SetRegionCaptureCropId(std::move(crop_id));
 
-  if (layout_object) {
-    // If we forced a stacking context, we need to reattach to the layout tree.
-    // There is no corresponding style change.
-    if (RuntimeEnabledFeatures::ElementCaptureEnabled()) {
-      if (should_force_stacking_context) {
-        SetForceReattachLayoutTree();
-      }
-    }
-
-    // The crop ID needs to be propagated to the paint system by the time that
-    // capture begins. The API requires the implementation to propagate the
-    // token right away, so we force invalidate here.
+  // If a LayoutObject does not yet exist, this full paint invalidation
+  // will occur automatically after it is created.
+  if (LayoutObject* layout_object = GetLayoutObject()) {
+    // The SubCaptureTarget ID needs to be propagated to the paint system.
     layout_object->SetShouldDoFullPaintInvalidation();
   }
 }
 
 const RegionCaptureCropId* Element::GetRegionCaptureCropId() const {
   return HasRareData() ? GetElementRareData()->GetRegionCaptureCropId()
+                       : nullptr;
+}
+
+void Element::SetRestrictionTargetId(std::unique_ptr<RestrictionTargetId> id) {
+  CHECK(RuntimeEnabledFeatures::ElementCaptureEnabled());
+
+  ElementRareDataVector& rare_data = EnsureElementRareData();
+  CHECK(!rare_data.GetRestrictionTargetId());
+
+  // Propagate efficient form through the rendering pipeline.
+  // This has the intended side effect of forcing the element
+  // into its own stacking context during rendering.
+  rare_data.SetRestrictionTargetId(std::move(id));
+
+  // By forcing reattachment, we ensure that the element would now be
+  // picked up as in its own stacking context.
+  // There is no corresponding style change.
+  SetForceReattachLayoutTree();
+
+  // If a LayoutObject does not yet exist, this full paint invalidation
+  // will occur automatically after it is created.
+  if (LayoutObject* layout_object = GetLayoutObject()) {
+    // The SubCaptureTarget ID needs to be propagated to the paint system.
+    layout_object->SetShouldDoFullPaintInvalidation();
+  }
+}
+
+const RestrictionTargetId* Element::GetRestrictionTargetId() const {
+  return HasRareData() ? GetElementRareData()->GetRestrictionTargetId()
                        : nullptr;
 }
 
@@ -4911,6 +5314,10 @@ void Element::ChildrenChanged(const ChildrenChange& change) {
           .GetStyleEngine()
           .ScheduleInvalidationsForHasPseudoWhenAllChildrenRemoved(*this);
     }
+  }
+
+  if (GetDocument().HasDirAttribute()) {
+    AdjustDirectionalityIfNeededAfterChildrenChanged(change);
   }
 }
 
@@ -5928,17 +6335,27 @@ void Element::SetInnerHTMLInternal(const String& html,
     setTextContent(html);
   } else {
     if (DocumentFragment* fragment = CreateFragmentForInnerOuterHTML(
-            html, this, kAllowScriptingContent, "innerHTML",
-            include_shadow_roots, exception_state)) {
+            html, this, kAllowScriptingContent, include_shadow_roots,
+            exception_state)) {
       ContainerNode* container = this;
+      bool swap_dom_parts{false};
       if (auto* template_element = DynamicTo<HTMLTemplateElement>(*this)) {
         // Allow replacing innerHTML on declarative shadow templates, prior to
         // their closing tag being parsed.
         container = template_element->IsDeclarativeShadowRoot()
                         ? template_element->DeclarativeShadowContent()
                         : template_element->content();
+        swap_dom_parts =
+            template_element->hasAttribute(html_names::kParsepartsAttr);
       }
       ReplaceChildrenWithFragment(container, fragment, exception_state);
+      if (swap_dom_parts) {
+        // Move the parts list over to the template's content document's
+        // DocumentPartRoot.
+        To<DocumentFragment>(*container)
+            .getPartRoot()
+            .SwapPartsList(fragment->getPartRoot());
+      }
     }
   }
 }
@@ -5991,7 +6408,7 @@ void Element::setOuterHTML(const String& html,
   Node* next = nextSibling();
 
   DocumentFragment* fragment = CreateFragmentForInnerOuterHTML(
-      html, parent, kAllowScriptingContent, "outerHTML",
+      html, parent, kAllowScriptingContent,
       /*include_shadow_roots=*/false, exception_state);
   if (exception_state.HadException()) {
     return;
@@ -6202,7 +6619,7 @@ void Element::insertAdjacentHTML(const String& where,
 
   // Step 3 of http://domparsing.spec.whatwg.org/#insertadjacenthtml()
   DocumentFragment* fragment = CreateFragmentForInnerOuterHTML(
-      markup, context_element, kAllowScriptingContent, "insertAdjacentHTML",
+      markup, context_element, kAllowScriptingContent,
       /*include_shadow_roots=*/false, exception_state);
   if (!fragment) {
     return;
@@ -7264,7 +7681,7 @@ void Element::SetContainsFullScreenElement(bool flag) {
   // When exiting fullscreen, the element's document may not be active.
   if (flag) {
     DCHECK(GetDocument().IsActive());
-    GetDocument().GetStyleEngine().EnsureUAStyleForFullscreen();
+    GetDocument().GetStyleEngine().EnsureUAStyleForFullscreen(*this);
   }
   PseudoStateChanged(CSSSelector::kPseudoFullScreenAncestor);
 }
@@ -9095,6 +9512,12 @@ Element* Element::ImplicitAnchorElement() {
     }
   }
   return nullptr;
+}
+
+void Element::setHTMLUnsafe(const String& html,
+                            ExceptionState& exception_state) {
+  CHECK(RuntimeEnabledFeatures::HTMLUnsafeMethodsEnabled());
+  SetInnerHTMLInternal(html, /*include_shadow_roots=*/true, exception_state);
 }
 
 }  // namespace blink

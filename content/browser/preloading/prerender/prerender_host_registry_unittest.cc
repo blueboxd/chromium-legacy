@@ -200,15 +200,18 @@ class PrerenderHostRegistryTest : public RenderViewHostImplTestHarness {
       case PrerenderTriggerType::kSpeculationRule:
       case PrerenderTriggerType::kSpeculationRuleFromIsolatedWorld:
         return PrerenderAttributes(
-            url, trigger_type, embedder_histogram_suffix, Referrer(), eagerness,
+            url, trigger_type, embedder_histogram_suffix,
+            blink::mojom::SpeculationTargetHint::kNoHint, Referrer(), eagerness,
             rfh->GetLastCommittedOrigin(), rfh->GetProcess()->GetID(),
             contents()->GetWeakPtr(), rfh->GetFrameToken(),
             rfh->GetFrameTreeNodeId(), rfh->GetPageUkmSourceId(),
             ui::PAGE_TRANSITION_LINK,
-            /*url_match_predicate=*/absl::nullopt);
+            /*url_match_predicate=*/absl::nullopt,
+            /*prerender_navigation_handle_callback=*/absl::nullopt);
       case PrerenderTriggerType::kEmbedder:
         return PrerenderAttributes(
-            url, trigger_type, embedder_histogram_suffix, Referrer(),
+            url, trigger_type, embedder_histogram_suffix,
+            /*target_hint=*/absl::nullopt, Referrer(),
             /*eagerness=*/absl::nullopt, /*initiator_origin=*/absl::nullopt,
             /*initiator_process_id=*/ChildProcessHost::kInvalidUniqueID,
             contents()->GetWeakPtr(),
@@ -218,7 +221,8 @@ class PrerenderHostRegistryTest : public RenderViewHostImplTestHarness {
             /*initiator_ukm_id=*/ukm::kInvalidSourceId,
             ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
                                       ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-            /*url_match_predicate=*/absl::nullopt);
+            /*url_match_predicate=*/absl::nullopt,
+            /*prerender_navigation_handle_callback=*/absl::nullopt);
     }
   }
 

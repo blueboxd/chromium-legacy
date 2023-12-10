@@ -355,6 +355,9 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // Returns the number of browsers.
 - (NSUInteger)browserCount [[nodiscard]];
 
+// Returns the number of the realized web states from the existing web states.
+- (NSInteger)realizedWebStatesCount [[nodiscard]];
+
 // Returns the index of active tab in normal (non-incognito) mode.
 - (NSUInteger)indexOfActiveNormalTab;
 
@@ -758,6 +761,9 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 
 // Removes the object for `key` in NSUserDefault.
 - (void)removeUserDefaultObjectForKey:(NSString*)key;
+
+// Returns the object for `key` in NSUserDefault.
+- (id)userDefaultObjectForKey:(NSString*)key;
 
 #pragma mark - Pref Utilities (EG2)
 

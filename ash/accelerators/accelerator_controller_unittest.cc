@@ -781,38 +781,6 @@ TEST_F(AcceleratorControllerTest, TestRepeatedSnap) {
   EXPECT_EQ(normal_bounds.ToString(), window->bounds().ToString());
 }
 
-// Test that GetEncodedShortcut encodes a shortcut correctly.
-// - The low 16 bits represent the key code.
-// - The high 16 bits represent the modififers.
-//   - The 31 bit: Command key
-//   - The 30 bit: Alt key
-//   - The 29 bit: Control key
-//   - The 28 bit: Shift key
-//   - All other bits are 0
-TEST_F(AcceleratorControllerTest, GetEncodedShortcut) {
-  // Test will verify that ui::EF_FUNCTION_DOWN and ui::EF_ALTGR_DOWN will be
-  // ignored.
-  const int all_modifiers = ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
-                            ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN |
-                            ui::EF_FUNCTION_DOWN | ui::EF_ALTGR_DOWN;
-  struct {
-    ui::KeyboardCode code;
-    int modifiers;
-    const int expected_int;
-  } keys[] = {
-      {ui::VKEY_A, ui::EF_SHIFT_DOWN, 0x0800'0041},  // A: 0x41
-      {ui::VKEY_A, ui::EF_CONTROL_DOWN, 0x1000'0041},
-      {ui::VKEY_A, ui::EF_ALT_DOWN, 0x2000'0041},
-      {ui::VKEY_A, ui::EF_COMMAND_DOWN, 0x4000'0041},
-      {ui::VKEY_Z, all_modifiers, 0x7800'005A},  // Z: 0x5A
-  };
-
-  for (const auto& key : keys) {
-    EXPECT_EQ(GetEncodedShortcut(ui::Accelerator(key.code, key.modifiers)),
-              key.expected_int);
-  }
-}
-
 class AcceleratorControllerTestWithClamshellSplitView
     : public AcceleratorControllerTest {
  public:
@@ -835,7 +803,7 @@ class AcceleratorControllerTestWithClamshellSplitView
  private:
   void EnterOverviewAndDragTo(aura::Window* window,
                               const gfx::Point& destination) {
-    DCHECK(!Shell::Get()->overview_controller()->InOverviewSession());
+    CHECK(!OverviewController::Get()->InOverviewSession());
     ToggleOverview();
 
     ui::test::EventGenerator* generator = GetEventGenerator();
@@ -1308,11 +1276,9 @@ TEST_F(AcceleratorControllerTest, DontToggleFullscreenWhenOverviewStarts) {
   generator->PressKey(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE);
   generator->PressKey(ui::VKEY_ZOOM, ui::EF_NONE);
   EXPECT_FALSE(WindowState::Get(widget->GetNativeWindow())->IsFullscreen());
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
-  EXPECT_TRUE(Shell::Get()
-                  ->overview_controller()
-                  ->overview_session()
-                  ->IsWindowInOverview(widget->GetNativeWindow()));
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->overview_session()->IsWindowInOverview(
+      widget->GetNativeWindow()));
 }
 
 // Tests that window shortcuts don't work on a minimized, i.e. not visible,
@@ -1325,7 +1291,7 @@ TEST_F(AcceleratorControllerTest, MinimizedWindowInOverview) {
   EXPECT_TRUE(window_state->IsMinimized());
   ToggleOverview();
   GetEventGenerator()->PressKey(ui::VKEY_OEM_4, ui::EF_ALT_DOWN);
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
   EXPECT_TRUE(window_state->IsMinimized());
 }
 
@@ -1569,13 +1535,11 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleQuickSettings) {
 }
 
 TEST_F(AcceleratorControllerTest, ToggleMultitaskMenu) {
-  base::test::ScopedFeatureList scoped_feature_list;
   // Accelerators behind a flag should also be accompanied by the
   // `kShortcutCustomization` to support dynamic accelerator registration.
-  scoped_feature_list.InitWithFeatures(
-      {chromeos::wm::features::kWindowLayoutMenu,
-       ::features::kShortcutCustomization},
-      {});
+  base::test::ScopedFeatureList scoped_feature_list(
+      ::features::kShortcutCustomization);
+
   // Simulate fake user login to ensure pref registration is done correctly.
   SimulateUserLogin("fakeuser");
   // Enabling `kShortcutCustomization` will start letting

@@ -29,7 +29,7 @@ import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_
 import {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
 import {CrSliderElement, SliderTick} from 'chrome://resources/cr_elements/cr_slider/cr_slider.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {focusWithoutInk} from 'chrome://resources/js/focus_without_ink.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {flush, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -37,6 +37,7 @@ import {flush, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/pol
 import {assertExists, cast, castExists} from '../assert_extras.js';
 import {isRevampWayfindingEnabled} from '../common/load_time_booleans.js';
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
+import {DisplaySettingsProviderInterface, TabletModeObserverReceiver} from '../mojom-webui/display_settings_provider.mojom-webui.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
 import {Route, routes} from '../router.js';
@@ -44,6 +45,7 @@ import {Route, routes} from '../router.js';
 import {DevicePageBrowserProxy, DevicePageBrowserProxyImpl, getDisplayApi} from './device_page_browser_proxy.js';
 import {getTemplate} from './display.html.js';
 import {SettingsDisplayOverscanDialogElement} from './display_overscan_dialog.js';
+import {getDisplaySettingsProvider} from './display_settings_mojo_interface_provider.js';
 
 import DisplayLayout = chrome.system.display.DisplayLayout;
 import DisplayMode = chrome.system.display.DisplayMode;
@@ -64,7 +66,7 @@ interface DisplayResolutionPrefObject {
   }|null;
 }
 
-interface SettingsDisplayElement {
+export interface SettingsDisplayElement {
   $: {
     displayOverscan: SettingsDisplayOverscanDialogElement,
     displaySizeSlider: SettingsSliderElement,
@@ -74,7 +76,7 @@ interface SettingsDisplayElement {
 const SettingsDisplayElementBase =
     DeepLinkingMixin(PrefsMixin(RouteObserverMixin(I18nMixin(PolymerElement))));
 
-class SettingsDisplayElement extends SettingsDisplayElementBase {
+export class SettingsDisplayElement extends SettingsDisplayElementBase {
   static get is() {
     return 'settings-display';
   }
@@ -182,6 +184,11 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
         value: false,
       },
 
+      isTabletMode_: {
+        type: Boolean,
+        value: false,
+      },
+
       selectedParentModePref_: {
         type: Object,
         value: function() {
@@ -252,9 +259,11 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
   private currentSelectedParentModeIndex_: number;
   private displayChangedListener_: (() => void)|null;
   private displayModeList_: DropdownMenuOptionList;
+  private displaySettingsProvider: DisplaySettingsProviderInterface;
   private displayTabNames_: string[];
   private invalidDisplayId_: string;
   private isRevampWayfindingEnabled_: boolean;
+  private isTabletMode_: boolean;
   private listAllDisplayModes_: boolean;
   private logicalResolutionText_: string;
   private modeToParentModeMap_: Map<number, number>;
@@ -310,9 +319,12 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
      * Mode index values for slider.
      */
     this.modeToParentModeMap_ = new Map();
+
+    // Provider of display settings mojo API.
+    this.displaySettingsProvider = getDisplaySettingsProvider();
   }
 
-  override connectedCallback(): void {
+  override async connectedCallback(): Promise<void> {
     super.connectedCallback();
 
     this.displayChangedListener_ =
@@ -321,6 +333,10 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
 
     this.getDisplayInfo_();
     this.$.displaySizeSlider.updateValueInstantly = false;
+
+    const {isTabletMode} = await this.displaySettingsProvider.observeTabletMode(
+        new TabletModeObserverReceiver(this).$.bindNewPipeAndPassRemote());
+    this.isTabletMode_ = isTabletMode;
   }
 
   override disconnectedCallback(): void {
@@ -331,6 +347,13 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
 
     this.currentSelectedModeIndex_ = -1;
     this.currentSelectedParentModeIndex_ = -1;
+  }
+
+  /**
+   * Implements TabletModeObserver.OnTabletModeChanged.
+   */
+  onTabletModeChanged(isTabletMode: boolean): void {
+    this.isTabletMode_ = isTabletMode;
   }
 
   override beforeDeepLinkAttempt(_settingId: Setting): boolean {
@@ -402,7 +425,7 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
     getDisplayApi().getDisplayLayout().then(
         (layouts: DisplayLayout[]) =>
             this.displayLayoutFetched_(displays, layouts));
-    if (this.isMirrored_(displays)) {
+    if (this.isMirrored(displays)) {
       this.mirroringDestinationIds = displays[0].mirroringDestinationIds;
     } else {
       this.mirroringDestinationIds = [];
@@ -823,7 +846,7 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
   /**
    * Returns true if the ambient color setting should be shown for |display|.
    */
-  private showAmbientColorSetting_(
+  showAmbientColorSetting(
       ambientColorAvailable: boolean, display: DisplayUnitInfo): boolean {
     return ambientColorAvailable && display && display.isInternal;
   }
@@ -865,16 +888,17 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
     return this.i18n('displayMirror', displays[0].name);
   }
 
-  private showUnifiedDesktop_(
+  showUnifiedDesktop(
       unifiedDesktopAvailable: boolean, unifiedDesktopMode: boolean,
-      displays: DisplayUnitInfo[]): boolean {
+      displays: DisplayUnitInfo[], isTabletMode: boolean): boolean {
     if (displays === undefined) {
       return false;
     }
 
+    // Unified desktop is not supported in tablet mode.
     return unifiedDesktopMode ||
         (unifiedDesktopAvailable && displays.length > 1 &&
-         !this.isMirrored_(displays));
+         !this.isMirrored(displays) && !isTabletMode);
   }
 
   private getUnifiedDesktopText_(unifiedDesktopMode: boolean): string {
@@ -883,17 +907,17 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
                              'displayUnifiedDesktopOff');
   }
 
-  private showMirror_(unifiedDesktopMode: boolean, displays: DisplayUnitInfo[]):
+  showMirror(unifiedDesktopMode: boolean, displays: DisplayUnitInfo[]):
       boolean {
     if (displays === undefined) {
       return false;
     }
 
-    return this.isMirrored_(displays) ||
+    return this.isMirrored(displays) ||
         (!unifiedDesktopMode && displays.length > 1);
   }
 
-  private isMirrored_(displays: DisplayUnitInfo[]): boolean {
+  isMirrored(displays: DisplayUnitInfo[]): boolean {
     return displays !== undefined && displays.length > 0 &&
         !!displays[0].mirroringSourceId;
   }
@@ -1198,8 +1222,7 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
     (event.currentTarget as CrCheckboxElement).blur();
 
     const mirrorModeInfo: MirrorModeInfo = {
-      mode: this.isMirrored_(this.displays) ? MirrorMode.OFF :
-                                              MirrorMode.NORMAL,
+      mode: this.isMirrored(this.displays) ? MirrorMode.OFF : MirrorMode.NORMAL,
     };
     getDisplayApi().setMirrorMode(mirrorModeInfo).then(() => {
       const error = chrome.runtime.lastError;
@@ -1272,11 +1295,11 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
     }
   }
 
-  private shouldShowArrangementSection_(): boolean {
+  shouldShowArrangementSection(): boolean {
     if (!this.displays) {
       return false;
     }
-    return this.hasMultipleDisplays_() || this.isMirrored_(this.displays);
+    return this.hasMultipleDisplays_() || this.isMirrored(this.displays);
   }
 
   private onDisplaysChanged_(): void {
@@ -1286,6 +1309,26 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
       displayLayout.updateDisplays(
           this.displays, this.layouts, this.mirroringDestinationIds);
     }
+  }
+
+  getInvalidDisplayId(): string {
+    return this.invalidDisplayId_;
+  }
+
+  getRefreshRateList(): DropdownMenuOptionList {
+    return this.refreshRateList_;
+  }
+
+  getModeToParentModeMap(): Map<number, number> {
+    return this.modeToParentModeMap_;
+  }
+
+  getParentModeToRefreshRateMap(): Map<number, DropdownMenuOptionList> {
+    return this.parentModeToRefreshRateMap_;
+  }
+
+  getSelectedZoomPref(): chrome.settingsPrivate.PrefObject {
+    return this.selectedZoomPref_;
   }
 }
 

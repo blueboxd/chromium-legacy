@@ -18,6 +18,7 @@
 #include "base/timer/timer.h"
 #include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
+#include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/form_tracker.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "content/public/renderer/render_frame_observer.h"
@@ -104,9 +105,15 @@ class AutofillAgent : public content::RenderFrameObserver,
   void TriggerFormExtraction() override;
   void TriggerFormExtractionWithResponse(
       base::OnceCallback<void(bool)> callback) override;
-  void ApplyAutofillAction(mojom::AutofillActionType action_type,
-                           mojom::AutofillActionPersistence action_persistence,
-                           const FormData& form) override;
+  void ApplyFormAction(mojom::ActionType action_type,
+                       mojom::ActionPersistence action_persistence,
+                       const FormData& form) override;
+  void ApplyFieldAction(mojom::ActionPersistence action_persistence,
+                        FieldRendererId field_id,
+                        const std::u16string& value) override;
+  void ExtractForm(FormRendererId form,
+                   base::OnceCallback<void(const std::optional<FormData>&)>
+                       callback) override;
   void FieldTypePredictionsAvailable(
       const std::vector<FormDataPredictions>& forms) override;
   void ClearSection() override;
@@ -118,10 +125,6 @@ class AutofillAgent : public content::RenderFrameObserver,
   void TriggerSuggestions(
       FieldRendererId field_id,
       AutofillSuggestionTriggerSource trigger_source) override;
-  void FillFieldWithValue(FieldRendererId field_id,
-                          const std::u16string& value) override;
-  void PreviewFieldWithValue(FieldRendererId field_id,
-                             const std::u16string& value) override;
   void SetSuggestionAvailability(FieldRendererId field_id,
                                  const mojom::AutofillState state) override;
   void AcceptDataListSuggestion(FieldRendererId field_id,
@@ -279,7 +282,11 @@ class AutofillAgent : public content::RenderFrameObserver,
   // Helper method which collects unowned elements (i.e., those not inside a
   // form tag) and writes them into |output|. Returns true if the process is
   // successful, and all conditions for firing events are true.
-  bool CollectFormlessElements(FormData* output) const;
+  bool CollectFormlessElements(
+      FormData* output,
+      DenseSet<form_util::ExtractOption> extract_options = {
+          form_util::ExtractOption::kValue,
+          form_util::ExtractOption::kOptions}) const;
   FRIEND_TEST_ALL_PREFIXES(FormAutocompleteTest, CollectFormlessElements);
 
   void OnTextFieldDidChange(const blink::WebInputElement& element);
@@ -359,9 +366,9 @@ class AutofillAgent : public content::RenderFrameObserver,
   // reset when the AutofillAgent is pending deletion.
   std::unique_ptr<FormCache> form_cache_;
 
-  raw_ptr<PasswordAutofillAgent, ExperimentalRenderer>
+  raw_ptr<PasswordAutofillAgent, DanglingUntriaged>
       password_autofill_agent_;  // Weak reference.
-  raw_ptr<PasswordGenerationAgent, ExperimentalRenderer>
+  raw_ptr<PasswordGenerationAgent, DanglingUntriaged>
       password_generation_agent_;  // Weak reference.
 
   // The element corresponding to the last request sent for form field Autofill.
@@ -373,8 +380,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   // Records the last autofill action (Fill or Undo) done by the agent. Used in
   // ClearPreviewedForm to get the default state of previewed fields
   // post-clearing.
-  mojom::AutofillActionType last_action_type_ =
-      mojom::AutofillActionType::kFill;
+  mojom::ActionType last_action_type_ = mojom::ActionType::kFill;
 
   // Last form which was interacted with by the user.
   blink::WebFormElement last_interacted_form_;

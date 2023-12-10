@@ -72,8 +72,6 @@ constexpr base::TimeDelta kTimeMetricsMin = base::Seconds(1);
 constexpr base::TimeDelta kTimeMetricsMax = base::Days(7);
 constexpr int kTimeMetricsBucketCount = 100;
 
-constexpr char kSearchBoxIphUrlPlaceholder[] = "https://www.google.com/";
-
 bool IsTabletMode() {
   return ash::TabletMode::IsInTabletMode();
 }
@@ -82,16 +80,6 @@ bool IsTabletMode() {
 bool IsSessionActive() {
   return session_manager::SessionManager::Get()->session_state() ==
          session_manager::SessionState::ACTIVE;
-}
-
-bool CanBeHandledAsSystemUrl(const GURL& sanitized_url,
-                             ui::PageTransition transition) {
-  if (!PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED) &&
-      !PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_GENERATED)) {
-    return false;
-  }
-  return ChromeWebUIControllerFactory::GetInstance()->CanHandleUrl(
-      sanitized_url);
 }
 
 // IDs passed to ActivateItem are always of the form "<app id>". But app search
@@ -732,12 +720,6 @@ AppListClientImpl::CreateLauncherSearchIphSession() {
   // return `ScopedIphSessionImpl`.
   return std::make_unique<ScopedIphSessionImpl>(
       tracker, feature_engagement::kIPHLauncherSearchHelpUiFeature);
-}
-
-void AppListClientImpl::OpenSearchBoxIphUrl() {
-  OpenURL(profile_, GURL(kSearchBoxIphUrlPlaceholder),
-          ui::PageTransition::PAGE_TRANSITION_LINK,
-          WindowOpenDisposition::NEW_FOREGROUND_TAB);
 }
 
 void AppListClientImpl::LoadIcon(int profile_id, const std::string& app_id) {

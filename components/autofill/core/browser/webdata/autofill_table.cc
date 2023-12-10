@@ -958,28 +958,6 @@ time_t GetEndTime(const base::Time& end) {
   return end.ToTimeT();
 }
 
-// Returns |s| with |escaper| in front of each of occurrence of a character
-// from |special_chars|. Any occurrence of |escaper| in |s| is doubled. For
-// example, Substitute("hello_world!", "_%", '!'') returns "hello!_world!!".
-std::u16string Substitute(const std::u16string& s,
-                          const std::u16string& special_chars,
-                          const char16_t& escaper) {
-  // Prepend |escaper| to the list of |special_chars|.
-  std::u16string escape_wildcards(special_chars);
-  escape_wildcards.insert(escape_wildcards.begin(), escaper);
-
-  // Prepend the |escaper| just before |special_chars| in |s|.
-  std::u16string result(s);
-  for (char16_t c : escape_wildcards) {
-    for (size_t pos = 0; (pos = result.find(c, pos)) != std::u16string::npos;
-         pos += 2) {
-      result.insert(result.begin() + pos, escaper);
-    }
-  }
-
-  return result;
-}
-
 // This helper function binds the `profile`s properties to the placeholders in
 // `s`, in the order the columns are defined in the header file.
 // Instead of `profile.modification_date()`, `modification_date` is used. This
@@ -1186,7 +1164,7 @@ WebDatabaseTable::TypeKey AutofillTable::GetTypeKey() const {
 }
 
 bool AutofillTable::CreateTablesIfNecessary() {
-  return InitMainTable() && InitCreditCardsTable() && InitIbansTable() &&
+  return InitMainTable() && InitCreditCardsTable() && InitLocalIbansTable() &&
          InitMaskedCreditCardsTable() && InitUnmaskedCreditCardsTable() &&
          InitServerCardMetadataTable() && InitServerAddressesTable() &&
          InitServerAddressMetadataTable() && InitAutofillSyncMetadataTable() &&
@@ -1980,7 +1958,7 @@ void AutofillTable::SetServerProfiles(
   SetServerProfilesAndMetadata(profiles, /*update_metadata=*/true);
 }
 
-bool AutofillTable::AddIban(const Iban& iban) {
+bool AutofillTable::AddLocalIban(const Iban& iban) {
   sql::Statement s;
   InsertBuilder(db_, s, kLocalIbansTable,
                 {kGuid, kUseCount, kUseDate, kValueEncrypted, kNickname});
@@ -1992,10 +1970,10 @@ bool AutofillTable::AddIban(const Iban& iban) {
   return true;
 }
 
-bool AutofillTable::UpdateIban(const Iban& iban) {
+bool AutofillTable::UpdateLocalIban(const Iban& iban) {
   DCHECK(base::Uuid::ParseCaseInsensitive(iban.guid()).is_valid());
 
-  std::unique_ptr<Iban> old_iban = GetIban(iban.guid());
+  std::unique_ptr<Iban> old_iban = GetLocalIban(iban.guid());
   if (!old_iban) {
     return false;
   }
@@ -2015,12 +1993,12 @@ bool AutofillTable::UpdateIban(const Iban& iban) {
   return result;
 }
 
-bool AutofillTable::RemoveIban(const std::string& guid) {
+bool AutofillTable::RemoveLocalIban(const std::string& guid) {
   DCHECK(base::Uuid::ParseCaseInsensitive(guid).is_valid());
   return DeleteWhereColumnEq(db_, kLocalIbansTable, kGuid, guid);
 }
 
-std::unique_ptr<Iban> AutofillTable::GetIban(const std::string& guid) {
+std::unique_ptr<Iban> AutofillTable::GetLocalIban(const std::string& guid) {
   DCHECK(base::Uuid::ParseCaseInsensitive(guid).is_valid());
   sql::Statement s;
   SelectBuilder(db_, s, kLocalIbansTable,
@@ -2034,7 +2012,7 @@ std::unique_ptr<Iban> AutofillTable::GetIban(const std::string& guid) {
   return IbanFromStatement(s, *autofill_table_encryptor_);
 }
 
-bool AutofillTable::GetIbans(std::vector<std::unique_ptr<Iban>>* ibans) {
+bool AutofillTable::GetLocalIbans(std::vector<std::unique_ptr<Iban>>* ibans) {
   DCHECK(ibans);
   ibans->clear();
 
@@ -2044,7 +2022,7 @@ bool AutofillTable::GetIbans(std::vector<std::unique_ptr<Iban>>* ibans) {
 
   while (s.Step()) {
     std::string guid = s.ColumnString(0);
-    std::unique_ptr<Iban> iban = GetIban(guid);
+    std::unique_ptr<Iban> iban = GetLocalIban(guid);
     if (!iban)
       return false;
     ibans->push_back(std::move(iban));
@@ -3967,7 +3945,7 @@ bool AutofillTable::InitCreditCardsTable() {
                                  {kNickname, "VARCHAR"}});
 }
 
-bool AutofillTable::InitIbansTable() {
+bool AutofillTable::InitLocalIbansTable() {
   return CreateTableIfNotExists(db_, kLocalIbansTable,
                                 {{kGuid, "VARCHAR PRIMARY KEY"},
                                  {kUseCount, "INTEGER NOT NULL DEFAULT 0"},

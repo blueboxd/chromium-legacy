@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/ash/login/oobe_screen.h"
 #include "chromeos/ash/components/osauth/public/common_types.h"
+#include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder_types.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
@@ -69,6 +70,11 @@ class WizardContext {
     // User's choice about using recovery factor. Filled by
     // consolidated consent screen, used by auth_factors_setup screen.
     bool recovery_factor_opted_in = false;
+  };
+
+  struct KnowledgeFactorSetup {
+    // Whether usage of local password is forced.
+    bool local_password_forced = false;
   };
 
   // Configuration for automating OOBE screen actions, e.g. during device
@@ -144,6 +150,8 @@ class WizardContext {
   // The data for recovery setup flow.
   RecoverySetup recovery_setup;
 
+  KnowledgeFactorSetup knowledge_factor_setup;
+
   // Authorization data that is required by PinSetup screen to add PIN as
   // another possible auth factor. Can be empty (if PIN is not supported).
   // In future will be replaced by AuthSession.
@@ -174,6 +182,13 @@ class WizardContext {
   // Whether the user is currently setting up OOBE using QuickStart.
   // TODO(b/283724988) - Combine QuickStart fields into a class.
   bool quick_start_setup_ongoing = false;
+
+  // WiFi credentials that a received by a Chromebook from an Android device
+  // during Quick Start flow. They are set on the QuickStartScreen during the
+  // initial connection between the devices.
+  // TODO(b/283724988) - Combine QuickStart fields into a class.
+  absl::optional<ash::quick_start::mojom::WifiCredentials>
+      quick_start_wifi_credentials;
 
   // If this is a first login after update from CloudReady to a new version.
   // During such an update show users license agreement and data collection

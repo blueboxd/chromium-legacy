@@ -73,7 +73,7 @@
 #include "content/browser/file_system/file_system_url_loader_factory.h"
 #include "content/browser/file_system_access/file_system_access_manager_impl.h"
 #include "content/browser/font_access/font_access_manager.h"
-#include "content/browser/generic_sensor/sensor_provider_proxy_impl.h"
+#include "content/browser/generic_sensor/frame_sensor_provider_proxy.h"
 #include "content/browser/geolocation/geolocation_service_impl.h"
 #include "content/browser/idle/idle_manager_impl.h"
 #include "content/browser/installedapp/installed_app_provider_impl.h"
@@ -314,10 +314,6 @@ BASE_FEATURE(kDisableFrameNameUpdateOnNonCurrentRenderFrameHost,
 BASE_FEATURE(kEvictOnAXEvents,
              "EvictOnAXEvents",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kUnblockSpeechSynthesisForBFCache,
-             "UnblockSpeechSynthesisForBFCache",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace features
 
@@ -1606,9 +1602,9 @@ RenderFrameHostImpl::RenderFrameHostImpl(
 
   InitializePrivateNetworkRequestPolicy();
 
-  unload_event_monitor_timeout_ =
-      std::make_unique<TimeoutMonitor>(base::BindRepeating(
-          &RenderFrameHostImpl::OnUnloaded, weak_ptr_factory_.GetWeakPtr()));
+  unload_event_monitor_timeout_ = std::make_unique<TimeoutMonitor>(
+      base::BindRepeating(&RenderFrameHostImpl::OnNavigationUnloadTimeout,
+                          weak_ptr_factory_.GetWeakPtr()));
   beforeunload_timeout_ = std::make_unique<TimeoutMonitor>(
       base::BindRepeating(&RenderFrameHostImpl::BeforeUnloadTimeout,
                           weak_ptr_factory_.GetWeakPtr()));
@@ -1716,8 +1712,6 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
       } else if (navigation_request->state() >=
                      NavigationRequest::WILL_PROCESS_RESPONSE &&
                  navigation_request->GetRenderFrameHost() == this) {
-        frame_tree_node_->ResetNavigationRequest(
-            NavigationDiscardReason::kRenderFrameHostDestruction);
         // As we are unable to come up with a case that will lead to this path,
         // we instead record the dumps for debugging the scenario.
         // TODO(crbug.com/1430653): if we verify that this path is impossible,
@@ -1775,25 +1769,7 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // If this was the last active frame in the SiteInstanceGroup, the
   // DecrementActiveFrameCount call will trigger the deletion of the
   // SiteInstanceGroup's proxies.
-  {
-    SCOPED_CRASH_KEY_BOOL("Bug1470312", "is_main_frame", is_main_frame());
-    SCOPED_CRASH_KEY_BOOL(
-        "Bug1470312", "is_sandboxed",
-        policy_container_host_
-            ? IsSandboxed(network::mojom::WebSandboxFlags::kOrigin)
-            : false);
-    SCOPED_CRASH_KEY_BOOL(
-        "Bug1470312", "sig_is_notifying_observers",
-        GetSiteInstance()->group()->is_notifying_observers_for_debugging());
-    SCOPED_CRASH_KEY_STRING256("Bug1470312", "origin",
-                               GetLastCommittedOrigin().GetDebugString());
-    SCOPED_CRASH_KEY_STRING256("Bug1470312", "origin_from_url",
-                               GetLastCommittedURL().GetWithEmptyPath().spec());
-    SCOPED_CRASH_KEY_STRING256(
-        "Bug1470312", "site_info",
-        GetSiteInstance()->GetSiteInfo().GetDebugString());
-    GetSiteInstance()->group()->DecrementActiveFrameCount();
-  }
+  GetSiteInstance()->group()->DecrementActiveFrameCount();
 
   // Once a RenderFrame is created in the renderer, there are three possible
   // clean-up paths:
@@ -2118,6 +2094,10 @@ void RenderFrameHostImpl::OnPortalActivated(
             std::move(callback).Run(result);
           },
           std::move(callback)));
+
+  if (browser_accessibility_manager_) {
+    browser_accessibility_manager_->DidActivatePortal();
+  }
 }
 
 void RenderFrameHostImpl::OnPortalCreatedForTesting(
@@ -3015,6 +2995,12 @@ void RenderFrameHostImpl::AccessibilityHitTest(
                      opt_event_to_fire, std::move(opt_callback)));
 }
 
+gfx::NativeWindow RenderFrameHostImpl::GetTopLevelNativeWindow() {
+  WebContents* web_contents = WebContents::FromRenderFrameHost(this);
+  return web_contents ? web_contents->GetTopLevelNativeWindow()
+                      : gfx::NativeWindow();
+}
+
 bool RenderFrameHostImpl::AccessibilityIsRootFrame() const {
   // Do not use is_main_frame() or IsOutermostMainFrame().
   // Frame trees may be nested so it can be the case that is_main_frame() is
@@ -3492,8 +3478,9 @@ void RenderFrameHostImpl::DeleteRenderFrame(
       }
       // If the subframe takes too long to unload, force its removal from the
       // tree. See https://crbug.com/950625.
-      subframe_unload_timer_.Start(FROM_HERE, subframe_unload_timeout_, this,
-                                   &RenderFrameHostImpl::OnUnloadTimeout);
+      subframe_unload_timer_.Start(
+          FROM_HERE, subframe_unload_timeout_, this,
+          &RenderFrameHostImpl::OnSubframeDeletionUnloadTimeout);
     }
   }
 
@@ -5472,6 +5459,27 @@ void RenderFrameHostImpl::OnUnloadACK() {
   // |this| is potentially deleted. Do not add code after this.
 }
 
+void RenderFrameHostImpl::MaybeLogMissingUnloadAck() {
+  // If you are seeing this logging appear in a flaky test, the test may be
+  // dependent on an unload handler or other sudden-termination disabling event
+  // handler. If so, the test should probably
+  // - call DisableUnloadTimerForTesting() to avoid timeouts on slow devices
+  // - wait for the frame to be deleted e.g. via
+  //   RenderFrameHostWrapper::WaitUntilRenderFrameDeleted
+  // See https://crbug.com/1489568 for more information.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kLogMissingUnloadACK)) {
+    LOG(ERROR) << "Missing unload ACK for "
+               << (IsOutermostMainFrame() ? "main frame" : "subframe") << ": "
+               << GetLastCommittedURL();
+  }
+}
+
+void RenderFrameHostImpl::OnNavigationUnloadTimeout() {
+  MaybeLogMissingUnloadAck();
+  OnUnloaded();
+}
+
 void RenderFrameHostImpl::OnUnloaded() {
   DCHECK(is_waiting_for_unload_ack_);
 
@@ -6290,18 +6298,31 @@ void RenderFrameHostImpl::AllowBindings(int bindings_flags) {
   if (web_ui_)
     CHECK_EQ(web_ui_->GetBindings(), webui_bindings);
 
-  // Ensure we aren't granting WebUI bindings to a process that has already
-  // been used for non-privileged views.
+  // Ensure we aren't granting WebUI bindings to a process that has already been
+  // used to host other content.
   if (webui_bindings && GetProcess()->IsInitializedAndNotDead() &&
       !ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
           GetProcess()->GetID())) {
-    // This process has no bindings yet. Make sure it does not have more
-    // than this single active view.
-    // --single-process only has one renderer.
-    if (GetProcess()->GetActiveViewCount() > 1 &&
+    // This process has no bindings yet. Make sure it does not have any frames
+    // that have committed a navigation, since bindings should always be granted
+    // prior to committing the first WebUI navigation in a process.  This is a
+    // defense-in-depth check complementing the site isolation process lock
+    // checks above and in places like RenderProcessHostImpl::IsSuitableHost().
+    // --single-process only has one renderer, so it is exempt from this check.
+    size_t non_empty_frame_count = 0;
+    GetProcess()->ForEachRenderFrameHost(base::BindRepeating(
+        [](size_t& non_empty_frame_count, RenderFrameHost* rfh) {
+          if (!static_cast<RenderFrameHostImpl*>(rfh)
+                   ->is_initial_empty_document()) {
+            ++non_empty_frame_count;
+          }
+        },
+        std::ref(non_empty_frame_count)));
+    if (non_empty_frame_count > 0 &&
         !base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kSingleProcess))
+            switches::kSingleProcess)) {
       return;
+    }
   }
 
   if (webui_bindings) {
@@ -6629,35 +6650,52 @@ void RenderFrameHostImpl::FullscreenStateChanged(
   delegate_->FullscreenStateChanged(this, is_fullscreen, std::move(options));
 }
 
-#if defined(USE_AURA)
 bool RenderFrameHostImpl::CanUseWindowingControls(
     base::StringPiece js_api_name) {
-  // TODO(laurila, crbug.com/1466855): Create bad_message::ENTRIES for the
-  // strings.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+  mojo::ReportBadMessage(
+      base::StrCat({js_api_name,
+                    " API is only supported on Desktop platforms. This "
+                    "excludes mobile platforms."}));
+  return false;
+#else
   if (!base::FeatureList::IsEnabled(
           blink::features::kDesktopPWAsAdditionalWindowingControls)) {
-    mojo::ReportBadMessage("API called without the feature enabled.");
+    mojo::ReportBadMessage(base::StrCat(
+        {"API called without Additional Windowing Controls feature enabled: ",
+         js_api_name}));
     return false;
   }
   if (!IsInPrimaryMainFrame()) {
-    mojo::ReportBadMessage("API called from a non-primary-main frame.");
+    mojo::ReportBadMessage(base::StrCat(
+        {"API called from a non-primary-main frame: ", js_api_name}));
     return false;
   }
   if (!IsActive()) {
+    mojo::ReportBadMessage(
+        base::StrCat({"API called from a non-active frame: ", js_api_name}));
     return false;
   }
   if (!IsWindowManagementGranted(this)) {
     mojo::ReportBadMessage(
-        base::StrCat({js_api_name,
-                      " blocked due to `window-management` permission not "
-                      "being granted."}));
+        base::StrCat({"API called without `window-management` permission "
+                      "being granted: ",
+                      js_api_name}));
     return false;
   }
   return true;
+#endif
 }
 
 void RenderFrameHostImpl::Maximize() {
-  if (!CanUseWindowingControls("window.maximize")) {
+  const std::string js_api_name = "window.maximize";
+#if !defined(USE_AURA)
+  // TODO(laurila, crbug.com/1466851): Enable on Mac, when it's supported.
+  mojo::ReportBadMessage(
+      base::StrCat({js_api_name, " API is not supported on MacOS yet."}));
+#endif
+
+  if (!CanUseWindowingControls(js_api_name)) {
     return;
   }
 
@@ -6665,7 +6703,15 @@ void RenderFrameHostImpl::Maximize() {
 }
 
 void RenderFrameHostImpl::Minimize() {
-  if (!CanUseWindowingControls("window.minimize")) {
+  const std::string js_api_name = "window.minimize";
+
+#if !defined(USE_AURA)
+  // TODO(laurila, crbug.com/1466851): Enable on Mac, when it's supported.
+  mojo::ReportBadMessage(
+      base::StrCat({js_api_name, " API is not supported on MacOS yet."}));
+#endif
+
+  if (!CanUseWindowingControls(js_api_name)) {
     return;
   }
 
@@ -6673,13 +6719,27 @@ void RenderFrameHostImpl::Minimize() {
 }
 
 void RenderFrameHostImpl::Restore() {
+  const std::string js_api_name = "window.restore";
+
+#if !defined(USE_AURA)
+  // TODO(laurila, crbug.com/1466851): Enable on Mac, when it's supported.
+  mojo::ReportBadMessage(
+      base::StrCat({js_api_name, " API is not supported on MacOS yet."}));
+#endif
+
   if (!CanUseWindowingControls("window.restore")) {
     return;
   }
 
   delegate_->Restore();
 }
-#endif
+
+void RenderFrameHostImpl::SetResizable(bool resizable) {
+  if (!CanUseWindowingControls("window.setResizable")) {
+    return;
+  }
+  GetContentClient()->browser()->SetCanResizeFromWebAPI(&GetPage(), resizable);
+}
 
 void RenderFrameHostImpl::RegisterProtocolHandler(const std::string& scheme,
                                                   const GURL& url,
@@ -9893,8 +9953,9 @@ void RenderFrameHostImpl::ResetNavigationsUsingSwappedOutRFH() {
   }
 }
 
-void RenderFrameHostImpl::OnUnloadTimeout() {
+void RenderFrameHostImpl::OnSubframeDeletionUnloadTimeout() {
   DCHECK(IsPendingDeletion());
+  MaybeLogMissingUnloadAck();
   parent_->RemoveChild(GetFrameTreeNodeForUnload());
 }
 
@@ -10422,14 +10483,30 @@ void RenderFrameHostImpl::CommitNavigation(
     // specified.
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         keep_alive_loader_factory;
-    if (blink::features::IsKeepAliveURLLoaderServiceEnabled() &&
-        subresource_proxying_factory_bundle) {
+    if (subresource_proxying_factory_bundle &&
+        base::FeatureList::IsEnabled(
+            blink::features::kKeepAliveInBrowserMigration)) {
       // Also setting up URLLoaderFactory for keepalive using the same loader
       // factories.
       GetStoragePartition()->GetKeepAliveURLLoaderService()->BindFactory(
           keep_alive_loader_factory.InitWithNewPipeAndPassReceiver(),
           subresource_proxying_factory_bundle,
           navigation_request->GetPolicyContainerHost());
+    }
+    // Set up the fetchlater loader factory. It is used to proxy FetchLater
+    // requests via the browser process.
+    // See
+    // https://docs.google.com/document/d/1U8XSnICPY3j-fjzG35UVm6zjwL6LvX6ETU3T8WrzLyQ/edit
+    mojo::PendingAssociatedRemote<blink::mojom::FetchLaterLoaderFactory>
+        fetch_later_loader_factory;
+    if (subresource_proxying_factory_bundle &&
+        base::FeatureList::IsEnabled(blink::features::kFetchLaterAPI)) {
+      GetStoragePartition()
+          ->GetKeepAliveURLLoaderService()
+          ->BindFetchLaterLoaderFactory(
+              fetch_later_loader_factory.InitWithNewEndpointAndPassReceiver(),
+              subresource_proxying_factory_bundle,
+              navigation_request->GetPolicyContainerHost());
     }
 
     mojom::NavigationClient* navigation_client =
@@ -10490,7 +10567,8 @@ void RenderFrameHostImpl::CommitNavigation(
         std::move(subresource_overrides), std::move(controller),
         std::move(container_info),
         std::move(subresource_proxying_loader_factory_for_renderer),
-        std::move(keep_alive_loader_factory), std::move(resource_cache_remote),
+        std::move(keep_alive_loader_factory),
+        std::move(fetch_later_loader_factory), std::move(resource_cache_remote),
         manifest_policy, std::move(policy_container), *document_token,
         devtools_navigation_token);
     navigation_request->frame_tree_node()
@@ -10681,6 +10759,22 @@ void RenderFrameHostImpl::SetWebUI(NavigationRequest& request) {
 
   // Verify expectation that WebUI should not be created for error pages.
   DCHECK(!GetSiteInstance()->GetSiteInfo().is_error_page());
+
+  // Ensure that the RenderFrameHost's process is locked.  Usually this happens
+  // as part of creating a speculative RFH for WebUI navigations, but it's also
+  // possible to reuse an initial RFH in an unassigned SiteInstance for a WebUI
+  // navigation. In that case, the initial RFH needs to lock its process now and
+  // also mark the process as used. The AllowBindings() call below requires that
+  // the process is properly locked to WebUI.
+  if (base::FeatureList::IsEnabled(
+          features::kReuseInitialRenderFrameHostForWebUI)) {
+    if (!GetSiteInstance()->HasSite()) {
+      // WebUI URLs should also require assigning a site.
+      CHECK(SiteInstanceImpl::ShouldAssignSiteForUrlInfo(request.GetUrlInfo()));
+      GetSiteInstance()->ConvertToDefaultOrSetSite(request.GetUrlInfo());
+    }
+    GetProcess()->SetIsUsed();
+  }
 
   WebUI::TypeID new_web_ui_type =
       WebUIControllerFactoryRegistry::GetInstance()->GetWebUIType(
@@ -11903,18 +11997,11 @@ void RenderFrameHostImpl::GetSpeechSynthesis(
         GetProcess()->GetBrowserContext(), this);
   }
   speech_synthesis_impl_->AddReceiver(std::move(receiver));
-
-  if (!base::FeatureList::IsEnabled(
-          features::kUnblockSpeechSynthesisForBFCache)) {
-    // Blocklist SpeechSynthesis for BackForwardCache when the flag is off.
-    OnBackForwardCacheDisablingFeatureUsed(
-        BackForwardCacheDisablingFeature::kSpeechSynthesis);
-  }
 }
 
 void RenderFrameHostImpl::GetSensorProvider(
-    mojo::PendingReceiver<device::mojom::SensorProvider> receiver) {
-  SensorProviderProxyImpl::GetOrCreateForCurrentDocument(this)->Bind(
+    mojo::PendingReceiver<blink::mojom::WebSensorProvider> receiver) {
+  FrameSensorProviderProxy::GetOrCreateForCurrentDocument(this)->Bind(
       std::move(receiver));
 }
 
@@ -13506,6 +13593,8 @@ void RenderFrameHostImpl::SendCommitNavigation(
         subresource_proxying_loader_factory,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         keep_alive_loader_factory,
+    mojo::PendingAssociatedRemote<blink::mojom::FetchLaterLoaderFactory>
+        fetch_later_loader_factory,
     mojo::PendingRemote<blink::mojom::ResourceCache> resource_cache_remote,
     const absl::optional<blink::ParsedPermissionsPolicy>& permissions_policy,
     blink::mojom::PolicyContainerPtr policy_container,
@@ -13624,7 +13713,8 @@ void RenderFrameHostImpl::SendCommitNavigation(
       std::move(subresource_loader_factories), std::move(subresource_overrides),
       std::move(controller), std::move(container_info),
       std::move(subresource_proxying_loader_factory),
-      std::move(keep_alive_loader_factory), document_token,
+      std::move(keep_alive_loader_factory),
+      std::move(fetch_later_loader_factory), document_token,
       devtools_navigation_token, permissions_policy,
       std::move(policy_container), std::move(code_cache_host),
       std::move(resource_cache_remote), std::move(cookie_manager_info),
@@ -15488,8 +15578,10 @@ void RenderFrameHostImpl::OnCookiesAccessed(
                           details_vector.size());
   size_t access_sum = 0;
   for (auto& details : details_vector) {
-    access_sum += details->cookie_list.size();
-    EmitCookieWarningsAndMetrics(this, details);
+    for (size_t i = 0; i < details->count; ++i) {
+      access_sum += details->cookie_list.size();
+      EmitCookieWarningsAndMetrics(this, details);
+    }
 
     CookieAccessDetails allowed;
     CookieAccessDetails blocked;

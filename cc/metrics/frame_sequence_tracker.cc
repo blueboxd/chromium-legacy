@@ -366,9 +366,6 @@ void FrameSequenceTracker::ReportFrameEnd(
   // is ignored.
   if (frame_had_no_compositor_damage_ && !compositor_frame_submitted_) {
     DCHECK_GT(impl_throughput().frames_expected, 0u) << TRACKER_DCHECK_MSG;
-    DCHECK_GT(impl_throughput().frames_expected,
-              impl_throughput().frames_produced)
-        << TRACKER_DCHECK_MSG;
     --impl_throughput().frames_expected;
     metrics()->NotifyNoUpdateForJankReporter(
         FrameInfo::SmoothEffectDrivingThread::kCompositor,
@@ -436,9 +433,6 @@ void FrameSequenceTracker::ReportFramePresented(
   DCHECK(!vsync_interval.is_zero()) << TRACKER_DCHECK_MSG;
   const bool was_presented = !feedback.failed();
   if (was_presented && submitted_frame_since_last_presentation) {
-    DCHECK_LT(impl_throughput().frames_produced,
-              impl_throughput().frames_expected)
-        << TRACKER_DCHECK_MSG;
     ++impl_throughput().frames_produced;
     if (metrics()->GetEffectiveThread() == ThreadType::kCompositor) {
       metrics()->AdvanceTrace(feedback.timestamp, frame_token);

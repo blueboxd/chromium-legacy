@@ -28,6 +28,7 @@ class PLATFORM_EXPORT FontFeatures {
   wtf_size_t size() const { return features_.size(); }
   bool IsEmpty() const { return features_.empty(); }
 
+  const hb_feature_t& operator[](wtf_size_t i) const { return features_[i]; }
   const hb_feature_t* data() const { return features_.data(); }
 
   absl::optional<unsigned> FindValueForTesting(hb_tag_t tag) const;
@@ -40,9 +41,15 @@ class PLATFORM_EXPORT FontFeatures {
   void EraseAt(wtf_size_t position, wtf_size_t length) {
     features_.EraseAt(position, length);
   }
+  void Shrink(wtf_size_t size) { features_.Shrink(size); }
+
+  using FeatureArray = Vector<hb_feature_t, 6>;
+  using const_iterator = FeatureArray::const_iterator;
+  const_iterator begin() const { return features_.begin(); }
+  const_iterator end() const { return features_.end(); }
 
  private:
-  Vector<hb_feature_t, 6> features_;
+  FeatureArray features_;
 };
 
 }  // namespace blink

@@ -64,7 +64,6 @@ class FakeMediaStreamVideoSink : public MediaStreamVideoSink {
   void DisconnectFromTrack() { MediaStreamVideoSink::DisconnectFromTrack(); }
 
   void OnVideoFrame(scoped_refptr<media::VideoFrame> frame,
-                    std::vector<scoped_refptr<media::VideoFrame>> scaled_frames,
                     base::TimeTicks capture_time) {
     *capture_time_ = capture_time;
     *metadata_ = frame->metadata();
@@ -167,9 +166,9 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
 
   Persistent<MediaStreamSource> stream_source_;
   MockMojoMediaStreamDispatcherHost mock_dispatcher_host_;
-  raw_ptr<MediaStreamVideoCapturerSource, ExperimentalRenderer>
+  raw_ptr<MediaStreamVideoCapturerSource, DanglingUntriaged>
       video_capturer_source_;  // owned by |stream_source_|.
-  raw_ptr<MockVideoCapturerSource, ExperimentalRenderer>
+  raw_ptr<MockVideoCapturerSource, DanglingUntriaged>
       delegate_;  // owned by |source_|.
   String stream_source_id_;
   bool source_stopped_;
@@ -236,9 +235,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTimeAndMetadataPlumbing) {
   frame->metadata().frame_rate = 30.0;
   PostCrossThreadTask(
       *Platform::Current()->GetIOTaskRunner(), FROM_HERE,
-      CrossThreadBindOnce(deliver_frame_cb, frame,
-                          std::vector<scoped_refptr<media::VideoFrame>>(),
-                          reference_capture_time));
+      CrossThreadBindOnce(deliver_frame_cb, frame, reference_capture_time));
   run_loop.Run();
   fake_sink.DisconnectFromTrack();
   EXPECT_EQ(reference_capture_time, capture_time);

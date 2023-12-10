@@ -207,8 +207,8 @@ WidgetInputHandlerManager::WidgetInputHandlerManager(
     bool allow_scroll_resampling)
     : widget_(std::move(widget)),
       frame_widget_input_handler_(std::move(frame_widget_input_handler)),
-
       widget_scheduler_(std::move(widget_scheduler)),
+      widget_is_embedded_(widget_ && widget_->is_embedded()),
       input_event_queue_(base::MakeRefCounted<MainThreadEventQueue>(
           this,
           widget_scheduler_->InputTaskRunner(),
@@ -294,6 +294,11 @@ bool WidgetInputHandlerManager::HandleInputEvent(
       std::move(handled_callback));
   widget_->input_handler().HandleInputEvent(event, std::move(metrics),
                                             std::move(blink_callback));
+
+  // TODO(szager): Should this be limited to discrete input events by
+  // conditioning on (!scheduler::PendingUserInput::IsContinuousEventType())?
+  widget_->LayerTreeHost()->proxy()->SetInputResponsePending();
+
   return true;
 }
 
@@ -525,8 +530,15 @@ void WidgetInputHandlerManager::DispatchEvent(
   // without a begin. Scrolling, pinch-zoom etc. don't seem dangerous.
 
   uint16_t suppress_input = suppressing_input_events_state_;
-  if (!base::FeatureList::IsEnabled(
-          blink::features::kDropInputEventsBeforeFirstPaint)) {
+
+  bool ignore_first_paint = !base::FeatureList::IsEnabled(
+      blink::features::kDropInputEventsBeforeFirstPaint);
+  // TODO(https://crbug.com/1490296): Investigate the possibility of a stale
+  // subframe after navigation.
+  if (widget_is_embedded_) {
+    ignore_first_paint = true;
+  }
+  if (ignore_first_paint) {
     suppress_input &=
         ~static_cast<uint16_t>(SuppressingInputEventsBits::kHasNotPainted);
   }

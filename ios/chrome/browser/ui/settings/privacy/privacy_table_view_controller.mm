@@ -219,10 +219,7 @@ const char kSyncSettingsURL[] = "settings://open_sync";
   [model addSectionWithIdentifier:SectionIdentifierWebServices];
   [model addSectionWithIdentifier:SectionIdentifierIncognitoAuth];
   [model addSectionWithIdentifier:SectionIdentifierIncognitoInterstitial];
-
-  if (web::IsBrowserLockdownModeEnabled()) {
-    [model addSectionWithIdentifier:SectionIdentifierLockdownMode];
-  }
+  [model addSectionWithIdentifier:SectionIdentifierLockdownMode];
 
   // Clear Browsing item.
   [model addItem:[self clearBrowsingDetailItem]
@@ -260,15 +257,10 @@ const char kSyncSettingsURL[] = "settings://open_sync";
       toSectionWithIdentifier:SectionIdentifierIncognitoInterstitial];
 
   // Lockdown Mode item.
-  if (web::IsBrowserLockdownModeEnabled()) {
-    [model addItem:[self lockdownModeDetailItem]
-        toSectionWithIdentifier:SectionIdentifierLockdownMode];
-    [model setFooter:[self showPrivacyFooterItem]
-        forSectionWithIdentifier:SectionIdentifierLockdownMode];
-  } else {
-    [model setFooter:[self showPrivacyFooterItem]
-        forSectionWithIdentifier:SectionIdentifierIncognitoInterstitial];
-  }
+  [model addItem:[self lockdownModeDetailItem]
+      toSectionWithIdentifier:SectionIdentifierLockdownMode];
+  [model setFooter:[self showPrivacyFooterItem]
+      forSectionWithIdentifier:SectionIdentifierLockdownMode];
 }
 
 #pragma mark - Model Objects
@@ -606,9 +598,9 @@ const char kSyncSettingsURL[] = "settings://open_sync";
   if (URL.gurl == GURL(kGoogleServicesSettingsURL)) {
     // kGoogleServicesSettingsURL is not a realy link. It should be handled
     // with a special case.
-    [self.dispatcher showGoogleServicesSettingsFromViewController:self];
+    [self.settingsHandler showGoogleServicesSettingsFromViewController:self];
   } else if (URL.gurl == GURL(kSyncSettingsURL)) {
-    [self.dispatcher showSyncSettingsFromViewController:self];
+    [self.settingsHandler showSyncSettingsFromViewController:self];
   } else {
     [super view:view didTapLinkURL:URL];
   }

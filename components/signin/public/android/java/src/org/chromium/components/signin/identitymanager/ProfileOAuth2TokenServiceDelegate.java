@@ -8,10 +8,11 @@ import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.jni_zero.CalledByNative;
+import org.jni_zero.NativeMethods;
+
 import org.chromium.base.Promise;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.signin.AccessTokenData;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
@@ -171,15 +172,19 @@ final class ProfileOAuth2TokenServiceDelegate {
     @CalledByNative
     void seedAndReloadAccountsWithPrimaryAccount(@Nullable String primaryAccountId) {
         ThreadUtils.assertOnUiThread();
-        mAccountTrackerService.seedAccountsIfNeeded(() -> {
-            final List<CoreAccountInfo> coreAccountInfos =
-                    AccountUtils.getCoreAccountInfosIfFulfilledOrEmpty(
-                            AccountManagerFacadeProvider.getInstance().getCoreAccountInfos());
-            ProfileOAuth2TokenServiceDelegateJni.get()
-                    .reloadAllAccountsWithPrimaryAccountAfterSeeding(
-                            mNativeProfileOAuth2TokenServiceDelegate, primaryAccountId,
-                            AccountUtils.toAccountEmails(coreAccountInfos).toArray(new String[0]));
-        });
+        mAccountTrackerService.legacySeedAccountsIfNeeded(
+                () -> {
+                    final List<CoreAccountInfo> coreAccountInfos =
+                            AccountUtils.getCoreAccountInfosIfFulfilledOrEmpty(
+                                    AccountManagerFacadeProvider.getInstance()
+                                            .getCoreAccountInfos());
+                    ProfileOAuth2TokenServiceDelegateJni.get()
+                            .reloadAllAccountsWithPrimaryAccountAfterSeeding(
+                                    mNativeProfileOAuth2TokenServiceDelegate,
+                                    primaryAccountId,
+                                    AccountUtils.toAccountEmails(coreAccountInfos)
+                                            .toArray(new String[0]));
+                });
     }
 
     @NativeMethods

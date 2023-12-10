@@ -24,6 +24,7 @@
 <translation id="1154390310959620237">Може да приспособите само 5 кратенки. Избришете кратенка за да додадете нова.</translation>
 <translation id="1164939766849482256">Штедач на екран Dawn to dark</translation>
 <translation id="1167755866710282443">Отворете го менито за приспособување на клучевите. Повлечете го менито за преместување.</translation>
+<translation id="1174073918202301297">Кратенката е додадена</translation>
 <translation id="1175697296044146566"><ph name="MANAGER" /> управува со овој <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1175951029573070619">Просечен (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Отстрани</translation>
@@ -118,6 +119,7 @@
 <translation id="1768959921651994223">Тип автентикација</translation>
 <translation id="1776228893584526149">Тон на боја на тапет</translation>
 <translation id="1782199038061388045">превод</translation>
+<translation id="1788485524395674731">Вашиот администратор управува со апликацијава</translation>
 <translation id="1792647875738159689">Се откажува скенирањето</translation>
 <translation id="1801418420130173017">Овозможи темна тема</translation>
 <translation id="1807246157184219062">Светла</translation>
@@ -132,7 +134,6 @@
 <translation id="1871569928317311284">Исклучи темна тема</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Исклучи темен режим</translation>
-<translation id="1881188606372070653">Одете на <ph name="BEGIN_LINK1" />страницата „Правна помош“<ph name="END_LINK1" /> за да побарате промени во содржините поради правни причини. Одредени податоци за сметката и системот може да се испратат до Google. Ќе ги користиме податоците што ни ги давате за да помогнеме во решавањето на техничките проблеми и да ги подобриме нашите услуги, што подлежат на нашата <ph name="BEGIN_LINK2" />Политика за приватност<ph name="END_LINK2" /> и<ph name="BEGIN_LINK3" />Условите за користење<ph name="END_LINK3" />.</translation>
 <translation id="1885577615937958993">премотување аудиовизуелни содржини нанапред</translation>
 <translation id="1887850431809612466">Ревизија на хардвер</translation>
 <translation id="1897672602657312171">Можно е да се јави конфликт меѓу кратенка без копче за пребарување и кратенката на некоја апликација. Притиснете ја кратенкава повторно за да продолжите да ја користите или притиснете нова кратенка со копчето за пребарување.</translation>
@@ -194,6 +195,7 @@
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2338501278241028356">Вклучете Bluetooth за да откриете места во близина</translation>
 <translation id="2346474577291266260">Одличен (<ph name="SIGNAL_STRENGTH" />)</translation>
+<translation id="2358070305000735383">Дијалогот за изменување за <ph name="DESCRIPTION" /> е отворен.</translation>
 <translation id="2359808026110333948">Продолжи</translation>
 <translation id="2364498172489649528">Помина</translation>
 <translation id="2367335866686097760">Мапирање клуч на копче</translation>
@@ -213,6 +215,7 @@
 <translation id="2505327257735685095">Освежете ја тековната слика за тапет</translation>
 <translation id="2512979179176933762">прикажување прозорци</translation>
 <translation id="2513396635448525189">Слика при најавување</translation>
+<translation id="2515109918609218604">Кратенката не е достапна. Притиснете нова кратенка без користење на функциските и копчињата за пребарување.</translation>
 <translation id="2517472476991765520">Скенирај</translation>
 <translation id="2521835766824839541">претходна песна</translation>
 <translation id="2526590354069164005">Десктоп</translation>
@@ -333,7 +336,6 @@
 <translation id="3604713164406837697">Менување тапет</translation>
 <translation id="360565022852130722">Wi-Fi мрежата е обезбедена со слаб протокол WEP 802.1x</translation>
 <translation id="3606583719724308068">Висока латенција кон веб-сајтовите со HTTPS</translation>
-<translation id="3607216139080387279">Прикажувај штедач на екран</translation>
 <translation id="361575905210396100">Фала за повратните информации</translation>
 <translation id="3632579075709132555">Вклучи/исклучи заштита на приватноста</translation>
 <translation id="3651050199673793219">Изберете температурна единица</translation>
@@ -345,7 +347,6 @@
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> рецензии)</translation>
 <translation id="3748026146096797577">Не е поврзана</translation>
 <translation id="3749289110408117711">Име на датотека</translation>
-<translation id="3766934827878963937">1 час</translation>
 <translation id="3771294271822695279">Видеодатотеки</translation>
 <translation id="3784455785234192852">Катанец</translation>
 <translation id="380097101658023925">контроли за rgb</translation>
@@ -481,6 +482,7 @@
 <translation id="4793756956024303490">Алгоритам за компримирање</translation>
 <translation id="4794140124556169553">Извршувањето CPU-тест може да влијае врз изведбата на системот</translation>
 <translation id="4798078634453489142">Отстранете APN за да додадете ново APN</translation>
+<translation id="479989351350248267">search</translation>
 <translation id="4800589996161293643">Заедница на Chromebook</translation>
 <translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341">Откажан налог за печатење: <ph name="DOCUMENT_TITLE" /></translation>
@@ -624,6 +626,7 @@
 <translation id="584953448295717128">APN е откриено автоматски.</translation>
 <translation id="5849570051105887917">Код на оператор на почетна страница</translation>
 <translation id="5859603669299126575">Албум од уметничката галерија</translation>
+<translation id="5859969039821714932">Кратенката не е достапна. Притиснете нова кратенка без <ph name="KEY" />.</translation>
 <translation id="5860033963881614850">Исклучено</translation>
 <translation id="5860491529813859533">Вклучи</translation>
 <translation id="5876385649737594562">Вклучете за да изберете опции</translation>
@@ -686,9 +689,9 @@
 <translation id="629550705077076970">затемнување на тастатурата</translation>
 <translation id="6302401976930124515">Тестот за <ph name="TEST_NAME" /> е откажан</translation>
 <translation id="631063167932043783">Апликација Explore</translation>
-<translation id="6318437367327684789">засекогаш</translation>
 <translation id="6319207335391420837">Ажурирајте го фирмверот на <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Вклучете го штедачот на екранот</translation>
+<translation id="6324916366299863871">Изменете ја кратенката</translation>
 <translation id="6325525973963619867">Неуспешно</translation>
 <translation id="6331191339300272798">Автоматска темна тема</translation>
 <translation id="6340526405444716530">Персонализација</translation>
@@ -709,7 +712,6 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Слаб (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Одете во поставките за сметката</translation>
-<translation id="6461047516875166066">Кажи ми повеќе</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Да се скенира страницата пак?}=1{Да се скенира страницата {PAGE_NUMBER} пак?}one{Да се скенира страницата {PAGE_NUMBER} пак?}other{Да се скенира страницата {PAGE_NUMBER} пак?}}</translation>
 <translation id="6472207088655375767">ОТП</translation>
 <translation id="6480327114083866287">Управува: <ph name="MANAGER" /></translation>
@@ -788,6 +790,7 @@
 <translation id="7103252855940681301">Името на уредот <ph name="INDEX" /> од <ph name="COUNT" /> е: <ph name="NAME" />.</translation>
 <translation id="7107255225945990211">Избирање ексклузивен постер за <ph name="PRODUCT_NAME" /></translation>
 <translation id="7108668606237948702">enter</translation>
+<translation id="7119389851461848805">енергија</translation>
 <translation id="7130438335435247835">Име на пристапна точка (APN)</translation>
 <translation id="7134436342991564651">{0,plural, =1{Именски сервер}one{Именски сервер}other{Именски сервери}}</translation>
 <translation id="7135814714616751706">Пребарувајте кратенки</translation>
@@ -828,9 +831,9 @@
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7388959671917308825">Вградена подлога за допир</translation>
 <translation id="7397270852490618635">Исклучи ја светлата тема</translation>
+<translation id="7401543881546089382">Избриши кратенка</translation>
 <translation id="741244894080940828">конверзија</translation>
 <translation id="7415801143053185905">Многу висока латенција на HTTP</translation>
-<translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{Вашиот администратор поставил <ph name="APP_NAME_1" /> да се стартува автоматски при секое најавување.}=2{Вашиот администратор поставил <ph name="APP_NAME_1" /> и <ph name="APP_NAME_2" /> да се стартуваат автоматски при секое најавување.}=3{Вашиот администратор поставил <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> и <ph name="APP_NAME_3" /> да се стартуваат автоматски при секое најавување.}one{Вашиот администратор поставил <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> и уште # апликација да се стартуваат автоматски при секое најавување.}other{Вашиот администратор поставил <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> и уште # апликации да се стартуваат автоматски при секое најавување.}}</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7458970041932198923">Поврзете се на мрежа и повторно вчитајте ја страницата за да ги прегледате и поставите аватарите.</translation>
 <translation id="7469648432129124067">Откриен е портал</translation>
@@ -866,6 +869,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7716280709122323042">WPA3</translation>
 <translation id="7718231387947923843">светлина на тастатурата</translation>
+<translation id="7730077286107534951">Можно е некои податоци за сметката и системот да се испраќаат до Google. Податоциве ги користиме за да помогнеме во решавањето на техничките проблеми и да ги подобриме нашите услуги, што подлежат на нашите <ph name="BEGIN_LINK2" />Политика за приватност<ph name="END_LINK2" /> и <ph name="BEGIN_LINK3" />Услови за користење<ph name="END_LINK3" />. За да побарате промени на содржините, одете во нашиот <ph name="BEGIN_LINK1" />Центар за правна помош<ph name="END_LINK1" />.</translation>
 <translation id="773153675489693198">Број на циклуси</translation>
 <translation id="7747039790905080783">Претходно споделен клуч</translation>
 <translation id="7752963721013053477">Dawn to dark - ексклузивно</translation>
@@ -902,6 +906,7 @@
 <translation id="7978412674231730200">Приватен клуч</translation>
 <translation id="7994702968232966508">EAP-метод</translation>
 <translation id="8004582292198964060">Прелистувач</translation>
+<translation id="8017679124341497925">Кратенката е изменета</translation>
 <translation id="802154636333426148">Неуспешно преземање</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Овозможете режим во автоматска боја</translation>
@@ -942,6 +947,7 @@
 <translation id="8336739000755212683">Променете ја сликата за сметката на уредот</translation>
 <translation id="8347126826554447157"><ph name="SHORCTCUT1" /> или <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">Налози за печатење</translation>
+<translation id="8349826889576450703">стартер</translation>
 <translation id="8351855506390808906">Мапирање клуч на точка на допир</translation>
 <translation id="8352772353338965963">Додајте сметка за повеќекратно најавување. Сите најавени сметки се достапни без лозинка, така што оваа можност треба да се користи само со сметки на кои им се верува.</translation>
 <translation id="8364946094152050673">Празни сервери за име</translation>
@@ -1015,6 +1021,7 @@
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8876270629542503161">Уредот е таблет.</translation>
 <translation id="8881098542468797602">Тестот успеа</translation>
+<translation id="8892443466059986410">Откажи го изменувањето кратенка</translation>
 <translation id="8898840733695078011">Јачина на сигнал</translation>
 <translation id="8909114361904403025">стрелка нагоре</translation>
 <translation id="8910721771319628100">Стандардната мрежа е над прагот за латентност</translation>
@@ -1034,9 +1041,9 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{Скенирај}=1{Скенирај {NUMBER_OF_PAGES} страница}one{Скенирај {NUMBER_OF_PAGES} страница}other{Скенирај {NUMBER_OF_PAGES} страници}}</translation>
 <translation id="8997710128084572139">Нивото на батерија на уредот е <ph name="BATTERY_PERCENTAGE" /> %.</translation>
-<translation id="8998156756248178381">{NUM_ROOL_APPS,plural, =1{<ph name="APP_NAME_1" /> се стартуваше автоматски}one{# апликација се стартуваа автоматски}other{# апликации се стартуваа автоматски}}</translation>
 <translation id="8998289560386111590">Не е достапен на вашиот уред</translation>
 <translation id="9003704114456258138">Зачестеност</translation>
+<translation id="901834265349196618">е-пошта</translation>
 <translation id="9024331582947483881">цел екран</translation>
 <translation id="9025198690966128418">Користете го како личен уред</translation>
 <translation id="902638246363752736">Поставки на тастатура</translation>
@@ -1057,11 +1064,9 @@
 <translation id="9111102763498581341">Отклучи</translation>
 <translation id="9122602430962285795">За да се поврзете повторно, одете во „Поставки“</translation>
 <translation id="9126720536733509015">Зачувај повеќе страници во еден PDF-документ</translation>
-<translation id="9133104754938025929">За да заштеди батерија, штедачот на екран работи само при полнење.</translation>
 <translation id="9133772297793293778">Притиснете ги модификаторите 1 – 4 и уште 1 копче на вашата тастатура. За да излезете од режим на изменување, притиснете Alt + Esc.</translation>
 <translation id="9137526406337347448">Услуги на Google</translation>
 <translation id="9138630967333032450">Лев Shift</translation>
-<translation id="9143347780818904997"><ph name="MINUTES" /> минути</translation>
 <translation id="9149391708638971077">Изврши тест за меморија</translation>
 <translation id="9161276708550942948">space</translation>
 <translation id="9173638680043580060">Преостанува помалку од една минута</translation>
@@ -1077,6 +1082,7 @@
 <translation id="945522503751344254">Испратете повратни информации</translation>
 <translation id="952992212772159698">Не е активиран</translation>
 <translation id="960719561871045870">Код на оператор</translation>
+<translation id="966787709310836684">мени</translation>
 <translation id="979450713603643090">Светлорозов</translation>
 <translation id="982713511914535780">Изврши тест за празнење</translation>
 <translation id="987264212798334818">Општо</translation>

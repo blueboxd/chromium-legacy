@@ -69,6 +69,7 @@ android_library("cardboard_java") {
 
 static_library("cardboard") {
   sources = [
+    "config/opengl_es2_custom_bindings.h",
     "src/sdk/device_params/android/device_params.cc",
     "src/sdk/device_params/android/device_params.h",
     "src/sdk/distortion_mesh.cc",
@@ -83,7 +84,6 @@ static_library("cardboard") {
     "src/sdk/polynomial_radial_distortion.cc",
     "src/sdk/polynomial_radial_distortion.h",
     "src/sdk/qr_code.h",
-    "src/sdk/qrcode/android/qr_code.cc",
     "src/sdk/qrcode/cardboard_v1/cardboard_v1.cc",
     "src/sdk/qrcode/cardboard_v1/cardboard_v1.h",
     "src/sdk/qrcode/ios/device_params_helper.h",
@@ -130,20 +130,30 @@ static_library("cardboard") {
     "src/sdk/util/vector.h",
     "src/sdk/util/vectorutils.cc",
     "src/sdk/util/vectorutils.h",
+
+    # TODO(b/299595377): Remove override once changes have been upstreamed.
     "src_overrides/sdk/cardboard.cc",
-    "src_overrides/sdk/jni_utils/android/jni_registration.h",
     "src_overrides/sdk/jni_utils/android/jni_utils.cc",
+
+    # TODO(b/299595377): Remove override once changes have been upstreamed.
+    "src_overrides/sdk/qrcode/android/qr_code.cc",
+
+    # TODO(b/299595377): Remove override once changes have been upstreamed.
     "src_overrides/sdk/rendering/opengl_es2_distortion_renderer.cc",
   ]
 
   deps = [
     "//base",
+    "//third_party/jni_zero:jni_helpers",
     "//ui/gl",
   ]
 
   defines = [ "CARDBOARD_USE_CUSTOM_GL_BINDINGS" ]
 
-  include_dirs = [ "src/sdk" ]
+  include_dirs = [
+    "config",
+    "src/sdk",
+  ]
 
   libs = [
     "android",

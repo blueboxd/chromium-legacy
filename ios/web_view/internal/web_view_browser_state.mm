@@ -45,7 +45,7 @@
 #import "ios/web_view/internal/passwords/web_view_bulk_leak_check_service_factory.h"
 #import "ios/web_view/internal/passwords/web_view_password_manager_log_router_factory.h"
 #import "ios/web_view/internal/passwords/web_view_password_requirements_service_factory.h"
-#import "ios/web_view/internal/passwords/web_view_password_store_factory.h"
+#import "ios/web_view/internal/passwords/web_view_profile_password_store_factory.h"
 #import "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #import "ios/web_view/internal/signin/web_view_signin_client_factory.h"
 #import "ios/web_view/internal/sync/web_view_gcm_profile_service_factory.h"
@@ -192,7 +192,7 @@ void WebViewBrowserState::RegisterPrefs(
   WebViewWebDataServiceWrapperFactory::GetInstance();
   WebViewPasswordManagerLogRouterFactory::GetInstance();
   WebViewAccountPasswordStoreFactory::GetInstance();
-  WebViewPasswordStoreFactory::GetInstance();
+  WebViewProfilePasswordStoreFactory::GetInstance();
   WebViewPasswordRequirementsServiceFactory::GetInstance();
   WebViewSigninClientFactory::GetInstance();
   WebViewIdentityManagerFactory::GetInstance();

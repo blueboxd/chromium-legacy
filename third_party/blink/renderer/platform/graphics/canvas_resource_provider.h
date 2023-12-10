@@ -259,9 +259,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
 
   size_t TotalOpCount() const { return recorder_.TotalOpCount(); }
   size_t TotalOpBytesUsed() const { return recorder_.OpBytesUsed(); }
-  size_t TotalPinnedImageBytes() const { return total_pinned_image_bytes_; }
+  size_t TotalImageBytesUsed() const { return recorder_.ImageBytesUsed(); }
 
-  void DidPinImage(size_t bytes) override;
   void InitializeForRecording(cc::PaintCanvas* canvas) const override;
 
   bool IsPrinting() { return resource_host_ && resource_host_->IsPrinting(); }
@@ -270,6 +269,10 @@ class PLATFORM_EXPORT CanvasResourceProvider
 
   void AlwaysEnableRasterTimersForTesting(bool value) {
     always_enable_raster_timers_for_testing_ = value;
+  }
+
+  const absl::optional<cc::PaintRecord>& LastRecording() {
+    return last_recording_;
   }
 
  protected:
@@ -361,8 +364,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
   std::unique_ptr<cc::SkiaPaintCanvas> skia_canvas_;
   MemoryManagedPaintRecorder recorder_{this};
 
-  size_t total_pinned_image_bytes_ = 0;
-
   const cc::PaintImage::Id snapshot_paint_image_id_;
   cc::PaintImage::ContentId snapshot_paint_image_content_id_ =
       cc::PaintImage::kInvalidContentId;
@@ -397,6 +398,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
   bool clear_frame_ = true;
   FlushReason last_flush_reason_ = FlushReason::kNone;
   FlushReason printing_fallback_reason_ = FlushReason::kNone;
+  absl::optional<cc::PaintRecord> last_recording_;
 
   base::WeakPtrFactory<CanvasResourceProvider> weak_ptr_factory_{this};
 };

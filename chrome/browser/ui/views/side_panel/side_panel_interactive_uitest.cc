@@ -4,12 +4,14 @@
 
 #include "base/test/bind.h"
 #include "base/test/gtest_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
+#include "chrome/browser/ui/side_panel/side_panel_entry_id.h"
 #include "chrome/browser/ui/side_search/side_search_config.h"
+#include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/side_panel/side_panel.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
@@ -28,6 +30,8 @@
 #include "ui/base/interaction/element_tracker.h"
 #include "ui/base/interaction/expect_call_in_scope.h"
 #include "ui/base/interaction/interaction_sequence.h"
+#include "ui/base/interaction/polling_state_observer.h"
+#include "ui/base/interaction/state_observer.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/interaction/element_tracker_views.h"
@@ -40,13 +44,9 @@ class SidePanelInteractiveTest : public InteractiveBrowserTest {
   ~SidePanelInteractiveTest() override = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kPowerBookmarksSidePanel);
     set_open_about_blank_on_browser_launch(true);
     InteractiveBrowserTest::SetUp();
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // This test is specifically to guard against this regression
@@ -194,4 +194,61 @@ IN_PROC_BROWSER_TEST_F(SidePanelInteractiveTest,
       // Verify the bookmarks side panel entry is shown (last seen)
       WaitForShow(kBookmarkSidePanelWebViewElementId),
       EnsureNotPresent(kReadLaterSidePanelWebViewElementId));
+}
+
+// Test case for menus that only appear with the kSidePanelPinning feature
+// enabled.
+class PinnedSidePanelInteractiveTest : public InteractiveBrowserTest {
+ public:
+  PinnedSidePanelInteractiveTest() = default;
+  ~PinnedSidePanelInteractiveTest() override = default;
+
+  void SetUp() override {
+    set_open_about_blank_on_browser_launch(true);
+    scoped_feature_list_.InitAndEnableFeature(features::kSidePanelPinning);
+    InteractiveBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Verify that we can open the ReadingMode side panel from the 3dot -> More
+// tools context menu.
+IN_PROC_BROWSER_TEST_F(PinnedSidePanelInteractiveTest,
+                       OpenReadingModeSidePanel) {
+  // Replace the contents of the ReadingMode side panel with an empty view so it
+  // loads faster.
+  auto* registry = SidePanelCoordinator::GetGlobalSidePanelRegistry(browser());
+  registry->Deregister(SidePanelEntry::Key(SidePanelEntry::Id::kReadAnything));
+  registry->Register(std::make_unique<SidePanelEntry>(
+      SidePanelEntry::Id::kReadAnything, u"testing1", ui::ImageModel(),
+      base::BindRepeating([]() { return std::make_unique<views::View>(); })));
+
+  SidePanelCoordinator* const coordinator =
+      SidePanelUtil::GetSidePanelCoordinatorForBrowser(browser());
+
+  chrome::ExecuteCommand(browser(), IDC_SHOW_READING_MODE_SIDE_PANEL);
+
+  EXPECT_EQ(SidePanelEntryKey(SidePanelEntryId::kReadAnything),
+            coordinator->GetCurrentSidePanelEntryForTesting()->key());
+}
+
+// Verify that we can open the history cluster side panel from the app menu.
+IN_PROC_BROWSER_TEST_F(PinnedSidePanelInteractiveTest,
+                       OpenHistoryClusterSidePanel) {
+  auto* registry = SidePanelCoordinator::GetGlobalSidePanelRegistry(browser());
+  registry->Deregister(
+      SidePanelEntry::Key(SidePanelEntry::Id::kHistoryClusters));
+  registry->Register(std::make_unique<SidePanelEntry>(
+      SidePanelEntry::Id::kHistoryClusters, u"testing1", ui::ImageModel(),
+      base::BindRepeating([]() { return std::make_unique<views::View>(); })));
+
+  SidePanelCoordinator* const coordinator =
+      SidePanelUtil::GetSidePanelCoordinatorForBrowser(browser());
+
+  chrome::ExecuteCommand(browser(), IDC_SHOW_HISTORY_CLUSTERS_SIDE_PANEL);
+
+  EXPECT_EQ(SidePanelEntryKey(SidePanelEntryId::kHistoryClusters),
+            coordinator->GetCurrentSidePanelEntryForTesting()->key());
 }

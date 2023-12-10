@@ -109,7 +109,9 @@ class SiteInstanceGroup;
 struct AXEventNotificationDetails;
 struct AXLocationChangeNotificationDetails;
 struct ContextMenuParams;
+struct CookieAccessDetails;
 struct GlobalRequestID;
+struct TrustTokenAccessDetails;
 
 namespace mojom {
 class CreateNewWindowParams;
@@ -333,7 +335,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
       bool is_fullscreen,
       blink::mojom::FullscreenOptionsPtr options);
 
-#if defined(USE_AURA)
   // Request to maximize window.
   virtual void Maximize() {}
 
@@ -342,7 +343,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
   // Request to restore window.
   virtual void Restore() {}
-#endif
 
 #if BUILDFLAG(IS_ANDROID)
   // Updates information to determine whether a user gesture should carryover to

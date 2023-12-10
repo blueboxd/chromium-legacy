@@ -16,6 +16,7 @@
 #include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_file_util.h"
 #include "base/test/test_future.h"
 #include "base/time/time.h"
@@ -32,12 +33,46 @@
 namespace reporting {
 namespace {
 
+using std::literals::string_view_literals::operator""sv;
+
 using ::ash::cros_healthd::FakeCrosHealthd;
 using ::ash::cros_healthd::mojom::CrashEventInfo;
 using ::ash::cros_healthd::mojom::CrashEventInfoPtr;
 using ::ash::cros_healthd::mojom::CrashUploadInfo;
 using ::ash::cros_healthd::mojom::EventCategoryEnum;
 using ::ash::cros_healthd::mojom::EventInfo;
+
+// RAII class to interrupt after event is observed.
+class ScopedInterruptedAfterEventObserved {
+ public:
+  // `observer` must remain alive when this object destructs.
+  explicit ScopedInterruptedAfterEventObserved(
+      FatalCrashEventsObserver& observer)
+      : observer_(&observer) {
+    FatalCrashEventsObserver::TestEnvironment::SetInterruptedAfterEventObserved(
+        *observer_, /*interrupted_after_event_observed=*/true);
+  }
+
+  virtual ~ScopedInterruptedAfterEventObserved() {
+    FatalCrashEventsObserver::TestEnvironment::SetInterruptedAfterEventObserved(
+        *observer_, /*interrupted_after_event_observed=*/false);
+  }
+
+  ScopedInterruptedAfterEventObserved(
+      const ScopedInterruptedAfterEventObserved&) = delete;
+  ScopedInterruptedAfterEventObserved& operator=(
+      const ScopedInterruptedAfterEventObserved&) = delete;
+
+  // The move constructor and assignment are currently unused, but there's
+  // no reason to not support them as they are standard in scoped classes.
+  ScopedInterruptedAfterEventObserved(ScopedInterruptedAfterEventObserved&&) =
+      default;
+  ScopedInterruptedAfterEventObserved& operator=(
+      ScopedInterruptedAfterEventObserved&&) = default;
+
+ private:
+  raw_ptr<FatalCrashEventsObserver> observer_;
+};
 
 // Base class for testing `FatalCrashEventsObserver`. `NoSessionAshTestBase` is
 // needed here because the observer uses `ash::Shell()` to obtain the user
@@ -56,6 +91,20 @@ class FatalCrashEventsObserverTestBase : public ::ash::NoSessionAshTestBase {
   FatalCrashEventsObserverTestBase() = default;
   ~FatalCrashEventsObserverTestBase() override = default;
 
+  // Create a new `CrashEventInfo` object that respects the `is_uploaded`
+  // param.
+  static CrashEventInfoPtr NewCrashEventInfo(bool is_uploaded) {
+    auto crash_event_info = CrashEventInfo::New();
+    if (is_uploaded) {
+      crash_event_info->upload_info = CrashUploadInfo::New();
+      crash_event_info->upload_info->crash_report_id = kCrashReportId;
+      // The default zero time is earlier than the UNIX epoch.
+      crash_event_info->upload_info->creation_time = base::Time::UnixEpoch();
+    }
+
+    return crash_event_info;
+  }
+
   void SetUp() override {
     ::ash::NoSessionAshTestBase::SetUp();
     FakeCrosHealthd::Initialize();
@@ -70,7 +119,7 @@ class FatalCrashEventsObserverTestBase : public ::ash::NoSessionAshTestBase {
   // optionally sets the OnEventObserved callback if test_event is provided.
   std::unique_ptr<FatalCrashEventsObserver>
   CreateAndEnableFatalCrashEventsObserver(
-      base::test::TestFuture<MetricData>* test_event = nullptr) {
+      base::test::TestFuture<MetricData>* test_event = nullptr) const {
     auto observer =
         fatal_crash_test_environment_.CreateFatalCrashEventsObserver();
     observer->SetReportingEnabled(true);
@@ -95,7 +144,7 @@ class FatalCrashEventsObserverTestBase : public ::ash::NoSessionAshTestBase {
   FatalCrashTelemetry WaitForFatalCrashTelemetry(
       CrashEventInfoPtr crash_event_info,
       FatalCrashEventsObserver* fatal_crash_events_observer = nullptr,
-      base::test::TestFuture<MetricData>* result_metric_data = nullptr) {
+      base::test::TestFuture<MetricData>* result_metric_data = nullptr) const {
     std::unique_ptr<FatalCrashEventsObserver> internal_observer;
     if (fatal_crash_events_observer == nullptr) {
       internal_observer = CreateAndEnableFatalCrashEventsObserver();
@@ -118,18 +167,6 @@ class FatalCrashEventsObserverTestBase : public ::ash::NoSessionAshTestBase {
     EXPECT_TRUE(metric_data.has_telemetry_data());
     EXPECT_TRUE(metric_data.telemetry_data().has_fatal_crash_telemetry());
     return std::move(metric_data.telemetry_data().fatal_crash_telemetry());
-  }
-
-  // Create a new `CrashEventInfo` object that respects the `is_uploaded`
-  // param.
-  CrashEventInfoPtr NewCrashEventInfo(bool is_uploaded) {
-    auto crash_event_info = CrashEventInfo::New();
-    if (is_uploaded) {
-      crash_event_info->upload_info = CrashUploadInfo::New();
-      crash_event_info->upload_info->crash_report_id = kCrashReportId;
-    }
-
-    return crash_event_info;
   }
 
   // Simulate user login and allows specifying whether the user is affiliated.
@@ -237,6 +274,51 @@ TEST_P(FatalCrashEventsObserverTest, FieldCrashReportIdPassedThrough) {
   }
 }
 
+TEST_F(FatalCrashEventsObserverTest,
+       FieldBeenReportedWithoutCrashReportIdUnsetIfUnuploaded) {
+  const auto fatal_crash_telemetry =
+      WaitForFatalCrashTelemetry(NewCrashEventInfo(/*is_uploaded=*/false));
+  EXPECT_FALSE(
+      fatal_crash_telemetry.has_been_reported_without_crash_report_id());
+}
+
+TEST_F(
+    FatalCrashEventsObserverTest,
+    FieldBeenReportedWithoutCrashReportIdIsFalseIfUploadedNotPreviouslyReported) {
+  const auto fatal_crash_telemetry =
+      WaitForFatalCrashTelemetry(NewCrashEventInfo(/*is_uploaded=*/true));
+  ASSERT_TRUE(
+      fatal_crash_telemetry.has_been_reported_without_crash_report_id());
+  EXPECT_FALSE(fatal_crash_telemetry.been_reported_without_crash_report_id());
+}
+
+TEST_F(
+    FatalCrashEventsObserverTest,
+    FieldBeenReportedWithoutCrashReportIdIsTrueIfUploadedAndPreviouslyReported) {
+  static constexpr std::string_view kLocalId = "a local ID";
+
+  base::test::TestFuture<MetricData> result_metric_data;
+  auto fatal_crash_events_observer =
+      CreateAndEnableFatalCrashEventsObserver(&result_metric_data);
+
+  // First an unuploaded crash with a set local ID.
+  auto crash_event_info = NewCrashEventInfo(/*is_uploaded=*/false);
+  crash_event_info->local_id = kLocalId;
+  std::ignore = WaitForFatalCrashTelemetry(std::move(crash_event_info),
+                                           fatal_crash_events_observer.get(),
+                                           &result_metric_data);
+
+  // Second an uploaded crash with the same local ID.
+  crash_event_info = NewCrashEventInfo(/*is_uploaded=*/true);
+  crash_event_info->local_id = kLocalId;
+  const auto fatal_crash_telemetry = WaitForFatalCrashTelemetry(
+      std::move(crash_event_info), fatal_crash_events_observer.get(),
+      &result_metric_data);
+  ASSERT_TRUE(
+      fatal_crash_telemetry.has_been_reported_without_crash_report_id());
+  EXPECT_TRUE(fatal_crash_telemetry.been_reported_without_crash_report_id());
+}
+
 TEST_P(FatalCrashEventsObserverTest, FieldUserEmailFilledIfAffiliated) {
   SimulateUserLogin(kUserEmail, user_manager::USER_TYPE_REGULAR,
                     /*is_user_affiliated=*/true);
@@ -259,6 +341,7 @@ TEST_P(FatalCrashEventsObserverTest, FieldUserEmailAbsentIfUnaffiliated) {
 }
 
 TEST_P(FatalCrashEventsObserverTest, ObserveMultipleEvents) {
+  // The observer is capable of observing multiple events.
   base::test::TestFuture<MetricData> test_event;
   auto observer = CreateAndEnableFatalCrashEventsObserver(&test_event);
 
@@ -266,6 +349,11 @@ TEST_P(FatalCrashEventsObserverTest, ObserveMultipleEvents) {
     const auto local_id = base::NumberToString(i);
     auto crash_event_info = NewCrashEventInfo(is_uploaded());
     crash_event_info->local_id = local_id;
+    if (is_uploaded()) {
+      // Incremental offset, otherwise the later uploaded crashes would not be
+      // reported.
+      crash_event_info->upload_info->offset = i;
+    }
     const auto fatal_crash_telemetry = WaitForFatalCrashTelemetry(
         std::move(crash_event_info), observer.get(), &test_event);
     ASSERT_TRUE(fatal_crash_telemetry.has_local_id());
@@ -320,7 +408,12 @@ TEST_P(FatalCrashEventsObserverWithUserAffiliationParamTest,
     SimulateUserLogin(kUserEmail, kSessionTypes[i].user_type,
                       is_user_affiliated());
     auto crash_event_info = NewCrashEventInfo(is_uploaded());
-    // crash with the same local ID would be ignored, assign a unique local ID
+    if (is_uploaded()) {
+      // Incremental offset, otherwise the later uploaded crashes would not be
+      // reported.
+      crash_event_info->upload_info->offset = i;
+    }
+    // Crash with the same local ID would be ignored, assign a unique local ID
     // here to prevent the second session type from failure.
     crash_event_info->local_id = base::NumberToString(i);
     const auto fatal_crash_telemetry =
@@ -356,9 +449,17 @@ class FatalCrashEventsObserverReportedLocalIdsTestBase
       const FatalCrashEventsObserverReportedLocalIdsTestBase&) = delete;
 
  protected:
+  using ShouldReportResult =
+      FatalCrashEventsObserver::TestEnvironment::ShouldReportResult;
+
   // The maximum number of local IDs to save.
   static constexpr size_t kMaxNumOfLocalIds{
       FatalCrashEventsObserver::TestEnvironment::kMaxNumOfLocalIds};
+  // The maximum size of the priority queue before reconstructing it.
+  static constexpr size_t kMaxSizeOfLocalIdEntryQueue{
+      FatalCrashEventsObserver::TestEnvironment::kMaxSizeOfLocalIdEntryQueue};
+  static constexpr const char* kUmaUnuploadedCrashShouldNotReportReason{
+      FatalCrashEventsObserver::kUmaUnuploadedCrashShouldNotReportReason};
   static constexpr std::string_view kLocalId = "local ID";
   static constexpr base::Time kCaptureTime = base::Time::FromTimeT(14);
   static constexpr std::string_view kLocalIdEarly = "local ID Early";
@@ -371,7 +472,7 @@ class FatalCrashEventsObserverReportedLocalIdsTestBase
 
   // Gets the path to the save file.
   const base::FilePath& GetSaveFilePath() const {
-    return fatal_crash_test_environment_.GetSaveFilePath();
+    return fatal_crash_test_environment_.GetReportedLocalIdSaveFilePath();
   }
 
   // Generates an uninteresting fatal crash event to alter the observer's state
@@ -380,10 +481,21 @@ class FatalCrashEventsObserverReportedLocalIdsTestBase
       std::string_view local_id,
       base::Time capture_time,
       FatalCrashEventsObserver& fatal_crash_observer,
-      base::test::TestFuture<MetricData>* test_event = nullptr) {
-    auto crash_event_info = NewCrashEventInfo(/*is_uploaded=*/false);
+      base::test::TestFuture<MetricData>* test_event = nullptr,
+      bool is_uploaded = false) const {
+    static uint64_t offset = 0u;
+
+    auto crash_event_info = NewCrashEventInfo(is_uploaded);
     crash_event_info->local_id = local_id;
     crash_event_info->capture_time = capture_time;
+    if (is_uploaded) {
+      // Keep offset increasing so that uploaded crash event would not be
+      // blocked because the offset is smaller than previous. Not allowing fine
+      // tuning offset here because the test focuses on
+      // `ReportedLocalIdManager`, not the role offset plays in uploaded
+      // crashes.
+      crash_event_info->upload_info->offset = offset++;
+    }
 
     const auto fatal_crash_telemetry = WaitForFatalCrashTelemetry(
         std::move(crash_event_info), &fatal_crash_observer, test_event);
@@ -401,7 +513,8 @@ class FatalCrashEventsObserverReportedLocalIdsTestBase
       base::Time capture_time,
       FatalCrashEventsObserver& fatal_crash_observer) {
     base::test::TestFuture<FatalCrashEventsObserver::LocalIdEntry> result;
-    fatal_crash_observer.SetSkippedCrashCallback(result.GetRepeatingCallback());
+    fatal_crash_observer.SetSkippedUnuploadedCrashCallback(
+        result.GetRepeatingCallback());
 
     auto crash_event_info = NewCrashEventInfo(/*is_uploaded=*/false);
     crash_event_info->local_id = local_id;
@@ -430,6 +543,29 @@ class FatalCrashEventsObserverReportedLocalIdsTest
   // Whether the fatal crash events observer should reload to simulate user
   // restarting ash.
   bool reload() const { return GetParam(); }
+
+  // Creates a `FatalCrashEventsObserver` object with the number of saved local
+  // IDs maximized.
+  std::tuple<std::unique_ptr<FatalCrashEventsObserver>,
+             std::unique_ptr<base::test::TestFuture<MetricData>>>
+  CreateFatalCrashEventsObserverFilledWithMaxNumberOfSavedLocalIds() const {
+    auto result_metric_data =
+        std::make_unique<base::test::TestFuture<MetricData>>();
+    auto fatal_crash_events_observer =
+        CreateAndEnableFatalCrashEventsObserver(result_metric_data.get());
+
+    for (size_t i = 0u; i < kMaxNumOfLocalIds; ++i) {
+      std::ostringstream ss;
+      ss << kLocalId << i;
+      CreateFatalCrashEvent(/*local_id=*/ss.str(),
+                            /*capture_time=*/kCaptureTime,
+                            *fatal_crash_events_observer,
+                            result_metric_data.get());
+    }
+
+    return std::make_tuple(std::move(fatal_crash_events_observer),
+                           std::move(result_metric_data));
+  }
 };
 
 TEST_P(FatalCrashEventsObserverReportedLocalIdsTest,
@@ -440,17 +576,22 @@ TEST_P(FatalCrashEventsObserverReportedLocalIdsTest,
   if (reload()) {
     fatal_crash_events_observer = CreateAndEnableFatalCrashEventsObserver();
   }
+
+  base::HistogramTester histogram_tester;
   const auto local_id_entry = WaitForSkippedFatalCrashEvent(
       /*local_id=*/kLocalId,
       /*capture_time=*/kCaptureTime, *fatal_crash_events_observer);
   EXPECT_EQ(local_id_entry.local_id, kLocalId);
   EXPECT_EQ(local_id_entry.capture_timestamp_us,
             FatalCrashEventsObserver::ConvertTimeToMicroseconds(kCaptureTime));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(kUmaUnuploadedCrashShouldNotReportReason),
+      base::BucketsAre(base::Bucket(ShouldReportResult::kHasBeenReported, 1)));
 }
 
 TEST_P(FatalCrashEventsObserverReportedLocalIdsTest,
-       UnwritableSaveFileRepeatedLocalIdNotReportedIfNotReloaded) {
-  // Even if save file is unwritable, the same observer should still skip the
+       UncreatableSaveFileRepeatedLocalIdNotReportedIfNotReloaded) {
+  // Even if save file can't be created, the same observer should still skip the
   // unuploaded crash with the same local ID if the user does not restart ash,
   // while it is outside of our control if ash has been restarted.
   ASSERT_TRUE(base::MakeFileUnwritable(GetSaveFilePath().DirName()));
@@ -477,72 +618,170 @@ TEST_P(FatalCrashEventsObserverReportedLocalIdsTest,
 }
 
 TEST_P(FatalCrashEventsObserverReportedLocalIdsTest,
-       TooManySavedEarlierSkippedLaterReported) {
-  base::test::TestFuture<MetricData> result_metric_data;
-  auto fatal_crash_events_observer =
-      CreateAndEnableFatalCrashEventsObserver(&result_metric_data);
-
-  for (size_t i = 0u; i < kMaxNumOfLocalIds; ++i) {
-    std::ostringstream ss;
-    ss << kLocalId << i;
-    CreateFatalCrashEvent(/*local_id=*/ss.str(), /*capture_time=*/kCaptureTime,
-                          *fatal_crash_events_observer, &result_metric_data);
-  }
+       TooManySavedEarlierCrashesSkipped) {
+  auto [fatal_crash_events_observer, result_metric_data] =
+      CreateFatalCrashEventsObserverFilledWithMaxNumberOfSavedLocalIds();
 
   if (reload()) {
     fatal_crash_events_observer =
-        CreateAndEnableFatalCrashEventsObserver(&result_metric_data);
+        CreateAndEnableFatalCrashEventsObserver(result_metric_data.get());
   }
 
-  // Crashes with earlier or the same timestamp are skipped.
-  auto local_id_entry = WaitForSkippedFatalCrashEvent(
-      /*local_id=*/kLocalIdEarly,
-      /*capture_time=*/kCaptureTimeEarly, *fatal_crash_events_observer);
-  EXPECT_EQ(local_id_entry.local_id, kLocalIdEarly);
-  EXPECT_EQ(
-      local_id_entry.capture_timestamp_us,
-      FatalCrashEventsObserver::ConvertTimeToMicroseconds(kCaptureTimeEarly));
-  local_id_entry = WaitForSkippedFatalCrashEvent(/*local_id=*/kLocalId,
-                                                 /*capture_time=*/kCaptureTime,
-                                                 *fatal_crash_events_observer);
-  EXPECT_EQ(local_id_entry.local_id, kLocalId);
-  EXPECT_EQ(local_id_entry.capture_timestamp_us,
-            FatalCrashEventsObserver::ConvertTimeToMicroseconds(kCaptureTime));
+  // Crashes with an earlier timestamp are skipped. Repeat twice for robustness
+  // -- after the first crash is not reported, the second crash still should not
+  // be reported.
+  for (int i = 0; i < 2; ++i) {
+    base::HistogramTester histogram_tester;
+    std::ostringstream ss;
+    ss << kLocalIdEarly << i;
+    const auto local_id_entry = WaitForSkippedFatalCrashEvent(
+        /*local_id=*/ss.str(),
+        /*capture_time=*/kCaptureTimeEarly, *fatal_crash_events_observer);
+    EXPECT_EQ(local_id_entry.local_id, ss.str());
+    EXPECT_EQ(
+        local_id_entry.capture_timestamp_us,
+        FatalCrashEventsObserver::ConvertTimeToMicroseconds(kCaptureTimeEarly));
+    EXPECT_THAT(
+        histogram_tester.GetAllSamples(
+            kUmaUnuploadedCrashShouldNotReportReason),
+        base::BucketsAre(base::Bucket(
+            ShouldReportResult::kCrashTooOldAndMaxNumOfSavedLocalIdsReached,
+            1)));
+  }
+}
 
-  // Crashes with later timestamps are reported.
+TEST_P(FatalCrashEventsObserverReportedLocalIdsTest,
+       TooManySavedSameTimeCrashesSkipped) {
+  auto [fatal_crash_events_observer, result_metric_data] =
+      CreateFatalCrashEventsObserverFilledWithMaxNumberOfSavedLocalIds();
+
+  if (reload()) {
+    fatal_crash_events_observer =
+        CreateAndEnableFatalCrashEventsObserver(result_metric_data.get());
+  }
+
+  // Crashes with the same timestamp are skipped. Repeat twice for robustness --
+  // after the first crash is not reported, the second crash still should not be
+  // reported.
+  for (int i = 0; i < 2; ++i) {
+    base::HistogramTester histogram_tester;
+    std::ostringstream ss;
+    // Use -(i + 1) here to avoid same local IDs with the one already saved by
+    // the observer.
+    ss << kLocalId << -(i + 1);
+    const auto local_id_entry = WaitForSkippedFatalCrashEvent(
+        /*local_id=*/ss.str(),
+        /*capture_time=*/kCaptureTime, *fatal_crash_events_observer);
+    EXPECT_EQ(local_id_entry.local_id, ss.str());
+    EXPECT_EQ(
+        local_id_entry.capture_timestamp_us,
+        FatalCrashEventsObserver::ConvertTimeToMicroseconds(kCaptureTime));
+    EXPECT_THAT(
+        histogram_tester.GetAllSamples(
+            kUmaUnuploadedCrashShouldNotReportReason),
+        base::BucketsAre(base::Bucket(
+            ShouldReportResult::kCrashTooOldAndMaxNumOfSavedLocalIdsReached,
+            1)));
+  }
+}
+
+TEST_P(FatalCrashEventsObserverReportedLocalIdsTest,
+       TooManySavedLaterCrashReported) {
+  auto [fatal_crash_events_observer, result_metric_data] =
+      CreateFatalCrashEventsObserverFilledWithMaxNumberOfSavedLocalIds();
+
+  if (reload()) {
+    fatal_crash_events_observer =
+        CreateAndEnableFatalCrashEventsObserver(result_metric_data.get());
+  }
+
+  // Crash with later timestamps are reported.
+  base::HistogramTester histogram_tester;
   auto crash_event_info = NewCrashEventInfo(/*is_uploaded=*/false);
   crash_event_info->local_id = kLocalIdLate;
   crash_event_info->capture_time = kCaptureTimeLate;
   const auto fatal_crash_telemetry = WaitForFatalCrashTelemetry(
       std::move(crash_event_info), fatal_crash_events_observer.get(),
-      &result_metric_data);
+      result_metric_data.get());
   ASSERT_TRUE(fatal_crash_telemetry.has_local_id());
   EXPECT_EQ(fatal_crash_telemetry.local_id(), kLocalIdLate);
   ASSERT_TRUE(fatal_crash_telemetry.has_timestamp_us());
   EXPECT_EQ(
       fatal_crash_telemetry.timestamp_us(),
       FatalCrashEventsObserver::ConvertTimeToMicroseconds(kCaptureTimeLate));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(kUmaUnuploadedCrashShouldNotReportReason),
+      base::BucketsAre(base::Bucket(ShouldReportResult::kYes, 1)));
 }
 
 TEST_P(FatalCrashEventsObserverReportedLocalIdsTest,
-       RepeatedLocalIDReportedIfFirstTimeIsInterrupted) {
+       CrashReportedAsUploadedIsRemoved) {
   base::test::TestFuture<MetricData> result_metric_data;
   auto fatal_crash_events_observer =
       CreateAndEnableFatalCrashEventsObserver(&result_metric_data);
-  // Simulate the thread is interrupted after event observed callback is called.
-  fatal_crash_test_environment_.SetInterruptedAfterEventObserved(
-      *fatal_crash_events_observer, /*interrupted_after_event_observed=*/true);
-  CreateFatalCrashEvent(
-      /*local_id=*/kLocalId, /*capture_time=*/kCaptureTime,
-      *fatal_crash_events_observer, &result_metric_data);
+
+  // Same crash, first reported as unuploaded, then reported again as uploaded.
+  CreateFatalCrashEvent(/*local_id=*/kLocalId, /*capture_time=*/kCaptureTime,
+                        *fatal_crash_events_observer, &result_metric_data,
+                        /*is_uploaded=*/false);
+  CreateFatalCrashEvent(/*local_id=*/kLocalId, /*capture_time=*/kCaptureTime,
+                        *fatal_crash_events_observer, &result_metric_data,
+                        /*is_uploaded=*/true);
+
   if (reload()) {
     fatal_crash_events_observer =
         CreateAndEnableFatalCrashEventsObserver(&result_metric_data);
   }
 
-  // Now back to what production code does.
-  fatal_crash_test_environment_.SetInterruptedAfterEventObserved(
-      *fatal_crash_events_observer, /*interrupted_after_event_observed=*/false);
+  // Create kMaxNumOfLocalIds - 1 crashes with an earlier capture time.
+  for (size_t i = 0u; i < kMaxNumOfLocalIds - 1u; ++i) {
+    std::ostringstream ss;
+    ss << kLocalIdEarly << i;
+    CreateFatalCrashEvent(/*local_id=*/ss.str(),
+                          /*capture_time=*/kCaptureTimeEarly,
+                          *fatal_crash_events_observer, &result_metric_data,
+                          /*is_uploaded=*/false);
+  }
+
+  // Because the first crash (which has a later capture time) has been uploaded,
+  // it should no longer be saved. Therefore, the kMaxNumOfLocalIds'th early
+  // crash should be saved.
+  auto crash_event_info = NewCrashEventInfo(/*is_uploaded=*/false);
+  crash_event_info->local_id = kLocalIdEarly;
+  crash_event_info->capture_time = kCaptureTimeEarly;
+  const auto fatal_crash_telemetry = WaitForFatalCrashTelemetry(
+      std::move(crash_event_info), fatal_crash_events_observer.get(),
+      &result_metric_data);
+  ASSERT_TRUE(fatal_crash_telemetry.has_local_id());
+  EXPECT_EQ(fatal_crash_telemetry.local_id(), kLocalIdEarly);
+  ASSERT_TRUE(fatal_crash_telemetry.has_timestamp_us());
+  EXPECT_EQ(
+      fatal_crash_telemetry.timestamp_us(),
+      FatalCrashEventsObserver::ConvertTimeToMicroseconds(kCaptureTimeEarly));
+}
+
+// Tests that if the thread is interrupted somehow when the event is being
+// processed (e.g., ash crashes), a crash with the same local ID should still be
+// reported.
+TEST_F(FatalCrashEventsObserverReportedLocalIdsTest,
+       RepeatedLocalIDReportedIfFirstTimeIsInterrupted) {
+  base::test::TestFuture<MetricData> result_metric_data;
+  auto fatal_crash_events_observer =
+      CreateAndEnableFatalCrashEventsObserver(&result_metric_data);
+
+  {
+    // Simulate the thread is interrupted after event observed callback is
+    // called.
+    ScopedInterruptedAfterEventObserved scoped_interruption(
+        *fatal_crash_events_observer);
+    CreateFatalCrashEvent(
+        /*local_id=*/kLocalId, /*capture_time=*/kCaptureTime,
+        *fatal_crash_events_observer, &result_metric_data);
+  }
+
+  // Always reload to simulate what happens practically, e.g., ash crashes.
+  fatal_crash_events_observer =
+      CreateAndEnableFatalCrashEventsObserver(&result_metric_data);
 
   // Event with the same local ID is reported again.
   auto crash_event_info = NewCrashEventInfo(/*is_uploaded=*/false);
@@ -558,10 +797,103 @@ TEST_P(FatalCrashEventsObserverReportedLocalIdsTest,
             FatalCrashEventsObserver::ConvertTimeToMicroseconds(kCaptureTime));
 }
 
-// TODO(b/266018440): After implementing the logic that controls whether an
-// uploaded crash should be reported (which would include the logic to remove
-// crashes from saved unuploaded crashes), test here that the earliest crash has
-// been removed after a sufficient amount of later crashes are reported.
+TEST_F(FatalCrashEventsObserverReportedLocalIdsTest,
+       CrashReportedAsUploadedIsNotRemovedIfInterrupted) {
+  base::test::TestFuture<MetricData> result_metric_data;
+  auto fatal_crash_events_observer =
+      CreateAndEnableFatalCrashEventsObserver(&result_metric_data);
+
+  // Same crash, first reported as unuploaded, then reported again as uploaded.
+  CreateFatalCrashEvent(/*local_id=*/kLocalId, /*capture_time=*/kCaptureTime,
+                        *fatal_crash_events_observer, &result_metric_data,
+                        /*is_uploaded=*/false);
+
+  {
+    // Simulate the thread is interrupted after event observed callback is
+    // called.
+    ScopedInterruptedAfterEventObserved scoped_interruption(
+        *fatal_crash_events_observer);
+    CreateFatalCrashEvent(/*local_id=*/kLocalId, /*capture_time=*/kCaptureTime,
+                          *fatal_crash_events_observer, &result_metric_data,
+                          /*is_uploaded=*/true);
+  }
+
+  // Reload.
+  fatal_crash_events_observer =
+      CreateAndEnableFatalCrashEventsObserver(&result_metric_data);
+
+  // Create kMaxNumOfLocalIds - 1 crashes with an earlier capture time.
+  for (size_t i = 0u; i < kMaxNumOfLocalIds - 1u; ++i) {
+    std::ostringstream ss;
+    ss << kLocalIdEarly << i;
+    CreateFatalCrashEvent(/*local_id=*/ss.str(),
+                          /*capture_time=*/kCaptureTimeEarly,
+                          *fatal_crash_events_observer, &result_metric_data,
+                          /*is_uploaded=*/false);
+  }
+
+  // Because the first crash (which has a later capture time) has been uploaded,
+  // it should no longer be saved. However, because the thread is interrupted,
+  // it remains in the saved local IDs. Therefore, the kMaxNumOfLocalIds'th
+  // early crash would not be saved here.
+  auto local_id_entry = WaitForSkippedFatalCrashEvent(
+      /*local_id=*/kLocalIdEarly,
+      /*capture_time=*/kCaptureTimeEarly, *fatal_crash_events_observer);
+  EXPECT_EQ(local_id_entry.local_id, kLocalIdEarly);
+  EXPECT_EQ(
+      local_id_entry.capture_timestamp_us,
+      FatalCrashEventsObserver::ConvertTimeToMicroseconds(kCaptureTimeEarly));
+  local_id_entry = WaitForSkippedFatalCrashEvent(
+      /*local_id=*/kLocalIdEarly,
+      /*capture_time=*/kCaptureTimeEarly, *fatal_crash_events_observer);
+  EXPECT_EQ(local_id_entry.local_id, kLocalIdEarly);
+  EXPECT_EQ(
+      local_id_entry.capture_timestamp_us,
+      FatalCrashEventsObserver::ConvertTimeToMicroseconds(kCaptureTimeEarly));
+}
+
+TEST_F(FatalCrashEventsObserverReportedLocalIdsTest,
+       ReconstructLocalIdEntryQueueAfterMaxIsReached) {
+  base::test::TestFuture<MetricData> result_metric_data;
+  auto fatal_crash_events_observer =
+      CreateAndEnableFatalCrashEventsObserver(&result_metric_data);
+
+  // Report an unuploaded crash with an early capture time.
+  CreateFatalCrashEvent(/*local_id=*/kLocalIdEarly,
+                        /*capture_time=*/kCaptureTimeEarly,
+                        *fatal_crash_events_observer, &result_metric_data,
+                        /*is_uploaded=*/false);
+
+  // Create kMaxSizeOfLocalIdEntryQueue - 1 crashes with a later capture time.
+  // Report them as unuploaded first and then uploaded. This should be able to
+  // fill the priority queue up with the local IDs of uploaded crashes.
+  for (size_t i = 0u; i < kMaxSizeOfLocalIdEntryQueue - 1u; ++i) {
+    std::ostringstream ss;
+    ss << kLocalIdLate << i;
+    CreateFatalCrashEvent(/*local_id=*/ss.str(),
+                          /*capture_time=*/kCaptureTimeLate,
+                          *fatal_crash_events_observer, &result_metric_data,
+                          /*is_uploaded=*/false);
+    CreateFatalCrashEvent(/*local_id=*/ss.str(),
+                          /*capture_time=*/kCaptureTimeLate,
+                          *fatal_crash_events_observer, &result_metric_data,
+                          /*is_uploaded=*/true);
+  }
+
+  // Sanity check: The priority queue is large.
+  ASSERT_EQ(fatal_crash_test_environment_.GetLocalIdEntryQueueSize(
+                *fatal_crash_events_observer),
+            kMaxSizeOfLocalIdEntryQueue);
+
+  // One more unuploaded crash and the queue should be constructed.
+  CreateFatalCrashEvent(/*local_id=*/kLocalIdLate,
+                        /*capture_time=*/kCaptureTimeLate,
+                        *fatal_crash_events_observer, &result_metric_data,
+                        /*is_uploaded=*/false);
+  EXPECT_EQ(fatal_crash_test_environment_.GetLocalIdEntryQueueSize(
+                *fatal_crash_events_observer),
+            2u);
+}
 
 INSTANTIATE_TEST_SUITE_P(
     FatalCrashEventsObserverReportedLocalIdsTests,
@@ -667,6 +999,33 @@ TEST_F(FatalCrashEventsObserverReportedLocalIdsCorruptSaveFileTest,
       /*capture_time=*/kCaptureTimeZero, *fatal_crash_events_observer);
 }
 
+TEST_F(FatalCrashEventsObserverReportedLocalIdsCorruptSaveFileTest,
+       UnreadableSaveFileIgnored) {
+  base::test::TestFuture<MetricData> result_metric_data;
+  auto fatal_crash_events_observer =
+      CreateAndEnableFatalCrashEventsObserver(&result_metric_data);
+  CreateFatalCrashEvent(kLocalId, kCaptureTime, *fatal_crash_events_observer,
+                        &result_metric_data);
+
+  // The save file is now available. Make it unreadable.
+  ASSERT_TRUE(base::PathExists(GetSaveFilePath()));
+  ASSERT_TRUE(base::MakeFileUnreadable(GetSaveFilePath()));
+
+  // Reload to force loading from the save file.
+  fatal_crash_events_observer =
+      CreateAndEnableFatalCrashEventsObserver(&result_metric_data);
+
+  // Verify that no crash is loaded by receiving an unuploaded crash with the
+  // same local ID.
+  auto crash_event_info = NewCrashEventInfo(/*is_uploaded=*/false);
+  crash_event_info->local_id = kLocalId;
+  const auto fatal_crash_telemetry = WaitForFatalCrashTelemetry(
+      std::move(crash_event_info), fatal_crash_events_observer.get(),
+      &result_metric_data);
+  ASSERT_TRUE(fatal_crash_telemetry.has_local_id());
+  EXPECT_EQ(fatal_crash_telemetry.local_id(), kLocalId);
+}
+
 INSTANTIATE_TEST_SUITE_P(
     FatalCrashEventsObserverReportedLocalIdsCorruptSaveFileTests,
     FatalCrashEventsObserverReportedLocalIdsCorruptSaveFileTest,
@@ -689,5 +1048,483 @@ INSTANTIATE_TEST_SUITE_P(
     [](const testing::TestParamInfo<
         FatalCrashEventsObserverReportedLocalIdsCorruptSaveFileTest::ParamType>&
            info) { return info.param.name; });
+
+// Tests `FatalCrashEventsObserver` with uploaded crashes with a focus on
+// saved states.
+class FatalCrashEventsObserverUploadedCrashTestBase
+    : public FatalCrashEventsObserverTestBase {
+ public:
+  static constexpr std::string_view kCreationTimestampMsJsonKey{
+      FatalCrashEventsObserver::TestEnvironment::kCreationTimestampMsJsonKey};
+  static constexpr std::string_view kOffsetJsonKey{
+      FatalCrashEventsObserver::TestEnvironment::kOffsetJsonKey};
+
+  FatalCrashEventsObserverUploadedCrashTestBase(
+      const FatalCrashEventsObserverUploadedCrashTestBase&) = delete;
+  FatalCrashEventsObserverUploadedCrashTestBase& operator=(
+      const FatalCrashEventsObserverUploadedCrashTestBase&) = delete;
+
+ protected:
+  // Fields used for tests.
+  static constexpr std::string_view kCrashReportId = "crash report ID";
+
+  FatalCrashEventsObserverUploadedCrashTestBase() = default;
+  ~FatalCrashEventsObserverUploadedCrashTestBase() override = default;
+
+  // Gets the path to the save file.
+  const base::FilePath& GetSaveFilePath() const {
+    return fatal_crash_test_environment_.GetUploadedCrashInfoSaveFilePath();
+  }
+
+  // Generates an uninteresting fatal crash event to alter the observer's state
+  // in preparation for the test.
+  void CreateFatalCrashEvent(
+      std::string_view crash_report_id,
+      base::Time creation_time,
+      uint64_t offset,
+      FatalCrashEventsObserver& fatal_crash_observer,
+      base::test::TestFuture<MetricData>* test_event = nullptr) {
+    auto crash_event_info = NewCrashEventInfo(/*is_uploaded=*/true);
+    crash_event_info->upload_info->crash_report_id = crash_report_id;
+    crash_event_info->upload_info->creation_time = creation_time;
+    crash_event_info->upload_info->offset = offset;
+
+    const auto fatal_crash_telemetry = WaitForFatalCrashTelemetry(
+        std::move(crash_event_info), &fatal_crash_observer, test_event);
+    ASSERT_TRUE(fatal_crash_telemetry.has_crash_report_id());
+    ASSERT_EQ(fatal_crash_telemetry.crash_report_id(), crash_report_id);
+  }
+
+  // Wait for the given fatal crash event being skipped.
+  std::tuple<std::string /* crash_report_id */,
+             base::Time /* creation_time */,
+             uint64_t /* offset */>
+  WaitForSkippedFatalCrashEvent(
+      std::string_view crash_report_id,
+      base::Time creation_time,
+      uint64_t offset,
+      FatalCrashEventsObserver& fatal_crash_observer) {
+    base::test::TestFuture<std::string /* crash_report_id */,
+                           base::Time /* creation_time */,
+                           uint64_t /* offset */>
+        result;
+    fatal_crash_observer.SetSkippedUploadedCrashCallback(
+        result.GetRepeatingCallback());
+
+    auto crash_event_info = NewCrashEventInfo(/*is_uploaded=*/true);
+    crash_event_info->upload_info->crash_report_id = crash_report_id;
+    crash_event_info->upload_info->creation_time = creation_time;
+    crash_event_info->upload_info->offset = offset;
+    FakeCrosHealthd::Get()->EmitEventForCategory(
+        EventCategoryEnum::kCrash,
+        EventInfo::NewCrashEventInfo(std::move(crash_event_info)));
+
+    return result.Take();
+  }
+};
+
+struct FatalCrashEventsObserverUploadedCrashCase {
+  base::Time creation_time;
+  uint64_t offset;
+  bool should_be_reported;
+  bool creatable_save_file = true;
+  bool interrupt_after_event_observed = false;
+};
+
+// Tests whether uploads.log creation time and offset are respected in deciding
+// whether an uploaded crash should be reported.
+class FatalCrashEventsObserverUploadedCrashTest
+    : public FatalCrashEventsObserverUploadedCrashTestBase,
+      public ::testing::WithParamInterface<
+          std::tuple<FatalCrashEventsObserverUploadedCrashCase,
+                     /*reload=*/bool>> {
+ public:
+  static constexpr base::Time kCreationTime = base::Time::FromTimeT(10u);
+  static constexpr base::Time kEarlierCreationTime = base::Time::FromTimeT(1u);
+  static constexpr base::Time kLaterCreationTime = base::Time::FromTimeT(100u);
+  static constexpr uint64_t kOffset = 20u;
+  static constexpr uint64_t kSmallerOffset = 2u;
+  static constexpr uint64_t kLargerOffset = 200u;
+
+  FatalCrashEventsObserverUploadedCrashTest(
+      const FatalCrashEventsObserverUploadedCrashTest&) = delete;
+  FatalCrashEventsObserverUploadedCrashTest& operator=(
+      const FatalCrashEventsObserverUploadedCrashTest&) = delete;
+
+  // Gets the name as used in the test name given a creation time.
+  static constexpr std::string_view GetTestNameForCreationTime(
+      base::Time creation_time) {
+    if (creation_time >
+        FatalCrashEventsObserverUploadedCrashTest::kCreationTime) {
+      return "later_time"sv;
+    } else if (creation_time <
+               FatalCrashEventsObserverUploadedCrashTest::kCreationTime) {
+      return "earlier_time"sv;
+    } else {
+      return "same_time"sv;
+    }
+  }
+
+  // Gets the name as used in the test name given a offset.
+  static constexpr std::string_view GetTestNameForOffset(uint64_t offset) {
+    if (offset > FatalCrashEventsObserverUploadedCrashTest::kOffset) {
+      return "larger_offset"sv;
+    } else if (offset < FatalCrashEventsObserverUploadedCrashTest::kOffset) {
+      return "smaller_offset"sv;
+    } else {
+      return "same_offset"sv;
+    }
+  }
+
+ protected:
+  FatalCrashEventsObserverUploadedCrashTest() = default;
+  ~FatalCrashEventsObserverUploadedCrashTest() override = default;
+
+  // Whether the fatal crash events observer should reload to simulate user
+  // restarting ash.
+  bool reload() const { return std::get<1>(GetParam()); }
+
+  // Creation time of the second uploaded crash.
+  base::Time creation_time() const {
+    return std::get<0>(GetParam()).creation_time;
+  }
+
+  // Offset of the second uploaded crash.
+  uint64_t offset() const { return std::get<0>(GetParam()).offset; }
+
+  // Should the second uploaded crash be reported?
+  bool should_be_reported() const {
+    return std::get<0>(GetParam()).should_be_reported;
+  }
+
+  // Should the save file be made creatable.
+  bool creatable_save_file() const {
+    return std::get<0>(GetParam()).creatable_save_file;
+  }
+
+  // Should the first event be interrupted after the event observed callback.
+  // Used to simulate the thread is interrupted somehow when the event is being
+  // processed (e.g., ash crashes).
+  bool interrupt_after_event_observed() const {
+    return std::get<0>(GetParam()).interrupt_after_event_observed;
+  }
+};
+
+TEST_P(FatalCrashEventsObserverUploadedCrashTest,
+       ReportBasedOnCreationTimeAndOffset) {
+  // Report an uploaded crash with kCreationTime and kOffset. Then, receiving a
+  // second uploaded crash with the given creation time and offset in the
+  // parameters. Tests the second crash is properly reported or skipped.
+
+  static constexpr std::string_view kAnotherCrashReportId =
+      "Another Crash Report ID";
+
+  if (!creatable_save_file()) {
+    ASSERT_TRUE(base::MakeFileUnwritable(GetSaveFilePath().DirName()));
+  }
+
+  base::test::TestFuture<MetricData> result_metric_data;
+  auto fatal_crash_events_observer =
+      CreateAndEnableFatalCrashEventsObserver(&result_metric_data);
+
+  {
+    // Simulate the thread is interrupted after event observed callback is
+    // called, if required by the test params.
+    auto scoped_interruption =
+        interrupt_after_event_observed()
+            ? std::make_unique<ScopedInterruptedAfterEventObserved>(
+                  *fatal_crash_events_observer)
+            : nullptr;
+
+    CreateFatalCrashEvent(kCrashReportId, kCreationTime, kOffset,
+                          *fatal_crash_events_observer, &result_metric_data);
+  }
+
+  if (reload()) {
+    fatal_crash_events_observer =
+        CreateAndEnableFatalCrashEventsObserver(&result_metric_data);
+  }
+
+  if (should_be_reported()) {
+    // If the uploaded crash should be reported, we test that it is indeed
+    // reported by comparing the crash report ID.
+    auto crash_event_info = NewCrashEventInfo(/*is_uploaded=*/true);
+    crash_event_info->upload_info->crash_report_id = kAnotherCrashReportId;
+    crash_event_info->upload_info->creation_time = creation_time();
+    crash_event_info->upload_info->offset = offset();
+    const auto fatal_crash_telemetry = WaitForFatalCrashTelemetry(
+        std::move(crash_event_info), fatal_crash_events_observer.get(),
+        &result_metric_data);
+    ASSERT_TRUE(fatal_crash_telemetry.has_crash_report_id());
+    EXPECT_EQ(fatal_crash_telemetry.crash_report_id(), kAnotherCrashReportId);
+  } else {
+    // If the uploaded crash should not be reported, we expect a skipped event.
+    const auto [skipped_crash_report_id, skipped_creation_time,
+                skipped_offset] =
+        WaitForSkippedFatalCrashEvent(kAnotherCrashReportId, creation_time(),
+                                      offset(), *fatal_crash_events_observer);
+    EXPECT_EQ(skipped_crash_report_id, kAnotherCrashReportId);
+    EXPECT_EQ(skipped_creation_time, creation_time());
+    EXPECT_EQ(skipped_offset, offset());
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    FatalCrashEventsObserverUploadedCrashTestsForCorrectlyComparingCreationTimeAndOffset,
+    FatalCrashEventsObserverUploadedCrashTest,
+    ::testing::Combine(
+        ::testing::ValuesIn(std::vector<
+                            FatalCrashEventsObserverUploadedCrashCase>{
+            {.creation_time = FatalCrashEventsObserverUploadedCrashTest::
+                 kEarlierCreationTime,
+             .offset =
+                 FatalCrashEventsObserverUploadedCrashTest::kSmallerOffset,
+             .should_be_reported = false},
+            {.creation_time = FatalCrashEventsObserverUploadedCrashTest::
+                 kEarlierCreationTime,
+             .offset = FatalCrashEventsObserverUploadedCrashTest::kOffset,
+             .should_be_reported = false},
+            {.creation_time = FatalCrashEventsObserverUploadedCrashTest::
+                 kEarlierCreationTime,
+             .offset = FatalCrashEventsObserverUploadedCrashTest::kLargerOffset,
+             .should_be_reported = false},
+            {.creation_time =
+                 FatalCrashEventsObserverUploadedCrashTest::kCreationTime,
+             .offset =
+                 FatalCrashEventsObserverUploadedCrashTest::kSmallerOffset,
+             .should_be_reported = false},
+            {.creation_time =
+                 FatalCrashEventsObserverUploadedCrashTest::kCreationTime,
+             .offset = FatalCrashEventsObserverUploadedCrashTest::kOffset,
+             .should_be_reported = false},
+            {.creation_time =
+                 FatalCrashEventsObserverUploadedCrashTest::kCreationTime,
+             .offset = FatalCrashEventsObserverUploadedCrashTest::kLargerOffset,
+             .should_be_reported = true},
+            {.creation_time =
+                 FatalCrashEventsObserverUploadedCrashTest::kLaterCreationTime,
+             .offset =
+                 FatalCrashEventsObserverUploadedCrashTest::kSmallerOffset,
+             .should_be_reported = true},
+            {.creation_time =
+                 FatalCrashEventsObserverUploadedCrashTest::kLaterCreationTime,
+             .offset = FatalCrashEventsObserverUploadedCrashTest::kOffset,
+             .should_be_reported = true},
+            {.creation_time =
+                 FatalCrashEventsObserverUploadedCrashTest::kLaterCreationTime,
+             .offset = FatalCrashEventsObserverUploadedCrashTest::kLargerOffset,
+             .should_be_reported = true},
+        }),
+        /*reload=*/::testing::Bool()),
+    [](const testing::TestParamInfo<
+        FatalCrashEventsObserverUploadedCrashTest::ParamType>& info) {
+      return base::StrCat(
+          {FatalCrashEventsObserverUploadedCrashTest::
+               GetTestNameForCreationTime(
+                   std::get<0>(info.param).creation_time),
+           "_"sv,
+           FatalCrashEventsObserverUploadedCrashTest::GetTestNameForOffset(
+               std::get<0>(info.param).offset),
+           "_"sv, std::get<1>(info.param) ? "reload"sv : "same_session"sv});
+    });
+
+// Even if the save file can't be created, the unreloaded result should be the
+// same. No need to test it for all combinations of creation times and offsets;
+// only pick 2 cases, one that should report and another one that should not be
+// reported.
+INSTANTIATE_TEST_SUITE_P(
+    FatalCrashEventsObserverUploadedCrashTestsForUncreatableSaveFile,
+    FatalCrashEventsObserverUploadedCrashTest,
+    ::testing::Combine(
+        ::testing::ValuesIn(std::vector<
+                            FatalCrashEventsObserverUploadedCrashCase>{
+            {.creation_time = FatalCrashEventsObserverUploadedCrashTest::
+                 kEarlierCreationTime,
+             .offset = FatalCrashEventsObserverUploadedCrashTest::kOffset,
+             .should_be_reported = false,
+             .creatable_save_file = false},
+            {.creation_time =
+                 FatalCrashEventsObserverUploadedCrashTest::kLaterCreationTime,
+             .offset = FatalCrashEventsObserverUploadedCrashTest::kOffset,
+             .should_be_reported = true,
+             .creatable_save_file = false},
+        }),
+        /*reload=*/::testing::Values(false)),
+    [](const testing::TestParamInfo<
+        FatalCrashEventsObserverUploadedCrashTest::ParamType>& info) {
+      return base::StrCat(
+          {FatalCrashEventsObserverUploadedCrashTest::
+               GetTestNameForCreationTime(
+                   std::get<0>(info.param).creation_time),
+           "_"sv,
+           FatalCrashEventsObserverUploadedCrashTest::GetTestNameForOffset(
+               std::get<0>(info.param).offset),
+           "_uncreatable_file"sv});
+    });
+
+// Tests that if the thread is interrupted right after the on event callback
+// (e.g., ash crashes), the event that has been processed would not affect the
+// state of the observer and a later crash with the same creation time and
+// offset should still be reported.
+INSTANTIATE_TEST_SUITE_P(
+    FatalCrashEventsObserverUploadedCrashTestsForInterruptionAfterOnEvent,
+    FatalCrashEventsObserverUploadedCrashTest,
+    ::testing::Values(
+        std::make_tuple<FatalCrashEventsObserverUploadedCrashCase, bool>(
+            {.creation_time =
+                 FatalCrashEventsObserverUploadedCrashTest::kCreationTime,
+             .offset = FatalCrashEventsObserverUploadedCrashTest::kOffset,
+             .should_be_reported = true,
+             .interrupt_after_event_observed = true},
+            /*reload=*/true)),
+    [](const testing::TestParamInfo<
+        FatalCrashEventsObserverUploadedCrashTest::ParamType>& info) {
+      return base::StrCat(
+          {FatalCrashEventsObserverUploadedCrashTest::
+               GetTestNameForCreationTime(
+                   std::get<0>(info.param).creation_time),
+           "_"sv,
+           FatalCrashEventsObserverUploadedCrashTest::GetTestNameForOffset(
+               std::get<0>(info.param).offset),
+           "_interrupted"sv});
+    });
+
+struct FatalCrashEventsObserverUploadedCrashCorruptSaveFileCase {
+  std::string name;
+  std::string save_file_content;
+};
+
+// Tests uploaded crash but the save file is corrupted.
+class FatalCrashEventsObserverUploadedCrashCorruptSaveFileTest
+    : public FatalCrashEventsObserverUploadedCrashTestBase,
+      public ::testing::WithParamInterface<
+          FatalCrashEventsObserverUploadedCrashCorruptSaveFileCase> {
+ public:
+  FatalCrashEventsObserverUploadedCrashCorruptSaveFileTest(
+      const FatalCrashEventsObserverUploadedCrashCorruptSaveFileTest&) = delete;
+  FatalCrashEventsObserverUploadedCrashCorruptSaveFileTest& operator=(
+      const FatalCrashEventsObserverUploadedCrashCorruptSaveFileTest&) = delete;
+
+ protected:
+  FatalCrashEventsObserverUploadedCrashCorruptSaveFileTest() = default;
+  ~FatalCrashEventsObserverUploadedCrashCorruptSaveFileTest() override =
+      default;
+
+  const std::string& save_file_content() const {
+    return GetParam().save_file_content;
+  }
+};
+
+TEST_P(FatalCrashEventsObserverUploadedCrashCorruptSaveFileTest,
+       CorruptFileIgnored) {
+  ASSERT_TRUE(base::WriteFile(GetSaveFilePath(), save_file_content()));
+  base::test::TestFuture<MetricData> result_metric_data;
+  auto fatal_crash_events_observer =
+      CreateAndEnableFatalCrashEventsObserver(&result_metric_data);
+
+  // Verify that no crash is loaded by receiving an uploaded crash with zero
+  // uploads.log creation time and offset.
+  auto crash_event_info = NewCrashEventInfo(/*is_uploaded=*/true);
+  crash_event_info->upload_info->creation_time = base::Time::FromTimeT(0u);
+  crash_event_info->upload_info->offset = 0u;
+  crash_event_info->upload_info->crash_report_id = kCrashReportId;
+  const auto fatal_crash_telemetry = WaitForFatalCrashTelemetry(
+      std::move(crash_event_info), fatal_crash_events_observer.get(),
+      &result_metric_data);
+  ASSERT_TRUE(fatal_crash_telemetry.has_crash_report_id());
+  EXPECT_EQ(fatal_crash_telemetry.crash_report_id(), kCrashReportId);
+}
+
+TEST_F(FatalCrashEventsObserverUploadedCrashCorruptSaveFileTest,
+       UnreadableSaveFileIgnored) {
+  static constexpr base::Time kZeroCreationTime = base::Time::FromTimeT(0u);
+  static constexpr uint64_t kZeroOffset = 0u;
+
+  base::test::TestFuture<MetricData> result_metric_data;
+  auto fatal_crash_events_observer =
+      CreateAndEnableFatalCrashEventsObserver(&result_metric_data);
+  CreateFatalCrashEvent(kCrashReportId, kZeroCreationTime, kZeroOffset,
+                        *fatal_crash_events_observer, &result_metric_data);
+
+  // The save file is now available. Make it unreadable.
+  ASSERT_TRUE(base::PathExists(GetSaveFilePath()));
+  ASSERT_TRUE(base::MakeFileUnreadable(GetSaveFilePath()));
+
+  // Reload to force loading from the save file.
+  fatal_crash_events_observer =
+      CreateAndEnableFatalCrashEventsObserver(&result_metric_data);
+
+  // Verify that no crash is loaded by receiving an uploaded crash with zero
+  // uploads.log creation time and offset.
+  auto crash_event_info = NewCrashEventInfo(/*is_uploaded=*/true);
+  crash_event_info->upload_info->creation_time = kZeroCreationTime;
+  crash_event_info->upload_info->offset = kZeroOffset;
+  crash_event_info->upload_info->crash_report_id = kCrashReportId;
+  const auto fatal_crash_telemetry = WaitForFatalCrashTelemetry(
+      std::move(crash_event_info), fatal_crash_events_observer.get(),
+      &result_metric_data);
+  ASSERT_TRUE(fatal_crash_telemetry.has_crash_report_id());
+  EXPECT_EQ(fatal_crash_telemetry.crash_report_id(), kCrashReportId);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    FatalCrashEventsObserverUploadedCrashCorruptSaveFileTests,
+    FatalCrashEventsObserverUploadedCrashCorruptSaveFileTest,
+    ::testing::ValuesIn(
+        std::vector<FatalCrashEventsObserverUploadedCrashCorruptSaveFileCase>{
+            {.name = "empty", .save_file_content = ""},
+            {.name = "not_json", .save_file_content = "some_string"},
+            {.name = "not_valid_json",
+             .save_file_content = "{missing_a_brace = True"},
+            {.name = "not_a_dict_json",
+             .save_file_content = "[\"i_am_a_list\"]"},
+            {.name = "no_creation_timestamp_ms_key",
+             .save_file_content = base::StrCat(
+                 {"{\"",
+                  FatalCrashEventsObserverUploadedCrashTestBase::kOffsetJsonKey,
+                  "\" = 10}"})},
+            {.name = "no_offset_key",
+             .save_file_content =
+                 base::StrCat({"{\"",
+                               FatalCrashEventsObserverUploadedCrashTestBase::
+                                   kCreationTimestampMsJsonKey,
+                               "\" = 1}"})},
+            {.name = "timestamp_not_a_number",
+             .save_file_content = base::StrCat(
+                 {"{\"",
+                  FatalCrashEventsObserverUploadedCrashTestBase::
+                      kCreationTimestampMsJsonKey,
+                  "\" = \"not a number\",\"",
+                  FatalCrashEventsObserverUploadedCrashTestBase::kOffsetJsonKey,
+                  "\" = 10}"})},
+            {.name = "negative_timestamp",
+             .save_file_content = base::StrCat(
+                 {"{\"",
+                  FatalCrashEventsObserverUploadedCrashTestBase::
+                      kCreationTimestampMsJsonKey,
+                  "\" = -1,\"",
+                  FatalCrashEventsObserverUploadedCrashTestBase::kOffsetJsonKey,
+                  "\" = 10}"})},
+            {.name = "offset_not_a_number",
+             .save_file_content = base::StrCat(
+                 {"{\"",
+                  FatalCrashEventsObserverUploadedCrashTestBase::
+                      kCreationTimestampMsJsonKey,
+                  "\" = 1,\"",
+                  FatalCrashEventsObserverUploadedCrashTestBase::kOffsetJsonKey,
+                  "\" = \"not a number\"}"})},
+            {.name = "negative_offset",
+             .save_file_content = base::StrCat(
+                 {"{\"",
+                  FatalCrashEventsObserverUploadedCrashTestBase::
+                      kCreationTimestampMsJsonKey,
+                  "\" = 1,\"",
+                  FatalCrashEventsObserverUploadedCrashTestBase::kOffsetJsonKey,
+                  "\" = -10}"})},
+        }),
+    [](const testing::TestParamInfo<
+        FatalCrashEventsObserverUploadedCrashCorruptSaveFileTest::ParamType>&
+           info) { return info.param.name; });
+
 }  // namespace
 }  // namespace reporting

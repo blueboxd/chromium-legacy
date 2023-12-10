@@ -13,8 +13,7 @@
 
 EmbeddedPermissionPromptAskView::EmbeddedPermissionPromptAskView(
     Browser* browser,
-    base::WeakPtr<permissions::PermissionPrompt::Delegate> delegate,
-    bool is_permission_allowed)
+    base::WeakPtr<permissions::PermissionPrompt::Delegate> delegate)
     : EmbeddedPermissionPromptBaseView(browser, delegate) {}
 
 EmbeddedPermissionPromptAskView::~EmbeddedPermissionPromptAskView() = default;
@@ -42,7 +41,7 @@ void EmbeddedPermissionPromptAskView::RunButtonCallback(int button_id) {
 }
 
 std::vector<EmbeddedPermissionPromptAskView::RequestLineConfiguration>
-EmbeddedPermissionPromptAskView::GetRequestLinesConfiguration() {
+EmbeddedPermissionPromptAskView::GetRequestLinesConfiguration() const {
   std::vector<RequestLineConfiguration> lines;
 
   for (auto* request : delegate()->Requests()) {
@@ -53,7 +52,7 @@ EmbeddedPermissionPromptAskView::GetRequestLinesConfiguration() {
 }
 
 std::vector<EmbeddedPermissionPromptAskView::ButtonConfiguration>
-EmbeddedPermissionPromptAskView::GetButtonsConfiguration() {
+EmbeddedPermissionPromptAskView::GetButtonsConfiguration() const {
   std::vector<ButtonConfiguration> buttons;
   if (base::FeatureList::IsEnabled(permissions::features::kOneTimePermission)) {
     buttons.emplace_back(

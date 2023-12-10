@@ -33,7 +33,7 @@ class RadioButtonGroup : public GarbageCollected<RadioButtonGroup> {
 
   bool IsEmpty() const { return members_.empty(); }
   bool IsRequired() const { return required_count_; }
-  HTMLInputElement* CheckedButton() const { return checked_button_; }
+  HTMLInputElement* CheckedButton() const { return checked_button_.Get(); }
   void Add(HTMLInputElement*);
   void UpdateCheckedState(HTMLInputElement*);
   void RequiredAttributeChanged(HTMLInputElement*);
@@ -277,7 +277,7 @@ RadioButtonGroup* RadioButtonGroupScope::FindGroupByName(
   if (!name_to_group_map_)
     return nullptr;
   auto it = name_to_group_map_->find(name);
-  return it != name_to_group_map_->end() ? it->value : nullptr;
+  return it != name_to_group_map_->end() ? it->value.Get() : nullptr;
 }
 
 }  // namespace blink

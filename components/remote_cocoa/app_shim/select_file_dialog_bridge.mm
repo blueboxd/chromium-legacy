@@ -41,6 +41,10 @@ NSString* GetDescriptionFromExtension(const base::FilePath::StringType& ext) {
   if (description.length) {
     return description;
   } else {
+    base::apple::ScopedCFTypeRef<CFStringRef> uti(CreateUTIFromExtension(ext));
+    NSString* description =
+        base::apple::CFToNSOwnershipCast(UTTypeCopyDescription(uti.get()));
+
     if (description && description.length) {
       return description;
     }
@@ -90,7 +94,7 @@ NSView* CreateAccessoryView() {
   return view;
 }
 
-NSSavePanel* __unsafe_unretained g_last_created_panel_for_testing = nil;
+NSSavePanel* __weak g_last_created_panel_for_testing = nil;
 
 }  // namespace
 
@@ -292,25 +296,17 @@ void SelectFileDialogBridge::Show(
   // Ensure that |callback| (rather than |this|) be retained by the block.
   auto callback = base::BindRepeating(&SelectFileDialogBridge::OnPanelEnded,
                                       weak_factory_.GetWeakPtr());
-
-  if(@available(macOS 10.15,*)){
-    // In immersive fullscreen, `panel_` might be shown behind`owning_window_`.
-    // Adding `panel_` as a child of `owning_window_` seems to force `panel_` on
-    // top. See crbug.com/1484058.
-    [owning_window_ addChildWindow:panel_ ordered:NSWindowAbove];
-    [panel_ beginSheetModalForWindow:owning_window_
-                   completionHandler:^(NSInteger result) {
-                     callback.Run(result != NSModalResponseOK);
-                   }];
-    // Per crbug.com/605098, a sheet should not have a parentWindow (it should
-    // have only sheetParent), so remove it from its window parent.
-    [owning_window_ removeChildWindow:panel_];
-  } else {
-    [panel_ beginSheetModalForWindow:owning_window_
-                   completionHandler:^(NSInteger result) {
-                     callback.Run(result != NSModalResponseOK);
-                   }];
-  }
+  // In immersive fullscreen, `panel_` might be shown behind`owning_window_`.
+  // Adding `panel_` as a child of `owning_window_` seems to force `panel_` on
+  // top. See crbug.com/1484058.
+  [owning_window_ addChildWindow:panel_ ordered:NSWindowAbove];
+  [panel_ beginSheetModalForWindow:owning_window_
+                 completionHandler:^(NSInteger result) {
+                   callback.Run(result != NSModalResponseOK);
+                 }];
+  // Per crbug.com/605098, a sheet should not have a parentWindow (it should
+  // have only sheetParent), so remove it from its window parent.
+  [owning_window_ removeChildWindow:panel_];
 }
 
 void SelectFileDialogBridge::SetAccessoryView(

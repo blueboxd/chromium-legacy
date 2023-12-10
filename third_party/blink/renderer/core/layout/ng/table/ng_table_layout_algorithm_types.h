@@ -8,8 +8,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/geometry/box_strut.h"
 #include "third_party/blink/renderer/core/layout/min_max_sizes.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
@@ -119,14 +119,14 @@ class CORE_EXPORT NGTableTypes {
   struct CellBlockConstraint {
     DISALLOW_NEW();
     LayoutUnit min_block_size;
-    NGBoxStrut borders;
+    BoxStrut borders;
     wtf_size_t column_index;
     wtf_size_t effective_rowspan;
     bool is_constrained;  // True if this cell has a specified block-size.
     bool has_descendant_that_depends_on_percentage_block_size;
     CellBlockConstraint(
         LayoutUnit min_block_size,
-        NGBoxStrut borders,
+        BoxStrut borders,
         wtf_size_t column_index,
         wtf_size_t effective_rowspan,
         bool is_constrained,
@@ -213,8 +213,8 @@ class CORE_EXPORT NGTableTypes {
       const NGBlockNode&,
       WritingDirectionMode table_writing_direction,
       bool is_fixed_layout,
-      const NGBoxStrut& cell_border,
-      const NGBoxStrut& cell_padding);
+      const BoxStrut& cell_border,
+      const BoxStrut& cell_padding);
 
   static Section CreateSection(const NGLayoutInputNode&,
                                wtf_size_t start_row,

@@ -123,9 +123,6 @@ COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::FeatureParam<bool> kPrefetchDNSWithURLAllAnchorElements;
 
 COMPONENT_EXPORT(NETWORK_CPP)
-BASE_DECLARE_FEATURE(kOutOfProcessSystemDnsResolution);
-
-COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kAccessControlAllowMethodsInCORSPreflightSpecConformant);
 
 // If enabled, then navigation requests should check the match responses in the
@@ -157,6 +154,10 @@ BASE_DECLARE_FEATURE(kVisibilityAwareResourceScheduler);
 // Enables Compression Dictionary Transport with Zstandard (aka Shared Zstd).
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kSharedZstd);
+
+// Enables de-duping of cookie access details sent to observers.
+COMPONENT_EXPORT(NETWORK_CPP)
+BASE_DECLARE_FEATURE(kCookieAccessDetailsNotificationDeDuping);
 
 }  // namespace features
 }  // namespace network

@@ -9,6 +9,7 @@
 #include "base/task/thread_pool.h"
 #include "base/types/pass_key.h"
 #include "content/browser/media/cdm_storage_common.h"
+#include "content/public/common/content_features.h"
 #include "media/cdm/cdm_type.h"
 #include "media/mojo/mojom/cdm_storage.mojom.h"
 
@@ -20,6 +21,8 @@ const char kUmaPrefix[] = "Media.EME.CdmStorageManager.";
 
 const char kIncognito[] = "Incognito";
 const char kNonIncognito[] = "NonIncognito";
+
+const char kMigration[] = ".Migration";
 
 const char kDeleteDatabaseError[] = "DeleteDatabaseError.";
 const char kDeleteForStorageKeyError[] = "DeleteForStorageKeyError.";
@@ -130,12 +133,11 @@ void CdmStorageManager::DeleteFile(const blink::StorageKey& storage_key,
 
 void CdmStorageManager::DeleteDataForStorageKey(
     const blink::StorageKey& storage_key,
-    const media::CdmType& cdm_type,
     base::OnceCallback<void(bool)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   db_.AsyncCall(&CdmStorageDatabase::DeleteDataForStorageKey)
-      .WithArgs(storage_key, cdm_type)
+      .WithArgs(storage_key)
       .Then(base::BindOnce(&CdmStorageManager::DidDeleteForStorageKey,
                            weak_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -248,7 +250,18 @@ void CdmStorageManager::ReportDatabaseOpenError(CdmStorageOpenError error) {
 }
 
 std::string CdmStorageManager::GetHistogramName(const char operation[]) {
-  return std::string{kUmaPrefix} + std::string{operation} +
-         (in_memory() ? std::string{kIncognito} : std::string{kNonIncognito});
+  // If the 'kCdmStorageDatabaseMigration' flag is enabled, we should mark the
+  // UMA with the fact that this error came during the migration.
+
+  auto histogram_name =
+      std::string{kUmaPrefix} + std::string{operation} +
+      (in_memory() ? std::string{kIncognito} : std::string{kNonIncognito});
+
+  if (base::FeatureList::IsEnabled(features::kCdmStorageDatabase) &&
+      base::FeatureList::IsEnabled(features::kCdmStorageDatabaseMigration)) {
+    histogram_name += std::string{kMigration};
+  }
+
+  return histogram_name;
 }
 }  // namespace content

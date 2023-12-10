@@ -135,6 +135,7 @@
 #define IDC_SHOW_PASSWORD_MANAGER       35041
 #define IDC_SHOW_PAYMENT_METHODS        35042
 #define IDC_SHOW_ADDRESSES              35043
+#define IDC_ORGANIZE_TABS               35044
 
 // Page-manipulation commands that target a specified tab, which may not be the
 // active one.
@@ -215,6 +216,7 @@
 #define IDC_MANAGE_EXTENSIONS           40022
 #define IDC_DEV_TOOLS_INSPECT           40023
 #define IDC_UPGRADE_DIALOG              40024
+#define IDC_SHOW_HISTORY_CLUSTERS_SIDE_PANEL 40025
 #define IDC_PROFILING_ENABLED           40028
 #define IDC_BOOKMARKS_MENU              40029
 #define IDC_EXTENSION_ERRORS            40031
@@ -260,6 +262,7 @@
 #define IDC_READING_LIST_MENU           40270
 #define IDC_READING_LIST_MENU_ADD_TAB   40271
 #define IDC_READING_LIST_MENU_SHOW_UI   40272
+#define IDC_SHOW_READING_MODE_SIDE_PANEL 40273
 #define IDC_SHOW_BOOKMARK_SIDE_PANEL    40274
 #define IDC_SHOW_SEARCH_COMPANION       40275
 #define IDC_SHOW_CHROME_LABS            40276
@@ -408,6 +411,7 @@
 #define IDC_CONTENT_CONTEXT_OPEN_WITH_LAST IDC_CONTENT_CONTEXT_OPEN_WITH14
 // Context menu items that provide fast access to input methods.
 #define IDC_CONTENT_CONTEXT_EMOJI 50210
+#define IDC_CONTEXT_COMPOSE 50220
 // Context menu items in the bookmark bar
 #define IDC_BOOKMARK_BAR_OPEN_ALL 51000
 #define IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW 51001

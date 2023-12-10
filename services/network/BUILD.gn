@@ -11,12 +11,6 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 
 component("network_service") {
   sources = [
-    "brokered_client_socket_factory.cc",
-    "brokered_client_socket_factory.h",
-    "brokered_tcp_client_socket.cc",
-    "brokered_tcp_client_socket.h",
-    "brokered_udp_client_socket.cc",
-    "brokered_udp_client_socket.h",
     "chunked_data_pipe_upload_data_stream.cc",
     "chunked_data_pipe_upload_data_stream.h",
     "conditional_cache_deletion_helper.cc",
@@ -66,6 +60,12 @@ component("network_service") {
     "ip_protection_config_cache.h",
     "ip_protection_config_cache_impl.cc",
     "ip_protection_config_cache_impl.h",
+    "ip_protection_proxy_list_manager.h",
+    "ip_protection_proxy_list_manager_impl.cc",
+    "ip_protection_proxy_list_manager_impl.h",
+    "ip_protection_token_cache_manager.h",
+    "ip_protection_token_cache_manager_impl.cc",
+    "ip_protection_token_cache_manager_impl.h",
     "is_browser_initiated.h",
     "keepalive_statistics_recorder.cc",
     "keepalive_statistics_recorder.h",
@@ -286,6 +286,12 @@ component("network_service") {
     sources += [
       "broker_helper_win.cc",
       "broker_helper_win.h",
+      "brokered_client_socket_factory.cc",
+      "brokered_client_socket_factory.h",
+      "brokered_tcp_client_socket.cc",
+      "brokered_tcp_client_socket.h",
+      "brokered_udp_client_socket.cc",
+      "brokered_udp_client_socket.h",
       "windows_system_proxy_resolver_mojo.cc",
       "windows_system_proxy_resolver_mojo.h",
     ]
@@ -331,7 +337,6 @@ component("network_service") {
     "//services/network/trust_tokens",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
-    "//sql",
     "//url",
   ]
 
@@ -366,10 +371,6 @@ component("network_service") {
   }
 
   if (is_android) {
-    sources += [
-      "sandboxed_vfs_delegate.cc",
-      "sandboxed_vfs_delegate.h",
-    ]
     deps += [
       "//crypto",
       "//third_party/boringssl",
@@ -394,6 +395,7 @@ if (is_linux || is_chromeos) {
       "//sandbox/linux:sandbox_services",
       "//sandbox/policy:policy",
     ]
+    configs += [ "//build/config/compiler:wexit_time_destructors" ]
   }
 }
 
@@ -401,8 +403,6 @@ source_set("tests") {
   testonly = true
 
   sources = [
-    "brokered_tcp_client_socket_unittest.cc",
-    "brokered_udp_client_socket_unittest.cc",
     "chunked_data_pipe_upload_data_stream_unittest.cc",
     "cookie_access_delegate_impl_unittest.cc",
     "cookie_manager_unittest.cc",
@@ -426,6 +426,8 @@ source_set("tests") {
     "http_cache_data_remover_unittest.cc",
     "ignore_errors_cert_verifier_unittest.cc",
     "ip_protection_config_cache_impl_unittest.cc",
+    "ip_protection_proxy_list_manager_impl_unittest.cc",
+    "ip_protection_token_cache_manager_impl_unittest.cc",
     "keepalive_statistics_recorder_unittest.cc",
     "masked_domain_list/network_service_proxy_allow_list_unittest.cc",
     "masked_domain_list/network_service_resource_block_list_unittest.cc",
@@ -521,6 +523,8 @@ source_set("tests") {
   if (is_win) {
     sources += [
       "broker_helper_win_unittest.cc",
+      "brokered_tcp_client_socket_unittest.cc",
+      "brokered_udp_client_socket_unittest.cc",
       "windows_system_proxy_resolver_mojo_unittest.cc",
     ]
   }

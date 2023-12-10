@@ -49,6 +49,12 @@ static constexpr auto kAutofillHeuristicsVsHtmlOverrides =
          {ADDRESS_HOME_APT_NUM, HtmlFieldType::kAddressLine2},
          {ADDRESS_HOME_APT_NUM, HtmlFieldType::kAddressLine3},
          {ADDRESS_HOME_BETWEEN_STREETS, HtmlFieldType::kAddressLevel2},
+         {ADDRESS_HOME_BETWEEN_STREETS_OR_LANDMARK,
+          HtmlFieldType::kAddressLevel2},
+         {ADDRESS_HOME_BETWEEN_STREETS_OR_LANDMARK,
+          HtmlFieldType::kAddressLine2},
+         {ADDRESS_HOME_BETWEEN_STREETS_OR_LANDMARK,
+          HtmlFieldType::kOrganization},
          {ADDRESS_HOME_DEPENDENT_LOCALITY, HtmlFieldType::kAddressLevel1},
          {ADDRESS_HOME_DEPENDENT_LOCALITY, HtmlFieldType::kAddressLevel2},
          {ADDRESS_HOME_DEPENDENT_LOCALITY, HtmlFieldType::kAddressLevel3},
@@ -76,6 +82,7 @@ static constexpr auto kAutofillHeuristicsVsServerOverrides =
          {ADDRESS_HOME_DEPENDENT_LOCALITY, ADDRESS_HOME_LINE2},
          {ADDRESS_HOME_DEPENDENT_LOCALITY, ADDRESS_HOME_LINE3},
          {ADDRESS_HOME_LANDMARK, ADDRESS_HOME_LINE2},
+         {ADDRESS_HOME_BETWEEN_STREETS_OR_LANDMARK, ADDRESS_HOME_LINE2},
          {ADDRESS_HOME_OVERFLOW_AND_LANDMARK, ADDRESS_HOME_LINE2},
          {ADDRESS_HOME_OVERFLOW, ADDRESS_HOME_LINE2}});
 
@@ -256,9 +263,11 @@ AutofillField::AutofillField(FieldSignature field_signature) : AutofillField() {
 }
 
 AutofillField::AutofillField(const FormFieldData& field)
-    : FormFieldData(field), parseable_name_(name), parseable_label_(label) {
-  field_signature_ = CalculateFieldSignatureByNameAndType(
-      name, FormControlTypeToString(form_control_type));
+    : FormFieldData(field),
+      field_signature_(
+          CalculateFieldSignatureByNameAndType(name, form_control_type)),
+      parseable_name_(name),
+      parseable_label_(label) {
   local_type_predictions_.fill(NO_SERVER_DATA);
 }
 
@@ -447,7 +456,7 @@ AutofillType AutofillField::ComputedType() const {
     // Either way, retain a preference for the CVC heuristic over the
     // server's password predictions (http://crbug.com/469007)
     believe_server =
-        believe_server && !(AutofillType(server_type()).group() ==
+        believe_server && !(GroupTypeOfServerFieldType(server_type()) ==
                                 FieldTypeGroup::kPasswordField &&
                             heuristic_type() == CREDIT_CARD_VERIFICATION_CODE);
 
@@ -505,8 +514,7 @@ bool AutofillField::IsEmpty() const {
 FieldSignature AutofillField::GetFieldSignature() const {
   return field_signature_
              ? *field_signature_
-             : CalculateFieldSignatureByNameAndType(
-                   name, FormControlTypeToString(form_control_type));
+             : CalculateFieldSignatureByNameAndType(name, form_control_type);
 }
 
 std::string AutofillField::FieldSignatureAsStr() const {
@@ -545,8 +553,10 @@ void AutofillField::NormalizePossibleTypesValidities() {
 }
 
 bool AutofillField::IsCreditCardPrediction() const {
-  return AutofillType(server_type()).group() == FieldTypeGroup::kCreditCard ||
-         AutofillType(heuristic_type()).group() == FieldTypeGroup::kCreditCard;
+  return GroupTypeOfServerFieldType(server_type()) ==
+             FieldTypeGroup::kCreditCard ||
+         GroupTypeOfServerFieldType(heuristic_type()) ==
+             FieldTypeGroup::kCreditCard;
 }
 
 void AutofillField::AppendLogEventIfNotRepeated(
@@ -557,10 +567,13 @@ void AutofillField::AppendLogEventIfNotRepeated(
 
   // Disable it for now until we find a selection criterion to select forms to
   // be recorded into UKM. Always enable for clients with
-  // `features::kAutofillFeedback` enabled.
+  // `features::kAutofillFeedback` and
+  // `features::kAutofillGranularFillingAvailable` enabled.
   if (!base::FeatureList::IsEnabled(
           features::kAutofillLogUKMEventsWithSampleRate) &&
-      !base::FeatureList::IsEnabled(features::kAutofillFeedback)) {
+      !base::FeatureList::IsEnabled(features::kAutofillFeedback) &&
+      !base::FeatureList::IsEnabled(
+          features::kAutofillGranularFillingAvailable)) {
     return;
   }
 
@@ -591,8 +604,6 @@ DeprecatedFormControlType AutofillField::FormControlType() const {
     return DeprecatedFormControlType::kSelectOne;
   } else if (form_control_type == FormControlType::kSelectList) {
     return DeprecatedFormControlType::kSelectlist;
-  } else if (form_control_type == FormControlType::kEmpty) {
-    return DeprecatedFormControlType::kEmpty;
   } else {
     return DeprecatedFormControlType::kOther;
   }

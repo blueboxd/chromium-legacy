@@ -68,15 +68,15 @@
 // Whether the NTP should initially be scrolled into the feed.
 @property(nonatomic, assign) BOOL shouldScrollIntoFeed;
 
-// `YES` when notifications indicate the omnibox is focused.
-@property(nonatomic, assign) BOOL omniboxFocused;
-
 // `YES` if the omnibox should be focused on when the view appears for voice
 // over.
 @property(nonatomic, assign) BOOL focusAccessibilityOmniboxWhenViewAppears;
 
 // The mutator to provide updates to the NTP mediator.
 @property(nonatomic, weak) id<NewTabPageMutator> mutator;
+
+// Whether or not the fake omnibox is pinned to the top of the NTP.
+@property(nonatomic, readonly) BOOL isFakeboxPinned;
 
 // Initializes the new tab page view controller.
 - (instancetype)init NS_DESIGNATED_INITIALIZER;

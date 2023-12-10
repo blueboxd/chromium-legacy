@@ -307,10 +307,12 @@ test("device_unittests") {
       "bluetooth/floss/floss_battery_manager_client_unittest.cc",
       "bluetooth/floss/floss_bluetooth_telephony_client_unittest.cc",
       "bluetooth/floss/floss_dbus_client_unittest.cc",
+      "bluetooth/floss/floss_dbus_manager_unittest.cc",
       "bluetooth/floss/floss_gatt_manager_client_unittest.cc",
       "bluetooth/floss/floss_lescan_client_unittest.cc",
       "bluetooth/floss/floss_manager_client_unittest.cc",
       "bluetooth/floss/floss_socket_manager_unittest.cc",
+      "bluetooth/floss/floss_version_unittest.cc",
       "bluetooth/test/bluetooth_test_bluez.cc",
       "bluetooth/test/bluetooth_test_bluez.h",
     ]
@@ -489,11 +491,11 @@ if (is_android) {
     sources = bluetooth_java_sources_needing_jni
     deps = [
       "//base:base_java",
-      "//base:jni_java",
       "//components/location/android:location_java",
       "//device/bluetooth:java",
       "//third_party/android_sdk:android_test_mock_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
+      "//third_party/jni_zero:jni_zero_java",
     ]
 
     srcjar_deps = [

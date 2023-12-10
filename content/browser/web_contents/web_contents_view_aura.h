@@ -15,8 +15,8 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
-#include "content/browser/site_instance_group.h"
 #include "content/browser/web_contents/web_contents_view.h"
+#include "content/browser/web_contents/web_contents_view_drag_security_info.h"
 #include "content/common/buildflags.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
@@ -177,11 +177,6 @@ class CONTENT_EXPORT WebContentsViewAura
   // Returns GetNativeView unless overridden for testing.
   gfx::NativeView GetRenderWidgetHostViewParent() const;
 
-  // Returns whether |target_rwh| is a valid RenderWidgetHost to be dragging
-  // over. This enforces that same-page, cross-site drags are not allowed. See
-  // crbug.com/666858.
-  bool IsValidDragTarget(RenderWidgetHostImpl* target_rwh) const;
-
   // Called from CreateView() to create |window_|.
   void CreateAuraWindow(aura::Window* context);
 
@@ -202,7 +197,7 @@ class CONTENT_EXPORT WebContentsViewAura
   void RestoreFocus() override;
   void FocusThroughTabTraversal(bool reverse) override;
   DropData* GetDropData() const override;
-  void CancelDragDropForPortalActivation() override;
+  void TransferDragSecurityInfo(WebContentsView* view) override;
   gfx::Rect GetViewBounds() const override;
   void CreateView(gfx::NativeView context) override;
   RenderWidgetHostViewBase* CreateViewForWidget(
@@ -365,7 +360,7 @@ class CONTENT_EXPORT WebContentsViewAura
   std::unique_ptr<WindowObserver> window_observer_;
 
   // The WebContentsImpl whose contents we display.
-  raw_ptr<WebContentsImpl> web_contents_;
+  const raw_ptr<WebContentsImpl> web_contents_;
 
   std::unique_ptr<WebContentsViewDelegate> delegate_;
 
@@ -387,34 +382,8 @@ class CONTENT_EXPORT WebContentsViewAura
   // avoid sending the drag exited message after leaving the current view.
   GlobalRoutingID current_rvh_for_drag_;
 
-  // We track the IDs of the source RenderProcessHost and RenderViewHost from
-  // which the current drag originated. These are used to ensure that drag
-  // events do not fire over a cross-site frame (with respect to the source
-  // frame) in the same page (see crbug.com/666858). Specifically, the
-  // RenderViewHost is used to check the "same page" property, while the
-  // RenderProcessHost is used to check the "cross-site" property. Note that the
-  // reason the RenderProcessHost is tracked instead of the RenderWidgetHost is
-  // so that we still allow drags between non-contiguous same-site frames (such
-  // frames will have the same process, but different widgets). Note also that
-  // the RenderViewHost may not be in the same process as the RenderProcessHost,
-  // since the view corresponds to the page, while the process is specific to
-  // the frame from which the drag started.
-  // We also track whether a dragged image is accessible from its frame, so we
-  // can disallow tainted-cross-origin same-page drag-drop.
-  struct DragStart {
-    DragStart(SiteInstanceGroupId site_instance_group_id,
-              GlobalRoutingID view_id,
-              bool image_accessible_from_frame)
-        : site_instance_group_id(site_instance_group_id),
-          view_id(view_id),
-          image_accessible_from_frame(image_accessible_from_frame) {}
-    ~DragStart() = default;
-
-    SiteInstanceGroupId site_instance_group_id;
-    GlobalRoutingID view_id;
-    bool image_accessible_from_frame;
-  };
-  absl::optional<DragStart> drag_start_;
+  // Holds the security info for the current drag.
+  WebContentsViewDragSecurityInfo drag_security_info_;
 
   // Responsible for handling gesture-nav and pull-to-refresh UI.
   std::unique_ptr<GestureNavSimple> gesture_nav_simple_;

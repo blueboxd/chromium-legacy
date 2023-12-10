@@ -124,6 +124,7 @@
 #if BUILDFLAG(IS_LINUX)
 #include "content/browser/accessibility/browser_accessibility_auralinux.h"
 #include "ui/base/ime/linux/text_edit_command_auralinux.h"
+#include "ui/base/ime/text_input_flags.h"
 #include "ui/linux/linux_ui.h"
 #endif
 
@@ -797,8 +798,10 @@ void RenderWidgetHostViewAura::ComputeDisplayFeature() {
 
   const display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window_);
-  // Set the display feature only if the browser window is maximized.
-  if (window_->GetRootWindow()->GetBoundsInScreen() != display.work_area()) {
+  // Set the display feature only if the browser window is maximized or
+  // fullscreen.
+  if (window_->GetRootWindow()->GetBoundsInScreen() != display.work_area() &&
+      window_->GetRootWindow()->GetBoundsInScreen() != display.bounds()) {
     return;
   }
 
@@ -2753,7 +2756,13 @@ void RenderWidgetHostViewAura::ForwardKeyboardEventWithLatencyInfo(
   auto* linux_ui = ui::LinuxUi::instance();
   std::vector<ui::TextEditCommandAuraLinux> commands;
   if (!event.skip_if_unhandled && linux_ui && event.os_event &&
-      linux_ui->GetTextEditCommandsForEvent(*event.os_event, &commands)) {
+      linux_ui->GetTextEditCommandsForEvent(
+          *event.os_event,
+          base::FeatureList::IsEnabled(
+              blink::features::kArrowKeysInVerticalWritingModes)
+              ? GetTextInputFlags()
+              : ui::TEXT_INPUT_FLAG_NONE,
+          &commands)) {
     // Transform from ui/ types to content/ types.
     std::vector<blink::mojom::EditCommandPtr> edit_commands;
     for (std::vector<ui::TextEditCommandAuraLinux>::const_iterator it =

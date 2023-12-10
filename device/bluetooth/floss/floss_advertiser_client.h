@@ -17,7 +17,11 @@
 namespace floss {
 
 constexpr char kAdvertisingSetCallbackPath[] =
-    "/org/chromium/bluetooth/advertising_set_callback";
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    "/org/chromium/bluetooth/advertising_set/callback/lacros";
+#else
+    "/org/chromium/bluetooth/advertising_set/callback";
+#endif
 
 // Represents type of address to advertise.
 enum class OwnAddressType {
@@ -161,6 +165,7 @@ class DEVICE_BLUETOOTH_EXPORT FlossAdvertiserClient
   void Init(dbus::Bus* bus,
             const std::string& service_name,
             const int adapter_index,
+            base::Version version,
             base::OnceClosure on_ready) override;
 
   // Manages observers.

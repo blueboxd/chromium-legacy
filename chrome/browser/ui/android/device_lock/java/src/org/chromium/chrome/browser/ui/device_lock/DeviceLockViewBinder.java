@@ -4,6 +4,10 @@
 
 package org.chromium.chrome.browser.ui.device_lock;
 
+import android.view.View;
+
+import androidx.appcompat.content.res.AppCompatResources;
+
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -22,6 +26,8 @@ public class DeviceLockViewBinder {
             DeviceLockViewBinder.setContinueButton(model, view);
         } else if (propertyKey == DeviceLockProperties.IN_SIGN_IN_FLOW) {
             DeviceLockViewBinder.setDismissButtonText(model, view);
+        } else if (propertyKey == DeviceLockProperties.UI_ENABLED) {
+            DeviceLockViewBinder.setUiStyle(model, view);
         } else if (propertyKey == DeviceLockProperties.ON_DISMISS_CLICKED) {
             view.getDismissButton().setOnClickListener(
                     model.get(DeviceLockProperties.ON_DISMISS_CLICKED));
@@ -66,6 +72,33 @@ public class DeviceLockViewBinder {
         } else {
             view.getContinueButton().setOnClickListener(
                     model.get(DeviceLockProperties.ON_GO_TO_OS_SETTINGS_CLICKED));
+        }
+    }
+
+    private static void setUiStyle(PropertyModel model, DeviceLockView view) {
+        if (model.get(DeviceLockProperties.UI_ENABLED)) {
+            view.getProgressBar().setVisibility(View.GONE);
+            view.getTitle().setTextAppearance(R.style.TextAppearance_Headline_Primary);
+            view.getDescription().setTextAppearance(R.style.TextAppearance_TextMedium_Primary);
+            view.getNoticeText().setTextAppearance(R.style.TextAppearance_TextMedium_Primary);
+            view.getNoticeText()
+                    .setDrawableTintColor(
+                            AppCompatResources.getColorStateList(
+                                    view.getContext(),
+                                    R.color.default_icon_color_accent1_tint_list));
+            view.getContinueButton().setEnabled(true);
+            view.getDismissButton().setEnabled(true);
+        } else {
+            view.getProgressBar().setVisibility(View.VISIBLE);
+            view.getTitle().setTextAppearance(R.style.TextAppearance_Headline_Disabled);
+            view.getDescription().setTextAppearance(R.style.TextAppearance_TextMedium_Disabled);
+            view.getNoticeText().setTextAppearance(R.style.TextAppearance_TextMedium_Disabled);
+            view.getNoticeText()
+                    .setDrawableTintColor(
+                            AppCompatResources.getColorStateList(
+                                    view.getContext(), R.color.default_text_color_disabled_list));
+            view.getContinueButton().setEnabled(false);
+            view.getDismissButton().setEnabled(false);
         }
     }
 

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <limits>
+#include <memory>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -55,7 +56,6 @@ constexpr const char* usage_msg =
            [--output_limit=<number>] [--output_folder=<folder>]
            [--linear_output] ([--use-legacy]|[--use_vd_vda])
            [--use-gl=<backend>] [--ozone-platform=<platform>]
-           [--disable_vaapi_lock]
            [--gtest_help] [--help]
            [<video path>] [<video metadata path>]
 )";
@@ -102,13 +102,7 @@ The following arguments are supported:
                         swiftshader (software rendering)
   --ozone-platform      specify which Ozone platform to use, possible values
                         depend on build configuration but normally include
-                        x11, drm, wayland, and headless
-  --disable_vaapi_lock  disable the global VA-API lock if applicable,
-                        i.e., only on devices that use the VA-API with a libva
-                        backend that's known to be thread-safe and only in
-                        portions of the Chrome stack that should be able to
-                        deal with the absence of the lock
-                        (not the VaapiVideoDecodeAccelerator).)""") +
+                        x11, drm, wayland, and headless.)""") +
 #if defined(ARCH_CPU_ARM_FAMILY)
     R"""(
   --disable-libyuv      use hw format conversion instead of libYUV.
@@ -264,7 +258,7 @@ class VideoDecoderTest : public ::testing::Test {
     }
 
     Dav1dVideoDecoder decoder(
-        /*media_log=*/nullptr,
+        std::make_unique<NullMediaLog>(),
         OffloadableVideoDecoder::OffloadState::kOffloaded);
     VideoDecoderConfig decoder_config(
         video->Codec(), video->Profile(),
@@ -435,14 +429,14 @@ TEST_F(VideoDecoderTest, Decode) {
                                 /*times=*/kNumDecodeBuffers));
 }
 
-// This test case sends all the frames and expects them to be fully decoded
-// (as in, VideoDecoder::OutputCB should be called). Most of them should be
-// decoded as well, but since this test doesn't exercise an End-of-Stream
-// (a.k.a. "a flush"), some will likely be held onto by the VideoDecoder/driver
-// as part of its decoding pipeline. We don't know how many (it depends also on
-// the ImageProcessor, if any), so it's not a good idea to set expectations on
-// the number of kFrameDecoded events.
-TEST_F(VideoDecoderTest, DecodeAndOutputAllFrames) {
+// This test case sends all the frames and expects them to be accepted for
+// decoding (as in, VideoDecoder::OutputCB should be called). Most of them
+// should be decoded as well, but since this test doesn't exercise an
+// End-of-Stream (a.k.a. "a flush"), some will likely be held onto by the
+// VideoDecoder/driver as part of its decoding pipeline. We don't know how
+// many (it depends also on the ImageProcessor, if any), so it's not a good
+// idea to set expectations on the number of kFrameDecoded events.
+TEST_F(VideoDecoderTest, AllDecoderBuffersAcceptedForDecoding) {
   auto tvp = CreateDecoderListener(g_env->Video());
 
   tvp->Play();
@@ -816,8 +810,6 @@ int main(int argc, char** argv) {
       implementation = media::test::DecoderImplementation::kVDVDA;
     } else if (it->first == "linear_output") {
       linear_output = true;
-    } else if (it->first == "disable_vaapi_lock") {
-      disabled_features.push_back(media::kGlobalVaapiLock);
 #if defined(ARCH_CPU_ARM_FAMILY)
     } else if (it->first == "disable-libyuv") {
       enabled_features.clear();
@@ -828,6 +820,8 @@ int main(int argc, char** argv) {
       return EXIT_FAILURE;
     }
   }
+
+  disabled_features.push_back(media::kGlobalVaapiLock);
 
   if (use_legacy && use_vd_vda) {
     std::cout << "--use-legacy and --use_vd_vda cannot be enabled together.\n"

@@ -310,7 +310,6 @@
 <translation id="2276987123919776440">15 นาที</translation>
 <translation id="2277103315734023688">ไปข้างหน้า</translation>
 <translation id="2282073721614284166">เปิดลิงก์ในแท็บ</translation>
-<translation id="2284237890386182187">เปิดอยู่ ไม่มีอุปกรณ์ที่เชื่อมต่อ</translation>
 <translation id="2292698582925480719">ระดับการแสดงผล</translation>
 <translation id="229397294990920565">กำลังปิดอินเทอร์เน็ตมือถือ...</translation>
 <translation id="2295777434187870477">ไมค์เปิดอยู่ การปิดไมค์จะปิดเสียงการป้อนข้อมูล</translation>
@@ -352,7 +351,6 @@
 <translation id="243878895369688216">เปิดเมื่อวานนี้</translation>
 <translation id="2440978926514840421">บันทึก GIF แล้ว</translation>
 <translation id="2441427462554639370">การบันทึกสิ้นสุดเนื่องจากพื้นที่เก็บข้อมูลใกล้เต็มแล้ว</translation>
-<translation id="24452542372838207">ขยายการแจ้งเตือน</translation>
 <translation id="2448312741937722512">ประเภท</translation>
 <translation id="2449089818483227734">แบตเตอรี่เหลือน้อย</translation>
 <translation id="2450205753526923158">โหมดภาพหน้าจอ</translation>
@@ -493,7 +491,6 @@
 <translation id="3062298103034426069">ไม่รองรับ</translation>
 <translation id="3068622547379332530">เวอร์ชัน <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">ชั้นวางอยู่ทางซ้าย</translation>
-<translation id="3070639127620815135">Search + Esc</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">ขยายเมนู</translation>
 <translation id="3087734570205094154">ด้านล่าง</translation>
@@ -572,7 +569,6 @@
 <translation id="3387527074123400161">Chromium OS</translation>
 <translation id="3389599499324569679">เปิดการพิมพ์ตามคำบอกใช่ไหม</translation>
 <translation id="3394432020929931914">, ขยายแล้ว</translation>
-<translation id="3400357268283240774">การตั้งค่าเพิ่มเติม</translation>
 <translation id="3405101454990027959">เปิดการเข้าถึงไมโครโฟน</translation>
 <translation id="3408735331120433841">กำลังแคสต์หน้าจออยู่ในขณะนี้</translation>
 <translation id="3409584356742878290">แสดงหรือซ่อนตัวตรวจสอบเครื่องมือสำหรับนักพัฒนาแอป</translation>
@@ -620,7 +616,6 @@
 <translation id="3563775809269155755">เปิดใช้ฮอตสปอต</translation>
 <translation id="3566240529365775567">เปิดเมื่อสักครู่</translation>
 <translation id="3571734092741541777">ตั้งค่า</translation>
-<translation id="3572988532398145777">คุณขยายการแจ้งเตือนขณะที่แผงเปิดอยู่ไม่ได้ โปรดปิดแผงด้านล่างก่อน</translation>
 <translation id="3573179567135747900">เปลี่ยนกลับเป็น "<ph name="FROM_LOCALE" />" (จำเป็นต้องรีสตาร์ต)</translation>
 <translation id="3576141592585647168">เปลี่ยนแปลงเขตเวลา</translation>
 <translation id="3577473026931028326">เกิดข้อผิดพลาด ลองใหม่</translation>
@@ -699,7 +694,6 @@
 <translation id="385300504083504382">จุดเริ่มต้น</translation>
 <translation id="3859364108019690">สตรีมแอปไม่ได้</translation>
 <translation id="3861651314799684201">กด Enter เพื่อบันทึกแบบเต็มหน้าจอ</translation>
-<translation id="3865912916886104060">ไม่มีอุปกรณ์ที่เชื่อมต่อ ระบบจะปิด Wi-Fi เพื่อเริ่มใช้ฮอตสปอต</translation>
 <translation id="3886872229787704059">เปิดวันนี้</translation>
 <translation id="3891340733213178823">กด Ctrl+Shift+Q 2 ครั้งเพื่อออกจากระบบ</translation>
 <translation id="3893630138897523026">ChromeVox (การตอบสนองด้วยเสียง)</translation>
@@ -784,7 +778,6 @@
 <translation id="4197790712631116042">ปิด</translation>
 <translation id="4201033867194214117"><ph name="FEATURE_NAME" /> ไม่พร้อมใช้งาน</translation>
 <translation id="4201051445878709314">แสดงเดือนที่ผ่านมา</translation>
-<translation id="4202362334312791952">มีอุปกรณ์ที่เชื่อมต่ออยู่ 1 เครื่อง ระบบจะปิด Wi-Fi เพื่อเริ่มใช้ฮอตสปอต</translation>
 <translation id="4209973997261364186">Wi-Fi เปิดอยู่</translation>
 <translation id="4212472694152630271">เปลี่ยนไปใช้ PIN</translation>
 <translation id="4215497585250573029">การตั้งค่า VPN</translation>
@@ -901,7 +894,6 @@
 <translation id="468293128311738995">แอปจากโทรศัพท์ของคุณ</translation>
 <translation id="4690510401873698237">ชั้นวางอยู่ด้านล่าง</translation>
 <translation id="4696813013609194136">ปลดล็อกอุปกรณ์ด้วยรหัสของผู้ปกครอง</translation>
-<translation id="4698850295812410683">แสดงเครื่องมือสไตลัส</translation>
 <translation id="4702647871202761252">หน้าจอส่วนตัวปิดอยู่</translation>
 <translation id="4706121060329443414">ระบบจะพยายามดาวน์โหลดภายหลัง โดยจะส่งคำพูดไปประมวลผลที่ Google ก่อนในขณะนี้</translation>
 <translation id="470644585772471629">การกลับสี</translation>
@@ -1049,6 +1041,7 @@
 <translation id="5260676007519551770">เดสก์ที่ 4</translation>
 <translation id="5268819379131021772">รายการงานของ Google</translation>
 <translation id="5275923704957843041">ตัวอย่างเดสก์</translation>
+<translation id="5277869901083657836">เปิด/ปิดเครื่องมือสไตลัส</translation>
 <translation id="5278086053818066789">เปิด/ปิด ChromeVox (อธิบายและอ่านออกเสียง)</translation>
 <translation id="5283099933536931082"><ph name="APP_ITEM_TITLE" /> ส่งคำขอให้คุณดำเนินการ</translation>
 <translation id="5283198616748585639">เพิ่ม 1 นาที</translation>
@@ -1091,7 +1084,6 @@
 <translation id="5426063383988017631">เมนูการตั้งค่าปิดแล้ว</translation>
 <translation id="5428899915242071344">เริ่มเลือก</translation>
 <translation id="5429993543155113935">ขณะนี้ยังไม่รองรับหน้าต่างที่ไม่ระบุตัวตน</translation>
-<translation id="5430931332414098647">การเชื่อมต่อ Wi-Fi ฮอตสปอตจากมือถือโดยอัตโนมัติ</translation>
 <translation id="5431318178759467895">สี</translation>
 <translation id="5433020815079095860">อินพุตเสียง</translation>
 <translation id="544691375626129091">เพิ่มผู้ใช้ที่มีทั้งหมดลงในเซสชันนี้แล้ว</translation>
@@ -1120,6 +1112,7 @@
 <translation id="554893713779400387">สลับการเขียนตามคำบอก</translation>
 <translation id="5551456515017410630">เปิด/ปิดปฏิทิน</translation>
 <translation id="5551974246223970793">เมื่อค้นหาในหน้า ให้ไปยังรายการถัดไปที่ตรงกับการค้นหา</translation>
+<translation id="5555639311269196631">ปิดฮอตสปอต</translation>
 <translation id="5558091555391176027">เปิด/ปิดระดับการเข้าถึงสูงของการแชร์ใกล้เคียง</translation>
 <translation id="556042886152191864">ปุ่ม</translation>
 <translation id="5570122939431135380">เปิดแท็บใหม่ในหน้าต่างใหม่ที่ไม่ระบุตัวตน</translation>
@@ -1165,7 +1158,6 @@
 <translation id="5707775774148071965">อุปกรณ์รองรับอัตราข้อมูลที่สูงกว่าสายสัญญาณ และอาจจำกัดประสิทธิภาพของอุปกรณ์</translation>
 <translation id="5710450975648804523">โหมดห้ามรบกวนเปิดอยู่</translation>
 <translation id="571295407079589142">อินเทอร์เน็ตมือถือปิดอยู่</translation>
-<translation id="5716891621595980681">มีอุปกรณ์ที่เชื่อมต่ออยู่ <ph name="DEVICECOUNT" /> เครื่อง ระบบจะปิด Wi-Fi เพื่อเริ่มใช้ฮอตสปอต</translation>
 <translation id="5727460725221669831">หากคุณลืมรหัสผ่านหรือเปลี่ยนรหัสผ่านของบัญชี Google เมื่อเร็วๆ นี้ ให้ลองกู้คืนผู้ใช้รายนี้</translation>
 <translation id="573413375004481890">อุปกรณ์นี้รองรับจอแสดงผลทั้งหมดไม่ได้ ระบบจึงยกเลิกการเชื่อมต่อจอแสดงผลจอหนึ่ง</translation>
 <translation id="5740328398383587084">การแชร์ใกล้เคียง</translation>
@@ -1215,7 +1207,6 @@
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">เปิด</translation>
 <translation id="5920710855273935292">ปิดเสียงไมค์อยู่</translation>
-<translation id="5924855612669061715">ฮอตสปอตเปิดอยู่</translation>
 <translation id="5946788582095584774"><ph name="FEATURE_NAME" /> เปิดอยู่</translation>
 <translation id="5947494881799873997">ย้อนกลับ</translation>
 <translation id="595202126637698455">เปิดใช้งานการติดตามการปฏิบัติงานแล้ว</translation>
@@ -1231,6 +1222,7 @@
 <translation id="598407983968395253">ใช้เทมเพลต</translation>
 <translation id="598882571027504733">หากต้องการรับอัปเดต ให้รีสตาร์ท Chromebook ในขณะที่ยังเชื่อมต่อกับแป้นพิมพ์</translation>
 <translation id="6000279412553873020">แป้น ปุ่ม และอื่นๆ</translation>
+<translation id="6002122790816966947">อุปกรณ์ของคุณ</translation>
 <translation id="6012623610530968780">หน้า <ph name="SELECTED_PAGE" /> จาก <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="601304062528754300">ไฮไลต์รายการถัดไปบนแถบ</translation>
 <translation id="6015573907265691211">ทำเครื่องหมายว่าเสร็จแล้ว</translation>
@@ -1299,7 +1291,6 @@
 <translation id="6231419273573514727">อุปกรณ์ต่อพ่วงอาจมีประสิทธิภาพจำกัด</translation>
 <translation id="6232891689835436217">"<ph name="APP_NAME" />" กำลังใช้กล้องและไมโครโฟน</translation>
 <translation id="6237231532760393653">1X</translation>
-<translation id="6244986124527896815">เปิดแอปตัวจัดการงานโดยใช้ "<ph name="NEW_SHORTCUT" />"</translation>
 <translation id="6247728804802644171">เปิดการแจ้งเตือน</translation>
 <translation id="6254629735336163724">ล็อกไว้ที่แนวนอนแล้ว</translation>
 <translation id="6259254695169772643">ใช้สไตลัสเพื่อเลือก</translation>
@@ -1521,6 +1512,7 @@
 <translation id="7188494361780961876">เมนูได้ย้ายไปอยู่ที่มุมซ้ายบนของหน้าจอ</translation>
 <translation id="7189412385142492784">ดาวศุกร์อยู่ไกลแค่ไหน</translation>
 <translation id="7198435252016571249">จัดกล้องพอดีกับมุมขวาล่างแล้ว เนื่องจากขัดแย้งกับแพลตฟอร์มของระบบ</translation>
+<translation id="7219573373513695352">ไม่ได้เชื่อมต่ออุปกรณ์</translation>
 <translation id="7229029500464092426">ใช้หน่วยความจำแล้ว <ph name="AVAILABLE_MEMORY" /> | รวมทั้งหมด <ph name="TOTAL_MEMORY" /></translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" /> Chromebook นี้ต้องรีสตาร์ทเพื่อใช้การอัปเดต ซึ่งอาจใช้เวลาถึง 1 นาที</translation>
 <translation id="7256634071279256947">ไมโครโฟนด้านหลัง</translation>
@@ -1946,7 +1938,6 @@
 <translation id="9030665205623277906">ภาพรวมการใช้ CPU: <ph name="CPU_USEAGE" />%</translation>
 <translation id="9034924485347205037">ไฟล์ Linux</translation>
 <translation id="9047624247355796468">เปิดการตั้งค่าสำหรับ <ph name="NETWORK_NAME" /></translation>
-<translation id="9059834730836941392">ยุบการแจ้งเตือน</translation>
 <translation id="906458777597946297">ขยายหน้าต่างเต็มหน้าจอ</translation>
 <translation id="9065203028668620118">แก้ไข</translation>
 <translation id="9070640332319875144">การตั้งค่า Assistant</translation>

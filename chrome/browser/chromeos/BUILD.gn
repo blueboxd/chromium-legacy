@@ -145,13 +145,12 @@ source_set("chromeos") {
     "policy/dlp/dlp_files_controller.h",
     "policy/dlp/dlp_files_utils.cc",
     "policy/dlp/dlp_files_utils.h",
-    "policy/dlp/dlp_histogram_helper.cc",
-    "policy/dlp/dlp_histogram_helper.h",
     "policy/dlp/dlp_notification_helper.cc",
     "policy/dlp/dlp_notification_helper.h",
     "policy/dlp/dlp_policy_constants.h",
     "policy/dlp/dlp_reporting_manager.cc",
     "policy/dlp/dlp_reporting_manager.h",
+    "policy/dlp/dlp_rules_manager.cc",
     "policy/dlp/dlp_rules_manager.h",
     "policy/dlp/dlp_rules_manager_factory.cc",
     "policy/dlp/dlp_rules_manager_factory.h",
@@ -169,6 +168,8 @@ source_set("chromeos") {
     "reporting/metric_reporting_prefs.h",
     "reporting/network/network_bandwidth_sampler.cc",
     "reporting/network/network_bandwidth_sampler.h",
+    "reporting/usage_telemetry_periodic_collector_base.cc",
+    "reporting/usage_telemetry_periodic_collector_base.h",
     "reporting/user_reporting_settings.cc",
     "reporting/user_reporting_settings.h",
     "reporting/websites/website_events_observer.cc",
@@ -176,12 +177,16 @@ source_set("chromeos") {
     "reporting/websites/website_metrics_retriever_interface.h",
     "reporting/websites/website_usage_observer.cc",
     "reporting/websites/website_usage_observer.h",
+    "reporting/websites/website_usage_telemetry_sampler.cc",
+    "reporting/websites/website_usage_telemetry_sampler.h",
     "smart_reader/smart_reader_client_impl.cc",
     "smart_reader/smart_reader_client_impl.h",
     "tablet_mode/chrome_content_browser_client_tablet_mode_part.cc",
     "tablet_mode/chrome_content_browser_client_tablet_mode_part.h",
     "tablet_mode/tablet_mode_page_behavior.cc",
     "tablet_mode/tablet_mode_page_behavior.h",
+    "tast_support/stack_sampling_recorder.cc",
+    "tast_support/stack_sampling_recorder.h",
     "upload_office_to_cloud/upload_office_to_cloud.cc",
     "upload_office_to_cloud/upload_office_to_cloud.h",
     "video_conference/video_conference_manager_client.cc",
@@ -214,7 +219,6 @@ source_set("chromeos") {
     "//chrome/browser/apps/app_service",
   ]
   public_deps = [
-    ":dlp_policy_event_proto",
     "//base",
     "//build:chromeos_buildflags",
     "//chrome/browser/extensions",
@@ -228,6 +232,7 @@ source_set("chromeos") {
     "//chromeos/dbus/power",
     "//components/account_id",
     "//components/arc/common",
+    "//components/enterprise/data_controls:dlp_policy_event_proto",
     "//components/file_access",
     "//components/keyed_service/content",
     "//components/keyed_service/core",
@@ -258,6 +263,7 @@ source_set("chromeos") {
     "//url",
   ]
   deps = [
+    ":system_stack_sampled_metrics_status_proto",
     "//chrome/app:command_ids",
     "//chrome/app:generated_resources",
     "//chrome/app/vector_icons",
@@ -357,6 +363,8 @@ source_set("chromeos") {
       "extensions/login_screen/login/shared_session_handler.h",
       "reporting/websites/website_metrics_retriever_ash.cc",
       "reporting/websites/website_metrics_retriever_ash.h",
+      "reporting/websites/website_usage_telemetry_periodic_collector_ash.cc",
+      "reporting/websites/website_usage_telemetry_periodic_collector_ash.h",
     ]
     allow_circular_includes_from += [ "//chrome/browser/ash/crosapi" ]
     public_deps += [
@@ -375,6 +383,7 @@ source_set("chromeos") {
       "//chrome/browser/ui/ash/system_web_apps:system_web_apps",
       "//chromeos/ash/components/chaps_util",
       "//chromeos/ash/components/login/auth/public:authpublic",
+      "//chromeos/ash/components/login/session",
       "//chromeos/ash/components/settings",
       "//components/session_manager:base",
       "//components/session_manager/core",
@@ -399,8 +408,14 @@ source_set("chromeos") {
       "reporting/device_reporting_settings_lacros.h",
       "reporting/metric_reporting_manager_lacros.cc",
       "reporting/metric_reporting_manager_lacros.h",
+      "reporting/metric_reporting_manager_lacros_factory.cc",
+      "reporting/metric_reporting_manager_lacros_factory.h",
+      "reporting/metric_reporting_manager_lacros_shutdown_notifier_factory.cc",
+      "reporting/metric_reporting_manager_lacros_shutdown_notifier_factory.h",
       "reporting/websites/website_metrics_retriever_lacros.cc",
       "reporting/websites/website_metrics_retriever_lacros.h",
+      "reporting/websites/website_usage_telemetry_periodic_collector_lacros.cc",
+      "reporting/websites/website_usage_telemetry_periodic_collector_lacros.h",
     ]
     public_deps += [
       "//chromeos/lacros",
@@ -468,7 +483,7 @@ static_library("test_support") {
   }
 
   deps = [
-    ":dlp_policy_event_proto",
+    "//components/enterprise/data_controls:dlp_policy_event_proto",
     "//components/reporting/client:test_support",
   ]
 
@@ -508,9 +523,12 @@ source_set("unit_tests") {
     "policy/dlp/dlp_scoped_file_access_delegate_unittest.cc",
     "reporting/metric_reporting_prefs_unittest.cc",
     "reporting/network/network_bandwidth_sampler_unittest.cc",
+    "reporting/usage_telemetry_periodic_collector_base_unittest.cc",
     "reporting/user_reporting_settings_unittest.cc",
     "reporting/websites/website_events_observer_unittest.cc",
     "reporting/websites/website_usage_observer_unittest.cc",
+    "reporting/websites/website_usage_telemetry_sampler_unittest.cc",
+    "tast_support/stack_sampling_recorder_unittest.cc",
     "video_conference/video_conference_ukm_helper_unittest.cc",
 
     # TODO(zturner): Enable this on Windows. See
@@ -521,7 +539,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":chromeos",
-    ":dlp_policy_event_proto",
+    ":system_stack_sampled_metrics_status_proto",
     ":test_support",
     "//base",
     "//base/test:test_support",
@@ -551,6 +569,7 @@ source_set("unit_tests") {
     "//components/arc/common:arc_intent_helper_constants",
     "//components/arc/common:arc_test_support",
     "//components/enterprise/data_controls",
+    "//components/enterprise/data_controls:dlp_policy_event_proto",
     "//components/file_access",
     "//components/keyed_service/core",
     "//components/policy/core/common:common_constants",
@@ -603,6 +622,7 @@ source_set("unit_tests") {
       "extensions/login_screen/login_screen_storage/login_screen_storage_api_ash_unittest.cc",
       "extensions/login_screen/login_state/session_state_changed_event_dispatcher_ash_unittest.cc",
       "reporting/websites/website_metrics_retriever_ash_unittest.cc",
+      "reporting/websites/website_usage_telemetry_periodic_collector_ash_unittest.cc",
       "tablet_mode/chrome_content_browser_client_tablet_mode_part_unittest.cc",
     ]
     deps += [
@@ -650,8 +670,11 @@ source_set("unit_tests") {
     sources += [
       "policy/dlp/dlp_files_controller_lacros_unittest.cc",
       "reporting/device_reporting_settings_lacros_unittest.cc",
+      "reporting/metric_reporting_manager_lacros_factory_unittest.cc",
+      "reporting/metric_reporting_manager_lacros_shutdown_notifier_factory_unittest.cc",
       "reporting/metric_reporting_manager_lacros_unittest.cc",
       "reporting/websites/website_metrics_retriever_lacros_unittest.cc",
+      "reporting/websites/website_usage_telemetry_periodic_collector_lacros_unittest.cc",
     ]
     deps += [
       "//chromeos/lacros",
@@ -663,6 +686,9 @@ source_set("unit_tests") {
   }
 }
 
-proto_library("dlp_policy_event_proto") {
-  sources = [ "policy/dlp/dlp_policy_event.proto" ]
+proto_library("system_stack_sampled_metrics_status_proto") {
+  sources = [ "//third_party/cros_system_api/proto/stack_sampled_metrics_status//stack_sampled_metrics_status.proto" ]
+
+  proto_out_dir =
+      "third_party/cros_system_api/proto/stack_sampled_metrics_status"
 }

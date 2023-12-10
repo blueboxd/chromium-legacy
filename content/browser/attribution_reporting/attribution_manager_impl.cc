@@ -197,9 +197,9 @@ bool IsStorageKeySessionOnly(
 
 void RecordStoreSourceStatus(StoreSourceResult result) {
   static_assert(StorableSource::Result::kMaxValue ==
-                    StorableSource::Result::kEventReportWindowsInvalidStartTime,
-                "Bump version of Conversions.SourceStoredStatus6 histogram.");
-  base::UmaHistogramEnumeration("Conversions.SourceStoredStatus6",
+                    StorableSource::Result::kExceedsMaxChannelCapacity,
+                "Bump version of Conversions.SourceStoredStatus7 histogram.");
+  base::UmaHistogramEnumeration("Conversions.SourceStoredStatus7",
                                 result.status);
 }
 
@@ -1292,7 +1292,9 @@ void AttributionManagerImpl::OnAggregatableReportAssembled(
 
   absl::visit(
       base::Overloaded{
-          [](const AttributionReport::EventLevelData&) { NOTREACHED(); },
+          [](const AttributionReport::EventLevelData&) {
+            NOTREACHED_NORETURN();
+          },
           [&](AttributionReport::AggregatableAttributionData& data) {
             data.common_data.assembled_report = std::move(assembled_report);
           },

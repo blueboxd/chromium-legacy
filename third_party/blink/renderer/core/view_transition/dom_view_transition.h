@@ -22,27 +22,33 @@ class ViewTransition;
 
 // This class handles script interaction for the ViewTransition object. It
 // implements the ViewTransition IDL interface.
-class CORE_EXPORT DOMViewTransition
-    : public ScriptWrappable,
-      public ActiveScriptWrappable<DOMViewTransition> {
+class CORE_EXPORT DOMViewTransition : public ScriptWrappable,
+                                      public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
-
   using PromiseProperty =
       ScriptPromiseProperty<ToV8UndefinedGenerator, ScriptValue>;
 
  public:
+  // Constructor for navigation-initiated view transition (used only in the new
+  // document).
+  explicit DOMViewTransition(ExecutionContext&, ViewTransition&);
+
+  // Constructor for script-initiated view transition. Also delegated from the
+  // navigation-initiated constructor.
   explicit DOMViewTransition(ExecutionContext&,
                              ViewTransition&,
-                             ScriptState&,
                              V8ViewTransitionCallback*);
 
   ~DOMViewTransition() override;
 
+  // ExecutionContextLifecycleObserver implementation.
+  void ContextDestroyed() override;
+
   // IDL implementation. Refer to view_transition.idl for additional comments.
   void skipTransition();
-  ScriptPromise finished() const;
-  ScriptPromise ready() const;
-  ScriptPromise updateCallbackDone() const;
+  ScriptPromise finished(ScriptState*) const;
+  ScriptPromise ready(ScriptState*) const;
+  ScriptPromise updateCallbackDone(ScriptState*) const;
 
   // Called from ViewTransition when the transition is skipped/aborted for any
   // reason.
@@ -57,14 +63,7 @@ class CORE_EXPORT DOMViewTransition
 
   void InvokeDOMChangeCallback();
 
-  // ActiveScriptWrappable functionality.
-  // TODO(bokan): `this` doesn't actually need to be ActiveScriptWrappable but
-  // is used to `view_transition_` alive in the face of the Viz callback. Could
-  // ViewTransition more explicitly manage its lifetime?
-  bool HasPendingActivity() const override;
-  ExecutionContext* GetExecutionContext() const { return execution_context_; }
-
-  ViewTransition* GetViewTransitionForTest() { return view_transition_; }
+  ViewTransition* GetViewTransitionForTest() { return view_transition_.Get(); }
 
   void Trace(Visitor* visitor) const override;
 
@@ -90,11 +89,10 @@ class CORE_EXPORT DOMViewTransition
     const bool success_;
   };
 
+  // Cleared when the context is destroyed.
   Member<ExecutionContext> execution_context_;
 
   Member<ViewTransition> view_transition_;
-
-  Member<ScriptState> script_state_;
 
   Member<V8ViewTransitionCallback> update_dom_callback_;
   Member<PromiseProperty> finished_promise_property_;

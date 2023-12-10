@@ -33,7 +33,11 @@ std::unique_ptr<FlossAdminClient> FlossAdminClient::Create() {
 }
 
 constexpr char FlossAdminClient::kExportedCallbacksPath[] =
-    "/org/chromium/bluetooth/adminclient";
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    "/org/chromium/bluetooth/admin/callback/lacros";
+#else
+    "/org/chromium/bluetooth/admin/callback";
+#endif
 
 FlossAdminClient::FlossAdminClient() = default;
 FlossAdminClient::~FlossAdminClient() {
@@ -98,10 +102,12 @@ void FlossAdminClient::HandleGetAllowedServices(
 void FlossAdminClient::Init(dbus::Bus* bus,
                             const std::string& service_name,
                             const int adapter_index,
+                            base::Version version,
                             base::OnceClosure on_ready) {
   bus_ = bus;
   admin_path_ = FlossDBusClient::GenerateAdminPath(adapter_index);
   service_name_ = service_name;
+  version_ = version;
 
   dbus::ObjectProxy* object_proxy =
       bus_->GetObjectProxy(service_name_, admin_path_);

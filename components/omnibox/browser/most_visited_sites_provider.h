@@ -12,6 +12,7 @@
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
+#include "ui/base/device_form_factor.h"
 
 // Autocomplete provider serving Most Visited Sites in zero-prefix context.
 // Serves most frequently visited URLs in a form of either individual- or
@@ -30,8 +31,7 @@ class MostVisitedSitesProvider : public AutocompleteProvider {
  private:
   FRIEND_TEST_ALL_PREFIXES(MostVisitedSitesProviderTest,
                            AllowMostVisitedSitesSuggestions);
-  FRIEND_TEST_ALL_PREFIXES(MostVisitedSitesProviderTest,
-                           SrpCoverageIsControlledWithFeatureFlag);
+  FRIEND_TEST_ALL_PREFIXES(MostVisitedSitesProviderTest, NoSRPCoverage);
 
   ~MostVisitedSitesProvider() override;
 
@@ -46,6 +46,7 @@ class MostVisitedSitesProvider : public AutocompleteProvider {
 
   void BlockURL(const GURL& site_url);
 
+  const ui::DeviceFormFactor device_form_factor_;
   const raw_ptr<AutocompleteProviderClient, DanglingUntriaged> client_;
   // Note: used to cancel requests - not a general purpose WeakPtr factory.
   base::WeakPtrFactory<MostVisitedSitesProvider> request_weak_ptr_factory_{

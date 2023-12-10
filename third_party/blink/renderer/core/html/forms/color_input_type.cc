@@ -101,10 +101,6 @@ void ColorInputType::CountUsage() {
   CountUsageIfVisible(WebFeature::kInputTypeColor);
 }
 
-const AtomicString& ColorInputType::FormControlType() const {
-  return input_type_names::kColor;
-}
-
 bool ColorInputType::SupportsRequired() const {
   return false;
 }
@@ -194,7 +190,7 @@ void ColorInputType::ClosePopupView() {
 }
 
 bool ColorInputType::HasOpenedPopup() const {
-  return chooser_;
+  return chooser_ != nullptr;
 }
 
 bool ColorInputType::ShouldRespectListAttribute() {

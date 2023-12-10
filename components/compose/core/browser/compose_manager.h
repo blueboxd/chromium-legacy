@@ -5,21 +5,20 @@
 #ifndef COMPONENTS_COMPOSE_CORE_BROWSER_COMPOSE_MANAGER_H_
 #define COMPONENTS_COMPOSE_CORE_BROWSER_COMPOSE_MANAGER_H_
 
-#include <string>
-
-#include "base/functional/callback.h"
+#include "components/autofill/core/browser/autofill_compose_delegate.h"
 
 namespace compose {
 
 // The interface for embedder-independent, tab-specific compose logic.
-class ComposeManager {
+class ComposeManager : public autofill::AutofillComposeDelegate {
  public:
-  using ComposeCallback = base::OnceCallback<void(const std::u16string&)>;
-
-  virtual ~ComposeManager() = default;
-
-  virtual bool IsEnabled() const = 0;
-  virtual void OfferCompose(ComposeCallback callback) = 0;
+  // TODO(b/300325327): Add non-Autofill specific methods.
+  // Opens compose from the context menu given the 'frame_token',
+  // 'field_renderer_id', and 'bounds'.
+  virtual void OpenComposeFromContextMenu(
+      const autofill::LocalFrameToken frame_token,
+      const autofill::FieldRendererId field_renderer_id,
+      const gfx::RectF bounds) = 0;
 };
 
 }  // namespace compose

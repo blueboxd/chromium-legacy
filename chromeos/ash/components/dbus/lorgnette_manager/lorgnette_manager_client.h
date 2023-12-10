@@ -70,6 +70,13 @@ class COMPONENT_EXPORT(LORGNETTE_MANAGER) LorgnetteManagerClient
       chromeos::DBusMethodCallback<lorgnette::CloseScannerResponse>
           callback) = 0;
 
+  // Starts a scan using information in |request| and returns the result using
+  // the provided |callback|.
+  virtual void StartPreparedScan(
+      const lorgnette::StartPreparedScanRequest& request,
+      chromeos::DBusMethodCallback<lorgnette::StartPreparedScanResponse>
+          callback) = 0;
+
   // Request a scanned image using lorgnette's StartScan API. As each page is
   // completed, calls |page_callback| with the page number and a string
   // containing the image data. Calls |completion_callback| when the scan has
@@ -84,6 +91,13 @@ class COMPONENT_EXPORT(LORGNETTE_MANAGER) LorgnetteManagerClient
       base::RepeatingCallback<void(std::string, uint32_t)> page_callback,
       base::RepeatingCallback<void(uint32_t, uint32_t)> progress_callback) = 0;
 
+  // Reads scan data described by |request| and returns the results using the
+  // provided |callback|.
+  virtual void ReadScanData(
+      const lorgnette::ReadScanDataRequest& request,
+      chromeos::DBusMethodCallback<lorgnette::ReadScanDataResponse>
+          callback) = 0;
+
   // Requests that lorgnette cancel the currently running scan job.
   // When this function returns, that guarantees that cancelling has been
   // requested, but the cancelled scan is not completely terminated until
@@ -96,6 +110,12 @@ class COMPONENT_EXPORT(LORGNETTE_MANAGER) LorgnetteManagerClient
   // This function makes the assumption that LorgnetteManagerClient only has one
   // scan running at a time.
   virtual void CancelScan(chromeos::VoidDBusMethodCallback cancel_callback) = 0;
+
+  // Cancels a scan specified by the JobHandle in |request| and returns the
+  // result using the provided |callback|.
+  virtual void CancelScan(
+      const lorgnette::CancelScanRequest& request,
+      chromeos::DBusMethodCallback<lorgnette::CancelScanResponse> callback) = 0;
 
   // Starts a new scanner discovery session.  A handle to the session is
   // returned in the response.  While the session is active, device update

@@ -373,7 +373,7 @@ static_library("browser") {
     ]
     deps += [
       ":jni_headers",
-      "//url:gurl_android",
+      "//url",
     ]
   } else {
     deps += [ "//components/keep_alive_registry" ]
@@ -544,11 +544,11 @@ if (is_android) {
     ]
     deps = [
       ":java_resources",
-      "//base:jni_java",
       "//chrome/browser/flags:java",
       "//components/embedder_support/android:util_java",
       "//components/security_state/core:security_state_enums_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
+      "//third_party/jni_zero:jni_zero_java",
     ]
   }
 
@@ -568,7 +568,6 @@ if (is_android) {
     deps = [
       ":java_resources",
       "//base:base_java",
-      "//base:jni_java",
       "//build/android:build_java",
       "//components/browser_ui/settings/android:java",
       "//components/browser_ui/styles/android:java_resources",
@@ -582,6 +581,7 @@ if (is_android) {
       "//third_party/androidx:androidx_collection_collection_java",
       "//third_party/androidx:androidx_core_core_java",
       "//third_party/androidx:androidx_interpolator_interpolator_java",
+      "//third_party/jni_zero:jni_zero_java",
       "//third_party/metrics_proto:metrics_proto_java",
       "//ui/android:ui_full_java",
       "//url:gurl_java",
@@ -661,6 +661,7 @@ if (is_android) {
 static_library("test_support") {
   testonly = true
   sources = [
+    "fake_autocomplete_provider.cc",
     "fake_autocomplete_provider.h",
     "fake_autocomplete_provider_client.cc",
     "fake_autocomplete_provider_client.h",
@@ -700,6 +701,7 @@ static_library("test_support") {
     "//components/optimization_guide/core:core",
     "//components/optimization_guide/proto:optimization_guide_proto",
     "//components/prefs:test_support",
+    "//components/query_tiles:public",
     "//components/query_tiles/test:test_support",
     "//components/resources",
     "//components/search_engines",
@@ -844,6 +846,7 @@ source_set("unit_tests") {
     "//components/optimization_guide/core:test_support",
     "//components/optimization_guide/proto:optimization_guide_proto",
     "//components/prefs:test_support",
+    "//components/query_tiles:public",
     "//components/safe_browsing/core/common:common",
     "//components/search",
     "//components/search_engines",

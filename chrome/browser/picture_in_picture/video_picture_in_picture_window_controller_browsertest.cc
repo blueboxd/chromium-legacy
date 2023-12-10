@@ -32,7 +32,6 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "content/public/browser/media_session.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/overlay_window.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -405,7 +404,7 @@ class PictureInPicturePixelComparisonBrowserTest
 
   base::FilePath GetFilePath(base::FilePath::StringPieceType relative_path) {
     base::FilePath base_dir;
-    CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &base_dir));
+    CHECK(base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &base_dir));
     // The path relative to <chromium src> for pixel test data.
     const base::FilePath::StringPieceType kTestDataPath =
         FILE_PATH_LITERAL("chrome/test/data/media/picture-in-picture/");

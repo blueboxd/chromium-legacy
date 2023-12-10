@@ -8,7 +8,7 @@
 #include "base/dcheck_is_on.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
+#include "third_party/blink/renderer/core/layout/geometry/box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/hyphen_result.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_text_index.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_offset_range.h"
@@ -99,9 +99,9 @@ struct CORE_EXPORT NGInlineItemResult {
 
   // Margins, borders, and padding for open tags.
   // Margins are set for atomic inlines too.
-  NGLineBoxStrut margins;
-  NGLineBoxStrut borders;
-  NGLineBoxStrut padding;
+  LineBoxStrut margins;
+  LineBoxStrut borders;
+  LineBoxStrut padding;
 
   // Inside of this may be breakable. False means there are no break
   // opportunities, or has CSS properties that prohibit breaking.

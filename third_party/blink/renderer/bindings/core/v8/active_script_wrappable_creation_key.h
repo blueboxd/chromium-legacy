@@ -35,7 +35,6 @@ class ActiveScriptWrappableCreationKey final {
   friend class DedicatedWorker;
   friend class DocumentTransition;
   friend class DOMFileSystem;
-  friend class DOMViewTransition;
   friend class DOMWebSocket;
   friend class EditContext;
   template <typename Traits>
@@ -43,7 +42,6 @@ class ActiveScriptWrappableCreationKey final {
   friend class EventSource;
   friend class FetchEvent;
   friend class FileReader;
-  friend class FileSystemDirectoryIterator;
   friend class FileWriter;
   friend class FontFace;
   template <typename NativeFrameType>
@@ -99,7 +97,6 @@ class ActiveScriptWrappableCreationKey final {
   friend class SerialPort;
   friend class ServiceWorker;
   friend class ServiceWorkerRegistration;
-  friend class SharedStorageIterator;
   friend class SharedWorker;
   friend class SmartCardReader;
   friend class SmartCardReaderPresenceObserver;

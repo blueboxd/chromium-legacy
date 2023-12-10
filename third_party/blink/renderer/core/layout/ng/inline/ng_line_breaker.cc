@@ -8,7 +8,6 @@
 #include "base/ranges/algorithm.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/layout_text_combine.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_segment.h"
@@ -32,6 +31,7 @@
 #include "third_party/blink/renderer/core/svg/svg_text_content_element.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shaping_line_breaker.h"
+#include "third_party/blink/renderer/platform/text/bidi_paragraph.h"
 #include "third_party/blink/renderer/platform/text/character.h"
 
 namespace blink {
@@ -57,10 +57,10 @@ inline LineBreakStrictness StrictnessFromLineBreak(LineBreak line_break) {
 
 // Returns smallest negative left and right bearing in `box_fragment`.
 // This function is used for calculating side bearing.
-NGLineBoxStrut ComputeNegativeSideBearings(
+LineBoxStrut ComputeNegativeSideBearings(
     const NGPhysicalBoxFragment& box_fragment) {
   const auto get_shape_result =
-      [](const NGInlineCursor cursor) -> const ShapeResultView* {
+      [](const InlineCursor cursor) -> const ShapeResultView* {
     if (!cursor)
       return nullptr;
     const NGFragmentItem& item = *cursor.CurrentItem();
@@ -72,9 +72,9 @@ NGLineBoxStrut ComputeNegativeSideBearings(
     return item.TextShapeResult();
   };
 
-  NGLineBoxStrut side_bearing;
+  LineBoxStrut side_bearing;
 
-  for (NGInlineCursor cursor(box_fragment); cursor; cursor.MoveToNextLine()) {
+  for (InlineCursor cursor(box_fragment); cursor; cursor.MoveToNextLine()) {
     // Take left/right bearing from the first/last child in the line if it has
     // `ShapeResult`. The first/last child can be non text item, e.g. image.
     // Note: Items in the line are in visual order. So, first=left, last=right.
@@ -125,7 +125,7 @@ NGLineBoxStrut ComputeNegativeSideBearings(
     //    * `rect.size.width  = text_ink_bounds.Width()`
     // [1] https://drafts.csswg.org/css-inline/#initial-letter-box-size
     // Sizeing the Initial Letter Box
-    NGInlineCursor child_at_left_edge = cursor;
+    InlineCursor child_at_left_edge = cursor;
     child_at_left_edge.MoveToFirstChild();
     if (auto* shape_result = get_shape_result(child_at_left_edge)) {
       const LayoutUnit left_bearing =
@@ -135,7 +135,7 @@ NGLineBoxStrut ComputeNegativeSideBearings(
           std::min(side_bearing.inline_start, left_bearing);
     }
 
-    NGInlineCursor child_at_right_edge = cursor;
+    InlineCursor child_at_right_edge = cursor;
     child_at_right_edge.MoveToLastChild();
     if (auto* shape_result = get_shape_result(child_at_right_edge)) {
       const LayoutUnit width = shape_result->SnappedWidth();
@@ -225,9 +225,9 @@ inline bool HasUnpositionedFloats(const NGInlineItemResults& item_results) {
 LayoutUnit ComputeInlineEndSize(const NGConstraintSpace& space,
                                 const ComputedStyle* style) {
   DCHECK(style);
-  NGBoxStrut margins = ComputeMarginsForSelf(space, *style);
-  NGBoxStrut borders = ComputeBordersForInline(*style);
-  NGBoxStrut paddings = ComputePadding(space, *style);
+  BoxStrut margins = ComputeMarginsForSelf(space, *style);
+  BoxStrut borders = ComputeBordersForInline(*style);
+  BoxStrut paddings = ComputePadding(space, *style);
 
   return margins.inline_end + borders.inline_end + paddings.inline_end;
 }
@@ -366,11 +366,11 @@ void NGLineBreaker::UpdateAvailableWidth() {
 NGLineBreaker::NGLineBreaker(NGInlineNode node,
                              NGLineBreakerMode mode,
                              const NGConstraintSpace& space,
-                             const NGLineLayoutOpportunity& line_opportunity,
+                             const LineLayoutOpportunity& line_opportunity,
                              const NGLeadingFloats& leading_floats,
                              const NGInlineBreakToken* break_token,
                              const NGColumnSpannerPath* column_spanner_path,
-                             NGExclusionSpace* exclusion_space)
+                             ExclusionSpace* exclusion_space)
     : line_opportunity_(line_opportunity),
       node_(node),
       mode_(mode),
@@ -442,7 +442,7 @@ NGLineBreaker::NGLineBreaker(NGInlineNode node,
 NGLineBreaker::~NGLineBreaker() = default;
 
 void NGLineBreaker::SetLineOpportunity(
-    const NGLineLayoutOpportunity& line_opportunity) {
+    const LineLayoutOpportunity& line_opportunity) {
   line_opportunity_ = line_opportunity;
   UpdateAvailableWidth();
 }
@@ -548,7 +548,7 @@ void NGLineBreaker::ComputeBaseDirection() {
   // https://w3c.github.io/csswg-drafts/css-writing-modes-3/#valdef-unicode-bidi-plaintext
   // which sets to LTR if no strong characters.
   // https://unicode.org/reports/tr9/#P3
-  base_direction_ = NGBidiParagraph::BaseDirectionForStringOrLtr(
+  base_direction_ = BidiParagraph::BaseDirectionForStringOrLtr(
       StringView(text, start_offset),
       // For CSS processing, line feed (U+000A) is treated as a segment break.
       // https://w3c.github.io/csswg-drafts/css-text-3/#segment-break
@@ -1372,8 +1372,10 @@ NGLineBreaker::BreakResult NGLineBreaker::BreakText(
           item_(item) {}
 
    protected:
-    scoped_refptr<ShapeResult> Shape(unsigned start, unsigned end) final {
-      return line_breaker_->ShapeText(*item_, start, end);
+    scoped_refptr<ShapeResult> Shape(unsigned start,
+                                     unsigned end,
+                                     ShapeOptions options) final {
+      return line_breaker_->ShapeText(*item_, start, end, options);
     }
 
    private:
@@ -1382,19 +1384,18 @@ NGLineBreaker::BreakResult NGLineBreaker::BreakText(
 
   } breaker(this, &item, &item_shape_result);
 
-  unsigned options = ShapingLineBreaker::kDefaultOptions;
-  if (item_result->StartOffset() == line_info->StartOffset()) {
-    options |= ShapingLineBreaker::kStartOfLine;
-  }
+  const ComputedStyle& style = *item.Style();
+  breaker.SetTextSpacingTrim(style.GetFontDescription().GetTextSpacingTrim());
+  breaker.SetLineStart(line_info->StartOffset());
 
   // Reshaping between the last character and trailing spaces is needed only
   // when we need accurate end position, because kerning between trailing spaces
   // is not visible.
   if (!NeedsAccurateEndPosition(*line_info, item))
-    options |= ShapingLineBreaker::kDontReshapeEndIfAtSpace;
+    breaker.SetDontReshapeEndIfAtSpace();
 
   if (UNLIKELY(break_at_)) {
-    if (BreakTextAt(item_result, item, breaker, options, line_info)) {
+    if (BreakTextAt(item_result, item, breaker, line_info)) {
       return kBreakAt;
     }
     return kSuccess;
@@ -1404,7 +1405,7 @@ NGLineBreaker::BreakResult NGLineBreaker::BreakText(
   // because if this item overflows, we will rewind and break line again. The
   // overflowing ShapeResult is not needed.
   if (break_anywhere_if_overflow_ && !override_break_anywhere_)
-    options |= ShapingLineBreaker::kNoResultIfOverflow;
+    breaker.SetNoResultIfOverflow();
 
 #if DCHECK_IS_ON()
   unsigned try_count = 0;
@@ -1416,14 +1417,14 @@ NGLineBreaker::BreakResult NGLineBreaker::BreakText(
     ++try_count;
     DCHECK_LE(try_count, 2u);
 #endif
-    scoped_refptr<const ShapeResultView> shape_result = breaker.ShapeLine(
-        item_result->StartOffset(), available_width.ClampNegativeToZero(),
-        options, &result);
+    scoped_refptr<const ShapeResultView> shape_result =
+        breaker.ShapeLine(item_result->StartOffset(),
+                          available_width.ClampNegativeToZero(), &result);
 
     // If this item overflows and 'break-word' is set, this line will be
     // rewinded. Making this item long enough to overflow is enough.
     if (!shape_result) {
-      DCHECK(options & ShapingLineBreaker::kNoResultIfOverflow);
+      DCHECK(breaker.NoResultIfOverflow());
       item_result->inline_size = available_width_with_hyphens + 1;
       item_result->text_offset.end = item.EndOffset();
       item_result->text_offset.AssertNotEmpty();
@@ -1495,7 +1496,6 @@ NGLineBreaker::BreakResult NGLineBreaker::BreakText(
 bool NGLineBreaker::BreakTextAt(NGInlineItemResult* item_result,
                                 const NGInlineItem& item,
                                 ShapingLineBreaker& breaker,
-                                unsigned options,
                                 NGLineInfo* line_info) {
   DCHECK(break_at_);
   DCHECK_LE(current_.text_offset, break_at_.end.text_offset);
@@ -1510,7 +1510,7 @@ bool NGLineBreaker::BreakTextAt(NGInlineItemResult* item_result,
   }
   if (item_result->Length()) {
     scoped_refptr<const ShapeResultView> shape_result = breaker.ShapeLineAt(
-        item_result->StartOffset(), item_result->EndOffset(), options);
+        item_result->StartOffset(), item_result->EndOffset());
     item_result->inline_size =
         shape_result->SnappedWidth().ClampNegativeToZero();
     item_result->shape_result = std::move(shape_result);
@@ -1727,17 +1727,19 @@ void NGLineBreaker::HandleEmptyText(const NGInlineItem& item,
 // Re-shape the specified range of |NGInlineItem|.
 scoped_refptr<ShapeResult> NGLineBreaker::ShapeText(const NGInlineItem& item,
                                                     unsigned start,
-                                                    unsigned end) {
+                                                    unsigned end,
+                                                    ShapeOptions options) {
   scoped_refptr<ShapeResult> shape_result;
   if (!items_data_.segments) {
     RunSegmenter::RunSegmenterRange segment_range =
         NGInlineItemSegment::UnpackSegmentData(start, end, item.SegmentData());
     shape_result = shaper_.Shape(&item.Style()->GetFont(), item.Direction(),
-                                 start, end, segment_range);
+                                 start, end, segment_range, options);
   } else {
     shape_result = items_data_.segments->ShapeText(
         &shaper_, &item.Style()->GetFont(), item.Direction(), start, end,
-        base::checked_cast<unsigned>(&item - items_data_.items.begin()));
+        base::checked_cast<unsigned>(&item - items_data_.items.begin()),
+        options);
   }
   if (UNLIKELY(spacing_.HasSpacing()))
     shape_result->ApplySpacing(spacing_);
@@ -2591,7 +2593,7 @@ void NGLineBreaker::HandleAtomicInline(const NGInlineItem& item,
         ShouldApplyInlineKerning(physical_box_fragment)) {
       // Apply "Inline Kerning" to the initial letter box[1].
       // [1] https://drafts.csswg.org/css-inline/#initial-letter-inline-position
-      const NGLineBoxStrut side_bearing =
+      const LineBoxStrut side_bearing =
           ComputeNegativeSideBearings(physical_box_fragment);
       if (IsLtr(base_direction_)) {
         item_result->margins.inline_start += side_bearing.inline_start;
@@ -2696,8 +2698,8 @@ void NGLineBreaker::HandleBlockInInline(
     // The exclusion spaces *must* match. If they don't we'll have an incorrect
     // layout (as it will potentially won't consider some preceeding floats).
     // Move the derived geometry for performance.
-    DCHECK(*exclusion_space_ == constraint_space_.ExclusionSpace());
-    constraint_space_.ExclusionSpace().MoveAndUpdateDerivedGeometry(
+    DCHECK(*exclusion_space_ == constraint_space_.GetExclusionSpace());
+    constraint_space_.GetExclusionSpace().MoveAndUpdateDerivedGeometry(
         *exclusion_space_);
 
     NGBlockNode block_node(To<LayoutBox>(item.GetLayoutObject()));
@@ -2852,7 +2854,7 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
       constraint_space_.AvailableSize(),
       constraint_space_.PercentageResolutionSize(),
       constraint_space_.ReplacedPercentageResolutionSize(),
-      {constraint_space_.BfcOffset().line_offset, bfc_block_offset},
+      {constraint_space_.GetBfcOffset().line_offset, bfc_block_offset},
       constraint_space_, node_.Style());
 
   bool float_after_line =
@@ -2884,8 +2886,8 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
     }
   }
 
-  NGLayoutOpportunity opportunity = exclusion_space_->FindLayoutOpportunity(
-      {constraint_space_.BfcOffset().line_offset, bfc_block_offset},
+  LayoutOpportunity opportunity = exclusion_space_->FindLayoutOpportunity(
+      {constraint_space_.GetBfcOffset().line_offset, bfc_block_offset},
       constraint_space_.AvailableSize().inline_size);
 
   DCHECK_EQ(bfc_block_offset, opportunity.rect.BlockStartOffset());

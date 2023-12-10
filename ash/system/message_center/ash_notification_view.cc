@@ -43,6 +43,7 @@
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -170,6 +171,9 @@ constexpr float kDarkModeMinContrastRatio = 6.0;
 // If the image displayed in `icon_view()` is smaller in either width or height
 // than this value, we draw a background around the image.
 constexpr int kSmallImageBackgroundThreshold = 6;
+
+// The horizontal spacing between control button icons.
+constexpr int kControlButtonsHorizontalSpacing = 6;
 
 // Helpers ---------------------------------------------------------------------
 
@@ -542,6 +546,7 @@ AshNotificationView::AshNotificationView(
                   .AddChild(
                       views::Builder<views::FlexLayoutView>()
                           .SetOrientation(views::LayoutOrientation::kVertical)
+                          .SetCrossAxisAlignment(views::LayoutAlignment::kEnd)
                           .AddChild(
                               views::Builder<views::BoxLayoutView>()
                                   .SetMainAxisAlignment(MainAxisAlignment::kEnd)
@@ -550,9 +555,14 @@ AshNotificationView::AshNotificationView(
                                   .AddChild(
                                       CreateControlButtonsBuilder()
                                           .CopyAddressTo(&control_buttons_view_)
-                                          .SetProperty(
-                                              views::kCrossAxisAlignmentKey,
-                                              views::LayoutAlignment::kEnd)
+                                          .SetBetweenButtonSpacing(
+                                              kControlButtonsHorizontalSpacing)
+                                          .SetCloseButtonIcon(
+                                              vector_icons::
+                                                  kCloseChromeRefreshIcon)
+                                          .SetSettingsButtonIcon(
+                                              vector_icons::
+                                                  kSettingsOutlineIcon)
                                           .SetButtonIconColors(
                                               AshColorProvider::Get()
                                                   ->GetContentLayerColor(
@@ -567,9 +577,7 @@ AshNotificationView::AshNotificationView(
                                   .CopyAddressTo(&expand_button_)
                                   .SetCallback(base::BindRepeating(
                                       &AshNotificationView::ToggleExpand,
-                                      base::Unretained(this)))
-                                  .SetProperty(views::kCrossAxisAlignmentKey,
-                                               views::LayoutAlignment::kEnd))));
+                                      base::Unretained(this))))));
 
   // Main right view contains all the views besides control buttons, app icon,
   // grouped container and action buttons.
@@ -1023,12 +1031,12 @@ void AshNotificationView::PopulateGroupNotifications(
 
   for (auto* notification : notifications) {
     auto notification_view =
-            MessageViewFactory::Create(*notification, /*shown_in_popup=*/false);
+        MessageViewFactory::Create(*notification, /*shown_in_popup=*/false);
     // The child can either be an AshNotificationView or a custom notification
     // view.
     if (notification->type() != message_center::NOTIFICATION_TYPE_CUSTOM) {
       auto* ash_notification_view =
-              static_cast<AshNotificationView*>(notification_view.get());
+          static_cast<AshNotificationView*>(notification_view.get());
       ash_notification_view->SetGroupedChildExpanded(IsExpanded());
     }
 
@@ -1061,8 +1069,9 @@ void AshNotificationView::RemoveGroupNotification(
     return;
   }
 
-  base::WeakPtr<AshNotificationView> to_be_removed =
-      static_cast<AshNotificationView*>(child_view)->weak_factory_.GetWeakPtr();
+  base::WeakPtr<message_center::MessageView> to_be_removed =
+      static_cast<message_center::MessageView*>(child_view)
+          ->weak_factory_.GetWeakPtr();
   if (to_be_removed) {
     // Abort any previously queued animations, if a remove animation was in
     // progress this will cause `to_be_removed` to be deleted. Because of this
@@ -1150,11 +1159,14 @@ void AshNotificationView::UpdateViewForExpandedState(bool expanded) {
     title_row_->title_view()->SetMaxLines(
         expanded ? kTitleLabelExpandedMaxLines : kTitleLabelCollapsedMaxLines);
     // Add extra padding to center the title in collapsed mode when there is no
-    // message.
-    title_row_->SetProperty(views::kMarginsKey,
-                            !message_label() && !use_expanded_padding
-                                ? kTitleRowNoMessageCollapsedPadding
-                                : gfx::Insets());
+    // message. The exception is when this is a progress notification, as
+    // progress notifications always show a progress bar and thus don't need the
+    // title vertically centered.
+    title_row_->SetProperty(
+        views::kMarginsKey,
+        !progress_bar_view() && !message_label() && !use_expanded_padding
+            ? kTitleRowNoMessageCollapsedPadding
+            : gfx::Insets());
   }
 
   if (message_label()) {
@@ -1215,16 +1227,29 @@ void AshNotificationView::UpdateViewForExpandedState(bool expanded) {
 
     int notification_count = 0;
     for (auto* child : grouped_notifications_container_->children()) {
-      auto* notification_view = static_cast<AshNotificationView*>(child);
-      notification_view->AnimateGroupedChildExpandedCollapse(expanded);
-      notification_view->SetGroupedChildExpanded(expanded);
+      auto* message_view = static_cast<message_center::MessageView*>(child);
+      std::string notification_id = message_view->notification_id();
+
+      message_center::Notification* notification =
+          message_center::MessageCenter::Get()->FindVisibleNotificationById(
+              notification_id);
+
+      if (notification->type() != message_center::NOTIFICATION_TYPE_CUSTOM ||
+          notification->notifier_id().type !=
+              message_center::NotifierType::ARC_APPLICATION) {
+        auto* notification_view = static_cast<AshNotificationView*>(child);
+        notification_view->AnimateGroupedChildExpandedCollapse(expanded);
+        notification_view->SetGroupedChildExpanded(expanded);
+      }
+
       notification_count++;
       if (notification_count >
           message_center_style::kMaxGroupedNotificationsInCollapsedState) {
-        notification_view->SetVisible(expanded);
+        child->SetVisible(expanded);
       }
     }
   }
+
   NotificationViewBase::UpdateViewForExpandedState(expanded);
 
   message_label_in_expanded_state_->SetProperty(
@@ -1317,6 +1342,8 @@ void AshNotificationView::CreateOrUpdateTitleView(
     title_row_->UpdateTitle(title);
     ReorderViewInLeftContent(title_row_);
   }
+
+  expand_button_->SetNotificationTitleForButtonTooltip(title);
 
   int max_available_width = notification.icon().IsEmpty()
                                 ? kTitleRowMinimumWidth
@@ -1666,7 +1693,7 @@ views::View* AshNotificationView::FindGroupNotificationView(
   auto notification = base::ranges::find(
       grouped_notifications_container_->children(), notification_id,
       [](views::View* notification_view) {
-        return static_cast<AshNotificationView*>(notification_view)
+        return static_cast<message_center::MessageView*>(notification_view)
             ->notification_id();
       });
   return notification == grouped_notifications_container_->children().end()

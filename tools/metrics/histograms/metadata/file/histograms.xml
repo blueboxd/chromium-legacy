@@ -986,6 +986,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="FileBrowser.OfficeFiles.Errors.{CloudProvider}.MetricState"
+    enum="MetricState" expires_after="M124">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    The state of the FileBrowser.OfficeFiles.Errors.{CloudProvider} metric.
+  </summary>
+  <token key="CloudProvider" variants="CloudProvider"/>
+</histogram>
+
 <histogram
     name="FileBrowser.OfficeFiles.FileHandler.{RootType}.{ConnectionStatus}"
     enum="OfficeFileHandler" expires_after="M124">
@@ -1036,6 +1046,36 @@ chromium-metrics-reviews@google.com.
     <variant name="1000MB-and-above"/>
   </token>
   <token key="CloudProvider" variants="CloudProvider"/>
+</histogram>
+
+<histogram name="FileBrowser.OfficeFiles.ODFS.AuthAttempt"
+    enum="BooleanInteractive" expires_after="M124">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    Chrome OS File Browser: OneDrive OAuth flow attempts. Recorded at the start
+    of the flow.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.OfficeFiles.ODFS.AuthResult.Interactive"
+    enum="OfficeOneDriveAuthResultInteractive" expires_after="M124">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    Chrome OS File Browser: OneDrive interactive OAuth flow result. Recorded at
+    the end of the flow.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.OfficeFiles.ODFS.AuthResult.NonInteractive"
+    enum="OfficeOneDriveAuthResultNonInteractive" expires_after="M124">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    Chrome OS File Browser: OneDrive non-interactive OAuth flow result. Recorded
+    at the end of the flow.
+  </summary>
 </histogram>
 
 <histogram name="FileBrowser.OfficeFiles.ODFS.FileSize.{Direction}" units="KiB"
@@ -1151,6 +1191,29 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="FileBrowser.OfficeFiles.ODFS.Version" units="version"
+    expires_after="M124">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    Chrome OS File Browser: version of the ODFS extension on service worker
+    startup. The version string is encoded in 9 bits to fit max histogram
+    buckets (1002), major: 1 bit (MSB), minor: 3 bits, patch: 5 bits.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.OfficeFiles.Open.CloudProvider"
+    enum="CloudProvider" expires_after="M124">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    Chrome OS File Browser: Records the cloud provider used when opening a file.
+    Record Google Drive or OneDrive cloud provider if a file is being opened
+    with Drive web or Microsoft 365, respectively. Record Unknown if an unknown
+    cloud provider is used and record None if no cloud provider used.
+  </summary>
+</histogram>
+
 <histogram name="FileBrowser.OfficeFiles.Open.FileType.{CloudProvider}"
     enum="OfficeOpenExtensions" expires_after="M124">
   <owner>simmonsjosh@google.com</owner>
@@ -1182,6 +1245,24 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram
+    name="FileBrowser.OfficeFiles.Open.IOTaskError.{CloudProvider}.{Transfer}.MetricState"
+    enum="MetricState" expires_after="M124">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    The state of the
+    FileBrowser.OfficeFiles.Open.IOTaskError.{CloudProvider}.{Transfer} metric.
+  </summary>
+  <token key="CloudProvider" variants="CloudProvider"/>
+  <token key="Transfer">
+    <variant name="Copy"
+        summary="The files have been copied to {CloudProvider}"/>
+    <variant name="Move"
+        summary="The files have been moved to {CloudProvider}"/>
+  </token>
+</histogram>
+
 <histogram name="FileBrowser.OfficeFiles.Open.SourceVolume.{CloudProvider}"
     enum="OfficeFilesSourceVolume" expires_after="M124">
   <owner>austinct@chromium.org</owner>
@@ -1203,6 +1284,18 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram
+    name="FileBrowser.OfficeFiles.Open.SourceVolume.{CloudProvider}.MetricState"
+    enum="MetricState" expires_after="M124">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    The state of the FileBrowser.OfficeFiles.Open.SourceVolume.{CloudProvider}
+    metric.
+  </summary>
+  <token key="CloudProvider" variants="CloudProvider"/>
+</histogram>
+
 <histogram name="FileBrowser.OfficeFiles.Open.TransferRequired.{CloudProvider}"
     enum="OfficeFilesTransferRequired" expires_after="M124">
   <owner>simmonsjosh@google.com</owner>
@@ -1214,6 +1307,18 @@ chromium-metrics-reviews@google.com.
   <token key="CloudProvider" variants="CloudProvider"/>
 </histogram>
 
+<histogram
+    name="FileBrowser.OfficeFiles.Open.TransferRequired.{CloudProvider}.MetricState"
+    enum="MetricState" expires_after="M124">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    The state of the
+    FileBrowser.OfficeFiles.Open.TransferRequired.{CloudProvider} metric.
+  </summary>
+  <token key="CloudProvider" variants="CloudProvider"/>
+</histogram>
+
 <histogram name="FileBrowser.OfficeFiles.Open.UploadResult.{CloudProvider}"
     enum="OfficeFilesUploadResult" expires_after="M124">
   <owner>simmonsjosh@google.com</owner>
@@ -1221,6 +1326,18 @@ chromium-metrics-reviews@google.com.
   <summary>
     Chrome OS File Browser: Records the upload result of the &quot;upload and
     open&quot; workflow for Office files.
+  </summary>
+  <token key="CloudProvider" variants="CloudProvider"/>
+</histogram>
+
+<histogram
+    name="FileBrowser.OfficeFiles.Open.UploadResult.{CloudProvider}.MetricState"
+    enum="MetricState" expires_after="M124">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    The state of the FileBrowser.OfficeFiles.Open.UploadResult.{CloudProvider}
+    metric.
   </summary>
   <token key="CloudProvider" variants="CloudProvider"/>
 </histogram>
@@ -1283,6 +1400,17 @@ chromium-metrics-reviews@google.com.
     <variant name="OneDrive"
         summary="The task is for Microsoft OneDrive/Office"/>
   </token>
+</histogram>
+
+<histogram
+    name="FileBrowser.OfficeFiles.TaskResult.{CloudProvider}.MetricState"
+    enum="MetricState" expires_after="M124">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    The state of the FileBrowser.OfficeFiles.TaskResult.{CloudProvider} metric.
+  </summary>
+  <token key="CloudProvider" variants="CloudProvider"/>
 </histogram>
 
 <histogram name="FileBrowser.OfficeFiles.UseOutsideDrive"

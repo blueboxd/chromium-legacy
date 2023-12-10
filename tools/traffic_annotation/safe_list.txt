@@ -24,8 +24,8 @@ all,chrome/browser/apps/app_discovery_service/recommended_arc_apps/recommend_app
 all,chrome/browser/ash/app_list/search/arc/recommend_apps_fetcher_impl.cc
 all,chrome/browser/ui/ash/projector/screencast_manager.cc
 all,chrome/services/cups_proxy/socket_manager.cc
-missing,chrome/browser/manta/orca_provider.cc
-missing,chrome/browser/manta/snapper_provider.cc
+missing,components/manta/orca_provider.cc
+missing,components/manta/snapper_provider.cc
 
 # Android-specific annotations.
 # TODO(crbug.com/995852): Complete these.
@@ -92,7 +92,6 @@ missing_new_fields,chrome/browser/ash/printing/server_printers_fetcher.cc
 missing_new_fields,chrome/browser/ash/remote_apps/remote_apps_manager.cc
 missing_new_fields,chrome/browser/ash/smb_client/discovery/netbios_client.cc
 missing_new_fields,chrome/browser/ash/wallpaper_handlers/wallpaper_handlers.cc
-missing_new_fields,chrome/browser/autofill/autofill_gstatic_reader.cc
 missing_new_fields,chrome/browser/autofill/autofill_image_fetcher_impl.cc
 missing_new_fields,chrome/browser/bitmap_fetcher/bitmap_fetcher_service.cc
 missing_new_fields,chrome/browser/cart/cart_discount_fetcher.cc
@@ -163,7 +162,7 @@ missing_new_fields,chrome/browser/ui/views/qrcode_generator/qrcode_generator_bub
 missing_new_fields,chrome/browser/ui/views/sharing_hub/screenshot/screenshot_captured_bubble.cc
 missing_new_fields,chrome/browser/ui/views/webid/account_selection_bubble_view.cc
 missing_new_fields,chrome/browser/ui/webui/ash/edu_account_login_handler.cc
-missing_new_fields,chrome/browser/ui/webui/devtools_ui_data_source.cc
+missing_new_fields,chrome/browser/ui/webui/devtools/devtools_ui_data_source.cc
 missing_new_fields,chrome/browser/ui/webui/download_internals/download_internals_ui_message_handler.cc
 missing_new_fields,chrome/browser/ui/webui/downloads/downloads_dom_handler.cc
 missing_new_fields,chrome/browser/ui/webui/management/management_ui_handler_chromeos.cc

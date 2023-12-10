@@ -124,22 +124,10 @@ void LayoutReplaced::UpdateLayout() {
   NOT_DESTROYED();
   DCHECK(NeedsLayout());
 
-  PhysicalRect old_content_rect = ReplacedContentRect();
-
   ClearLayoutOverflow();
   ClearSelfNeedsLayoutOverflowRecalc();
   ClearChildNeedsLayoutOverflowRecalc();
-
   ClearNeedsLayout();
-
-  if (RuntimeEnabledFeatures::PaintNewReplacedInvalidationEnabled()) {
-    return;
-  }
-
-  if (ReplacedContentRectFrom(PhysicalContentBoxRectFromNG()) !=
-      old_content_rect) {
-    SetShouldDoFullPaintInvalidation();
-  }
 }
 
 void LayoutReplaced::IntrinsicSizeChanged() {
@@ -164,6 +152,20 @@ static inline bool LayoutObjectHasIntrinsicAspectRatio(
   return layout_object->IsImage() || layout_object->IsCanvas() ||
          IsA<LayoutVideo>(layout_object) ||
          IsA<LayoutViewTransitionContent>(layout_object);
+}
+
+void LayoutReplaced::AddVisualEffectOverflow() {
+  NOT_DESTROYED();
+  if (!StyleRef().HasVisualOverflowingEffect()) {
+    return;
+  }
+
+  // Add in the final overflow with shadows, outsets and outline combined.
+  PhysicalRect visual_effect_overflow = PhysicalBorderBoxRect();
+  PhysicalBoxStrut outsets = ComputeVisualEffectOverflowOutsets();
+  visual_effect_overflow.Expand(outsets);
+  AddSelfVisualOverflow(visual_effect_overflow);
+  UpdateHasSubpixelVisualEffectOutsets(outsets);
 }
 
 void LayoutReplaced::RecalcVisualOverflow() {
@@ -384,11 +386,11 @@ PhysicalSize LayoutReplaced::SizeFromNG() const {
   return GetBoxLayoutExtraInput()->size;
 }
 
-NGPhysicalBoxStrut LayoutReplaced::BorderPaddingFromNG() const {
+PhysicalBoxStrut LayoutReplaced::BorderPaddingFromNG() const {
   if (GetBoxLayoutExtraInput()) {
     return GetBoxLayoutExtraInput()->border_padding;
   }
-  return NGPhysicalBoxStrut(
+  return PhysicalBoxStrut(
       BorderTop() + PaddingTop(), BorderRight() + PaddingRight(),
       BorderBottom() + PaddingBottom(), BorderLeft() + PaddingLeft());
 }
@@ -396,7 +398,7 @@ NGPhysicalBoxStrut LayoutReplaced::BorderPaddingFromNG() const {
 PhysicalRect LayoutReplaced::PhysicalContentBoxRectFromNG() const {
   NOT_DESTROYED();
   const PhysicalSize size = SizeFromNG();
-  const NGPhysicalBoxStrut border_padding = BorderPaddingFromNG();
+  const PhysicalBoxStrut border_padding = BorderPaddingFromNG();
   return PhysicalRect(
       border_padding.left, border_padding.top,
       (size.width - border_padding.HorizontalSum()).ClampNegativeToZero(),
@@ -440,7 +442,7 @@ static std::pair<LayoutUnit, LayoutUnit> SelectionTopAndBottom(
   if (layout_replaced.IsInline() &&
       layout_replaced.IsInLayoutNGInlineFormattingContext()) {
     // Step 1: Find the line box containing |layout_replaced|.
-    NGInlineCursor line_box;
+    InlineCursor line_box;
     line_box.MoveTo(layout_replaced);
     if (!line_box)
       return fallback;
@@ -508,7 +510,7 @@ PhysicalRect LayoutReplaced::LocalSelectionVisualRect() const {
 
   if (IsInline() && IsInLayoutNGInlineFormattingContext()) {
     PhysicalRect rect;
-    NGInlineCursor cursor;
+    InlineCursor cursor;
     cursor.MoveTo(*this);
     for (; cursor; cursor.MoveToNextForSameLayoutObject())
       rect.Unite(cursor.CurrentLocalSelectionRectForReplaced());

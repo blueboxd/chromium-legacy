@@ -36,6 +36,8 @@ import org.chromium.components.browser_ui.site_settings.SiteSettingsDelegate;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.favicon.LargeIconBridge;
+import org.chromium.components.permissions.PermissionsAndroidFeatureList;
+import org.chromium.components.permissions.PermissionsAndroidFeatureMap;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.BrowserContextHandle;
@@ -127,6 +129,9 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
                 return ContentFeatureMap.isEnabled(ContentFeatures.FED_CM);
             case SiteSettingsCategory.Type.NFC:
                 return ContentFeatureMap.isEnabled(ContentFeatureList.WEB_NFC);
+            case SiteSettingsCategory.Type.STORAGE_ACCESS:
+                return PermissionsAndroidFeatureMap.isEnabled(
+                        PermissionsAndroidFeatureList.PERMISSION_STORAGE_ACCESS);
             case SiteSettingsCategory.Type.ZOOM:
                 return ContentFeatureMap.isEnabled(ContentFeatureList.SMART_ZOOM);
             default:
@@ -147,11 +152,6 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
     @Override
     public boolean isPrivacySandboxFirstPartySetsUIFeatureEnabled() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.PRIVACY_SANDBOX_FPS_UI);
-    }
-
-    @Override
-    public boolean isPrivacySandboxSettings4Enabled() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4);
     }
 
     @Override
@@ -222,11 +222,7 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
         if (mPrivacySandboxController == null) return;
 
         // Only show the snackbar when Privacy Sandbox APIs are enabled.
-        if (isPrivacySandboxSettings4Enabled()) {
-            if (!isAnyPrivacySandboxApiEnabledV4()) return;
-        } else {
-            if (!PrivacySandboxBridge.isPrivacySandboxEnabled()) return;
-        }
+        if (!isAnyPrivacySandboxApiEnabledV4()) return;
 
         if (PrivacySandboxBridge.isPrivacySandboxRestricted()) return;
 

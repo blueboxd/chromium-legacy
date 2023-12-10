@@ -42,7 +42,7 @@ targets.legacy_compound_suite(
 )
 
 targets.legacy_compound_suite(
-    name = "android_nougat_emulator_gtests",
+    name = "android_oreo_emulator_gtests",
     basic_suites = [
         "android_emulator_specific_chrome_public_tests",
         "android_monochrome_smoke_tests",
@@ -55,16 +55,6 @@ targets.legacy_compound_suite(
         "system_webview_shell_instrumentation_tests",  # Not an experimental test
         "webview_cts_tests_gtest",
         "webview_ui_instrumentation_tests",
-    ],
-)
-
-targets.legacy_compound_suite(
-    name = "android_nougat_gtests",
-    basic_suites = [
-        "android_ar_gtests",
-        "android_ddready_vr_gtests",
-        "android_monochrome_smoke_tests",
-        "android_smoke_tests",
     ],
 )
 
@@ -391,9 +381,6 @@ targets.legacy_compound_suite(
         "telemetry_perf_unittests_isolated_scripts",
         "vulkan_swiftshader_isolated_scripts",
         "chromium_web_tests_high_dpi_isolated_scripts",
-        # TODO(weizhong): Remove wptrunner steps once experimenting completes.
-        "wpt_web_tests_content_shell",
-        "wpt_web_tests_highdpi",
     ],
 )
 
@@ -405,12 +392,14 @@ targets.legacy_compound_suite(
         "chromium_gtests_for_linux_and_mac_only",
         "mac_specific_chromium_gtests",
         "non_android_and_cast_and_chromeos_chromium_gtests",
-        "non_android_chromium_gtests",
+        "non_android_chromium_gtests_no_nacl",
     ],
 )
 
 # When changing something here, change
 # chromium_mac_gtests_no_nacl_once in the same way.
+# TODO(b/303417958): This no_nacl suite is identical to the normal suite, since
+# NaCl has been disabled on Mac. Replace this by the normal suite.
 targets.legacy_compound_suite(
     name = "chromium_mac_gtests_no_nacl",
     basic_suites = [
@@ -490,8 +479,6 @@ targets.legacy_compound_suite(
         "mac_specific_isolated_scripts",
         "mojo_python_unittests_isolated_scripts",
         "telemetry_perf_unittests_isolated_scripts",
-        # TODO(weizhong): Remove wptrunner steps once experimenting completes.
-        "wpt_web_tests_content_shell",
     ],
 )
 
@@ -509,7 +496,7 @@ targets.legacy_compound_suite(
         "cr23_pixel_browser_tests_gtests",
         "fieldtrial_browser_tests",
         "non_android_and_cast_and_chromeos_chromium_gtests",
-        "non_android_chromium_gtests",
+        "non_android_chromium_gtests_no_nacl",
         "non_android_chromium_gtests_skia_gold",
         "pixel_browser_tests_gtests",
         "vr_platform_specific_chromium_gtests",
@@ -534,7 +521,7 @@ targets.legacy_compound_suite(
         "cr23_win_gtests",
         "fieldtrial_browser_tests",
         "non_android_and_cast_and_chromeos_chromium_gtests",
-        "non_android_chromium_gtests",
+        "non_android_chromium_gtests_no_nacl",
         "non_android_chromium_gtests_skia_gold",
         "pixel_browser_tests_gtests",
         "vr_platform_specific_chromium_gtests",
@@ -561,7 +548,7 @@ targets.legacy_compound_suite(
         "chromium_gtests_for_devices_with_graphical_output",
         "chromium_gtests_for_win_and_linux_only",
         "non_android_and_cast_and_chromeos_chromium_gtests",
-        "non_android_chromium_gtests",
+        "non_android_chromium_gtests_no_nacl",
         "vr_platform_specific_chromium_gtests",
         "win_specific_chromium_gtests",
     ],
@@ -603,8 +590,6 @@ targets.legacy_compound_suite(
         "telemetry_desktop_minidump_unittests_isolated_scripts",
         "telemetry_perf_unittests_isolated_scripts",
         "win_specific_isolated_scripts",
-        # TODO(weizhong): Remove wptrunner steps once experimenting completes.
-        "wpt_web_tests_content_shell",
     ],
 )
 
@@ -788,6 +773,15 @@ targets.legacy_compound_suite(
         "gpu_dawn_perf_smoke_isolated_scripts",
         "gpu_dawn_webgpu_blink_web_tests",
         "gpu_dawn_webgpu_blink_web_tests_force_swiftshader",
+    ],
+)
+
+targets.legacy_compound_suite(
+    name = "gpu_dawn_compat_telemetry_tests",
+    basic_suites = [
+        "gpu_dawn_webgpu_compat_cts",
+        "gpu_dawn_webgpu_cts",
+        "gpu_dawn_web_platform_webgpu_cts_force_swiftshader",
     ],
 )
 
@@ -1308,7 +1302,7 @@ targets.legacy_compound_suite(
 )
 
 targets.legacy_compound_suite(
-    name = "nougat_isolated_scripts",
+    name = "oreo_isolated_scripts",
     basic_suites = [
         "android_isolated_scripts",
         "chromium_junit_tests_scripts",

@@ -44,10 +44,8 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_chromeos_version_info.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
-#include "chromeos/ui/wm/features.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/base/hit_test.h"
@@ -173,6 +171,10 @@ class TabletModeControllerTest : public AshTestBase {
   }
 
   bool IsTabletModeStarted() const { return test_api_->IsTabletModeStarted(); }
+
+  bool IsInPhysicalTabletState() const {
+    return test_api_->IsInPhysicalTabletState();
+  }
 
   // Attaches a SimpleTestTickClock to the TabletModeController with a non
   // null value initial value.
@@ -627,7 +629,7 @@ TEST_F(TabletModeControllerTest, DisplayDisconnectionDuringOverview) {
 
   UpdateDisplay("800x600");
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
   EXPECT_EQ(w1->GetRootWindow(), w2->GetRootWindow());
 
   OverviewWallpaperController::SetDisableChangeWallpaperForTest(false);
@@ -667,6 +669,31 @@ TEST_F(TabletModeControllerTest, NoTabletModeWithDisabledInternalDisplay) {
   // Tablet mode signal should also be ignored.
   SetTabletMode(true);
   EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_FALSE(AreEventsBlocked());
+}
+
+// Tests that tablet mode change events are fired while in unified desktop mode.
+TEST_F(TabletModeControllerTest,
+       TabletModeChangeEventsFiredInUnifiedDesktopMode) {
+  UpdateDisplay("300x200, 300x200");
+  display::test::DisplayManagerTestApi(display_manager())
+      .SetFirstDisplayAsInternalDisplay();
+  ASSERT_FALSE(IsTabletModeStarted());
+
+  // Turn on unified desktop mode.
+  display_manager()->SetUnifiedDesktopEnabled(true);
+  ASSERT_TRUE(display_manager()->IsInUnifiedMode());
+
+  // Opening the lid to 270 degrees should start tablet mode.
+  OpenLidToAngle(270.0f);
+  EXPECT_TRUE(IsTabletModeStarted());
+  EXPECT_TRUE(IsInPhysicalTabletState());
+  EXPECT_TRUE(AreEventsBlocked());
+
+  // Opening the lid to 30 degrees should stop tablet mode.
+  OpenLidToAngle(30.0f);
+  EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_FALSE(IsInPhysicalTabletState());
   EXPECT_FALSE(AreEventsBlocked());
 }
 
@@ -1190,7 +1217,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveNoSnap) {
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewController::State::kNoSnap,
             split_view_controller()->state());
-  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
 }
 
 // Test that if the active window is snapped on the left before tablet mode,
@@ -1201,7 +1228,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveLeftSnap) {
   EXPECT_EQ(SplitViewController::State::kPrimarySnapped,
             split_view_controller()->state());
   EXPECT_EQ(window.get(), split_view_controller()->primary_window());
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
   EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 }
 
@@ -1213,7 +1240,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveRightSnap) {
   EXPECT_EQ(SplitViewController::State::kSecondarySnapped,
             split_view_controller()->state());
   EXPECT_EQ(window.get(), split_view_controller()->secondary_window());
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
   EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 }
 
@@ -1230,7 +1257,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveLeftSnapPreviousRightSnap) {
             split_view_controller()->state());
   EXPECT_EQ(left_window.get(), split_view_controller()->primary_window());
   EXPECT_EQ(right_window.get(), split_view_controller()->secondary_window());
-  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
   EXPECT_EQ(left_window.get(), window_util::GetActiveWindow());
 }
 
@@ -1247,7 +1274,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveRightSnapPreviousLeftSnap) {
             split_view_controller()->state());
   EXPECT_EQ(left_window.get(), split_view_controller()->primary_window());
   EXPECT_EQ(right_window.get(), split_view_controller()->secondary_window());
-  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
   EXPECT_EQ(right_window.get(), window_util::GetActiveWindow());
 }
 
@@ -1264,7 +1291,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveTransientChildOfLeftSnap) {
   EXPECT_EQ(SplitViewController::State::kPrimarySnapped,
             split_view_controller()->state());
   EXPECT_EQ(parent.get(), split_view_controller()->primary_window());
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
   EXPECT_EQ(child.get(), window_util::GetActiveWindow());
 }
 
@@ -1282,7 +1309,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveAppListPreviousLeftSnap) {
   EXPECT_EQ(SplitViewController::State::kPrimarySnapped,
             split_view_controller()->state());
   EXPECT_EQ(window.get(), split_view_controller()->primary_window());
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
   EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 }
 
@@ -1294,6 +1321,10 @@ TEST_F(TabletModeControllerTest, StartTabletActiveDraggedPreviousLeftSnap) {
   std::unique_ptr<aura::Window> snapped_window =
       CreateDesktopWindowSnappedLeft();
   wm::ActivateWindow(dragged_window.get());
+
+  GetEventGenerator()->PressTouch(
+      dragged_window->GetBoundsInScreen().CenterPoint());
+
   ASSERT_TRUE(Shell::Get()->toplevel_window_event_handler()->AttemptToStartDrag(
       dragged_window.get(), gfx::PointF(), HTCAPTION,
       ToplevelWindowEventHandler::EndClosure()));
@@ -1301,7 +1332,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveDraggedPreviousLeftSnap) {
   EXPECT_EQ(SplitViewController::State::kPrimarySnapped,
             split_view_controller()->state());
   EXPECT_EQ(snapped_window.get(), split_view_controller()->primary_window());
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
   EXPECT_EQ(snapped_window.get(), window_util::GetActiveWindow());
 }
 
@@ -1320,7 +1351,7 @@ TEST_F(TabletModeControllerTest,
   EXPECT_EQ(SplitViewController::State::kPrimarySnapped,
             split_view_controller()->state());
   EXPECT_EQ(snapped_window.get(), split_view_controller()->primary_window());
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
   EXPECT_EQ(snapped_window.get(), window_util::GetActiveWindow());
 }
 
@@ -1336,6 +1367,9 @@ TEST_F(TabletModeControllerTest,
   ::wm::AddTransientChild(parent.get(), child.get());
   wm::ActivateWindow(child.get());
   wm::ActivateWindow(dragged_window.get());
+
+  GetEventGenerator()->PressTouch(
+      dragged_window->GetBoundsInScreen().CenterPoint());
   ASSERT_TRUE(Shell::Get()->toplevel_window_event_handler()->AttemptToStartDrag(
       dragged_window.get(), gfx::PointF(), HTCAPTION,
       ToplevelWindowEventHandler::EndClosure()));
@@ -1343,7 +1377,7 @@ TEST_F(TabletModeControllerTest,
   EXPECT_EQ(SplitViewController::State::kPrimarySnapped,
             split_view_controller()->state());
   EXPECT_EQ(parent.get(), split_view_controller()->primary_window());
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
   EXPECT_EQ(parent.get(), window_util::GetActiveWindow());
 }
 
@@ -1371,7 +1405,7 @@ TEST_F(TabletModeControllerTest,
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewController::State::kNoSnap,
             split_view_controller()->state());
-  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
 }
 
 // Test that if before tablet mode, the active window is snapped on the right
@@ -1399,7 +1433,7 @@ TEST_F(TabletModeControllerTest,
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewController::State::kNoSnap,
             split_view_controller()->state());
-  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
 }
 
 // Test that if before tablet mode, the active window is snapped on the left and
@@ -1429,7 +1463,7 @@ TEST_F(TabletModeControllerTest,
   EXPECT_EQ(SplitViewController::State::kPrimarySnapped,
             split_view_controller()->state());
   EXPECT_EQ(left_window.get(), split_view_controller()->primary_window());
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
   EXPECT_EQ(left_window.get(), window_util::GetActiveWindow());
 }
 
@@ -1459,7 +1493,7 @@ TEST_F(TabletModeControllerTest,
   EXPECT_EQ(SplitViewController::State::kSecondarySnapped,
             split_view_controller()->state());
   EXPECT_EQ(right_window.get(), split_view_controller()->secondary_window());
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
   EXPECT_EQ(right_window.get(), window_util::GetActiveWindow());
 }
 
@@ -1487,7 +1521,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveLeftSnapPreviousLeftSnap) {
   EXPECT_EQ(SplitViewController::State::kPrimarySnapped,
             split_view_controller()->state());
   EXPECT_EQ(window1.get(), split_view_controller()->primary_window());
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
   EXPECT_EQ(window1.get(), window_util::GetActiveWindow());
 }
 
@@ -1505,7 +1539,7 @@ TEST_F(TabletModeControllerTest,
   EXPECT_EQ(SplitViewController::State::kPrimarySnapped,
             split_view_controller()->state());
   EXPECT_EQ(window.get(), split_view_controller()->primary_window());
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
   EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 }
 
@@ -1551,7 +1585,7 @@ TEST_F(TabletModeControllerTest,
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SplitViewController::State::kPrimarySnapped,
             split_view_controller()->state());
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
 }
 
 // Test that tablet mode controller does not respond to the input device changes
@@ -2067,24 +2101,9 @@ TEST_F(TabletModeControllerScreenshotTest, TransientChildTypeWindow) {
   EXPECT_TRUE(IsShelfAndFloatContainerOpaque());
 }
 
-class TabletModeControllerFloatScreenshotTest
-    : public TabletModeControllerScreenshotTest {
- public:
-  TabletModeControllerFloatScreenshotTest()
-      : scoped_feature_list_(chromeos::wm::features::kWindowLayoutMenu) {}
-  TabletModeControllerFloatScreenshotTest(
-      const TabletModeControllerFloatScreenshotTest&) = delete;
-  TabletModeControllerFloatScreenshotTest& operator=(
-      const TabletModeControllerFloatScreenshotTest&) = delete;
-  ~TabletModeControllerFloatScreenshotTest() override = default;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
 // Floated window in tablet mode only covers a portion of the work area, so we
 // don't take a screenshot.
-TEST_F(TabletModeControllerFloatScreenshotTest, NoScreenshotFloatedWindow) {
+TEST_F(TabletModeControllerScreenshotTest, NoScreenshotFloatedWindow) {
   auto window = CreateAppWindow();
   PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
   ASSERT_TRUE(WindowState::Get(window.get())->IsFloated());

@@ -10,8 +10,8 @@
 #import "ios/chrome/browser/favicon/favicon_loader.h"
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/net/crurl.h"
-#import "ios/chrome/browser/passwords/ios_chrome_account_password_store_factory.h"
-#import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_account_password_store_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
@@ -59,8 +59,9 @@
       initWithSearchController:searchController];
   self.passwordViewController.delegate = self;
 
-  auto profilePasswordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
-      self.browser->GetBrowserState(), ServiceAccessType::EXPLICIT_ACCESS);
+  auto profilePasswordStore =
+      IOSChromeProfilePasswordStoreFactory::GetForBrowserState(
+          self.browser->GetBrowserState(), ServiceAccessType::EXPLICIT_ACCESS);
   auto accountPasswordStore =
       IOSChromeAccountPasswordStoreFactory::GetForBrowserState(
           self.browser->GetBrowserState(), ServiceAccessType::EXPLICIT_ACCESS);

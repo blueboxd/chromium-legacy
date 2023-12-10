@@ -24,14 +24,13 @@ android_library("java") {
     "widget/java/src/org/chromium/components/browser_ui/settings/ImageButtonPreference.java",
     "widget/java/src/org/chromium/components/browser_ui/settings/LearnMorePreference.java",
     "widget/java/src/org/chromium/components/browser_ui/settings/LongSummaryTextMessagePreference.java",
-    "widget/java/src/org/chromium/components/browser_ui/settings/PaddedDividerItemDecoration.java",
+    "widget/java/src/org/chromium/components/browser_ui/settings/PaddedItemDecorationWithDivider.java",
     "widget/java/src/org/chromium/components/browser_ui/settings/SpinnerPreference.java",
     "widget/java/src/org/chromium/components/browser_ui/settings/TextMessagePreference.java",
   ]
   deps = [
     ":java_resources",
     "//base:base_java",
-    "//base:jni_java",
     "//build/android:build_java",
     "//components/browser_ui/styles/android:java",
     "//components/browser_ui/util/android:java",
@@ -44,6 +43,7 @@ android_library("java") {
     "//third_party/androidx:androidx_fragment_fragment_java",
     "//third_party/androidx:androidx_preference_preference_java",
     "//third_party/androidx:androidx_recyclerview_recyclerview_java",
+    "//third_party/jni_zero:jni_zero_java",
     "//ui/android:ui_java",
     "//ui/android:ui_no_recycler_view_java",
   ]

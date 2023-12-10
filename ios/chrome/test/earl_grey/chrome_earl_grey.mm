@@ -264,6 +264,10 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
   return [ChromeEarlGreyAppInterface browserCount];
 }
 
+- (NSInteger)realizedWebStatesCount {
+  return [ChromeEarlGreyAppInterface realizedWebStatesCount];
+}
+
 - (NSUInteger)evictedMainTabCount {
   return [ChromeEarlGreyAppInterface evictedMainTabCount];
 }
@@ -1421,6 +1425,10 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
 
 - (void)removeUserDefaultObjectForKey:(NSString*)key {
   [ChromeEarlGreyAppInterface removeUserDefaultObjectForKey:key];
+}
+
+- (id)userDefaultObjectForKey:(NSString*)key {
+  return [ChromeEarlGreyAppInterface userDefaultObjectForKey:key];
 }
 
 #pragma mark - Pref Utilities (EG2)

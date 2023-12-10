@@ -18,8 +18,8 @@
 #import "components/password_manager/core/browser/password_manager_test_utils.h"
 #import "components/password_manager/core/browser/test_password_store.h"
 #import "components/password_manager/core/common/password_manager_features.h"
-#import "ios/chrome/browser/passwords/ios_chrome_account_password_store_factory.h"
-#import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_account_password_store_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -125,7 +125,7 @@ class PasswordFetcherTest : public PlatformTest {
     PlatformTest::SetUp();
     TestChromeBrowserState::Builder test_cbs_builder;
     test_cbs_builder.AddTestingFactory(
-        IOSChromePasswordStoreFactory::GetInstance(),
+        IOSChromeProfilePasswordStoreFactory::GetInstance(),
         base::BindRepeating(&BuildPasswordStore,
                             password_manager::IsAccountStore(false)));
     // Despite overriding BuildServiceInstanceFor() for the account factory,
@@ -141,7 +141,7 @@ class PasswordFetcherTest : public PlatformTest {
 
   scoped_refptr<password_manager::PasswordStoreInterface>
   GetProfilePasswordStore() {
-    return IOSChromePasswordStoreFactory::GetForBrowserState(
+    return IOSChromeProfilePasswordStoreFactory::GetForBrowserState(
         chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS);
   }
 

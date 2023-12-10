@@ -26,7 +26,6 @@
 #include "base/strings/escape.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/system/sys_info.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -130,6 +129,8 @@
 #include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/password_generation_util.h"
+#include "components/compose/buildflags.h"
+#include "components/compose/core/browser/compose_features.h"
 #include "components/custom_handlers/protocol_handler.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/feed/feed_feature_list.h"
@@ -222,6 +223,11 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "url/origin.h"
+
+#if BUILDFLAG(ENABLE_COMPOSE)
+#include "chrome/browser/compose/chrome_compose_client.h"
+#include "components/compose/core/browser/compose_manager.h"
+#endif
 
 #if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
 #include "chrome/browser/renderer_context_menu/spelling_options_submenu_observer.h"
@@ -500,13 +506,14 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        // Removed: {IDC_CONTENT_CONTEXT_ORCA, 136},
        {IDC_CONTENT_CONTEXT_RUN_LAYOUT_EXTRACTION, 137},
        {IDC_CONTENT_PASTE_FROM_CLIPBOARD, 138},
+       {IDC_CONTEXT_COMPOSE, 139},
        // To add new items:
        //   - Add one more line above this comment block, using the UMA value
        //     from the line below this comment block.
        //   - Increment the UMA value in that latter line.
        //   - Add the new item to the RenderViewContextMenuItem enum in
        //     tools/metrics/histograms/enums.xml.
-       {0, 139}});
+       {0, 140}});
 
   // These UMA values are for the the ContextMenuOptionDesktop enum, used for
   // the ContextMenu.SelectedOptionDesktop histograms.
@@ -947,17 +954,19 @@ void RenderViewContextMenu::AppendCurrentExtensionItems() {
   // For Panel, this happens when the panel is navigated to a url outside of the
   // extension's package.
   const Extension* extension = GetExtension();
-  if (!extension)
-    return;
-
   extensions::WebViewGuest* web_view_guest =
       extensions::WebViewGuest::FromRenderFrameHost(
           content::RenderFrameHost::FromID(render_process_id_,
                                            render_frame_id_));
   MenuItem::ExtensionKey key;
+  std::u16string title;
   if (web_view_guest) {
+    const std::string& extension_id =
+        extension ? extension->id() : std::string();
+    title = extension ? base::UTF8ToUTF16(extension->name())
+                      : web_view_guest->owner_web_contents()->GetTitle();
     key = MenuItem::ExtensionKey(
-        extension->id(), web_view_guest->owner_rfh()->GetProcess()->GetID(),
+        extension_id, web_view_guest->owner_rfh()->GetProcess()->GetID(),
         web_view_guest->view_instance_id());
   } else {
     key = MenuItem::ExtensionKey(extension->id());
@@ -966,7 +975,7 @@ void RenderViewContextMenu::AppendCurrentExtensionItems() {
   // Only add extension items from this extension.
   int index = 0;
   extension_items_.AppendExtensionItems(key, PrintableSelectionText(), &index,
-                                        /*is_action_menu=*/false);
+                                        /*is_action_menu=*/false, title);
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
@@ -1021,12 +1030,11 @@ void RenderViewContextMenu::IssuePreconnectionToUrl(
 
   GURL anonymization_key_gurl(anonymization_key_url);
   net::SchemefulSite anonymization_key_schemeful_site(anonymization_key_gurl);
-  auto network_anonymization_key =
-      net::NetworkAnonymizationKey::CreateCrossSite(
-          anonymization_key_schemeful_site);
+  auto network_anonymziation_key = net::NetworkAnonymizationKey::CreateSameSite(
+      anonymization_key_schemeful_site);
   loading_predictor->PreconnectURLIfAllowed(GURL(preconnect_url),
                                             /*allow_credentials=*/true,
-                                            network_anonymization_key);
+                                            network_anonymziation_key);
 }
 
 bool RenderViewContextMenu::IsInProgressiveWebApp() const {
@@ -1154,16 +1162,11 @@ void RenderViewContextMenu::InitMenu() {
     AppendPlatformEditableItems();
   }
 
-  // Show Read Anything option if text is selected and if it's not already open
-  // in the side panel.
+  // Show Read Anything option if it's not already open in the side panel.
   if (features::IsReadAnythingEnabled()) {
     if (GetBrowser() && GetBrowser()->is_type_normal() &&
-        !IsReadAnythingEntryShowing(GetBrowser()) &&
-        (content_type_->SupportsGroup(
-             ContextMenuContentType::ITEM_GROUP_COPY) ||
-         content_type_->SupportsGroup(
-             ContextMenuContentType::ITEM_GROUP_EDITABLE))) {
-      AppendReadAnythingItem();
+        !IsReadAnythingEntryShowing(GetBrowser())) {
+      AppendReadingModeItem();
     }
   }
 
@@ -1461,7 +1464,7 @@ void RenderViewContextMenu::RecordShownItem(int id, bool is_submenu) {
 }
 
 bool RenderViewContextMenu::IsHTML5Fullscreen() const {
-  Browser* browser = chrome::FindBrowserWithWebContents(embedder_web_contents_);
+  Browser* browser = chrome::FindBrowserWithTab(embedder_web_contents_);
   if (!browser)
     return false;
 
@@ -1471,7 +1474,7 @@ bool RenderViewContextMenu::IsHTML5Fullscreen() const {
 }
 
 bool RenderViewContextMenu::IsPressAndHoldEscRequiredToExitFullscreen() const {
-  Browser* browser = chrome::FindBrowserWithWebContents(source_web_contents_);
+  Browser* browser = chrome::FindBrowserWithTab(source_web_contents_);
   if (!browser)
     return false;
 
@@ -1755,7 +1758,7 @@ void RenderViewContextMenu::AppendQuickAnswersItems() {
 #if BUILDFLAG(IS_CHROMEOS)
   if (!quick_answers_menu_observer_) {
     quick_answers_menu_observer_ =
-        std::make_unique<QuickAnswersMenuObserver>(this);
+        std::make_unique<QuickAnswersMenuObserver>(this, GetProfile());
   }
 
   observers_.AddObserver(quick_answers_menu_observer_.get());
@@ -1886,22 +1889,26 @@ void RenderViewContextMenu::AppendSearchWebForImageItems() {
     return;
   }
 
-  std::u16string menu_string =
+  menu_model_.AddItem(
+      GetSearchForImageIdc(),
       l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHLENSFORIMAGE,
-                                 GetImageSearchProviderName(provider));
+                                 provider->short_name()));
 
-  if (lens::features::UseLensContextMenuItemAlternateText()) {
-    menu_string = l10n_util::GetStringFUTF16(
-        IDS_CONTENT_CONTEXT_SEARCHLENSFORIMAGE_ALT_TEXT,
-        provider->short_name());
-  }
-
-  menu_model_.AddItem(GetSearchForImageIdc(), menu_string);
   if (companion::IsNewBadgeEnabledForSearchMenuItem(GetBrowser())) {
     menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
   }
 
-  MaybePrepareForLensQuery();
+  if (search::DefaultSearchProviderIsGoogle(GetProfile())) {
+    if (companion::IsSearchImageInCompanionSidePanelSupported(GetBrowser()) &&
+        companion::GetShouldIssuePreconnectForCompanion()) {
+      IssuePreconnectionToUrl(companion::GetPreconnectKeyForCompanion(),
+                              companion::GetImageUploadURLForCompanion());
+    } else if (base::FeatureList::IsEnabled(lens::features::kLensStandalone) &&
+               lens::features::GetShouldIssuePreconnectForLens()) {
+      IssuePreconnectionToUrl(lens::features::GetPreconnectKeyForLens(),
+                              lens::features::GetHomepageURLForLens());
+    }
+  }
 
   if (base::FeatureList::IsEnabled(lens::features::kLensStandalone) &&
       base::FeatureList::IsEnabled(lens::features::kEnableImageTranslate) &&
@@ -2109,7 +2116,7 @@ void RenderViewContextMenu::AppendMediaRouterItem() {
   }
 }
 
-void RenderViewContextMenu::AppendReadAnythingItem() {
+void RenderViewContextMenu::AppendReadingModeItem() {
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPEN_IN_READING_MODE,
                                   IDS_CONTENT_CONTEXT_READING_MODE);
   menu_model_.SetIsNewFeatureAt(
@@ -2185,8 +2192,7 @@ void RenderViewContextMenu::AppendSearchProvider() {
     SideSearchTabContentsHelper* helper =
         SideSearchTabContentsHelper::FromWebContents(embedder_web_contents_);
 
-    Browser* browser =
-        chrome::FindBrowserWithWebContents(embedder_web_contents_);
+    Browser* browser = chrome::FindBrowserWithTab(embedder_web_contents_);
     if (!side_search::IsSearchWebInSidePanelSupported(browser) ||
         (helper && helper->CanShowSidePanelFromContextMenuSearch())) {
       menu_model_.AddItem(
@@ -2234,18 +2240,28 @@ void RenderViewContextMenu::AppendSpellingAndSearchSuggestionItems() {
     AppendSearchProvider();
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   }
+  bool render_separator = false;
   if (params_.misspelled_word.empty()) {
-    bool render_separator = false;
     if (DoesInputFieldTypeSupportEmoji(params_.input_field_type) &&
         ui::IsEmojiPanelSupported()) {
       render_separator = true;
       menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_EMOJI,
                                       IDS_CONTENT_CONTEXT_EMOJI);
     }
+  }
+  // TODO(b/301371110): Update enabling constraints.
+  if (base::FeatureList::IsEnabled(compose::features::kEnableCompose)) {
+    menu_model_.AddItemWithStringId(IDC_CONTEXT_COMPOSE,
+                                    IDS_COMPOSE_SUGGESTION_MAIN_TEXT);
+    // TODO(b/303646344): Remove new feature tag when no longer new.
+    menu_model_.SetIsNewFeatureAt(
+        menu_model_.GetItemCount() - 1,
+        !content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_LINK));
 
-    if (render_separator) {
-      menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-    }
+    render_separator = true;
+  }
+  if (render_separator) {
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   }
 }
 
@@ -2493,7 +2509,18 @@ void RenderViewContextMenu::AppendRegionSearchItem() {
       menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
     }
 
-    MaybePrepareForLensQuery();
+    if (search::DefaultSearchProviderIsGoogle(GetProfile())) {
+      if (companion::IsSearchImageInCompanionSidePanelSupported(GetBrowser()) &&
+          companion::GetShouldIssuePreconnectForCompanion()) {
+        IssuePreconnectionToUrl(companion::GetPreconnectKeyForCompanion(),
+                                companion::GetImageUploadURLForCompanion());
+      } else if (base::FeatureList::IsEnabled(
+                     lens::features::kLensStandalone) &&
+                 lens::features::GetShouldIssuePreconnectForLens()) {
+        IssuePreconnectionToUrl(lens::features::GetPreconnectKeyForLens(),
+                                lens::features::GetHomepageURLForLens());
+      }
+    }
   }
 }
 
@@ -2759,6 +2786,8 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 #endif
 
     case IDC_CONTENT_CONTEXT_EMOJI:
+      return params_.is_editable;
+    case IDC_CONTEXT_COMPOSE:
       return params_.is_editable;
 
     case IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION1:
@@ -3173,16 +3202,16 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       RecordAmbientSearchQuery(
           lens::AmbientSearchEntryPoint::CONTEXT_MENU_SEARCH_WEB_FOR);
       if (companion::IsSearchWebInCompanionSidePanelSupported(
-              chrome::FindBrowserWithWebContents(embedder_web_contents_))) {
+              chrome::FindBrowserWithTab(embedder_web_contents_))) {
         ExecSearchWebInCompanionSidePanel(selection_navigation_url_);
         break;
       }
       // Searching in this side panel is dependent on the companion feature
       // being disabled.
       if (side_search::IsSearchWebInSidePanelSupported(
-              chrome::FindBrowserWithWebContents(embedder_web_contents_)) &&
+              chrome::FindBrowserWithTab(embedder_web_contents_)) &&
           !companion::IsSearchInCompanionSidePanelSupported(
-              chrome::FindBrowserWithWebContents(embedder_web_contents_))) {
+              chrome::FindBrowserWithTab(embedder_web_contents_))) {
         ExecSearchWebInSidePanel(selection_navigation_url_);
         break;
       }
@@ -3239,6 +3268,25 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       }
       break;
     }
+
+#if BUILDFLAG(ENABLE_COMPOSE)
+    case IDC_CONTEXT_COMPOSE: {
+      auto* client = ChromeComposeClient::FromWebContents(source_web_contents_);
+      compose::ComposeManager* compose_manager =
+          client ? &client->GetManager() : nullptr;
+      RenderFrameHost* render_frame_host = GetRenderFrameHost();
+      if (compose_manager && render_frame_host) {
+        const autofill::LocalFrameToken frame_token = autofill::LocalFrameToken(
+            render_frame_host->GetFrameToken().value());
+        // TODO(b/305798770): Use appropriate parameters once the Autofill Form
+        // Extraction API is available.
+        compose_manager->OpenComposeFromContextMenu(
+            frame_token, autofill::FieldRendererId(*params_.field_renderer_id),
+            gfx::RectF(params_.x, params_.y, 50, 50));
+      }
+      break;
+    }
+#endif  // BUILDFLAG(ENABLE_COMPOSE)
 
     case IDC_CONTENT_CLIPBOARD_HISTORY_MENU: {
 #if BUILDFLAG(IS_CHROMEOS)
@@ -3966,7 +4014,7 @@ void RenderViewContextMenu::ExecSearchLensForImage(bool is_image_translate) {
 }
 
 void RenderViewContextMenu::ExecAddANote() {
-  Browser* browser = chrome::FindBrowserWithWebContents(source_web_contents_);
+  Browser* browser = chrome::FindBrowserWithTab(source_web_contents_);
   if (!browser) {
     return;
   }
@@ -4268,7 +4316,7 @@ void RenderViewContextMenu::PluginActionAt(
 }
 
 Browser* RenderViewContextMenu::GetBrowser() const {
-  return chrome::FindBrowserWithWebContents(embedder_web_contents_);
+  return chrome::FindBrowserWithTab(embedder_web_contents_);
 }
 
 bool RenderViewContextMenu::CanTranslate(bool menu_logging) {
@@ -4277,40 +4325,6 @@ bool RenderViewContextMenu::CanTranslate(bool menu_logging) {
   return chrome_translate_client &&
          chrome_translate_client->GetTranslateManager()->CanManuallyTranslate(
              menu_logging);
-}
-
-void RenderViewContextMenu::MaybePrepareForLensQuery() {
-  if (!search::DefaultSearchProviderIsGoogle(GetProfile())) {
-    return;
-  }
-
-  // Chrome Search Companion preparation
-  if (companion::IsSearchImageInCompanionSidePanelSupported(GetBrowser())) {
-    if (companion::GetShouldIssuePreconnectForCompanion()) {
-      IssuePreconnectionToUrl(companion::GetPreconnectKeyForCompanion(),
-                              companion::GetImageUploadURLForCompanion());
-    }
-    if (companion::GetShouldIssueProcessPrewarmingForCompanion() &&
-        !base::SysInfo::IsLowEndDevice()) {
-      content::RenderProcessHost::WarmupSpareRenderProcessHost(
-          browser_context_);
-    }
-    return;
-  }
-
-  // Lens Side Panel preparation
-  if (lens::features::IsLensSidePanelEnabled()) {
-    if (lens::features::GetShouldIssuePreconnectForLens()) {
-      IssuePreconnectionToUrl(lens::features::GetPreconnectKeyForLens(),
-                              lens::features::GetHomepageURLForLens());
-    }
-    if (lens::features::GetShouldIssueProcessPrewarmingForLens() &&
-        !base::SysInfo::IsLowEndDevice()) {
-      content::RenderProcessHost::WarmupSpareRenderProcessHost(
-          browser_context_);
-    }
-    return;
-  }
 }
 
 #if BUILDFLAG(IS_CHROMEOS)

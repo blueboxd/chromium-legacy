@@ -8,8 +8,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/password_manager/account_password_store_factory.h"
-#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_utils.h"
+#include "chrome/browser/password_manager/profile_password_store_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
@@ -74,9 +74,11 @@ ManagePasswordsBubbleController::~ManagePasswordsBubbleController() {
 }
 
 std::u16string ManagePasswordsBubbleController::GetTitle() const {
-  return GetManagePasswordsDialogTitleText(
-      GetWebContents()->GetVisibleURL(), delegate_->GetOrigin(),
-      !delegate_->GetCurrentForms().empty());
+  return delegate_->GetState() == password_manager::ui::CONFIRMATION_STATE
+             ? GetConfirmationManagePasswordsDialogTitleText()
+             : GetManagePasswordsDialogTitleText(
+                   GetWebContents()->GetVisibleURL(), delegate_->GetOrigin(),
+                   !delegate_->GetCurrentForms().empty());
 }
 
 void ManagePasswordsBubbleController::OnManageClicked(
@@ -230,7 +232,7 @@ ManagePasswordsBubbleController::PasswordStoreForForm(
   return password_form.IsUsingAccountStore()
              ? AccountPasswordStoreFactory::GetForProfile(
                    profile, ServiceAccessType::EXPLICIT_ACCESS)
-             : PasswordStoreFactory::GetForProfile(
+             : ProfilePasswordStoreFactory::GetForProfile(
                    profile, ServiceAccessType::EXPLICIT_ACCESS);
 }
 

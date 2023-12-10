@@ -66,7 +66,6 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/frame/caption_buttons/snap_controller.h"
-#include "chromeos/ui/wm/features.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -82,6 +81,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/shadow_types.h"
+#include "ui/wm/core/transient_window_manager.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -95,14 +95,14 @@ class OverviewStatesObserver : public OverviewObserver {
  public:
   explicit OverviewStatesObserver(aura::Window* root_window)
       : root_window_(root_window) {
-    Shell::Get()->overview_controller()->AddObserver(this);
+    OverviewController::Get()->AddObserver(this);
   }
 
   OverviewStatesObserver(const OverviewStatesObserver&) = delete;
   OverviewStatesObserver& operator=(const OverviewStatesObserver&) = delete;
 
   ~OverviewStatesObserver() override {
-    Shell::Get()->overview_controller()->RemoveObserver(this);
+    OverviewController::Get()->RemoveObserver(this);
   }
 
   // OverviewObserver:
@@ -454,14 +454,14 @@ TEST_F(SplitViewControllerTest, WindowCloseTest) {
             SplitViewController::SnapPosition::kSecondary);
   // Window grid is showing no recent items, and has no windows, but it is still
   // available.
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
 
   // Now close the other snapped window.
   window2.reset();
   EXPECT_EQ(split_view_controller()->InSplitViewMode(), false);
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::State::kNoSnap);
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
 
   // 3 - Then test the scenario with more than two windows.
   std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
@@ -485,7 +485,7 @@ TEST_F(SplitViewControllerTest, WindowCloseTest) {
   EXPECT_EQ(split_view_controller()->default_snap_position(),
             SplitViewController::SnapPosition::kPrimary);
   // Now overview window grid can be opened.
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
 
   // Close the other snapped window.
   window3.reset();
@@ -493,7 +493,7 @@ TEST_F(SplitViewControllerTest, WindowCloseTest) {
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::State::kNoSnap);
   // Test the overview winow grid should still open.
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
 }
 
 // Tests that split view overview session is started and ended correctly.
@@ -515,7 +515,7 @@ TEST_F(SplitViewControllerTest, StartEndSplitViewOverviewSession) {
             SplitViewController::State::kPrimarySnapped);
   EXPECT_EQ(split_view_controller()->primary_window(), window1.get());
   EXPECT_FALSE(split_view_controller()->secondary_window());
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
   EXPECT_TRUE(RootWindowController::ForWindow(Shell::GetPrimaryRootWindow())
                   ->split_view_overview_session());
 
@@ -527,7 +527,7 @@ TEST_F(SplitViewControllerTest, StartEndSplitViewOverviewSession) {
             SplitViewController::State::kBothSnapped);
   EXPECT_EQ(split_view_controller()->primary_window(), window1.get());
   EXPECT_EQ(split_view_controller()->secondary_window(), window2.get());
-  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
   EXPECT_FALSE(RootWindowController::ForWindow(Shell::GetPrimaryRootWindow())
                    ->split_view_overview_session());
 
@@ -538,7 +538,7 @@ TEST_F(SplitViewControllerTest, StartEndSplitViewOverviewSession) {
             SplitViewController::State::kSecondarySnapped);
   EXPECT_FALSE(split_view_controller()->primary_window());
   EXPECT_EQ(split_view_controller()->secondary_window(), window2.get());
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
   EXPECT_TRUE(RootWindowController::ForWindow(Shell::GetPrimaryRootWindow())
                   ->split_view_overview_session());
 
@@ -547,7 +547,7 @@ TEST_F(SplitViewControllerTest, StartEndSplitViewOverviewSession) {
   window2.reset();
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::State::kNoSnap);
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
   EXPECT_FALSE(RootWindowController::ForWindow(Shell::GetPrimaryRootWindow())
                    ->split_view_overview_session());
 }
@@ -593,7 +593,7 @@ TEST_F(SplitViewControllerTest, MinimizeWindowTest) {
   EXPECT_EQ(split_view_controller()->default_snap_position(),
             SplitViewController::SnapPosition::kSecondary);
   // The overview window grid will open.
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
 
   // Now minimize the other snapped window.
   WindowState::Get(window2.get())->OnWMEvent(&minimize_event);
@@ -601,7 +601,7 @@ TEST_F(SplitViewControllerTest, MinimizeWindowTest) {
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::State::kNoSnap);
   // The overview window grid is still open.
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
 }
 
 // Tests that if one of the snapped window gets maximized / full-screened, the
@@ -666,7 +666,7 @@ TEST_F(SplitViewControllerTest, WindowStateChangeTest) {
   // Maximize the snapped window will end the split view mode and overview mode.
   WindowState::Get(window1.get())->OnWMEvent(&maximize_event);
   EXPECT_EQ(split_view_controller()->InSplitViewMode(), false);
-  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
 
   split_view_controller()->SnapWindow(
       window1.get(), SplitViewController::SnapPosition::kPrimary);
@@ -678,7 +678,7 @@ TEST_F(SplitViewControllerTest, WindowStateChangeTest) {
   // mode.
   WindowState::Get(window1.get())->OnWMEvent(&fullscreen_event);
   EXPECT_EQ(split_view_controller()->InSplitViewMode(), false);
-  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
 }
 
 // Tests that if split view mode is active, activate another window will snap
@@ -721,7 +721,7 @@ TEST_F(SplitViewControllerTest, SnapWindowWithUnresizableSnapProperty) {
   // Switch to clamshell mode and enter overview mode.
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   ToggleOverview();
-  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  ASSERT_TRUE(OverviewController::Get()->InOverviewSession());
 
   split_view_controller()->SnapWindow(
       window.get(), SplitViewController::SnapPosition::kPrimary);
@@ -898,7 +898,7 @@ TEST_F(SplitViewControllerTest, DividerStateWhenDraggedOverviewItemDestroyed) {
             split_view_divider()->divider_widget()->GetZOrderLevel());
 
   OverviewSession* overview_session =
-      Shell::Get()->overview_controller()->overview_session();
+      OverviewController::Get()->overview_session();
   auto* overview_item =
       overview_session->GetOverviewItemForWindow(window2.get());
   gfx::PointF drag_point = overview_item->target_bounds().CenterPoint();
@@ -937,7 +937,7 @@ TEST_F(SplitViewControllerTest, DividerStateWhenOverviewItemDragCancelled) {
             split_view_divider()->divider_widget()->GetZOrderLevel());
 
   OverviewSession* overview_session =
-      Shell::Get()->overview_controller()->overview_session();
+      OverviewController::Get()->overview_session();
   auto* overview_item =
       overview_session->GetOverviewItemForWindow(window2.get());
   gfx::PointF drag_point = overview_item->target_bounds().CenterPoint();
@@ -1552,18 +1552,7 @@ TEST_F(SplitViewControllerTest, OverviewNotStealFocusOnSwapWindows) {
   EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
 }
 
-class SplitViewControllerFloatTest : public SplitViewControllerTest {
- public:
-  SplitViewControllerFloatTest() = default;
-  SplitViewControllerFloatTest(const SplitViewControllerFloatTest&) = delete;
-  SplitViewControllerFloatTest& operator=(const SplitViewControllerFloatTest&) =
-      delete;
-  ~SplitViewControllerFloatTest() override = default;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_{
-      chromeos::wm::features::kWindowLayoutMenu};
-};
+using SplitViewControllerFloatTest = SplitViewControllerTest;
 
 // Tests that the floated window is not auto-snapped if it's on top of two
 // snapped windows. It should only get snapped if it's activated from overview.
@@ -1578,8 +1567,8 @@ TEST_F(SplitViewControllerFloatTest, DontAutosnapFloatedWindow) {
   // Snap `window1` so that Overview is open.
   split_view_controller()->SnapWindow(
       window1.get(), SplitViewController::SnapPosition::kPrimary);
-  auto* overview_controller = Shell::Get()->overview_controller();
-  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  auto* overview_controller = OverviewController::Get();
+  ASSERT_TRUE(OverviewController::Get()->InOverviewSession());
   auto* overview_session = overview_controller->overview_session();
   ASSERT_TRUE(overview_session->IsWindowInOverview(window2.get()));
   ASSERT_TRUE(overview_session->IsWindowInOverview(floated_window.get()));
@@ -1599,7 +1588,7 @@ TEST_F(SplitViewControllerFloatTest, DontAutosnapFloatedWindow) {
   EXPECT_TRUE(WindowState::Get(floated_window.get())->IsFloated());
   split_view_controller()->SnapWindow(
       window1.get(), SplitViewController::SnapPosition::kPrimary);
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
   overview_session = overview_controller->overview_session();
   EXPECT_TRUE(overview_session->IsWindowInOverview(floated_window.get()));
   wm::ActivateWindow(floated_window.get());
@@ -1669,7 +1658,7 @@ TEST_F(SplitViewControllerTest, LongPressExitsSplitView) {
   // current active window.
   LongPressOnOverviewButtonTray();
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
-  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
   EXPECT_EQ(window1.get(), window_util::GetActiveWindow());
 
   // Snap |window1| to the right.
@@ -1683,7 +1672,7 @@ TEST_F(SplitViewControllerTest, LongPressExitsSplitView) {
   // current active window.
   LongPressOnOverviewButtonTray();
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
-  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
   EXPECT_EQ(window1.get(), window_util::GetActiveWindow());
 
   // Snap two windows and activate the left window, |window1|.
@@ -1760,7 +1749,7 @@ TEST_F(SplitViewControllerTest, LongPressExitsSplitViewWithTransientChild) {
   // current active window.
   LongPressOnOverviewButtonTray();
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
-  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
   EXPECT_EQ(right_window.get(), window_util::GetActiveWindow());
 }
 
@@ -1768,19 +1757,19 @@ TEST_F(SplitViewControllerTest, LongPressExitsSplitViewWithTransientChild) {
 // button while in overview mode if we have at least one window.
 TEST_F(SplitViewControllerTest, LongPressInOverviewMode) {
   ToggleOverview();
-  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  ASSERT_TRUE(OverviewController::Get()->InOverviewSession());
   ASSERT_FALSE(split_view_controller()->InSplitViewMode());
 
   // Nothing happens if there are no windows.
   LongPressOnOverviewButtonTray();
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
 
   std::unique_ptr<aura::Window> window = CreateAppWindow();
-  ASSERT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  ASSERT_FALSE(OverviewController::Get()->InOverviewSession());
 
   ToggleOverview();
-  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  ASSERT_TRUE(OverviewController::Get()->InOverviewSession());
   ASSERT_FALSE(split_view_controller()->InSplitViewMode());
 
   // Verify that with a window, a long press on the overview button tray will
@@ -1800,12 +1789,12 @@ TEST_F(SplitViewControllerTest, LongPressInOverviewModeHistograms) {
 
   ToggleOverview();
   WaitForOverviewEnterAnimation();
-  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  ASSERT_TRUE(OverviewController::Get()->InOverviewSession());
   CheckOverviewEnterExitHistogram("EnterInTablet", {0, 0}, {0, 0});
 
   // Nothing happens if there are no windows.
   LongPressOnOverviewButtonTray();
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
 
   // Activating a window will exit overview.
   std::unique_ptr<aura::Window> window = CreateAppWindow();
@@ -1814,7 +1803,7 @@ TEST_F(SplitViewControllerTest, LongPressInOverviewModeHistograms) {
   ToggleOverview();
   WaitForOverviewEnterAnimation();
   CheckOverviewEnterExitHistogram("EnterInTablet2", {1, 0}, {0, 0});
-  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  ASSERT_TRUE(OverviewController::Get()->InOverviewSession());
   ASSERT_FALSE(split_view_controller()->InSplitViewMode());
 
   // Verify that with a window, a long press on the overview button tray will
@@ -2369,11 +2358,11 @@ TEST_F(SplitViewControllerTest, NewWindowTest) {
   ToggleOverview();
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::State::kPrimarySnapped);
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
 
   // Now new a window. Test it won't end the overview mode
   std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
 }
 
 // Tests that when split view ends because of a transition from tablet mode to
@@ -2545,7 +2534,7 @@ TEST_F(SplitViewControllerTest, ShadowDisappearsWhenSnapped) {
   split_view_controller()->SnapWindow(
       window1.get(), SplitViewController::SnapPosition::kPrimary);
   EXPECT_FALSE(shadow_controller->IsShadowVisibleForWindow(window1.get()));
-  auto* overview_controller = Shell::Get()->overview_controller();
+  auto* overview_controller = OverviewController::Get();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   auto* overview_session = overview_controller->overview_session();
   EXPECT_TRUE(overview_session->IsWindowInOverview(window2.get()));
@@ -2573,7 +2562,8 @@ TEST_F(SplitViewControllerTest, ShadowDisappearsWhenSnapped) {
 // windows in overview mode to snap to both side of the screen), or toggle
 // overview to end overview causes a window to snap, we should not have the
 // exiting animation.
-TEST_F(SplitViewControllerTest, OverviewExitAnimationTest) {
+// TODO(crbug.com/1493835): Re-enable this test
+TEST_F(SplitViewControllerTest, DISABLED_OverviewExitAnimationTest) {
   ui::ScopedAnimationDurationScaleMode anmatin_scale(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
@@ -2588,10 +2578,10 @@ TEST_F(SplitViewControllerTest, OverviewExitAnimationTest) {
       std::make_unique<OverviewStatesObserver>(window1->GetRootWindow());
   ToggleOverview();
   WaitForOverviewEnterAnimation();
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
   ToggleOverview();
   WaitForOverviewExitAnimation();
-  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
   EXPECT_TRUE(overview_observer->overview_animate_when_exiting());
   CheckOverviewEnterExitHistogram("NormalEnterExit", {1, 0}, {1, 0});
 
@@ -2601,7 +2591,7 @@ TEST_F(SplitViewControllerTest, OverviewExitAnimationTest) {
   // It will end overview.
   wm::ActivateWindow(window1.get());
   WaitForOverviewExitAnimation();
-  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
   EXPECT_TRUE(overview_observer->overview_animate_when_exiting());
   CheckOverviewEnterExitHistogram("EnterExitByActivation", {2, 0}, {2, 0});
 
@@ -2609,7 +2599,7 @@ TEST_F(SplitViewControllerTest, OverviewExitAnimationTest) {
   split_view_controller()->SnapWindow(
       window1.get(), SplitViewController::SnapPosition::kPrimary);
   WaitForOverviewEnterAnimation();
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
   // Reset the observer as we'll need the OverviewStatesObserver to be added to
   // to ShellObserver list after SplitViewController.
   overview_observer =
@@ -2621,21 +2611,21 @@ TEST_F(SplitViewControllerTest, OverviewExitAnimationTest) {
   split_view_controller()->SnapWindow(
       window2.get(), SplitViewController::SnapPosition::kSecondary);
   WaitForOverviewExitAnimation();
-  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
   EXPECT_FALSE(overview_observer->overview_animate_when_exiting());
   CheckOverviewEnterExitHistogram("ExitBySnap", {2, 1}, {2, 1});
 
   // 4) If ending overview causes a window to snap:
   ToggleOverview();
   WaitForOverviewEnterAnimation();
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
   // Test |overview_animate_when_exiting_| has been properly reset.
   EXPECT_TRUE(overview_observer->overview_animate_when_exiting());
   CheckOverviewEnterExitHistogram("EnterInSplitView2", {2, 2}, {2, 1});
 
   ToggleOverview();
   WaitForOverviewExitAnimation();
-  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
   EXPECT_FALSE(overview_observer->overview_animate_when_exiting());
   CheckOverviewEnterExitHistogram("ExitInSplitView", {2, 2}, {2, 2});
 }
@@ -2676,11 +2666,11 @@ TEST_F(SplitViewControllerTest, ActivateNonSnappableWindow) {
   split_view_controller()->SnapWindow(
       window1.get(), SplitViewController::SnapPosition::kPrimary);
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
 
   wm::ActivateWindow(window3.get());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
-  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
 }
 
 // Tests that if a snapped window has a bubble transient child, the bubble's
@@ -3022,7 +3012,7 @@ TEST_F(SplitViewControllerTest, EndSplitViewDuringDividerSnapAnimation) {
 class TestOverviewItemsOnOverviewModeEndObserver : public OverviewObserver {
  public:
   TestOverviewItemsOnOverviewModeEndObserver() {
-    Shell::Get()->overview_controller()->AddObserver(this);
+    OverviewController::Get()->AddObserver(this);
   }
 
   TestOverviewItemsOnOverviewModeEndObserver(
@@ -3031,7 +3021,7 @@ class TestOverviewItemsOnOverviewModeEndObserver : public OverviewObserver {
       const TestOverviewItemsOnOverviewModeEndObserver&) = delete;
 
   ~TestOverviewItemsOnOverviewModeEndObserver() override {
-    Shell::Get()->overview_controller()->RemoveObserver(this);
+    OverviewController::Get()->RemoveObserver(this);
   }
   void OnOverviewModeEnding(OverviewSession* overview_session) override {
     items_on_last_overview_end_ = overview_session->num_items();
@@ -3048,13 +3038,11 @@ TEST_F(SplitViewControllerTest, ItemsRemovedFromOverviewOnSnap) {
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
 
   ToggleOverview();
-  ASSERT_EQ(
-      2u, Shell::Get()->overview_controller()->overview_session()->num_items());
+  ASSERT_EQ(2u, OverviewController::Get()->overview_session()->num_items());
   split_view_controller()->SnapWindow(
       window1.get(), SplitViewController::SnapPosition::kPrimary);
-  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
-  EXPECT_EQ(
-      1u, Shell::Get()->overview_controller()->overview_session()->num_items());
+  ASSERT_TRUE(OverviewController::Get()->InOverviewSession());
+  EXPECT_EQ(1u, OverviewController::Get()->overview_session()->num_items());
 
   // Create |observer| after splitview is entered so that it gets notified after
   // splitview does, and so will notice the changes splitview made to overview
@@ -3233,7 +3221,7 @@ TEST_F(SplitViewControllerTest, WMSnapEvent) {
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_EQ(split_view_controller()->primary_window(), window1.get());
   EXPECT_FALSE(split_view_controller()->IsWindowInSplitView(window2.get()));
-  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  OverviewController* overview_controller = OverviewController::Get();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   OverviewSession* overview_session = overview_controller->overview_session();
   EXPECT_TRUE(overview_session->IsWindowInOverview(window2.get()));
@@ -3489,7 +3477,7 @@ TEST_F(SplitViewControllerTest, SelectWindowCannotOneThirdSnap) {
   ASSERT_EQ(chromeos::kTwoThirdSnapRatio,
             WindowState::Get(window1.get())->snap_ratio());
   ASSERT_TRUE(WindowState::Get(window1.get())->IsSnapped());
-  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  ASSERT_TRUE(OverviewController::Get()->InOverviewSession());
 
   // Select `window2`. Test that both windows are maximized and we have exited
   // splitview.
@@ -3699,7 +3687,7 @@ TEST_F(SplitViewControllerTest, WMSnapEventDeviceOrientationMetricsInTablet) {
   WindowSnapWMEvent wm_left_snap_event(WM_EVENT_SNAP_PRIMARY);
   WindowState::Get(window1.get())->OnWMEvent(&wm_left_snap_event);
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
-  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  OverviewController* overview_controller = OverviewController::Get();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   histogram_tester.ExpectBucketCount(
       kDeviceOrientationTablet,
@@ -4138,7 +4126,7 @@ TEST_F(SplitViewKeyboardTest, ShowHideOnScreenKeyboardWithOverviewEnabled) {
       CreateWindow(gfx::Rect(0, 0, 400, 400)));
   for (auto rotation :
        {display::Display::ROTATE_0, display::Display::ROTATE_270}) {
-    EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+    EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
     test_api.SetDisplayRotation(rotation,
                                 display::Display::RotationSource::ACTIVE);
     // Cache the original work area.
@@ -4160,7 +4148,7 @@ TEST_F(SplitViewKeyboardTest, ShowHideOnScreenKeyboardWithOverviewEnabled) {
     // the shrunk work area bottom.
     split_view_controller()->SnapWindow(
         right_window.get(), SplitViewController::SnapPosition::kSecondary);
-    EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+    EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
     EXPECT_EQ(right_window->bounds().bottom(), shrink_work_area.bottom());
 
     // Dismiss on-screen keyboard, the window's bottom is equal to the original

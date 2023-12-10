@@ -174,7 +174,6 @@ class ASH_EXPORT NightLightControllerImpl
   void OnDisplayConfigurationChanged() override;
 
   // aura::EnvObserver:
-  void OnWindowInitialized(aura::Window* window) override {}
   void OnHostInitialized(aura::WindowTreeHost* host) override;
 
   // SessionObserver:
@@ -182,7 +181,7 @@ class ASH_EXPORT NightLightControllerImpl
 
   // ash::NightLightController:
   void SetCurrentGeoposition(const SimpleGeoposition& position) override;
-  bool GetEnabled() const override;
+  bool IsNightLightEnabled() const override;
 
   // chromeos::PowerManagerClient::Observer:
   void SuspendDone(base::TimeDelta sleep_duration) override;

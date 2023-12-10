@@ -9,9 +9,10 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.chrome.browser.flags.BooleanCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.components.embedder_support.util.UrlUtilities;
@@ -29,6 +30,11 @@ public class DseNewTabUrlManager {
     private Callback<Profile> mProfileCallback;
     private TemplateUrlService mTemplateUrlService;
 
+    private static final String SWAP_OUT_NTP_PARAM = "swap_out_ntp";
+    public static final BooleanCachedFieldTrialParameter SWAP_OUT_NTP =
+            new BooleanCachedFieldTrialParameter(
+                    ChromeFeatureList.NEW_TAB_SEARCH_ENGINE_URL_ANDROID, SWAP_OUT_NTP_PARAM, false);
+
     public DseNewTabUrlManager(ObservableSupplier<Profile> profileSupplier) {
         mProfileSupplier = profileSupplier;
         mProfileCallback = this::onProfileAvailable;
@@ -41,8 +47,10 @@ public class DseNewTabUrlManager {
      * @param gurl The GURL to check.
      */
     public GURL maybeGetOverrideUrl(GURL gurl) {
-        if (isIncognito() || !isNewTabSearchEngineUrlAndroidEnabled()
-                || isDefaultSearchEngineGoogle() || !UrlUtilities.isNTPUrl(gurl)) {
+        if (isIncognito()
+                || !shouldSwapOutNtp()
+                || isDefaultSearchEngineGoogle()
+                || !UrlUtilities.isNTPUrl(gurl)) {
             return gurl;
         }
 
@@ -73,12 +81,14 @@ public class DseNewTabUrlManager {
     /**
      * Returns the new Tab URL of the default search engine if should override any NTP's URL.
      * Returns the given URL if don't need to override.
-     * @param url The URL to check.
+     *
+     * @param gurl The URL to check.
      * @param profile The instance of the current {@link Profile}.
      */
     public static GURL maybeGetOverrideUrl(GURL gurl, Profile profile) {
         if ((profile != null && profile.isOffTheRecord())
-                || !isNewTabSearchEngineUrlAndroidEnabled() || isDefaultSearchEngineGoogle()
+                || !shouldSwapOutNtp()
+                || isDefaultSearchEngineGoogle()
                 || !UrlUtilities.isNTPUrl(gurl)) {
             return gurl;
         }
@@ -100,7 +110,7 @@ public class DseNewTabUrlManager {
      * Returns cached value of {@link ChromePreferenceKeys.IS_DSE_GOOGLE} in the SharedPreference.
      */
     public static boolean isDefaultSearchEngineGoogle() {
-        return SharedPreferencesManager.getInstance().readBoolean(
+        return ChromeSharedPreferences.getInstance().readBoolean(
                 ChromePreferenceKeys.IS_DSE_GOOGLE, true);
     }
 
@@ -115,7 +125,7 @@ public class DseNewTabUrlManager {
     @Nullable
     public static String getDSENewTabUrl(TemplateUrlService templateUrlService) {
         if (templateUrlService == null) {
-            return SharedPreferencesManager.getInstance().readString(
+            return ChromeSharedPreferences.getInstance().readString(
                     ChromePreferenceKeys.DSE_NEW_TAB_URL, null);
         }
 
@@ -145,14 +155,18 @@ public class DseNewTabUrlManager {
 
     private void onTemplateURLServiceChanged() {
         boolean isDSEGoogle = mTemplateUrlService.isDefaultSearchEngineGoogle();
-        SharedPreferencesManager.getInstance().writeBoolean(
+        ChromeSharedPreferences.getInstance().writeBoolean(
                 ChromePreferenceKeys.IS_DSE_GOOGLE, isDSEGoogle);
         if (isDSEGoogle) {
-            SharedPreferencesManager.getInstance().removeKey(ChromePreferenceKeys.DSE_NEW_TAB_URL);
+            ChromeSharedPreferences.getInstance().removeKey(ChromePreferenceKeys.DSE_NEW_TAB_URL);
         } else {
-            SharedPreferencesManager.getInstance().writeString(
+            ChromeSharedPreferences.getInstance().writeString(
                     ChromePreferenceKeys.DSE_NEW_TAB_URL, getDSENewTabUrl(mTemplateUrlService));
         }
+    }
+
+    private static boolean shouldSwapOutNtp() {
+        return isNewTabSearchEngineUrlAndroidEnabled() && SWAP_OUT_NTP.getValue();
     }
 
     public TemplateUrlService getTemplateUrlServiceForTesting() {

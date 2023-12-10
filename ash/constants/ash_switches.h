@@ -311,7 +311,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kQsAddFakeCastDevices[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kQsShowLocaleTile[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kRegulatoryLabelDir[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kRemoteRebootCommandTimeoutInSecondsForTesting[];
+extern const char kRemoteRebootCommandDelayInSecondsForTesting[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kRevenBranding[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kRlzPingDelay[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kRmaNotAllowed[];
@@ -361,6 +361,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kCameraEffectsSupportedByHardware[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kPreventKioskAutolaunchForTesting[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kAllowDefaultShelfPinLayoutIgnoringSync[];
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -473,6 +475,9 @@ bool IsCameraEffectsSupportedByHardware();
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool UseFakeCrasAudioClientForDBus();
+
+COMPONENT_EXPORT(ASH_CONSTANTS)
+bool ShouldAllowDefaultShelfPinLayoutIgnoringSync();
 
 }  // namespace ash::switches
 

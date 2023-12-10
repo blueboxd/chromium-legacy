@@ -52,7 +52,7 @@ FirstPartySetsPolicyServiceFactory::FirstPartySetsPolicyServiceFactory()
     : ProfileKeyedServiceFactory(
           "FirstPartySetsPolicyService",
           ProfileSelections::Builder()
-              .WithRegular(ProfileSelection::kOwnInstance)
+              .WithRegular(ProfileSelection::kRedirectedToOriginal)
               // TODO(crbug.com/1418376): Check if this service is needed in
               // Guest mode.
               .WithGuest(ProfileSelection::kRedirectedToOriginal)
@@ -81,7 +81,7 @@ bool FirstPartySetsPolicyServiceFactory::ServiceIsCreatedWithBrowserContext()
 
 void FirstPartySetsPolicyServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(kFirstPartySetsOverrides);
+  registry->RegisterDictionaryPref(kRelatedWebsiteSetsOverrides);
 }
 
 }  // namespace first_party_sets

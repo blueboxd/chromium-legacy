@@ -70,15 +70,16 @@
 #import "components/web_resource/web_resource_pref_names.h"
 #import "ios/chrome/app/variations_app_state_agent.h"
 #import "ios/chrome/browser/first_run/first_run.h"
-#import "ios/chrome/browser/memory/memory_debugger_manager.h"
+#import "ios/chrome/browser/memory/model/memory_debugger_manager.h"
+#import "ios/chrome/browser/metrics/constants.h"
 #import "ios/chrome/browser/metrics/ios_chrome_metrics_service_client.h"
 #import "ios/chrome/browser/ntp/set_up_list_prefs.h"
-#import "ios/chrome/browser/ntp_tiles/tab_resumption/tab_resumption_prefs.h"
+#import "ios/chrome/browser/ntp_tiles/model/tab_resumption/tab_resumption_prefs.h"
 #import "ios/chrome/browser/parcel_tracking/parcel_tracking_prefs.h"
 #import "ios/chrome/browser/policy/policy_util.h"
-#import "ios/chrome/browser/prerender/prerender_pref.h"
+#import "ios/chrome/browser/prerender/model/prerender_pref.h"
 #import "ios/chrome/browser/push_notification/push_notification_service.h"
-#import "ios/chrome/browser/safety_check/ios_chrome_safety_check_manager_constants.h"
+#import "ios/chrome/browser/safety_check/model/ios_chrome_safety_check_manager_constants.h"
 #import "ios/chrome/browser/shared/model/browser_state/browser_state_info_cache.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
@@ -92,7 +93,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/safety_check/safety_check_prefs.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_constants.h"
-#import "ios/chrome/browser/voice/voice_search_prefs_registration.h"
+#import "ios/chrome/browser/voice/model/voice_search_prefs_registration.h"
 #import "ios/chrome/browser/web/font_size/font_size_tab_helper.h"
 #import "ios/web/common/features.h"
 #import "ui/base/l10n/l10n_util.h"
@@ -164,6 +165,59 @@ inline constexpr char kPrivacySandboxManuallyControlled[] =
 // sync setup flow, after the user has pressed "turn on sync" but before they
 // have accepted the confirmation dialog.
 inline constexpr char kSyncRequested[] = "sync.requested";
+
+// Deprecated 10/2023.
+// A boolean used to track whether the user has tapped on any of the keyboard
+// accessories when the autofill branding is visible.
+const char kAutofillBrandingKeyboardAccessoriesTapped[] =
+    "ios.autofill.branding.keyboard_accessory_tapped";
+
+// Helper function migrating the preference `pref_name` of type "double" from
+// `defaults` to `pref_service`.
+void MigrateDoublePreferenceFromUserDefaults(std::string_view pref_name,
+                                             PrefService* pref_service,
+                                             NSUserDefaults* defaults) {
+  NSString* key = @(pref_name.data());
+  NSNumber* value =
+      base::apple::ObjCCast<NSNumber>([defaults objectForKey:key]);
+  if (!value) {
+    return;
+  }
+
+  pref_service->SetDouble(pref_name.data(), [value doubleValue]);
+  [defaults removeObjectForKey:key];
+}
+
+// Helper function migrating the preference `pref_name` of type "int" from
+// `defaults` to `pref_service`.
+void MigrateIntegerPreferenceFromUserDefaults(std::string_view pref_name,
+                                              PrefService* pref_service,
+                                              NSUserDefaults* defaults) {
+  NSString* key = @(pref_name.data());
+  NSNumber* value =
+      base::apple::ObjCCast<NSNumber>([defaults objectForKey:key]);
+  if (!value) {
+    return;
+  }
+
+  pref_service->SetInteger(pref_name.data(), [value intValue]);
+  [defaults removeObjectForKey:key];
+}
+
+// Helper function migrating the preference `pref_name` of type "NSDate" from
+// `defaults` to `pref_service`.
+void MigrateNSDatePreferenceFromUserDefaults(std::string_view pref_name,
+                                             PrefService* pref_service,
+                                             NSUserDefaults* defaults) {
+  NSString* key = @(pref_name.data());
+  NSDate* value = base::apple::ObjCCast<NSDate>([defaults objectForKey:key]);
+  if (!value) {
+    return;
+  }
+
+  pref_service->SetTime(pref_name.data(), base::Time::FromNSDate(value));
+  [defaults removeObjectForKey:key];
+}
 
 }  // namespace
 
@@ -265,8 +319,8 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
       prefs::kAutofillBrandingIconAnimationRemainingCount, 2);
   // Register other autofill branding prefs.
   registry->RegisterIntegerPref(prefs::kAutofillBrandingIconDisplayCount, 0);
-  registry->RegisterBooleanPref(
-      prefs::kAutofillBrandingKeyboardAccessoriesTapped, false);
+  registry->RegisterBooleanPref(kAutofillBrandingKeyboardAccessoriesTapped,
+                                false);
 
   registry->RegisterDictionaryPref(kLocalConsentsDictionary);
 
@@ -538,9 +592,11 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
                                 false);
 
   // Preferences related to parcel tracking.
-  registry->RegisterBooleanPref(prefs::kIosParcelTrackingOptInPromptDisplayed,
+  registry->RegisterBooleanPref(
+      prefs::kIosParcelTrackingOptInPromptDisplayLimitMet, false);
+  registry->RegisterIntegerPref(prefs::kIosParcelTrackingOptInStatus, 2);
+  registry->RegisterBooleanPref(prefs::kIosParcelTrackingOptInPromptSwipedDown,
                                 false);
-  registry->RegisterIntegerPref(prefs::kIosParcelTrackingOptInStatus, 0);
 
   registry->RegisterBooleanPref(kObsoleteIosSettingsPromoAlreadySeen, false);
   registry->RegisterIntegerPref(kObsoleteIosSettingsSigninPromoDisplayedCount,
@@ -554,6 +610,9 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
                                 false);
   // Preference related to feed.
   registry->RegisterTimePref(kActivityBucketLastReportedDateKey, base::Time());
+  registry->RegisterIntegerPref(kActivityBucketKey, 0);
+  registry->RegisterDoublePref(kTimeSpentInFeedAggregateKey, 0.0);
+
   registry->RegisterBooleanPref(kSyncRequested, false);
 }
 
@@ -607,27 +666,16 @@ void MigrateObsoleteLocalStatePrefs(PrefService* prefs) {
 
   // Added 09/2023
   // TODO(crbug.com/1485045) To be removed after a few milestones.
-  {
-    NSString* key = @(kAppStoreRatingTotalDaysOnChromeKey);
-    NSInteger value = [defaults integerForKey:key];
-    if (value) {
-      [defaults removeObjectForKey:key];
-      prefs->SetInteger(kAppStoreRatingTotalDaysOnChromeKey, value);
-    }
-  }
+  MigrateIntegerPreferenceFromUserDefaults(kAppStoreRatingTotalDaysOnChromeKey,
+                                           prefs, defaults);
 
   // Added 09/2023
   // TODO(crbug.com/1485045) To be removed after a few milestones.
-  {
-    NSString* key = @(kAppStoreRatingLastShownPromoDayKey);
-    NSDate* value =
-        base::apple::ObjCCastStrict<NSDate>([defaults objectForKey:key]);
-    if (value) {
-      [defaults removeObjectForKey:key];
-      prefs->SetTime(kAppStoreRatingLastShownPromoDayKey,
-                     base::Time::FromNSDate(value));
-    }
-  }
+  MigrateNSDatePreferenceFromUserDefaults(kAppStoreRatingLastShownPromoDayKey,
+                                          prefs, defaults);
+
+  // Added 10/2023.
+  prefs->ClearPref(kAutofillBrandingKeyboardAccessoriesTapped);
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -695,26 +743,32 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
   prefs->ClearPref(kObsoleteIosSettingsSigninPromoDisplayedCount);
   prefs->ClearPref(kPrivacySandboxManuallyControlled);
 
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   // Added 09/2023.
   // TODO(crbug.com/1486770) To be removed after a few milestones.
-  {
-    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-    NSString* key = @(kActivityBucketLastReportedDateKey);
-    NSDate* value = [defaults objectForKey:key];
-    if (value != nil) {
-      [defaults removeObjectForKey:key];
-      prefs->SetTime(kActivityBucketLastReportedDateKey,
-                     base::Time::FromNSDate(value));
-    }
-  }
+  MigrateNSDatePreferenceFromUserDefaults(kActivityBucketLastReportedDateKey,
+                                          prefs, defaults);
 
   // Added 10/2023.
   prefs->ClearPref(kSyncRequested);
+
+  // Added 10/2023.
+  // TODO(crbug.com/1486770) To be removed after a few milestones.
+  MigrateIntegerPreferenceFromUserDefaults(kActivityBucketKey, prefs, defaults);
+
+  // Added 10/2023.
+  // TODO(crbug.com/1486770) To be removed after a few milestones.
+  MigrateDoublePreferenceFromUserDefaults(kTimeSpentInFeedAggregateKey, prefs,
+                                          defaults);
 }
 
 void MigrateObsoleteUserDefault(void) {
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+
   // Added 08/2023.
-  [[NSUserDefaults standardUserDefaults]
-      setBool:NO
-       forKey:@"userHasInteractedWithPinnedTabsOverflow"];
+  [defaults removeObjectForKey:@"userHasInteractedWithPinnedTabsOverflow"];
+
+  // Added 10/2023
+  [defaults removeObjectForKey:@"PathToBrowserStateToKeep"];
+  [defaults removeObjectForKey:@"HasBrowserStateBeenRemoved"];
 }

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/test/scoped_feature_list.h"
@@ -30,11 +31,13 @@
 
 namespace {
 
+#if !BUILDFLAG(IS_ANDROID)
 base::FilePath GetTestFilePathForCacheGuid() {
   base::FilePath user_data_path;
   base::PathService::Get(chrome::DIR_USER_DATA, &user_data_path);
   return user_data_path.AppendASCII("SyncTestTmpCacheGuid");
 }
+#endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 class SyncDisabledViaDashboardChecker : public SingleClientStatusChangeChecker {
@@ -44,7 +47,7 @@ class SyncDisabledViaDashboardChecker : public SingleClientStatusChangeChecker {
 
   bool IsExitConditionSatisfied(std::ostream* os) override {
     *os << "Waiting for sync disabled by dashboard";
-    return service()->IsSyncFeatureDisabledViaDashboard();
+    return service()->GetUserSettings()->IsSyncFeatureDisabledViaDashboard();
   }
 };
 #else
@@ -312,7 +315,6 @@ IN_PROC_BROWSER_TEST_F(
       syncer::HISTORY_DELETE_DIRECTIVES));
   EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::SESSIONS));
   EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::USER_EVENTS));
-  EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PROXY_TABS));
 
   // With `kReplaceSyncPromosWithSignInPromos`, both PREFERENCES and
   // PRIORITY_PREFERENCES should be enabled in transport mode.
@@ -368,7 +370,6 @@ IN_PROC_BROWSER_TEST_F(
       GetSyncService(0)->GetActiveDataTypes().Has(syncer::USER_EVENTS));
   // But SESSIONS aka Open Tabs still works.
   EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::SESSIONS));
-  EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PROXY_TABS));
 
   // With `kReplaceSyncPromosWithSignInPromos`, both PREFERENCES and
   // PRIORITY_PREFERENCES should be enabled in transport mode.
@@ -379,19 +380,25 @@ IN_PROC_BROWSER_TEST_F(
   // CONTACT_INFO should be disabled by default for explicit-passphrase users.
   EXPECT_FALSE(
       GetSyncService(0)->GetActiveDataTypes().Has(syncer::CONTACT_INFO));
-  // AUTOFILL_WALLET_DATA should be disabled when CONTACT_INFO is disabled.
-  // TODO(crbug.com/1435431): It shouldn't be disabled once kPayments is
-  // decoupled from kAutofill.
-  EXPECT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(
-      syncer::AUTOFILL_WALLET_DATA));
+  if (!base::FeatureList::IsEnabled(
+          syncer::kSyncDecoupleAddressPaymentSettings)) {
+    // AUTOFILL_WALLET_DATA should be disabled when CONTACT_INFO is disabled.
+    // TODO(crbug.com/1435431): It shouldn't be disabled once kPayments is
+    // decoupled from kAutofill.
+    EXPECT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(
+        syncer::AUTOFILL_WALLET_DATA));
+  }
 
   // Enabling kAutofill to enable CONTACT_INFO.
   GetSyncService(0)->GetUserSettings()->SetSelectedType(
       syncer::UserSelectableType::kAutofill, true);
-  // TODO(crbug.com/1435431): This should be removed once kPayments is decoupled
-  // from kAutofill.
-  GetSyncService(0)->GetUserSettings()->SetSelectedType(
-      syncer::UserSelectableType::kPayments, true);
+  if (!base::FeatureList::IsEnabled(
+          syncer::kSyncDecoupleAddressPaymentSettings)) {
+    // TODO(crbug.com/1435431): This should be removed once kPayments is
+    // decoupled from kAutofill.
+    GetSyncService(0)->GetUserSettings()->SetSelectedType(
+        syncer::UserSelectableType::kPayments, true);
+  }
 
   ASSERT_NE(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
@@ -400,8 +407,6 @@ IN_PROC_BROWSER_TEST_F(
   // CONTACT_INFO and AUTOFILL_WALLET_DATA should be enabled.
   EXPECT_TRUE(
       GetSyncService(0)->GetActiveDataTypes().Has(syncer::CONTACT_INFO));
-  // TODO(crbug.com/1435431): This should be removed once kPayments is decoupled
-  // from kAutofill.
   EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(
       syncer::AUTOFILL_WALLET_DATA));
 }
@@ -480,7 +485,6 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::SESSIONS));
   EXPECT_FALSE(
       GetSyncService(0)->GetActiveDataTypes().Has(syncer::USER_EVENTS));
-  EXPECT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PROXY_TABS));
 
   // Without `kReplaceSyncPromosWithSignInPromos`, neither PREFERENCES nor
   // PRIORITY_PREFERENCES should be active in transport mode (even if the user

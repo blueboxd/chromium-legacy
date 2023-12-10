@@ -14,7 +14,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_encoder_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_encoder_encode_options.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
-#include "third_party/blink/renderer/modules/webcodecs/allow_shared_buffer_source_util.h"
+#include "third_party/blink/renderer/modules/webcodecs/array_buffer_util.h"
 #include "third_party/blink/renderer/modules/webcodecs/audio_data.h"
 #include "third_party/blink/renderer/modules/webcodecs/encoded_audio_chunk.h"
 #include "third_party/blink/renderer/modules/webcodecs/encoded_video_chunk.h"
@@ -59,9 +59,11 @@ AudioEncoderConfig* MakeAudioEncoderConfig(
     const wc_fuzzer::ConfigureAudioEncoder& proto);
 
 EncodedVideoChunk* MakeEncodedVideoChunk(
+    ScriptState* script_state,
     const wc_fuzzer::EncodedVideoChunk& proto);
 
 EncodedAudioChunk* MakeEncodedAudioChunk(
+    ScriptState* script_state,
     const wc_fuzzer::EncodedAudioChunk& proto);
 
 AllowSharedBufferSource* MakeAllowSharedBufferSource(
@@ -78,7 +80,8 @@ VideoFrame* MakeVideoFrame(
 VideoFrame* MakeVideoFrame(ScriptState* script_state,
                            const wc_fuzzer::VideoFrameBitmapInit& proto);
 
-AudioData* MakeAudioData(const wc_fuzzer::AudioDataInit& proto);
+AudioData* MakeAudioData(ScriptState* script_state,
+                         const wc_fuzzer::AudioDataInit& proto);
 
 AudioDataCopyToOptions* MakeAudioDataCopyToOptions(
     const wc_fuzzer::AudioDataCopyToOptions& proto);
@@ -92,6 +95,8 @@ String ToBitrateMode(
 String ToScalabilityMode(wc_fuzzer::ConfigureVideoEncoder_ScalabilityMode mode);
 
 String ToLatencyMode(wc_fuzzer::ConfigureVideoEncoder_LatencyMode mode);
+
+String ToContentHint(wc_fuzzer::ConfigureVideoEncoder_ContentHint hint);
 
 String ToAlphaOption(wc_fuzzer::ConfigureVideoEncoder_AlphaOption option);
 

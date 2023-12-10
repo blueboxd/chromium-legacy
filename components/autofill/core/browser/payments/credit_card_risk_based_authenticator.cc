@@ -6,8 +6,8 @@
 
 #include "base/check_deref.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/autofill_progress_dialog_type.h"
 #include "components/autofill/core/browser/payments/autofill_payments_feature_availability.h"
+#include "components/autofill/core/browser/payments/payments_util.h"
 
 namespace autofill {
 
@@ -24,7 +24,6 @@ CreditCardRiskBasedAuthenticator::~CreditCardRiskBasedAuthenticator() = default;
 
 void CreditCardRiskBasedAuthenticator::Authenticate(
     CreditCard card,
-    int64_t billing_customer_id,
     base::WeakPtr<Requester> requester) {
   // Authenticate should not be called while there is an existing authentication
   // underway.
@@ -34,18 +33,15 @@ void CreditCardRiskBasedAuthenticator::Authenticate(
   card_ = std::move(card);
   requester_ = requester;
 
-  autofill_client_->ShowAutofillProgressDialog(
-      AutofillProgressDialogType::kServerCardUnmaskProgressDialog,
-      base::BindOnce(&CreditCardRiskBasedAuthenticator::OnCardUnmaskCancelled,
-                     weak_ptr_factory_.GetWeakPtr()));
-
   unmask_request_details_->card = card_;
 
   if (ShouldShowCardMetadata(unmask_request_details_->card)) {
     unmask_request_details_->client_behavior_signals.push_back(
         ClientBehaviorConstants::kShowingCardArtImageAndCardProductName);
   }
-  unmask_request_details_->billing_customer_number = billing_customer_id;
+  unmask_request_details_->billing_customer_number =
+      payments::GetBillingCustomerId(
+          autofill_client_->GetPersonalDataManager());
 
   autofill_client_->GetPaymentsClient()->Prepare();
   autofill_client_->LoadRiskData(
@@ -66,10 +62,6 @@ void CreditCardRiskBasedAuthenticator::OnDidGetUnmaskRiskData(
 void CreditCardRiskBasedAuthenticator::OnUnmaskResponseReceived(
     AutofillClient::PaymentsRpcResult result,
     payments::PaymentsClient::UnmaskResponseDetails& response_details) {
-  autofill_client_->CloseAutofillProgressDialog(
-      /*show_confirmation_before_closing=*/result ==
-          AutofillClient::PaymentsRpcResult::kSuccess &&
-      !response_details.real_pan.empty());
   RiskBasedAuthenticationResponse response;
   if (result == AutofillClient::PaymentsRpcResult::kSuccess) {
     response.did_succeed = true;
@@ -90,29 +82,18 @@ void CreditCardRiskBasedAuthenticator::OnUnmaskResponseReceived(
   } else {
     // We received an error when attempting to unmask the card.
     response.did_succeed = false;
-    AutofillErrorDialogContext autofill_error_dialog_context;
     CHECK(card_.record_type() == CreditCard::RecordType::kMaskedServerCard);
-    autofill_error_dialog_context.type =
+    response.error_dialog_context.type =
         result == AutofillClient::PaymentsRpcResult::kNetworkError
             ? AutofillErrorDialogType::
                   kMaskedServerCardRiskBasedUnmaskingNetworkError
             : AutofillErrorDialogType::
                   kMaskedServerCardRiskBasedUnmaskingPermanentError;
-    autofill_client_->ShowAutofillErrorDialog(autofill_error_dialog_context);
 
     // TODO(crbug.com/1470933): Log the error metrics.
   }
   if (requester_) {
-    requester_->OnRiskBasedAuthenticationComplete(response);
-  }
-  Reset();
-}
-
-void CreditCardRiskBasedAuthenticator::OnCardUnmaskCancelled() {
-  // TODO(crbug.com/1470933): Log the cancel metrics.
-  if (requester_) {
-    requester_->OnRiskBasedAuthenticationComplete(
-        RiskBasedAuthenticationResponse().with_did_succeed(false));
+    requester_->OnRiskBasedAuthenticationResponseReceived(response);
   }
   Reset();
 }

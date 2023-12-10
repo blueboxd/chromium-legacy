@@ -279,7 +279,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.AccountTracker.SeedAccountInfo.IsAccountIdEmpty"
-    enum="BooleanEmpty" expires_after="2023-12-31">
+    enum="BooleanEmpty" expires_after="2024-03-31">
   <owner>msarda@chromium.org</owner>
   <owner>sinhak@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -581,7 +581,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.Enterprise.WorkProfile.ProfileCreatedWithPolicySet"
-    enum="BooleanCreated" expires_after="2024-03-24">
+    enum="BooleanCreated" expires_after="2024-08-01">
   <owner>pastarmovj@chromium.org</owner>
   <owner>ydago@chromium.org</owner>
   <summary>
@@ -593,7 +593,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.Enterprise.WorkProfile.ProfileCreatedwithPolicyUnset"
-    enum="BooleanCreated" expires_after="2023-09-15">
+    enum="BooleanCreated" expires_after="2024-08-01">
   <owner>pastarmovj@chromium.org</owner>
   <owner>ydago@chromium.org</owner>
   <summary>
@@ -827,7 +827,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.IOSDeviceRestoreSignedInState"
-    enum="IOSDeviceRestoreSignedinState" expires_after="2024-01-28">
+    enum="IOSDeviceRestoreSignedinState" expires_after="2024-03-31">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -852,7 +852,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.IOSNumberOfDeviceAccounts" units="accounts"
-    expires_after="2024-01-28">
+    expires_after="2024-03-31">
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -1586,6 +1586,21 @@ kept as long as profile signout is possible -->
   </summary>
 </histogram>
 
+<histogram name="Signin.SyncOptIn.PreSyncConfirmationLatency" units="ms"
+    expires_after="2024-02-01">
+  <owner>ljjlee@google.com</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Records the time taken to determine whether the user should be presented the
+    sync consent screen (or another screen such as the sync disabled screen).
+    This only includes the time that has passed from the latest sync-related
+    user input to measure the user-perceivable delay.
+
+    This metric is short-term and is intended to measure the impact of waiting
+    for additional user information prior to displaying this screen.
+  </summary>
+</histogram>
+
 <histogram name="Signin.SyncOptIn.Started" enum="SigninAccessPoint"
     expires_after="2024-02-20">
   <owner>bsazonov@chromium.org</owner>
@@ -1673,7 +1688,7 @@ name="TransactionalReauthEntryPoint" -->
 </histogram>
 
 <histogram name="Signin.TransactionalReauthUserAction"
-    enum="SigninReauthUserAction" expires_after="2024-01-28">
+    enum="SigninReauthUserAction" expires_after="2024-03-31">
 <!-- Name completed by histogram_suffixes
 name="TransactionalReauthEntryPoint" -->
 

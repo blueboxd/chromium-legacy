@@ -329,7 +329,7 @@ String GetTitle(blink::Element* element) {
   return element->title();
 }
 
-bool CanHaveInlineTextBoxChildren(blink::AXObject* obj) {
+bool CanHaveInlineTextBoxChildren(const blink::AXObject* obj) {
   if (!ui::CanHaveInlineTextBoxChildren(obj->RoleValue())) {
     return false;
   }
@@ -775,7 +775,8 @@ bool AXNodeObject::ComputeAccessibilityIsIgnored(
   if (AXObject::ComputeAccessibilityIsIgnored(ignored_reasons)) {
     // Fallback elements inside of a <canvas> are invisible, but are not ignored
     // if they are semantic and not aria-hidden or hidden via style.
-    if (IsAriaHidden() || IsHiddenViaStyle() || !GetNode()->parentElement() ||
+    if (IsAriaHidden() || IsHiddenViaStyle() || IsHiddenByChildTree() ||
+        !GetNode()->parentElement() ||
         !GetNode()->parentElement()->IsInCanvasSubtree()) {
       return true;
     }
@@ -1262,18 +1263,14 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (GetNode()->IsTextNode())
     return ax::mojom::blink::Role::kStaticText;
 
-  const HTMLSelectListElement* owner_select_list =
-      HTMLSelectListElement::OwnerSelectList(GetNode());
-  if (owner_select_list) {
-    HTMLSelectListElement::PartType part_type =
-        owner_select_list->AssignedPartType(GetNode());
-    if (part_type == HTMLSelectListElement::PartType::kButton) {
+  if (auto* button = DynamicTo<HTMLButtonElement>(GetNode())) {
+    if (button->OwnerSelectList()) {
       return ax::mojom::blink::Role::kComboBoxMenuButton;
-    } else if (part_type == HTMLSelectListElement::PartType::kListBox) {
-      return ax::mojom::blink::Role::kListBox;
-    } else if (part_type == HTMLSelectListElement::PartType::kOption) {
-      return ax::mojom::blink::Role::kListBoxOption;
     }
+  }
+
+  if (IsA<HTMLListboxElement>(GetNode())) {
+    return ax::mojom::blink::Role::kListBox;
   }
 
   if (IsA<HTMLImageElement>(GetNode()))
@@ -1379,10 +1376,12 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
 
   if (auto* option = DynamicTo<HTMLOptionElement>(*GetNode())) {
     HTMLSelectElement* select_element = option->OwnerSelectElement();
-    if (!select_element || select_element->IsMultiple())
+    if (!select_element || select_element->IsMultiple() ||
+        option->OwnerSelectList()) {
       return ax::mojom::blink::Role::kListBoxOption;
-    else
+    } else {
       return ax::mojom::blink::Role::kMenuListOption;
+    }
   }
 
   if (IsA<HTMLTextAreaElement>(*GetNode()))
@@ -2000,8 +1999,8 @@ bool AXNodeObject::IsNativeSpinButton() const {
   return false;
 }
 
-bool AXNodeObject::IsChildTreeOwner() const {
-  return ui::IsChildTreeOwner(native_role_);
+bool AXNodeObject::IsEmbeddingElement() const {
+  return ui::IsEmbeddingElement(native_role_);
 }
 
 bool AXNodeObject::IsClickable() const {
@@ -2235,9 +2234,8 @@ AccessibilityExpanded AXNodeObject::IsExpanded() const {
   if (!element)
     return kExpandedUndefined;
 
-  if (HTMLSelectListElement* select_list =
-          HTMLSelectListElement::OwnerSelectList(element)) {
-    if (select_list->ButtonPart() == element) {
+  if (auto* button = DynamicTo<HTMLButtonElement>(element)) {
+    if (auto* select_list = button->OwnerSelectList()) {
       return select_list->open() ? kExpandedExpanded : kExpandedCollapsed;
     }
   }
@@ -3493,24 +3491,26 @@ String AXNodeObject::GetValueForControl() const {
   }
 
   if (RoleValue() == ax::mojom::blink::Role::kComboBoxMenuButton) {
-    // An HTML <selectlist> gets its value from the selected option.
-    if (auto* select_list = HTMLSelectListElement::OwnerSelectList(node)) {
-      DCHECK(RuntimeEnabledFeatures::HTMLSelectListElementEnabled());
-      if (HTMLOptionElement* selected = select_list->selectedOption()) {
-        // TODO(accessibility) Because these <option> elements can contain
-        // anything, we need to create an AXObject for the selected option, and
-        // use ax_selected_option->ComputedName(). However, for now, the
-        // AXObject is not created because AXObject::IsRelevantSlotElement()
-        // returns false for the invisible slot parent. Also, strangely,
-        // selected->innerText()/GetInnerTextWithoutUpdate() are returning "".
-        // See the following content_browsertest:
-        // All/DumpAccessibilityTreeTest.AccessibilitySelectList/blink.
-        // TODO(crbug.com/1401767): DCHECK fails with synchronous serialization.
-        DCHECK(selected->firstChild())
-            << "There is a selected option but it has no DOM children.";
-        return selected->textContent();
+    // An HTML <selectlist>'s button gets its value from the selected option.
+    if (auto* button = DynamicTo<HTMLButtonElement>(node)) {
+      if (auto* select_list = button->OwnerSelectList()) {
+        if (HTMLOptionElement* selected = select_list->selectedOption()) {
+          // TODO(accessibility) Because these <option> elements can contain
+          // anything, we need to create an AXObject for the selected option,
+          // and use ax_selected_option->ComputedName(). However, for now, the
+          // AXObject is not created because AXObject::IsRelevantSlotElement()
+          // returns false for the invisible slot parent. Also, strangely,
+          // selected->innerText()/GetInnerTextWithoutUpdate() are returning "".
+          // See the following content_browsertest:
+          // All/DumpAccessibilityTreeTest.AccessibilitySelectList/blink.
+          // TODO(crbug.com/1401767): DCHECK fails with synchronous
+          // serialization.
+          DCHECK(selected->firstChild())
+              << "There is a selected option but it has no DOM children.";
+          return selected->textContent();
+        }
+        return String();
       }
-      return String();
     }
 
     // An ARIA combobox can get value from inner contents.
@@ -3686,12 +3686,12 @@ bool AXNodeObject::HasContentEditableAttributeSet() const {
 }
 
 // Returns the nearest block-level LayoutBlockFlow ancestor
-static LayoutBlockFlow* NonInlineBlockFlow(LayoutObject* object) {
+static LayoutBlockFlow* GetNearestBlockFlow(LayoutObject* object) {
   LayoutObject* current = object;
   while (current) {
-    auto* block_flow = DynamicTo<LayoutBlockFlow>(current);
-    if (block_flow && !block_flow->IsAtomicInlineLevel())
+    if (auto* block_flow = DynamicTo<LayoutBlockFlow>(current)) {
       return block_flow;
+    }
     current = current->Parent();
   }
 
@@ -3700,14 +3700,14 @@ static LayoutBlockFlow* NonInlineBlockFlow(LayoutObject* object) {
 }
 
 // Returns true if |r1| and |r2| are both non-null, both inline, and are
-// contained within the same non-inline LayoutBlockFlow.
-static bool IsInSameNonInlineBlockFlow(LayoutObject* r1, LayoutObject* r2) {
+// contained within the same LayoutBlockFlow.
+static bool IsInSameBlockFlow(LayoutObject* r1, LayoutObject* r2) {
   if (!r1 || !r2)
     return false;
   if (!r1->IsInline() || !r2->IsInline())
     return false;
-  LayoutBlockFlow* b1 = NonInlineBlockFlow(r1);
-  LayoutBlockFlow* b2 = NonInlineBlockFlow(r2);
+  LayoutBlockFlow* b1 = GetNearestBlockFlow(r1);
+  LayoutBlockFlow* b2 = GetNearestBlockFlow(r2);
   return b1 && b2 && b1 == b2;
 }
 
@@ -3888,15 +3888,32 @@ static bool ShouldInsertSpaceBetweenObjectsIfNeeded(
     AXObject* next,
     ax::mojom::blink::NameFrom last_used_name_from,
     ax::mojom::blink::NameFrom name_from) {
-  // If we're going between two layoutObjects that are in separate
+  // If we're going between two LayoutObjects that are in separate
   // LayoutBoxes, add whitespace if it wasn't there already. Intuitively if
   // you have <span>Hello</span><span>World</span>, those are part of the same
   // LayoutBox so we should return "HelloWorld", but given
   // <div>Hello</div><div>World</div> the strings are in separate boxes so we
   // should return "Hello World".
-  if (!IsInSameNonInlineBlockFlow(next->GetLayoutObject(),
-                                  previous->GetLayoutObject()))
+  // https://www.w3.org/TR/css-display-3/#the-display-properties
+  if (!IsInSameBlockFlow(next->GetLayoutObject(),
+                         previous->GetLayoutObject())) {
     return true;
+  }
+
+  // Even if we are in the same block flow, let's make sure to add whitespace
+  // if the layout objects define new formatting contexts for their children,
+  // as is the case with the inline-* family of display properties.
+  // So we want the following:
+  //    <span style="display:inline-block;">Hello</span><span>World</span>
+  //    <span style="display:inline-flex;">Hello</span><span>World</span>
+  //    <span style="display:inline-grid;">Hello</span><span>World</span>
+  //    <span style="display:inline-table;">Hello</span><span>World</span>
+  // to return "Hello World". See "inner display type" in the CSS Display 3.0
+  // spec: https://www.w3.org/TR/css-display-3/#the-display-properties
+  if (next->GetLayoutObject()->IsAtomicInlineLevel() ||
+      previous->GetLayoutObject()->IsAtomicInlineLevel()) {
+    return true;
+  }
 
   // Even if it is in the same inline block flow, if we are using a text
   // alternative such as an ARIA label or HTML title, we should separate
@@ -4352,6 +4369,28 @@ int AXNodeObject::TextOffsetInFormattingContext(int offset) const {
 // Inline text boxes.
 //
 
+bool AXNodeObject::ShouldLoadInlineTextBoxes() const {
+  CHECK(!IsDetached());
+
+  if (!CanHaveInlineTextBoxChildren(this)) {
+    return false;
+  }
+
+  if (!AXObjectCache().GetAXMode().has_mode(ui::AXMode::kInlineTextBoxes)) {
+    return false;
+  }
+
+#if BUILDFLAG(IS_ANDROID)
+  // On Android, once an object has loaded inline text boxes, it will keep
+  // them refreshed.
+  return always_load_inline_text_boxes_;
+#else
+  // Other platforms keep all inline text boxes in the tree and refreshed,
+  // depending on the AXMode.
+  return true;
+#endif
+}
+
 void AXNodeObject::LoadInlineTextBoxes() {
   std::queue<AXID> work_queue;
   work_queue.push(AXObjectID());
@@ -4359,8 +4398,9 @@ void AXNodeObject::LoadInlineTextBoxes() {
   while (!work_queue.empty()) {
     AXObject* work_obj = AXObjectCache().ObjectFromAXID(work_queue.front());
     work_queue.pop();
-    if (!work_obj || !work_obj->AccessibilityIsIncludedInTree())
+    if (!work_obj || !work_obj->LastKnownIsIncludedInTreeValue()) {
       continue;
+    }
 
     if (CanHaveInlineTextBoxChildren(work_obj)) {
       if (work_obj->CachedChildrenIncludingIgnored().empty()) {
@@ -4369,21 +4409,25 @@ void AXNodeObject::LoadInlineTextBoxes() {
         // on subtrees that may later be stale, once they are stale, the old
         // inline text boxes are cleared because SetNeedsToUpdateChildren()
         // calls ClearChildren().
-        work_obj->ForceAddInlineTextBoxChildren();
+        work_obj->LoadInlineTextBoxesHelper();
       }
     } else {
       for (const auto& child : work_obj->ChildrenIncludingIgnored())
         work_queue.push(child->AXObjectID());
     }
   }
+
+  // If the work was deferred via ChildrenChanged(), update accessibility
+  // to force that work to be performed now.
+  if (!AXObjectCache().IsProcessingDeferredEvents()) {
+    AXObjectCache().UpdateAXForAllDocuments();
+  }
 }
 
-void AXNodeObject::ForceAddInlineTextBoxChildren() {
+void AXNodeObject::LoadInlineTextBoxesHelper() {
   // The inline textbox children start empty.
   DCHECK(CachedChildrenIncludingIgnored().empty());
-  AddInlineTextBoxChildren();
-  // Avoid adding these children twice.
-  children_dirty_ = false;
+
 #if BUILDFLAG(IS_ANDROID)
   // Keep inline text box children up-to-date for this object in the future.
   // This is only necessary on Android, which tries to skip inline text boxes
@@ -4391,23 +4435,33 @@ void AXNodeObject::ForceAddInlineTextBoxChildren() {
   always_load_inline_text_boxes_ = true;
 #endif
 
-  // If inline text box children were added, mark the node dirty so that the
-  // results are serialized.
-  if (!CachedChildrenIncludingIgnored().empty()) {
-    AXObjectCache().MarkAXObjectDirtyWithDetails(
-        this, /*subtree*/ false, ax::mojom::blink::EventFrom::kNone,
-        ax::mojom::blink::Action::kNone, {});
+  if (AXObjectCache().IsProcessingDeferredEvents()) {
+    // Can only add new objects while processing deferred events.
+    AddInlineTextBoxChildren();
+    // Avoid adding these children twice.
+    children_dirty_ = false;
+    // If inline text box children were added, mark the node dirty so that the
+    // results are serialized.
+    if (!CachedChildrenIncludingIgnored().empty()) {
+      AXObjectCache().MarkAXObjectDirtyWithDetails(
+          this, /*subtree*/ false, ax::mojom::blink::EventFrom::kNone,
+          ax::mojom::blink::Action::kNone, {});
+    }
+  } else {
+    // Wait until processing deferred events.
+    AXObjectCache().ChildrenChanged(this);
   }
 }
 
 void AXNodeObject::AddInlineTextBoxChildren() {
-  DCHECK(GetDocument());
-  DCHECK(CanHaveInlineTextBoxChildren(this));
-  DCHECK(!GetLayoutObject()->NeedsLayout());
-  DCHECK(AXObjectCache().GetAXMode().has_mode(ui::AXMode::kInlineTextBoxes));
-  DCHECK(!AXObjectCache().GetAXMode().HasExperimentalFlags(
+  CHECK(GetDocument());
+  CHECK(ShouldLoadInlineTextBoxes());
+  CHECK(!GetLayoutObject()->NeedsLayout());
+  CHECK(AXObjectCache().GetAXMode().has_mode(ui::AXMode::kInlineTextBoxes));
+  CHECK(!AXObjectCache().GetAXMode().HasExperimentalFlags(
       ui::AXMode::kExperimentalFormControls))
       << "Form controls mode should not have inline text boxes turned on.";
+  CHECK(AXObjectCache().IsProcessingDeferredEvents());
 
   auto* layout_text = To<LayoutText>(GetLayoutObject());
   for (auto* box = layout_text->FirstAbstractInlineTextBox(); box;
@@ -4569,22 +4623,10 @@ void AXNodeObject::AddChildrenImpl() {
     return;
   }
 
-  if (CanHaveInlineTextBoxChildren(this)) {
-#if BUILDFLAG(IS_ANDROID)
-    // On Android, once an object has loaded inline text boxes, it will keep
-    // them refreshed.
-    bool load_inline_text_box_children = always_load_inline_text_boxes_;
-#else
-    // Other platforms keep all inline text boxes in the tree and refreshed.
-    bool load_inline_text_box_children =
-        GetDocument()->GetSettings() &&
-        GetDocument()->GetSettings()->GetInlineTextBoxAccessibilityEnabled();
-#endif
-    if (load_inline_text_box_children) {
-      AddInlineTextBoxChildren();
-      CHECK_ATTACHED();
-      return;
-    }
+  if (ShouldLoadInlineTextBoxes()) {
+    AddInlineTextBoxChildren();
+    CHECK_ATTACHED();
+    return;
   }
 
   if (IsA<HTMLImageElement>(GetNode())) {
@@ -5274,7 +5316,7 @@ AXObject::AXObjectVector AXNodeObject::ErrorMessageFromAria() const {
   AXObjectVector error_messages;
   for (Element* element : elements_from_attribute) {
     AXObject* obj = AXObjectCache().GetOrCreate(element);
-    if (obj && !obj->AccessibilityIsIgnored()) {
+    if (!obj->AccessibilityIsIgnored()) {
       error_messages.push_back(obj);
     }
   }

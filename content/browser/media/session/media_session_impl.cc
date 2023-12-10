@@ -1074,8 +1074,9 @@ MediaSessionImpl::GetMediaSessionInfoSync() {
 
   // Disable Remote Playback by passing empty RemotePlaybackMetadata when there
   // are multiple media players.
-  if (normal_players_.size() == 1u) {
-    info->remote_playback_metadata = remote_playback_metadata_.Clone();
+  info->remote_playback_metadata = remote_playback_metadata_.Clone();
+  if (normal_players_.size() > 1u && info->remote_playback_metadata) {
+    info->remote_playback_metadata->remote_playback_disabled = true;
   }
 
   MediaSessionClient* media_session_client = MediaSessionClient::Get();
@@ -1200,10 +1201,9 @@ void MediaSessionImpl::EnterPictureInPicture() {
       ShouldRouteAction(
           media_session::mojom::MediaSessionAction::kEnterPictureInPicture)) {
     DidReceiveAction(
-        media_session::mojom::MediaSessionAction::kEnterPictureInPicture,
-        blink::mojom::MediaSessionActionDetails::NewPictureInPicture(
-            blink::mojom::MediaSessionPictureInPictureActionDetails::New(
-                /*automatic=*/false)));
+        media_session::mojom::MediaSessionAction::kEnterPictureInPicture);
+    uma_helper_.RecordEnterPictureInPicture(
+        MediaSessionUmaHelper::EnterPictureInPictureType::kRegisteredManual);
     return;
   }
 
@@ -1211,6 +1211,8 @@ void MediaSessionImpl::EnterPictureInPicture() {
   DCHECK_EQ(normal_players_.size(), 1u);
   normal_players_.begin()->first.observer->OnEnterPictureInPicture(
       normal_players_.begin()->first.player_id);
+  uma_helper_.RecordEnterPictureInPicture(
+      MediaSessionUmaHelper::EnterPictureInPictureType::kDefaultHandler);
 }
 
 void MediaSessionImpl::ExitPictureInPicture() {
@@ -1228,10 +1230,9 @@ void MediaSessionImpl::EnterAutoPictureInPicture() {
   }
 
   DidReceiveAction(
-      media_session::mojom::MediaSessionAction::kEnterPictureInPicture,
-      blink::mojom::MediaSessionActionDetails::NewPictureInPicture(
-          blink::mojom::MediaSessionPictureInPictureActionDetails::New(
-              /*automatic=*/true)));
+      media_session::mojom::MediaSessionAction::kEnterPictureInPicture);
+  uma_helper_.RecordEnterPictureInPicture(
+      MediaSessionUmaHelper::EnterPictureInPictureType::kRegisteredAutomatic);
 }
 
 void MediaSessionImpl::SetAudioSinkId(const absl::optional<std::string>& id) {
@@ -1687,6 +1688,8 @@ void MediaSessionImpl::RebuildAndNotifyActionsChanged() {
           media_session::mojom::MediaSessionAction::kEnterPictureInPicture)) {
     actions.insert(
         media_session::mojom::MediaSessionAction::kEnterAutoPictureInPicture);
+    actions.insert(
+        media_session::mojom::MediaSessionAction::kExitPictureInPicture);
   }
 
   if (base::FeatureList::IsEnabled(

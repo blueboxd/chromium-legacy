@@ -35,6 +35,7 @@
 #include "ash/system/progress_indicator/progress_indicator.h"
 #include "ash/user_education/user_education_class_properties.h"
 #include "ash/user_education/user_education_controller.h"
+#include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
 #include "base/check.h"
 #include "base/functional/bind.h"
@@ -1295,8 +1296,18 @@ bool AppListItemView::OnKeyPressed(const ui::KeyEvent& event) {
 
 void AppListItemView::OnMouseReleased(const ui::MouseEvent& event) {
   auto weak_this = weak_ptr_factory_.GetWeakPtr();
-  // Triggers the button's click handler callback, which might delete `this`.
-  Button::OnMouseReleased(event);
+  // Reset all states if we are already dragging, and avoid triggering a button
+  // mouse release event.
+  if (ui_state_ == UI_STATE_DRAGGING &&
+      drag_state_ == DragState::kInitialized) {
+    SetMouseDragging(false);
+    drag_state_ = DragState::kNone;
+    return;
+  } else {
+    // Triggers the button's click handler callback, which might delete `this`.
+    Button::OnMouseReleased(event);
+  }
+
   if (!weak_this) {
     return;
   }
@@ -1808,6 +1819,11 @@ void AppListItemView::ItemIsNewInstallChanged() {
   }
 }
 
+std::unique_ptr<ui::LayerTreeOwner> AppListItemView::RequestDuplicateLayer() {
+  CHECK(layer());
+  return ::wm::RecreateLayers(this);
+}
+
 void AppListItemView::ItemBeingDestroyed() {
   DCHECK(item_weak_);
   item_weak_->RemoveObserver(this);
@@ -1838,7 +1854,7 @@ void AppListItemView::ItemProgressUpdated() {
         ProgressIndicator::CreateDefaultInstance(base::BindRepeating(
             [](AppListItemView* view) -> absl::optional<float> {
               if (view->item()->app_status() == AppStatus::kPending) {
-                return absl::nullopt;
+                return 0.0f;
               }
               // If download is in-progress, return the progress as a decimal.
               // Otherwise, the progress indicator shouldn't be painted.
@@ -1849,13 +1865,24 @@ void AppListItemView::ItemProgressUpdated() {
             },
             base::Unretained(this)));
     progress_indicator_->SetInnerIconVisible(false);
+    progress_indicator_->SetInnerRingVisible(false);
+    progress_indicator_->SetOuterRingStrokeWidth(2.0);
     EnsureLayer();
     layer()->Add(progress_indicator_->CreateLayer(base::BindRepeating(
         [](AppListItemView* view, ui::ColorId color_id) {
           return view->GetColorProvider()->GetColor(color_id);
         },
         base::Unretained(this))));
-    progress_indicator_->SetColorId(cros_tokens::kCrosSysOnPrimaryContainer);
+  }
+
+  EnsureLayer();
+
+  if (item()->app_status() == AppStatus::kPending) {
+    progress_indicator_->SetColorId(cros_tokens::kCrosSysHighlightShape);
+    progress_indicator_->SetOuterRingTrackVisible(true);
+  } else {
+    progress_indicator_->SetColorId(cros_tokens::kCrosSysPrimary);
+    progress_indicator_->SetOuterRingTrackVisible(false);
   }
 
   UpdateProgressRingBounds();
@@ -1870,7 +1897,6 @@ void AppListItemView::UpdateProgressRingBounds() {
   CHECK(!is_folder_);
 
   gfx::Size progress_indicator_size = app_list_config_->grid_icon_size();
-  EnsureLayer();
 
   const gfx::Rect progress_bounds = GetIconBoundsForTargetViewBounds(
       app_list_config_, rect,

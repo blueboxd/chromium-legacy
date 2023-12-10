@@ -11,7 +11,6 @@
 #include "base/values.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/enterprise/connectors/device_trust/common/metrics_utils.h"
-#include "chrome/browser/enterprise/connectors/device_trust/device_trust_features.h"
 #include "chrome/browser/enterprise/connectors/device_trust/device_trust_service.h"
 #include "chrome/browser/enterprise/connectors/device_trust/device_trust_service_factory.h"
 #include "chrome/browser/enterprise/connectors/device_trust/navigation_throttle.h"
@@ -30,6 +29,7 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/enterprise/connectors/device_trust/device_trust_features.h"
 #include "chrome/browser/enterprise/connectors/device_trust/test/device_trust_test_environment_win.h"
 #include "chrome/browser/enterprise/connectors/test/test_constants.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
@@ -182,20 +182,6 @@ IN_PROC_BROWSER_TEST_F(DeviceTrustBrowserTest, AttestationFullFlowKeyExistsV1) {
   VerifyAttestationFlowFailure(test::kFailedToParseChallengeJsonResponse);
 }
 
-class DeviceTrustDisabledBrowserTest : public DeviceTrustBrowserTest {
- protected:
-  DeviceTrustDisabledBrowserTest() {
-    scoped_feature_list_.InitWithFeatureState(kDeviceTrustConnectorEnabled,
-                                              false);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(DeviceTrustDisabledBrowserTest,
-                       AttestationFullFlowKeyExists) {
-  TriggerUrlNavigation();
-  VerifyNoInlineFlowOccurred();
-}
-
 // Tests that the attestation flow does not get triggered when navigating to a
 // domain that is not part of the allow-list.
 IN_PROC_BROWSER_TEST_F(DeviceTrustBrowserTest, AttestationHostNotAllowed) {
@@ -239,10 +225,8 @@ class DeviceTrustDelayedManagementBrowserTest
     scoped_feature_list_.InitWithFeatures(
         /*enabled_features=*/
         {
-          kUserDTCInlineFlowEnabled
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-              ,
-              ash::features::kUnmanagedDeviceDeviceTrustConnectorEnabled
+          ash::features::kUnmanagedDeviceDeviceTrustConnectorEnabled
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
         },
         /*disabled_features=*/{});
@@ -398,7 +382,14 @@ IN_PROC_BROWSER_TEST_F(DeviceTrustCreateKeyUploadFailedBrowserTest,
   ASSERT_TRUE(device_trust_test_environment_win_->KeyExists());
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceTrustDesktopBrowserTest,
+class DeviceTrustKeyRotationBrowserTest : public DeviceTrustDesktopBrowserTest {
+ protected:
+  DeviceTrustKeyRotationBrowserTest() {
+    scoped_feature_list_.InitWithFeatureState(kDTCKeyRotationEnabled, true);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(DeviceTrustKeyRotationBrowserTest,
                        RemoteCommandKeyRotationSuccess) {
   // Make sure the key is present and store its current value.
   std::vector<uint8_t> current_key_pair =
@@ -419,7 +410,7 @@ IN_PROC_BROWSER_TEST_F(DeviceTrustDesktopBrowserTest,
             current_key_pair);
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceTrustDesktopBrowserTest,
+IN_PROC_BROWSER_TEST_F(DeviceTrustKeyRotationBrowserTest,
                        RemoteCommandKeyRotationFailure) {
   // Make sure key presents and stores its current value.
   std::vector<uint8_t> current_key_pair =
@@ -441,21 +432,6 @@ IN_PROC_BROWSER_TEST_F(DeviceTrustDesktopBrowserTest,
   ASSERT_TRUE(device_trust_test_environment_win_->KeyExists());
   EXPECT_EQ(device_trust_test_environment_win_->GetWrappedKey(),
             current_key_pair);
-}
-
-class DeviceTrustDisabledCreateKeyBrowserTest
-    : public DeviceTrustCreateKeyBrowserTest {
- protected:
-  DeviceTrustDisabledCreateKeyBrowserTest() {
-    scoped_feature_list_.InitWithFeatureState(kDeviceTrustConnectorEnabled,
-                                              false);
-  }
-};
-IN_PROC_BROWSER_TEST_F(DeviceTrustDisabledCreateKeyBrowserTest,
-                       AttestationFullFlowKeyCreation) {
-  TriggerUrlNavigation();
-  VerifyNoInlineFlowOccurred();
-  ASSERT_FALSE(device_trust_test_environment_win_->KeyExists());
 }
 
 #endif

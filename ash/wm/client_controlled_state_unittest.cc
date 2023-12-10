@@ -32,12 +32,10 @@
 #include "ash/wm/wm_event.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
-#include "base/test/scoped_feature_list.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "chromeos/ui/frame/caption_buttons/snap_controller.h"
 #include "chromeos/ui/frame/header_view.h"
 #include "chromeos/ui/wm/constants.h"
-#include "chromeos/ui/wm/features.h"
 #include "chromeos/ui/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -154,10 +152,6 @@ class ClientControlledStateTest : public AshTestBase {
   ~ClientControlledStateTest() override = default;
 
   void SetUp() override {
-    // We need to enable the flag before `AshTestBase::SetUp()` to make
-    // FloatController instantiated in Shell.
-    scoped_feature_list_.InitAndEnableFeature(
-        chromeos::wm::features::kWindowLayoutMenu);
     AshTestBase::SetUp();
 
     widget_delegate_ = new TestWidgetDelegate();
@@ -226,7 +220,6 @@ class ClientControlledStateTest : public AshTestBase {
   raw_ptr<FakeWindowStateDelegate, DanglingUntriaged | ExperimentalAsh>
       window_state_delegate_ = nullptr;
   std::unique_ptr<views::Widget> widget_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // This suite runs test cases both in clamshell mode and tablet mode.
@@ -1160,7 +1153,7 @@ TEST_P(ClientControlledStateTestClamshellAndTablet, FloatWindow) {
 
 TEST_P(ClientControlledStateTestClamshellAndTablet,
        DragOverviewWindowToSnapOneSide) {
-  auto* const overview_controller = Shell::Get()->overview_controller();
+  auto* const overview_controller = OverviewController::Get();
   auto* const split_view_controller = SplitViewController::Get(window());
 
   widget_delegate()->EnableSnap();
@@ -1205,7 +1198,7 @@ TEST_P(ClientControlledStateTestClamshellAndTablet,
 
 TEST_P(ClientControlledStateTestClamshellAndTablet,
        DragOverviewWindowToSnapBothSide) {
-  auto* const overview_controller = Shell::Get()->overview_controller();
+  auto* const overview_controller = OverviewController::Get();
   auto* const split_view_controller = SplitViewController::Get(window());
   auto* const event_generator = GetEventGenerator();
 
@@ -1270,7 +1263,7 @@ TEST_P(ClientControlledStateTestClamshellAndTablet,
 
 TEST_P(ClientControlledStateTestClamshellAndTablet,
        SnapBeforePreviousEventIsApplied) {
-  auto* const overview_controller = Shell::Get()->overview_controller();
+  auto* const overview_controller = OverviewController::Get();
   auto* const split_view_controller = SplitViewController::Get(window());
 
   widget_delegate()->EnableSnap();

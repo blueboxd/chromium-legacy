@@ -901,8 +901,17 @@ IN_PROC_BROWSER_TEST_F(WebContentsInteractionTestUtilTest,
   EXPECT_CALL_IN_SCOPE(completed, Run, sequence->RunSynchronouslyForTesting());
 }
 
+// TODO(crbug.com/1492005): Resolve flakiness on ChromeOS and re-enable the
+// test.
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_StateChangeExistsTimeoutSendsEvent \
+  DISABLED_StateChangeExistsTimeoutSendsEvent
+#else
+#define MAYBE_StateChangeExistsTimeoutSendsEvent \
+  StateChangeExistsTimeoutSendsEvent
+#endif
 IN_PROC_BROWSER_TEST_F(WebContentsInteractionTestUtilTest,
-                       StateChangeExistsTimeoutSendsEvent) {
+                       MAYBE_StateChangeExistsTimeoutSendsEvent) {
   UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::CompletedCallback, completed);
   UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::AbortedCallback, aborted);
 
@@ -1470,8 +1479,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsInteractionTestUtilTest,
                         // doesn't exist in the document.
                         WebContentsInteractionTestUtil::StateChange
                             state_change;
-                        state_change.type = WebContentsInteractionTestUtil::
-                            StateChange::Type::kConditionTrue;
                         state_change.where = kQuery;
                         state_change.test_function = kCheckFunction;
                         state_change.event =
@@ -2198,6 +2205,57 @@ IN_PROC_BROWSER_TEST_F(WebContentsInteractionTestUtilTest,
                        .SetType(ui::InteractionSequence::StepType::kCustomEvent,
                                 kInteractionTestUtilCustomEventType)
                        .SetElementID(kWebContentsElementId)
+                       .Build())
+          .Build();
+
+  EXPECT_CALL_IN_SCOPE(completed, Run, sequence->RunSynchronouslyForTesting());
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsInteractionTestUtilTest,
+                       SendEventOnExistsStateChangeContinueAcrossNavigation) {
+  UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::CompletedCallback, completed);
+  UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::AbortedCallback, aborted);
+
+  const WebContentsInteractionTestUtil::DeepQuery kQuery{"#ref"};
+  auto util = WebContentsInteractionTestUtil::ForExistingTabInBrowser(
+      browser(), kWebContentsElementId);
+  const GURL url1 = embedded_test_server()->GetURL(kDocumentWithTitle1URL);
+  const GURL url2 = embedded_test_server()->GetURL(kDocumentWithLinksURL);
+
+  // Navigate to the first page.
+  util->LoadPage(url1);
+
+  auto sequence =
+      ui::InteractionSequence::Builder()
+          .SetCompletedCallback(completed.Get())
+          .SetAbortedCallback(aborted.Get())
+          .SetContext(browser()->window()->GetElementContext())
+          .AddStep(ui::InteractionSequence::StepBuilder()
+                       .SetType(ui::InteractionSequence::StepType::kShown)
+                       .SetElementID(kWebContentsElementId)
+                       .SetStartCallback(base::BindLambdaForTesting(
+                           [&](ui::InteractionSequence* sequence,
+                               ui::TrackedElement* element) {
+                             // Wait for an element that is only present on the
+                             // second page, to be loaded below.
+                             WebContentsInteractionTestUtil::StateChange change;
+                             change.type = WebContentsInteractionTestUtil::
+                                 StateChange::Type::kExists;
+                             change.where = kQuery;
+                             change.event = kInteractionTestUtilCustomEventType;
+                             change.continue_across_navigation = true;
+                             util->SendEventOnStateChange(change);
+
+                             // Navigate to the second page.
+                             util->LoadPage(url2);
+                           }))
+                       .SetMustRemainVisible(false)
+                       .Build())
+          .AddStep(ui::InteractionSequence::StepBuilder()
+                       .SetType(ui::InteractionSequence::StepType::kCustomEvent,
+                                kInteractionTestUtilCustomEventType)
+                       .SetElementID(kWebContentsElementId)
+                       .SetMustBeVisibleAtStart(false)
                        .Build())
           .Build();
 

@@ -12,7 +12,11 @@
 #include "ash/wm/overview/overview_item_base.h"
 #include "ash/wm/overview/overview_item_view.h"
 #include "ash/wm/window_util.h"
+#include "base/check_op.h"
 #include "base/containers/unique_ptr_adapters.h"
+#include "base/functional/callback_helpers.h"
+#include "base/memory/weak_ptr.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/views/widget/widget.h"
@@ -24,9 +28,9 @@ namespace {
 // Insets values for the individual overview items hosted by the overview group
 // item.
 constexpr gfx::InsetsF kLeftItemBoundsInsets =
-    gfx::InsetsF::TLBR(/*top=*/2, /*left=*/2, /*bottom=*/2, /*right=*/1);
+    gfx::InsetsF::TLBR(/*top=*/0, /*left=*/0, /*bottom=*/0, /*right=*/1);
 constexpr gfx::InsetsF kRightItemBoundsInsets =
-    gfx::InsetsF::TLBR(/*top=*/2, /*left=*/1, /*bottom=*/2, /*right=*/2);
+    gfx::InsetsF::TLBR(/*top=*/0, /*left=*/1, /*bottom=*/0, /*right=*/0);
 
 }  // namespace
 
@@ -42,10 +46,13 @@ OverviewGroupItem::OverviewGroupItem(const Windows& windows,
   for (auto* window : windows) {
     // Create the overview items hosted by `this`, which will be the delegate to
     // handle the window destroying if the overview representation for the
-    // window is hosted by `this`.
+    // window is hosted by `this`. We also need to explicitly disable the shadow
+    // to be installed on individual overview item hosted by `this` as the
+    // group-level shadow will be installed instead.
     std::unique_ptr<OverviewItem> overview_item =
         std::make_unique<OverviewItem>(window, overview_session_,
-                                       overview_grid_, /*delegate=*/this);
+                                       overview_grid_, /*delegate=*/this,
+                                       /*eligible_for_shadow_config=*/false);
 
     // Disallow events to be forwarded to the individual overview item(s) hosted
     // by `this` so that we can perform group-level operation on event received
@@ -75,6 +82,16 @@ std::vector<aura::Window*> OverviewGroupItem::GetWindows() {
   return windows;
 }
 
+bool OverviewGroupItem::HasVisibleOnAllDesksWindow() {
+  for (const auto& item : overview_items_) {
+    if (item->HasVisibleOnAllDesksWindow()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 bool OverviewGroupItem::Contains(const aura::Window* target) const {
   for (const auto& item : overview_items_) {
     if (item->Contains(target)) {
@@ -99,6 +116,15 @@ void OverviewGroupItem::RestoreWindow(bool reset_transform, bool animate) {}
 
 void OverviewGroupItem::SetBounds(const gfx::RectF& target_bounds,
                                   OverviewAnimationType animation_type) {
+  // Run at the exit of this function to `UpdateRoundedCornersAndShadow()`.
+  base::ScopedClosureRunner exit_runner(base::BindOnce(
+      [](base::WeakPtr<OverviewGroupItem> overview_group_item) {
+        if (overview_group_item) {
+          overview_group_item->UpdateRoundedCornersAndShadow();
+        }
+      },
+      weak_ptr_factory_.GetWeakPtr()));
+
   target_bounds_ = target_bounds;
 
   const int size = overview_items_.size();
@@ -138,12 +164,10 @@ gfx::RectF OverviewGroupItem::GetTargetBoundsInScreen() const {
   return target_bounds;
 }
 
-gfx::RectF OverviewGroupItem::GetWindowTargetBoundsWithInsets() const {
-  // TODO(b/295067835): `target_bounds_` will be updated when we start working
-  // on the actual implementation of `SetBounds()`.
-  gfx::RectF item_target_bounds = target_bounds_;
-  item_target_bounds.Inset(gfx::InsetsF::TLBR(kHeaderHeightDp, 0, 0, 0));
-  return item_target_bounds;
+gfx::RectF OverviewGroupItem::GetTargetBoundsWithInsets() const {
+  gfx::RectF target_bounds_with_insets = target_bounds_;
+  target_bounds_with_insets.Inset(gfx::InsetsF::TLBR(kHeaderHeightDp, 0, 0, 0));
+  return target_bounds_with_insets;
 }
 
 gfx::RectF OverviewGroupItem::GetTransformedBounds() const {
@@ -152,14 +176,15 @@ gfx::RectF OverviewGroupItem::GetTransformedBounds() const {
   // actual implementation of this function.
   CHECK_GE(overview_items_.size(), 1u);
   CHECK_LE(overview_items_.size(), 2u);
-  return overview_items_.at(0)->GetTransformedBounds();
+  return overview_items_[0]->GetTransformedBounds();
 }
 
-float OverviewGroupItem::GetItemScale(const gfx::Size& size) {
+float OverviewGroupItem::GetItemScale(int height) {
   // TODO(michelefan): This is a temporary placeholder for the item scale
-  // calculation, which needs to be updated when we start working on the actual
-  // implementation of this function.
-  return overview_items_.at(0)->GetItemScale(size);
+  // calculation, which should be updated when we implement the overview for
+  // vertical split screen.
+  CHECK(!overview_items_.empty());
+  return overview_items_[0]->GetItemScale(height);
 }
 
 void OverviewGroupItem::ScaleUpSelectedItem(
@@ -177,12 +202,11 @@ views::View* OverviewGroupItem::GetBackDropView() const {
 
 void OverviewGroupItem::UpdateRoundedCornersAndShadow() {
   for (const auto& overview_item : overview_items_) {
-    overview_item->UpdateRoundedCornersAndShadow();
+    overview_item->UpdateRoundedCorners();
   }
-}
 
-void OverviewGroupItem::SetShadowBounds(
-    absl::optional<gfx::RectF> bounds_in_screen) {}
+  RefreshShadowVisuals(/*shadow_visible=*/true);
+}
 
 void OverviewGroupItem::SetOpacity(float opacity) {}
 
@@ -192,7 +216,9 @@ float OverviewGroupItem::GetOpacity() const {
   return 1.f;
 }
 
-void OverviewGroupItem::PrepareForOverview() {}
+void OverviewGroupItem::PrepareForOverview() {
+  prepared_for_overview_ = true;
+}
 
 void OverviewGroupItem::OnStartingAnimationComplete() {
   for (const auto& item : overview_items_) {
@@ -238,8 +264,6 @@ void OverviewGroupItem::OnOverviewItemContinuousScroll(
 
 void OverviewGroupItem::SetVisibleDuringItemDragging(bool visible,
                                                      bool animate) {}
-
-void OverviewGroupItem::UpdateShadowTypeForDrag(bool is_dragging) {}
 
 void OverviewGroupItem::UpdateCannotSnapWarningVisibility(bool animate) {}
 

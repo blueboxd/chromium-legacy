@@ -116,17 +116,11 @@
 #include "third_party/blink/public/common/page_state/page_state_serialization.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
 #include "third_party/blink/public/mojom/navigation/prefetched_signed_exchange_info.mojom.h"
-#include "third_party/blink/public/mojom/runtime_feature_state/runtime_feature_state.mojom.h"
+#include "third_party/blink/public/mojom/runtime_feature_state/runtime_feature.mojom.h"
 #include "url/url_constants.h"
 
 namespace content {
 namespace {
-
-// TODO(https://crbug.com/1439948): Remove this base::Feature kill switch once
-// the feature safely rolls out.
-BASE_FEATURE(kUpdateSessionHistoryIndexBeforeNavigationStateChanged,
-             "UpdateSessionHistoryIndexBeforeNavigationStateChanged",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Invoked when entries have been pruned, or removed. For example, if the
 // current entries are [google, digg, yahoo], with the current entry google,
@@ -2218,10 +2212,7 @@ void NavigationControllerImpl::RendererDidNavigateToExistingEntry(
   // delegate sees the correct committed index when notified of navigation
   // state changes. (Otherwise CanGoBack may incorrectly return true, as in
   // https://crbug.com/1439948.)
-  if (base::FeatureList::IsEnabled(
-          kUpdateSessionHistoryIndexBeforeNavigationStateChanged)) {
-    last_committed_entry_index_ = GetIndexOfEntry(entry);
-  }
+  last_committed_entry_index_ = GetIndexOfEntry(entry);
 
   // We should also usually discard the pending entry if it corresponds to a
   // different navigation, since that one is now likely canceled.  In rare
@@ -2233,13 +2224,6 @@ void NavigationControllerImpl::RendererDidNavigateToExistingEntry(
   // actually change any other state, just kill the pointer.
   if (!keep_pending_entry)
     DiscardNonCommittedEntriesWithCommitDetails(commit_details);
-
-  if (!base::FeatureList::IsEnabled(
-          kUpdateSessionHistoryIndexBeforeNavigationStateChanged)) {
-    // Update the last committed index to reflect the committed entry.
-    // (This is legacy behavior, in case the kill-switch needs to be used.)
-    last_committed_entry_index_ = GetIndexOfEntry(entry);
-  }
 }
 
 void NavigationControllerImpl::RendererDidNavigateNewSubframe(
@@ -3986,12 +3970,12 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
           /*view_transition_state=*/absl::nullopt,
           /*soft_navigation_heuristics_task_id=*/absl::nullopt,
           /*modified_runtime_features=*/
-          base::flat_map<::blink::mojom::RuntimeFeatureState, bool>(),
+          base::flat_map<::blink::mojom::RuntimeFeature, bool>(),
           /*fenced_frame_properties=*/absl::nullopt,
           /*not_restored_reasons=*/nullptr,
           /*load_with_storage_access=*/false,
           /*browsing_context_group_info=*/absl::nullopt,
-          /*lcpp_hint=*/nullptr);
+          /*lcpp_hint=*/nullptr, blink::CreateDefaultRendererContentSettings());
 #if BUILDFLAG(IS_ANDROID)
   if (ValidateDataURLAsString(params.data_url_as_string)) {
     commit_params->data_url_as_string = params.data_url_as_string->data();
@@ -4257,10 +4241,9 @@ NavigationControllerImpl::LoadPostCommitErrorPage(
       SystemEntropyUtils::ComputeSystemEntropyForFrameTreeNode(
           node, blink::mojom::SystemEntropy::kNormal);
 
-  // Error pages have a fully permissive FramePolicy.
   // TODO(arthursonzogni): Consider providing the minimal capabilities to the
   // error pages.
-  commit_params->frame_policy = blink::FramePolicy();
+  commit_params->frame_policy = node->pending_frame_policy();
 
   std::unique_ptr<NavigationRequest> navigation_request =
       NavigationRequest::CreateBrowserInitiated(

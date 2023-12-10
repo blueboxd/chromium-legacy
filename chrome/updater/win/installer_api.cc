@@ -447,8 +447,9 @@ Installer::Result MakeInstallerResult(
               ? 0
               : kErrorApplicationInstallerFailed;
       result.installer_text =
-          outcome.installer_text ? *outcome.installer_text
-                                 : GetTextForSystemError(result.original_error);
+          outcome.installer_text
+              ? *outcome.installer_text
+              : base::WideToUTF8(GetTextForSystemError(result.original_error));
       CHECK_NE(result.original_error, 0);
       break;
   }
@@ -527,6 +528,18 @@ AppInstallerResult RunApplicationInstaller(
 
   return MakeInstallerResult(
       GetInstallerOutcome(app_info.scope, app_info.app_id), exit_code);
+}
+
+std::string LookupString(const base::FilePath& path,
+                         const std::string& keyname,
+                         const std::string& default_value) {
+  return default_value;
+}
+
+base::Version LookupVersion(const base::FilePath& path,
+                            const std::string& keyname,
+                            const base::Version& default_value) {
+  return default_value;
 }
 
 }  // namespace updater

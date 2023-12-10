@@ -70,8 +70,8 @@ constexpr char kFetchLaterEndpoint[] = "/fetch-later";
 // Encodes the given `url` using the JS method encodeURIComponent.
 std::string EncodeURL(const GURL& url) {
   url::RawCanonOutputT<char> buffer;
-  url::EncodeURIComponent(url.spec().data(), url.spec().size(), &buffer);
-  return std::string(buffer.data(), buffer.length());
+  url::EncodeURIComponent(url.spec(), &buffer);
+  return std::string(buffer.view());
 }
 
 MATCHER(IsFrameHidden,
@@ -1007,6 +1007,10 @@ class FetchLaterNoBackForwardCacheBrowserTest
     : public FetchLaterBrowserTestBase,
       public testing::WithParamInterface<TestTimeoutType> {
  protected:
+  // TODO(crbug.com/1465781): Remove this after refactoring is done.
+  void SetUp() override {
+    GTEST_SKIP() << "Skipping all FetchLater tests until refactoring is done";
+  }
   const FeaturesType& GetEnabledFeatures() override {
     static const FeaturesType enabled_features = {
         {blink::features::kFetchLaterAPI, {{}}}};
@@ -1060,6 +1064,10 @@ class FetchLaterWithBackForwardCacheMetricsBrowserTestBase
     : public FetchLaterBrowserTestBase,
       public BackForwardCacheMetricsTestMatcher {
  protected:
+  // TODO(crbug.com/1465781): Remove this after refactoring is done.
+  void SetUp() override {
+    GTEST_SKIP() << "Skipping all FetchLater tests until refactoring is done";
+  }
   void SetUpOnMainThread() override {
     // TestAutoSetUkmRecorder's constructor requires a sequenced context.
     ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();

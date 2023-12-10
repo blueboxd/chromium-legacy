@@ -217,12 +217,7 @@ bool ExecutionContext::SharedArrayBufferTransferAllowed() const {
   else
     origin = GetSecurityOrigin();
 
-  if (!origin) {
-    // TODO(crbug.com/1419253): Shared storage worklet architecture currently
-    // has a null security origin.
-    CHECK(IsSharedStorageWorkletGlobalScope());
-    return false;
-  }
+  CHECK(origin);
 
   if (SecurityPolicy::IsSharedArrayBufferAlwaysAllowedForOrigin(origin))
     return true;
@@ -565,7 +560,8 @@ v8::MicrotaskQueue* ExecutionContext::GetMicrotaskQueue() const {
   return GetAgent()->event_loop()->microtask_queue();
 }
 
-bool ExecutionContext::FeatureEnabled(OriginTrialFeature feature) const {
+bool ExecutionContext::FeatureEnabled(
+    mojom::blink::OriginTrialFeature feature) const {
   return origin_trial_context_->IsFeatureEnabled(feature);
 }
 
@@ -573,23 +569,24 @@ bool ExecutionContext::IsFeatureEnabled(
     mojom::blink::PermissionsPolicyFeature feature,
     ReportOptions report_option,
     const String& message) {
-  bool should_report;
-  bool enabled = security_context_.IsFeatureEnabled(feature, &should_report);
+  SecurityContext::FeatureStatus status =
+      security_context_.IsFeatureEnabled(feature);
 
-  if (should_report && report_option == ReportOptions::kReportOnFailure) {
+  if (status.should_report &&
+      report_option == ReportOptions::kReportOnFailure) {
     mojom::blink::PolicyDisposition disposition =
-        enabled ? mojom::blink::PolicyDisposition::kReport
-                : mojom::blink::PolicyDisposition::kEnforce;
+        status.enabled ? mojom::blink::PolicyDisposition::kReport
+                       : mojom::blink::PolicyDisposition::kEnforce;
 
-    ReportPermissionsPolicyViolation(feature, disposition, message);
+    ReportPermissionsPolicyViolation(feature, disposition,
+                                     status.reporting_endpoint, message);
   }
-  return enabled;
+  return status.enabled;
 }
 
 bool ExecutionContext::IsFeatureEnabled(
     mojom::blink::PermissionsPolicyFeature feature) const {
-  bool should_report;
-  return security_context_.IsFeatureEnabled(feature, &should_report);
+  return security_context_.IsFeatureEnabled(feature).enabled;
 }
 
 bool ExecutionContext::IsFeatureEnabled(
@@ -702,6 +699,11 @@ void ExecutionContext::WriteIntoTrace(
   proto->set_origin(GetSecurityOrigin()->ToString().Utf8());
   proto->set_type(GetContextType(*this));
   proto->set_world_type(GetWorldType(*this));
+}
+
+bool ExecutionContext::CrossOriginIsolatedCapabilityOrDisabledWebSecurity()
+    const {
+  return Agent::IsWebSecurityDisabled() || CrossOriginIsolatedCapability();
 }
 
 }  // namespace blink

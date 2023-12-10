@@ -45,7 +45,7 @@ web_app::WebAppInstallInfo MakeInstallInfoFromApp(
 
 }  // namespace
 
-WebAppProfileSwitcher::WebAppProfileSwitcher(const web_app::AppId& app_id,
+WebAppProfileSwitcher::WebAppProfileSwitcher(const webapps::AppId& app_id,
                                              Profile& active_profile,
                                              base::OnceClosure on_completion)
     : app_id_(app_id),
@@ -121,7 +121,8 @@ void WebAppProfileSwitcher::InstallOrOpenWebAppWindowForProfile(
                                  weak_factory_.GetWeakPtr()));
 }
 
-void WebAppProfileSwitcher::InstallAndLaunchWebApp(IconBitmaps icon_bitmaps) {
+void WebAppProfileSwitcher::InstallAndLaunchWebApp(
+    web_app::IconBitmaps icon_bitmaps) {
   web_app::WebAppProvider* active_profile_provider =
       web_app::WebAppProvider::GetForWebApps(&active_profile_.get());
   if (!active_profile_provider->registrar_unsafe().IsInstalled(app_id_)) {
@@ -155,7 +156,7 @@ void WebAppProfileSwitcher::InstallAndLaunchWebApp(IconBitmaps icon_bitmaps) {
 }
 
 void WebAppProfileSwitcher::LaunchAppWithId(
-    const web_app::AppId& app_id,
+    const webapps::AppId& app_id,
     webapps::InstallResultCode install_result) {
   // TODO(crbug/1414331): Record metrics for installation failures.
   if (!IsSuccess(install_result)) {

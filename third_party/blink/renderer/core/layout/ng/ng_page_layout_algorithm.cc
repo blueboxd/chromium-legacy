@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_page_layout_algorithm.h"
 
 #include <algorithm>
-#include "third_party/blink/renderer/core/layout/ng/layout_ng_view.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
@@ -69,7 +69,7 @@ const NGLayoutResult* NGPageLayoutAlgorithm::Layout() {
 
   // Compute the block-axis size now that we know our content size.
   LayoutUnit block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), /* border_padding */ NGBoxStrut(),
+      ConstraintSpace(), Style(), /* border_padding */ BoxStrut(),
       intrinsic_block_size, absl::nullopt);
   container_builder_.SetFragmentsTotalBlockSize(block_size);
 
@@ -96,7 +96,7 @@ const NGPhysicalBoxFragment* NGPageLayoutAlgorithm::LayoutPage(
   DCHECK(page_size.inline_size != kIndefiniteSize);
   DCHECK(page_size.block_size != kIndefiniteSize);
   NGConstraintSpace child_space = CreateConstraintSpaceForPages(page_size);
-  NGFragmentGeometry fragment_geometry =
+  FragmentGeometry fragment_geometry =
       CalculateInitialFragmentGeometry(child_space, Node(), BreakToken());
   NGBlockLayoutAlgorithm child_algorithm(
       {Node(), fragment_geometry, child_space, break_token});

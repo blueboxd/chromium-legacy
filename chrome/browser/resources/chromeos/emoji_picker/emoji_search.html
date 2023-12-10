@@ -18,6 +18,10 @@
       calc(var(--emoji-picker-width) - 2*var(--emoji-picker-search-side-padding));
   }
 
+  :host([jelly-support]) {
+    --emoji-picker-top-bar-bottom-padding: 10px;
+  }
+
   cr-search-field {
     --cr-search-field-clear-icon-fill: var(--emoji-picker-search-field-clear-icon-color);
     --cr-search-field-clear-icon-margin-end: var(--emoji-picker-search-margins);
@@ -139,6 +143,11 @@
     margin-inline-end: var(--emoji-picker-side-padding);
     overflow-y: scroll;
     padding: 13px 2px 2px 2px;
+    /**
+     * We need this to remove the non-transparent gap of topbar's box-shadow.
+     */
+    margin-top: -6px;
+    padding-top: 6px;
   }
 
   #no-emoji-image {
@@ -200,7 +209,7 @@
     </div>
     <div id="search-results">
       <template is="dom-repeat" items="[[searchResults]]">
-        <emoji-group data="[[item.emoji]]" category$="[[item.category]]" gif-support$="[[gifSupport]]">
+        <emoji-group data="[[item.emoji]]" category$="[[item.category]]" gif-support$="[[gifSupport]]" jelly-support$="[[jellySupport]]">
         </emoji-group>
       </template>
     </div>

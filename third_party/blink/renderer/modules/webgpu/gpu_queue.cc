@@ -373,8 +373,8 @@ ScriptPromise GPUQueue::onSubmittedWorkDone(ScriptState* script_state) {
       BindWGPUOnceCallback(&GPUQueue::OnWorkDoneCallback, WrapPersistent(this),
                            WrapPersistent(resolver));
 
-  GetProcs().queueOnSubmittedWorkDone(
-      GetHandle(), 0u, callback->UnboundCallback(), callback->AsUserdata());
+  GetProcs().queueOnSubmittedWorkDone(GetHandle(), callback->UnboundCallback(),
+                                      callback->AsUserdata());
   // WebGPU guarantees that promises are resolved in finite time so we
   // need to ensure commands are flushed.
   EnsureFlush(ToEventLoop(script_state));

@@ -10,10 +10,9 @@ import android.os.SystemClock;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeMethods;
-import org.chromium.build.annotations.MainDex;
+import org.jni_zero.CalledByNative;
+import org.jni_zero.JNINamespace;
+import org.jni_zero.NativeMethods;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -38,7 +37,6 @@ import javax.annotation.concurrent.GuardedBy;
  * final String| class member. Otherwise NoDynamicStringsInTraceEventCheck error will be thrown.
  */
 @JNINamespace("base::android")
-@MainDex
 public class EarlyTraceEvent {
     /** Single trace event. */
     @VisibleForTesting

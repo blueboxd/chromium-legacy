@@ -18,7 +18,6 @@
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcut.h"
 #include "chrome/browser/web_applications/web_app_callback_app_identity.h"
-#include "chrome/browser/web_applications/web_app_id.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/webapps/browser/uninstall_result_code.h"
 #include "components/webapps/common/web_app_id.h"
@@ -27,6 +26,10 @@
 class Browser;
 class BrowserWindow;
 class Profile;
+
+namespace base {
+class FilePath;
+}  // namespace base
 
 namespace content {
 class WebContents;
@@ -230,6 +233,16 @@ class WebAppUiManager {
       gfx::NativeWindow parent_window,
       UninstallCompleteCallback callback,
       UninstallScheduledCallback scheduled_callback) = 0;
+
+  // Launches the Isolated Web App installer for a bundle with the given path.
+  virtual void LaunchIsolatedWebAppInstaller(
+      const base::FilePath& bundle_path) = 0;
+
+  // Creates the EnableSupportedLinksInfobar in an app window when the app is
+  // launched via link capturing from a link.
+  virtual void MaybeCreateEnableSupportedLinksInfobar(
+      content::WebContents* web_contents,
+      const std::string& launch_name) = 0;
 
  private:
   base::ObserverList<WebAppUiManagerObserver, /*check_empty=*/true> observers_;

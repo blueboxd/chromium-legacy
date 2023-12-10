@@ -1362,11 +1362,6 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
 
   PopulateNumericCapabilities(&caps, feature_info_.get());
 
-  api()->glGetIntegervFn(GL_BIND_GENERATES_RESOURCE_CHROMIUM,
-                         &caps.bind_generates_resource_chromium);
-  DCHECK_EQ(caps.bind_generates_resource_chromium != GL_FALSE,
-            group_->bind_generates_resource());
-
   caps.egl_image_external =
       feature_info_->feature_flags().oes_egl_image_external;
   caps.egl_image_external_essl3 =
@@ -1388,8 +1383,6 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.texture_norm16 = feature_info_->feature_flags().ext_texture_norm16;
   caps.texture_half_float_linear =
       feature_info_->feature_flags().enable_texture_half_float_linear;
-  caps.image_ycbcr_422 =
-      feature_info_->feature_flags().chromium_image_ycbcr_422;
   caps.image_ycbcr_420v =
       feature_info_->feature_flags().chromium_image_ycbcr_420v;
   caps.image_ycbcr_420v_disabled_for_video_frames =
@@ -1408,9 +1401,6 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
       feature_info_->workarounds().max_copy_texture_chromium_size;
   caps.render_buffer_format_bgra8888 =
       feature_info_->feature_flags().ext_render_buffer_format_bgra8888;
-  caps.occlusion_query_boolean =
-      feature_info_->feature_flags().occlusion_query_boolean;
-  caps.timer_queries = feature_info_->feature_flags().ext_disjoint_timer_query;
   caps.gpu_rasterization =
       group_->gpu_feature_info()
           .status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] ==
@@ -1418,27 +1408,11 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.msaa_is_slow = MSAAIsSlow(feature_info_->workarounds());
   caps.avoid_stencil_buffers =
       feature_info_->workarounds().avoid_stencil_buffers;
-  caps.multisample_compatibility =
-      feature_info_->feature_flags().ext_multisample_compatibility;
-#if BUILDFLAG(IS_WIN)
-  caps.shared_image_d3d = D3DImageBackingFactory::IsD3DSharedImageSupported(
-      group_->gpu_preferences());
-  caps.shared_image_swap_chain =
-      caps.shared_image_d3d && D3DImageBackingFactory::IsSwapChainSupported();
-#endif  // BUILDFLAG(IS_WIN)
-  if (base::FeatureList::IsEnabled(features::kPassthroughYuvRgbConversion)) {
-    caps.supports_yuv_rgb_conversion = true;
-  }
+  caps.supports_yuv_rgb_conversion = true;
   // Technically, YUV readback is handled on the client side, but enable it here
   // so that clients can use this to detect support.
   caps.supports_yuv_readback = true;
-  caps.texture_npot = feature_info_->feature_flags().npot_ok;
-  caps.supports_luminance_shared_images =
-      !feature_info_->gl_version_info().is_angle_metal;
-  caps.disable_r8_shared_images =
-      feature_info_->workarounds().r8_egl_images_broken;
   caps.chromium_gpu_fence = feature_info_->feature_flags().chromium_gpu_fence;
-  caps.chromium_nonblocking_readback = true;
   caps.mesa_framebuffer_flip_y =
       feature_info_->feature_flags().mesa_framebuffer_flip_y;
 
@@ -1455,6 +1429,20 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   PopulateDRMCapabilities(&caps, feature_info_.get());
 #endif
+
+  return caps;
+}
+
+gpu::GLCapabilities GLES2DecoderPassthroughImpl::GetGLCapabilities() {
+  CHECK(initialized());
+  GLCapabilities caps;
+
+  PopulateGLCapabilities(&caps, feature_info_.get());
+  CHECK_EQ(caps.bind_generates_resource_chromium != GL_FALSE,
+           group_->bind_generates_resource());
+  caps.occlusion_query_boolean =
+      feature_info_->feature_flags().occlusion_query_boolean;
+  caps.timer_queries = feature_info_->feature_flags().ext_disjoint_timer_query;
 
   return caps;
 }
@@ -1663,8 +1651,7 @@ GLES2DecoderPassthroughImpl::CreateAbstractTexture(GLenum target,
   GLuint service_id = 0;
   api()->glGenTexturesFn(1, &service_id);
   scoped_refptr<TexturePassthrough> texture(
-      new TexturePassthrough(service_id, target, internal_format, width, height,
-                             depth, border, format, type));
+      new TexturePassthrough(service_id, target));
 
   // Unretained is safe, because of the destruction cb.
   std::unique_ptr<PassthroughAbstractTextureImpl> abstract_texture =

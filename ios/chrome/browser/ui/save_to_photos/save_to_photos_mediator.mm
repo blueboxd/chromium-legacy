@@ -27,6 +27,13 @@
 
 namespace {
 
+NSString* const kGooglePhotosAppProductIdentifier = @"962194608";
+
+NSString* const kGooglePhotosRecentlyAddedURLString =
+    @"https://photos.google.com/search/_tra_?obfsgid=";
+
+NSString* const kGooglePhotosAppURLScheme = @"googlephotos";
+
 NSURL* GetGooglePhotosAppURL() {
   NSURLComponents* photosAppURLComponents = [[NSURLComponents alloc] init];
   photosAppURLComponents.scheme = kGooglePhotosAppURLScheme;
@@ -51,15 +58,6 @@ void StartMediatorHelper(__weak SaveToPhotosMediator* mediator,
 }
 
 }  // namespace
-
-NSString* const kGooglePhotosAppProductIdentifier = @"962194608";
-
-NSString* const kGooglePhotosStoreKitCampaignToken = @"chrome-x-photos";
-
-NSString* const kGooglePhotosRecentlyAddedURLString =
-    @"https://photos.google.com/search/_tra_?obfsgid=";
-
-NSString* const kGooglePhotosAppURLScheme = @"googlephotos";
 
 @implementation SaveToPhotosMediator {
   PhotosService* _photosService;
@@ -408,8 +406,7 @@ NSString* const kGooglePhotosAppURLScheme = @"googlephotos";
   // If the Photos app is not installed, show StoreKit.
   if (![UIApplication.sharedApplication canOpenURL:GetGooglePhotosAppURL()]) {
     [self.delegate
-        showStoreKitWithProductIdentifier:kGooglePhotosAppProductIdentifier
-                            campaignToken:kGooglePhotosStoreKitCampaignToken];
+        showStoreKitWithProductIdentifier:kGooglePhotosAppProductIdentifier];
     return;
   }
 

@@ -9,7 +9,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "content/browser/generic_sensor/sensor_provider_proxy_impl.h"
+#include "content/browser/generic_sensor/web_contents_sensor_provider_proxy.h"
 #include "content/browser/presentation/presentation_test_utils.h"
 #include "content/browser/renderer_host/back_forward_cache_disable.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -3960,14 +3960,14 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, VideoSuspendAndResume) {
 class SensorBackForwardCacheBrowserTest : public BackForwardCacheBrowserTest {
  protected:
   SensorBackForwardCacheBrowserTest() {
-    SensorProviderProxyImpl::OverrideSensorProviderBinderForTesting(
+    WebContentsSensorProviderProxy::OverrideSensorProviderBinderForTesting(
         base::BindRepeating(
             &SensorBackForwardCacheBrowserTest::BindSensorProvider,
             base::Unretained(this)));
   }
 
   ~SensorBackForwardCacheBrowserTest() override {
-    SensorProviderProxyImpl::OverrideSensorProviderBinderForTesting(
+    WebContentsSensorProviderProxy::OverrideSensorProviderBinderForTesting(
         base::NullCallback());
   }
 
@@ -4543,27 +4543,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   ExpectRestored(FROM_HERE);
 }
 
-class BackForwardCacheBrowserTestWithSpeechSynthesis
-    : public BackForwardCacheBrowserTest,
-      public testing::WithParamInterface<bool> {
- public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    if (IsSpeechSynthesisSupported()) {
-      EnableFeatureAndSetParams(features::kUnblockSpeechSynthesisForBFCache, "",
-                                "");
-    } else {
-      DisableFeature(features::kUnblockSpeechSynthesisForBFCache);
-    }
-    BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
-  }
-
-  bool IsSpeechSynthesisSupported() { return GetParam(); }
-};
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         BackForwardCacheBrowserTestWithSpeechSynthesis,
-                         testing::Bool());
-
 // This test is not important for Chrome OS if TTS is called in content. For
 // more details refer (content/browser/speech/tts_platform_impl.cc).
 #if BUILDFLAG(IS_CHROMEOS)
@@ -4571,7 +4550,7 @@ INSTANTIATE_TEST_SUITE_P(All,
 #else
 #define MAYBE_CacheIfUsingSpeechSynthesis CacheIfUsingSpeechSynthesis
 #endif  // BUILDFLAG(IS_CHROMEOS)
-IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithSpeechSynthesis,
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        MAYBE_CacheIfUsingSpeechSynthesis) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
@@ -4591,18 +4570,12 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithSpeechSynthesis,
 
   // 2) Navigate away.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
+
   // 3) Go back to the page with SpeechSynthesis and ensure the page is
   // restored if the flag is on.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
-  if (IsSpeechSynthesisSupported()) {
-    ExpectRestored(FROM_HERE);
-    // TODO(crbug.com/1411151): Test that onend callback is fired upon restore.
-  } else {
-    ExpectNotRestored(
-        {NotRestoredReason::kBlocklistedFeatures},
-        {blink::scheduler::WebSchedulerTrackedFeature::kSpeechSynthesis}, {},
-        {}, {}, FROM_HERE);
-  }
+  ExpectRestored(FROM_HERE);
+  // TODO(crbug.com/1411151): Test that onend callback is fired upon restore.
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
@@ -4653,7 +4626,18 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                     {}, {reason}, {}, FROM_HERE);
 }
 
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CacheWithMediaSession) {
+// TODO(crbug.com/1491942): This fails with the field trial testing config.
+class BackForwardCacheBrowserTestNoTestingConfig
+    : public BackForwardCacheBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch("disable-field-trial-config");
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestNoTestingConfig,
+                       CacheWithMediaSession) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // 1) Navigate to a page using MediaSession.
@@ -4811,8 +4795,19 @@ class BackForwardCacheBrowserTestWithMediaSession
   }
 };
 
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithMediaSession,
-                       CacheWhenMediaSessionPlaybackStateIsChanged) {
+// TODO(crbug.com/1491942): This fails with the field trial testing config.
+class BackForwardCacheBrowserTestWithMediaSessionNoTestingConfig
+    : public BackForwardCacheBrowserTestWithMediaSession {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    BackForwardCacheBrowserTestWithMediaSession::SetUpCommandLine(command_line);
+    command_line->AppendSwitch("disable-field-trial-config");
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(
+    BackForwardCacheBrowserTestWithMediaSessionNoTestingConfig,
+    CacheWhenMediaSessionPlaybackStateIsChanged) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // 1) Navigate to a page.
@@ -4857,8 +4852,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithMediaSession,
   ExpectRestored(FROM_HERE);
 }
 
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithMediaSession,
-                       DontCacheWhenMediaSessionServiceIsUsed) {
+IN_PROC_BROWSER_TEST_F(
+    BackForwardCacheBrowserTestWithMediaSessionNoTestingConfig,
+    DontCacheWhenMediaSessionServiceIsUsed) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Navigate to a page using MediaSession.

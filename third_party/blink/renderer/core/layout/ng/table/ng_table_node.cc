@@ -26,18 +26,18 @@ const NGTableBorders* NGTableNode::GetTableBorders() const {
   return table_borders;
 }
 
-const NGBoxStrut& NGTableNode::GetTableBordersStrut() const {
+const BoxStrut& NGTableNode::GetTableBordersStrut() const {
   return GetTableBorders()->TableBorder();
 }
 
 scoped_refptr<const NGTableTypes::Columns> NGTableNode::GetColumnConstraints(
     const NGTableGroupedChildren& grouped_children,
-    const NGBoxStrut& border_padding) const {
+    const BoxStrut& border_padding) const {
   LayoutNGTable* layout_table = To<LayoutNGTable>(box_.Get());
   scoped_refptr<const NGTableTypes::Columns> column_constraints =
       layout_table->GetCachedTableColumnConstraints();
   if (!column_constraints) {
-    column_constraints = NGTableAlgorithmUtils::ComputeColumnConstraints(
+    column_constraints = ComputeColumnConstraints(
         *this, grouped_children, *GetTableBorders(), border_padding);
     layout_table->SetCachedTableColumnConstraints(column_constraints.get());
   }
@@ -46,14 +46,14 @@ scoped_refptr<const NGTableTypes::Columns> NGTableNode::GetColumnConstraints(
 
 LayoutUnit NGTableNode::ComputeTableInlineSize(
     const NGConstraintSpace& space,
-    const NGBoxStrut& border_padding) const {
+    const BoxStrut& border_padding) const {
   return NGTableLayoutAlgorithm::ComputeTableInlineSize(*this, space,
                                                         border_padding);
 }
 
 LayoutUnit NGTableNode::ComputeCaptionBlockSize(
     const NGConstraintSpace& space) const {
-  NGFragmentGeometry geometry =
+  FragmentGeometry geometry =
       CalculateInitialFragmentGeometry(space, *this, /* break_token */ nullptr);
   NGLayoutAlgorithmParams params(*this, geometry, space);
   NGTableLayoutAlgorithm algorithm(params);

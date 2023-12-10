@@ -13961,28 +13961,18 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 // https://crbug.com/936962).
 IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTestNoServer,
                        SameDocumentNavigationRaceWithCrossDocumentNavigation) {
-  net::test_server::ControllableHttpResponse response_success(
-      embedded_test_server(), "/title1.html");
   ASSERT_TRUE(embedded_test_server()->Start());
 
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
   FrameTreeNode* root = web_contents->GetPrimaryFrameTree().root();
 
-  // 1. Navigate to a simple page with no-cache, no-store.
+  // 1. Navigate to a simple page that cannot be BFCached.
   GURL start_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   {
-    UrlCommitObserver history_commit_observer(root, start_url);
-    shell()->LoadURL(start_url);
-    response_success.WaitForRequest();
-    response_success.Send(
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/html; charset=utf-8\r\n"
-        "Cache-Control: no-cache, no-store\r\n"
-        "\r\n"
-        "The server speaks HTTP!");
-    response_success.Done();
-    history_commit_observer.Wait();
+    EXPECT_TRUE(NavigateToURL(shell(), start_url));
+    DisableBackForwardCacheForTesting(
+        web_contents, BackForwardCache::TEST_REQUIRES_NO_CACHING);
     EXPECT_EQ(0, web_contents->GetController().GetLastCommittedEntryIndex());
   }
 
@@ -22108,6 +22098,49 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   url::Origin committed_origin =
       shell()->web_contents()->GetPrimaryMainFrame()->GetLastCommittedOrigin();
   EXPECT_EQ(origin_to_commit.value(), committed_origin);
+}
+
+// This tests a regression found in https://crbug.com/1487803.
+// This test loads a page with sandbox flags set in its header, and then opens
+// a new page in a new tab. This ensures that the new page is also loaded with
+// sandbox flags. After the new page commits, it loads a post-commit error page
+// and checks that it loads without issue.
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
+                       LoadPostCommitErrorPageSandboxedTopLevel) {
+  GURL url(embedded_test_server()->GetURL(
+      "/set-header?Content-Security-Policy: sandbox allow-top-navigation "
+      "allow-scripts allow-popups"));
+  GURL new_url(embedded_test_server()->GetURL("/title1.html"));
+
+  // Navigate to the main page
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  // Open a new page in a new tab. The sandbox flags are copied over.
+  ShellAddedObserver new_shell_observer;
+  EXPECT_TRUE(ExecJs(current_main_frame_host(),
+                     JsReplace(R"(window.open($1, '_blank');)", new_url)));
+  Shell* new_shell = new_shell_observer.GetShell();
+  ASSERT_NE(new_shell->web_contents(), shell()->web_contents());
+  EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
+  FrameTreeNode* new_root =
+      static_cast<WebContentsImpl*>(new_shell->web_contents())
+          ->GetPrimaryFrameTree()
+          .root();
+
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      new_shell->web_contents()->GetController());
+
+  // Navigate the page in the new tab to a post-commit error page.
+  std::string error_html = "Error page";
+  TestNavigationObserver error_observer(new_shell->web_contents());
+  controller.LoadPostCommitErrorPage(new_root->current_frame_host(), new_url,
+                                     error_html);
+  error_observer.Wait();
+
+  EXPECT_FALSE(error_observer.last_navigation_succeeded());
+  EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, error_observer.last_net_error_code());
+  EXPECT_EQ(PAGE_TYPE_ERROR, controller.GetLastCommittedEntry()->GetPageType());
+  EXPECT_EQ(error_html, EvalJs(new_shell, "document.body.innerHTML"));
 }
 
 INSTANTIATE_TEST_SUITE_P(

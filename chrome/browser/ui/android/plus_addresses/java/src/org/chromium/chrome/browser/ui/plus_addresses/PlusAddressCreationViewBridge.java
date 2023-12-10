@@ -8,9 +8,10 @@ import android.app.Activity;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeMethods;
+import org.jni_zero.CalledByNative;
+import org.jni_zero.JNINamespace;
+import org.jni_zero.NativeMethods;
+
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -33,10 +34,27 @@ public class PlusAddressCreationViewBridge implements PlusAddressCreationDelegat
     }
 
     @CalledByNative
-    private void show(WindowAndroid windowAndroid, String primaryEmailAddress, String modalTitle) {
+    private void show(
+            WindowAndroid windowAndroid,
+            String primaryEmailAddress,
+            String modalTitle,
+            String plusAddressLabel,
+            String proposedPlusAddressPlaceholder,
+            String plusAddressDescription,
+            String plusAddressModalOkText,
+            String plusAddressModalCancelText) {
         Activity activity = windowAndroid.getActivity().get();
         mPlusAddressCreationPrompt =
-                new PlusAddressCreationPrompt(this, activity, primaryEmailAddress, modalTitle);
+                new PlusAddressCreationPrompt(
+                        this,
+                        activity,
+                        primaryEmailAddress,
+                        modalTitle,
+                        plusAddressLabel,
+                        proposedPlusAddressPlaceholder,
+                        plusAddressDescription,
+                        plusAddressModalOkText,
+                        plusAddressModalCancelText);
         mPlusAddressCreationPrompt.show(windowAndroid.getModalDialogManager());
     }
 

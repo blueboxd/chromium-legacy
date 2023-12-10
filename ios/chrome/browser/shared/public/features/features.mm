@@ -80,7 +80,7 @@ const base::FeatureParam<DefaultBrowserPromoGenericTailoredArm>
 
 BASE_FEATURE(kDefaultBrowserRefactoringPromoManager,
              "DefaultBrowserRefactoringPromoManager",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDefaultBrowserVideoPromo,
              "DefaultBrowserVideoPromo",
@@ -106,7 +106,7 @@ bool ShouldShowPartialTranslateInIncognito() {
   }
   return !base::GetFieldTrialParamByFeatureAsBool(
       kIOSEditMenuPartialTranslate,
-      kIOSEditMenuPartialTranslateNoIncognitoParam, true);
+      kIOSEditMenuPartialTranslateNoIncognitoParam, false);
 }
 
 const char kIOSEditMenuSearchWithTitleParamTitle[] =
@@ -149,10 +149,6 @@ BASE_FEATURE(kEnableLensInNTP,
              "EnableLensInNTP",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kEnableLensContextMenuAltText,
-             "EnableLensContextMenuAltText",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kEnableLensInOmniboxCopiedImage,
              "EnableLensInOmniboxCopiedImage",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -181,6 +177,10 @@ BASE_FEATURE(kEnableExpKitAppleCalendar,
              "EnableExpKitAppleCalendar",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kTCRexKillSwitch,
+             "kTCRexKillSwitch",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kTabGridNewTransitions,
              "TabGridNewTransitions",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -188,10 +188,6 @@ BASE_FEATURE(kTabGridNewTransitions,
 bool IsNewTabGridTransitionsEnabled() {
   return base::FeatureList::IsEnabled(kTabGridNewTransitions);
 }
-
-BASE_FEATURE(kMultilineFadeTruncatingLabel,
-             "MultilineFadeTruncatingLabel",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kNonModalDefaultBrowserPromoImpressionLimit,
              "NonModalDefaultBrowserPromoImpressionLimit",
@@ -272,7 +268,7 @@ BASE_FEATURE(kThemeColorInTopToolbar,
 
 BASE_FEATURE(kTabGridRefactoring,
              "TabGridRefactoring",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsSafetyCheckMagicStackEnabled() {
   return base::FeatureList::IsEnabled(kSafetyCheckMagicStack);
@@ -289,3 +285,7 @@ BASE_FEATURE(kIOSSaveToPhotos,
 BASE_FEATURE(kSettingsWillBeDismissedBugFixKillSwitch,
              "SettingsWillBeDismissedBugFixKillSwitch",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kEnableUIEditMenuInteraction,
+             "EnableUIEditMenuInteraction",
+             base::FEATURE_DISABLED_BY_DEFAULT);

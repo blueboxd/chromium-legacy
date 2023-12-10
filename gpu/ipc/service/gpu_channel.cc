@@ -762,7 +762,7 @@ std::unique_ptr<GpuChannel> GpuChannel::Create(
       image_decode_accelerator_worker, gpu_extra_info,
       gpu_memory_buffer_factory));
 
-  if (!gpu_channel->CreateSharedImageStub()) {
+  if (!gpu_channel->CreateSharedImageStub(gpu_extra_info)) {
     LOG(ERROR) << "GpuChannel: Failed to create SharedImageStub";
     return nullptr;
   }
@@ -778,11 +778,6 @@ void GpuChannel::Init(IPC::ChannelHandle channel_handle,
   sync_channel_->Init(channel_handle, IPC::Channel::MODE_SERVER,
                       /*create_pipe_now=*/false);
   channel_ = sync_channel_.get();
-}
-
-void GpuChannel::SetGpuExtraInfo(const gfx::GpuExtraInfo& gpu_extra_info) {
-  CHECK(shared_image_stub_);
-  shared_image_stub_->SetGpuExtraInfo(gpu_extra_info);
 }
 
 base::WeakPtr<GpuChannel> GpuChannel::AsWeakPtr() {
@@ -951,15 +946,17 @@ mojom::GpuChannel& GpuChannel::GetGpuChannelForTesting() {
   return *filter_;
 }
 
-bool GpuChannel::CreateSharedImageStub() {
+bool GpuChannel::CreateSharedImageStub(
+    const gfx::GpuExtraInfo& gpu_extra_info) {
   // SharedImageInterfaceProxy/Stub is a singleton per channel, using a reserved
   // route.
   const int32_t shared_image_route_id =
       static_cast<int32_t>(GpuChannelReservedRoutes::kSharedImageInterface);
   shared_image_stub_ = SharedImageStub::Create(this, shared_image_route_id);
-  if (!shared_image_stub_)
+  if (!shared_image_stub_) {
     return false;
-
+  }
+  shared_image_stub_->SetGpuExtraInfo(gpu_extra_info);
   filter_->AddRoute(shared_image_route_id, shared_image_stub_->sequence());
   return true;
 }
@@ -1005,18 +1002,22 @@ class ScopedCreateCommandBufferResponder {
       mojom::GpuChannel::CreateCommandBufferCallback callback)
       : callback_(std::move(callback)) {}
   ~ScopedCreateCommandBufferResponder() {
-    std::move(callback_).Run(result_, capabilities_);
+    std::move(callback_).Run(result_, capabilities_, gl_capabilities_);
   }
 
   void set_result(ContextResult result) { result_ = result; }
   void set_capabilities(const Capabilities& capabilities) {
     capabilities_ = capabilities;
   }
+  void set_gl_capabilities(const GLCapabilities& gl_capabilities) {
+    gl_capabilities_ = gl_capabilities;
+  }
 
  private:
   mojom::GpuChannel::CreateCommandBufferCallback callback_;
   ContextResult result_ = ContextResult::kFatalFailure;
   Capabilities capabilities_;
+  GLCapabilities gl_capabilities_;
 };
 
 void GpuChannel::CreateCommandBuffer(
@@ -1126,6 +1127,7 @@ void GpuChannel::CreateCommandBuffer(
 
   responder.set_result(ContextResult::kSuccess);
   responder.set_capabilities(stub->decoder_context()->GetCapabilities());
+  responder.set_gl_capabilities(stub->decoder_context()->GetGLCapabilities());
   stubs_[route_id] = std::move(stub);
 }
 

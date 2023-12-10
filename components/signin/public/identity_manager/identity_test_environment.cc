@@ -131,7 +131,8 @@ IdentityManagerDependenciesOwner::IdentityManagerDependenciesOwner(
           std::move(remote),
           /*remote_version=*/std::numeric_limits<uint32_t>::max(),
           /*account_manager_for_tests=*/
-          account_manager_factory_->GetAccountManager(std::string()));
+          account_manager_factory_->GetAccountManager(std::string())
+              ->GetWeakPtr());
 #endif
 }
 
@@ -383,9 +384,7 @@ IdentityTestEnvironment::FinishBuildIdentityManagerForTests(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   init_params.account_manager_facade = account_manager_facade;
 #endif
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
   init_params.signin_client = signin_client;
-#endif
 
   return std::make_unique<IdentityManager>(std::move(init_params));
 }

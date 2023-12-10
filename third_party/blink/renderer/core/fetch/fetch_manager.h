@@ -5,7 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_FETCH_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_FETCH_MANAGER_H_
 
+#include "base/memory/scoped_refptr.h"
+#include "base/task/single_thread_task_runner.h"
+#include "base/time/tick_clock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/platform/child_url_loader_factory_bundle.h"
+#include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
@@ -32,6 +37,27 @@ class CORE_EXPORT FetchManager final
                       FetchRequestData*,
                       AbortSignal*,
                       ExceptionState&);
+
+  // ExecutionContextLifecycleObserver overrides:
+  void ContextDestroyed() override;
+
+  void Trace(Visitor*) const override;
+
+ private:
+  class Loader;
+
+  // Removes loader from `loaders_`.
+  void OnLoaderFinished(Loader*);
+
+  HeapHashSet<Member<Loader>> loaders_;
+};
+
+class CORE_EXPORT FetchLaterManager final
+    : public GarbageCollected<FetchLaterManager>,
+      public ExecutionContextLifecycleObserver {
+ public:
+  explicit FetchLaterManager(ExecutionContext*);
+
   FetchLaterResult* FetchLater(ScriptState*,
                                FetchRequestData*,
                                AbortSignal*,
@@ -43,16 +69,26 @@ class CORE_EXPORT FetchManager final
 
   void Trace(Visitor*) const override;
 
- private:
-  class Loader;
-  class DeferredLoader;
+  // For testing only:
+  size_t NumLoadersForTesting() const;
+  void RecreateTimerForTesting(scoped_refptr<base::SingleThreadTaskRunner>,
+                               const base::TickClock*);
 
-  // Removes loader from `loaders_`.
-  void OnLoaderFinished(Loader*);
-  // Removes loader from `deferred_loaders_`.
+ private:
+  class DeferredLoader;
+  // TODO(crbug.com/1293679): Update to proper TaskType once spec is finalized.
+  // Using the `TaskType::kNetworkingUnfreezable` as deferred requests need to
+  // work when ExecutionContext is in BackForwardCache/frozen.
+  static constexpr TaskType kTaskType = TaskType::kNetworkingUnfreezable;
+
+  // Returns a pointer to the wrapper that provides FetchLaterLoaderFactory.
+  // Returns nullptr if the context is detached.
+  blink::ChildURLLoaderFactoryBundle* GetFactory();
+
+  // Removes a loader from `deferred_loaders_`.
   void OnDeferredLoaderFinished(DeferredLoader*);
 
-  HeapHashSet<Member<Loader>> loaders_;
+  // Every deferred loader represents a FetchLater request.
   HeapHashSet<Member<DeferredLoader>> deferred_loaders_;
 };
 

@@ -59,11 +59,13 @@ class BrowsingTopicsCalculatorTest : public testing::Test {
     host_content_settings_map_ = base::MakeRefCounted<HostContentSettingsMap>(
         &prefs_, /*is_off_the_record=*/false, /*store_last_modified=*/false,
         /*restore_session=*/false, /*should_record_metrics=*/false);
-    cookie_settings_ = base::MakeRefCounted<content_settings::CookieSettings>(
-        host_content_settings_map_.get(), &prefs_, false, "chrome-extension");
     tracking_protection_settings_ =
-        std::make_unique<privacy_sandbox::TrackingProtectionSettings>(&prefs_,
-                                                                      nullptr);
+        std::make_unique<privacy_sandbox::TrackingProtectionSettings>(
+            &prefs_,
+            /*onboarding_service=*/nullptr, /*is_incognito=*/false);
+    cookie_settings_ = base::MakeRefCounted<content_settings::CookieSettings>(
+        host_content_settings_map_.get(), &prefs_,
+        tracking_protection_settings_.get(), false, "chrome-extension");
     auto privacy_sandbox_delegate = std::make_unique<
         privacy_sandbox_test_util::MockPrivacySandboxSettingsDelegate>();
     privacy_sandbox_delegate->SetUpIsPrivacySandboxRestrictedResponse(
@@ -89,7 +91,9 @@ class BrowsingTopicsCalculatorTest : public testing::Test {
   }
 
   ~BrowsingTopicsCalculatorTest() override {
+    cookie_settings_->ShutdownOnUIThread();
     host_content_settings_map_->ShutdownOnUIThread();
+    tracking_protection_settings_->Shutdown();
   }
 
   EpochTopics CalculateTopics(base::circular_deque<EpochTopics> epochs = {}) {
@@ -284,49 +288,6 @@ TEST_F(BrowsingTopicsCalculatorTest, TopicsMetadata) {
       "BrowsingTopics.EpochTopicsCalculation.CalculatorResultStatus",
       /*kSuccess*/ 0,
       /*expected_bucket_count=*/2);
-}
-
-// Regression test for crbug/1495959.
-TEST_F(BrowsingTopicsCalculatorTest, ModelAvailableAfterDelay) {
-  test_annotator_.SetModelAvailable(false);
-
-  base::Time begin_time = base::Time::Now();
-
-  AddHistoryEntries({kHost1, kHost2, kHost3, kHost4, kHost5, kHost6},
-                    begin_time);
-
-  task_environment_.AdvanceClock(base::Seconds(1));
-
-  // This PostTask will run when the |CalculateTopics| run loop starts and will
-  // signal to the calculator that the model is ready, triggering it to start.
-  task_environment_.GetMainThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](TestAnnotator* annotator) {
-            annotator->UseModelInfo(*optimization_guide::TestModelInfoBuilder()
-                                         .SetVersion(1)
-                                         .Build());
-            annotator->UseAnnotations({
-                {kHost1, {1, 2, 3, 4, 5, 6}},
-                {kHost2, {2, 3, 4, 5, 6}},
-                {kHost3, {3, 4, 5, 6}},
-                {kHost4, {4, 5, 6}},
-                {kHost5, {5, 6}},
-                {kHost6, {6}},
-            });
-            annotator->SetModelAvailable(true);
-          },
-          &test_annotator_));
-
-  EpochTopics result = CalculateTopics();
-  ExpectResultTopicsEqual(result.top_topics_and_observing_domains(),
-                          {{Topic(6), {}},
-                           {Topic(5), {}},
-                           {Topic(4), {}},
-                           {Topic(3), {}},
-                           {Topic(2), {}}});
-
-  EXPECT_EQ(result.padded_top_topics_start_index(), 5u);
 }
 
 TEST_F(BrowsingTopicsCalculatorTest, TopTopicsRankedByFrequency) {

@@ -161,10 +161,6 @@ class PolicyTestPageVisibilityTest
 // and policy are enabled, and invisible otherwise.
 IN_PROC_BROWSER_TEST_P(PolicyTestPageVisibilityTest,
                        TestPageVisibleWhenEnabled) {
-  if (!policy::utils::IsPolicyTestingEnabled(/*pref_service=*/nullptr,
-                                             chrome::GetChannel())) {
-    GTEST_SKIP() << "chrome://policy/test not allowed on this build.";
-  }
   // Enable or disable managed profile as needed.
   policy::ScopedManagementServiceOverrideForTesting browser_management(
       policy::ManagementServiceFactory::GetForProfile(GetProfile()),
@@ -242,7 +238,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTestHandlerTest,
                        HandleSetAndRevertLocalTestPolicies) {
   if (!policy::utils::IsPolicyTestingEnabled(/*pref_service=*/nullptr,
                                              chrome::GetChannel())) {
-    GTEST_SKIP() << "chrome://policy/test not allowed on this build.";
+    return;
   }
   std::unique_ptr<PolicyUIHandler> handler = SetUpHandler();
   const std::string jsonString =
@@ -325,7 +321,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTestHandlerTest,
 IN_PROC_BROWSER_TEST_F(PolicyTestHandlerTest, FilterSensitivePolicies) {
   if (!policy::utils::IsPolicyTestingEnabled(/*pref_service=*/nullptr,
                                              chrome::GetChannel())) {
-    GTEST_SKIP() << "chrome://policy/test not allowed on this build.";
+    return;
   }
   std::unique_ptr<PolicyUIHandler> handler = SetUpHandler();
   const std::string jsonString =
@@ -366,10 +362,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTestHandlerTest, FilterSensitivePolicies) {
 // are applied after restart.
 IN_PROC_BROWSER_TEST_F(PolicyTestHandlerTest,
                        PRE_PRE_ApplyTestPoliciesAfterRestart) {
-  if (!policy::utils::IsPolicyTestingEnabled(/*pref_service=*/nullptr,
-                                             chrome::GetChannel())) {
-    GTEST_SKIP() << "chrome://policy/test not allowed on this build.";
-  }
   std::unique_ptr<PolicyUIHandler> handler = SetUpHandler();
 
   // Set the value of AccessCodeCastDeviceDuration to 100.
@@ -518,10 +510,6 @@ class PolicyTestUITest : public PlatformBrowserTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(PolicyTestUITest, TestRowAddedWhenAddPolicyClicked) {
-  if (!policy::utils::IsPolicyTestingEnabled(/*pref_service=*/nullptr,
-                                             chrome::GetChannel())) {
-    GTEST_SKIP() << "chrome://policy/test not allowed on this build.";
-  }
   ASSERT_TRUE(content::NavigateToURL(web_contents(),
                                      GURL(chrome::kChromeUIPolicyTestURL)));
   EXPECT_EQ(GetNumberOfRows(), 1);
@@ -530,10 +518,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTestUITest, TestRowAddedWhenAddPolicyClicked) {
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTestUITest, TestRowDeletedWhenRemoveClicked) {
-  if (!policy::utils::IsPolicyTestingEnabled(/*pref_service=*/nullptr,
-                                             chrome::GetChannel())) {
-    GTEST_SKIP() << "chrome://policy/test not allowed on this build.";
-  }
   ASSERT_TRUE(content::NavigateToURL(web_contents(),
                                      GURL(chrome::kChromeUIPolicyTestURL)));
   EXPECT_EQ(GetNumberOfRows(), 1);
@@ -552,10 +536,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTestUITest, TestRowDeletedWhenRemoveClicked) {
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTestUITest, TestPresetAutofill) {
-  if (!policy::utils::IsPolicyTestingEnabled(/*pref_service=*/nullptr,
-                                             chrome::GetChannel())) {
-    GTEST_SKIP() << "chrome://policy/test not allowed on this build.";
-  }
   ASSERT_TRUE(content::NavigateToURL(web_contents(),
                                      GURL(chrome::kChromeUIPolicyTestURL)));
   const std::string getSelectedPresetId =
@@ -606,10 +586,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTestUITest, TestPresetAutofill) {
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTestUITest, TestPolicyNameChangesInputType) {
-  if (!policy::utils::IsPolicyTestingEnabled(/*pref_service=*/nullptr,
-                                             chrome::GetChannel())) {
-    GTEST_SKIP() << "chrome://policy/test not allowed on this build.";
-  }
   ASSERT_TRUE(content::NavigateToURL(web_contents(),
                                      GURL(chrome::kChromeUIPolicyTestURL)));
   const std::string getValueInputType =
@@ -643,10 +619,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTestUITest, TestPolicyNameChangesInputType) {
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTestUITest, TestErrorStateWhenNameNotSelected) {
-  if (!policy::utils::IsPolicyTestingEnabled(/*pref_service=*/nullptr,
-                                             chrome::GetChannel())) {
-    GTEST_SKIP() << "chrome://policy/test not allowed on this build.";
-  }
   ASSERT_TRUE(content::NavigateToURL(web_contents(),
                                      GURL(chrome::kChromeUIPolicyTestURL)));
   const std::string getNameDropdownInErrorStateJs =
@@ -690,10 +662,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTestUITest, TestErrorStateWhenNameNotSelected) {
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTestUITest, TestIncorrectValueTypeRaisesError) {
-  if (!policy::utils::IsPolicyTestingEnabled(/*pref_service=*/nullptr,
-                                             chrome::GetChannel())) {
-    GTEST_SKIP() << "chrome://policy/test not allowed on this build.";
-  }
   ASSERT_TRUE(content::NavigateToURL(web_contents(),
                                      GURL(chrome::kChromeUIPolicyTestURL)));
   EXPECT_TRUE(ClickAddPolicy());
@@ -768,10 +736,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTestUITest, TestIncorrectValueTypeRaisesError) {
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTestUITest, TestClearPoliciesButton) {
-  if (!policy::utils::IsPolicyTestingEnabled(/*pref_service=*/nullptr,
-                                             chrome::GetChannel())) {
-    GTEST_SKIP() << "chrome://policy/test not allowed on this build.";
-  }
   ASSERT_TRUE(content::NavigateToURL(web_contents(),
                                      GURL(chrome::kChromeUIPolicyTestURL)));
   for (int i = 0; i < 4; i++) {

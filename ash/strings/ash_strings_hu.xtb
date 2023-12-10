@@ -310,7 +310,6 @@
 <translation id="2276987123919776440">15 perc</translation>
 <translation id="2277103315734023688">Ugrás előre</translation>
 <translation id="2282073721614284166">Link megnyitása lapon</translation>
-<translation id="2284237890386182187">Bekapcsolva, nincsenek csatlakoztatott eszközök</translation>
 <translation id="2292698582925480719">Megjelenítés méret</translation>
 <translation id="229397294990920565">Mobiladat-kapcsolat kikapcsolása…</translation>
 <translation id="2295777434187870477">A mikrofon be van kapcsolva, a gombra kattintva elnémítja.</translation>
@@ -352,7 +351,6 @@
 <translation id="243878895369688216">Tegnap nyitotta meg</translation>
 <translation id="2440978926514840421">GIF-felvétel rögzítve</translation>
 <translation id="2441427462554639370">Felvétel megszakítva a kritikusan kevés tárhely miatt</translation>
-<translation id="24452542372838207">Értesítés kibontása</translation>
 <translation id="2448312741937722512">Típus</translation>
 <translation id="2449089818483227734">Alacsony töltöttség</translation>
 <translation id="2450205753526923158">Képernyőkép mód</translation>
@@ -493,7 +491,6 @@
 <translation id="3062298103034426069">Nem támogatott</translation>
 <translation id="3068622547379332530">Verzió: <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">A polc a bal oldalon található</translation>
-<translation id="3070639127620815135">search + esc</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Menü kibontása</translation>
 <translation id="3087734570205094154">Alja</translation>
@@ -572,7 +569,6 @@
 <translation id="3387527074123400161">ChromiumOS</translation>
 <translation id="3389599499324569679">Bekapcsolja a Diktálás funkciót?</translation>
 <translation id="3394432020929931914">, kibontva</translation>
-<translation id="3400357268283240774">További beállítások</translation>
 <translation id="3405101454990027959">Mikrofon-hozzáférés aktiválása</translation>
 <translation id="3408735331120433841">Jelenleg folyamatban van a képernyő átküldése.</translation>
 <translation id="3409584356742878290">A Fejlesztői eszközök ellenőrző paneljének megjelenítése vagy elrejtése</translation>
@@ -620,7 +616,6 @@
 <translation id="3563775809269155755">Hotspot engedélyezése</translation>
 <translation id="3566240529365775567">Éppen most nyitotta meg</translation>
 <translation id="3571734092741541777">Beállítás</translation>
-<translation id="3572988532398145777">Az értesítés nem bontható ki, ha meg van nyitva egy panel. Előbb zárja be az alábbi panelt.</translation>
 <translation id="3573179567135747900">Visszatérés ehhez: "<ph name="FROM_LOCALE" />" (újraindítás szükséges)</translation>
 <translation id="3576141592585647168">Időzóna módosítása</translation>
 <translation id="3577473026931028326">Hiba történt. Próbálja újra.</translation>
@@ -704,7 +699,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="385300504083504382">A legelejére</translation>
 <translation id="3859364108019690">Az alkalmazástreamelés nem sikerült</translation>
 <translation id="3861651314799684201">Nyomja le az Entert a teljes képernyő tartalmának rögzítéséhez</translation>
-<translation id="3865912916886104060">Nincsenek csatlakoztatott eszközök. A rendszer kikapcsolja a Wi-Fi-t, hogy használni lehessen a hotspotot.</translation>
 <translation id="3886872229787704059">Ma nyitotta meg</translation>
 <translation id="3891340733213178823">Nyomja meg a Ctrl+Shift+Q billentyűkombinációt kétszer a kijelentkezéshez.</translation>
 <translation id="3893630138897523026">ChromeVox (beszélt visszajelzés)</translation>
@@ -789,7 +783,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4197790712631116042">Ki</translation>
 <translation id="4201033867194214117">A(z) <ph name="FEATURE_NAME" /> nem áll rendelkezésre.</translation>
 <translation id="4201051445878709314">Az előző hónap megjelenítése</translation>
-<translation id="4202362334312791952">Egy eszköz van csatlakoztatva. A rendszer kikapcsolja a Wi-Fi-t, hogy használni lehessen a hotspotot.</translation>
 <translation id="4209973997261364186">Wi-Fi bekapcsolva</translation>
 <translation id="4212472694152630271">Váltás PIN-kódra</translation>
 <translation id="4215497585250573029">VPN-beállítások</translation>
@@ -906,7 +899,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="468293128311738995">Alkalmazások a telefonjáról</translation>
 <translation id="4690510401873698237">A polc alul található</translation>
 <translation id="4696813013609194136">Zárolás feloldása szülői kóddal</translation>
-<translation id="4698850295812410683">Érintőceruza-eszközök megjelenítése</translation>
 <translation id="4702647871202761252">Az adatvédelmi képernyő ki van kapcsolva</translation>
 <translation id="4706121060329443414">A letöltést később kísérli meg a rendszer. A beszédet a rendszer egyelőre elküldi a Google-nak feldolgozásra.</translation>
 <translation id="470644585772471629">Színek invertálása</translation>
@@ -1054,6 +1046,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="5260676007519551770">4. asztal</translation>
 <translation id="5268819379131021772">Google-feladatlista</translation>
 <translation id="5275923704957843041">Asztal előnézete</translation>
+<translation id="5277869901083657836">Érintőceruza-eszközök ki- és bekapcsolása</translation>
 <translation id="5278086053818066789">A ChromeVox (hangos visszajelzés) be- vagy kikapcsolása</translation>
 <translation id="5283099933536931082">A(z) <ph name="APP_ITEM_TITLE" /> alkalmazás a figyelmét igényli.</translation>
 <translation id="5283198616748585639">1 perc hozzáadása</translation>
@@ -1096,7 +1089,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="5426063383988017631">Beállítások menü bezárva</translation>
 <translation id="5428899915242071344">Kijelölés indítása</translation>
 <translation id="5429993543155113935">Az inkognitó ablakok jelenleg nem támogatottak.</translation>
-<translation id="5430931332414098647">Azonnali internetmegosztás</translation>
 <translation id="5431318178759467895">Színes</translation>
 <translation id="5433020815079095860">Audiobemenet</translation>
 <translation id="544691375626129091">Minden elérhető felhasználót hozzáadott a munkamenethez.</translation>
@@ -1125,6 +1117,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="554893713779400387">Diktálás váltása</translation>
 <translation id="5551456515017410630">Naptár megnyitása vagy bezárása</translation>
 <translation id="5551974246223970793">Oldalkereséskor ugrás a következő keresési találatra</translation>
+<translation id="5555639311269196631">Hotspot kikapcsolása</translation>
 <translation id="5558091555391176027">A Közeli megosztás funkció nagyfokú láthatóságának be-/kikapcsolása</translation>
 <translation id="556042886152191864">Gomb</translation>
 <translation id="5570122939431135380">Új lap megnyitása új inkognitó ablakban</translation>
@@ -1170,7 +1163,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="5707775774148071965">Az eszköz nagyobb adatátviteli sebességre képes, mint amit a kábel biztosítani tud. Ez korlátozhatja az eszköz teljesítményét.</translation>
 <translation id="5710450975648804523">Ne zavarjanak mód: bekapcsolva</translation>
 <translation id="571295407079589142">A mobiladat-kapcsolat ki van kapcsolva</translation>
-<translation id="5716891621595980681"><ph name="DEVICECOUNT" /> eszköz van csatlakoztatva. A rendszer kikapcsolja a Wi-Fi-t, hogy használni lehessen a hotspotot.</translation>
 <translation id="5727460725221669831">Ha elfelejtette a jelszavát, vagy nemrég módosította Google-fiókja jelszavát, próbálja meg helyreállítani ezt a felhasználót.</translation>
 <translation id="573413375004481890">Ez az eszköz nem tudta támogatni az összes kijelzőt, ezért egyet leválasztott</translation>
 <translation id="5740328398383587084">Közeli megosztás</translation>
@@ -1220,7 +1212,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Be</translation>
 <translation id="5920710855273935292">A mikrofon le van némítva.</translation>
-<translation id="5924855612669061715">A hotspot be van kapcsolva</translation>
 <translation id="5946788582095584774"><ph name="FEATURE_NAME" /> bekapcsolva.</translation>
 <translation id="5947494881799873997">Visszavonás</translation>
 <translation id="595202126637698455">Teljesítménykövetés engedélyezve</translation>
@@ -1236,6 +1227,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="598407983968395253">Sablon használata</translation>
 <translation id="598882571027504733">A frissítés lekéréséhez indítsa újra a Chromebookot a csatlakoztatott billentyűzet segítségével.</translation>
 <translation id="6000279412553873020">Billentyűk, gombok és egyebek</translation>
+<translation id="6002122790816966947">Saját eszközök</translation>
 <translation id="6012623610530968780"><ph name="TOTAL_PAGE_NUM" />/<ph name="SELECTED_PAGE" />. oldal</translation>
 <translation id="601304062528754300">Következő elem kiemelése a polcon</translation>
 <translation id="6015573907265691211">Megjelölés készként</translation>
@@ -1304,7 +1296,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="6231419273573514727">Korlátozott lehet a perifériás teljesítmény</translation>
 <translation id="6232891689835436217">A(z) <ph name="APP_NAME" /> jelenleg használja a kamerát és a mikrofont</translation>
 <translation id="6237231532760393653">1X</translation>
-<translation id="6244986124527896815">A feladatkezelőt a következő billentyűparanccsal nyithatja meg: „<ph name="NEW_SHORTCUT" />”.</translation>
 <translation id="6247728804802644171">Értesítések megnyitása</translation>
 <translation id="6254629735336163724">Vízszintes helyzetben zárolva</translation>
 <translation id="6259254695169772643">A kiválasztáshoz használja az érintőceruzát</translation>
@@ -1526,6 +1517,7 @@ Frissen telepítve</translation>
 <translation id="7188494361780961876">A menü a képernyő bal felső sarkába került.</translation>
 <translation id="7189412385142492784">Milyen messze van a Vénusz?</translation>
 <translation id="7198435252016571249">Kamera a jobb alsó sarokhoz igazítva. Ütközés a rendszerfelülettel.</translation>
+<translation id="7219573373513695352">Nincsenek csatlakoztatott eszközök</translation>
 <translation id="7229029500464092426">Memória <ph name="AVAILABLE_MEMORY" /> | <ph name="TOTAL_MEMORY" /> összesen</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. A Chromebookot újra kell indítani a frissítés alkalmazásához. Ez akár egy percig is eltarthat.</translation>
 <translation id="7256634071279256947">Hátulsó mikrofon</translation>
@@ -1951,7 +1943,6 @@ Az eszköz leállításához tartsa ismét nyomva az eszköz bekapcsológombját
 <translation id="9030665205623277906">Processzorhasználati pillanatkép: <ph name="CPU_USEAGE" />%</translation>
 <translation id="9034924485347205037">Linux-fájlok</translation>
 <translation id="9047624247355796468"><ph name="NETWORK_NAME" /> beállításainak megnyitása</translation>
-<translation id="9059834730836941392">Értesítés összecsukása</translation>
 <translation id="906458777597946297">Ablak teljes méretre állítása</translation>
 <translation id="9065203028668620118">Szerkesztés</translation>
 <translation id="9070640332319875144">A Segéd beállításai</translation>

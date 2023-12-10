@@ -34,9 +34,9 @@ class GPUAdapter final : public ScriptWrappable, public DawnObjectBase {
 
   void Trace(Visitor* visitor) const override;
 
-  GPU* gpu() const { return gpu_; }
+  GPU* gpu() const { return gpu_.Get(); }
   GPUSupportedFeatures* features() const;
-  GPUSupportedLimits* limits() const { return limits_; }
+  GPUSupportedLimits* limits() const { return limits_.Get(); }
   bool isFallbackAdapter() const;
   WGPUBackendType backendType() const;
   bool SupportsMultiPlanarFormats() const;
@@ -45,8 +45,7 @@ class GPUAdapter final : public ScriptWrappable, public DawnObjectBase {
   ScriptPromise requestDevice(ScriptState* script_state,
                               GPUDeviceDescriptor* descriptor);
 
-  ScriptPromise requestAdapterInfo(ScriptState* script_state,
-                                   const Vector<String>& unmask_hints);
+  ScriptPromise requestAdapterInfo(ScriptState* script_state);
 
   // Console warnings should generally be attributed to a GPUDevice, but in
   // cases where there is no device warnings can be surfaced here. It's expected
@@ -71,6 +70,7 @@ class GPUAdapter final : public ScriptWrappable, public DawnObjectBase {
   Member<GPU> gpu_;
   bool is_fallback_adapter_;
   WGPUBackendType backend_type_;
+  WGPUAdapterType adapter_type_;
   bool is_consumed_ = false;
   bool is_compatibility_mode_;
   Member<GPUSupportedLimits> limits_;

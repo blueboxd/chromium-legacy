@@ -19,7 +19,6 @@
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
 #include "chrome/browser/web_applications/scope_extension_info.h"
-#include "chrome/browser/web_applications/web_app_id.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/services/app_service/public/cpp/icon_info.h"
 #include "components/services/app_service/public/cpp/protocol_handler_info.h"
@@ -38,7 +37,7 @@
 static_assert(BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) ||
               BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA));
 
-class SkBitmap;
+namespace web_app {
 
 // A map of icon urls to the bitmaps provided by that url.
 using IconsMap = std::map<GURL, std::vector<SkBitmap>>;
@@ -179,8 +178,6 @@ struct WebAppShortcutsMenuItemInfo {
   // Sizes of successfully downloaded icons for this shortcut menu item.
   IconSizes downloaded_icon_sizes{};
 };
-
-namespace web_app {
 
 // Structure used when installing a web page as an app.
 struct WebAppInstallInfo {
@@ -388,6 +385,11 @@ struct WebAppInstallInfo {
   // API.
   absl::optional<webapps::AppId> parent_app_id;
 
+  // ManifestId of the app that called the SUB_APP API to install this app. This
+  // field is only used when the app is installed as a sub app through the
+  // SUB_APP API.
+  absl::optional<webapps::ManifestId> parent_app_manifest_id;
+
   // A list of additional terms to use when matching this app against
   // identifiers in admin policies (for shelf pinning, default file handlers,
   // etc).
@@ -407,8 +409,6 @@ struct WebAppInstallInfo {
   WebAppInstallInfo(const WebAppInstallInfo& other);
 };
 
-}  // namespace web_app
-
 bool operator==(const IconSizes& icon_sizes1, const IconSizes& icon_sizes2);
 
 bool operator==(const WebAppShortcutsMenuItemInfo::Icon& icon1,
@@ -416,5 +416,7 @@ bool operator==(const WebAppShortcutsMenuItemInfo::Icon& icon1,
 
 bool operator==(const WebAppShortcutsMenuItemInfo& shortcut_info1,
                 const WebAppShortcutsMenuItemInfo& shortcut_info2);
+
+}  // namespace web_app
 
 #endif  // CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_INSTALL_INFO_H_

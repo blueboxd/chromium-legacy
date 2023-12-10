@@ -47,12 +47,12 @@
 #import "ios/chrome/browser/favicon/favicon_service_factory.h"
 #import "ios/chrome/browser/history/history_service_factory.h"
 #import "ios/chrome/browser/metrics/google_groups_updater_service_factory.h"
-#import "ios/chrome/browser/passwords/ios_chrome_account_password_store_factory.h"
-#import "ios/chrome/browser/passwords/ios_chrome_password_receiver_service_factory.h"
-#import "ios/chrome/browser/passwords/ios_chrome_password_sender_service_factory.h"
-#import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
-#import "ios/chrome/browser/power_bookmarks/power_bookmark_service_factory.h"
-#import "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_account_password_store_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_password_receiver_service_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_password_sender_service_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
+#import "ios/chrome/browser/power_bookmarks/model/power_bookmark_service_factory.h"
+#import "ios/chrome/browser/reading_list/model/reading_list_model_factory.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
@@ -72,7 +72,7 @@
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #import "components/supervised_user/core/browser/supervised_user_settings_service.h"
-#import "ios/chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
+#import "ios/chrome/browser/supervised_user/model/supervised_user_settings_service_factory.h"
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 namespace {
@@ -112,8 +112,9 @@ IOSChromeSyncClient::IOSChromeSyncClient(ChromeBrowserState* browser_state)
   db_thread_ = profile_web_data_service_
                    ? profile_web_data_service_->GetDBTaskRunner()
                    : nullptr;
-  profile_password_store_ = IOSChromePasswordStoreFactory::GetForBrowserState(
-      browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
+  profile_password_store_ =
+      IOSChromeProfilePasswordStoreFactory::GetForBrowserState(
+          browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
   account_password_store_ =
       IOSChromeAccountPasswordStoreFactory::GetForBrowserState(
           browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
@@ -137,24 +138,22 @@ IOSChromeSyncClient::IOSChromeSyncClient(ChromeBrowserState* browser_state)
           PowerBookmarkServiceFactory::GetForBrowserState(browser_state_),
           supervised_user_settings_service);
 
-  reading_list::DualReadingListModel* dual_reading_list_model =
-      ReadingListModelFactory::GetAsDualReadingListModelForBrowserState(
-          browser_state_);
   local_data_query_helper_ =
       std::make_unique<browser_sync::LocalDataQueryHelper>(
-          profile_password_store_.get(),
+          profile_password_store_.get(), account_password_store_.get(),
           ios::LocalOrSyncableBookmarkModelFactory::GetForBrowserState(
               browser_state_),
-          dual_reading_list_model
-              ? dual_reading_list_model->GetLocalOrSyncableModel()
-              : nullptr);
+          ios::AccountBookmarkModelFactory::GetForBrowserState(browser_state_),
+          ReadingListModelFactory::GetAsDualReadingListModelForBrowserState(
+              browser_state_));
   local_data_migration_helper_ =
       std::make_unique<browser_sync::LocalDataMigrationHelper>(
           profile_password_store_.get(), account_password_store_.get(),
           ios::LocalOrSyncableBookmarkModelFactory::GetForBrowserState(
               browser_state_),
           ios::AccountBookmarkModelFactory::GetForBrowserState(browser_state_),
-          dual_reading_list_model);
+          ReadingListModelFactory::GetAsDualReadingListModelForBrowserState(
+              browser_state_));
 }
 
 IOSChromeSyncClient::~IOSChromeSyncClient() {}

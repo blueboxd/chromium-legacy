@@ -27,17 +27,17 @@ import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
+import org.jni_zero.CalledByNative;
+import org.jni_zero.CalledByNativeForTesting;
+import org.jni_zero.CalledByNativeUnchecked;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ResettersForTesting;
-import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.CalledByNativeForTesting;
-import org.chromium.base.annotations.CalledByNativeUnchecked;
 import org.chromium.base.compat.ApiHelperForM;
 import org.chromium.base.compat.ApiHelperForN;
 import org.chromium.base.compat.ApiHelperForP;
 import org.chromium.base.compat.ApiHelperForQ;
-import org.chromium.build.annotations.MainDex;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
@@ -61,7 +61,6 @@ import java.util.List;
 /**
  * This class implements net utilities required by the net component.
  */
-@MainDex
 class AndroidNetworkLibrary {
     private static final String TAG = "AndroidNetworkLibrary";
 

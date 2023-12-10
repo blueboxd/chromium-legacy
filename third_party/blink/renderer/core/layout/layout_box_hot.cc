@@ -5,9 +5,9 @@
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/layout/geometry/fragment_geometry.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_fragment_geometry.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_disable_side_effects_scope.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
@@ -42,14 +42,14 @@ bool LayoutBox::MayIntersect(const HitTestResult& result,
 
   PhysicalRect overflow_box;
   if (UNLIKELY(result.GetHitTestRequest().IsHitTestVisualOverflow())) {
-    overflow_box = PhysicalVisualOverflowRectIncludingFilters();
+    overflow_box = VisualOverflowRectIncludingFilters();
   } else if (HasHitTestableOverflow()) {
     // PhysicalVisualOverflowRect is an approximation of
     // PhsyicalLayoutOverflowRect excluding self-painting descendants (which
     // hit test by themselves), with false-positive (which won't cause any
     // functional issues) when the point is only in visual overflow, but
     // excluding self-painting descendants is more important for performance.
-    overflow_box = PhysicalVisualOverflowRect();
+    overflow_box = VisualOverflowRect();
     if (ShouldClipOverflowAlongEitherAxis()) {
       overflow_box.Intersect(OverflowClipRect(PhysicalOffset()));
     }
@@ -72,7 +72,7 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
     const NGBlockBreakToken* break_token,
     const NGEarlyBreak* early_break,
     const NGColumnSpannerPath* column_spanner_path,
-    absl::optional<NGFragmentGeometry>* initial_fragment_geometry,
+    absl::optional<FragmentGeometry>* initial_fragment_geometry,
     NGLayoutCacheStatus* out_cache_status) {
   NOT_DESTROYED();
   *out_cache_status = NGLayoutCacheStatus::kNeedsLayout;
@@ -143,7 +143,7 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
 
     // Any floats might need to move, causing lines to wrap differently,
     // needing re-layout, either in cached result or in new constraint space.
-    if (!cached_layout_result->ExclusionSpace().IsEmpty() ||
+    if (!cached_layout_result->GetExclusionSpace().IsEmpty() ||
         new_space.HasFloats()) {
       return nullptr;
     }
@@ -197,11 +197,11 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
       return nullptr;
   }
 
-  LayoutUnit bfc_line_offset = new_space.BfcOffset().line_offset;
+  LayoutUnit bfc_line_offset = new_space.GetBfcOffset().line_offset;
   absl::optional<LayoutUnit> bfc_block_offset =
       cached_layout_result->BfcBlockOffset();
   LayoutUnit block_offset_delta;
-  NGMarginStrut end_margin_strut = cached_layout_result->EndMarginStrut();
+  MarginStrut end_margin_strut = cached_layout_result->EndMarginStrut();
 
   bool are_bfc_offsets_equal;
   bool is_margin_strut_equal;
@@ -217,14 +217,15 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
     // Check the BFC offset. Even if they don't match, there're some cases we
     // can still reuse the fragment.
     are_bfc_offsets_equal =
-        new_space.BfcOffset() == old_space.BfcOffset() &&
+        new_space.GetBfcOffset() == old_space.GetBfcOffset() &&
         new_space.ExpectedBfcBlockOffset() ==
             old_space.ExpectedBfcBlockOffset() &&
         new_space.ForcedBfcBlockOffset() == old_space.ForcedBfcBlockOffset();
 
-    is_margin_strut_equal = new_space.MarginStrut() == old_space.MarginStrut();
+    is_margin_strut_equal =
+        new_space.GetMarginStrut() == old_space.GetMarginStrut();
     is_exclusion_space_equal =
-        new_space.ExclusionSpace() == old_space.ExclusionSpace();
+        new_space.GetExclusionSpace() == old_space.GetExclusionSpace();
     bool is_clearance_offset_equal =
         new_space.ClearanceOffset() == old_space.ClearanceOffset();
 
@@ -384,8 +385,8 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
         // which will end up crossing the fragmentation line.
         auto DoFloatsCrossFragmentationLine = [&]() -> bool {
           const auto& result_exclusion_space =
-              cached_layout_result->ExclusionSpace();
-          if (result_exclusion_space != old_space.ExclusionSpace()) {
+              cached_layout_result->GetExclusionSpace();
+          if (result_exclusion_space != old_space.GetExclusionSpace()) {
             LayoutUnit block_end_offset =
                 FragmentainerOffsetAtBfc(new_space) +
                 result_exclusion_space.ClearanceOffset(EClear::kBoth);
@@ -452,7 +453,7 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
   }
 
   if (is_fragmented) {
-    if (cached_layout_result->ExclusionSpace().HasFragmentainerBreak()) {
+    if (cached_layout_result->GetExclusionSpace().HasFragmentainerBreak()) {
       // The final exclusion space is a processed version of the old one when
       // hitting the cache. One thing we don't support is copying the
       // fragmentation bits over correctly. That's something we could fix, if
@@ -530,8 +531,8 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
       is_margin_strut_equal && !needs_cached_result_update) {
     // In order not to rebuild the internal derived-geometry "cache" of float
     // data, we need to move this to the new "output" exclusion space.
-    cached_layout_result->ExclusionSpace().MoveAndUpdateDerivedGeometry(
-        new_space.ExclusionSpace());
+    cached_layout_result->GetExclusionSpace().MoveAndUpdateDerivedGeometry(
+        new_space.GetExclusionSpace());
     return cached_layout_result;
   }
 

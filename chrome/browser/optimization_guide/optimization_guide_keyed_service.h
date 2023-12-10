@@ -104,7 +104,7 @@ class OptimizationGuideKeyedService
       optimization_guide::proto::ModelExecutionFeature feature,
       const google::protobuf::MessageLite& request_metadata,
       optimization_guide::OptimizationGuideModelExecutionResultCallback
-          callback);
+          callback) override;
 
   // Adds hints for a URL with provided metadata to the optimization guide.
   // For testing purposes only. This will flush any callbacks for |url| that
@@ -130,6 +130,7 @@ class OptimizationGuideKeyedService
   OptimizationGuideLogger* GetOptimizationGuideLogger() {
     return optimization_guide_logger_.get();
   }
+
 
  private:
   friend class ChromeBrowserMainExtraPartsOptimizationGuide;

@@ -15,7 +15,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -32,8 +31,6 @@
 #include "components/supervised_user/core/common/buildflags.h"
 #include "components/supervised_user/core/common/features.h"
 #include "content/public/browser/gpu_data_manager.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/browser/allowlist_state.h"
 #include "extensions/browser/api/management/management_api.h"
@@ -210,46 +207,13 @@ class ExtensionWebstorePrivateApiTest : public MixinBasedExtensionApiTest {
   std::unique_ptr<ScopedTestDialogAutoConfirm> auto_confirm_install_;
 };
 
-class ExtensionWebstorePrivateApiTestParameterized
-    : public ExtensionWebstorePrivateApiTest,
-      public testing::WithParamInterface<bool> {
- public:
-  ExtensionWebstorePrivateApiTestParameterized() {
-    if (IsExtensionApprovalsV2Enabled()) {
-      feature_list_.InitAndEnableFeature(
-          supervised_user::kLocalExtensionApprovalsV2);
-    } else {
-      feature_list_.InitAndDisableFeature(
-          supervised_user::kLocalExtensionApprovalsV2);
-    }
-  }
-
-  ExtensionWebstorePrivateApiTestParameterized(
-      const ExtensionWebstorePrivateApiTestParameterized&) = delete;
-  ExtensionWebstorePrivateApiTestParameterized& operator=(
-      const ExtensionWebstorePrivateApiTestParameterized&) = delete;
-
-  ~ExtensionWebstorePrivateApiTestParameterized() override {}
-
-  bool IsExtensionApprovalsV2Enabled() const { return GetParam(); }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         ExtensionWebstorePrivateApiTestParameterized,
-                         testing::Bool());
-
 // Test cases where the user accepts the install confirmation dialog.
-IN_PROC_BROWSER_TEST_P(ExtensionWebstorePrivateApiTestParameterized,
-                       InstallAccepted) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallAccepted) {
   ASSERT_TRUE(RunInstallTest("accepted.html", "extension.crx"));
 }
 
 // Test having the default download directory missing.
-IN_PROC_BROWSER_TEST_P(ExtensionWebstorePrivateApiTestParameterized,
-                       MissingDownloadDir) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, MissingDownloadDir) {
   // Set a non-existent directory as the download path.
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
@@ -267,32 +231,27 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebstorePrivateApiTestParameterized,
 }
 
 // Tests passing a localized name.
-IN_PROC_BROWSER_TEST_P(ExtensionWebstorePrivateApiTestParameterized,
-                       InstallLocalized) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallLocalized) {
   ASSERT_TRUE(RunInstallTest("localized.html", "localized_extension.crx"));
 }
 
 // Now test the case where the user cancels the confirmation dialog.
-IN_PROC_BROWSER_TEST_P(ExtensionWebstorePrivateApiTestParameterized,
-                       InstallCancelled) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallCancelled) {
   ScopedTestDialogAutoConfirm auto_cancel(ScopedTestDialogAutoConfirm::CANCEL);
   ASSERT_TRUE(RunInstallTest("cancelled.html", "extension.crx"));
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionWebstorePrivateApiTestParameterized,
-                       IncorrectManifest1) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, IncorrectManifest1) {
   ASSERT_TRUE(RunInstallTest("incorrect_manifest1.html", "extension.crx"));
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionWebstorePrivateApiTestParameterized,
-                       IncorrectManifest2) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, IncorrectManifest2) {
   ASSERT_TRUE(RunInstallTest("incorrect_manifest2.html", "extension.crx"));
 }
 
 // Tests that we can request an app installed bubble (instead of the default
 // UI when an app is installed).
-IN_PROC_BROWSER_TEST_P(ExtensionWebstorePrivateApiTestParameterized,
-                       AppInstallBubble) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, AppInstallBubble) {
   WebstoreInstallListener listener;
   auto delegate_reset = WebstorePrivateApi::SetDelegateForTesting(&listener);
   ASSERT_TRUE(RunInstallTest("app_install_bubble.html", "app.crx"));
@@ -301,26 +260,23 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebstorePrivateApiTestParameterized,
   ASSERT_EQ("iladmdjkfniedhfhcfoefgojhgaiaccc", listener.id());
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionWebstorePrivateApiTestParameterized,
-                       IsInIncognitoMode) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, IsInIncognitoMode) {
   GURL page_url = GetTestServerURL("incognito.html");
   ASSERT_TRUE(OpenTestURL(page_url, /*open_in_incognito=*/true));
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionWebstorePrivateApiTestParameterized,
-                       IsNotInIncognitoMode) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, IsNotInIncognitoMode) {
   GURL page_url = GetTestServerURL("not_incognito.html");
   ASSERT_TRUE(OpenTestURL(page_url));
 }
 
 // Tests using the iconUrl parameter to the install function.
-IN_PROC_BROWSER_TEST_P(ExtensionWebstorePrivateApiTestParameterized, IconUrl) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, IconUrl) {
   ASSERT_TRUE(RunInstallTest("icon_url.html", "extension.crx"));
 }
 
 // Tests that the Approvals are properly created in beginInstall.
-IN_PROC_BROWSER_TEST_P(ExtensionWebstorePrivateApiTestParameterized,
-                       BeginInstall) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, BeginInstall) {
   std::string appId = "iladmdjkfniedhfhcfoefgojhgaiaccc";
   ASSERT_TRUE(RunInstallTest("begin_install.html", "extension.crx"));
 
@@ -342,8 +298,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebstorePrivateApiTestParameterized,
 }
 
 // Tests that themes are installed without an install prompt.
-IN_PROC_BROWSER_TEST_P(ExtensionWebstorePrivateApiTestParameterized,
-                       InstallTheme) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallTheme) {
   WebstoreInstallListener listener;
   auto delegate_reset = WebstorePrivateApi::SetDelegateForTesting(&listener);
   ASSERT_TRUE(RunInstallTest("theme.html", "../../theme.crx"));
@@ -353,7 +308,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebstorePrivateApiTestParameterized,
 }
 
 // Tests that an error is properly reported when an empty crx is returned.
-IN_PROC_BROWSER_TEST_P(ExtensionWebstorePrivateApiTestParameterized, EmptyCrx) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, EmptyCrx) {
   ASSERT_TRUE(RunInstallTest("empty.html", "empty.crx"));
 }
 
@@ -367,8 +322,7 @@ class SupervisedUserExtensionWebstorePrivateApiTest
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       public TestExtensionApprovalsManagerObserver,
 #endif
-      public TestParentPermissionDialogViewObserver,
-      public testing::WithParamInterface<bool> {
+      public TestParentPermissionDialogViewObserver {
  public:
   // The next dialog action to take.
   enum class NextDialogAction {
@@ -388,23 +342,24 @@ class SupervisedUserExtensionWebstorePrivateApiTest
             this,
             embedded_test_server_.get(),
             {
+                .consent_level = signin::ConsentLevel::kSignin,
                 .sign_in_mode =
                     supervised_user::SupervisionMixin::SignInMode::kSupervised,
             }) {
-    if (IsExtensionApprovalsV2Enabled()) {
       feature_list_.InitWithFeatures(
           /*enabled_features=*/
           {supervised_user::
                kEnableExtensionsPermissionsForSupervisedUsersOnDesktop,
-           supervised_user::kLocalExtensionApprovalsV2},
+           // Used to prevent user sign-out which crashes the test.
+           supervised_user::kClearingCookiesKeepsSupervisedUsersSignedIn},
           /*disabled_features=*/{});
-    } else {
-      feature_list_.InitWithFeatures(
-          /*enabled_features=*/
-          {supervised_user::
-               kEnableExtensionsPermissionsForSupervisedUsersOnDesktop},
-          /*disabled_features=*/{supervised_user::kLocalExtensionApprovalsV2});
-    }
+  }
+
+  ~SupervisedUserExtensionWebstorePrivateApiTest() override {
+    // Reset the feature list explicitly here, as other test members that may
+    // contain it will try to destruct it (e.g. objects contained in
+    // supervision_mixin_).
+    feature_list_.Reset();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -485,8 +440,6 @@ class SupervisedUserExtensionWebstorePrivateApiTest
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-  bool IsExtensionApprovalsV2Enabled() const { return GetParam(); }
-
   void set_next_dialog_action(NextDialogAction action) {
     next_dialog_action_ = action;
   }
@@ -502,19 +455,9 @@ class SupervisedUserExtensionWebstorePrivateApiTest
   base::test::ScopedFeatureList feature_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         SupervisedUserExtensionWebstorePrivateApiTest,
-                         testing::Bool());
-
-// TODO(b/289179073): Investigate flakiness on Windows/Mac/Linux.
 // Tests install for a child when parent permission is granted.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#define MAYBE_ParentPermissionGranted ParentPermissionGranted
-#else
-#define MAYBE_ParentPermissionGranted DISABLED_ParentPermissionGranted
-#endif
-IN_PROC_BROWSER_TEST_P(SupervisedUserExtensionWebstorePrivateApiTest,
-                       MAYBE_ParentPermissionGranted) {
+IN_PROC_BROWSER_TEST_F(SupervisedUserExtensionWebstorePrivateApiTest,
+                       ParentPermissionGranted) {
   WebstoreInstallListener listener;
   auto delegate_reset = WebstorePrivateApi::SetDelegateForTesting(&listener);
   set_next_dialog_action(NextDialogAction::kAccept);
@@ -534,7 +477,7 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserExtensionWebstorePrivateApiTest,
 
 // Tests no install occurs for a child when the parent permission
 // dialog is canceled.
-IN_PROC_BROWSER_TEST_P(SupervisedUserExtensionWebstorePrivateApiTest,
+IN_PROC_BROWSER_TEST_F(SupervisedUserExtensionWebstorePrivateApiTest,
                        ParentPermissionCanceled) {
   WebstoreInstallListener listener;
   set_next_dialog_action(NextDialogAction::kCancel);
@@ -555,7 +498,7 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserExtensionWebstorePrivateApiTest,
 }
 
 // Tests that no parent permission is required for a child to install a theme.
-IN_PROC_BROWSER_TEST_P(SupervisedUserExtensionWebstorePrivateApiTest,
+IN_PROC_BROWSER_TEST_F(SupervisedUserExtensionWebstorePrivateApiTest,
                        NoParentPermissionRequiredForTheme) {
   WebstoreInstallListener listener;
   auto delegate_reset = WebstorePrivateApi::SetDelegateForTesting(&listener);
@@ -568,7 +511,7 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserExtensionWebstorePrivateApiTest,
 // Tests that even if the kSupervisedUserInitiatedExtensionInstall feature flag
 // is enabled, supervised user extension installs are blocked if the
 // "Permissions for sites, apps and extensions" toggle is off.
-IN_PROC_BROWSER_TEST_P(SupervisedUserExtensionWebstorePrivateApiTest,
+IN_PROC_BROWSER_TEST_F(SupervisedUserExtensionWebstorePrivateApiTest,
                        InstallBlockedWhenPermissionsToggleOff) {
   base::HistogramTester histogram_tester;
   base::UserActionTester user_action_tester;

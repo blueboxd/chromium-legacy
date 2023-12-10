@@ -4914,8 +4914,7 @@ class CheckMockAnnotation(unittest.TestCase):
             MockFile('path/OneTest.java', [
                 'import a.b.c.Bar;',
                 'import a.b.c.Foo;',
-                '@Mock',
-                'public static Foo f = new Foo();',
+                '@Mock public static Foo f = new Foo();',
                 'Mockito.mock(new Bar(a, b, c))'
             ]),
             MockFile('path/TwoTest.java', [
@@ -4964,13 +4963,24 @@ class CheckMockAnnotation(unittest.TestCase):
                 'package a.b.c;',
                 '@Mock',
                 'public static Baz<abc> b;',
-                'Mockito.mock(Baz.class)']),
+                'Mockito.mock(Baz.class)'
+            ]),
             MockFile('path/SixTest.java', [
                 'package a.b.c;',
                 'import android.view.View;',
                 'import java.ArrayList;',
                 'Mockito.spy(new View())',
                 'Mockito.mock(ArrayList.class)'
+            ]),
+            MockFile('path/SevenTest.java', [
+                'package a.b.c;',
+                '@Mock private static Seven s;',
+                'Mockito.mock(Seven.class)'
+            ]),
+            MockFile('path/EightTest.java', [
+                'package a.b.c;',
+                '@Spy Eight e = new Eight2();',
+                'Mockito.py(new Eight())'
             ]),
         ]
         errors = PRESUBMIT.CheckMockAnnotation(mock_input, MockOutputApi())
@@ -5085,6 +5095,296 @@ class CheckNoAbbreviationInPngFileNameTest(unittest.TestCase):
     ]
     results = PRESUBMIT.CheckNoAbbreviationInPngFileName(input_api, MockOutputApi())
     self.assertEqual(0, len(results))
+
+class CheckDanglingUntriagedTest(unittest.TestCase):
+  def testError(self):
+    """Test patch adding dangling pointers are reported"""
+    mock_input_api = MockInputApi()
+    mock_output_api = MockOutputApi()
+
+    mock_input_api.change.DescriptionText = lambda: "description"
+    mock_input_api.files = [
+      MockAffectedFile(
+        local_path="foo/foo.cc",
+        old_contents="raw_ptr<T>",
+        new_contents="raw_ptr<T, DanglingUntriaged>",
+      )
+    ]
+    msgs = PRESUBMIT.CheckDanglingUntriaged(mock_input_api, mock_output_api)
+    self.assertEqual(len(msgs), 1)
+    self.assertEqual(len(msgs[0].message), 10)
+    self.assertEqual(
+      msgs[0].message[0],
+      "Unexpected new occurrences of `DanglingUntriaged` detected. Please",
+    )
+
+class CheckDanglingUntriagedTest(unittest.TestCase):
+  def testError(self):
+    """Test patch adding dangling pointers are reported"""
+    mock_input_api = MockInputApi()
+    mock_output_api = MockOutputApi()
+
+    mock_input_api.change.DescriptionText = lambda: "description"
+    mock_input_api.files = [
+      MockAffectedFile(
+        local_path="foo/foo.cc",
+        old_contents="raw_ptr<T>",
+        new_contents="raw_ptr<T, DanglingUntriaged>",
+      )
+    ]
+    msgs = PRESUBMIT.CheckDanglingUntriaged(mock_input_api,
+                        mock_output_api)
+    self.assertEqual(len(msgs), 1)
+    self.assertEqual(len(msgs[0].message), 11)
+    self.assertEqual(
+      msgs[0].message[0],
+      "Unexpected new occurrences of `DanglingUntriaged` detected. Please",
+    )
+
+  def testNonCppFile(self):
+    """Test patch adding dangling pointers are not reported in non C++ files"""
+    mock_input_api = MockInputApi()
+    mock_output_api = MockOutputApi()
+
+    mock_input_api.change.DescriptionText = lambda: "description"
+    mock_input_api.files = [
+      MockAffectedFile(
+        local_path="foo/README.md",
+        old_contents="",
+        new_contents="The DanglingUntriaged annotation means",
+      )
+    ]
+    msgs = PRESUBMIT.CheckDanglingUntriaged(mock_input_api,
+                        mock_output_api)
+    self.assertEqual(len(msgs), 0)
+
+  def testDeveloperAcknowledgeInCommitDescription(self):
+    """Test patch adding dangling pointers, but acknowledged by the developers
+    aren't reported"""
+    mock_input_api = MockInputApi()
+    mock_output_api = MockOutputApi()
+
+    mock_input_api.files = [
+      MockAffectedFile(
+        local_path="foo/foo.cc",
+        old_contents="raw_ptr<T>",
+        new_contents="raw_ptr<T, DanglingUntriaged>",
+      )
+    ]
+    mock_input_api.change.DescriptionText = lambda: (
+      "DanglingUntriaged-notes: Sorry about this!")
+    msgs = PRESUBMIT.CheckDanglingUntriaged(mock_input_api,
+                        mock_output_api)
+    self.assertEqual(len(msgs), 0)
+
+  def testDeveloperAcknowledgeInCommitFooter(self):
+    """Test patch adding dangling pointers, but acknowledged by the developers
+    aren't reported"""
+    mock_input_api = MockInputApi()
+    mock_output_api = MockOutputApi()
+
+    mock_input_api.files = [
+      MockAffectedFile(
+        local_path="foo/foo.cc",
+        old_contents="raw_ptr<T>",
+        new_contents="raw_ptr<T, DanglingUntriaged>",
+      )
+    ]
+    mock_input_api.change.DescriptionText = lambda: "description"
+    mock_input_api.change.footers["DanglingUntriaged-notes"] = ["Sorry!"]
+    msgs = PRESUBMIT.CheckDanglingUntriaged(mock_input_api,
+                        mock_output_api)
+    self.assertEqual(len(msgs), 0)
+
+  def testCongrats(self):
+    """Test the presubmit congrats users removing dangling pointers"""
+    mock_input_api = MockInputApi()
+    mock_output_api = MockOutputApi()
+
+    mock_input_api.files = [
+      MockAffectedFile(
+        local_path="foo/foo.cc",
+        old_contents="raw_ptr<T, DanglingUntriaged>",
+        new_contents="raw_ptr<T>",
+      )
+    ]
+    mock_input_api.change.DescriptionText = lambda: (
+      "This patch fixes some DanglingUntriaged pointers!")
+    msgs = PRESUBMIT.CheckDanglingUntriaged(mock_input_api,
+                        mock_output_api)
+    self.assertEqual(len(msgs), 1)
+    self.assertTrue(
+      "DanglingUntriaged pointers removed: 1" in msgs[0].message)
+    self.assertTrue("Thank you!" in msgs[0].message)
+
+  def testRenameFile(self):
+    """Patch that we do not warn about DanglingUntriaged when moving files"""
+    mock_input_api = MockInputApi()
+    mock_output_api = MockOutputApi()
+
+    mock_input_api.files = [
+      MockAffectedFile(
+        local_path="foo/foo.cc",
+        old_contents="raw_ptr<T, DanglingUntriaged>",
+        new_contents="",
+        action="D",
+      ),
+      MockAffectedFile(
+        local_path="foo/foo.cc",
+        old_contents="",
+        new_contents="raw_ptr<T, DanglingUntriaged>",
+        action="A",
+      ),
+    ]
+    mock_input_api.change.DescriptionText = lambda: (
+      "This patch moves files")
+    msgs = PRESUBMIT.CheckDanglingUntriaged(mock_input_api,
+                        mock_output_api)
+    self.assertEqual(len(msgs), 0)
+
+class CheckInlineConstexprDefinitionsInHeadersTest(unittest.TestCase):
+  def testNoInlineConstexprInHeaderFile(self):
+    """Tests that non-inlined constexpr variables in headers fail the test."""
+    input_api = MockInputApi()
+    input_api.files = [
+      MockAffectedFile('src/constants.h', ['constexpr int kVersion = 5;'])
+    ]
+    warnings = PRESUBMIT.CheckInlineConstexprDefinitionsInHeaders(input_api, MockOutputApi())
+    self.assertEqual(1, len(warnings))
+
+  def testNoInlineConstexprInHeaderFileInitializedFromFunction(self):
+    """Tests that non-inlined constexpr header variables that are initialized from a function fail."""
+    input_api = MockInputApi()
+    input_api.files = [
+      MockAffectedFile('src/constants.h', ['constexpr int kVersion = GetVersion();'])
+    ]
+    warnings = PRESUBMIT.CheckInlineConstexprDefinitionsInHeaders(input_api, MockOutputApi())
+    self.assertEqual(1, len(warnings))
+
+  def testNoInlineConstexprInHeaderFileInitializedWithExpression(self):
+    """Tests that non-inlined constexpr header variables initialized with an expression fail."""
+    input_api = MockInputApi()
+    input_api.files = [
+      MockAffectedFile('src/constants.h', ['constexpr int kVersion = (4 + 5)*3;'])
+    ]
+    warnings = PRESUBMIT.CheckInlineConstexprDefinitionsInHeaders(input_api, MockOutputApi())
+    self.assertEqual(1, len(warnings))
+
+  def testNoInlineConstexprInHeaderFileBraceInitialized(self):
+    """Tests that non-inlined constexpr header variables that are brace-initialized fail."""
+    input_api = MockInputApi()
+    input_api.files = [
+      MockAffectedFile('src/constants.h', ['constexpr int kVersion{5};'])
+    ]
+    warnings = PRESUBMIT.CheckInlineConstexprDefinitionsInHeaders(input_api, MockOutputApi())
+    self.assertEqual(1, len(warnings))
+
+  def testNoInlineConstexprInHeaderWithAttribute(self):
+    """Tests that non-inlined constexpr header variables that have compiler attributes fail."""
+    input_api = MockInputApi()
+    input_api.files = [
+      MockAffectedFile('src/constants.h', ['constexpr [[maybe_unused]] int kVersion{5};'])
+    ]
+    warnings = PRESUBMIT.CheckInlineConstexprDefinitionsInHeaders(input_api, MockOutputApi())
+    self.assertEqual(1, len(warnings))
+
+  def testInlineConstexprInHeaderWithAttribute(self):
+    """Tests that inlined constexpr header variables that have compiler attributes pass."""
+    input_api = MockInputApi()
+    input_api.files = [
+      MockAffectedFile('src/constants.h', ['inline constexpr [[maybe_unused]] int kVersion{5};']),
+      MockAffectedFile('src/constants.h', ['constexpr inline [[maybe_unused]] int kVersion{5};']),
+      MockAffectedFile('src/constants.h', ['inline constexpr [[maybe_unused]] inline int kVersion{5};'])
+    ]
+    warnings = PRESUBMIT.CheckInlineConstexprDefinitionsInHeaders(input_api, MockOutputApi())
+    self.assertEqual(0, len(warnings))
+
+  def testNoInlineConstexprInHeaderFileMultipleLines(self):
+    """Tests that non-inlined constexpr header variable definitions spanning multiple lines fail."""
+    input_api = MockInputApi()
+    lines = ['constexpr char kLongName =',
+             '    "This is a very long name of something.";'
+             ]
+    input_api.files = [MockAffectedFile('src/constants.h', lines)]
+    warnings = PRESUBMIT.CheckInlineConstexprDefinitionsInHeaders(input_api, MockOutputApi())
+    self.assertEqual(1, len(warnings))
+
+  def testNoInlineConstexprInCCFile(self):
+    """Tests that non-inlined constexpr variables in .cc files pass the test."""
+    input_api = MockInputApi()
+    input_api.files = [
+      MockAffectedFile('src/implementation.cc', ['constexpr int kVersion = 5;'])
+    ]
+    warnings = PRESUBMIT.CheckInlineConstexprDefinitionsInHeaders(input_api, MockOutputApi())
+    self.assertEqual(0, len(warnings))
+
+  def testInlineConstexprInHeaderFile(self):
+    """Tests that inlined constexpr variables in header files pass the test."""
+    input_api = MockInputApi()
+    input_api.files = [
+      MockAffectedFile('src/constants.h', ['constexpr inline int kX = 5;']),
+      MockAffectedFile('src/version.h', ['inline constexpr float kY = 5.0f;'])
+    ]
+    warnings = PRESUBMIT.CheckInlineConstexprDefinitionsInHeaders(input_api, MockOutputApi())
+    self.assertEqual(0, len(warnings))
+
+  def testConstexprStandaloneFunctionInHeaderFile(self):
+    """Tests that non-inlined constexpr functions in headers pass the test."""
+    input_api = MockInputApi()
+    input_api.files = [
+      MockAffectedFile('src/helpers.h', ['constexpr int GetVersion();'])
+    ]
+    warnings = PRESUBMIT.CheckInlineConstexprDefinitionsInHeaders(input_api, MockOutputApi())
+    self.assertEqual(0, len(warnings))
+
+  def testConstexprWithAbseilAttributeInHeader(self):
+    """Tests that non-inlined constexpr variables with Abseil-type prefixes in headers fail."""
+    input_api = MockInputApi()
+    input_api.files = [
+      MockAffectedFile('src/helpers.h', ['ABSL_FOOFOO constexpr int i = 5;'])
+    ]
+    warnings = PRESUBMIT.CheckInlineConstexprDefinitionsInHeaders(input_api, MockOutputApi())
+    self.assertEqual(1, len(warnings))
+
+  def testInlineConstexprWithAbseilAttributeInHeader(self):
+    """Tests that inlined constexpr variables with Abseil-type prefixes in headers pass."""
+    input_api = MockInputApi()
+    input_api.files = [
+      MockAffectedFile('src/helpers.h', ['constexpr ABSL_FOO inline int i = 5;'])
+    ]
+    warnings = PRESUBMIT.CheckInlineConstexprDefinitionsInHeaders(input_api, MockOutputApi())
+    self.assertEqual(0, len(warnings))
+
+  def testConstexprWithClangAttributeInHeader(self):
+    """Tests that non-inlined constexpr variables with attributes with colons in headers fail."""
+    input_api = MockInputApi()
+    input_api.files = [
+      MockAffectedFile('src/helpers.h', ['[[clang::someattribute]] constexpr int i = 5;'])
+    ]
+    warnings = PRESUBMIT.CheckInlineConstexprDefinitionsInHeaders(input_api, MockOutputApi())
+    self.assertEqual(1, len(warnings))
+
+  def testInlineConstexprWithClangAttributeInHeader(self):
+    """Tests that inlined constexpr variables with attributes with colons in headers pass."""
+    input_api = MockInputApi()
+    input_api.files = [
+      MockAffectedFile('src/helpers.h', ['constexpr [[clang::someattribute]] inline int i = 5;'])
+    ]
+    warnings = PRESUBMIT.CheckInlineConstexprDefinitionsInHeaders(input_api, MockOutputApi())
+    self.assertEqual(0, len(warnings))
+
+  def testNoExplicitInlineConstexprInsideClassInHeaderFile(self):
+    """Tests that non-inlined constexpr class members pass the test."""
+    input_api = MockInputApi()
+    lines = ['class SomeClass {',
+             ' public:',
+             '  static constexpr kVersion = 5;',
+             '};']
+    input_api.files = [
+      MockAffectedFile('src/class.h', lines)
+    ]
+    warnings = PRESUBMIT.CheckInlineConstexprDefinitionsInHeaders(input_api, MockOutputApi())
+    self.assertEqual(0, len(warnings))
 
 if __name__ == '__main__':
   unittest.main()

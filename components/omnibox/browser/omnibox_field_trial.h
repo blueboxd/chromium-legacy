@@ -576,6 +576,7 @@ extern const base::FeatureParam<bool> kDomainSuggestionsAlternativeScoring;
 struct MLConfig {
   MLConfig();
   MLConfig(const MLConfig&);
+  MLConfig& operator=(const MLConfig& other);
 
   // If true, logs Omnibox URL scoring signals to OmniboxEventProto.
   // Equivalent to omnibox::kLogUrlScoringSignals.
@@ -710,6 +711,14 @@ constexpr base::FeatureParam<int> kInspireMeAdditionalTrendingQueries(
     &omnibox::kInspireMe,
     "AdditionalTrendingQueries",
     10);
+
+constexpr base::FeatureParam<int> kInspireMePsuggestQueries(
+    &omnibox::kInspireMe,
+    "PersonalizedSuggestQueries",
+    20);
+
+constexpr base::FeatureParam<int>
+    kInspireMeNTPZPSLimit(&omnibox::kInspireMe, "NTPZPSSuggestionsLimit", 20);
 
 // <- Inspire Me
 // ---------------------------------------------------------

@@ -7,10 +7,11 @@ package org.chromium.chrome.browser.optimization_guide;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.jni_zero.CalledByNative;
+import org.jni_zero.JNINamespace;
+import org.jni_zero.NativeMethods;
+
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.lifetime.Destroyable;
 import org.chromium.components.optimization_guide.OptimizationGuideDecision;
 import org.chromium.components.optimization_guide.proto.CommonTypesProto.Any;
@@ -182,7 +183,6 @@ public class OptimizationGuideBridge implements Destroyable {
     private boolean isRequestContextAllowedForOnDemandOptimizations(RequestContext requestContext) {
         switch (requestContext) {
             case CONTEXT_PAGE_INSIGHTS_HUB:
-            case CONTEXT_NON_PERSONALIZED_PAGE_INSIGHTS_HUB:
                 return true;
             default:
                 return false;

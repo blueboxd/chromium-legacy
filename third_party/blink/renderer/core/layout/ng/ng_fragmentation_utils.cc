@@ -440,7 +440,7 @@ void SetupFragmentBuilderForFragmentation(
   builder->AdjustBorderScrollbarPaddingForFragmentation(previous_break_token);
 
   if (builder->IsInitialColumnBalancingPass()) {
-    const NGBoxStrut& unbreakable = builder->BorderScrollbarPadding();
+    const BoxStrut& unbreakable = builder->BorderScrollbarPadding();
     builder->PropagateTallestUnbreakableBlockSize(unbreakable.block_start);
     builder->PropagateTallestUnbreakableBlockSize(unbreakable.block_end);
   }
@@ -598,7 +598,7 @@ NGBreakStatus FinishFragmentation(NGBlockNode node,
 
   bool was_broken_by_child = builder->HasInflowChildBreakInside();
   if (!was_broken_by_child && space.IsNewFormattingContext())
-    was_broken_by_child = builder->ExclusionSpace().HasFragmentainerBreak();
+    was_broken_by_child = builder->GetExclusionSpace().HasFragmentainerBreak();
 
   if (space_left == kIndefiniteSize) {
     // We don't know how space is available (initial column balancing pass), so
@@ -692,7 +692,7 @@ NGBreakStatus FinishFragmentation(NGBlockNode node,
       // This is the first fragment generated for the node. Avoid breaking
       // inside block-start border, scrollbar and padding, if possible. No valid
       // breakpoints there.
-      const NGFragmentGeometry& geometry = builder->InitialFragmentGeometry();
+      const FragmentGeometry& geometry = builder->InitialFragmentGeometry();
       LayoutUnit block_start_unbreakable_space =
           geometry.border.block_start + geometry.scrollbar.block_start +
           geometry.padding.block_start;
@@ -984,9 +984,10 @@ bool MovePastBreakpoint(const NGConstraintSpace& space,
 
     // If clearance forces the child to the next fragmentainer, we cannot move
     // past the breakpoint, but rather retry in the next fragmentainer.
-    if (builder && builder->ExclusionSpace().NeedsClearancePastFragmentainer(
-                       child.Style().Clear(space.Direction())))
+    if (builder && builder->GetExclusionSpace().NeedsClearancePastFragmentainer(
+                       child.Style().Clear(space.Direction()))) {
       return false;
+    }
   }
 
   if (!space.HasKnownFragmentainerBlockSize() &&
@@ -1285,7 +1286,7 @@ NGConstraintSpace CreateConstraintSpaceForFragmentainer(
 NGBoxFragmentBuilder CreateContainerBuilderForMulticol(
     const NGBlockNode& multicol,
     const NGConstraintSpace& space,
-    const NGFragmentGeometry& fragment_geometry) {
+    const FragmentGeometry& fragment_geometry) {
   const ComputedStyle* style = &multicol.Style();
   NGBoxFragmentBuilder multicol_container_builder(multicol, style, space,
                                                   style->GetWritingDirection());

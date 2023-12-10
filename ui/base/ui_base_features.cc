@@ -104,7 +104,7 @@ BASE_FEATURE(kAlwaysConfirmComposition,
 // "Customize keyboard keys" page.
 BASE_FEATURE(kSupportF11AndF12KeyShortcuts,
              "SupportF11AndF12KeyShortcuts",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool AreF11AndF12ShortcutsEnabled() {
   // TODO(crbug/1264581): Remove this once kDeviceI18nShortcutsEnabled policy is
@@ -328,7 +328,8 @@ bool IsForcedColorsEnabled() {
 // milestones.
 BASE_FEATURE(kEyeDropper,
              "EyeDropper",
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS)
              base::FEATURE_ENABLED_BY_DEFAULT
 #else
              base::FEATURE_DISABLED_BY_DEFAULT
@@ -499,48 +500,6 @@ BASE_FEATURE(kChromeRefreshSecondary2023,
              "ChromeRefreshSecondary2023",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kChromeRefresh2023NTB,
-             "ChromeRefresh2023NTB",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-const char kChromeRefresh2023NTBVariationKey[] = "Variation";
-
-constexpr base::FeatureParam<ChromeRefresh2023NTBVariation>::Option
-    ChromeRefresh2023NTBVariationOption[] = {
-        {ChromeRefresh2023NTBVariation::kGM2Full, "GM2Full"},
-        {ChromeRefresh2023NTBVariation::kGM3OldIconNoBackground,
-         "GM3OldIconNoBackground"},
-        {ChromeRefresh2023NTBVariation::kGM3OldIconWithBackground,
-         "GM3OldIconWithBackground"},
-        {ChromeRefresh2023NTBVariation::kGM3NewIconNoBackground,
-         "GM3NewIconNoBackground"},
-        {ChromeRefresh2023NTBVariation::kGM3NewIconWithBackground,
-         "GM3NewIconWithBackground"},
-        {ChromeRefresh2023NTBVariation::kNoChoice, "No Choice"}};
-
-const base::FeatureParam<ChromeRefresh2023NTBVariation>
-    kChromeRefresh2023NTBValue(&kChromeRefresh2023NTB,
-                               kChromeRefresh2023NTBVariationKey,
-                               ChromeRefresh2023NTBVariation::kNoChoice,
-                               &ChromeRefresh2023NTBVariationOption);
-
-ChromeRefresh2023NTBVariation GetChromeRefresh2023NTB() {
-  ChromeRefresh2023NTBVariation option = kChromeRefresh2023NTBValue.Get();
-  if (option == ChromeRefresh2023NTBVariation::kNoChoice) {
-    if (!IsChromeRefresh2023()) {
-      return ChromeRefresh2023NTBVariation::kGM2Full;
-    } else {
-      return ChromeRefresh2023NTBVariation::kGM3NewIconNoBackground;
-    }
-  }
-
-  return option;
-}
-
-BASE_FEATURE(kChromeRefresh2023TopChromeFont,
-             "ChromeRefresh2023TopChromeFont",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 bool IsChromeRefresh2023() {
   if (!CustomizeChromeSupportsChromeRefresh2023()) {
     // Bail before checking any other feature flags so that associated studies
@@ -603,12 +562,6 @@ ChromeRefresh2023Level GetChromeRefresh2023Level() {
 BASE_FEATURE(kBubbleMetricsApi,
              "BubbleMetricsApi",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-#if !BUILDFLAG(IS_LINUX)
-BASE_FEATURE(kWebUiSystemFont,
-             "WebUiSystemFont",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif
 
 #if BUILDFLAG(IS_MAC)
 // When enabled, images will be written to the system clipboard as both a TIFF

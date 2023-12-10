@@ -90,7 +90,7 @@ class PersonalizationAppBrowserTest extends testing.Test {
   /** @override */
   get extraLibraries() {
     return [
-      '//third_party/mocha/mocha.js',
+      '//third_party/node/node_modules/mocha/mocha.js',
       '//chrome/test/data/webui/mocha_adapter.js',
     ];
   }
@@ -396,8 +396,10 @@ TEST_F(PersonalizationAppWallpaperSubpageBrowserTest.name, 'All', async () => {
 
   function getWallpaperSelected() {
     const subpage = getWallpaperSubpage();
+    const wallpaperTop =
+        subpage.shadowRoot.querySelector('wallpaper-subpage-top');
     const wallpaperSelected =
-        subpage.shadowRoot.querySelector('wallpaper-selected');
+        wallpaperTop.shadowRoot.querySelector('wallpaper-selected');
     assertTrue(!!wallpaperSelected, 'wallpaper-selected should exist');
     return wallpaperSelected;
   }
@@ -567,7 +569,7 @@ TEST_F(PersonalizationAppWallpaperSubpageBrowserTest.name, 'All', async () => {
       assertDeepEquals(
           new Map([
             ['googlePhotosAlbumId', sharedAlbumId],
-            ['googlePhotosAlbumIsShared', 'true']
+            ['googlePhotosAlbumIsShared', 'true'],
           ]),
           new Map(new URLSearchParams(location.search).entries()),
           'album id and is shared param should appear in location.search');

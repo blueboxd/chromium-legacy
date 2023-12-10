@@ -10,13 +10,13 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/box_sides.h"
+#include "third_party/blink/renderer/core/layout/geometry/box_strut.h"
+#include "third_party/blink/renderer/core/layout/geometry/fragment_geometry.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
+#include "third_party/blink/renderer/core/layout/mathml/mathml_paint_info.h"
 #include "third_party/blink/renderer/core/layout/ng/flex/ng_flex_data.h"
 #include "third_party/blink/renderer/core/layout/ng/frame_set_layout_data.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_fragment_geometry.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items_builder.h"
-#include "third_party/blink/renderer/core/layout/ng/mathml/ng_mathml_paint_info.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
@@ -60,7 +60,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final : public NGFragmentBuilder {
   }
 
   void SetInitialFragmentGeometry(
-      const NGFragmentGeometry& initial_fragment_geometry) {
+      const FragmentGeometry& initial_fragment_geometry) {
     initial_fragment_geometry_ = &initial_fragment_geometry;
     size_ = initial_fragment_geometry_->border_box_size;
     is_initial_block_size_indefinite_ = size_.block_size == kIndefiniteSize;
@@ -86,7 +86,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final : public NGFragmentBuilder {
     border_scrollbar_padding_.block_start = LayoutUnit();
   }
 
-  const NGFragmentGeometry& InitialFragmentGeometry() const {
+  const FragmentGeometry& InitialFragmentGeometry() const {
     DCHECK(initial_fragment_geometry_);
     return *initial_fragment_geometry_;
   }
@@ -144,16 +144,16 @@ class CORE_EXPORT NGBoxFragmentBuilder final : public NGFragmentBuilder {
     intrinsic_block_size_ = intrinsic_block_size;
   }
   LayoutUnit IntrinsicBlockSize() const { return intrinsic_block_size_; }
-  const NGBoxStrut& Borders() const {
+  const BoxStrut& Borders() const {
     DCHECK(initial_fragment_geometry_);
     DCHECK_NE(BoxType(), NGPhysicalFragment::kInlineBox);
     return initial_fragment_geometry_->border;
   }
-  const NGBoxStrut& Scrollbar() const {
+  const BoxStrut& Scrollbar() const {
     DCHECK(initial_fragment_geometry_);
     return initial_fragment_geometry_->scrollbar;
   }
-  const NGBoxStrut& Padding() const {
+  const BoxStrut& Padding() const {
     DCHECK(initial_fragment_geometry_);
     return initial_fragment_geometry_->padding;
   }
@@ -161,11 +161,11 @@ class CORE_EXPORT NGBoxFragmentBuilder final : public NGFragmentBuilder {
     DCHECK(initial_fragment_geometry_);
     return initial_fragment_geometry_->border_box_size;
   }
-  const NGBoxStrut& BorderPadding() const {
+  const BoxStrut& BorderPadding() const {
     DCHECK(initial_fragment_geometry_);
     return border_padding_;
   }
-  const NGBoxStrut& BorderScrollbarPadding() const {
+  const BoxStrut& BorderScrollbarPadding() const {
     DCHECK(initial_fragment_geometry_);
     return border_scrollbar_padding_;
   }
@@ -212,7 +212,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final : public NGFragmentBuilder {
   void AddResult(
       const NGLayoutResult&,
       const LogicalOffset,
-      absl::optional<const NGBoxStrut> margins,
+      absl::optional<const BoxStrut> margins,
       absl::optional<LogicalOffset> relative_offset = absl::nullopt,
       const NGInlineContainer<LogicalOffset>* inline_container = nullptr);
   // AddResult() with the default margin computation.
@@ -225,7 +225,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final : public NGFragmentBuilder {
   void AddChild(
       const NGPhysicalFragment&,
       const LogicalOffset&,
-      const NGMarginStrut* margin_strut = nullptr,
+      const MarginStrut* margin_strut = nullptr,
       bool is_self_collapsing = false,
       absl::optional<LogicalOffset> relative_offset = absl::nullopt,
       const NGInlineContainer<LogicalOffset>* inline_container = nullptr);
@@ -464,7 +464,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final : public NGFragmentBuilder {
       LayoutUnit operator_ascent,
       LayoutUnit operator_descent) {
     if (!mathml_paint_info_)
-      mathml_paint_info_ = std::make_unique<NGMathMLPaintInfo>();
+      mathml_paint_info_ = std::make_unique<MathMLPaintInfo>();
 
     mathml_paint_info_->operator_character = operator_character;
     mathml_paint_info_->operator_shape_result_view =
@@ -480,9 +480,9 @@ class CORE_EXPORT NGBoxFragmentBuilder final : public NGFragmentBuilder {
       LayoutUnit operator_ascent,
       LayoutUnit operator_descent,
       LayoutUnit radical_operator_inline_offset,
-      const NGBoxStrut& radical_base_margins) {
+      const BoxStrut& radical_base_margins) {
     if (!mathml_paint_info_)
-      mathml_paint_info_ = std::make_unique<NGMathMLPaintInfo>();
+      mathml_paint_info_ = std::make_unique<MathMLPaintInfo>();
 
     mathml_paint_info_->operator_character = kSquareRootCharacter;
     mathml_paint_info_->operator_shape_result_view =
@@ -638,9 +638,9 @@ class CORE_EXPORT NGBoxFragmentBuilder final : public NGFragmentBuilder {
 
   const NGLayoutResult* ToBoxFragment(WritingMode);
 
-  const NGFragmentGeometry* initial_fragment_geometry_ = nullptr;
-  NGBoxStrut border_padding_;
-  NGBoxStrut border_scrollbar_padding_;
+  const FragmentGeometry* initial_fragment_geometry_ = nullptr;
+  BoxStrut border_padding_;
+  BoxStrut border_scrollbar_padding_;
   // We clamp the block-start of |border_scrollbar_padding_| after an item
   // fragments. Store the original block-start, as well, for cases where it is
   // needed.
@@ -710,7 +710,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final : public NGFragmentBuilder {
 
   scoped_refptr<SerializedScriptValue> custom_layout_data_;
 
-  std::unique_ptr<NGMathMLPaintInfo> mathml_paint_info_;
+  std::unique_ptr<MathMLPaintInfo> mathml_paint_info_;
 
 #if DCHECK_IS_ON()
   // Describes what size_.block_size represents; either the size of a single

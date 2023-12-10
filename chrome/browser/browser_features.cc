@@ -70,13 +70,6 @@ BASE_FEATURE(kPromoBrowserCommands,
 // ui/webui/resources/js/browser_command/browser_command.mojom
 const char kBrowserCommandIdParam[] = "BrowserCommandIdParam";
 
-#if BUILDFLAG(IS_MAC)
-// Enables integration with the macOS feature Universal Links.
-BASE_FEATURE(kEnableUniveralLinks,
-             "EnableUniveralLinks",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables reading and writing PWA notification permissions from quick settings
 // menu.
@@ -271,17 +264,6 @@ BASE_FEATURE(kNewTabPageTriggerForPrerender2,
 BASE_FEATURE(kSupportSearchSuggestionForPrerender2,
              "SupportSearchSuggestionForPrerender2",
              base::FEATURE_DISABLED_BY_DEFAULT);
-const base::FeatureParam<SearchSuggestionPrerenderImplementationType>::Option
-    search_suggestion_implementation_types[] = {
-        {SearchSuggestionPrerenderImplementationType::kUsePrefetch,
-         "use_prefetch"},
-        {SearchSuggestionPrerenderImplementationType::kIgnorePrefetch,
-         "ignore_prefetch"}};
-const base::FeatureParam<SearchSuggestionPrerenderImplementationType>
-    kSearchSuggestionPrerenderImplementationTypeParam{
-        &kSupportSearchSuggestionForPrerender2, "implementation_type",
-        SearchSuggestionPrerenderImplementationType::kUsePrefetch,
-        &search_suggestion_implementation_types};
 
 const base::FeatureParam<SearchPreloadShareableCacheType>::Option
     search_preload_shareable_cache_types[] = {
@@ -309,5 +291,11 @@ BASE_FEATURE(kAutocompleteActionPredictorConfidenceCutoff,
 BASE_FEATURE(kOmniboxTriggerForNoStatePrefetch,
              "OmniboxTriggerForNoStatePrefetch",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+BASE_FEATURE(kPayloadTestComponent,
+             "PayloadTestComponent",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 }  // namespace features

@@ -14,7 +14,7 @@
 #include "components/performance_manager/graph/graph_impl_operations.h"
 #include "components/performance_manager/graph/process_node_impl.h"
 #include "components/performance_manager/public/graph/graph_operations.h"
-#include "components/performance_manager/public/resource_attribution/resource_contexts.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace performance_manager {
 
@@ -62,15 +62,21 @@ PageNodeImpl::PageNodeImpl(const WebContentsProxy& contents_proxy,
       browser_context_id_(browser_context_id),
       is_visible_(initial_properties.Has(PagePropertyFlag::kIsVisible)),
       is_audible_(initial_properties.Has(PagePropertyFlag::kIsAudible)),
+      has_picture_in_picture_(
+          initial_properties.Has(PagePropertyFlag::kHasPictureInPicture)),
       page_state_(page_state) {
-  DCHECK(IsValidInitialPageState(page_state));
+  // Nodes are created on the UI thread, then accessed on the PM sequence.
+  // `weak_this_` can be returned from GetWeakPtrOnUIThread() and dereferenced
+  // on the PM sequence.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DETACH_FROM_SEQUENCE(sequence_checker_);
   weak_this_ = weak_factory_.GetWeakPtr();
+
+  DCHECK(IsValidInitialPageState(page_state));
 
   if (is_audible_.value()) {
     audible_change_time_ = base::TimeTicks::Now();
   }
-
-  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 PageNodeImpl::~PageNodeImpl() {
@@ -80,12 +86,23 @@ PageNodeImpl::~PageNodeImpl() {
   DCHECK_EQ(EmbeddingType::kInvalid, embedding_type_);
   DCHECK(!page_load_tracker_data_);
   DCHECK(!site_data_);
+  DCHECK(!tab_connectedness_data_);
   DCHECK(!frozen_frame_data_);
   DCHECK(!page_aggregator_data_);
 }
 
 const WebContentsProxy& PageNodeImpl::contents_proxy() const {
   return contents_proxy_;
+}
+
+base::WeakPtr<PageNodeImpl> PageNodeImpl::GetWeakPtrOnUIThread() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return weak_this_;
+}
+
+base::WeakPtr<PageNodeImpl> PageNodeImpl::GetWeakPtr() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return weak_factory_.GetWeakPtr();
 }
 
 void PageNodeImpl::AddFrame(base::PassKey<FrameNodeImpl>,
@@ -148,6 +165,11 @@ void PageNodeImpl::SetIsAudible(bool is_audible) {
     // can infer the current state change time themselves via NowTicks.
     audible_change_time_ = base::TimeTicks::Now();
   }
+}
+
+void PageNodeImpl::SetHasPictureInPicture(bool has_picture_in_picture) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  has_picture_in_picture_.SetAndMaybeNotify(this, has_picture_in_picture);
 }
 
 void PageNodeImpl::SetUkmSourceId(ukm::SourceId ukm_source_id) {
@@ -253,7 +275,7 @@ FrameNodeImpl* PageNodeImpl::embedder_frame_node() const {
 
 resource_attribution::PageContext PageNodeImpl::resource_context() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return resource_context_;
+  return resource_attribution::PageContext::FromPageNode(this);
 }
 
 PageNodeImpl::EmbeddingType PageNodeImpl::embedding_type() const {
@@ -280,6 +302,11 @@ bool PageNodeImpl::is_visible() const {
 bool PageNodeImpl::is_audible() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return is_audible_.value();
+}
+
+bool PageNodeImpl::has_picture_in_picture() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return has_picture_in_picture_.value();
 }
 
 PageNode::LoadingState PageNodeImpl::loading_state() const {
@@ -442,12 +469,18 @@ void PageNodeImpl::set_page_state(PageState page_state) {
 
 void PageNodeImpl::OnJoiningGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#if DCHECK_IS_ON()
-  // Dereferencing the WeakPtr associated with this node will bind it to the
-  // current sequence (all subsequent calls to |GetWeakPtr| will return the
-  // same WeakPtr).
-  GetWeakPtr()->GetImpl();
-#endif
+
+  // Make sure all weak pointers, even `weak_this_` that was created on the UI
+  // thread in the constructor, can only be dereferenced on the graph sequence.
+  //
+  // If this is the first pointer dereferenced, it will bind all pointers from
+  // `weak_factory_` to the current sequence. If not, get() will DCHECK.
+  // DCHECK'ing the return value of get() prevents the compiler from optimizing
+  // it away.
+  //
+  // TODO(crbug.com/1134162): Use WeakPtrFactory::BindToCurrentSequence for this
+  // (it's clearer but currently not exposed publicly).
+  DCHECK(GetWeakPtr().get());
 }
 
 void PageNodeImpl::OnBeforeLeavingGraph() {
@@ -468,6 +501,7 @@ void PageNodeImpl::RemoveNodeAttachedData() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   page_load_tracker_data_.reset();
   site_data_.reset();
+  tab_connectedness_data_.reset();
   frozen_frame_data_.Reset();
   page_aggregator_data_.Reset();
 }
@@ -515,6 +549,11 @@ bool PageNodeImpl::IsVisible() const {
 base::TimeDelta PageNodeImpl::GetTimeSinceLastVisibilityChange() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return TimeSinceLastVisibilityChange();
+}
+
+bool PageNodeImpl::HasPictureInPicture() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return has_picture_in_picture();
 }
 
 bool PageNodeImpl::IsAudible() const {

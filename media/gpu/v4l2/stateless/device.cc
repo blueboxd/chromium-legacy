@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #if BUILDFLAG(IS_CHROMEOS)
 #include <linux/media/av1-ctrls.h>
-#include <linux/media/vp9-ctrls-upstream.h>
 #endif
 
 #include <fcntl.h>
@@ -25,6 +24,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "media/base/video_types.h"
 #include "media/gpu/macros.h"
+#include "media/gpu/v4l2/stateless/utils.h"
 #include "media/gpu/v4l2/v4l2_utils.h"
 
 // This has not been accepted upstream.
@@ -105,10 +105,40 @@ std::set<VideoCodec> Device::EnumerateInputFormats() {
     DVLOGF(4) << "Enumerated codec: "
               << media::FourccToString(fmtdesc.pixelformat) << " ("
               << fmtdesc.description << ")";
-    pix_fmts.insert(V4L2PixFmtToVideoCodec(fmtdesc.pixelformat));
+    VideoCodec enumerated_codec = V4L2PixFmtToVideoCodec(fmtdesc.pixelformat);
+
+    // Not all codecs returned from the device are supported by ChromeOS
+    if (VideoCodec::kUnknown != enumerated_codec) {
+      pix_fmts.insert(enumerated_codec);
+    }
   }
 
   return pix_fmts;
+}
+
+// VIDIOC_S_FMT
+bool Device::SetInputFormat(VideoCodec codec,
+                            gfx::Size resolution,
+                            size_t encoded_buffer_size) {
+  DVLOGF(4);
+  const uint32_t pix_fmt = VideoCodecToV4L2PixFmt(codec);
+  struct v4l2_format format;
+  memset(&format, 0, sizeof(format));
+  format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+  format.fmt.pix_mp.pixelformat = pix_fmt;
+  format.fmt.pix_mp.width = resolution.width();
+  format.fmt.pix_mp.height = resolution.height();
+  format.fmt.pix_mp.num_planes = 1;
+  format.fmt.pix_mp.plane_fmt[0].sizeimage = encoded_buffer_size;
+
+  if (IoctlDevice(VIDIOC_S_FMT, &format) != kIoctlOk ||
+      format.fmt.pix_mp.pixelformat != pix_fmt) {
+    DVLOGF(1) << "Failed to set format fourcc: " << FourccToString(pix_fmt);
+
+    return false;
+  }
+
+  return true;
 }
 
 // VIDIOC_ENUM_FRAMESIZES
@@ -133,7 +163,9 @@ std::pair<gfx::Size, gfx::Size> Device::GetFrameResolutionRange(
     }
   }
 
-  VPLOGF(1) << "VIDIOC_ENUM_FRAMESIZES failed, using default values";
+  VPLOGF(1) << "VIDIOC_ENUM_FRAMESIZES failed for "
+            << media::FourccToString(frame_size.pixel_format)
+            << ", using default values";
   return std::make_pair(kDefaultMinCodedSize, kDefaultMaxCodedSize);
 }
 
@@ -150,9 +182,7 @@ std::vector<VideoCodecProfile> Device::ProfilesForVideoCodec(VideoCodec codec) {
   const auto profile_cid = kV4L2CodecPixFmtToProfileCID.at(pix_fmt);
 
   v4l2_queryctrl query_ctrl = {.id = base::strict_cast<__u32>(profile_cid)};
-  const int ret = IoctlDevice(VIDIOC_QUERYCTRL, &query_ctrl);
-  if (ret != kIoctlOk) {
-    VPLOGF(1) << "VIDIOC_QUERYCTRL failed.";
+  if (IoctlDevice(VIDIOC_QUERYCTRL, &query_ctrl) != kIoctlOk) {
     return {};
   }
 
@@ -219,10 +249,26 @@ void Device::Close() {
 
 Device::~Device() {}
 
-int Device::IoctlDevice(int request, void* arg) {
-  DCHECK(device_fd_.is_valid());
+int Device::Ioctl(const base::ScopedFD& fd, uint64_t request, void* arg) {
+  DCHECK(fd.is_valid());
+  const int ret = HANDLE_EINTR(ioctl(fd.get(), request, arg));
+  if (ret != kIoctlOk) {
+    const logging::SystemErrorCode err = logging::GetLastSystemErrorCode();
+    if (err == EAGAIN && request == VIDIOC_DQBUF) {
+      DVLOGF(4) << IoctlToString(request)
+                << " failed: " << logging::SystemErrorCodeToString(err)
+                << ": This is _usually_ an expected failure from trying to "
+                   "VIDIOC_DQBUF a buffer that is not done being processed.";
+    } else {
+      DVLOGF(1) << IoctlToString(request)
+                << " failed: " << logging::SystemErrorCodeToString(err);
+    }
+  }
+  return ret;
+}
 
-  return HANDLE_EINTR(ioctl(device_fd_.get(), request, arg));
+int Device::IoctlDevice(uint64_t request, void* arg) {
+  return Ioctl(device_fd_, request, arg);
 }
 
 }  //  namespace media

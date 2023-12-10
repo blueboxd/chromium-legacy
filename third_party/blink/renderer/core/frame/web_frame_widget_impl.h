@@ -153,7 +153,7 @@ class CORE_EXPORT WebFrameWidgetImpl
 
   // Returns the WebFrame that this widget is attached to. It will be a local
   // root since only local roots have a widget attached.
-  WebLocalFrameImpl* LocalRootImpl() const { return local_root_; }
+  WebLocalFrameImpl* LocalRootImpl() const { return local_root_.Get(); }
 
   // Returns the bounding box of the block type node touched by the WebPoint.
   gfx::Rect ComputeBlockBound(const gfx::Point& point_in_root_frame,
@@ -246,11 +246,10 @@ class CORE_EXPORT WebFrameWidgetImpl
                      const gfx::Vector2dF& accumulated_overscroll,
                      const gfx::PointF& position,
                      const gfx::Vector2dF& velocity) override;
-  void InjectGestureScrollEvent(WebGestureDevice device,
-                                const gfx::Vector2dF& delta,
-                                ui::ScrollGranularity granularity,
-                                cc::ElementId scrollable_area_element_id,
-                                WebInputEvent::Type injected_type) override;
+  void InjectScrollbarGestureScroll(const gfx::Vector2dF& delta,
+                                    ui::ScrollGranularity granularity,
+                                    cc::ElementId scrollable_area_element_id,
+                                    WebInputEvent::Type injected_type) override;
   void DidChangeCursor(const ui::Cursor&) override;
   void GetCompositionCharacterBoundsInWindow(
       Vector<gfx::Rect>* bounds_in_dips) override;
@@ -403,6 +402,10 @@ class CORE_EXPORT WebFrameWidgetImpl
   // WebWidget overrides.
   void InitializeCompositing(const display::ScreenInfos& screen_infos,
                              const cc::LayerTreeSettings* settings) override;
+  void InitializeCompositingFromPreviousWidget(
+      const display::ScreenInfos& screen_infos,
+      const cc::LayerTreeSettings* settings,
+      WebFrameWidget& previous_widget) override;
   void SetCompositorVisible(bool visible) override;
   gfx::Size Size() override;
   void Resize(const gfx::Size& size_with_dsf) override;
@@ -906,6 +909,10 @@ class CORE_EXPORT WebFrameWidgetImpl
   Page* GetPage() const;
 
   mojom::blink::FrameWidgetHost* GetAssociatedFrameWidgetHost() const;
+
+  void InitializeCompositingInternal(const display::ScreenInfos& screen_infos,
+                                     const cc::LayerTreeSettings* settings,
+                                     WebFrameWidget* previous_widget);
 
   // Notifies RenderWidgetHostImpl that the frame widget has painted something.
   void DidMeaningfulLayout(WebMeaningfulLayout layout_type);

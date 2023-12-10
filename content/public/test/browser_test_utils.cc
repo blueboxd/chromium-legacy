@@ -68,8 +68,6 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/network_service_instance.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -1588,21 +1586,21 @@ class ExecuteJavaScriptForTestsWaiter : public WebContentsObserver {
         status == base::TERMINATION_STATUS_STILL_RUNNING) {
       return;
     }
-    RendererTerminated();
+    UpdateAfterScriptFailed("Renderer terminated.");
   }
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override {
     if (render_frame_host_ != render_frame_host)
       return;
-    RendererTerminated();
+    UpdateAfterScriptFailed("RenderFrame deleted.");
   }
 
  private:
-  void RendererTerminated() {
+  void UpdateAfterScriptFailed(const std::string& msg) {
     render_frame_host_ = nullptr;
     if (has_value_)
       return;
     SetValue(blink::mojom::JavaScriptExecutionResultType::kException,
-             base::Value("Renderer terminated"));
+             base::Value(msg));
   }
 
   void SetValue(blink::mojom::JavaScriptExecutionResultType type,

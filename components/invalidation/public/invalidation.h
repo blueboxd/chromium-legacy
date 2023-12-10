@@ -11,7 +11,6 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/values.h"
 #include "components/invalidation/public/ack_handle.h"
 #include "components/invalidation/public/invalidation_export.h"
 #include "components/invalidation/public/invalidation_util.h"
@@ -28,8 +27,6 @@ class INVALIDATION_EXPORT Invalidation {
   static Invalidation Init(const Topic& topic,
                            int64_t version,
                            const std::string& payload);
-  static Invalidation InitUnknownVersion(const Topic& topic);
-
   Invalidation(const Invalidation& other);
   Invalidation& operator=(const Invalidation& other);
   ~Invalidation();
@@ -38,12 +35,7 @@ class INVALIDATION_EXPORT Invalidation {
   bool operator==(const Invalidation& other) const;
 
   Topic topic() const;
-  bool is_unknown_version() const;
-
-  // Safe to call only if is_unknown_version() returns false.
   int64_t version() const;
-
-  // Safe to call only if is_unknown_version() returns false.
   const std::string& payload() const;
 
   const AckHandle& ack_handle() const;
@@ -59,15 +51,6 @@ class INVALIDATION_EXPORT Invalidation {
       base::WeakPtr<AckHandler> handler,
       scoped_refptr<base::SequencedTaskRunner> handler_task_runner);
 
-  // Returns whether or not this instance supports ack tracking.  This will
-  // depend on whether or not the source of invaliadations supports
-  // invalidations.
-  //
-  // Clients can safely ignore this flag.  They can assume that all
-  // invalidations support ack tracking.  If they're wrong, then invalidations
-  // will be less reliable, but their behavior will be no less correct.
-  bool SupportsAcknowledgement() const;
-
   // Acknowledges the receipt of this invalidation.
   //
   // Clients should call this on a received invalidation when they have fully
@@ -76,12 +59,8 @@ class INVALIDATION_EXPORT Invalidation {
   // re-deliver this invalidation in the event of a crash or restart.
   void Acknowledge() const;
 
-  base::Value::Dict ToValue() const;
-  std::string ToString() const;
-
  private:
   Invalidation(const Topic& topic,
-               bool is_unknown_version,
                int64_t version,
                const std::string& payload,
                AckHandle ack_handle);
@@ -89,15 +68,10 @@ class INVALIDATION_EXPORT Invalidation {
   // The Topic to which this invalidation belongs.
   Topic topic_;
 
-  // This flag is set to true if this is an unknown version invalidation.
-  bool is_unknown_version_;
-
-  // The version number of this invalidation.  Should not be accessed if this is
-  // an unkown version invalidation.
+  // The version number of this invalidation.
   int64_t version_;
 
-  // The payaload associated with this invalidation.  Should not be accessed if
-  // this is an unknown version invalidation.
+  // The payaload associated with this invalidation.
   std::string payload_;
 
   // A locally generated unique ID used to manage local acknowledgements.

@@ -451,6 +451,46 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     }
   }
 
+  const bool need_fallback_from_graphite = [this]() {
+    // If graphite is requested, check ANGLE implementation.
+    if (gpu_preferences_.gr_context_type != GrContextType::kGraphiteDawn &&
+        gpu_preferences_.gr_context_type != GrContextType::kGraphiteMetal) {
+      return false;
+    }
+
+#if BUILDFLAG(IS_APPLE)
+    // Graphite requires ANGLE Metal (or Swiftshader, handled below) on Mac
+    constexpr auto kRequiredANGLEImplementation = gl::ANGLEImplementation::kMetal;
+#elif BUILDFLAG(IS_WIN)
+    // Graphite requires ANGLE D3D11 (or Swiftshader, handled below) on Windows
+    constexpr auto kRequiredANGLEImplementation = gl::ANGLEImplementation::kD3D11;
+#else
+    constexpr auto kRequiredANGLEImplementation = gl::ANGLEImplementation::kNone;
+#endif
+    if (kRequiredANGLEImplementation == gl::ANGLEImplementation::kNone ||
+        gl::GetANGLEImplementation() == kRequiredANGLEImplementation) {
+      // If ANGLE is using required implementation, fallback is not needed.
+      return false;
+    }
+
+    // If ANGLE is using Swiftshader, fallback is not needed.
+    if (gl::GetANGLEImplementation() == gl::ANGLEImplementation::kSwiftShader) {
+      return false;
+    }
+
+    // If graphite is requested from command line, fallback is not needed.
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableSkiaGraphite)) {
+      return false;
+    }
+
+    return true;
+  }();
+
+  if (need_fallback_from_graphite) {
+    gpu_preferences_.gr_context_type = GrContextType::kGL;
+  }
+
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   // The ContentSandboxHelper is currently the only one implementation of
   // GpuSandboxHelper and it has no dependency. Except on Linux where

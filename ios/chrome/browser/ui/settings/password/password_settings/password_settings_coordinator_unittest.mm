@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import <UIKit/UIKit.h>
+#import <objc/runtime.h>
 
 #import "base/apple/foundation_util.h"
 #import "base/test/bind.h"
@@ -10,14 +11,17 @@
 #import "base/test/scoped_feature_list.h"
 #import "components/password_manager/core/browser/password_manager_test_utils.h"
 #import "components/password_manager/core/browser/test_password_store.h"
-#import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
+#import "ios/chrome/browser/shared/public/commands/browser_commands.h"
+#import "ios/chrome/browser/shared/public/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
+#import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/settings/password/password_manager_ui_features.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings/password_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings/password_settings_view_controller.h"
@@ -25,6 +29,7 @@
 #import "ios/chrome/browser/ui/settings/password/reauthentication/reauthentication_view_controller.h"
 #import "ios/chrome/test/app/mock_reauthentication_module.h"
 #import "ios/chrome/test/scoped_key_window.h"
+#import "ios/testing/protocol_fake.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/gtest/include/gtest/gtest.h"
 #import "testing/platform_test.h"
@@ -45,7 +50,7 @@ class PasswordSettingsCoordinatorTest : public PlatformTest {
     TestChromeBrowserState::Builder builder;
     // Add test password store. Used by the mediator.
     builder.AddTestingFactory(
-        IOSChromePasswordStoreFactory::GetInstance(),
+        IOSChromeProfilePasswordStoreFactory::GetInstance(),
         base::BindRepeating(
             &password_manager::BuildPasswordStore<
                 web::BrowserState, password_manager::TestPasswordStore>));
@@ -53,18 +58,18 @@ class PasswordSettingsCoordinatorTest : public PlatformTest {
     browser_state_ = builder.Build();
     browser_ = std::make_unique<TestBrowser>(browser_state_.get());
 
-    // Mock ApplicationCommands. Since ApplicationCommands conforms to
-    // ApplicationSettingsCommands, it must be mocked as well.
-    mocked_application_commands_handler_ =
-        OCMStrictProtocolMock(@protocol(ApplicationCommands));
-    [browser_->GetCommandDispatcher()
-        startDispatchingToTarget:mocked_application_commands_handler_
-                     forProtocol:@protocol(ApplicationCommands)];
-    id mocked_application_settings_command_handler =
-        OCMProtocolMock(@protocol(ApplicationSettingsCommands));
-    [browser_->GetCommandDispatcher()
-        startDispatchingToTarget:mocked_application_settings_command_handler
-                     forProtocol:@protocol(ApplicationSettingsCommands)];
+    NSArray<Protocol*>* command_protocols = @[
+      @protocol(ApplicationCommands), @protocol(BrowserCommands),
+      @protocol(BrowsingDataCommands), @protocol(ApplicationSettingsCommands),
+      @protocol(SnackbarCommands)
+    ];
+    fake_command_endpoint_ =
+        [[ProtocolFake alloc] initWithProtocols:command_protocols];
+    for (Protocol* protocol in command_protocols) {
+      [browser_->GetCommandDispatcher()
+          startDispatchingToTarget:fake_command_endpoint_
+                       forProtocol:protocol];
+    }
 
     mock_reauth_module_ = [[MockReauthenticationModule alloc] init];
     // Delay auth result so auth doesn't pass right after starting coordinator.
@@ -128,8 +133,8 @@ class PasswordSettingsCoordinatorTest : public PlatformTest {
   std::unique_ptr<ScopedPasswordSettingsReauthModuleOverride>
       scoped_reauth_override_;
   base::test::ScopedFeatureList scoped_feature_list_;
-  id mocked_application_commands_handler_;
   PasswordSettingsCoordinator* coordinator_ = nil;
+  ProtocolFake* fake_command_endpoint_ = nil;
 };
 
 // Tests that Password Settings is presented without authentication required.

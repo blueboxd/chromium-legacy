@@ -22,7 +22,7 @@
 #include "chrome/browser/ash/app_list/search/system_info/system_info_util.h"
 #include "chrome/browser/ash/app_list/search/test/test_search_controller.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
-#include "chrome/browser/ui/webui/settings/ash/device_storage_util.h"
+#include "chrome/browser/ui/webui/ash/settings/pages/storage/device_storage_util.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
@@ -215,7 +215,7 @@ void SetPowerManagerProperties(
 base::FilePath GetTestDataFilePath(const std::string& file_name) {
   // Get the path to file manager's test data directory.
   base::FilePath source_dir;
-  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_dir));
+  CHECK(base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &source_dir));
   base::FilePath test_data_dir = source_dir.AppendASCII("chrome")
                                      .AppendASCII("test")
                                      .AppendASCII("data")

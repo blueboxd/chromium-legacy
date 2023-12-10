@@ -40,7 +40,6 @@
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_util.h"
 #include "chrome/browser/apps/app_service/app_icon/dip_px_util.h"
-#include "chrome/browser/apps/app_service/app_icon/icon_effects.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/publishers/arc_apps.h"
@@ -85,6 +84,7 @@
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/app_update.h"
 #include "components/services/app_service/public/cpp/features.h"
+#include "components/services/app_service/public/cpp/icon_effects.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
@@ -318,12 +318,6 @@ ArcAppIconDescriptor GetAppListIconDescriptor(
       scale_factor);
 }
 
-ArcAppIconDescriptor GetAppListIconDescriptor(
-    int dip_size,
-    ui::ResourceScaleFactor scale_factor) {
-  return ArcAppIconDescriptor(dip_size, scale_factor);
-}
-
 bool IsIconCreated(Profile* profile,
                    ArcAppListPrefs* prefs,
                    const std::string& app_id,
@@ -519,8 +513,8 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
   ArcState GetArcState() const { return GetParam(); }
 
   ChromeShelfController* CreateShelfController() {
-    shelf_controller_ = std::make_unique<ChromeShelfController>(
-        profile_.get(), model_.get(), /*shelf_item_factory=*/nullptr);
+    shelf_controller_ =
+        std::make_unique<ChromeShelfController>(profile_.get(), model_.get());
     shelf_controller_->SetProfileForTest(profile_.get());
     shelf_controller_->SetShelfControllerHelperForTest(
         std::make_unique<ShelfControllerHelper>(profile_.get()));

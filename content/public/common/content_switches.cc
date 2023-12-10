@@ -262,9 +262,6 @@ const char kDisableSpeechAPI[]              = "disable-speech-api";
 // Disables the speech synthesis part of Web Speech API.
 const char kDisableSpeechSynthesisAPI[]     = "disable-speech-synthesis-api";
 
-// Disables adding the test certs in the network process.
-const char kDisableTestCerts[]              = "disable-test-root-certs";
-
 // Disable multithreaded GPU compositing of web content.
 const char kDisableThreadedCompositing[]    = "disable-threaded-compositing";
 
@@ -533,6 +530,9 @@ const char kLoggingLevel[]                  = "log-level";
 // Overrides the default file name to use for general-purpose logging (does not
 // affect which events are logged).
 const char kLogFile[] = "log-file";
+
+// Log an error whenever the unload timeout for a render frame is exceeded.
+const char kLogMissingUnloadACK[] = "log-missing-unload-ack";
 
 // Allows user to override maximum number of active WebGL contexts per
 // renderer process.

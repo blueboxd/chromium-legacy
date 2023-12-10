@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_position_state.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_session_action_details.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_session_action_handler.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_media_session_picture_in_picture_action_details.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_session_seek_to_action_details.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -209,7 +208,7 @@ void MediaSession::setMetadata(MediaMetadata* metadata) {
 }
 
 MediaMetadata* MediaSession::metadata() const {
-  return metadata_;
+  return metadata_.Get();
 }
 
 void MediaSession::OnMetadataChanged() {

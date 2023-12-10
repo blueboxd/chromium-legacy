@@ -31,7 +31,7 @@ import './pin_settings.js';
 
 import {SettingsToggleButtonElement} from '/shared/settings/controls/settings_toggle_button.js';
 import {fireAuthTokenInvalidEvent} from 'chrome://resources/ash/common/quick_unlock/utils.js';
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {focusWithoutInk} from 'chrome://resources/js/focus_without_ink.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
@@ -157,17 +157,6 @@ export class SettingsLockScreenElement extends SettingsLockScreenElementBase {
         value: false,
       },
 
-      /**
-       * Alias for the SmartLockUIRevamp feature flag.
-       */
-      smartLockUIRevampEnabled_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.getBoolean('smartLockUIRevampEnabled');
-        },
-        readOnly: true,
-      },
-
       noRecoveryVirtualPref_: Object,
 
       showDisableRecoveryDialog_: Boolean,
@@ -199,7 +188,6 @@ export class SettingsLockScreenElement extends SettingsLockScreenElementBase {
   private noRecoveryVirtualPref_: chrome.settingsPrivate.PrefObject;
   private recoveryChangeInProcess_: boolean;
   private showPasswordSettings_: boolean;
-  private smartLockUIRevampEnabled_: boolean;
   private showDisableRecoveryDialog_: boolean;
   private fingerprintBrowserProxy_: FingerprintBrowserProxy;
 
@@ -299,7 +287,7 @@ export class SettingsLockScreenElement extends SettingsLockScreenElementBase {
     if (!this.cryptohomeRecoveryEnabled_ || this.recovery_) {
       return '';
     }
-    return this.i18n('recoveryLearnMoreUrl');
+    return this.i18n('recoveryNotSupportedMessage');
   }
 
   private recoveryToggleDisabled_(): boolean {

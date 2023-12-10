@@ -294,6 +294,7 @@ class ReauthFlowStepController : public ProfileManagementStepController {
   std::unique_ptr<ProfilePickerDiceReauthProvider> reauth_provider_;
 };
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 std::unique_ptr<ProfileManagementStepController> CreateReauthtep(
     ProfilePickerWebContentsHost* host,
     Profile* profile,
@@ -311,6 +312,7 @@ std::unique_ptr<ProfileManagementStepController> CreateReauthtep(
           std::move(on_reauth_completed)),
       profile);
 }
+#endif
 
 }  // namespace
 
@@ -347,7 +349,12 @@ void ProfilePickerFlowController::SwitchToReauth(
     Profile* profile,
     base::OnceCallback<void()> on_error_callback) {
   DCHECK_EQ(Step::kProfilePicker, current_step());
-  DCHECK(!IsStepInitialized(Step::kReauth));
+
+  // if the step was already initialized, unregister to make sure the new
+  // reauth is properly initialised and the current reauth step is cleaned.
+  if (!IsStepInitialized(Step::kReauth)) {
+    UnregisterStep(Step::kReauth);
+  }
 
   RegisterStep(
       Step::kReauth,
@@ -370,10 +377,6 @@ void ProfilePickerFlowController::OnReauthCompleted(
     Profile* profile,
     base::OnceCallback<void()> on_error_callback,
     bool success) {
-  // Unregister to make sure the next reauth is properly initialised and the
-  // current step is cleaned.
-  UnregisterStep(Step::kReauth);
-
   if (!success) {
     SwitchToStep(
         Step::kProfilePicker, /*reset_state=*/true,

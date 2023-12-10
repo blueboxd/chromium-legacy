@@ -12,6 +12,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
+#include "chromeos/ash/components/dbus/resource_manager/resource_manager.pb.h"
 #include "chromeos/ash/components/dbus/resourced/fake_resourced_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -71,6 +72,12 @@ class ResourcedClientImpl : public ResourcedClient {
   void SetMemoryMarginsBps(uint32_t critical_margin,
                            uint32_t moderate_margin,
                            SetMemoryMarginsBpsCallback callback) override;
+
+  void ReportBackgroundProcesses(Component component,
+                                 const std::vector<int32_t>& pids) override;
+
+  void ReportBrowserProcesses(Component component,
+                              const std::vector<Process>& processes) override;
 
   void AddObserver(Observer* observer) override;
 
@@ -348,6 +355,71 @@ void ResourcedClientImpl::SetMemoryMarginsBps(
       base::BindOnce(&ResourcedClientImpl::HandleSetMemoryMarginBps,
                      weak_factory_.GetWeakPtr(), critical_margin,
                      moderate_margin, std::move(callback)));
+}
+
+void ResourcedClientImpl::ReportBackgroundProcesses(
+    Component component,
+    const std::vector<int32_t>& pids) {
+  resource_manager::ReportBackgroundProcesses request;
+
+  if (component == ResourcedClient::Component::kAsh) {
+    request.set_component(
+        resource_manager::ReportBackgroundProcesses_Component_ASH);
+  } else if (component == ResourcedClient::Component::kLacros) {
+    request.set_component(
+        resource_manager::ReportBackgroundProcesses_Component_LACROS);
+  } else {
+    NOTREACHED();
+  }
+
+  for (auto it = pids.begin(); it != pids.end(); ++it) {
+    request.add_pids(*it);
+  }
+
+  dbus::MethodCall method_call(
+      resource_manager::kResourceManagerInterface,
+      resource_manager::kReportBackgroundProcessesMethod);
+  if (!dbus::MessageWriter(&method_call).AppendProtoAsArrayOfBytes(request)) {
+    LOG(ERROR) << "Error serializing "
+               << resource_manager::kReportBackgroundProcessesMethod
+               << " request";
+    return;
+  }
+
+  proxy_->CallMethod(&method_call, kResourcedDBusTimeoutMilliseconds,
+                     base::DoNothing());
+}
+
+void ResourcedClientImpl::ReportBrowserProcesses(
+    Component component,
+    const std::vector<Process>& processes) {
+  resource_manager::ReportBrowserProcesses request;
+
+  if (component == ResourcedClient::Component::kAsh) {
+    request.set_browser_type(resource_manager::BrowserType::ASH);
+  } else if (component == ResourcedClient::Component::kLacros) {
+    request.set_browser_type(resource_manager::BrowserType::LACROS);
+  } else {
+    NOTREACHED();
+  }
+
+  for (auto it = processes.begin(); it != processes.end(); ++it) {
+    auto* process = request.add_processes();
+    process->set_pid(it->pid);
+    process->set_protected_(it->is_protected);
+    process->set_visible(it->is_visible);
+  }
+
+  dbus::MethodCall method_call(resource_manager::kResourceManagerInterface,
+                               resource_manager::kReportBrowserProcessesMethod);
+  if (!dbus::MessageWriter(&method_call).AppendProtoAsArrayOfBytes(request)) {
+    LOG(ERROR) << "Error serializing "
+               << resource_manager::kReportBrowserProcessesMethod << " request";
+    return;
+  }
+
+  proxy_->CallMethod(&method_call, kResourcedDBusTimeoutMilliseconds,
+                     base::DoNothing());
 }
 
 void ResourcedClientImpl::AddObserver(Observer* observer) {

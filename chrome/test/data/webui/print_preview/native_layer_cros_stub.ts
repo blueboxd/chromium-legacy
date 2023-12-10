@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {NativeLayerCros, NativeLayerCrosImpl, PrinterSetupResponse, PrinterStatus, PrinterStatusReason, PrinterStatusSeverity, PrintServersConfig} from 'chrome://print/print_preview.js';
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {LocalDestinationInfo, NativeLayerCros, NativeLayerCrosImpl, PrinterSetupResponse, PrinterStatus, PrinterStatusReason, PrinterStatusSeverity, PrintServersConfig} from 'chrome://print/print_preview.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
@@ -41,6 +41,8 @@ export class NativeLayerCrosStub extends TestBrowserProxy implements
   /** When true, all printer status retry requests return NO_ERROR. */
   private simulateStatusRetrySuccesful_: boolean = false;
 
+  private localPrinters_: LocalDestinationInfo[] = [];
+
   constructor() {
     super([
       'getEulaUrl',
@@ -50,6 +52,7 @@ export class NativeLayerCrosStub extends TestBrowserProxy implements
       'getPrintServersConfig',
       'recordPrinterStatusRetrySuccessHistogram',
       'getShowManagePrinters',
+      'observeLocalPrinters',
     ]);
   }
 
@@ -164,5 +167,14 @@ export class NativeLayerCrosStub extends TestBrowserProxy implements
 
   setShowManagePrinters(show: boolean): void {
     this.showManagePrinters = show;
+  }
+
+  setLocalPrinters(printers: LocalDestinationInfo[]): void {
+    this.localPrinters_ = printers;
+  }
+
+  observeLocalPrinters(): Promise<LocalDestinationInfo[]> {
+    this.methodCalled('observeLocalPrinters');
+    return Promise.resolve(this.localPrinters_);
   }
 }

@@ -79,6 +79,7 @@ static_library("browser") {
     "autofill_browser_util.h",
     "autofill_client.cc",
     "autofill_client.h",
+    "autofill_compose_delegate.h",
     "autofill_credit_card_policy_handler.cc",
     "autofill_credit_card_policy_handler.h",
     "autofill_data_util.cc",
@@ -477,6 +478,7 @@ static_library("browser") {
     "ui/label_formatter_utils.h",
     "ui/payments/bubble_show_options.cc",
     "ui/payments/bubble_show_options.h",
+    "ui/payments/card_unmask_otp_input_dialog_controller.h",
     "ui/payments/card_unmask_prompt_controller.h",
     "ui/payments/card_unmask_prompt_controller_impl.cc",
     "ui/payments/card_unmask_prompt_controller_impl.h",
@@ -524,8 +526,6 @@ static_library("browser") {
     "webdata/autofill_webdata_backend.h",
     "webdata/autofill_webdata_backend_impl.cc",
     "webdata/autofill_webdata_backend_impl.h",
-    "webdata/autofill_webdata_backend_util.cc",
-    "webdata/autofill_webdata_backend_util.h",
     "webdata/autofill_webdata_service.cc",
     "webdata/autofill_webdata_service.h",
     "webdata/autofill_webdata_service_observer.h",
@@ -605,7 +605,10 @@ static_library("browser") {
 
   defines = [ "CHROME_VERSION_MAJOR=" + chrome_version_major ]
 
-  configs += [ "//build/config:precompiled_headers" ]
+  configs += [
+    "//build/config:precompiled_headers",
+    "//build/config/compiler:wexit_time_destructors",
+  ]
 
   public_deps = [
     ":legal_message_line",
@@ -737,9 +740,10 @@ static_library("legal_message_line") {
   deps = [
     "//base",
     "//base:i18n",
-    "//ui/gfx/range:range",
-    "//url:url",
+    "//ui/gfx/range",
+    "//url",
   ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 static_library("test_support") {
@@ -776,6 +780,8 @@ static_library("test_support") {
     "metrics/ukm_metrics_test_utils.h",
     "mock_autocomplete_history_manager.cc",
     "mock_autocomplete_history_manager.h",
+    "mock_autofill_compose_delegate.cc",
+    "mock_autofill_compose_delegate.h",
     "mock_autofill_manager_observer.cc",
     "mock_autofill_manager_observer.h",
     "mock_autofill_optimization_guide.cc",
@@ -790,6 +796,8 @@ static_library("test_support") {
     "payments/test/mock_mandatory_reauth_manager.h",
     "payments/test/test_credit_card_otp_authenticator.cc",
     "payments/test/test_credit_card_otp_authenticator.h",
+    "payments/test/test_credit_card_risk_based_authenticator.cc",
+    "payments/test/test_credit_card_risk_based_authenticator.h",
     "payments/test_authentication_requester.cc",
     "payments/test_authentication_requester.h",
     "payments/test_credit_card_save_manager.cc",
@@ -861,6 +869,7 @@ static_library("test_support") {
     "//components/device_reauth:test_support",
     "//components/feature_engagement",
     "//components/leveldb_proto",
+    "//components/optimization_guide:machine_learning_tflite_buildflags",
     "//components/os_crypt/sync",
     "//components/os_crypt/sync:test_support",
     "//components/plus_addresses",

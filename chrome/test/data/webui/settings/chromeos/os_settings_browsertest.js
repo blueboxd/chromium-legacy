@@ -158,7 +158,7 @@ function crostiniTestGenPreamble() {
 var OSSettingsCrostiniPageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/crostini_page_test.js';
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/crostini_page/crostini_page_test.js';
   }
 
   /** @override */
@@ -171,27 +171,11 @@ TEST_F('OSSettingsCrostiniPageTest', 'AllJsTests', () => {
   mocha.run();
 });
 
-var OSSettingsCrostiniSettingsCardTest = class extends OSSettingsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/crostini_settings_card_test.js';
-  }
-
-  /** @override */
-  testGenPreamble() {
-    return crostiniTestGenPreamble();
-  }
-};
-
-TEST_F('OSSettingsCrostiniSettingsCardTest', 'AllJsTests', () => {
-  mocha.run();
-});
-
-var OSSettingsCrostiniExtraContainerPageTest =
+var OSSettingsCrostiniPageCrostiniSettingsCardTest =
     class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/crostini_extra_containers_subpage_test.js';
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/crostini_page/crostini_settings_card_test.js';
   }
 
   /** @override */
@@ -200,12 +184,31 @@ var OSSettingsCrostiniExtraContainerPageTest =
   }
 };
 
-TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
+TEST_F('OSSettingsCrostiniPageCrostiniSettingsCardTest', 'AllJsTests', () => {
   mocha.run();
 });
 
+var OSSettingsCrostiniPageCrostiniExtraContainersSubpageTest =
+    class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/crostini_page/crostini_extra_containers_subpage_test.js';
+  }
+
+  /** @override */
+  testGenPreamble() {
+    return crostiniTestGenPreamble();
+  }
+};
+
+TEST_F(
+    'OSSettingsCrostiniPageCrostiniExtraContainersSubpageTest', 'AllJsTests',
+    () => {
+      mocha.run();
+    });
+
 [['AboutPage', 'os_about_page_tests.js'],
- ['ApnDetailDialog', 'apn_detail_dialog_tests.js'],
+ ['ApnDetailDialog', 'apn_detail_dialog_test.js'],
  // TODO(crbug.com/1455866): Enable the ApnSubpage test.
  // [
  //   'ApnSubpage', 'apn_subpage_tests.js',
@@ -269,6 +272,7 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
      ]
    }
  ],
+ ['DevicePageDisplayPage', 'device_page/display_page_test.js'],
  [
    'DevicePageDragAndDropManager', 'device_page/drag_and_drop_manager_test.js',
    {
@@ -289,6 +293,10 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
    'DevicePageInputDeviceMojoInterfaceProvider',
    'device_page/input_device_mojo_interface_provider_test.js',
    {enabled: ['ash::features::kInputDeviceSettingsSplit']}
+ ],
+ [
+   'DevicePageDisplaySettingsMojoInterfaceProvider',
+   'device_page/display_settings_mojo_interface_provider_test.js'
  ],
  [
    'DevicePageKeyCombinationInputDialog',
@@ -455,6 +463,7 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
    'InternetPageInternetSubpageMenu',
    'internet_page/internet_subpage_menu_test.js'
  ],
+ ['InternetPageInternetSubpage', 'internet_page/internet_subpage_test.js'],
  [
    'InternetPageNetworkAlwaysOnVpn',
    'internet_page/network_always_on_vpn_test.js'
@@ -497,7 +506,6 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
    'InternetPageTetherConnectionDialog',
    'internet_page/tether_connection_dialog_test.js'
  ],
- ['InternetSubpage', 'internet_subpage_tests.js'],
  ['KerberosPage', 'kerberos_page/kerberos_page_test.js'],
  [
    'KerberosPageKerberosAccountsSubpage',
@@ -618,7 +626,6 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  [
    'OsA11yPageChromeVoxSubpage',
    'os_a11y_page/chromevox_subpage_test.js',
-   {enabled: ['features::kAccessibilityChromeVoxPageMigration']},
  ],
  [
    'OsA11yPageCursorAndTouchpadPage',
@@ -631,7 +638,6 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  [
    'OsA11yPageDisplayAndMagnificationSubpage',
    'os_a11y_page/display_and_magnification_subpage_test.js',
-   {enabled: ['features::kExperimentalAccessibilityColorEnhancementSettings']},
  ],
  [
    'OsA11yPageKeyboardAndTextInputPage',
@@ -727,10 +733,21 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
    'os_apps_page/app_management_page/supported_links_item_test.js',
  ],
  [
-   'OsAppsPageAppNotificationsPageAppNotificationsSubpage',
-   'os_apps_page/app_notifications_page/app_notifications_subpage_test.js'
+   'OsAppsPageAppNotificationsSubpageWithRevamp',
+   'os_apps_page/app_notifications_page/app_notifications_subpage_test.js',
+   {enabled: ['ash::features::kOsSettingsRevampWayfinding']},
+ ],
+ [
+   'OsAppsPageAppNotificationsSubpageWithoutRevamp',
+   'os_apps_page/app_notifications_page/app_notifications_subpage_test.js',
+   {disabled: ['ash::features::kOsSettingsRevampWayfinding']},
  ],
  ['OsAppsPage', 'os_apps_page/os_apps_page_test.js'],
+ [
+   'OsAppsPageAppNotificationsPageAppNotificationsManagerSubpage',
+   'os_apps_page/app_notifications_page/app_notifications_manager_subpage_test.js',
+   {enabled: ['ash::features::kOsSettingsRevampWayfinding']}
+ ],
  [
    'OsAppsPageManageIsolatedWebAppsPageManageIsolatedWebAppsSubpage',
    'os_apps_page/manage_isolated_web_apps_page/manage_isolated_web_apps_subpage_test.js'
@@ -959,7 +976,11 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
    'parental_controls_page/parental_controls_page_test.js'
  ],
  [
-   'OsPeopleAccountManagerSettingsCard',
+   'ParentalControlsSettingsCard',
+   'parental_controls_page/parental_controls_settings_card_test.js'
+ ],
+ [
+   'OsPeoplePageAccountManagerSettingsCard',
    'os_people_page/account_manager_settings_card_test.js',
  ],
  [
@@ -976,6 +997,10 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
        'ash::features::kLacrosProfileMigrationForceOff'
      ]
    },
+ ],
+ [
+   'OsPeoplePageAdditionalAccountsSettingsCard',
+   'os_people_page/additional_accounts_settings_card_test.js',
  ],
  [
    'PersonalizationPageWithPersonalizationHub',

@@ -132,8 +132,6 @@ void ChromeOSSystemProfileProvider::WriteLinkedAndroidPhoneProto(
   linked_android_phone_data->set_is_instant_tethering_enabled(IsFeatureEnabled(
       feature_states_map,
       ash::multidevice_setup::mojom::Feature::kInstantTethering));
-  linked_android_phone_data->set_is_messages_enabled(IsFeatureEnabled(
-      feature_states_map, ash::multidevice_setup::mojom::Feature::kMessages));
 }
 
 void ChromeOSSystemProfileProvider::UpdateMultiProfileUserCount(
@@ -234,7 +232,7 @@ void ChromeOSSystemProfileProvider::OnArcFeaturesParsed(
     LOG(WARNING) << "ArcFeatures not available on this build";
     return;
   }
-  arc_release_ = features->build_props.at("ro.build.version.release");
+  arc_release_ = features->build_props.release_version;
 }
 
 void ChromeOSSystemProfileProvider::OnTpmManagerGetRwVersionInfo(

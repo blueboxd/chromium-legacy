@@ -10,7 +10,6 @@ source_set("model") {
     "bring_android_tabs_to_ios_service_factory.mm",
   ]
   deps = [
-    ":features",
     ":metrics",
     "//base",
     "//components/keyed_service/core",
@@ -27,18 +26,10 @@ source_set("model") {
     "//ios/chrome/browser/shared/model/prefs:pref_names",
     "//ios/chrome/browser/shared/public/features:system_flags",
     "//ios/chrome/browser/sync/model",
-    "//ios/chrome/browser/synced_sessions",
-    "//ios/chrome/browser/url_loading",
-    "//ios/chrome/browser/url_loading:url_loading_params_header",
+    "//ios/chrome/browser/synced_sessions/model",
+    "//ios/chrome/browser/url_loading/model",
+    "//ios/chrome/browser/url_loading/model:url_loading_params_header",
   ]
-}
-
-source_set("features") {
-  sources = [
-    "features.h",
-    "features.mm",
-  ]
-  deps = [ "//base" ]
 }
 
 source_set("metrics") {
@@ -60,7 +51,7 @@ source_set("test_support") {
     "//components/prefs",
     "//components/segmentation_platform/embedder/default_model",
     "//ios/chrome/browser/sync/model",
-    "//ios/chrome/browser/synced_sessions",
+    "//ios/chrome/browser/synced_sessions/model",
   ]
 }
 
@@ -68,7 +59,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [ "bring_android_tabs_to_ios_service_unittest.mm" ]
   deps = [
-    ":features",
     ":metrics",
     ":model",
     "//base",
@@ -92,8 +82,8 @@ source_set("unit_tests") {
     "//ios/chrome/browser/shared/model/browser_state:test_support",
     "//ios/chrome/browser/shared/model/prefs:pref_names",
     "//ios/chrome/browser/sync/model",
-    "//ios/chrome/browser/url_loading",
-    "//ios/chrome/browser/url_loading:test_support",
+    "//ios/chrome/browser/url_loading/model",
+    "//ios/chrome/browser/url_loading/model:test_support",
     "//ios/web/public/test",
     "//testing/gtest",
   ]

@@ -242,7 +242,7 @@ void ClipboardPromise::HandleRead(ClipboardUnsanitizedFormats* formats) {
     if (unsanitized_formats.size() > 1) {
       script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotAllowedError,
-          "Support to read multiple unsanitized formats is not implemented."));
+          "Reading multiple unsanitized formats is not supported."));
       return;
     }
     if (unsanitized_formats[0] != kMimeTypeTextHTML) {
@@ -611,6 +611,11 @@ LocalFrame* ClipboardPromise::GetLocalFrame() const {
   }
   LocalFrame* local_frame = To<LocalDOMWindow>(context)->GetFrame();
   return local_frame;
+}
+
+ScriptState* ClipboardPromise::GetScriptState() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return script_promise_resolver_->GetScriptState();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> ClipboardPromise::GetTaskRunner() {

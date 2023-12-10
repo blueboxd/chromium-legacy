@@ -10,7 +10,7 @@ import 'chrome://resources/cr_elements/cr_input/cr_input.js';
 
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {DomRepeat, flush, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -124,6 +124,16 @@ export class AcceleratorEditDialogElement extends
   override connectedCallback(): void {
     super.connectedCallback();
     this.$.editDialog.showModal();
+
+    // Update the aria-label of editDialog, by default, it would include all the
+    // content within the dialog.
+    // 1. Remove 'aria-describedby' to avoid redundant information.
+    // 2. Set a custom aria-label indicating the dialog for certain shortcut is
+    // open.
+    this.$.editDialog.shadowRoot!.querySelector('#dialog')!.removeAttribute(
+        'aria-describedby');
+    this.$.editDialog.setTitleAriaLabel(
+        this.i18n('editDialogAriaLabel', this.description));
 
     this.eventTracker.add(
         window, 'accelerator-capturing-started',

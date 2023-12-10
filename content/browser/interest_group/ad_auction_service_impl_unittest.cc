@@ -14,8 +14,8 @@
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/feature_list.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
@@ -66,6 +66,8 @@
 #include "content/test/test_content_browser_client.h"
 #include "crypto/sha2.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/test_support/test_utils.h"
+#include "net/base/isolation_info.h"
 #include "net/third_party/quiche/src/quiche/oblivious_http/oblivious_http_gateway.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -190,7 +192,8 @@ class AllowInterestGroupContentBrowserClient : public TestContentBrowserClient {
 
     // Can join A interest groups on A top frames, B interest groups on B top
     // frames, C interest groups on C top frames, C interest groups on A top
-    // frames, and no.update.test interest groups on no.update.test top frames.
+    // frames, C interest groups on D top frames, and no.update.test interest
+    // groups on no.update.test top frames.
     return (top_frame_origin.host() == "a.test" &&
             api_origin.host() == "a.test") ||
            (top_frame_origin.host() == "b.test" &&
@@ -198,6 +201,8 @@ class AllowInterestGroupContentBrowserClient : public TestContentBrowserClient {
            (top_frame_origin.host() == "c.test" &&
             api_origin.host() == "c.test") ||
            (top_frame_origin.host() == "a.test" &&
+            api_origin.host() == "c.test") ||
+           (top_frame_origin.host() == "d.test" &&
             api_origin.host() == "c.test") ||
            (top_frame_origin.host() == "no.update.test" &&
             api_origin.host() == "no.update.test");
@@ -246,8 +251,11 @@ constexpr char kFledgeReportHeaders[] =
 // own URLLoaderInterceptor...so these are combined in this same class.
 class NetworkResponder {
  public:
-  // Register interest group update `response` to be served with JSON content
-  // type when a request to `url_path` is made.
+  using NetCallback =
+      base::RepeatingCallback<void(URLLoaderInterceptor::RequestParams*)>;
+
+  // Register interest group update `response` to be served with JSON
+  // content type when a request to `url_path` is made.
   void RegisterUpdateResponse(const std::string& url_path,
                               const std::string& response) {
     base::AutoLock auto_lock(lock_);
@@ -268,6 +276,14 @@ class NetworkResponder {
                               const std::string& response) {
     base::AutoLock auto_lock(lock_);
     report_map_[url_path] = response;
+  }
+
+  // Register a repeat callback to be served when a request to `url_path` is
+  // made.
+  void RegisterRepeatCallback(const std::string& url_path,
+                              const NetCallback callback) {
+    base::AutoLock auto_lock(lock_);
+    net_callback_map_[url_path] = callback;
   }
 
   // Registers a URL to use a "deferred" script response. For a deferred
@@ -397,8 +413,14 @@ class NetworkResponder {
  private:
   bool RequestHandler(URLLoaderInterceptor::RequestParams* params) {
     base::AutoLock auto_lock(lock_);
+    // Check if there is a registered repeat callback.
+    const auto callback_it =
+        net_callback_map_.find(params->url_request.url.path());
+    if (callback_it != net_callback_map_.end()) {
+      callback_it->second.Run(params);
+    }
 
-    // Check deferred responses map first.
+    // Check deferred responses map.
     const auto deferred_it =
         deferred_responses_map_.find(params->url_request.url.path());
     if (deferred_it != deferred_responses_map_.end()) {
@@ -540,6 +562,10 @@ class NetworkResponder {
 
   // Like `json_update_map_`, but for reporting requests.
   base::flat_map<std::string, std::string> report_map_ GUARDED_BY(lock_);
+
+  // Like `json_update_map_`, but for registered callbacks that will be given
+  // the `URLLoaderInterceptor::RequestParams*`.
+  base::flat_map<std::string, NetCallback> net_callback_map_ GUARDED_BY(lock_);
 
   // Only saves reporting requests that auctually received responses.
   std::vector<std::string> sent_reports_ GUARDED_BY(lock_);
@@ -829,23 +855,26 @@ class AdAuctionServiceImplTest : public RenderViewHostTestHarness {
     run_loop.Run();
 
     // Pipe should not have been closed - if it is expected to be closed, use
-    // JoinInterestGroupAndExpectPipeClosed().
+    // JoinInterestGroupAndExpectBadMessage().
     EXPECT_TRUE(interest_service.is_bound());
     EXPECT_TRUE(interest_service.is_connected());
   }
 
-  // Attempt to join an interest group and expect the Mojo pipe to be closed.
-  // This happens when an operation should have been rejected in the renderer,
-  // so should only happen if the renderer has been compromised.
+  // Attempts to join an interest group and expects the pipe to be closed and
+  // the passed in bad message Mojo error to be recorded. This happens when an
+  // operation should have been rejected in the renderer, so should only happen
+  // if the renderer has been compromised.
   //
   // If `rfh` is nullptr, uses the main frame.
-  void JoinInterestGroupAndExpectPipeClosed(
+  void JoinInterestGroupAndExpectBadMessage(
       const blink::InterestGroup& interest_group,
+      base::StringPiece expected_bad_message,
       RenderFrameHost* rfh = nullptr) {
     mojo::Remote<blink::mojom::AdAuctionService> interest_service;
     AdAuctionServiceImpl::CreateMojoService(
         rfh ? rfh : main_rfh(), interest_service.BindNewPipeAndPassReceiver());
 
+    mojo::test::BadMessageObserver observer;
     base::RunLoop run_loop;
     interest_service.set_disconnect_handler(run_loop.QuitClosure());
     interest_service->JoinInterestGroup(
@@ -853,6 +882,7 @@ class AdAuctionServiceImplTest : public RenderViewHostTestHarness {
           ADD_FAILURE() << "This callback should not be invoked.";
         }));
     run_loop.Run();
+    EXPECT_EQ(expected_bad_message, observer.WaitForBadMessage());
   }
 
   // Analogous to JoinInterestGroupAndFlush(), but leaves an interest
@@ -872,20 +902,23 @@ class AdAuctionServiceImplTest : public RenderViewHostTestHarness {
     run_loop.Run();
 
     // Pipe should not have been closed - if it is expected to be closed, use
-    // LeaveInterestGroupAndExpectPipeClosed().
+    // LeaveInterestGroupAndExpectBadMessage().
     EXPECT_TRUE(interest_service.is_bound());
     EXPECT_TRUE(interest_service.is_connected());
   }
 
-  // Analogous to JoinInterestGroupAndExpectPipeClosed(), but leaves an interest
+  // Analogous to JoinInterestGroupAndExpectBadMessage(), but leaves an interest
   // group instead of joining one.
-  void LeaveInterestGroupAndExpectPipeClosed(const url::Origin& owner,
-                                             const std::string& name,
-                                             RenderFrameHost* rfh = nullptr) {
+  void LeaveInterestGroupAndExpectBadMessage(
+      const url::Origin& owner,
+      const std::string& name,
+      base::StringPiece expected_bad_message,
+      RenderFrameHost* rfh = nullptr) {
     mojo::Remote<blink::mojom::AdAuctionService> interest_service;
     AdAuctionServiceImpl::CreateMojoService(
         rfh ? rfh : main_rfh(), interest_service.BindNewPipeAndPassReceiver());
 
+    mojo::test::BadMessageObserver observer;
     base::RunLoop run_loop;
     interest_service.set_disconnect_handler(run_loop.QuitClosure());
     interest_service->LeaveInterestGroup(
@@ -893,18 +926,21 @@ class AdAuctionServiceImplTest : public RenderViewHostTestHarness {
           ADD_FAILURE() << "This callback should not be invoked.";
         }));
     run_loop.Run();
+    EXPECT_EQ(expected_bad_message, observer.WaitForBadMessage());
   }
 
   // Calls ClearOriginJoinedInterestGroups() with the provided parameters, and
-  // expects the pipe to be closed, as happens when the renderer makes an
-  // invalid call.
-  void ClearOriginJoinedInterestGroupsAndExpectPipeClosed(
+  // expects the pipe to be closed and the passed in bad message Mojo error to
+  // be recorded.
+  void ClearOriginJoinedInterestGroupsAndExpectBadMessage(
       const url::Origin& owner,
+      const base::StringPiece expected_bad_message,
       RenderFrameHost* rfh = nullptr) {
     mojo::Remote<blink::mojom::AdAuctionService> interest_service;
     AdAuctionServiceImpl::CreateMojoService(
         rfh ? rfh : main_rfh(), interest_service.BindNewPipeAndPassReceiver());
 
+    mojo::test::BadMessageObserver observer;
     base::RunLoop run_loop;
     interest_service.set_disconnect_handler(run_loop.QuitClosure());
     interest_service->ClearOriginJoinedInterestGroups(
@@ -913,6 +949,7 @@ class AdAuctionServiceImplTest : public RenderViewHostTestHarness {
           ADD_FAILURE() << "This callback should not be invoked.";
         }));
     run_loop.Run();
+    EXPECT_EQ(expected_bad_message, observer.WaitForBadMessage());
   }
 
   // Updates registered interest groups according to their registered update
@@ -965,10 +1002,10 @@ class AdAuctionServiceImplTest : public RenderViewHostTestHarness {
         auction_config, mojo::NullReceiver(),
         base::BindLambdaForTesting(
             [&run_loop, &maybe_config](
-                bool manually_aborted,
+                bool aborted_by_script,
                 const absl::optional<
                     blink::FencedFrame::RedactedFencedFrameConfig>& config) {
-              EXPECT_FALSE(manually_aborted);
+              EXPECT_FALSE(aborted_by_script);
               maybe_config = config;
               run_loop.Quit();
             }));
@@ -1110,12 +1147,18 @@ TEST_F(AdAuctionServiceImplTest, JoinInterestGroupFrameNotHttps) {
 
   // Try to join an HTTPS interest group.
   blink::InterestGroup interest_group = CreateInterestGroup();
-  JoinInterestGroupAndExpectPipeClosed(interest_group);
+  JoinInterestGroupAndExpectBadMessage(
+      interest_group,
+      "Unexpected request: Interest groups may only be joined or left from "
+      "https origins");
   EXPECT_EQ(0, GetJoinCount(interest_group.owner, kInterestGroupName));
 
   // Try to join a same-origin HTTP interest group.
   interest_group.owner = kHttpOriginA;
-  JoinInterestGroupAndExpectPipeClosed(interest_group);
+  JoinInterestGroupAndExpectBadMessage(
+      interest_group,
+      "Validation failed for blink.mojom.AdAuctionService.4  "
+      "[VALIDATION_ERROR_DESERIALIZATION_FAILED]");
   EXPECT_EQ(0, GetJoinCount(kHttpOriginA, kInterestGroupName));
 }
 
@@ -1123,12 +1166,18 @@ TEST_F(AdAuctionServiceImplTest, JoinInterestGroupFrameNotHttps) {
 TEST_F(AdAuctionServiceImplTest, JoinInterestGroupOwnerNotHttps) {
   blink::InterestGroup interest_group = CreateInterestGroup();
   interest_group.owner = url::Origin::Create(GURL("http://a.test/"));
-  JoinInterestGroupAndExpectPipeClosed(interest_group);
+  JoinInterestGroupAndExpectBadMessage(
+      interest_group,
+      "Validation failed for blink.mojom.AdAuctionService.4  "
+      "[VALIDATION_ERROR_DESERIALIZATION_FAILED]");
   EXPECT_EQ(0, GetJoinCount(interest_group.owner, kInterestGroupName));
 
   // Secure, but not HTTPS.
   interest_group.owner = url::Origin::Create(GURL("wss://a.test/"));
-  JoinInterestGroupAndExpectPipeClosed(interest_group);
+  JoinInterestGroupAndExpectBadMessage(
+      interest_group,
+      "Validation failed for blink.mojom.AdAuctionService.4  "
+      "[VALIDATION_ERROR_DESERIALIZATION_FAILED]");
   EXPECT_EQ(0, GetJoinCount(interest_group.owner, kInterestGroupName));
 }
 
@@ -1141,19 +1190,28 @@ TEST_F(AdAuctionServiceImplTest, JoinInterestGroupDisallowedUrls) {
   // Test `bidding_url`.
   blink::InterestGroup interest_group = CreateInterestGroup();
   interest_group.bidding_url = kBadUrl;
-  JoinInterestGroupAndExpectPipeClosed(interest_group);
+  JoinInterestGroupAndExpectBadMessage(
+      interest_group,
+      "Validation failed for blink.mojom.AdAuctionService.4  "
+      "[VALIDATION_ERROR_DESERIALIZATION_FAILED]");
   EXPECT_EQ(0, GetJoinCount(kOriginA, kInterestGroupName));
 
   // Test `update_url`.
   interest_group = CreateInterestGroup();
   interest_group.update_url = kBadUrl;
-  JoinInterestGroupAndExpectPipeClosed(interest_group);
+  JoinInterestGroupAndExpectBadMessage(
+      interest_group,
+      "Validation failed for blink.mojom.AdAuctionService.4  "
+      "[VALIDATION_ERROR_DESERIALIZATION_FAILED]");
   EXPECT_EQ(0, GetJoinCount(kOriginA, kInterestGroupName));
 
   // Test `trusted_bidding_signals_url`.
   interest_group = CreateInterestGroup();
   interest_group.trusted_bidding_signals_url = kBadUrl;
-  JoinInterestGroupAndExpectPipeClosed(interest_group);
+  JoinInterestGroupAndExpectBadMessage(
+      interest_group,
+      "Validation failed for blink.mojom.AdAuctionService.4  "
+      "[VALIDATION_ERROR_DESERIALIZATION_FAILED]");
   EXPECT_EQ(0, GetJoinCount(kOriginA, kInterestGroupName));
 }
 
@@ -1218,7 +1276,10 @@ TEST_F(AdAuctionServiceImplTest, JoinMassiveInterestGroupFails) {
   blink::InterestGroup interest_group = CreateInterestGroup();
   // 1 MiB of '5' characters is over the size limit.
   interest_group.user_bidding_signals = std::string(1024 * 1024, '5');
-  JoinInterestGroupAndExpectPipeClosed(interest_group);
+  JoinInterestGroupAndExpectBadMessage(
+      interest_group,
+      "Validation failed for blink.mojom.AdAuctionService.4  "
+      "[VALIDATION_ERROR_DESERIALIZATION_FAILED]");
 
   EXPECT_EQ(0, GetJoinCount(kOriginA, kInterestGroupName));
   std::vector<StorageInterestGroup> groups =
@@ -1234,8 +1295,12 @@ TEST_F(AdAuctionServiceImplTest, LeaveClearInterestGroupOriginNotHttps) {
   const url::Origin kHttpOrigin = url::Origin::Create(kHttpUrl);
 
   NavigateAndCommit(kUrlA);
-  LeaveInterestGroupAndExpectPipeClosed(kHttpOrigin, kInterestGroupName);
-  ClearOriginJoinedInterestGroupsAndExpectPipeClosed(kHttpOrigin);
+  LeaveInterestGroupAndExpectBadMessage(
+      kHttpOrigin, kInterestGroupName,
+      "Unexpected request: Interest groups may only be owned by https origins");
+  ClearOriginJoinedInterestGroupsAndExpectBadMessage(
+      kHttpOrigin,
+      "Unexpected request: Interest groups may only be owned by https origins");
 }
 
 // Non-HTTPS interest origins should not be able to leave groups should be
@@ -1251,13 +1316,19 @@ TEST_F(AdAuctionServiceImplTest, LeaveClearInterestGroupFrameNotHttps) {
   // Navigate to an HTTP origin and try to leave a group with an HTTPS owner.
   // The request should be rejected.
   NavigateAndCommit(kHttpUrl);
-  LeaveInterestGroupAndExpectPipeClosed(kOriginA, kInterestGroupName);
+  LeaveInterestGroupAndExpectBadMessage(
+      kOriginA, kInterestGroupName,
+      "Unexpected request: Interest groups may only be joined or left from "
+      "https origins");
   EXPECT_EQ(1, GetJoinCount(kOriginA, kInterestGroupName));
 
   // Clearing shouldn't leave the IG, even if it's incorrectly executed, since
   // the joining origin is wrong, but still make sure there's no effect, just in
   // case.
-  ClearOriginJoinedInterestGroupsAndExpectPipeClosed(kOriginA);
+  ClearOriginJoinedInterestGroupsAndExpectBadMessage(
+      kOriginA,
+      "Unexpected request: Interest groups may only be joined or left from "
+      "https origins");
   EXPECT_EQ(1, GetJoinCount(kOriginA, kInterestGroupName));
 }
 
@@ -1341,7 +1412,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateAllUpdatableFields) {
 "adSizes": {"size_new": {"width": "300px", "height": "150px"}},
 "sizeGroups": {"group_new": ["size_new"]},
 "auctionServerRequestFlags": ["omit-ads", "include-full-ads"],
-"aggregationCoordinatorOrigin": "https://aggregation.coordinator.test/"
+"aggregationCoordinatorOrigin": "https://aggregation.coordinator.test"
 })",
                          kOriginStringA, kOriginStringA, kOriginStringA,
                          kOriginStringA, kOriginStringA, kOriginStringA));
@@ -1485,6 +1556,9 @@ TEST_F(AdAuctionServiceImplTest, UpdateAllUpdatableFields) {
       blink::AuctionServerRequestFlagsEnum::kOmitAds));
   EXPECT_TRUE(group.auction_server_request_flags.Has(
       blink::AuctionServerRequestFlagsEnum::kIncludeFullAds));
+  EXPECT_EQ(
+      "https://aggregation.coordinator.test",
+      group.aggregation_coordinator_origin.value_or(url::Origin()).Serialize());
 }
 
 // Only set the ads field -- the other fields shouldn't be changed.
@@ -2006,6 +2080,831 @@ TEST_F(AdAuctionServiceImplTest, UpdateMultipleInterestGroups) {
   ASSERT_EQ(second_group.ads->size(), 1u);
   EXPECT_EQ(second_group.ads.value()[0].render_url.spec(),
             "https://example.com/new_render2");
+}
+
+class AdAuctionServiceImplDifferentNIKDuringUpdateTest
+    : public AdAuctionServiceImplTest {
+ public:
+  AdAuctionServiceImplDifferentNIKDuringUpdateTest() {
+    feature_list_.InitAndEnableFeature(features::kGroupNIKByJoiningOrigin);
+  }
+
+ protected:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Join two interest groups with two different owners but one joining origin.
+// Check if they reuse same isolation info.
+TEST_F(AdAuctionServiceImplDifferentNIKDuringUpdateTest,
+       UpdateCheckNIKForTwoOwnersOneJoiningOrigin) {
+  constexpr char kGroupNameA[] = "groupA";
+  constexpr char kGroupNameC[] = "groupC";
+  net::IsolationInfo isolation_info1;
+  net::IsolationInfo isolation_info2;
+  base::RunLoop run_loop1;
+  base::RunLoop run_loop2;
+
+  network_responder_->RegisterRepeatCallback(
+      kUpdateUrlPath,
+      base::BindLambdaForTesting(
+          [&isolation_info1,
+           &run_loop1](URLLoaderInterceptor::RequestParams* params) {
+            if (params && params->url_request.trusted_params) {
+              isolation_info1 =
+                  params->url_request.trusted_params->isolation_info;
+            } else {
+              ADD_FAILURE() << "No params or trusted_params";
+            }
+            run_loop1.Quit();
+          }));
+  network_responder_->RegisterRepeatCallback(
+      kUpdateUrlPath2,
+      base::BindLambdaForTesting(
+          [&isolation_info2,
+           &run_loop2](URLLoaderInterceptor::RequestParams* params) {
+            if (params && params->url_request.trusted_params) {
+              isolation_info2 =
+                  params->url_request.trusted_params->isolation_info;
+            } else {
+              ADD_FAILURE() << "No params or trusted_params";
+            }
+            run_loop2.Quit();
+          }));
+  network_responder_->RegisterUpdateResponse(kUpdateUrlPath, R"({
+"ads": [{"renderURL": "https://example.com/new_render1"}]
+})");
+  network_responder_->RegisterUpdateResponse(kUpdateUrlPath2, R"({
+"ads": [{"renderURL": "https://example.com/new_render2"}]
+})");
+
+  // Navigate to top frame KUrlA.
+  NavigateAndCommit(kUrlA);
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(main_rfh());
+
+  // Attach a subframe with KUrlA to the top frame KUrlA.
+  // Create and update an interest group owned by kOriginA.
+  content::RenderFrameHost* subframeA = rfh_tester->AppendChild("subframeA");
+  subframeA =
+      NavigationSimulator::NavigateAndCommitFromDocument(kUrlA, subframeA);
+  blink::InterestGroup interest_group = CreateInterestGroup();
+  interest_group.name = kGroupNameA;
+  interest_group.update_url = kUrlA.Resolve(kUpdateUrlPath);
+  interest_group.bidding_url = kBiddingLogicUrlA;
+  interest_group.ads.emplace();
+  blink::InterestGroup::Ad ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group, subframeA);
+  EXPECT_EQ(1, GetJoinCount(kOriginA, kGroupNameA));
+  UpdateInterestGroupNoFlushForFrame(subframeA);
+
+  // Attach a subframe with KUrlC to the top frame KUrlA.
+  // Create and update an interest group owned by kOriginC.
+  content::RenderFrameHost* subframeC = rfh_tester->AppendChild("subframeC");
+  subframeC =
+      NavigationSimulator::NavigateAndCommitFromDocument(kUrlC, subframeC);
+  blink::InterestGroup interest_group_2 = CreateInterestGroup();
+  interest_group_2.name = kGroupNameC;
+  interest_group_2.owner = kOriginC;
+  interest_group_2.update_url = kUrlC.Resolve(kUpdateUrlPath2);
+  interest_group_2.bidding_url = kUrlC.Resolve(kBiddingUrlPath);
+  interest_group_2.ads.emplace();
+  ad = blink::InterestGroup::Ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group_2.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group_2, subframeC);
+  EXPECT_EQ(1, GetJoinCount(kOriginC, kGroupNameC));
+  UpdateInterestGroupNoFlushForFrame(subframeC);
+
+  run_loop1.Run();
+  run_loop2.Run();
+  task_environment()->RunUntilIdle();
+  ASSERT_TRUE(isolation_info1.IsEqualForTesting(isolation_info2));
+}
+
+// Join two interest groups with one owner but two different joining origins.
+// Check if they use different isolation info.
+TEST_F(AdAuctionServiceImplDifferentNIKDuringUpdateTest,
+       UpdateCheckNIKForOneOwnerTwoJoiningOrigins) {
+  constexpr char kGroupName1[] = "group1";
+  constexpr char kGroupName2[] = "group2";
+  net::IsolationInfo isolation_info1;
+  net::IsolationInfo isolation_info2;
+  base::RunLoop run_loop1;
+  base::RunLoop run_loop2;
+
+  network_responder_->RegisterRepeatCallback(
+      kUpdateUrlPath,
+      base::BindLambdaForTesting(
+          [&isolation_info1,
+           &run_loop1](URLLoaderInterceptor::RequestParams* params) {
+            if (params && params->url_request.trusted_params) {
+              isolation_info1 =
+                  params->url_request.trusted_params->isolation_info;
+            } else {
+              ADD_FAILURE() << "No params or trusted_params";
+            }
+            run_loop1.Quit();
+          }));
+  network_responder_->RegisterRepeatCallback(
+      kUpdateUrlPath2,
+      base::BindLambdaForTesting(
+          [&isolation_info2,
+           &run_loop2](URLLoaderInterceptor::RequestParams* params) {
+            if (params && params->url_request.trusted_params) {
+              isolation_info2 =
+                  params->url_request.trusted_params->isolation_info;
+            } else {
+              ADD_FAILURE() << "No params or trusted_params";
+            }
+            run_loop2.Quit();
+          }));
+  network_responder_->RegisterUpdateResponse(kUpdateUrlPath, R"({
+"ads": [{"renderURL": "https://example.com/new_render1"}]
+})");
+  network_responder_->RegisterUpdateResponse(kUpdateUrlPath2, R"({
+"ads": [{"renderURL": "https://example.com/new_render2"}]
+})");
+
+  // Navigate to top frame KUrlA.
+  NavigateAndCommit(kUrlA);
+  content::RenderFrameHostTester* rfh_tester_1 =
+      content::RenderFrameHostTester::For(main_rfh());
+
+  // Attach a subframe with KUrlC to the top frame KUrlA.
+  // Create and update an interest group owned by kOriginC.
+  content::RenderFrameHost* subframe_1 = rfh_tester_1->AppendChild("subframe1");
+  subframe_1 =
+      NavigationSimulator::NavigateAndCommitFromDocument(kUrlC, subframe_1);
+  blink::InterestGroup interest_group = CreateInterestGroup();
+  interest_group.name = kGroupName1;
+  interest_group.owner = kOriginC;
+  interest_group.update_url = kUrlC.Resolve(kUpdateUrlPath);
+  interest_group.bidding_url = kUrlC.Resolve(kBiddingUrlPath);
+  interest_group.ads.emplace();
+  blink::InterestGroup::Ad ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group, subframe_1);
+  EXPECT_EQ(1, GetJoinCount(kOriginC, kGroupName1));
+  UpdateInterestGroupNoFlushForFrame(subframe_1);
+
+  // Navigate to top frame kUrlC.
+  NavigateAndCommit(kUrlC);
+  content::RenderFrameHostTester* rfh_tester_2 =
+      content::RenderFrameHostTester::For(main_rfh());
+
+  // Attach a subframe with KUrlC to the top frame KUrlC.
+  // Create and update an interest group owned by kOriginC.
+  content::RenderFrameHost* subframe_2 = rfh_tester_2->AppendChild("subframe2");
+  subframe_2 =
+      NavigationSimulator::NavigateAndCommitFromDocument(kUrlC, subframe_2);
+  blink::InterestGroup interest_group_2 = CreateInterestGroup();
+  interest_group_2.name = kGroupName2;
+  interest_group_2.owner = kOriginC;
+  interest_group_2.update_url = kUrlC.Resolve(kUpdateUrlPath2);
+  interest_group_2.bidding_url = kUrlC.Resolve(kBiddingUrlPath);
+  interest_group_2.ads.emplace();
+  ad = blink::InterestGroup::Ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group_2.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group_2, subframe_2);
+  EXPECT_EQ(1, GetJoinCount(kOriginC, kGroupName2));
+  UpdateInterestGroupNoFlushForFrame(subframe_2);
+
+  run_loop1.Run();
+  run_loop2.Run();
+  ASSERT_FALSE(isolation_info1.IsEqualForTesting(isolation_info2));
+}
+
+// Join two interest groups with two different owners but one joining origin.
+// Ensure the second one join after all updating work completes and the queue is
+// popped empty. Check that the isolation info is different.
+TEST_F(AdAuctionServiceImplDifferentNIKDuringUpdateTest,
+       UpdatePopOwnerQueueToEmptyTriggerClearIsolationMap) {
+  constexpr char kGroupNameA[] = "groupA";
+  constexpr char kGroupNameC[] = "groupC";
+  net::IsolationInfo isolation_info1;
+  net::IsolationInfo isolation_info2;
+  base::RunLoop run_loop1;
+  base::RunLoop run_loop2;
+
+  network_responder_->RegisterRepeatCallback(
+      kUpdateUrlPath,
+      base::BindLambdaForTesting(
+          [&isolation_info1,
+           &run_loop1](URLLoaderInterceptor::RequestParams* params) {
+            if (params && params->url_request.trusted_params) {
+              isolation_info1 =
+                  params->url_request.trusted_params->isolation_info;
+            } else {
+              ADD_FAILURE() << "No params or trusted_params";
+            }
+            run_loop1.Quit();
+          }));
+  network_responder_->RegisterRepeatCallback(
+      kUpdateUrlPath2,
+      base::BindLambdaForTesting(
+          [&isolation_info2,
+           &run_loop2](URLLoaderInterceptor::RequestParams* params) {
+            if (params && params->url_request.trusted_params) {
+              isolation_info2 =
+                  params->url_request.trusted_params->isolation_info;
+            } else {
+              ADD_FAILURE() << "No params or trusted_params";
+            }
+            run_loop2.Quit();
+          }));
+  network_responder_->RegisterUpdateResponse(kUpdateUrlPath, R"({
+"ads": [{"renderURL": "https://example.com/new_render1"}]
+})");
+  network_responder_->RegisterUpdateResponse(kUpdateUrlPath2, R"({
+"ads": [{"renderURL": "https://example.com/new_render2"}]
+})");
+
+  // Navigate to top frame KUrlA.
+  NavigateAndCommit(kUrlA);
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(main_rfh());
+
+  // Attach a subframe with KUrlA to the top frame KUrlA.
+  // Create and update an interest group owned by kOriginA.
+  content::RenderFrameHost* subframeA = rfh_tester->AppendChild("subframeA");
+  subframeA =
+      NavigationSimulator::NavigateAndCommitFromDocument(kUrlA, subframeA);
+  blink::InterestGroup interest_group = CreateInterestGroup();
+  interest_group.name = kGroupNameA;
+  interest_group.update_url = kUrlA.Resolve(kUpdateUrlPath);
+  interest_group.bidding_url = kBiddingLogicUrlA;
+  interest_group.ads.emplace();
+  blink::InterestGroup::Ad ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group, subframeA);
+  EXPECT_EQ(1, GetJoinCount(kOriginA, kGroupNameA));
+  UpdateInterestGroupNoFlushForFrame(subframeA);
+  run_loop1.Run();
+
+  // Ensure the update process is done for the first interest group.
+  task_environment()->RunUntilIdle();
+
+  // Attach a subframe with KUrlC to the top frame KUrlA.
+  // Create and update an interest group owned by kOriginC.
+  content::RenderFrameHost* subframeC = rfh_tester->AppendChild("subframeC");
+  subframeC =
+      NavigationSimulator::NavigateAndCommitFromDocument(kUrlC, subframeC);
+  blink::InterestGroup interest_group_2 = CreateInterestGroup();
+  interest_group_2.name = kGroupNameC;
+  interest_group_2.owner = kOriginC;
+  interest_group_2.update_url = kUrlC.Resolve(kUpdateUrlPath2);
+  interest_group_2.bidding_url = kUrlC.Resolve(kBiddingUrlPath);
+  interest_group_2.ads.emplace();
+  ad = blink::InterestGroup::Ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group_2.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group_2, subframeC);
+  EXPECT_EQ(1, GetJoinCount(kOriginC, kGroupNameC));
+  UpdateInterestGroupNoFlushForFrame(subframeC);
+  run_loop2.Run();
+
+  ASSERT_FALSE(isolation_info1.IsEqualForTesting(isolation_info2));
+}
+
+// Join two interest groups with two different owners but one joining origin.
+// Ensure the owner queue gets cleared before the second interest group join.
+TEST_F(AdAuctionServiceImplDifferentNIKDuringUpdateTest,
+       UpdateClearOwnerQueueTriggerClearIsolationMap) {
+  constexpr char kGroupNameA[] = "groupA";
+  constexpr char kGroupNameC[] = "groupC";
+  net::IsolationInfo isolation_info1;
+  net::IsolationInfo isolation_info2;
+  base::RunLoop run_loop1;
+  base::RunLoop run_loop2;
+
+  network_responder_->RegisterRepeatCallback(
+      kUpdateUrlPath,
+      base::BindLambdaForTesting(
+          [&isolation_info1,
+           &run_loop1](URLLoaderInterceptor::RequestParams* params) {
+            if (params && params->url_request.trusted_params) {
+              isolation_info1 =
+                  params->url_request.trusted_params->isolation_info;
+            } else {
+              ADD_FAILURE() << "No params or trusted_params";
+            }
+            run_loop1.Quit();
+          }));
+  network_responder_->RegisterRepeatCallback(
+      kUpdateUrlPath2,
+      base::BindLambdaForTesting(
+          [&isolation_info2,
+           &run_loop2](URLLoaderInterceptor::RequestParams* params) {
+            if (params && params->url_request.trusted_params) {
+              isolation_info2 =
+                  params->url_request.trusted_params->isolation_info;
+            } else {
+              ADD_FAILURE() << "No params or trusted_params";
+            }
+            run_loop2.Quit();
+          }));
+
+  // Disconnect the network during the update process and use network
+  // disconnected error to trigger the clear owner queue action.
+  network_responder_->FailUpdateRequestWithError(
+      kUpdateUrlPath, net::ERR_INTERNET_DISCONNECTED);
+  network_responder_->RegisterUpdateResponse(kUpdateUrlPath2, R"({
+"ads": [{"renderURL": "https://example.com/new_render2"}]
+})");
+
+  // Navigate to top frame KUrlA.
+  NavigateAndCommit(kUrlA);
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(main_rfh());
+
+  // Attach a subframe with KUrlA to the top frame KUrlA.
+  // Create and update an interest group owned by kOriginA.
+  content::RenderFrameHost* subframeA = rfh_tester->AppendChild("subframeA");
+  subframeA =
+      NavigationSimulator::NavigateAndCommitFromDocument(kUrlA, subframeA);
+  blink::InterestGroup interest_group = CreateInterestGroup();
+  interest_group.name = kGroupNameA;
+  interest_group.update_url = kUrlA.Resolve(kUpdateUrlPath);
+  interest_group.bidding_url = kBiddingLogicUrlA;
+  interest_group.ads.emplace();
+  blink::InterestGroup::Ad ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group, subframeA);
+  EXPECT_EQ(1, GetJoinCount(kOriginA, kGroupNameA));
+  UpdateInterestGroupNoFlushForFrame(subframeA);
+  run_loop1.Run();
+
+  // Attach a subframe with KUrlC to the top frame KUrlA.
+  // Create and update an interest group owned by kOriginC.
+  content::RenderFrameHost* subframeC = rfh_tester->AppendChild("subframeC");
+  subframeC =
+      NavigationSimulator::NavigateAndCommitFromDocument(kUrlC, subframeC);
+  blink::InterestGroup interest_group_2 = CreateInterestGroup();
+  interest_group_2.name = kGroupNameC;
+  interest_group_2.owner = kOriginC;
+  interest_group_2.update_url = kUrlC.Resolve(kUpdateUrlPath2);
+  interest_group_2.bidding_url = kUrlC.Resolve(kBiddingUrlPath);
+  interest_group_2.ads.emplace();
+  ad = blink::InterestGroup::Ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group_2.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group_2, subframeC);
+  EXPECT_EQ(1, GetJoinCount(kOriginC, kGroupNameC));
+  UpdateInterestGroupNoFlushForFrame(subframeC);
+  run_loop2.Run();
+
+  ASSERT_FALSE(isolation_info1.IsEqualForTesting(isolation_info2));
+}
+
+// If there are two groups with joining origin A, two groups with joining origin
+// C, and batch limitation size as three, it cannot mix different joining
+// origins together in one batch.
+TEST_F(AdAuctionServiceImplDifferentNIKDuringUpdateTest,
+       UpdateMultipleJoiningOriginsAllLessThanBatchSize) {
+  manager_->set_max_parallel_updates_for_testing(3);
+  constexpr char kServerResponse[] = R"({
+"ads": [{"renderURL": "https://example.com/new_render"}]
+})";
+  constexpr char kGroupName1[] = "group1";
+  constexpr char kGroupName2[] = "group2";
+  constexpr char kGroupName3[] = "group3";
+  constexpr char kGroupName4[] = "group4";
+
+  // Navigate to top frame KUrlA.
+  NavigateAndCommit(kUrlA);
+  content::RenderFrameHostTester* rfh_tester_1 =
+      content::RenderFrameHostTester::For(main_rfh());
+
+  // Attach a subframe with KUrlC to the top frame KUrlA.
+  // Create and update an interest group owned by kOriginC.
+  content::RenderFrameHost* subframe_1 = rfh_tester_1->AppendChild("subframe1");
+  subframe_1 =
+      NavigationSimulator::NavigateAndCommitFromDocument(kUrlC, subframe_1);
+
+  blink::InterestGroup interest_group = CreateInterestGroup();
+  interest_group.name = kGroupName1;
+  interest_group.owner = kOriginC;
+  interest_group.update_url = kUrlC.Resolve(kUpdateUrlPath);
+  interest_group.bidding_url = kUrlC.Resolve(kBiddingUrlPath);
+  interest_group.ads.emplace();
+  blink::InterestGroup::Ad ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group, subframe_1);
+  EXPECT_EQ(1, GetJoinCount(kOriginC, kGroupName1));
+
+  blink::InterestGroup interest_group_2 = CreateInterestGroup();
+  interest_group_2.name = kGroupName2;
+  interest_group_2.owner = kOriginC;
+  interest_group_2.update_url = kUrlC.Resolve(kUpdateUrlPath2);
+  interest_group_2.bidding_url = kUrlC.Resolve(kBiddingUrlPath);
+  interest_group_2.ads.emplace();
+  ad = blink::InterestGroup::Ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group_2.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group_2, subframe_1);
+  EXPECT_EQ(1, GetJoinCount(kOriginC, kGroupName2));
+
+  // Navigate to top frame kUrlC.
+  NavigateAndCommit(kUrlC);
+  content::RenderFrameHostTester* rfh_tester_2 =
+      content::RenderFrameHostTester::For(main_rfh());
+
+  // Attach a subframe with KUrlC to the top frame KUrlC.
+  // Create and update an interest group owned by kOriginC.
+  content::RenderFrameHost* subframe_2 = rfh_tester_2->AppendChild("subframe2");
+  subframe_2 =
+      NavigationSimulator::NavigateAndCommitFromDocument(kUrlC, subframe_2);
+
+  blink::InterestGroup interest_group_3 = CreateInterestGroup();
+  interest_group_3.name = kGroupName3;
+  interest_group_3.owner = kOriginC;
+  interest_group_3.update_url = kUrlC.Resolve(kUpdateUrlPath3);
+  interest_group_3.bidding_url = kUrlC.Resolve(kBiddingUrlPath);
+  interest_group_3.ads.emplace();
+  ad = blink::InterestGroup::Ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group_3.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group_3, subframe_2);
+  EXPECT_EQ(1, GetJoinCount(kOriginC, kGroupName3));
+
+  blink::InterestGroup interest_group_4 = CreateInterestGroup();
+  interest_group_4.name = kGroupName4;
+  interest_group_4.owner = kOriginC;
+  interest_group_4.update_url = kUrlC.Resolve(kUpdateUrlPath4);
+  interest_group_4.bidding_url = kUrlC.Resolve(kBiddingUrlPath);
+  interest_group_4.ads.emplace();
+  ad = blink::InterestGroup::Ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group_4.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group_4, subframe_2);
+  EXPECT_EQ(1, GetJoinCount(kOriginC, kGroupName3));
+
+  network_responder_->RegisterDeferredUpdateResponse(kUpdateUrlPath);
+  network_responder_->RegisterDeferredUpdateResponse(kUpdateUrlPath2);
+  network_responder_->RegisterDeferredUpdateResponse(kUpdateUrlPath3);
+  network_responder_->RegisterDeferredUpdateResponse(kUpdateUrlPath4);
+  UpdateInterestGroupNoFlush();
+  task_environment()->RunUntilIdle();
+  EXPECT_EQ(network_responder_->UpdateCount(), 2u);
+
+  network_responder_->DoDeferredUpdateResponse(kUpdateUrlPath, kServerResponse);
+  network_responder_->DoDeferredUpdateResponse(kUpdateUrlPath2,
+                                               kServerResponse);
+  task_environment()->RunUntilIdle();
+  EXPECT_EQ(network_responder_->UpdateCount(), 4u);
+}
+
+// If there are three groups with joining origin A, one group with joining
+// origin C, and batch limitation size as three, it can send three groups with
+// joining origin A in one batch.
+TEST_F(AdAuctionServiceImplDifferentNIKDuringUpdateTest,
+       UpdateMultipleJoiningOriginsAndOneEqualToBatchSize) {
+  manager_->set_max_parallel_updates_for_testing(3);
+  constexpr char kServerResponse[] = R"({
+"ads": [{"renderURL": "https://example.com/new_render"}]
+})";
+  constexpr char kGroupName1[] = "group1";
+  constexpr char kGroupName2[] = "group2";
+  constexpr char kGroupName3[] = "group3";
+  constexpr char kGroupName4[] = "group4";
+
+  // Navigate to top frame KUrlA.
+  NavigateAndCommit(kUrlA);
+  content::RenderFrameHostTester* rfh_tester_1 =
+      content::RenderFrameHostTester::For(main_rfh());
+
+  // Attach a subframe with KUrlC to the top frame KUrlA.
+  // Create and update an interest group owned by kOriginC.
+  content::RenderFrameHost* subframe_1 = rfh_tester_1->AppendChild("subframe1");
+  subframe_1 =
+      NavigationSimulator::NavigateAndCommitFromDocument(kUrlC, subframe_1);
+
+  blink::InterestGroup interest_group = CreateInterestGroup();
+  interest_group.name = kGroupName1;
+  interest_group.owner = kOriginC;
+  interest_group.update_url = kUrlC.Resolve(kUpdateUrlPath);
+  interest_group.bidding_url = kUrlC.Resolve(kBiddingUrlPath);
+  interest_group.ads.emplace();
+  blink::InterestGroup::Ad ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group, subframe_1);
+  EXPECT_EQ(1, GetJoinCount(kOriginC, kGroupName1));
+
+  blink::InterestGroup interest_group_2 = CreateInterestGroup();
+  interest_group_2.name = kGroupName2;
+  interest_group_2.owner = kOriginC;
+  interest_group_2.update_url = kUrlC.Resolve(kUpdateUrlPath2);
+  interest_group_2.bidding_url = kUrlC.Resolve(kBiddingUrlPath);
+  interest_group_2.ads.emplace();
+  ad = blink::InterestGroup::Ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group_2.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group_2, subframe_1);
+  EXPECT_EQ(1, GetJoinCount(kOriginC, kGroupName2));
+
+  blink::InterestGroup interest_group_3 = CreateInterestGroup();
+  interest_group_3.name = kGroupName3;
+  interest_group_3.owner = kOriginC;
+  interest_group_3.update_url = kUrlC.Resolve(kUpdateUrlPath3);
+  interest_group_3.bidding_url = kUrlC.Resolve(kBiddingUrlPath);
+  interest_group_3.ads.emplace();
+  ad = blink::InterestGroup::Ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group_3.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group_3, subframe_1);
+  EXPECT_EQ(1, GetJoinCount(kOriginC, kGroupName3));
+
+  // Navigate to top frame kUrlC.
+  NavigateAndCommit(kUrlC);
+  content::RenderFrameHostTester* rfh_tester_2 =
+      content::RenderFrameHostTester::For(main_rfh());
+
+  // Attach a subframe with KUrlC to the top frame KUrlC.
+  // Create and update an interest group owned by kOriginC.
+  content::RenderFrameHost* subframe_2 = rfh_tester_2->AppendChild("subframe2");
+  subframe_2 =
+      NavigationSimulator::NavigateAndCommitFromDocument(kUrlC, subframe_2);
+
+  blink::InterestGroup interest_group_4 = CreateInterestGroup();
+  interest_group_4.name = kGroupName4;
+  interest_group_4.owner = kOriginC;
+  interest_group_4.update_url = kUrlC.Resolve(kUpdateUrlPath4);
+  interest_group_4.bidding_url = kUrlC.Resolve(kBiddingUrlPath);
+  interest_group_4.ads.emplace();
+  ad = blink::InterestGroup::Ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group_4.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group_4, subframe_2);
+  EXPECT_EQ(1, GetJoinCount(kOriginC, kGroupName4));
+
+  network_responder_->RegisterDeferredUpdateResponse(kUpdateUrlPath);
+  network_responder_->RegisterDeferredUpdateResponse(kUpdateUrlPath2);
+  network_responder_->RegisterDeferredUpdateResponse(kUpdateUrlPath3);
+  network_responder_->RegisterDeferredUpdateResponse(kUpdateUrlPath4);
+  UpdateInterestGroupNoFlush();
+  task_environment()->RunUntilIdle();
+  EXPECT_EQ(network_responder_->UpdateCount(), 3u);
+
+  network_responder_->DoDeferredUpdateResponse(kUpdateUrlPath, kServerResponse);
+  network_responder_->DoDeferredUpdateResponse(kUpdateUrlPath2,
+                                               kServerResponse);
+  network_responder_->DoDeferredUpdateResponse(kUpdateUrlPath3,
+                                               kServerResponse);
+  task_environment()->RunUntilIdle();
+  EXPECT_EQ(network_responder_->UpdateCount(), 4u);
+}
+
+// If there are three groups with joining origin A, one group with joining
+// origin C, and batch limitation size as two, it can send two groups with
+// joining origin A in the first batch, and remain two groups with different
+// joining origins together in the second batch.
+TEST_F(AdAuctionServiceImplDifferentNIKDuringUpdateTest,
+       UpdateMultipleJoiningOriginsAndOneMoreThanBatchSize) {
+  manager_->set_max_parallel_updates_for_testing(2);
+  constexpr char kServerResponse[] = R"({
+"ads": [{"renderURL": "https://example.com/new_render"}]
+})";
+  constexpr char kGroupName1[] = "group1";
+  constexpr char kGroupName2[] = "group2";
+  constexpr char kGroupName3[] = "group3";
+  constexpr char kGroupName4[] = "group4";
+
+  // Navigate to top frame KUrlA.
+  NavigateAndCommit(kUrlA);
+  content::RenderFrameHostTester* rfh_tester_1 =
+      content::RenderFrameHostTester::For(main_rfh());
+
+  // Attach a subframe with KUrlC to the top frame KUrlA.
+  // Create and update an interest group owned by kOriginC.
+  content::RenderFrameHost* subframe_1 = rfh_tester_1->AppendChild("subframe1");
+  subframe_1 =
+      NavigationSimulator::NavigateAndCommitFromDocument(kUrlC, subframe_1);
+
+  blink::InterestGroup interest_group = CreateInterestGroup();
+  interest_group.name = kGroupName1;
+  interest_group.owner = kOriginC;
+  interest_group.update_url = kUrlC.Resolve(kUpdateUrlPath);
+  interest_group.bidding_url = kUrlC.Resolve(kBiddingUrlPath);
+  interest_group.ads.emplace();
+  blink::InterestGroup::Ad ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group, subframe_1);
+  EXPECT_EQ(1, GetJoinCount(kOriginC, kGroupName1));
+
+  blink::InterestGroup interest_group_2 = CreateInterestGroup();
+  interest_group_2.name = kGroupName2;
+  interest_group_2.owner = kOriginC;
+  interest_group_2.update_url = kUrlC.Resolve(kUpdateUrlPath2);
+  interest_group_2.bidding_url = kUrlC.Resolve(kBiddingUrlPath);
+  interest_group_2.ads.emplace();
+  ad = blink::InterestGroup::Ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group_2.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group_2, subframe_1);
+  EXPECT_EQ(1, GetJoinCount(kOriginC, kGroupName2));
+
+  blink::InterestGroup interest_group_3 = CreateInterestGroup();
+  interest_group_3.name = kGroupName3;
+  interest_group_3.owner = kOriginC;
+  interest_group_3.update_url = kUrlC.Resolve(kUpdateUrlPath3);
+  interest_group_3.bidding_url = kUrlC.Resolve(kBiddingUrlPath);
+  interest_group_3.ads.emplace();
+  ad = blink::InterestGroup::Ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group_3.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group_3, subframe_1);
+  EXPECT_EQ(1, GetJoinCount(kOriginC, kGroupName3));
+
+  // Navigate to top frame kUrlC.
+  NavigateAndCommit(kUrlC);
+  content::RenderFrameHostTester* rfh_tester_2 =
+      content::RenderFrameHostTester::For(main_rfh());
+
+  // Attach a subframe with KUrlC to the top frame KUrlC.
+  // Create and update an interest group owned by kOriginC.
+  content::RenderFrameHost* subframe_2 = rfh_tester_2->AppendChild("subframe2");
+  subframe_2 =
+      NavigationSimulator::NavigateAndCommitFromDocument(kUrlC, subframe_2);
+
+  blink::InterestGroup interest_group_4 = CreateInterestGroup();
+  interest_group_4.name = kGroupName4;
+  interest_group_4.owner = kOriginC;
+  interest_group_4.update_url = kUrlC.Resolve(kUpdateUrlPath4);
+  interest_group_4.bidding_url = kUrlC.Resolve(kBiddingUrlPath);
+  interest_group_4.ads.emplace();
+  ad = blink::InterestGroup::Ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group_4.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group_4, subframe_2);
+  EXPECT_EQ(1, GetJoinCount(kOriginC, kGroupName3));
+
+  network_responder_->RegisterDeferredUpdateResponse(kUpdateUrlPath);
+  network_responder_->RegisterDeferredUpdateResponse(kUpdateUrlPath2);
+  network_responder_->RegisterDeferredUpdateResponse(kUpdateUrlPath3);
+  network_responder_->RegisterDeferredUpdateResponse(kUpdateUrlPath4);
+  UpdateInterestGroupNoFlush();
+  task_environment()->RunUntilIdle();
+  EXPECT_EQ(network_responder_->UpdateCount(), 2u);
+
+  if (network_responder_->HasPendingResponse(kUpdateUrlPath)) {
+    network_responder_->DoDeferredUpdateResponse(kUpdateUrlPath,
+                                                 kServerResponse);
+  }
+  if (network_responder_->HasPendingResponse(kUpdateUrlPath2)) {
+    network_responder_->DoDeferredUpdateResponse(kUpdateUrlPath2,
+                                                 kServerResponse);
+  }
+  if (network_responder_->HasPendingResponse(kUpdateUrlPath3)) {
+    network_responder_->DoDeferredUpdateResponse(kUpdateUrlPath3,
+                                                 kServerResponse);
+  }
+  task_environment()->RunUntilIdle();
+  EXPECT_EQ(network_responder_->UpdateCount(), 4u);
+}
+
+// Test if the interest group can still be able to update after delaying once.
+TEST_F(AdAuctionServiceImplDifferentNIKDuringUpdateTest,
+       UpdateMultipleBatches) {
+  manager_->set_max_parallel_updates_for_testing(2);
+  constexpr char kServerResponse[] = R"({
+"ads": [{"renderURL": "https://example.com/new_render"}]
+})";
+  constexpr char kGroupName1[] = "group1";
+  constexpr char kGroupName2[] = "group2";
+  constexpr char kGroupName3[] = "group3";
+  constexpr char kGroupName4[] = "group4";
+
+  // Navigate to top frame KUrlA.
+  NavigateAndCommit(kUrlA);
+  content::RenderFrameHostTester* rfh_tester_1 =
+      content::RenderFrameHostTester::For(main_rfh());
+
+  // Attach a subframe with KUrlC to the top frame KUrlA.
+  // Create and update an interest group owned by kOriginC.
+  content::RenderFrameHost* subframe_1 = rfh_tester_1->AppendChild("subframe1");
+  subframe_1 =
+      NavigationSimulator::NavigateAndCommitFromDocument(kUrlC, subframe_1);
+
+  blink::InterestGroup interest_group = CreateInterestGroup();
+  interest_group.name = kGroupName1;
+  interest_group.owner = kOriginC;
+  interest_group.update_url = kUrlC.Resolve(kUpdateUrlPath);
+  interest_group.bidding_url = kUrlC.Resolve(kBiddingUrlPath);
+  interest_group.ads.emplace();
+  blink::InterestGroup::Ad ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group, subframe_1);
+  EXPECT_EQ(1, GetJoinCount(kOriginC, kGroupName1));
+
+  // Navigate to top frame kUrlC.
+  NavigateAndCommit(kUrlC);
+  content::RenderFrameHostTester* rfh_tester_2 =
+      content::RenderFrameHostTester::For(main_rfh());
+
+  // Attach a subframe with KUrlC to the top frame KUrlC.
+  // Create and update an interest group owned by kOriginC.
+  content::RenderFrameHost* subframe_2 = rfh_tester_2->AppendChild("subframe2");
+  subframe_2 =
+      NavigationSimulator::NavigateAndCommitFromDocument(kUrlC, subframe_2);
+
+  blink::InterestGroup interest_group_2 = CreateInterestGroup();
+  interest_group_2.name = kGroupName2;
+  interest_group_2.owner = kOriginC;
+  interest_group_2.update_url = kUrlC.Resolve(kUpdateUrlPath2);
+  interest_group_2.bidding_url = kUrlC.Resolve(kBiddingUrlPath);
+  interest_group_2.ads.emplace();
+  ad = blink::InterestGroup::Ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group_2.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group_2, subframe_2);
+  EXPECT_EQ(1, GetJoinCount(kOriginC, kGroupName2));
+
+  blink::InterestGroup interest_group_3 = CreateInterestGroup();
+  interest_group_3.name = kGroupName3;
+  interest_group_3.owner = kOriginC;
+  interest_group_3.update_url = kUrlC.Resolve(kUpdateUrlPath3);
+  interest_group_3.bidding_url = kUrlC.Resolve(kBiddingUrlPath);
+  interest_group_3.ads.emplace();
+  ad = blink::InterestGroup::Ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group_3.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group_3, subframe_2);
+  EXPECT_EQ(1, GetJoinCount(kOriginC, kGroupName3));
+
+  // Navigate to top frame kUrlD.
+  NavigateAndCommit(kUrlD);
+  content::RenderFrameHostTester* rfh_tester_3 =
+      content::RenderFrameHostTester::For(main_rfh());
+
+  // Attach a subframe with KUrlC to the top frame KUrlD.
+  // Create and update an interest group owned by kOriginC.
+  content::RenderFrameHost* subframe_3 = rfh_tester_3->AppendChild("subframe3");
+  subframe_3 =
+      NavigationSimulator::NavigateAndCommitFromDocument(kUrlC, subframe_3);
+  blink::InterestGroup interest_group_4 = CreateInterestGroup();
+  interest_group_4.name = kGroupName4;
+  interest_group_4.owner = kOriginC;
+  interest_group_4.update_url = kUrlC.Resolve(kUpdateUrlPath4);
+  interest_group_4.bidding_url = kUrlC.Resolve(kBiddingUrlPath);
+  interest_group_4.ads.emplace();
+  ad = blink::InterestGroup::Ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group_4.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group_4, subframe_3);
+  EXPECT_EQ(1, GetJoinCount(kOriginC, kGroupName4));
+
+  network_responder_->RegisterDeferredUpdateResponse(kUpdateUrlPath);
+  network_responder_->RegisterDeferredUpdateResponse(kUpdateUrlPath2);
+  network_responder_->RegisterDeferredUpdateResponse(kUpdateUrlPath3);
+  network_responder_->RegisterDeferredUpdateResponse(kUpdateUrlPath4);
+  UpdateInterestGroupNoFlushForFrame(subframe_3);
+  task_environment()->RunUntilIdle();
+  EXPECT_EQ(network_responder_->UpdateCount(), 1u);
+
+  network_responder_->DoDeferredUpdateResponse(kUpdateUrlPath, kServerResponse);
+  task_environment()->RunUntilIdle();
+  EXPECT_EQ(network_responder_->UpdateCount(), 3u);
+
+  network_responder_->DoDeferredUpdateResponse(kUpdateUrlPath2,
+                                               kServerResponse);
+  network_responder_->DoDeferredUpdateResponse(kUpdateUrlPath3,
+                                               kServerResponse);
+  task_environment()->RunUntilIdle();
+  EXPECT_EQ(network_responder_->UpdateCount(), 4u);
 }
 
 // Join 2 interest groups, each with a different owner. When updating interest
@@ -4436,7 +5335,7 @@ TEST_F(AdAuctionServiceImplNoNegativeTargetingTest, RunAdAuctionNonceDisabled) {
   ad_auction_service->RunAdAuction(
       auction_config, mojo::NullReceiver(),
       base::BindOnce(
-          [](bool manually_aborted,
+          [](bool aborted_by_script,
              const absl::optional<
                  blink::FencedFrame::RedactedFencedFrameConfig>& config) {
             ADD_FAILURE() << "Callback unexpectedly invoked.";
@@ -4471,7 +5370,7 @@ TEST_F(AdAuctionServiceImplNoNegativeTargetingTest,
   ad_auction_service->RunAdAuction(
       auction_config, mojo::NullReceiver(),
       base::BindOnce(
-          [](bool manually_aborted,
+          [](bool aborted_by_script,
              const absl::optional<
                  blink::FencedFrame::RedactedFencedFrameConfig>& config) {
             ADD_FAILURE() << "Callback unexpectedly invoked.";
@@ -5875,10 +6774,10 @@ TEST_F(AdAuctionServiceImplTest, ReportingWorkletsDoNotBlockCompletion) {
       auction_config, mojo::NullReceiver(),
       base::BindLambdaForTesting(
           [&run_loop, &maybe_config](
-              bool manually_aborted,
+              bool aborted_by_script,
               const absl::optional<
                   blink::FencedFrame::RedactedFencedFrameConfig>& config) {
-            EXPECT_FALSE(manually_aborted);
+            EXPECT_FALSE(aborted_by_script);
             maybe_config = config;
             run_loop.Quit();
           }));
@@ -6674,7 +7573,7 @@ function reportResult() {}
         succeed_auction_config, mojo::NullReceiver(),
         base::BindLambdaForTesting(
             [&one_auction_complete](
-                bool manually_aborted,
+                bool aborted_by_script,
                 const absl::optional<
                     blink::FencedFrame::RedactedFencedFrameConfig>&
                     ignored_config) { one_auction_complete.Run(); }));
@@ -6809,7 +7708,11 @@ TEST_F(AdAuctionServiceImplRestrictedPermissionsPolicyTest,
   constexpr char kInterestGroupName2[] = "group2";
   interest_group.owner = kOriginC;
   interest_group.name = kInterestGroupName2;
-  JoinInterestGroupAndExpectPipeClosed(std::move(interest_group_2), subframe);
+  JoinInterestGroupAndExpectBadMessage(
+      std::move(interest_group_2),
+      "Unexpected request: Interest groups may only be joined or left when "
+      "feature join-ad-interest-group is enabled by Permissions Policy",
+      subframe);
   EXPECT_EQ(0, GetJoinCount(kOriginC, kInterestGroupName2));
 
   UpdateInterestGroupNoFlushForFrame(subframe);
@@ -6825,10 +7728,18 @@ TEST_F(AdAuctionServiceImplRestrictedPermissionsPolicyTest,
   EXPECT_EQ(group.bidding_url->spec(),
             base::StringPrintf("%s%s", kOriginStringC, kBiddingUrlPath));
 
-  LeaveInterestGroupAndExpectPipeClosed(kOriginC, kInterestGroupName, subframe);
+  LeaveInterestGroupAndExpectBadMessage(
+      kOriginC, kInterestGroupName,
+      "Unexpected request: Interest groups may only be joined or left when "
+      "feature join-ad-interest-group is enabled by Permissions Policy",
+      subframe);
   EXPECT_EQ(1, GetJoinCount(kOriginC, kInterestGroupName));
 
-  ClearOriginJoinedInterestGroupsAndExpectPipeClosed(kOriginC, subframe);
+  ClearOriginJoinedInterestGroupsAndExpectBadMessage(
+      kOriginC,
+      "Unexpected request: Interest groups may only be joined or left when "
+      "feature join-ad-interest-group is enabled by Permissions Policy",
+      subframe);
   EXPECT_EQ(1, GetJoinCount(kOriginC, kInterestGroupName));
 }
 
@@ -7145,10 +8056,10 @@ TEST_F(AdAuctionServiceImplTest, FencedFrameUrlMappingChangedDuringAuction) {
       auction_config, mojo::NullReceiver(),
       base::BindLambdaForTesting(
           [&run_loop, &maybe_config](
-              bool manually_aborted,
+              bool aborted_by_script,
               const absl::optional<
                   blink::FencedFrame::RedactedFencedFrameConfig>& config) {
-            EXPECT_FALSE(manually_aborted);
+            EXPECT_FALSE(aborted_by_script);
             maybe_config = config;
             run_loop.Quit();
           }));
@@ -8350,6 +9261,7 @@ class AdAuctionServiceImplBAndATest : public AdAuctionServiceImplTest {
   struct AdAuctionDataAndId {
     std::string request;
     absl::optional<base::Uuid> request_id;
+    std::string error_message;
   };
 
   // Gets auction data in the frame `rfh`. If `rfh` is nullptr, uses the main
@@ -8364,13 +9276,17 @@ class AdAuctionServiceImplBAndATest : public AdAuctionServiceImplTest {
     base::RunLoop run_loop;
     absl::optional<AdAuctionDataAndId> output;
     interest_service->GetInterestGroupAdAuctionData(
-        seller, blink::mojom::AdAuctionCoordinator::kGCP,
+        seller,
+        url::Origin::Create(
+            GURL(kDefaultBiddingAndAuctionGCPCoordinatorOrigin)),
         base::BindLambdaForTesting([&](mojo_base::BigBuffer result,
-                                       const absl::optional<base::Uuid>& id) {
+                                       const absl::optional<base::Uuid>& id,
+                                       const std::string& error_message) {
           AdAuctionDataAndId data;
           data.request = std::string(reinterpret_cast<char*>(result.data()),
                                      result.size());
           data.request_id = id;
+          data.error_message = error_message;
           output = data;
           run_loop.Quit();
         }));
@@ -8402,10 +9318,10 @@ class AdAuctionServiceImplBAndATest : public AdAuctionServiceImplTest {
         auction_config, abortable_ad_auction.BindNewPipeAndPassReceiver(),
         base::BindLambdaForTesting(
             [&run_loop, &maybe_config](
-                bool manually_aborted,
+                bool aborted_by_script,
                 const absl::optional<
                     blink::FencedFrame::RedactedFencedFrameConfig>& config) {
-              EXPECT_FALSE(manually_aborted);
+              EXPECT_FALSE(aborted_by_script);
               maybe_config = config;
               run_loop.Quit();
             }));
@@ -8423,6 +9339,30 @@ class AdAuctionServiceImplBAndATest : public AdAuctionServiceImplTest {
   const GURL kKeyUrl = kUrlA.Resolve(kBAndAKeyPath);
   base::test::ScopedFeatureList feature_list_;
 };
+
+// Expect bad mojo message if we use an invalid coordinator origin. The
+// coordinator origin must be secure.
+TEST_F(AdAuctionServiceImplTest, HandlesInvalidCoordinatorOrigin) {
+  url::Origin test_origin = url::Origin::Create(GURL(kOriginStringA));
+  url::Origin bad_coordinator =
+      url::Origin::Create(GURL("http://insecure.coordinator.test/"));
+
+  mojo::Remote<blink::mojom::AdAuctionService> interest_service;
+  AdAuctionServiceImpl::CreateMojoService(
+      main_rfh(), interest_service.BindNewPipeAndPassReceiver());
+  base::RunLoop run_loop;
+  interest_service.set_disconnect_handler(run_loop.QuitClosure());
+  interest_service->GetInterestGroupAdAuctionData(
+      /*seller=*/test_origin,
+      /*coordinator=*/bad_coordinator,
+      /*callback=*/
+      base::BindLambdaForTesting([&](mojo_base::BigBuffer result,
+                                     const absl::optional<base::Uuid>& id,
+                                     const std::string& error_message) {
+        ADD_FAILURE() << "This callback should not be invoked.";
+      }));
+  run_loop.Run();
+}
 
 // Test that interest_group_manager serialize the blob correctly.
 TEST_F(AdAuctionServiceImplTest, SerializesAuctionBlob) {
@@ -8473,18 +9413,18 @@ TEST_F(AdAuctionServiceImplTest, SerializesAuctionBlob) {
       }));
   run_loop.Run();
   std::string expected =
-      "AgAAARylZ3ZlcnNpb24AaXB1Ymxpc2hlcmZhLnRlc3RsZ2VuZXJhdGlvbklkeCQwMDAwMDAw"
+      "AgAAARqlZ3ZlcnNpb24AaXB1Ymxpc2hlcmZhLnRlc3RsZ2VuZXJhdGlvbklkeCQwMDAwMDAw"
       "MC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDBuaW50ZXJlc3RHcm91cHOhbmh0dHBzOi8v"
-      "YS50ZXN0WJcfiwgAAAAAAAAAVY07DsIwEAX5XSgh/"
-      "FpSUlLQYq9XjgNZR7sJyEIU8VkQ58RENDSvmdG84Q3KSDRZviygWK0NqQYNKJYafNN6Qupkg"
-      "M12R5r9XZCPzpK6yssyAhKERaWdKX1P3aRqGW8nRxLj7BznY9TV3tGIp5xE48j+"
-      "CgcM6fiCIftOzn2K7/8M/"
-      "Xh+"
-      "AHxJjt2gAAAAdGVuYWJsZURlYnVnUmVwb3J0aW5n9AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      "YS50ZXN0WJUfiwgAAAAAAAAAVYy7DoJAEAB9/"
+      "RCIr1ZKSwtb73Y3sCh7ZBc0xFhw32L8TiOxsZlmJjO8waFFTNJlBtlqjeJqQnBqFYS6CULS2"
+      "gCb7U68hruRHrkQd7VXoQQk0C9Kz5iHTtpJ2SjdTiwW4+wc5+OUq8Ay6ql6RmQ"
+      "pfocD9RbxQn3yRaqdke7/"
+      "Cv9"
+      "4fgB8SY7doAAAAHRlbmFibGVEZWJ1Z1JlcG9ydGluZ/QAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
       "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
       "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
       "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-      "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+      "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
   EXPECT_EQ(1, absl::popcount(msg.size()));  // Should be a power of 2.
   EXPECT_EQ(expected, base::Base64Encode(msg));
   EXPECT_THAT(group_names, testing::ElementsAre(testing::Pair(
@@ -8623,18 +9563,18 @@ TEST_F(AdAuctionServiceImplTest, SerializesMultipleOwnersAuctionBlob) {
   run_loop.Run();
 
   std::string expected =
-      "AgAAAZ+"
+      "AgAAAZ2"
       "lZ3ZlcnNpb24AaXB1Ymxpc2hlcmZhLnRlc3RsZ2VuZXJhdGlvbklkeCQwMDAwMDAwMC0wMDA"
       "wLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDBuaW50ZXJlc3RHcm91cHOibmh0dHBzOi8vYS50ZXN"
-      "0WJgfiwgAAAAAAAAAdc1LDsIwDARQKL1QP/"
-      "y29Ags2OI4VpuK2lUcQOwgZ+"
-      "lBQWGBkGBjjTzSvDghWI20EwhFuqVlGIjMK2qPMozCxEEfqazYeLkq+"
-      "b1rGU46tZ6QGG9ZZ5xt5Mxh1o2eLgfHene9OE7P+ZuxRVnVWC9XybAI/ovA9Wb7D8h/"
-      "ADEujjFPox8qewJqrXk30wAAAG5odHRwczovL2IudGVzdFhxH4sIAAAAAAAAAGtckpyYUtyU"
-      "FlKUmJlnCKGMUvISc1PTSkDs4qzk/NyC/"
-      "LzUvJLiRoi0cV5SUX55cWpRcGZ6XmJO8ZL0otTk1LzkSsaMpMwU5/"
-      "zSvBKGjIKi1LJwoPaGzKz8zDywICMAG/"
-      "7zMmwAAAB0ZW5hYmxlRGVidWdSZXBvcnRpbmf0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      "0WJcfiwgAAAAAAAAAdc07DsIwEARQCLlQPv"
+      "xaOAIFLev1KnFEdiOvSUQHPk"
+      "sOimQKhATNFDPSvDgjWI10EAhFytIy9ERGIGiH0g/CxEGfaazYeJmU/"
+      "Mk1DFedG09IjPesNc4e5cZh0Q6exrNjfbhOHKdy+WZsUVY11utNMiyC/yJwu9v/A/If"
+      "QIyrS8zT6YfKXmqteTfTAAAAbmh0dHBzOi8vYi50ZXN0WHAfiwgAAAAAAAAAJYnRDYMwDAVh"
+      "JMoIjFCkfofEEEflObJTUP+azsKgFeXrT"
+      "nf18C7Ydx7VMboLtwC30lxOt+RlzQJCsXrtHpPKbqR3XuCedixKnu"
+      "DfbZw4DPJCaWJW2h4M+3ASxj+2Pxv+8z"
+      "JsAAAAdGVuYWJsZURlYnVnUmVwb3J0aW5n9AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
       "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
       "AAAAAAAAAAAAAAAAA=";
   EXPECT_EQ(1, absl::popcount(msg.size()));  // Should be a power of 2.
@@ -8824,13 +9764,13 @@ TEST_F(AdAuctionServiceImplTest, SerializesAuctionBlobWithFullAds) {
       }));
   run_loop.Run();
   std::string expected =
-      "AgAAATelZ3ZlcnNpb24AaXB1Ymxpc2hlcmZhLnRlc3RsZ2VuZXJhdGlvbklkeCQwMDAwMDAw"
+      "AgAAATalZ3ZlcnNpb24AaXB1Ymxpc2hlcmZhLnRlc3RsZ2VuZXJhdGlvbklkeCQwMDAwMDAw"
       "MC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDBuaW50ZXJlc3RHcm91cHOhbmh0dHBzOi8v"
-      "YS50ZXN0WLIfiwgAAAAAAAAAhc4xDoJAEIVh8CSeACJa2VoYEyuMsR52RnYRdsnMAtEObqJy"
-      "UA2NiRY2r3v5/v6pAKUfdUUeEDxc6pJAaC5k0fB7iI/"
-      "pvtXe17KOYxV5Eh8DRtpXpRFzoy27plZn5wrAdDrsEBfJcoUWKkIFLDZj1wnxweQWShlzJkV"
-      "WXWc6M7hxjfWBrpnak7EyDMH9A3c/cDLJQ/j4W/"
-      "fdYwpn7KSFL2PdsJT3AAAAdGVuYWJsZURlYnVnUmVwb3J0aW5n9QAAAAAAAAAAAAAAAAAAAA"
+      "YS50ZXN0WLEfiwgAAAAAAAAAhc4xDoJAEEBR8SSeACJa2VoYEyuMsR52RnYRZjc7C0Q7uInK"
+      "QU1oTLTwAD/v9y8FKP2oawqAEODqKgKhhRCj8cRI/pQ"
+      "dWh2Ck02SqDiQhAQw1qGujJg77bxtnLpYWwJmU7BHXKarNTLUhAq8cO5tJ+SPpmCoZCw8KWJ"
+      "1m+vc4NY2HGbaeWrPhmUYZo8P3P3A6SQP0fPv3f"
+      "ePKa3hSYveY92wlPcAAAB0ZW5hYmxlRGVidWdSZXBvcnRpbmf1AAAAAAAAAAAAAAAAAAAAAA"
       "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
       "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
       "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
@@ -8896,7 +9836,8 @@ TEST_F(AdAuctionServiceImplBAndATest, EncryptsPayload) {
 
   absl::optional<AdAuctionDataAndId> result =
       GetAdAuctionDataAndFlushForFrame(test_origin);
-  EXPECT_TRUE(result.has_value());
+  ASSERT_TRUE(result.has_value());
+  ASSERT_LT(0u, result.value().request.size());
 
   auto key_config = quiche::ObliviousHttpHeaderKeyConfig::Create(
                         0x12, EVP_HPKE_DHKEM_X25519_HKDF_SHA256,
@@ -8910,7 +9851,7 @@ TEST_F(AdAuctionServiceImplBAndATest, EncryptsPayload) {
           .value();
   auto request =
       ohttp_gateway.DecryptObliviousHttpRequest(result.value().request);
-  EXPECT_TRUE(request.ok()) << request.status();
+  ASSERT_TRUE(request.ok()) << request.status();
   auto plaintext_data = request->GetPlaintextData();
 
   // The message should be a power of 2 in length
@@ -8937,11 +9878,11 @@ TEST_F(AdAuctionServiceImplBAndATest, EncryptsPayload) {
       testing::EndsWith(
           R"(", )"
           R"("interestGroups": {"https://a.test": )"
-          R"(h'1F8B080000000000000075CD4B0EC2300C04500A5CA81F7E5B38020BB6248E)"
-          R"(D5BAA276158756EC2067E941416103126CAC91479A1727304E23EEC5843CDDC2)"
-          R"(B1E910ED2B6A0BD2F5C2C8411FA92CD97A1915FD916A36179D6A8F800CB7ACB1)"
-          R"(E40E72E5306B7A8FC38958EFD40A717A666FC6E5455941B55A27C381F15F046C)"
-          R"(B6BB7FC0F20710E3FC1C1769F4837A02E2EDA5E5D3000000'}, )"
+          R"(h'1F8B080000000000000075CD3B0EC230100450025C281F7E2D3902455AD6EB)"
+          R"(55E288EC465E1344073E4B0E8A641A90A09962469A176704AB918E02214F5958)"
+          R"(8681C80804ED5186519838E8338D251B2F37257F722DC345E7D61312E33DEB8C)"
+          R"(B3B55C392CBAD1D3D438D687EBC5712AB33763F3A2ACB0DA6C936111FC1781BB)"
+          R"(FDE11FB0FE01C4B83CC7553AFDA05EE2EDA5E5D3000000'}, )"
           R"("enableDebugReporting": false})"));
 
   AdAuctionPageData* page_data = PageUserData<AdAuctionPageData>::GetForPage(
@@ -8960,12 +9901,10 @@ TEST_F(AdAuctionServiceImplBAndATest, EncryptsPayload) {
 TEST_F(AdAuctionServiceImplBAndATest, OriginNotAllowed) {
   base::HistogramTester hist;
   ProvideKeys();
-  content_browser_client_.SetAllowList({kOriginA});
-  url::Origin test_origin =
-      url::Origin::Create(GURL("http://not.attested.test/"));
-  NavigateAndCommit(kUrlA);
+  NavigateAndCommit(GURL("https://not.allowed.test/"));
+  url::Origin test_origin = url::Origin::Create(GURL(kOriginStringA));
   manager_->JoinInterestGroup(
-      blink::TestInterestGroupBuilder(kOriginA, "cars")
+      blink::TestInterestGroupBuilder(test_origin, "cars")
           .SetAds(
               {{{GURL("https://c.test/ad.html"), /*metadata=*/absl::nullopt,
                  /*size_group=*/absl::nullopt,
@@ -8987,6 +9926,7 @@ TEST_F(AdAuctionServiceImplBAndATest, OriginNotAllowed) {
       GetAdAuctionDataAndFlushForFrame(test_origin);
   EXPECT_TRUE(result.has_value());
   EXPECT_EQ("", result.value().request);
+  EXPECT_EQ("Invalid Operation", result.value().error_message);
 
   hist.ExpectTotalCount("Ads.InterestGroup.BaDataSize", 0);
   hist.ExpectTotalCount("Ads.InterestGroup.BaDataConstructionTime", 0);

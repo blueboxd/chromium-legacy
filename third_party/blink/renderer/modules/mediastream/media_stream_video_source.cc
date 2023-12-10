@@ -272,7 +272,6 @@ void MediaStreamVideoSource::StopForRestart(RestartCallback callback,
         *video_task_runner(), FROM_HERE,
         CrossThreadBindOnce(&VideoTrackAdapter::DeliverFrameOnVideoTaskRunner,
                             GetTrackAdapter(), black_frame,
-                            std::vector<scoped_refptr<media::VideoFrame>>(),
                             base::TimeTicks::Now()));
   }
 
@@ -569,8 +568,10 @@ bool MediaStreamVideoSource::SupportsEncodedOutput() const {
 void MediaStreamVideoSource::Crop(
     const base::Token& crop_id,
     uint32_t crop_version,
-    base::OnceCallback<void(media::mojom::CropRequestResult)> callback) {
-  std::move(callback).Run(media::mojom::CropRequestResult::kErrorGeneric);
+    base::OnceCallback<void(media::mojom::ApplySubCaptureTargetResult)>
+        callback) {
+  std::move(callback).Run(
+      media::mojom::ApplySubCaptureTargetResult::kErrorGeneric);
 }
 
 absl::optional<uint32_t> MediaStreamVideoSource::GetNextCropVersion() {

@@ -39,13 +39,19 @@ class ASH_EXPORT PipWindowResizer : public WindowResizer {
 
  private:
   WindowState* window_state() { return window_state_; }
-  gfx::Rect CalculateBoundsForPinch(const aura::Window* pip_window,
-                                    const gfx::PointF& initial_location,
-                                    const gfx::Rect& initial_bounds,
-                                    const gfx::PointF& location) const;
+
+  // Invoked during pinch to calculate the window bounds.
+  // `location_in_parent` is the current location of the gesture.
+  gfx::Rect CalculateBoundsForPinch(
+      const gfx::PointF& location_in_parent) const;
+
+  // Invoked during pinch to calculate the window transform.
+  gfx::Transform CalculateTransformForPinch() const;
+
   gfx::Rect ComputeFlungPosition();
 
-  gfx::PointF last_location_in_screen_;
+  absl::optional<gfx::PointF> last_location_in_screen_;
+  bool last_event_was_pinch_ = false;
   int fling_velocity_x_ = 0;
   int fling_velocity_y_ = 0;
   float dismiss_fraction_ = 1.f;

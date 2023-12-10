@@ -17,6 +17,7 @@
 <translation id="1591119736686995611">Otvara rešetku kartica u Chromiumu.</translation>
 <translation id="1617663976202781617">Podaci sinkronizacije Chromiuma</translation>
 <translation id="1647558790457890304">Postavke Chromiuma</translation>
+<translation id="164952285225495380">Ovaj se paket već prati na Chromiumu.</translation>
 <translation id="1722370509450468186">Zaporka će se spremiti na vaš račun (<ph name="EMAIL" />).</translation>
 <translation id="1736662517232558588">Podaci Chromiuma izbrisani su</translation>
 <translation id="1791845338122684020">Otvara stranicu povijesti u Chromiumu.</translation>
@@ -95,7 +96,6 @@ Kako biste promijenili tu postavku, <ph name="BEGIN_LINK" />izbrišite podatke C
 <translation id="4736424910885271643">Vašim računom upravlja <ph name="HOSTED_DOMAIN" />, pa će se vaši podaci iz Chromiuma izbrisati s ovog uređaja</translation>
 <translation id="4790638144988730920">Nastavite upotrebljavati podatke iz Chromiuma na svom Google računu.</translation>
 <translation id="4828317641996116749">Chromium nije uspio provjeriti sve zaporke. Pokušajte ponovo kasnije.</translation>
-<translation id="4935539884203837577">Chromium može otkriti evidencijske brojeve koje unesete i pratiti vaše pakete na stranici Nova kartica te istodobno pomoći drugim doživljajima kupnje na Chromiumu.</translation>
 <translation id="4985291216379576555">Chromium ne može provjeriti ima li ažuriranja jer ste offline</translation>
 <translation id="4996471330284142407">Veća učinkovitost uz Chromium, jednostavniji, sigurniji i brži nego ikad.</translation>
 <translation id="4999538639245140991">Budući da se odjavljujete s računa kojim upravlja <ph name="SIGNOUT_MANAGED_DOMAIN" />, vaši podaci iz Chromiuma izbrisat će se s ovog uređaja, no ostat će na vašem Google računu.</translation>
@@ -120,7 +120,6 @@ Kako biste promijenili tu postavku, <ph name="BEGIN_LINK" />izbrišite podatke C
 <translation id="5688047395118852662">Na ovoj se kartici prikazuju prijedlozi o tome kako iskoristiti sve prednosti Chromiuma.</translation>
 <translation id="5700709190537129682">Chromium ne može provjeriti vaše zaporke</translation>
 <translation id="5777187867430702742">Chromiumova stranica</translation>
-<translation id="584303319228224680">Automatsko praćenje paketa na Chromiumu</translation>
 <translation id="5889847953983052353">Kad je uključeno:
 <ph name="BEGIN_INDENT" /> • Pomozite poboljšati Chromium za korisnike koji ga upotrebljavaju na isti način kao vi.<ph name="END_INDENT" />
 
@@ -160,6 +159,7 @@ Vaše šifrirane podatke može pročitati samo osoba koja ima vašu šifru. Šif
 <translation id="6911341667534646387">Nastavite upotrebljavati podatke iz Chromiuma na svom Google računu</translation>
 <translation id="7006920032187763988">Zaporke koje ste spremili u Upravitelj zaporki možete koristiti u drugim aplikacijama na iPadu.</translation>
 <translation id="7018284295775193585">Chromium se ne može ažurirati</translation>
+<translation id="7025471822960602362">Praćenje otkrivenih paketa na Chromiumu</translation>
 <translation id="7045244423563602563">Prilagodite Chromium sebi</translation>
 <translation id="7055269218854630176">Vaša organizacija, <ph name="DOMAIN" />, upravlja računom na koji se prijavljujete i načinom na koji se Chromium može upotrebljavati. Vaš administrator može postaviti ili ograničiti određene značajke.</translation>
 <translation id="7099326575020694068">Chromium ne može upotrebljavati vaš fotoaparat u načinu podijeljenog prikaza</translation>

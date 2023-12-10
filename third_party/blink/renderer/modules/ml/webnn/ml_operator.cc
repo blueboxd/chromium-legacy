@@ -54,6 +54,8 @@ String MLOperator::OperatorKindToString(MLOperator::OperatorKind kind) {
       return "maxPool2d";
     case MLOperator::OperatorKind::kPad:
       return "pad";
+    case MLOperator::OperatorKind::kPow:
+      return "pow";
     case MLOperator::OperatorKind::kPRelu:
       return "prelu";
     case MLOperator::OperatorKind::kReduceMean:
@@ -100,7 +102,7 @@ MLOperator::OperatorKind MLOperator::Kind() const {
 }
 
 const bindings::DictionaryBase* MLOperator::Options() const {
-  return options_;
+  return options_.Get();
 }
 
 bool MLOperator::IsConnected() const {

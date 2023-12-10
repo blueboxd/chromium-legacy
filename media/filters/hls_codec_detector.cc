@@ -10,40 +10,42 @@
 namespace media {
 
 HlsCodecDetector::~HlsCodecDetector() = default;
-HlsCodecDetector::HlsCodecDetector(MediaLog* log, HlsRenditionHost* host)
+HlsCodecDetectorImpl::~HlsCodecDetectorImpl() = default;
+HlsCodecDetectorImpl::HlsCodecDetectorImpl(MediaLog* log,
+                                           HlsRenditionHost* host)
     : log_(log->Clone()), rendition_host_(host) {
   CHECK(host);
 }
 
-void HlsCodecDetector::DetermineContainerOnly(
+void HlsCodecDetectorImpl::DetermineContainerOnly(
     std::unique_ptr<HlsDataSourceStream> stream,
     CodecCallback cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(!callback_);
   callback_ = std::move(cb);
   parser_ = nullptr;
-  rendition_host_->ReadStream(std::move(stream),
-                              base::BindOnce(&HlsCodecDetector::OnStreamFetched,
-                                             weak_factory_.GetWeakPtr(),
-                                             /*container_only=*/true));
+  rendition_host_->ReadStream(
+      std::move(stream), base::BindOnce(&HlsCodecDetectorImpl::OnStreamFetched,
+                                        weak_factory_.GetWeakPtr(),
+                                        /*container_only=*/true));
 }
 
-void HlsCodecDetector::DetermineContainerAndCodec(
+void HlsCodecDetectorImpl::DetermineContainerAndCodec(
     std::unique_ptr<HlsDataSourceStream> stream,
     CodecCallback cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(!callback_);
   callback_ = std::move(cb);
   parser_ = nullptr;
-  rendition_host_->ReadStream(std::move(stream),
-                              base::BindOnce(&HlsCodecDetector::OnStreamFetched,
-                                             weak_factory_.GetWeakPtr(),
-                                             /*container_only=*/false));
+  rendition_host_->ReadStream(
+      std::move(stream), base::BindOnce(&HlsCodecDetectorImpl::OnStreamFetched,
+                                        weak_factory_.GetWeakPtr(),
+                                        /*container_only=*/false));
 }
 
-void HlsCodecDetector::OnStreamFetched(
+void HlsCodecDetectorImpl::OnStreamFetched(
     bool container_only,
-    HlsDataSourceStreamManager::ReadResult maybe_stream) {
+    HlsDataSourceProvider::ReadResult maybe_stream) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(callback_);
 
@@ -55,7 +57,7 @@ void HlsCodecDetector::OnStreamFetched(
   }
 
   auto stream = std::move(maybe_stream).value();
-  auto data_size = stream->BytesInBuffer();
+  auto data_size = stream->buffer_size();
   if (!data_size) {
     // If no data came back, then the data source has been exhausted and we
     // have failed to determine a codec.
@@ -68,7 +70,7 @@ void HlsCodecDetector::OnStreamFetched(
   // the container being used, then it will call `callback_` and not set
   // `parser_`.
   if (!parser_) {
-    DetermineContainer(container_only, stream->AsRawData(), data_size);
+    DetermineContainer(container_only, stream->raw_data(), data_size);
   }
 
   if (!parser_) {
@@ -91,7 +93,7 @@ void HlsCodecDetector::OnStreamFetched(
     return;
   }
 
-  if (!parser_->AppendToParseBuffer(stream->AsRawData(), data_size)) {
+  if (!parser_->AppendToParseBuffer(stream->raw_data(), data_size)) {
     std::move(callback_).Run(HlsDemuxerStatus::Codes::kInvalidBitstream);
     return;
   }
@@ -123,16 +125,16 @@ void HlsCodecDetector::OnStreamFetched(
   // HLS chunks are usually not too large, and playback will need to read this
   // chunk initially anyway, so fetching the whole thing isn't going to be an
   // issue.
-  stream->Flush();
+  stream->Clear();
   rendition_host_->ReadStream(
       std::move(stream),
-      base::BindOnce(&HlsCodecDetector::OnStreamFetched,
+      base::BindOnce(&HlsCodecDetectorImpl::OnStreamFetched,
                      weak_factory_.GetWeakPtr(), container_only));
 }
 
-void HlsCodecDetector::DetermineContainer(bool container_only,
-                                          const uint8_t* data,
-                                          size_t size) {
+void HlsCodecDetectorImpl::DetermineContainer(bool container_only,
+                                              const uint8_t* data,
+                                              size_t size) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   constexpr uint8_t kMP4FirstByte = 0x66;
   constexpr uint8_t kMPEGTSFirstByte = 0x47;
@@ -171,7 +173,7 @@ void HlsCodecDetector::DetermineContainer(bool container_only,
       parser_ =
           std::make_unique<mp2t::Mp2tStreamParser>(base::span{codecs}, false);
       on_container_configs = base::BindRepeating(
-          &HlsCodecDetector::OnNewConfigMP2T, base::Unretained(this));
+          &HlsCodecDetectorImpl::OnNewConfigMP2T, base::Unretained(this));
       break;
     }
     case kMP4FirstByte: {
@@ -201,14 +203,14 @@ void HlsCodecDetector::DetermineContainer(bool container_only,
   // callback + return type isn't allowed.
   parser_->Init(base::DoNothingAs<void(const StreamParser::InitParameters&)>(),
                 std::move(on_container_configs),
-                base::BindRepeating(&HlsCodecDetector::OnNewBuffers,
+                base::BindRepeating(&HlsCodecDetectorImpl::OnNewBuffers,
                                     base::Unretained(this)),
-                base::BindRepeating(&HlsCodecDetector::OnEncryptedMediaInit,
+                base::BindRepeating(&HlsCodecDetectorImpl::OnEncryptedMediaInit,
                                     base::Unretained(this)),
                 base::DoNothing(), base::DoNothing(), log_.get());
 }
 
-void HlsCodecDetector::AddCodecToResponse(std::string codec) {
+void HlsCodecDetectorImpl::AddCodecToResponse(std::string codec) {
   if (codec_response_ == "") {
     codec_response_ = codec;
   } else {
@@ -216,9 +218,11 @@ void HlsCodecDetector::AddCodecToResponse(std::string codec) {
   }
 }
 
-void HlsCodecDetector::ParserInit(const StreamParser::InitParameters& params) {}
+void HlsCodecDetectorImpl::ParserInit(
+    const StreamParser::InitParameters& params) {}
 
-bool HlsCodecDetector::OnNewConfigMP2T(std::unique_ptr<MediaTracks> tracks) {
+bool HlsCodecDetectorImpl::OnNewConfigMP2T(
+    std::unique_ptr<MediaTracks> tracks) {
   for (const auto& [id, video_config] : tracks->GetVideoConfigs()) {
     if (video_config.codec() != VideoCodec::kH264) {
       HlsDemuxerStatus error = HlsDemuxerStatus::Codes::kUnsupportedCodec;
@@ -248,7 +252,7 @@ bool HlsCodecDetector::OnNewConfigMP2T(std::unique_ptr<MediaTracks> tracks) {
   return true;
 }
 
-bool HlsCodecDetector::OnNewBuffers(
+bool HlsCodecDetectorImpl::OnNewBuffers(
     const StreamParser::BufferQueueMap& buffers) {
   // Buffers come after all the configs, so once we hit the buffers, we can
   // reply to `callback`. Move `codec_reponse_` and `container_` to clear them
@@ -260,8 +264,9 @@ bool HlsCodecDetector::OnNewBuffers(
   return true;
 }
 
-void HlsCodecDetector::OnEncryptedMediaInit(EmeInitDataType type,
-                                            const std::vector<uint8_t>& data) {
+void HlsCodecDetectorImpl::OnEncryptedMediaInit(
+    EmeInitDataType type,
+    const std::vector<uint8_t>& data) {
   std::move(callback_).Run(
       HlsDemuxerStatus::Codes::kEncryptedMediaNotSupported);
 }

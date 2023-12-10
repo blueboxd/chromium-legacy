@@ -9,6 +9,7 @@
 #include "ash/wm/overview/overview_types.h"
 #include "ash/wm/window_state_observer.h"
 #include "base/scoped_observation.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/presentation_time_recorder.h"
 
@@ -38,8 +39,16 @@ class SplitViewOverviewSession : public aura::WindowObserver,
   SplitViewOverviewSession& operator=(const SplitViewOverviewSession&) = delete;
   ~SplitViewOverviewSession() override;
 
+  // Initializes the session by starting overview. This must be called after the
+  // constructor, as consumers may check if `this` exists.
+  void Init(absl::optional<OverviewStartAction> action,
+            absl::optional<OverviewEnterExitType> type);
+
   const aura::Window* window() const { return window_; }
   chromeos::WindowStateType GetWindowStateType() const;
+  AutoSnapController* auto_snap_controller() {
+    return auto_snap_controller_.get();
+  }
 
   // aura::WindowObserver:
   void OnResizeLoopStarted(aura::Window* window) override;

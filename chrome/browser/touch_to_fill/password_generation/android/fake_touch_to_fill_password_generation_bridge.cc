@@ -13,6 +13,7 @@ FakeTouchToFillPasswordGenerationBridge::
 
 bool FakeTouchToFillPasswordGenerationBridge::Show(
     content::WebContents* web_contents,
+    PrefService* pref_service,
     TouchToFillPasswordGenerationDelegate* delegate,
     std::u16string password,
     std::string account) {
@@ -21,11 +22,13 @@ bool FakeTouchToFillPasswordGenerationBridge::Show(
 }
 
 void FakeTouchToFillPasswordGenerationBridge::Hide() {
-  OnDismissed(nullptr);
+  OnDismissed(/*env=*/nullptr, /*generated_password_accepted=*/false);
 }
 
-void FakeTouchToFillPasswordGenerationBridge::OnDismissed(JNIEnv* env) {
-  delegate_->OnDismissed();
+void FakeTouchToFillPasswordGenerationBridge::OnDismissed(
+    JNIEnv* env,
+    bool generated_password_accepted) {
+  delegate_->OnDismissed(generated_password_accepted);
 }
 
 void FakeTouchToFillPasswordGenerationBridge::OnGeneratedPasswordAccepted(

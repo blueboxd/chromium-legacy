@@ -15,11 +15,11 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/search/search_box_model.h"
 #include "ash/app_list/model/search/search_model.h"
-#include "ash/app_list/views/launcher_search_iph_view.h"
 #include "ash/app_list/views/result_selection_controller.h"
 #include "ash/app_list/views/search_box_view_delegate.h"
 #include "ash/app_list/views/search_result_base_view.h"
 #include "ash/ash_element_identifiers.h"
+#include "ash/assistant/ui/main_stage/launcher_search_iph_view.h"
 #include "ash/constants/ash_features.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
@@ -262,6 +262,36 @@ ui::ColorId GetFocusColorId(bool use_jelly_colors) {
 
 }  // namespace
 
+class CheckBoxMenuItemView : public views::MenuItemView {
+ public:
+  CheckBoxMenuItemView(views::MenuItemView* parent,
+                       int command,
+                       AppListViewDelegate* view_delegate)
+      : views::MenuItemView(parent,
+                            command,
+                            views::MenuItemView::Type::kNormal),
+        view_delegate_(view_delegate) {}
+
+  CheckBoxMenuItemView(const CheckBoxMenuItemView&) = delete;
+  CheckBoxMenuItemView& operator=(const CheckBoxMenuItemView&) = delete;
+
+  ~CheckBoxMenuItemView() override = default;
+
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    views::MenuItemView::GetAccessibleNodeData(node_data);
+    // Set the role of the toggleable menu items to checkbox.
+    node_data->role = ax::mojom::Role::kMenuItemCheckBox;
+    node_data->SetCheckedState(
+        view_delegate_->IsCategoryEnabled(
+            static_cast<AppListSearchControlCategory>(GetCommand()))
+            ? ax::mojom::CheckedState::kTrue
+            : ax::mojom::CheckedState::kFalse);
+  }
+
+ private:
+  raw_ptr<AppListViewDelegate> view_delegate_ = nullptr;
+};
+
 class FilterMenuAdapter : public views::MenuModelAdapter {
  public:
   FilterMenuAdapter(ui::SimpleMenuModel* menu_model,
@@ -275,6 +305,33 @@ class FilterMenuAdapter : public views::MenuModelAdapter {
   FilterMenuAdapter& operator=(const FilterMenuAdapter&) = delete;
 
   ~FilterMenuAdapter() override = default;
+
+  // Override AppendMenuItem to use customized MenuItemView.
+  views::MenuItemView* AppendMenuItem(views::MenuItemView* menu,
+                                      ui::MenuModel* model,
+                                      size_t model_index) override {
+    if (!menu->HasSubmenu()) {
+      menu->CreateSubmenu();
+    }
+
+    if (model->GetTypeAt(model_index) == ui::MenuModel::TYPE_TITLE) {
+      return menu->AppendTitle(model->GetLabelAt(model_index));
+    }
+
+    auto menu_item_view = std::make_unique<CheckBoxMenuItemView>(
+        menu, model->GetCommandIdAt(model_index), view_delegate_);
+    menu_item_view->SetTitle(model->GetLabelAt(model_index));
+    menu_item_view->SetIcon(model->GetIconAt(model_index));
+    menu_item_view->SetAccessibleName(model->GetAccessibleNameAt(model_index));
+
+    const ui::ElementIdentifier element_id =
+        model->GetElementIdentifierAt(model_index);
+    if (element_id) {
+      menu_item_view->SetProperty(views::kElementIdentifierKey, element_id);
+    }
+
+    return menu->GetSubmenu()->AddChildView(std::move(menu_item_view));
+  }
 
   // views::MenuDelegate
   bool ShouldExecuteCommandWithoutClosingMenu(int id,
@@ -753,10 +810,6 @@ void SearchBoxView::OpenAssistantPage() {
   delegate_->AssistantButtonPressed();
 }
 
-void SearchBoxView::OpenSearchBoxIphUrl() {
-  view_delegate_->OpenSearchBoxIphUrl();
-}
-
 void SearchBoxView::ShowFilterMenu() {
   ui::SimpleMenuModel* model = BuildFilterMenuModel();
   filter_menu_adapter_ = std::make_unique<FilterMenuAdapter>(
@@ -770,7 +823,9 @@ void SearchBoxView::ShowFilterMenu() {
 
 void SearchBoxView::OnFilterMenuClosed() {
   // Trigger the search while keeping the same query text.
-  TriggerSearch();
+  if (HasSearch()) {
+    TriggerSearch();
+  }
 }
 
 views::MenuItemView* SearchBoxView::GetFilterMenuItemByCategory(
@@ -814,6 +869,18 @@ void SearchBoxView::UpdateSearchBoxFocusPaint() {
     focus_ring_layer_->layer()->SetVisible(true);
   } else {
     focus_ring_layer_->layer()->SetVisible(false);
+  }
+}
+
+void SearchBoxView::OnAfterUserAction(views::Textfield* sender) {
+  if (highlight_range_.length() > 0 &&
+      !search_box()->GetSelectedRange().EqualsIgnoringDirection(
+          highlight_range_)) {
+    ResetHighlightRange();
+    if (search_box()->GetSelectedRange().length() == 0 &&
+        current_query_ != search_box()->GetText()) {
+      RunLauncherSearchQuery(search_box()->GetText());
+    }
   }
 }
 
@@ -1129,8 +1196,10 @@ bool SearchBoxView::IsValidAutocompleteText(
     const std::u16string& autocomplete_text) {
   // Don't set autocomplete text if it's the same as current search box
   // text.
-  if (autocomplete_text == search_box()->GetText())
+  if (autocomplete_text == search_box()->GetText()) {
     return false;
+  }
+
   // Don't set autocomplete text if the highlighted text is the same as
   // before.
   if (autocomplete_text.length() > highlight_range_.start() &&
@@ -1138,6 +1207,7 @@ bool SearchBoxView::IsValidAutocompleteText(
           search_box()->GetSelectedText()) {
     return false;
   }
+
   return true;
 }
 
@@ -1208,11 +1278,10 @@ void SearchBoxView::AcceptAutocompleteText() {
   if (!ShouldProcessAutocomplete())
     return;
 
-  // Do not trigger another search here in case the user is left clicking to
-  // select existing autocomplete text. (This also matches omnibox behavior.)
   DCHECK(HasAutocompleteText());
   search_box()->ClearSelection();
   ResetHighlightRange();
+  RunLauncherSearchQuery(search_box()->GetText());
 }
 
 bool SearchBoxView::HasAutocompleteText() {
@@ -1619,7 +1688,6 @@ bool SearchBoxView::ShouldProcessAutocomplete() {
 }
 
 void SearchBoxView::ResetHighlightRange() {
-  DCHECK(ShouldProcessAutocomplete());
   const uint32_t text_length = search_box()->GetText().length();
   highlight_range_.set_start(text_length);
   highlight_range_.set_end(text_length);

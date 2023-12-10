@@ -11,7 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/common/web_app_id.h"
@@ -65,7 +64,8 @@ class SubAppsServiceImpl
 
   void CollectInstallData(
       int add_call_id,
-      std::vector<std::pair<webapps::ManifestId, GURL>> requested_installs);
+      std::vector<std::pair<webapps::ManifestId, GURL>> requested_installs,
+      webapps::ManifestId parent_manifest_id);
   void ProcessInstallData(
       int add_call_id,
       std::vector<std::pair<webapps::ManifestId,

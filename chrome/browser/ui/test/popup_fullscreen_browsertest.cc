@@ -4,13 +4,16 @@
 
 #include <string>
 
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
+#include "chrome/browser/ui/test/fullscreen_test_util.h"
 #include "chrome/browser/ui/test/popup_test_base.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/metrics/content/subprocess_metrics_provider.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -102,13 +105,17 @@ INSTANTIATE_TEST_SUITE_P(,
                                             ::testing::Bool()));
 
 IN_PROC_BROWSER_TEST_P(PopupFullscreenTest, BasicFullscreen) {
+  // UMA Key for tracking duration of fullscreen popups.
+  static constexpr char kFullscreenDurationMetricKeyPopup[] =
+      "Blink.Element.Fullscreen.DurationUpTo1H.Popup";
+  base::HistogramTester histogram_tester;
   Browser* popup =
       OpenPopup(browser(), "open('/simple.html', '_blank', 'popup,fullscreen')",
                 ShouldTestWithUserGesture());
   content::WebContents* popup_contents =
       popup->tab_strip_model()->GetActiveWebContents();
   if (IsFullscreenExpected()) {
-    WaitForHTMLFullscreen(popup_contents);
+    content::WaitForHTMLFullscreen(popup_contents);
   } else {
     ASSERT_TRUE(console_observer_->Wait());
   }
@@ -121,6 +128,8 @@ IN_PROC_BROWSER_TEST_P(PopupFullscreenTest, BasicFullscreen) {
       popup->exclusive_access_manager()->fullscreen_controller();
   EXPECT_FALSE(fullscreen_controller->IsFullscreenForBrowser());
   EXPECT_EQ(fullscreen_controller->IsTabFullscreen(), IsFullscreenExpected());
+  // Expect no UMA samples logged yet for the popups fullscreen duration.
+  histogram_tester.ExpectTotalCount(kFullscreenDurationMetricKeyPopup, 0);
   EXPECT_EQ(EvalJs(popup_contents, "document.exitFullscreen()").error.empty(),
             IsFullscreenExpected());
   EXPECT_FALSE(fullscreen_controller->IsFullscreenForBrowser());
@@ -135,6 +144,10 @@ IN_PROC_BROWSER_TEST_P(PopupFullscreenTest, BasicFullscreen) {
   EXPECT_TRUE(content::WaitForLoadStop(popup_contents));
   EXPECT_FALSE(fullscreen_controller->IsFullscreenForBrowser());
   EXPECT_FALSE(fullscreen_controller->IsTabFullscreen());
+  // Expect exactly 1 UMA sample logged if fullscreen was entered & exited.
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  histogram_tester.ExpectTotalCount(kFullscreenDurationMetricKeyPopup,
+                                    IsFullscreenExpected() ? 1 : 0);
 }
 
 IN_PROC_BROWSER_TEST_P(PopupFullscreenTest, AboutBlankFullscreen) {
@@ -144,7 +157,7 @@ IN_PROC_BROWSER_TEST_P(PopupFullscreenTest, AboutBlankFullscreen) {
   content::WebContents* popup_contents =
       popup->tab_strip_model()->GetActiveWebContents();
   if (IsFullscreenExpected()) {
-    WaitForHTMLFullscreen(popup_contents);
+    content::WaitForHTMLFullscreen(popup_contents);
   } else {
     ASSERT_TRUE(console_observer_->Wait());
   }
@@ -182,7 +195,7 @@ IN_PROC_BROWSER_TEST_P(PopupFullscreenTest, FullscreenWithBounds) {
   content::WebContents* popup_contents =
       popup->tab_strip_model()->GetActiveWebContents();
   if (IsFullscreenExpected()) {
-    WaitForHTMLFullscreen(popup_contents);
+    content::WaitForHTMLFullscreen(popup_contents);
   } else {
     ASSERT_TRUE(console_observer_->Wait());
   }
@@ -218,7 +231,7 @@ IN_PROC_BROWSER_TEST_P(PopupFullscreenTest, ConsumesGesture) {
       browser(), "open('/simple.html', '_blank', 'popup,fullscreen')");
   content::WebContents* popup_contents =
       popup->tab_strip_model()->GetActiveWebContents();
-  WaitForHTMLFullscreen(popup_contents);
+  content::WaitForHTMLFullscreen(popup_contents);
   EXPECT_TRUE(EvalJs(popup_contents,
                      "!!document.fullscreenElement && "
                      "document.fullscreenElement == document.documentElement")
@@ -386,7 +399,7 @@ IN_PROC_BROWSER_TEST_P(PopupFullscreenPermissionPolicyTest,
         base::BindRepeating(&FullscreenPermissionPolicyViolationMessageFilter));
   }
   if (GetParam().is_fullscreen_expected_allowed()) {
-    WaitForHTMLFullscreen(popup_contents);
+    content::WaitForHTMLFullscreen(popup_contents);
   } else {
     ASSERT_TRUE(console_observer_->Wait());
   }

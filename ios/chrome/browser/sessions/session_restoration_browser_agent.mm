@@ -12,7 +12,6 @@
 #import "base/metrics/histogram_functions.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/time/time.h"
-#import "components/favicon/ios/web_favicon_driver.h"
 #import "components/previous_session_info/previous_session_info.h"
 #import "ios/chrome/browser/sessions/session_constants.h"
 #import "ios/chrome/browser/sessions/session_restoration_observer.h"
@@ -22,14 +21,12 @@
 #import "ios/chrome/browser/sessions/web_state_list_serialization.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/model/web_state_list/all_web_state_observation_forwarder.h"
 #import "ios/chrome/browser/shared/model/web_state_list/order_controller.h"
 #import "ios/chrome/browser/shared/model/web_state_list/order_controller_source.h"
 #import "ios/chrome/browser/shared/model/web_state_list/removing_indexes.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web/features.h"
-#import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/session_state/web_session_state_tab_helper.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
@@ -44,7 +41,7 @@ namespace {
 class OrderControllerSourceFromSessionWindowIOS final
     : public OrderControllerSource {
  public:
-  // Constructor taking the `session_window` used to return the data,
+  // Constructor taking the `session_window` used to return the data.
   explicit OrderControllerSourceFromSessionWindowIOS(
       SessionWindowIOS* session_window);
 
@@ -88,6 +85,9 @@ int OrderControllerSourceFromSessionWindowIOS::GetPinnedCount() const {
 
 int OrderControllerSourceFromSessionWindowIOS::GetOpenerOfItemAt(
     int index) const {
+  DCHECK_GE(index, 0);
+  DCHECK_LT(index, GetCount());
+
   CRWSessionUserData* user_data = session_window_.sessions[index].userData;
   NSNumber* opener_index_obj = base::apple::ObjCCast<NSNumber>(
       [user_data objectForKey:kLegacyWebStateListOpenerIndexKey]);
@@ -102,6 +102,9 @@ bool OrderControllerSourceFromSessionWindowIOS::IsOpenerOfItemAt(
     int index,
     int opener_index,
     bool check_navigation_index) const {
+  DCHECK_GE(index, 0);
+  DCHECK_LT(index, GetCount());
+
   // `check_navigation_index` is only used for `DetermineInsertionIndex()`
   // which should not be used, so we can assert that the parameter is false.
   DCHECK(!check_navigation_index);
@@ -163,8 +166,7 @@ SessionWindowIOS* FilterInvalidTabs(SessionWindowIOS* session_window) {
   const int sessions_count = static_cast<int>(session_window.sessions.count);
 
   std::vector<int> items_to_drop;
-  NSMutableDictionary<NSString*, NSNumber*>* mapping =
-      [NSMutableDictionary dictionary];
+  NSMutableSet<NSString*>* seen_identifiers = [NSMutableSet set];
   // Count the number of dropped tabs because they are duplicates, for
   // reporting.
   int duplicate_count = 0;
@@ -176,13 +178,11 @@ SessionWindowIOS* FilterInvalidTabs(SessionWindowIOS* session_window) {
     } else {
       // Filter out session items that are duplicate (after something went bad
       // somewhere).
-      NSNumber* previous_index = mapping[session.stableIdentifier];
-      if (previous_index != nil) {
-        // In case of duplicate, drop the previous occurrence.
-        items_to_drop.push_back(previous_index.intValue);
+      if ([seen_identifiers containsObject:session.stableIdentifier]) {
+        items_to_drop.push_back(index);
         duplicate_count++;
       }
-      mapping[session.stableIdentifier] = @(index);
+      [seen_identifiers addObject:session.stableIdentifier];
     }
   }
   base::UmaHistogramCounts100("Tabs.DroppedDuplicatesCountOnSessionRestore",
@@ -282,23 +282,6 @@ void SessionRestorationBrowserAgent::RestoreSessionWindow(
           base::BindRepeating(
               &web::WebState::CreateWithStorageSession,
               web::WebState::CreateParams(browser_->GetBrowserState())));
-
-  // Setup the placeholder and start fetching the favicon for the restored
-  // tabs if necessary.
-  for (web::WebState* web_state : restored_web_states) {
-    const GURL& visible_url = web_state->GetVisibleURL();
-    if (!visible_url.is_valid()) {
-      continue;
-    }
-
-    favicon::WebFaviconDriver::FromWebState(web_state)->FetchFavicon(
-        visible_url, /*is_same_document=*/false);
-
-    if (visible_url != kChromeUINewTabURL) {
-      PagePlaceholderTabHelper::FromWebState(web_state)
-          ->AddPlaceholderForNextNavigation();
-    }
-  }
 
   for (auto& observer : observers_) {
     observer.SessionRestorationFinished(browser_, restored_web_states);

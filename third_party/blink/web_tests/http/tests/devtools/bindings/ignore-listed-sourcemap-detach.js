@@ -5,12 +5,11 @@
 import {TestRunner} from 'test_runner';
 import {ConsoleTestRunner} from 'console_test_runner';
 
-import * as SDK from 'devtools/core/sdk/sdk.js';
 import * as Common from 'devtools/core/common/common.js';
 import * as BindingsModule from 'devtools/models/bindings/bindings.js';
+import * as SDK from 'devtools/core/sdk/sdk.js';
 
 (async function() {
-  await TestRunner.loadLegacyModule('console');
   TestRunner.addResult(`Tests that ignore-listed sourcemaps properly detach on reload crbug.com/888688`);
   var content =
     `console.log(1);

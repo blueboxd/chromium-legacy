@@ -292,6 +292,7 @@ class CORE_EXPORT WebLocalFrameImpl final
           mojom::blink::ContextMenuClientInterfaceBase> context_menu_client)
       override;
   void UsageCountChromeLoadTimes(const WebString& metric) override;
+  void UsageCountChromeCSI(const WebString& metric) override;
   bool DispatchedPagehideAndStillHidden() const override;
   FrameScheduler* Scheduler() const override;
   scheduler::WebAgentGroupScheduler* GetAgentGroupScheduler() const override;
@@ -521,13 +522,13 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   void SetClient(WebLocalFrameClient* client) { client_ = client; }
 
-  WebFrameWidgetImpl* FrameWidgetImpl() { return frame_widget_; }
+  WebFrameWidgetImpl* FrameWidgetImpl() { return frame_widget_.Get(); }
 
   WebTextCheckClient* GetTextCheckerClient() const {
     return text_check_client_;
   }
 
-  FindInPage* GetFindInPage() const { return find_in_page_; }
+  FindInPage* GetFindInPage() const { return find_in_page_.Get(); }
 
   TextFinder* GetTextFinder() const;
   // Returns the text finder object if it already exists.

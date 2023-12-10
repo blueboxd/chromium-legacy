@@ -9,7 +9,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/callback_list.h"
 #include "base/files/file_path.h"
 #include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
@@ -142,9 +141,9 @@ class AnnotatorImpl : public Annotator,
   // memory.
   size_t in_progess_batches_ = 0;
 
-  // Callbacks that are run when the model is updated with the correct taxonomy
-  // version.
-  base::OnceClosureList model_available_callbacks_;
+  // Indicates whether the model received was valid. Model will be invalid when
+  // metadata versions are unsupported.
+  bool is_valid_model_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -25,7 +25,6 @@ import static org.mockito.Mockito.when;
 import static org.chromium.ui.test.util.ViewUtils.VIEW_NULL;
 import static org.chromium.ui.test.util.ViewUtils.waitForView;
 
-import android.accounts.Account;
 import android.content.pm.ActivityInfo;
 import android.view.View;
 import android.view.ViewGroup;
@@ -79,7 +78,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.top.ToolbarPhone;
@@ -94,6 +93,7 @@ import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependencies
 import org.chromium.chrome.test.util.browser.suggestions.mostvisited.FakeMostVisitedSites;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.externalauth.ExternalAuthUtils;
+import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.test.util.AccountCapabilitiesBuilder;
 import org.chromium.components.signin.test.util.FakeAccountManagerFacade;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -142,10 +142,10 @@ public class FeedV2NewTabPageTest {
     private final FakeAccountManagerFacade mFakeAccountManagerFacade =
             new FakeAccountManagerFacade() {
                 @Override
-                public Promise<List<Account>> getAccounts() {
+                public Promise<List<CoreAccountInfo>> getCoreAccountInfos() {
                     // Attention. When cache is not populated, the Promise shouldn't be fulfilled.
                     if (mIsCachePopulatedInAccountManagerFacade) {
-                        return super.getAccounts();
+                        return super.getCoreAccountInfos();
                     }
                     return new Promise<>();
                 }
@@ -214,6 +214,8 @@ public class FeedV2NewTabPageTest {
         FeatureList.TestValues testValuesOverride = new FeatureList.TestValues();
         testValuesOverride.addFeatureFlagOverride(
                 ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID, mEnableScrollableMVT);
+        testValuesOverride.addFeatureFlagOverride(
+                ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_PHONE_ANDROID, mEnableScrollableMVT);
         FeatureList.setTestValues(testValuesOverride);
 
         mActivityTestRule.startMainActivityWithURL("about:blank");
@@ -277,10 +279,10 @@ public class FeedV2NewTabPageTest {
     @DisabledTest(message = "https://crbug.com/1046822")
     public void testSignInPromo_DismissBySwipe() {
         openNewTabPage();
-        boolean dismissed = SharedPreferencesManager.getInstance().readBoolean(
+        boolean dismissed = ChromeSharedPreferences.getInstance().readBoolean(
                 ChromePreferenceKeys.SIGNIN_PROMO_NTP_PROMO_DISMISSED, false);
         if (dismissed) {
-            SharedPreferencesManager.getInstance().writeBoolean(
+            ChromeSharedPreferences.getInstance().writeBoolean(
                     ChromePreferenceKeys.SIGNIN_PROMO_NTP_PROMO_DISMISSED, false);
         }
 
@@ -304,7 +306,7 @@ public class FeedV2NewTabPageTest {
         onView(withId(R.id.ntp_content)).check(matches(isDisplayed()));
 
         // Reset state.
-        SharedPreferencesManager.getInstance().writeBoolean(
+        ChromeSharedPreferences.getInstance().writeBoolean(
                 ChromePreferenceKeys.SIGNIN_PROMO_NTP_PROMO_DISMISSED, dismissed);
     }
 
@@ -415,9 +417,7 @@ public class FeedV2NewTabPageTest {
     @EnableFeatures(ChromeFeatureList.SURFACE_POLISH)
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     @DisabledTest(message = "crbug.com/1467377")
-    // clang-format off
     public void testFakeOmniboxPolishOnNtp() throws IOException{
-        // clang-format on
         openNewTabPage();
 
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();

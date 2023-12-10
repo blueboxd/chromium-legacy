@@ -75,6 +75,10 @@ BASE_FEATURE(kUseAlternativePortForGloballyReachableCheck,
              "UseAlternativePortForGloballyReachableCheck",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kEnableIPv6ReachabilityOverride,
+             "EnableIPv6ReachabilityOverride",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kSHA1ServerSignature,
              "SHA1ServerSignature",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -169,7 +173,7 @@ BASE_FEATURE(kSameSiteDefaultChecksMethodRigorously,
 #if BUILDFLAG(CHROME_ROOT_STORE_OPTIONAL)
 BASE_FEATURE(kChromeRootStoreUsed,
              "ChromeRootStoreUsed",
-#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
              base::FEATURE_ENABLED_BY_DEFAULT
 #else
              base::FEATURE_DISABLED_BY_DEFAULT
@@ -393,6 +397,10 @@ const base::FeatureParam<bool> kIpPrivacyDirectOnly{
     &kEnableIpProtectionProxy, /*name=*/"IpPrivacyDirectOnly",
     /*default_value=*/false};
 
+const base::FeatureParam<bool> kIpPrivacyBsaEnablePrivacyPass{
+    &kEnableIpProtectionProxy, /*name=*/"IpPrivacyBsaEnablePrivacyPass",
+    /*default_value=*/false};
+
 // Network-change migration requires NetworkHandle support, which are currently
 // only supported on Android (see
 // NetworkChangeNotifier::AreNetworkHandlesSupported).
@@ -467,5 +475,13 @@ BASE_FEATURE(kSpdyHeadersToHttpResponseUseBuilder,
 BASE_FEATURE(kSpdyHeadersToHttpResponseVerifyCorrectness,
              "SpdyHeadersToHttpResponseVerifyCorrectness",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kReceiveEcn, "ReceiveEcn", base::FEATURE_DISABLED_BY_DEFAULT);
+
+// TODO(crbug.com/634470): Remove this feature flag in January 2024 if the new
+// limit sticks.
+BASE_FEATURE(kNewCertPathBuilderIterationLimit,
+             "NewCertPathBuilderIterationLimit",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace net::features

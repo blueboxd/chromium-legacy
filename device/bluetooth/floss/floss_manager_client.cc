@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/observer_list.h"
 #include "base/task/single_thread_task_runner.h"
+#include "components/device_event_log/device_event_log.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
@@ -50,7 +51,11 @@ const DBusTypeInfo& GetDBusTypeInfo<AdapterWithEnabled>(
 
 // static
 const char FlossManagerClient::kExportedCallbacksPath[] =
-    "/org/chromium/bluetooth/managerclient";
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    "/org/chromium/bluetooth/manager/callback/lacros";
+#else
+    "/org/chromium/bluetooth/manager/callback";
+#endif
 
 // static
 const char FlossManagerClient::kObjectManagerPath[] = "/";
@@ -159,6 +164,22 @@ void FlossManagerClient::SetAdapterEnabled(int adapter,
       command, adapter);
 }
 
+base::Version FlossManagerClient::GetFlossApiVersion() const {
+  return version_;
+}
+
+void FlossManagerClient::DoGetFlossApiVersion() {
+  CallManagerMethod<uint32_t>(
+      base::BindOnce(&FlossManagerClient::HandleGetFlossApiVersion,
+                     weak_ptr_factory_.GetWeakPtr()),
+      manager::kGetFlossApiVersion);
+}
+
+bool FlossManagerClient::IsCompatibleFlossApi() {
+  return version_ >= floss::version::GetMinimalSupportedVersion() &&
+         version_ <= floss::version::GetMaximalSupportedVersion();
+}
+
 void FlossManagerClient::OnSetAdapterEnabled(DBusResult<Void> response) {
   // Only handle error cases since non-error called in OnHciEnabledChange
   if (adapter_enabled_callback_ && !response.has_value()) {
@@ -184,6 +205,15 @@ void FlossManagerClient::SetDevCoredump(ResponseCallback<Void> callback,
 void FlossManagerClient::RegisterWithManager() {
   DCHECK(!manager_available_);
 
+  // Get Floss API version of the daemon.
+  DoGetFlossApiVersion();
+
+  // Register for callbacks before Get* calls so we won't miss any state change.
+  CallManagerMethod<Void>(
+      base::BindOnce(&FlossManagerClient::HandleRegisterCallback,
+                     weak_ptr_factory_.GetWeakPtr()),
+      manager::kRegisterCallback, dbus::ObjectPath(kExportedCallbacksPath));
+
   // Get the default adapter.
   CallManagerMethod<int>(
       base::BindOnce(&FlossManagerClient::HandleGetDefaultAdapter,
@@ -195,12 +225,6 @@ void FlossManagerClient::RegisterWithManager() {
       base::BindOnce(&FlossManagerClient::HandleGetAvailableAdapters,
                      weak_ptr_factory_.GetWeakPtr()),
       manager::kGetAvailableAdapters);
-
-  // Register for callbacks.
-  CallManagerMethod<Void>(
-      base::BindOnce(&FlossManagerClient::HandleRegisterCallback,
-                     weak_ptr_factory_.GetWeakPtr()),
-      manager::kRegisterCallback, dbus::ObjectPath(kExportedCallbacksPath));
 
   manager_available_ = true;
   for (auto& observer : observers_) {
@@ -232,14 +256,18 @@ void FlossManagerClient::RemoveManager() {
 void FlossManagerClient::Init(dbus::Bus* bus,
                               const std::string& service_name,
                               const int adapter_index,
+                              base::Version version,
                               base::OnceClosure on_ready) {
+  init_ = false;
   bus_ = bus;
   service_name_ = service_name;
+  on_ready_ = std::move(on_ready);
 
   // We should always have object proxy since the client initialization is
   // gated on ObjectManager marking the manager interface as available.
   if (!bus_->GetObjectProxy(service_name_, dbus::ObjectPath(kManagerObject))) {
     LOG(ERROR) << "FlossManagerClient couldn't init. Object proxy was null.";
+    std::move(on_ready_).Run();
     return;
   }
 
@@ -261,6 +289,7 @@ void FlossManagerClient::Init(dbus::Bus* bus,
           base::BindOnce(&FlossManagerClient::RegisterWithManager,
                          weak_ptr_factory_.GetWeakPtr()))) {
     LOG(ERROR) << "Unable to successfully export FlossManagerClientCallbacks.";
+    std::move(on_ready_).Run();
     return;
   }
 
@@ -294,8 +323,6 @@ void FlossManagerClient::Init(dbus::Bus* bus,
         }
       }),
       base::FeatureList::IsEnabled(bluez::features::kLinkLayerPrivacy));
-
-  on_ready_ = std::move(on_ready);
 }
 
 void FlossManagerClient::HandleGetDefaultAdapter(DBusResult<int32_t> response) {
@@ -349,7 +376,9 @@ void FlossManagerClient::HandleRegisterCallback(DBusResult<Void> result) {
   if (!result.has_value()) {
     LOG(ERROR) << "Floss manager RegisterCallback returned error: "
                << result.error();
-    return;
+    init_ = false;
+  } else {
+    init_ = IsCompatibleFlossApi();
   }
 
   if (on_ready_) {
@@ -466,6 +495,28 @@ void FlossManagerClient::CompleteSetFlossEnabled(DBusResult<bool> ret) {
     LOG(ERROR) << "Floss couldn't be enabled. Error=" << ret.error();
   } else {
     DVLOG(1) << "Completed SetFlossEnabled with value " << *ret;
+  }
+}
+
+void FlossManagerClient::HandleGetFlossApiVersion(
+    DBusResult<uint32_t> response) {
+  if (!response.has_value()) {
+    BLUETOOTH_LOG(EVENT) << "Floss API version is not available! Error="
+                         << response.error();
+    version_ = base::Version("0.0");
+    return;
+  }
+
+  uint32_t val = response.value();
+  version_ = floss::version::IntoVersion(val);
+
+  BLUETOOTH_LOG(EVENT) << "Floss API version " << version_;
+  if (!IsCompatibleFlossApi()) {
+    BLUETOOTH_LOG(ERROR) << "Unsupported Floss API version " << version_
+                         << ". Valid range: "
+                         << floss::version::GetMinimalSupportedVersion()
+                         << " to "
+                         << floss::version::GetMinimalSupportedVersion();
   }
 }
 

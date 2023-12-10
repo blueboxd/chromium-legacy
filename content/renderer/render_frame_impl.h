@@ -455,6 +455,8 @@ class CONTENT_EXPORT RenderFrameImpl
           subresource_proxying_loader_factory,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           keep_alive_loader_factory,
+      mojo::PendingAssociatedRemote<blink::mojom::FetchLaterLoaderFactory>
+          fetch_later_loader_factory,
       const blink::DocumentToken& document_token,
       const base::UnguessableToken& devtools_navigation_token,
       const absl::optional<blink::ParsedPermissionsPolicy>& permissions_policy,
@@ -781,6 +783,14 @@ class CONTENT_EXPORT RenderFrameImpl
 
   base::WeakPtr<media::DecoderFactory> GetMediaDecoderFactory();
 
+  // Returns a blink::ChildURLLoaderFactoryBundle which can be used to request
+  // subresources for this frame.
+  //
+  // The returned bundle was typically sent by the browser process when
+  // committing a navigation, but in some cases (about:srcdoc, initial empty
+  // document) it may be inherited from the parent or opener.
+  blink::ChildURLLoaderFactoryBundle* GetLoaderFactoryBundle() override;
+
  protected:
   explicit RenderFrameImpl(CreateParams params);
 
@@ -898,14 +908,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // Requests that the browser process navigates to |url|.
   void OpenURL(std::unique_ptr<blink::WebNavigationInfo> info);
 
-  // Returns a blink::ChildURLLoaderFactoryBundle which can be used to request
-  // subresources for this frame.
-  //
-  // The returned bundle was typically sent by the browser process when
-  // committing a navigation, but in some cases (about:srcdoc, initial empty
-  // document) it may be inherited from the parent or opener.
-  blink::ChildURLLoaderFactoryBundle* GetLoaderFactoryBundle();
-
   scoped_refptr<blink::ChildURLLoaderFactoryBundle> CreateLoaderFactoryBundle(
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle> info,
       absl::optional<std::vector<blink::mojom::TransferrableURLLoaderPtr>>
@@ -913,7 +915,9 @@ class CONTENT_EXPORT RenderFrameImpl
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           subresource_proxying_loader_factory,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
-          keep_alive_loader_factory);
+          keep_alive_loader_factory,
+      mojo::PendingAssociatedRemote<blink::mojom::FetchLaterLoaderFactory>
+          fetch_later_loader_factory);
 
   // Update current main frame's encoding and send it to browser window.
   // Since we want to let users see the right encoding info from menu
@@ -979,6 +983,8 @@ class CONTENT_EXPORT RenderFrameImpl
           subresource_proxying_loader_factory,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           keep_alive_loader_factory,
+      mojo::PendingAssociatedRemote<blink::mojom::FetchLaterLoaderFactory>
+          fetch_later_loader_factory,
       mojo::PendingRemote<blink::mojom::CodeCacheHost> code_cache_host,
       mojo::PendingRemote<blink::mojom::ResourceCache> resource_cache,
       mojom::CookieManagerInfoPtr cookie_manager_info,
@@ -1537,6 +1543,21 @@ class CONTENT_EXPORT RenderFrameImpl
   // contents) should be sent to the browser immediately. This is normally
   // false, but set to true by some tests.
   bool send_content_state_immediately_ = false;
+
+  // The RenderFrameImpl can be created in 2 modes.
+  //
+  // 1. The associated WebFrameWidget and its compositor is initialized at
+  //    creation time. This is default mode.
+  //
+  // 2. The associated WebFrameWidget and its compositor is initialized at
+  //    commit time. This is done for local RF->local RF navigations to reuse
+  //    the compositor from the previous RFH. This is purely a performance
+  //    optimization.
+  //
+  // When in mode 2, the parameters to create the WebFrameWidget (which are
+  // part of the IPC that created this frame) are cached until commit to lazily
+  // create the WebFrameWidget.
+  mojom::CreateFrameWidgetParamsPtr widget_params_for_lazy_widget_creation_;
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_{this};
 };

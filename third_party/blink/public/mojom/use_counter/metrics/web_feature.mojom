@@ -4012,6 +4012,22 @@ enum WebFeature {
   kObservableConstructor = 4672,
   kTextWrapBalance = 4673,
   kTextWrapPretty = 4674,
+  kV8PointerEvent_DeviceId_AttributeGetter = 4675,
+  kSourceMappingUrlMagicCommentAtSign = 4676,
+  kHTMLDetailsElementNameAttribute = 4677,
+  kHTMLDetailsElementNameAttributeClosesSelf = 4678,
+  kHTMLDetailsElementNameAttributeClosesOther = 4679,
+  kCSSSubgridLayout = 4680,
+  kV8TemporalObject = 4681,
+  kChromeCSIUnknown = 4682,
+  kChromeCSIOnloadT = 4683,
+  kChromeCSIPageT = 4684,
+  kChromeCSIStartE = 4685,
+  kChromeCSITran = 4686,
+  kParseHTMLUnsafe = 4687,
+  kSetHTMLUnsafe = 4688,
+  kWebAssemblyModuleCompilation = 4689,
+
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
   // Also, run update_use_counter_feature_enum.py in

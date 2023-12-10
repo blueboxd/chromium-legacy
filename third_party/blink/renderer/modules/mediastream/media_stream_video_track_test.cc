@@ -189,7 +189,7 @@ class MediaStreamVideoTrackTest
   ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
   Persistent<MediaStreamSource> source_;
   // |mock_source_| is owned by |source_|.
-  raw_ptr<MockMediaStreamVideoSource, ExperimentalRenderer> mock_source_;
+  raw_ptr<MockMediaStreamVideoSource, DanglingUntriaged> mock_source_;
   bool source_started_;
 };
 
@@ -235,7 +235,6 @@ class CheckThreadHelper {
 void CheckThreadVideoFrameReceiver(
     CheckThreadHelper* helper,
     scoped_refptr<media::VideoFrame> frame,
-    std::vector<scoped_refptr<media::VideoFrame>> scaled_frames,
     base::TimeTicks estimated_capture_time) {
   // Do nothing.
 }
@@ -574,11 +573,6 @@ TEST_F(MediaStreamVideoTrackTest,
       "Media.VideoCapture.Track.FrameDrop.DeviceCapture",
       media::VideoCaptureFrameDropReason::kDeviceClientFrameHasInvalidFormat,
       MediaStreamVideoTrack::kMaxConsecutiveFrameDropForSameReasonCount);
-
-  histogram_tester.ExpectBucketCount(
-      "Media.VideoCapture.Track.MaxFrameDropExceeded.DeviceCapture",
-      media::VideoCaptureFrameDropReason::kDeviceClientFrameHasInvalidFormat,
-      1);
 }
 
 TEST_F(MediaStreamVideoTrackTest,

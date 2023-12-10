@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.omnibox.suggestions.carousel;
 import android.content.Context;
 
 import androidx.annotation.CallSuper;
+import androidx.annotation.NonNull;
 
 import org.chromium.chrome.browser.omnibox.R;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionProcessor;
@@ -16,7 +17,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 
 /** The base processor implementation for the Carousel suggestions. */
 public abstract class BaseCarouselSuggestionProcessor implements SuggestionProcessor {
-    private final Context mContext;
+    protected final @NonNull Context mContext;
     private final int mCarouselViewDecorationHeightPx;
 
     /**
@@ -24,8 +25,9 @@ public abstract class BaseCarouselSuggestionProcessor implements SuggestionProce
      */
     public BaseCarouselSuggestionProcessor(Context context) {
         mContext = context;
-        mCarouselViewDecorationHeightPx = context.getResources().getDimensionPixelSize(
-                R.dimen.omnibox_suggestion_header_height);
+        mCarouselViewDecorationHeightPx =
+                context.getResources()
+                        .getDimensionPixelSize(R.dimen.omnibox_suggestion_header_height);
     }
 
     /**

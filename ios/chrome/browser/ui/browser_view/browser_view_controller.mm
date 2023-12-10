@@ -15,12 +15,13 @@
 #import "components/ukm/ios/ukm_url_recorder.h"
 #import "ios/chrome/browser/crash_report/model/crash_keys_helper.h"
 #import "ios/chrome/browser/discover_feed/feed_constants.h"
-#import "ios/chrome/browser/find_in_page/util.h"
+#import "ios/chrome/browser/find_in_page/model/util.h"
 #import "ios/chrome/browser/intents/intents_donation_helper.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder_browser_agent.h"
+#import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/new_tab_page_util.h"
-#import "ios/chrome/browser/reading_list/reading_list_browser_agent.h"
+#import "ios/chrome/browser/reading_list/model/reading_list_browser_agent.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
@@ -36,7 +37,7 @@
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/shared/ui/util/url_with_title.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
-#import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
+#import "ios/chrome/browser/snapshots/model/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ui/authentication/re_signin_infobar_delegate.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmarks_coordinator.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
@@ -56,6 +57,7 @@
 #import "ios/chrome/browser/ui/main_content/main_content_ui_state.h"
 #import "ios/chrome/browser/ui/main_content/web_scroll_view_main_content_ui_forwarder.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
+#import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_coordinator.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_mediator.h"
 #import "ios/chrome/browser/ui/side_swipe/swipe_view.h"
@@ -65,7 +67,6 @@
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_presentation.h"
 #import "ios/chrome/browser/ui/tabs/switch_to_tab_animation_view.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_constants.h"
-#import "ios/chrome/browser/ui/tabs/tab_strip_containing.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_presenter.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_coordinator.h"
@@ -73,9 +74,9 @@
 #import "ios/chrome/browser/ui/toolbar/fullscreen/toolbar_ui.h"
 #import "ios/chrome/browser/ui/toolbar/fullscreen/toolbar_ui_broadcasting_util.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator.h"
-#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
-#import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
-#import "ios/chrome/browser/url_loading/url_loading_params.h"
+#import "ios/chrome/browser/url_loading/model/url_loading_browser_agent.h"
+#import "ios/chrome/browser/url_loading/model/url_loading_notifier_browser_agent.h"
+#import "ios/chrome/browser/url_loading/model/url_loading_params.h"
 #import "ios/chrome/browser/web/page_placeholder_browser_agent.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
@@ -271,7 +272,7 @@ enum HeaderBehaviour {
 // Coordinator for the new tablet tab strip.
 @property(nonatomic, strong) TabStripCoordinator* tabStripCoordinator;
 // A weak reference to the view of the tab strip on tablet.
-@property(nonatomic, weak) UIView<TabStripContaining>* tabStripView;
+@property(nonatomic, weak) UIView* tabStripView;
 
 // Returns the header views, all the chrome on top of the page, including the
 // ones that cannot be scrolled off screen by full screen.
@@ -638,11 +639,6 @@ enum HeaderBehaviour {
   };
 
   [self setLastTapPointFromCommand:originPoint];
-  // The new tab can be opened before BVC has been made visible onscreen.  Test
-  // for this case by checking if the parent container VC is currently in the
-  // process of being presented.
-  DCHECK(self.visible || self.dismissingModal ||
-         self.parentViewController.isBeingPresented);
 
   // In most cases, we want to take a snapshot of the current tab before opening
   // a new tab. However, if the current tab is not fully visible (did not finish
@@ -1105,7 +1101,12 @@ enum HeaderBehaviour {
   if (_isShutdown)
     return;
 
-  [self dismissPopups];
+  // TODO(crbug.com/522721): Support size changes for all popups and modal
+  // dialogs.
+  [self.helpHandler hideAllHelpBubbles];
+  if (!IsNewOverflowMenuEnabled()) {
+    [self.popupMenuCommandsHandler dismissPopupMenuAnimated:NO];
+  }
 
   __weak BrowserViewController* weakSelf = self;
 
@@ -1135,6 +1136,8 @@ enum HeaderBehaviour {
   if (ios::provider::IsFullscreenSmoothScrollingSupported()) {
     self.fullscreenController->ResizeHorizontalViewport();
   }
+
+  [self.popupMenuCommandsHandler adjustPopupSize];
 }
 
 - (void)completedTransition {
@@ -1499,9 +1502,12 @@ enum HeaderBehaviour {
     if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
       if (base::FeatureList::IsEnabled(kModernTabStrip) &&
           self.tabStripCoordinator) {
-        [self addChildViewController:self.tabStripCoordinator.viewController];
-        self.tabStripView = self.tabStripCoordinator.view;
+        UIViewController* tabStripViewController =
+            self.tabStripCoordinator.viewController;
+        [self addChildViewController:tabStripViewController];
+        self.tabStripView = tabStripViewController.view;
         [self.view addSubview:self.tabStripView];
+        [tabStripViewController didMoveToParentViewController:self];
         [self addConstraintsToTabStrip];
       }
       [self.view insertSubview:primaryToolbarView
@@ -1661,11 +1667,8 @@ enum HeaderBehaviour {
   self.broadcasting = self.active && self.viewVisible;
 }
 
-// Dismisses popups and modal dialogs that are displayed above the BVC upon size
-// changes (e.g. rotation, resizing,…) or when the accessibility escape gesture
-// is performed.
-// TODO(crbug.com/522721): Support size changes for all popups and modal
-// dialogs.
+// Dismisses popups and modal dialogs that are displayed above the BVC when the
+// accessibility escape gesture is performed.
 - (void)dismissPopups {
   // The dispatcher may not be fully connected during shutdown, so selectors may
   // be unrecognized.
@@ -2069,13 +2072,14 @@ enum HeaderBehaviour {
                      }];
   }
 
-  [self.toolbarCoordinator transitionToLocationBarFocusedState:YES];
+  [self.toolbarCoordinator transitionToLocationBarFocusedState:YES
+                                                    completion:nil];
 }
 
 - (void)omniboxDidResignFirstResponder {
   [_sideSwipeMediator setEnabled:YES];
 
-  [self.ntpCoordinator locationBarDidResignFirstResponder];
+  [self.ntpCoordinator locationBarWillResignFirstResponder];
 
   [UIView animateWithDuration:0.3
       animations:^{
@@ -2092,7 +2096,16 @@ enum HeaderBehaviour {
         [self.typingShield setHidden:YES];
       }];
 
-  [self.toolbarCoordinator transitionToLocationBarFocusedState:NO];
+  ProceduralBlock completion = nil;
+  if (IsIOSLargeFakeboxEnabled()) {
+    // Show the NTP's fake toolbar after the defocus animation completes.
+    completion = ^{
+      [self.ntpCoordinator locationBarDidResignFirstResponder];
+    };
+  };
+
+  [self.toolbarCoordinator transitionToLocationBarFocusedState:NO
+                                                    completion:completion];
 }
 
 #pragma mark - BrowserCommands
@@ -2528,7 +2541,7 @@ enum HeaderBehaviour {
   return ([self currentHeaderOffset] == 0.0f);
 }
 
-- (void)showTabStripView:(UIView<TabStripContaining>*)tabStripView {
+- (void)showTabStripView:(UIView*)tabStripView {
   DCHECK([self isViewLoaded]);
   DCHECK(tabStripView);
   self.tabStripView = tabStripView;

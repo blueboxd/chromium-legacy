@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/touch_to_fill/android/touch_to_fill_view_impl.h"
+#include <jni.h>
 
 #include <memory>
 #include <vector>
@@ -10,7 +11,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "chrome/browser/touch_to_fill/android/internal/jni/TouchToFillBridge_jni.h"
 #include "chrome/browser/touch_to_fill/android/jni_headers/Credential_jni.h"
@@ -21,7 +21,6 @@
 #include "components/password_manager/core/browser/passkey_credential.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
-#include "components/strings/grit/components_strings.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "url/android/gurl_android.h"
@@ -139,7 +138,8 @@ void TouchToFillViewImpl::Show(
       is_origin_secure.value(), passkey_array, credential_array,
       !!(flags & TouchToFillView::kTriggerSubmission),
       !(flags & TouchToFillView::kCanManagePasswordsWhenPasskeysPresent),
-      !!(flags & TouchToFillView::kShouldShowHybridOption));
+      !!(flags & TouchToFillView::kShouldShowHybridOption),
+      !!(flags & TouchToFillView::kShouldShowCredManEntry));
 }
 
 void TouchToFillViewImpl::OnCredentialSelected(const UiCredential& credential) {
@@ -170,6 +170,10 @@ void TouchToFillViewImpl::OnManagePasswordsSelected(JNIEnv* env,
 
 void TouchToFillViewImpl::OnHybridSignInSelected(JNIEnv* env) {
   controller_->OnHybridSignInSelected();
+}
+
+void TouchToFillViewImpl::OnShowCredManSelected(JNIEnv* env) {
+  controller_->OnShowCredManSelected();
 }
 
 void TouchToFillViewImpl::OnDismiss(JNIEnv* env) {

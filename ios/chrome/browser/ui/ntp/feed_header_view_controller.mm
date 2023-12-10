@@ -5,9 +5,9 @@
 #import "ios/chrome/browser/ui/ntp/feed_header_view_controller.h"
 
 #import "ios/chrome/browser/ntp/features.h"
+#import "ios/chrome/browser/ntp/home/features.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/discover_feed_constants.h"
 #import "ios/chrome/browser/ui/ntp/feed_control_delegate.h"
@@ -54,6 +54,8 @@ const CGFloat kFollowingDotRadius = 3;
 const CGFloat kFollowingDotMargin = 8;
 // Duration of the fade animation for elements that toggle when switching feeds.
 const CGFloat kSegmentAnimationDuration = 0.3;
+// Padding on top of the header.
+const CGFloat kTopVerticalPadding = 15;
 
 // The size of feed symbol images.
 NSInteger kFeedSymbolPointSize = 17;
@@ -504,11 +506,14 @@ NSInteger kFeedSymbolPointSize = 17;
 
   self.feedHeaderConstraints = [[NSMutableArray alloc] init];
 
+  CGFloat totalHeaderHeight =
+      [self feedHeaderHeight] + [self customSearchEngineViewHeight];
+  if (IsFeedContainmentEnabled()) {
+    totalHeaderHeight += kTopVerticalPadding;
+  }
   [self.feedHeaderConstraints addObjectsFromArray:@[
     // Anchor container and menu button.
-    [self.view.heightAnchor
-        constraintEqualToConstant:([self feedHeaderHeight] +
-                                   [self customSearchEngineViewHeight])],
+    [self.view.heightAnchor constraintEqualToConstant:totalHeaderHeight],
     [self.container.heightAnchor
         constraintEqualToConstant:[self feedHeaderHeight]],
     [self.container.bottomAnchor

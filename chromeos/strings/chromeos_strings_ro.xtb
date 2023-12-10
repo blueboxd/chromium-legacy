@@ -24,6 +24,7 @@
 <translation id="1154390310959620237">Poți personaliza doar cinci comenzi rapide. Șterge o comandă rapidă ca să adaugi alta.</translation>
 <translation id="1164939766849482256">Screensaver din zori până seara</translation>
 <translation id="1167755866710282443">Deschide meniul pentru a personaliza tastele. Trage meniul pentru a muta.</translation>
+<translation id="1174073918202301297">Comanda rapidă a fost adăugată</translation>
 <translation id="1175697296044146566">Acest <ph name="DEVICE_TYPE" /> este gestionat de <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Medie (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Elimină</translation>
@@ -74,6 +75,7 @@
 <translation id="1499900233129743732"><ph name="MANAGER" /> gestionează acest utilizator și poate să gestioneze de la distanță setările și să monitorizeze activitatea utilizatorului.</translation>
 <translation id="150962533380566081">PUK nevalid.</translation>
 <translation id="1510238584712386396">Lansator</translation>
+<translation id="1515129336378114413">pagina de pornire a browserului</translation>
 <translation id="1526389707933164996">Animație pentru screensaver</translation>
 <translation id="152892567002884378">Mărește volumul</translation>
 <translation id="1555130319947370107">Albastru</translation>
@@ -118,6 +120,7 @@
 <translation id="1768959921651994223">Tip de autentificare</translation>
 <translation id="1776228893584526149">Tonul imaginii de fundal</translation>
 <translation id="1782199038061388045">traducere</translation>
+<translation id="1788485524395674731">Această setare este gestionată de administrator</translation>
 <translation id="1792647875738159689">Se anulează scanarea</translation>
 <translation id="1801418420130173017">Dezactivează tema întunecată</translation>
 <translation id="1807246157184219062">Luminos</translation>
@@ -132,7 +135,6 @@
 <translation id="1871569928317311284">Dezactivează tema întunecată</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Dezactivează modul întunecat</translation>
-<translation id="1881188606372070653">Accesează <ph name="BEGIN_LINK1" />pagina Asistență juridică<ph name="END_LINK1" /> ca să soliciți modificări ale conținutului din motive juridice. Unele informații despre cont și sistem pot fi trimise la Google. Vom folosi informațiile trimise pentru a ajuta la remedierea problemelor tehnice sau pentru a îmbunătăți serviciile, conform <ph name="BEGIN_LINK2" />Politicii de confidențialitate<ph name="END_LINK2" /> și <ph name="BEGIN_LINK3" />Termenilor și condițiilor<ph name="END_LINK3" />.</translation>
 <translation id="1885577615937958993">derulează rapid conținutul media</translation>
 <translation id="1887850431809612466">Versiune hardware</translation>
 <translation id="1897672602657312171">Comanda rapidă fără tasta de căutare poate intra în conflict cu comanda rapidă a unei aplicații. Introdu din nou comanda rapidă ca să o folosești în continuare sau introdu o nouă comandă rapidă care folosește tasta de căutare.</translation>
@@ -194,6 +196,7 @@
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2338501278241028356">Pentru a descoperi dispozitivele din apropiere, activează Bluetooth</translation>
 <translation id="2346474577291266260">Excelentă (<ph name="SIGNAL_STRENGTH" />)</translation>
+<translation id="2358070305000735383">Caseta de dialog de editare pentru <ph name="DESCRIPTION" /> este deschisă.</translation>
 <translation id="2359808026110333948">Continuă</translation>
 <translation id="2364498172489649528">Reușită</translation>
 <translation id="2367335866686097760">Tastă pentru maparea tastelor</translation>
@@ -213,6 +216,7 @@
 <translation id="2505327257735685095">Actualizează imaginea de fundal actuală</translation>
 <translation id="2512979179176933762">afișează ferestrele</translation>
 <translation id="2513396635448525189">Imagine de conectare</translation>
+<translation id="2515109918609218604">Comanda rapidă nu este disponibilă. Introdu o nouă comandă rapidă fără să folosești tastele de funcții și de căutare.</translation>
 <translation id="2517472476991765520">Scanează</translation>
 <translation id="2521835766824839541">melodia anterioară</translation>
 <translation id="2526590354069164005">Desktop</translation>
@@ -333,7 +337,6 @@
 <translation id="3604713164406837697">Schimbă imaginea de fundal</translation>
 <translation id="360565022852130722">Rețeaua Wi-Fi este securizată cu protocolul slab WEP 802.1x</translation>
 <translation id="3606583719724308068">Latență mare pe site-urile HTTPS</translation>
-<translation id="3607216139080387279">Afișează screensaverul</translation>
 <translation id="361575905210396100">Îți mulțumim pentru feedback</translation>
 <translation id="3632579075709132555">Activarea / dezactivarea ecranului de confidențialitate</translation>
 <translation id="3651050199673793219">Selectează o unitate de temperatură</translation>
@@ -345,7 +348,6 @@
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> recenzii)</translation>
 <translation id="3748026146096797577">Neconectat</translation>
 <translation id="3749289110408117711">Nume de fișier</translation>
-<translation id="3766934827878963937">timp de o oră</translation>
 <translation id="3771294271822695279">Fișiere video</translation>
 <translation id="3784455785234192852">Blochează</translation>
 <translation id="380097101658023925">comenzi pentru rgb</translation>
@@ -481,6 +483,7 @@
 <translation id="4793756956024303490">Algoritm de comprimare</translation>
 <translation id="4794140124556169553">Rularea unui test pentru CPU poate afecta performanța sistemului</translation>
 <translation id="4798078634453489142">Elimină un APN pentru a adăuga un APN nou</translation>
+<translation id="479989351350248267">căutați</translation>
 <translation id="4800589996161293643">Comunitatea Chromebook</translation>
 <translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341">S-a anulat sarcina de printare <ph name="DOCUMENT_TITLE" /></translation>
@@ -624,6 +627,7 @@
 <translation id="584953448295717128">APN-ul este detectat automat.</translation>
 <translation id="5849570051105887917">Codul furnizorului local</translation>
 <translation id="5859603669299126575">Albumul galeriei de imagini</translation>
+<translation id="5859969039821714932">Comanda rapidă nu este disponibilă. Apasă pe o nouă comandă rapidă fără <ph name="KEY" />.</translation>
 <translation id="5860033963881614850">Dezactivat</translation>
 <translation id="5860491529813859533">Activează</translation>
 <translation id="5876385649737594562">Activează modul pentru a selecta opțiuni</translation>
@@ -686,9 +690,9 @@
 <translation id="629550705077076970">reducerea luminozității tastaturii</translation>
 <translation id="6302401976930124515">Testul <ph name="TEST_NAME" /> a fost anulat</translation>
 <translation id="631063167932043783">Explorează aplicația</translation>
-<translation id="6318437367327684789">întotdeauna</translation>
 <translation id="6319207335391420837">Actualizează firmware-ul pentru <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Activează screensaverul</translation>
+<translation id="6324916366299863871">Editează o comandă rapidă</translation>
 <translation id="6325525973963619867">Eșuat</translation>
 <translation id="6331191339300272798">Tema întunecată automată</translation>
 <translation id="6340526405444716530">Personalizare</translation>
@@ -709,7 +713,6 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Slabă (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Accesează setările contului</translation>
-<translation id="6461047516875166066">Spune-mi mai multe</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Scanezi din nou pagina?}=1{Scanezi din nou pagina {PAGE_NUMBER}?}few{Scanezi din nou pagina {PAGE_NUMBER}?}other{Scanezi din nou pagina {PAGE_NUMBER}?}}</translation>
 <translation id="6472207088655375767">OTP</translation>
 <translation id="6480327114083866287">Gestionat de <ph name="MANAGER" /></translation>
@@ -744,6 +747,7 @@
 <translation id="6659594942844771486">Filă</translation>
 <translation id="6673898378497337661">mărește luminozitatea tastaturii</translation>
 <translation id="6692996468359469499">Obține informații despre selecție</translation>
+<translation id="6694534975463174713">lacăt</translation>
 <translation id="6704062477274546131">Rezolvare DNS</translation>
 <translation id="6723839937902243910">Alimentare</translation>
 <translation id="6723847290197874913">Retroiluminarea tastaturii</translation>
@@ -788,6 +792,7 @@
 <translation id="7103252855940681301">Dispozitivul <ph name="INDEX" /> din <ph name="COUNT" /> numit <ph name="NAME" />.</translation>
 <translation id="7107255225945990211">Alege grafica exclusivă pentru <ph name="PRODUCT_NAME" /></translation>
 <translation id="7108668606237948702">enter</translation>
+<translation id="7119389851461848805">pornire</translation>
 <translation id="7130438335435247835">Numele punctului de acces (APN)</translation>
 <translation id="7134436342991564651">{0,plural, =1{Server de nume}few{Servere de nume}other{Servere de nume}}</translation>
 <translation id="7135814714616751706">Caută comenzi rapide</translation>
@@ -828,9 +833,9 @@
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7388959671917308825">Touchpad încorporat</translation>
 <translation id="7397270852490618635">Dezactivează tema luminoasă</translation>
+<translation id="7401543881546089382">Ștergeți comanda rapidă</translation>
 <translation id="741244894080940828">conversie</translation>
 <translation id="7415801143053185905">Latență foarte mare a solicitărilor HTTP</translation>
-<translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{Administratorul a setat <ph name="APP_NAME_1" /> să pornească automat de fiecare dată când te conectezi.}=2{Administratorul a setat <ph name="APP_NAME_1" /> și <ph name="APP_NAME_2" /> să pornească automat de fiecare dată când te conectezi.}=3{Administratorul a setat <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> și <ph name="APP_NAME_3" /> să pornească automat de fiecare dată când te conectezi.}few{Administratorul a setat <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> și încă # aplicații să pornească automat de fiecare dată când te conectezi.}other{Administratorul a setat <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> și încă # de aplicații să pornească automat de fiecare dată când te conectezi.}}</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7458970041932198923">Conectează-te la o rețea și reîncarcă pagina pentru a vedea și a seta avatarele.</translation>
 <translation id="7469648432129124067">S-a detectat un portal</translation>
@@ -866,6 +871,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7716280709122323042">WPA3</translation>
 <translation id="7718231387947923843">iluminarea tastaturii</translation>
+<translation id="7730077286107534951">Unele informații despre cont și sistem pot fi trimise la Google. Le folosim pentru a rezolva problemele tehnice și pentru a îmbunătăți serviciile, în conformitate cu <ph name="BEGIN_LINK2" />Politica de confidențialitate<ph name="END_LINK2" /> și cu <ph name="BEGIN_LINK3" />Termenii și condițiile<ph name="END_LINK3" />. Pentru a solicita modificări ale conținutului, accesează <ph name="BEGIN_LINK1" />Ajutor pentru probleme juridice<ph name="END_LINK1" />.</translation>
 <translation id="773153675489693198">Numărul de cicluri</translation>
 <translation id="7747039790905080783">Cheie predistribuită</translation>
 <translation id="7752963721013053477">Din zori până seara – Exclusive</translation>
@@ -902,6 +908,7 @@
 <translation id="7978412674231730200">Cheie privată</translation>
 <translation id="7994702968232966508">Metodă EAP</translation>
 <translation id="8004582292198964060">Browser</translation>
+<translation id="8017679124341497925">Comanda rapidă a fost editată</translation>
 <translation id="802154636333426148">Descărcarea nu a reușit</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Activează modul de culoare automată</translation>
@@ -942,6 +949,7 @@
 <translation id="8336739000755212683">Schimbă imaginea contului de pe dispozitiv</translation>
 <translation id="8347126826554447157"><ph name="SHORCTCUT1" /> sau <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">Sarcini de printare</translation>
+<translation id="8349826889576450703">lansator</translation>
 <translation id="8351855506390808906">Punct de contact pentru maparea tastelor</translation>
 <translation id="8352772353338965963">Adăugați un cont pentru conectarea multiplă. Conturile conectate pot fi accesate fără parolă, prin urmare, această funcție trebuie folosită numai cu conturile de încredere.</translation>
 <translation id="8364946094152050673">Serverele de nume sunt goale</translation>
@@ -1015,6 +1023,7 @@
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8876270629542503161">Dispozitivul este o tabletă.</translation>
 <translation id="8881098542468797602">Testul a reușit</translation>
+<translation id="8892443466059986410">Anulează modificarea comenzii rapide</translation>
 <translation id="8898840733695078011">Puterea semnalului</translation>
 <translation id="8909114361904403025">săgeată în sus</translation>
 <translation id="8910721771319628100">Rețeaua prestabilită depășește pragul de latență</translation>
@@ -1034,9 +1043,9 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{Scanează}=1{Scanează {NUMBER_OF_PAGES} pagină}few{Scanează {NUMBER_OF_PAGES} pagini}other{Scanează {NUMBER_OF_PAGES} de pagini}}</translation>
 <translation id="8997710128084572139">Nivelul bateriei dispozitivului este de <ph name="BATTERY_PERCENTAGE" /> %.</translation>
-<translation id="8998156756248178381">{NUM_ROOL_APPS,plural, =1{<ph name="APP_NAME_1" /> a pornit automat}few{# aplicații au pornit automat}other{# de aplicații au pornit automat}}</translation>
 <translation id="8998289560386111590">Nu este disponibil pe dispozitivul tău</translation>
 <translation id="9003704114456258138">Frecvență</translation>
+<translation id="901834265349196618">e-mail</translation>
 <translation id="9024331582947483881">ecran complet</translation>
 <translation id="9025198690966128418">Folosește ca dispozitiv personal</translation>
 <translation id="902638246363752736">Setări tastatură</translation>
@@ -1057,11 +1066,9 @@
 <translation id="9111102763498581341">Deblochează</translation>
 <translation id="9122602430962285795">Accesează Setări pentru reconectare</translation>
 <translation id="9126720536733509015">Salvează mai multe pagini într-un fișier PDF</translation>
-<translation id="9133104754938025929">Pentru a economisi bateria, screensaverul funcționează numai în timpul încărcării.</translation>
 <translation id="9133772297793293778">Apasă 1 – 4 modificatori și încă o tastă de pe tastatură. Pentru a ieși din modul de editare, apasă pe Alt + Esc.</translation>
 <translation id="9137526406337347448">Google Services</translation>
 <translation id="9138630967333032450">Shift din stânga</translation>
-<translation id="9143347780818904997">timp de <ph name="MINUTES" /> minute</translation>
 <translation id="9149391708638971077">Rulează testul Memorie</translation>
 <translation id="9161276708550942948">spațiu</translation>
 <translation id="9173638680043580060">A rămas mai puțin de un minut</translation>
@@ -1077,6 +1084,7 @@
 <translation id="945522503751344254">Trimite feedback</translation>
 <translation id="952992212772159698">Neactivat</translation>
 <translation id="960719561871045870">Cod operator</translation>
+<translation id="966787709310836684">meniu</translation>
 <translation id="979450713603643090">Roz deschis</translation>
 <translation id="982713511914535780">Rulează testul Descărcare</translation>
 <translation id="987264212798334818">General</translation>

@@ -14,6 +14,7 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/functional/callback_helpers.h"
 #include "base/i18n/message_formatter.h"
 #include "base/logging.h"
 #include "base/strings/strcat.h"
@@ -24,6 +25,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/link_capturing/link_capturing_features.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/locks/all_apps_lock.h"
@@ -36,7 +38,6 @@
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/app_constants/constants.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
@@ -46,6 +47,7 @@
 #include "components/services/app_service/public/cpp/permission.h"
 #include "components/services/app_service/public/cpp/preferred_apps_list_handle.h"
 #include "components/services/app_service/public/cpp/types_util.h"
+#include "components/url_formatter/elide_url.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -61,6 +63,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/webui/resources/cr_components/app_management/app_management.mojom.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/arc/session/connection_holder.h"
@@ -137,6 +140,7 @@ bool CanShowDefaultAppAssociationsUi() {
 #endif
 }
 
+#if BUILDFLAG(IS_CHROMEOS)
 // Returns a list of intent filters that support http/https given an app ID.
 apps::IntentFilters GetSupportedLinkIntentFilters(Profile* profile,
                                                   const std::string& app_id) {
@@ -171,6 +175,7 @@ std::vector<std::string> GetSupportedLinks(Profile* profile,
   return std::vector<std::string>(supported_links.begin(),
                                   supported_links.end());
 }
+#endif
 
 #if !BUILDFLAG(IS_CHROMEOS)
 std::vector<std::string> GetSupportedLinksForPWAs(
@@ -214,6 +219,38 @@ absl::optional<std::string> MaybeFormatBytes(absl::optional<uint64_t> bytes) {
 
   return absl::nullopt;
 }
+#if !BUILDFLAG(IS_CHROMEOS)
+std::string GetFormattedOrigin(const webapps::AppId& app_id,
+                               web_app::WebAppProvider& provider) {
+  GURL origin_url = provider.registrar_unsafe().GetAppStartUrl(app_id);
+  // Format origin URL to not show the scheme and default port numbers.
+  std::u16string origin_url_formatted =
+      url_formatter::FormatOriginForSecurityDisplay(
+          url::Origin::Create(origin_url),
+          url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
+  return base::UTF16ToUTF8(origin_url_formatted);
+}
+
+// Returns a list of origin URLs from scope_extensions of an app's Manifest.
+std::vector<std::string> GetScopeExtensions(const webapps::AppId& app_id,
+                                            web_app::WebAppProvider& provider) {
+  std::vector<std::string> scope_extensions_vector;
+
+  for (const auto& scope_extension :
+       provider.registrar_unsafe().GetScopeExtensions(app_id)) {
+    url::Origin origin = scope_extension.origin;
+    // Format origin URL to not show the scheme and default port numbers.
+    std::u16string origin_formatted =
+        url_formatter::FormatOriginForSecurityDisplay(
+            origin, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
+    if (scope_extension.has_origin_wildcard) {
+      origin_formatted = u"*." + origin_formatted;
+    }
+    scope_extensions_vector.push_back(base::UTF16ToUTF8(origin_formatted));
+  }
+  return scope_extensions_vector;
+}
+#endif  // !BUILDFLAG(IS_CHROMEOS)
 
 }  // namespace
 
@@ -407,11 +444,9 @@ void AppManagementPageHandler::SetPreferredApp(const std::string& app_id,
 #else
   web_app::WebAppProvider* provider =
       web_app::WebAppProvider::GetForWebApps(profile_);
-  provider->scheduler().ScheduleCallbackWithLock<web_app::AllAppsLock>(
-      "AppManagementPageHandler::MakeAppPreferredAndResetOthers",
-      std::make_unique<web_app::AllAppsLockDescription>(),
-      base::BindOnce(&AppManagementPageHandler::MakeAppPreferredAndResetOthers,
-                     weak_ptr_factory_.GetWeakPtr(), app_id, is_preferred_app));
+
+  provider->scheduler().SetAppCapturesSupportedLinksDisableOverlapping(
+      app_id, is_preferred_app, base::DoNothing());
 #endif  // BUILDFLAG(IS_CHROMEOS)
 }
 
@@ -420,15 +455,19 @@ void AppManagementPageHandler::GetOverlappingPreferredApps(
     GetOverlappingPreferredAppsCallback callback) {
 #if BUILDFLAG(IS_CHROMEOS)
   auto intent_filters = GetSupportedLinkIntentFilters(profile_, app_id);
+  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
   base::flat_set<std::string> app_ids =
-      apps::AppServiceProxyFactory::GetForProfile(profile_)
-          ->PreferredAppsList()
-          .FindPreferredAppsForFilters(intent_filters);
+      proxy->PreferredAppsList().FindPreferredAppsForFilters(intent_filters);
   app_ids.erase(app_id);
-  // Remove the use_browser app ID as it's mainly used inside the intent system
-  // and is not an app in app management. This prevents an overlap dialog from
-  // being shown when there are no "real" apps that overlap.
-  app_ids.erase(apps_util::kUseBrowserForLink);
+
+  // Erase all IDs that do not correspond to installed apps in App Service. Such
+  // IDs could be apps that have been uninstalled but did not have their
+  // preference updated correctly, or the legacy "use_browser" preference. This
+  // prevents attempting to show an overlapping app dialog for an app that
+  // doesn't currently exist.
+  base::EraseIf(app_ids, [proxy](const std::string& app_id) {
+    return !proxy->AppRegistryCache().IsAppInstalled(app_id);
+  });
   std::move(callback).Run(std::move(app_ids).extract());
 #else
   web_app::WebAppProvider* provider =
@@ -591,7 +630,7 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
 #else
   // This allows us to bypass showing the supported links item on the PWA app
   // settings page on Windows, Mac and Linux platforms.
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAsLinkCapturing)) {
+  if (base::FeatureList::IsEnabled(apps::features::kDesktopPWAsLinkCapturing)) {
     app->supported_links = GetSupportedLinksForPWAs(app->id, *provider);
   } else {
     app->supported_links = std::vector<std::string>();
@@ -688,6 +727,14 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
 
   app->publisher_id = update.PublisherId();
 
+#if !BUILDFLAG(IS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(
+          blink::features::kWebAppEnableScopeExtensions)) {
+    app->formatted_origin = GetFormattedOrigin(app->id, *provider);
+    app->scope_extensions = GetScopeExtensions(app->id, *provider);
+  }
+#endif  // !BUILDFLAG(IS_CHROMEOS)
+
   return app;
 }
 
@@ -765,52 +812,3 @@ void AppManagementPageHandler::OnPreferredAppsListWillBeDestroyed(
     apps::PreferredAppsListHandle* handle) {
   preferred_apps_list_handle_observer_.Reset();
 }
-
-#if !BUILDFLAG(IS_CHROMEOS)
-void AppManagementPageHandler::MakeAppPreferredAndResetOthers(
-    const webapps::AppId& app_id,
-    bool set_to_preferred,
-    web_app::AllAppsLock& lock) {
-  bool is_already_preferred = lock.registrar().CapturesLinksInScope(app_id);
-
-  // Only update in web_app DB if the user selected choice does not match the
-  // one in the DB currently.
-  bool requires_update = (set_to_preferred && !is_already_preferred) ||
-                         (!set_to_preferred && is_already_preferred);
-
-  if (!requires_update) {
-    return;
-  }
-
-  // TODO(b/273830801): Automatically call observers when changes are committed
-  //  to the web_app DB.
-  for (const webapps::AppId& id : lock.registrar().GetAppIds()) {
-    if (id == app_id) {
-      {
-        web_app::ScopedRegistryUpdate update = lock.sync_bridge().BeginUpdate();
-        web_app::WebApp* app_to_update = update->UpdateApp(app_id);
-        app_to_update->SetIsUserSelectedAppForSupportedLinks(set_to_preferred);
-      }
-      lock.registrar().NotifyWebAppUserLinkCapturingPreferencesChanged(
-          app_id, set_to_preferred);
-    } else {
-      // For all other app_ids, if one is already set as the preferred, reset
-      // all other apps in the registry if they were previously set to be a
-      // preferred app to capture similar type of links according to scope
-      // prefixes.
-      if (set_to_preferred && lock.registrar().CapturesLinksInScope(id) &&
-          lock.registrar().AppScopesMatchForUserLinkCapturing(app_id, id)) {
-        {
-          web_app::ScopedRegistryUpdate update =
-              lock.sync_bridge().BeginUpdate();
-          web_app::WebApp* app_to_update = update->UpdateApp(id);
-          app_to_update->SetIsUserSelectedAppForSupportedLinks(
-              /*is_user_selected_app_for_capturing_links=*/false);
-        }
-        lock.registrar().NotifyWebAppUserLinkCapturingPreferencesChanged(
-            id, /*is_preferred=*/false);
-      }
-    }
-  }
-}
-#endif  // !BUILDFLAG(IS_CHROMEOS)

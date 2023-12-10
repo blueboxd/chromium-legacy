@@ -21,7 +21,7 @@ namespace switches {
 // alongside the definition of their values in the .cc file.
 
 #if BUILDFLAG(IS_ANDROID)
-BASE_DECLARE_FEATURE(kIdentityStatusConsistency);
+BASE_DECLARE_FEATURE(kSeedAccountsRevamp);
 #endif
 
 extern const char kClearTokenService[];
@@ -59,9 +59,15 @@ BASE_DECLARE_FEATURE(kSearchEngineChoice);
 
 BASE_DECLARE_FEATURE(kSearchEngineChoiceFre);
 
+BASE_DECLARE_FEATURE(kSearchEngineChoiceSettingsUi);
+
 // Used to experiment and validate the UNO model on Desktop. Not meant to be
 // launched to stable for the moment, while it's still in a prototype state.
 BASE_DECLARE_FEATURE(kUnoDesktop);
+
+#if BUILDFLAG(IS_IOS)
+BASE_DECLARE_FEATURE(kRemoveSignedInAccountsDialog);
+#endif
 
 }  // namespace switches
 

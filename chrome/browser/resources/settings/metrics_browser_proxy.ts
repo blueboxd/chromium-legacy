@@ -37,8 +37,9 @@ export enum PrivacyElementInteractions {
   THIRD_PARTY_COOKIES_ALLOW = 20,
   THIRD_PARTY_COOKIES_BLOCK_IN_INCOGNITO = 21,
   THIRD_PARTY_COOKIES_BLOCK = 22,
+  BLOCK_ALL_THIRD_PARTY_COOKIES = 23,
   // Max value should be updated whenever new entries are added.
-  MAX_VALUE = 23,
+  MAX_VALUE = 24,
 }
 
 /**
@@ -367,7 +368,8 @@ export class MetricsBrowserProxyImpl implements MetricsBrowserProxy {
   recordSafetyCheckNotificationsListCountHistogram(suggestions: number) {
     chrome.send('metricsHandler:recordInHistogram', [
       'Settings.SafetyCheck.NotificationsListCount',
-      suggestions, 99 /*max value for Notification suggestions*/,
+      suggestions,
+      99 /*max value for Notification suggestions*/,
     ]);
   }
 

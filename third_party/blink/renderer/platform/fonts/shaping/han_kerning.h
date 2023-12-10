@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_HAN_KERNING_H_
 
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/text/han_kerning_char_type.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -42,27 +43,33 @@ class PLATFORM_EXPORT HanKerning {
   STACK_ALLOCATED();
 
  public:
+  struct Options {
+    bool is_horizontal = true;
+    bool apply_start = false;
+  };
+
   HanKerning(const String& text,
              wtf_size_t start,
              wtf_size_t end,
              const SimpleFontData& font_data,
              const FontDescription& font_description,
-             bool is_horizontal,
-             FontFeatures& features) {
+             Options options,
+             FontFeatures* features) {
     if (!RuntimeEnabledFeatures::CSSTextSpacingTrimEnabled()) {
       return;
     }
-    // TODO(crbug.com/1463890): Add more conditions to fail fast.
-    Compute(text, start, end, font_data, font_description, is_horizontal,
-            features);
+    if (text.Is8Bit()) {
+      return;
+    }
+    Compute(text, start, end, font_data, font_description, options, features);
+  }
+  ~HanKerning() {
+    if (UNLIKELY(features_)) {
+      ResetFeatures();
+    }
   }
 
-  enum class CharType : uint8_t {
-    kOther,
-    kOpen,
-    kClose,
-    kMiddle,
-  };
+  using CharType = HanKerningCharType;
 
   // Data retrieved from fonts for `HanKerning`.
   struct PLATFORM_EXPORT FontData {
@@ -89,19 +96,29 @@ class PLATFORM_EXPORT HanKerning {
     CharType type_for_semicolon = CharType::kOther;
   };
 
+  // Check if the `CharType` of a character is `kOpen` without knowing the font.
+  // `CharType` depends on fonts, but only between `kClose` and `kMiddle`.
+  // `kOpen` can be determined without `FontData`.
+  static bool IsOpen(UChar ch);
+
  private:
   static CharType GetCharType(UChar ch, const FontData& font_data);
 
   static bool ShouldKern(CharType type, CharType last_type);
   static bool ShouldKernLast(CharType type, CharType last_type);
 
-  static void Compute(const String& text,
-                      wtf_size_t start,
-                      wtf_size_t end,
-                      const SimpleFontData& font_data,
-                      const FontDescription& font_description,
-                      bool is_horizontal,
-                      FontFeatures& features);
+  void Compute(const String& text,
+               wtf_size_t start,
+               wtf_size_t end,
+               const SimpleFontData& font_data,
+               const FontDescription& font_description,
+               Options options,
+               FontFeatures* features);
+
+  void ResetFeatures();
+
+  FontFeatures* features_ = nullptr;
+  wtf_size_t num_features_before_;
 };
 
 }  // namespace blink

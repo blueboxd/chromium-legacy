@@ -24,6 +24,7 @@
 <translation id="1154390310959620237">Je kunt maximaal 5 sneltoetsen aanpassen. Verwijder een sneltoets om een nieuwe te kunnen toevoegen.</translation>
 <translation id="1164939766849482256">Screensaver Van dageraad tot donker</translation>
 <translation id="1167755866710282443">Open het menu om sleutels aan te passen. Sleep het menu om te verplaatsen.</translation>
+<translation id="1174073918202301297">Snelkoppeling toegevoegd</translation>
 <translation id="1175697296044146566">Deze <ph name="DEVICE_TYPE" /> wordt beheerd door <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Gemiddeld (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Verwijderen</translation>
@@ -74,6 +75,7 @@
 <translation id="1499900233129743732"><ph name="MANAGER" /> beheert deze gebruiker en kan op afstand instellingen beheren en gebruikersactiviteit in de gaten houden.</translation>
 <translation id="150962533380566081">Ongeldige pukcode.</translation>
 <translation id="1510238584712386396">Launcher</translation>
+<translation id="1515129336378114413">homepage van browser</translation>
 <translation id="1526389707933164996">Screensaveranimatie</translation>
 <translation id="152892567002884378">Volume omhoog</translation>
 <translation id="1555130319947370107">Blauw</translation>
@@ -118,6 +120,7 @@
 <translation id="1768959921651994223">Verificatietype</translation>
 <translation id="1776228893584526149">Achtergrondtint</translation>
 <translation id="1782199038061388045">vertaling</translation>
+<translation id="1788485524395674731">Deze app wordt beheerd door je beheerder</translation>
 <translation id="1792647875738159689">Scannen annuleren</translation>
 <translation id="1801418420130173017">Donker thema uitzetten</translation>
 <translation id="1807246157184219062">Licht</translation>
@@ -132,7 +135,6 @@
 <translation id="1871569928317311284">Donker thema uitzetten</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Donkere modus uitzetten</translation>
-<translation id="1881188606372070653">Ga naar de <ph name="BEGIN_LINK1" />juridische Help-pagina<ph name="END_LINK1" /> om contentwijzigingen om juridische redenen aan te vragen. Bepaalde account- en systeemgegevens worden mogelijk naar Google gestuurd. We gebruiken deze gegevens om technische problemen op te lossen en onze services te verbeteren, in overeenstemming met ons <ph name="BEGIN_LINK2" />Privacybeleid<ph name="END_LINK2" /> en onze <ph name="BEGIN_LINK3" />Servicevoorwaarden<ph name="END_LINK3" />.</translation>
 <translation id="1885577615937958993">media vooruitspoelen</translation>
 <translation id="1887850431809612466">Hardwarerevisie</translation>
 <translation id="1897672602657312171">Sneltoets zonder zoektoets kan conflicteren met de sneltoets van bepaalde apps. Druk opnieuw op deze sneltoets om die te blijven gebruiken of druk op een nieuwe sneltoets met de zoektoets.</translation>
@@ -167,7 +169,9 @@
 <translation id="2152882202543497059"><ph name="NUMBER" /> foto's</translation>
 <translation id="2157660087437850958">emoji-kiezer</translation>
 <translation id="2157959690810728433">IN DE WACHTRIJ</translation>
+<translation id="2158450850127366833">{NUM_ROOL_APPS,plural,offset:2 =1{Je beheerder heeft ingesteld dat <ph name="APP_NAME_1" /> automatisch wordt gestart als je inlogt.}=2{Je beheerder heeft ingesteld dat <ph name="APP_NAME_1" /> en <ph name="APP_NAME_2" /> automatisch worden gestart als je inlogt.}=3{Je beheerder heeft ingesteld dat <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> en <ph name="APP_NAME_3" /> automatisch worden gestart als je inlogt.}other{Je beheerder heeft ingesteld dat <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> en # andere apps automatisch worden gestart als je inlogt.}}</translation>
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: Opnieuw proberen</translation>
+<translation id="215916044711630446">De knop APN toevoegen staat nu uit</translation>
 <translation id="2161394479394250669">Afdruktaak annuleren</translation>
 <translation id="2161656808144014275">Tekst</translation>
 <translation id="2163937499206714165">Donkere modus aanzetten</translation>
@@ -194,6 +198,7 @@
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2338501278241028356">Zet Bluetooth aan om apparaten in de buurt te vinden</translation>
 <translation id="2346474577291266260">Uitstekend (<ph name="SIGNAL_STRENGTH" />)</translation>
+<translation id="2358070305000735383">Dialoogvenster Bewerken voor <ph name="DESCRIPTION" /> is geopend.</translation>
 <translation id="2359808026110333948">Doorgaan</translation>
 <translation id="2364498172489649528">Geslaagd</translation>
 <translation id="2367335866686097760">Sleutel voor toetstoewijzing</translation>
@@ -213,6 +218,7 @@
 <translation id="2505327257735685095">De huidige achtergrondafbeelding vernieuwen</translation>
 <translation id="2512979179176933762">vensters tonen</translation>
 <translation id="2513396635448525189">Inlogafbeelding</translation>
+<translation id="2515109918609218604">Sneltoets niet beschikbaar. Druk op een nieuwe sneltoets zonder de functie- en zoektoetsen te gebruiken.</translation>
 <translation id="2517472476991765520">Scannen</translation>
 <translation id="2521835766824839541">vorig nummer</translation>
 <translation id="2526590354069164005">Bureaublad</translation>
@@ -333,7 +339,6 @@
 <translation id="3604713164406837697">Achtergrond wijzigen</translation>
 <translation id="360565022852130722">Wifi-netwerk is beveiligd met het zwakke protocol WEP 802.1x</translation>
 <translation id="3606583719724308068">Lange vertraging voor HTTPS-websites</translation>
-<translation id="3607216139080387279">Screensaver tonen</translation>
 <translation id="361575905210396100">Bedankt voor je feedback</translation>
 <translation id="3632579075709132555">Privacyscherm schakelen</translation>
 <translation id="3651050199673793219">Een temperatuureenheid selecteren</translation>
@@ -345,7 +350,6 @@
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> reviews)</translation>
 <translation id="3748026146096797577">Niet verbonden</translation>
 <translation id="3749289110408117711">Bestandsnaam</translation>
-<translation id="3766934827878963937">gedurende 1 uur</translation>
 <translation id="3771294271822695279">Videobestanden</translation>
 <translation id="3784455785234192852">Vergrendelen</translation>
 <translation id="380097101658023925">rgb-bedieningselementen</translation>
@@ -396,6 +400,7 @@
 <translation id="4117637339509843559">Donkere modus</translation>
 <translation id="4130035430755296270">Plaats de cursor voor meer lay-outopties.</translation>
 <translation id="4131410914670010031">Zwart/wit</translation>
+<translation id="4143820682073026914">{NUM_ROOL_APPS,plural, =1{<ph name="APP_NAME_1" /> is automatisch gestart}other{# apps zijn automatisch gestart}}</translation>
 <translation id="4145784616224233563">HTTP-firewall</translation>
 <translation id="4147897805161313378">Google Foto's</translation>
 <translation id="4150201353443180367">Weergave</translation>
@@ -441,6 +446,7 @@
 <translation id="445059817448385655">Oud wachtwoord</translation>
 <translation id="4453205916657964690">Netmask</translation>
 <translation id="4454245904991689773">Scannen naar</translation>
+<translation id="4456812688969919973">De knop APN opslaan staat nu uit</translation>
 <translation id="4469288414739283461">Screensaver Aardestroom</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Kan de niet-standaard netwerkgateway niet pingen</translation>
@@ -481,6 +487,7 @@
 <translation id="4793756956024303490">Compressiealgoritme</translation>
 <translation id="4794140124556169553">Als je een CPU-test uitvoert, kan dit je systeemprestaties beïnvloeden</translation>
 <translation id="4798078634453489142">Verwijder een APN om een nieuwe APN toe te voegen</translation>
+<translation id="479989351350248267">zoeken</translation>
 <translation id="4800589996161293643">Chromebook-community</translation>
 <translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341">Afdruktaak <ph name="DOCUMENT_TITLE" /> geannuleerd</translation>
@@ -624,6 +631,7 @@
 <translation id="584953448295717128">APN wordt automatisch gevonden.</translation>
 <translation id="5849570051105887917">Code thuisprovider</translation>
 <translation id="5859603669299126575">Kunstgalerie-album</translation>
+<translation id="5859969039821714932">Sneltoets niet beschikbaar. Druk op een nieuwe sneltoets zonder <ph name="KEY" />.</translation>
 <translation id="5860033963881614850">Uit</translation>
 <translation id="5860491529813859533">Aanzetten</translation>
 <translation id="5876385649737594562">Aanzetten om opties te selecteren</translation>
@@ -686,9 +694,9 @@
 <translation id="629550705077076970">toetsenbord dimmen</translation>
 <translation id="6302401976930124515">Test <ph name="TEST_NAME" /> is geannuleerd</translation>
 <translation id="631063167932043783">App verkennen</translation>
-<translation id="6318437367327684789">oneindig</translation>
 <translation id="6319207335391420837">Firmware updaten op <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Screensaver altijd aanzetten</translation>
+<translation id="6324916366299863871">Snelkoppeling bewerken</translation>
 <translation id="6325525973963619867">Mislukt</translation>
 <translation id="6331191339300272798">Automatisch donker thema</translation>
 <translation id="6340526405444716530">Personalisatie</translation>
@@ -709,7 +717,7 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Zwak (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Naar Accountinstellingen gaan</translation>
-<translation id="6461047516875166066">Meer informatie</translation>
+<translation id="6462978824459367242">De knop APN toevoegen staat nu aan</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Pagina opnieuw scannen?}=1{Pagina {PAGE_NUMBER} opnieuw scannen?}other{Pagina {PAGE_NUMBER} opnieuw scannen?}}</translation>
 <translation id="6472207088655375767">Eenmalig wachtwoord</translation>
 <translation id="6480327114083866287">Beheerd door <ph name="MANAGER" /></translation>
@@ -744,6 +752,7 @@
 <translation id="6659594942844771486">Browsertabblad</translation>
 <translation id="6673898378497337661">helderheid van toetsenbord verhogen</translation>
 <translation id="6692996468359469499">Informatie over je selectie bekijken</translation>
+<translation id="6694534975463174713">slot</translation>
 <translation id="6704062477274546131">DNS-resolutie</translation>
 <translation id="6723839937902243910">Voeding</translation>
 <translation id="6723847290197874913">Achtergrondverlichting toetsenbord</translation>
@@ -788,6 +797,7 @@
 <translation id="7103252855940681301">Apparaat <ph name="INDEX" /> van <ph name="COUNT" /> met de naam <ph name="NAME" />.</translation>
 <translation id="7107255225945990211">Kies exclusieve <ph name="PRODUCT_NAME" />-kunst</translation>
 <translation id="7108668606237948702">Enter</translation>
+<translation id="7119389851461848805">aan/uit</translation>
 <translation id="7130438335435247835">Toegangspuntnaam (APN)</translation>
 <translation id="7134436342991564651">{0,plural, =1{Naamserver}other{Naamservers}}</translation>
 <translation id="7135814714616751706">Sneltoetsen zoeken</translation>
@@ -828,9 +838,9 @@
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7388959671917308825">Geïntegreerde touchpad</translation>
 <translation id="7397270852490618635">Licht thema uitzetten</translation>
+<translation id="7401543881546089382">Snelle link verwijderen</translation>
 <translation id="741244894080940828">conversie</translation>
 <translation id="7415801143053185905">Zeer hoge HTTP-vertraging</translation>
-<translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{Je beheerder heeft ingesteld dat <ph name="APP_NAME_1" /> automatisch wordt gestart als je inlogt.}=2{Je beheerder heeft ingesteld dat <ph name="APP_NAME_1" /> en <ph name="APP_NAME_2" /> automatisch worden gestart als je inlogt.}=3{Je beheerder heeft ingesteld dat <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> en <ph name="APP_NAME_3" /> automatisch worden gestart als je inlogt.}other{Je beheerder heeft ingesteld dat <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> en # andere apps automatisch worden gestart als je inlogt.}}</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7458970041932198923">Maak verbinding met een netwerk en laad de pagina opnieuw om avatars te bekijken en in te stellen.</translation>
 <translation id="7469648432129124067">Portal waargenomen</translation>
@@ -866,6 +876,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7716280709122323042">WPA3</translation>
 <translation id="7718231387947923843">toetsenbordlampje</translation>
+<translation id="7730077286107534951">Bepaalde account- en systeemgegevens worden misschien naar Google gestuurd. We gebruiken deze informatie om technische problemen op te lossen en onze services te verbeteren, in overeenstemming met ons <ph name="BEGIN_LINK2" />Privacybeleid<ph name="END_LINK2" /> en onze <ph name="BEGIN_LINK3" />Servicevoorwaarden<ph name="END_LINK3" />. Als je contentwijzigingen wilt aanvragen, ga je naar de <ph name="BEGIN_LINK1" />juridische Help-pagina<ph name="END_LINK1" />.</translation>
 <translation id="773153675489693198">Aantal oplaadbeurten</translation>
 <translation id="7747039790905080783">Eerder gedeelde sleutel</translation>
 <translation id="7752963721013053477">Dageraad tot donker - exclusief</translation>
@@ -902,6 +913,7 @@
 <translation id="7978412674231730200">Privésleutel</translation>
 <translation id="7994702968232966508">EAP-methode</translation>
 <translation id="8004582292198964060">Browser</translation>
+<translation id="8017679124341497925">Snelkoppeling bewerkt</translation>
 <translation id="802154636333426148">Downloaden mislukt</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Modus voor automatische kleuren aanzetten</translation>
@@ -942,6 +954,7 @@
 <translation id="8336739000755212683">Accountafbeelding van apparaat wijzigen</translation>
 <translation id="8347126826554447157"><ph name="SHORCTCUT1" /> of <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">Afdruktaken</translation>
+<translation id="8349826889576450703">launcher</translation>
 <translation id="8351855506390808906">Aanraakpunt voor toetstoewijzing</translation>
 <translation id="8352772353338965963">Een account toevoegen aan Toegang tot meerdere accounts. Alle ingelogde accounts zijn toegankelijk zonder wachtwoord, dus deze functie moet alleen worden gebruikt voor vertrouwde accounts.</translation>
 <translation id="8364946094152050673">Lege naamservers</translation>
@@ -1015,6 +1028,7 @@
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8876270629542503161">Apparaat is een tablet.</translation>
 <translation id="8881098542468797602">Test geslaagd</translation>
+<translation id="8892443466059986410">Bewerken van snelkoppeling annuleren</translation>
 <translation id="8898840733695078011">Signaalsterkte</translation>
 <translation id="8909114361904403025">pijl-omhoog</translation>
 <translation id="8910721771319628100">Standaardnetwerk overschrijdt drempel voor latentie</translation>
@@ -1034,14 +1048,15 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{Scannen}=1{Pagina {NUMBER_OF_PAGES} scannen}other{Pagina {NUMBER_OF_PAGES} scannen}}</translation>
 <translation id="8997710128084572139">Apparaat heeft nog <ph name="BATTERY_PERCENTAGE" />% batterijlading.</translation>
-<translation id="8998156756248178381">{NUM_ROOL_APPS,plural, =1{<ph name="APP_NAME_1" /> is automatisch gestart}other{# apps zijn automatisch gestart}}</translation>
 <translation id="8998289560386111590">Niet beschikbaar op je apparaat</translation>
 <translation id="9003704114456258138">Frequentie</translation>
+<translation id="901834265349196618">e-mail</translation>
 <translation id="9024331582947483881">volledig scherm</translation>
 <translation id="9025198690966128418">Gebruiken als persoonlijk apparaat</translation>
 <translation id="902638246363752736">Toetsenbordinstellingen</translation>
 <translation id="9028832514430399253">Gebruik de schakelaar om de screensaveropties te selecteren</translation>
 <translation id="9039663905644212491">PEAP</translation>
+<translation id="9049868303458988905">De knop APN opslaan staat nu aan</translation>
 <translation id="9058932992221914855">IPv6</translation>
 <translation id="9062831201344759865">DNS-omzetting heeft een lange vertraging</translation>
 <translation id="9065203028668620118">Bewerken</translation>
@@ -1057,11 +1072,9 @@
 <translation id="9111102763498581341">Ontgrendelen</translation>
 <translation id="9122602430962285795">Ga naar Instellingen als je weer verbinding wilt maken</translation>
 <translation id="9126720536733509015">Meerdere pagina's opslaan in 1 pdf-bestand</translation>
-<translation id="9133104754938025929">De screensaver werkt alleen tijdens het opladen om de batterij te sparen.</translation>
 <translation id="9133772297793293778">Druk op 1-4 functietoetsen en 1 andere toets op je toetsenbord. Druk op Alt + Esc om de bewerkingsmodus te sluiten.</translation>
 <translation id="9137526406337347448">Google-services</translation>
 <translation id="9138630967333032450">Shift links</translation>
-<translation id="9143347780818904997">gedurende <ph name="MINUTES" /> minuten</translation>
 <translation id="9149391708638971077">Geheugentest uitvoeren</translation>
 <translation id="9161276708550942948">spatie</translation>
 <translation id="9173638680043580060">Nog minder dan een minuut</translation>
@@ -1077,6 +1090,7 @@
 <translation id="945522503751344254">Feedback sturen</translation>
 <translation id="952992212772159698">Niet geactiveerd</translation>
 <translation id="960719561871045870">Operatorcode</translation>
+<translation id="966787709310836684">menu</translation>
 <translation id="979450713603643090">Lichtroze</translation>
 <translation id="982713511914535780">Ontlaadtest uitvoeren</translation>
 <translation id="987264212798334818">Algemeen</translation>

@@ -12,7 +12,6 @@
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/apps/app_service/package_id.h"
 #include "chrome/browser/apps/app_service/package_id_util.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_almanac_connector.h"
@@ -25,6 +24,7 @@
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
+#include "components/services/app_service/public/cpp/package_id.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "google_apis/google_api_keys.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -78,7 +78,8 @@ const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
 namespace apps {
 PromiseAppService::PromiseAppService(Profile* profile,
                                      AppRegistryCache& app_registry_cache)
-    : promise_app_registry_cache_(
+    : profile_(profile),
+      promise_app_registry_cache_(
           std::make_unique<apps::PromiseAppRegistryCache>()),
       promise_app_almanac_connector_(
           std::make_unique<PromiseAppAlmanacConnector>(profile)),
@@ -158,9 +159,6 @@ void PromiseAppService::LoadIcon(const PackageId& package_id,
 }
 
 void PromiseAppService::OnAppUpdate(const apps::AppUpdate& update) {
-  if (update.AppType() != AppType::kArc && update.AppType() != AppType::kWeb) {
-    return;
-  }
   // Check that the update is for a new installation.
   if (!update.ReadinessChanged() ||
       update.Readiness() != apps::Readiness::kReady ||
@@ -168,17 +166,21 @@ void PromiseAppService::OnAppUpdate(const apps::AppUpdate& update) {
     return;
   }
 
-  // TODO(b/288832707): Find a way to match installed web-only TWAs to their
-  // promise apps, which will have different package IDs.
-
-  // Check that the update corresponds to a registered promise app.
-  const PackageId package_id(update.AppType(), update.PublisherId());
-  if (!promise_app_registry_cache_->HasPromiseApp(package_id)) {
+  absl::optional<PackageId> package_id =
+      apps_util::GetPackageIdForApp(profile_.get(), update);
+  if (!package_id.has_value()) {
     return;
   }
+
+  // Check that the update corresponds to a registered promise app.
+  if (!promise_app_registry_cache_->HasPromiseApp(package_id.value())) {
+    return;
+  }
+
   // Delete the promise app.
-  PromiseAppPtr promise_app = std::make_unique<PromiseApp>(package_id);
+  PromiseAppPtr promise_app = std::make_unique<PromiseApp>(package_id.value());
   promise_app->status = PromiseStatus::kSuccess;
+  promise_app->installed_app_id = update.AppId();
   OnPromiseApp(std::move(promise_app));
 }
 
@@ -213,12 +215,15 @@ void PromiseAppService::OnGetPromiseAppInfoCompleted(
   // promise app item. When an icon is requested, the PromiseAppIconCache will
   // fallback to returning a placeholder icon.
   if (!promise_app_info.has_value() ||
+      !promise_app_info->GetName().has_value() ||
       promise_app_info->GetIcons().size() == 0) {
-    PromiseAppPtr promise_app = std::make_unique<PromiseApp>(package_id);
-    promise_app->should_show = true;
-    promise_app_registry_cache_->OnPromiseApp(std::move(promise_app));
+    SetPromiseAppReadyToShow(package_id);
     return;
   }
+
+  PromiseAppPtr promise_app = std::make_unique<PromiseApp>(package_id);
+  promise_app->name = promise_app_info->GetName().value();
+  promise_app_registry_cache_->OnPromiseApp(std::move(promise_app));
 
   pending_download_count_[package_id] = promise_app_info->GetIcons().size();
 
@@ -270,9 +275,7 @@ void PromiseAppService::OnIconDownloaded(
   pending_download_count_.erase(package_id);
 
   // Update the promise app so it can show to the user.
-  PromiseAppPtr promise_app = std::make_unique<PromiseApp>(package_id);
-  promise_app->should_show = true;
-  promise_app_registry_cache_->OnPromiseApp(std::move(promise_app));
+  SetPromiseAppReadyToShow(package_id);
 }
 
 bool PromiseAppService::IsRegisteredInAppRegistryCache(
@@ -291,9 +294,7 @@ bool PromiseAppService::IsRegisteredInAppRegistryCache(
         if (update.PublisherId() != package_id.identifier()) {
           return;
         }
-        if (update.Readiness() == Readiness::kUninstalledByUser ||
-            update.Readiness() == Readiness::kRemoved ||
-            update.Readiness() == Readiness::kUninstalledByNonUser) {
+        if (!apps_util::IsInstalled(update.Readiness())) {
           // It's possible for an app to be in the AppRegistryCache despite
           // being uninstalled. Do not consider this as a registered
           // installed app.
@@ -303,6 +304,12 @@ bool PromiseAppService::IsRegisteredInAppRegistryCache(
         return;
       });
   return is_registered;
+}
+
+void PromiseAppService::SetPromiseAppReadyToShow(const PackageId& package_id) {
+  PromiseAppPtr promise_app = std::make_unique<PromiseApp>(package_id);
+  promise_app->should_show = true;
+  promise_app_registry_cache_->OnPromiseApp(std::move(promise_app));
 }
 
 }  // namespace apps

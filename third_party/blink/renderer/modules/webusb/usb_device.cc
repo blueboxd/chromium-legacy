@@ -4,11 +4,9 @@
 
 #include "third_party/blink/renderer/modules/webusb/usb_device.h"
 
-#include <limits>
 #include <utility>
 
 #include "base/containers/span.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -45,10 +43,6 @@ namespace {
 
 const char kAccessDeniedError[] = "Access denied.";
 const char kBufferTooBig[] = "The data buffer exceeded its maximum size.";
-const char kPacketLengthsTooBig[] =
-    "The total packet length exceeded the maximum size.";
-const char kBufferSizeMismatch[] =
-    "The data buffer size must match the total packet length.";
 const char kDetachedBuffer[] = "The data buffer has been detached.";
 const char kDeviceStateChangeInProgress[] =
     "An operation that changes the device state is in progress.";
@@ -112,20 +106,6 @@ String ConvertTransferStatus(const UsbTransferStatus& status) {
   }
 }
 
-// Returns the sum of `packet_lengths`, or nullopt if the sum would overflow.
-absl::optional<uint32_t> TotalPacketLength(
-    const Vector<unsigned>& packet_lengths) {
-  uint32_t total_bytes = 0;
-  for (const auto packet_length : packet_lengths) {
-    // Check for overflow.
-    if (std::numeric_limits<uint32_t>::max() - total_bytes < packet_length) {
-      return absl::nullopt;
-    }
-    total_bytes += packet_length;
-  }
-  return total_bytes;
-}
-
 }  // namespace
 
 USBDevice::USBDevice(USB* parent,
@@ -177,7 +157,7 @@ USBConfiguration* USBDevice::configuration() const {
   if (configuration_index_ == kNotFound)
     return nullptr;
   DCHECK_LT(configuration_index_, configurations_.size());
-  return configurations_[configuration_index_];
+  return configurations_[configuration_index_].Get();
 }
 
 HeapVector<Member<USBConfiguration>> USBDevice::configurations() const {
@@ -575,13 +555,6 @@ ScriptPromise USBDevice::isochronousTransferIn(
   if (exception_state.HadException())
     return ScriptPromise();
 
-  absl::optional<uint32_t> total_bytes = TotalPacketLength(packet_lengths);
-  if (!total_bytes.has_value()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
-                                      kPacketLengthsTooBig);
-    return ScriptPromise();
-  }
-
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
       script_state, exception_state.GetContext());
   ScriptPromise promise = resolver->Promise();
@@ -610,18 +583,6 @@ ScriptPromise USBDevice::isochronousTransferOut(
   if (data.IsDetached()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kDetachedBuffer);
-    return ScriptPromise();
-  }
-
-  absl::optional<uint32_t> total_bytes = TotalPacketLength(packet_lengths);
-  if (!total_bytes.has_value()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
-                                      kPacketLengthsTooBig);
-    return ScriptPromise();
-  }
-  if (total_bytes.value() != data.ByteLength()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
-                                      kBufferSizeMismatch);
     return ScriptPromise();
   }
 

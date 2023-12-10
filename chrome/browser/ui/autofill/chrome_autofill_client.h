@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "build/build_config.h"
-#include "chrome/browser/autofill/autofill_gstatic_reader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/payments/autofill_error_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/autofill_progress_dialog_controller_impl.h"
@@ -52,6 +51,7 @@ class AutofillPopupControllerImpl;
 #if BUILDFLAG(IS_ANDROID)
 class AutofillSaveCardBottomSheetBridge;
 class AutofillSnackbarControllerImpl;
+class AutofillCvcSaveMessageDelegate;
 #endif  // BUILDFLAG(IS_ANDROID)
 struct OfferNotificationOptions;
 struct VirtualCardEnrollmentFields;
@@ -112,7 +112,7 @@ class ChromeAutofillClient : public ContentAutofillClient,
   AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
   IbanManager* GetIbanManager() override;
   plus_addresses::PlusAddressService* GetPlusAddressService() override;
-  compose::ComposeManager* GetComposeManager() override;
+  AutofillComposeDelegate* GetComposeDelegate() override;
   void OfferPlusAddressCreation(
       const url::Origin& main_frame_origin,
       plus_addresses::PlusAddressCallback callback) override;
@@ -174,8 +174,6 @@ class ChromeAutofillClient : public ContentAutofillClient,
   void HideVirtualCardEnrollBubbleAndIconIfVisible() override;
 #endif
 #if !BUILDFLAG(IS_ANDROID)
-  std::vector<std::string> GetAllowedMerchantsForVirtualCards() override;
-  std::vector<std::string> GetAllowedBinRangesForVirtualCards() override;
   void ShowLocalCardMigrationDialog(
       base::OnceClosure show_migration_dialog_closure) override;
   void ConfirmMigrateLocalCardToCloud(
@@ -190,7 +188,11 @@ class ChromeAutofillClient : public ContentAutofillClient,
       MigrationDeleteCardCallback delete_local_card_callback) override;
   void ConfirmSaveIbanLocally(const Iban& iban,
                               bool should_show_prompt,
-                              LocalSaveIbanPromptCallback callback) override;
+                              SaveIbanPromptCallback callback) override;
+  void ConfirmUploadIbanToCloud(const Iban& iban,
+                                const LegalMessageLines& legal_message_lines,
+                                bool should_show_prompt,
+                                SaveIbanPromptCallback callback) override;
   void ShowWebauthnOfferDialog(
       WebauthnDialogCallback offer_dialog_callback) override;
   void ShowWebauthnVerifyPendingDialog(
@@ -248,6 +250,7 @@ class ChromeAutofillClient : public ContentAutofillClient,
   void PinPopupView() override;
   PopupOpenArgs GetReopenPopupArgs(
       AutofillSuggestionTriggerSource trigger_source) const override;
+  std::optional<PopupScreenLocation> GetPopupScreenLocation() const override;
   void UpdatePopup(const std::vector<Suggestion>& suggestions,
                    PopupType popup_type,
                    AutofillSuggestionTriggerSource trigger_source) override;
@@ -268,7 +271,7 @@ class ChromeAutofillClient : public ContentAutofillClient,
       base::OnceClosure no_interactive_authentication_callback) override;
   bool IsAutocompleteEnabled() const override;
   bool IsPasswordManagerEnabled() override;
-  void DidFillOrPreviewForm(mojom::AutofillActionPersistence action_persistence,
+  void DidFillOrPreviewForm(mojom::ActionPersistence action_persistence,
                             AutofillTriggerSource trigger_source,
                             bool is_refill) override;
   void DidFillOrPreviewField(const std::u16string& autofilled_value,
@@ -363,6 +366,8 @@ class ChromeAutofillClient : public ContentAutofillClient,
   std::unique_ptr<FastCheckoutClient> fast_checkout_client_;
   std::unique_ptr<AutofillSaveCardBottomSheetBridge>
       autofill_save_card_bottom_sheet_bridge_;
+  std::unique_ptr<AutofillCvcSaveMessageDelegate>
+      autofill_cvc_save_message_delegate_;
 #endif
   std::unique_ptr<CardUnmaskPromptControllerImpl> unmask_controller_;
   AutofillErrorDialogControllerImpl autofill_error_dialog_controller_;

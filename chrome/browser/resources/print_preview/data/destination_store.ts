@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 
@@ -257,6 +257,16 @@ export class DestinationStore extends EventTarget {
         (type: PrinterType,
          printers: LocalDestinationInfo[]|ExtensionDestinationInfo[]) =>
             this.onPrintersAdded_(type, printers));
+
+    // <if expr="is_chromeos">
+    if (loadTimeData.getBoolean('isLocalPrinterObservingEnabled')) {
+      addListenerCallback(
+          'local-printers-updated',
+          (type: PrinterType,
+           printers: LocalDestinationInfo[]|ExtensionDestinationInfo[]) =>
+              this.onLocalPrintersUpdated_(type, printers));
+    }
+    // </if>
   }
 
   /**
@@ -364,6 +374,11 @@ export class DestinationStore extends EventTarget {
     // destinationsInserted_ may never be called.
     if (this.typesToSearch_.size === 0) {
       this.tryToSelectInitialDestination_();
+      // <if expr="is_chromeos">
+      // Start observing local printers if there is no attempt to load
+      // destinations.
+      this.observeLocalPrinters_();
+      // </if>
       return;
     }
 
@@ -866,6 +881,10 @@ export class DestinationStore extends EventTarget {
     } else if (this.typesToSearch_.size === 0) {
       this.tryToSelectInitialDestination_();
     }
+
+    // <if expr="is_chromeos">
+    this.observeLocalPrinters_();
+    // </if>
   }
 
   /**
@@ -946,6 +965,35 @@ export class DestinationStore extends EventTarget {
         (printer: LocalDestinationInfo|ExtensionDestinationInfo) =>
             parseDestination(type, printer)));
   }
+
+  // <if expr="is_chromeos">
+  private observeLocalPrinters_() {
+    if (!loadTimeData.getBoolean('isLocalPrinterObservingEnabled')) {
+      return;
+    }
+
+    this.nativeLayerCros_.observeLocalPrinters().then(
+        (printers: LocalDestinationInfo[]) =>
+            this.onLocalPrintersUpdated_(PrinterType.LOCAL_PRINTER, printers));
+  }
+
+  /**
+   * Inserts any new printers retrieved from the 'local-printers-updated' event.
+   * @param printerType The type of printer(s) added.
+   * @param printers Information about the printers that have been retrieved.
+   */
+  private onLocalPrintersUpdated_(
+      printerType: PrinterType,
+      printers: LocalDestinationInfo[]|ExtensionDestinationInfo[]) {
+    if (!printers) {
+      return;
+    }
+
+    this.insertDestinations_(printers.map(
+        (printer: LocalDestinationInfo|ExtensionDestinationInfo) =>
+            parseDestination(printerType, printer)));
+  }
+  // </if>
 }
 
 /**

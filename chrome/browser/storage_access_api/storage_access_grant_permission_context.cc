@@ -145,7 +145,7 @@ content_settings::ContentSettingConstraints ComputeConstraints(
   switch (outcome) {
     case RequestOutcome::kGrantedByFirstPartySet:
       constraints.set_lifetime(
-          blink::features::kStorageAccessAPIImplicitPermissionLifetime.Get());
+          blink::features::kStorageAccessAPIRelatedWebsiteSetsLifetime.Get());
       constraints.set_session_model(
           content_settings::SessionModel::NonRestorableUserSession);
       return constraints;
@@ -604,8 +604,9 @@ void StorageAccessGrantPermissionContext::NotifyPermissionSetInternal(
   browser_context()
       ->GetDefaultStoragePartition()
       ->GetCookieManagerForBrowserProcess()
-      ->SetStorageAccessGrantSettings(
-          grants, base::BindOnce(std::move(callback), content_setting));
+      ->SetContentSettings(
+          ContentSettingsType::STORAGE_ACCESS, grants,
+          base::BindOnce(std::move(callback), content_setting));
 }
 
 void StorageAccessGrantPermissionContext::UpdateContentSetting(

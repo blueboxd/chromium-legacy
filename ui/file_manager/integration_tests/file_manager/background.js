@@ -98,11 +98,13 @@ export async function openNewWindow(initialRoot, appState = {}) {
   const launchDir = appState ? appState.currentDirectoryURL : undefined;
   const type = appState ? appState.type : undefined;
   const volumeFilter = appState ? appState.volumeFilter : undefined;
+  const searchQuery = appState ? appState.searchQuery : undefined;
   const appId = await sendTestMessage({
     name: 'launchFileManager',
-    launchDir: launchDir,
-    type: type,
+    launchDir,
+    type,
     volumeFilter,
+    searchQuery,
   });
 
   return appId;
@@ -170,10 +172,15 @@ export async function openAndWaitForClosingDialog(
   const caller = getCaller();
   let resultPromise;
   if (useBrowserOpen) {
-    resultPromise = sendTestMessage({name: 'runSelectFileDialog'});
+    await sendTestMessage({name: 'runSelectFileDialog'});
+    resultPromise = async () => {
+      return await sendTestMessage({name: 'waitForSelectFileDialogNavigation'});
+    };
   } else {
     await openEntryChoosingWindow(dialogParams);
-    resultPromise = pollForChosenEntry(caller);
+    resultPromise = () => {
+      return pollForChosenEntry(caller);
+    };
   }
 
   const appId = await remoteCall.waitForWindow(debug);
@@ -190,7 +197,7 @@ export async function openAndWaitForClosingDialog(
       return pending(caller, 'Waiting for Window %s to hide.', appId);
     }
   });
-  return resultPromise;
+  return await resultPromise();
 }
 
 /**

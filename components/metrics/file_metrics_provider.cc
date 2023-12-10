@@ -548,9 +548,11 @@ FileMetricsProvider::AccessResult FileMetricsProvider::CheckAndMapMetricSource(
       std::move(memory_allocator));
   // Pass a custom RangesManager so that we do not register the BucketRanges
   // with the global StatisticsRecorder when creating histogram objects using
-  // the allocator's underlying data. Otherwise, it could add unnecessary
-  // contention, and possibly a low amount of extra memory that will never be
-  // released.
+  // the allocator's underlying data. This avoids unnecessary contention on the
+  // global StatisticsRecorder lock.
+  // Note: Since RangesManager is not thread safe, this means that |allocator|
+  // must be iterated over one thread at a time (i.e., not concurrently). This
+  // is the case.
   source->allocator->SetRangesManager(new base::RangesManager());
 
   // Check that an "independent" file has the necessary information present.
@@ -707,30 +709,23 @@ bool FileMetricsProvider::ProvideIndependentMetricsOnTaskRunner(
         snapshot_manager, source,
         /*required_flags=*/base::HistogramBase::kUmaTargetedHistogramFlag);
 
-    if (base::FeatureList::IsEnabled(
-            features::kRestoreUmaClientIdIndependentLogs)) {
-      // NOTE: If you are adding anything here, consider also changing
-      // MetricsStateManager::ProvidePreviousSessionData().
+    // NOTE: If you are adding anything here, consider also changing
+    // MetricsStateMetricsProvider::ProvidePreviousSessionData().
 
-      // Use the client UUID stored in the system profile (if there is one) as
-      // the independent log's client ID. Usually, this has no effect, but there
-      // are scenarios where the log may have come from a session that had a
-      // different client ID than the one currently in use (e.g., client ID was
-      // reset due to being detected as a cloned install), so make sure to
-      // associate it with the proper one.
-      const std::string& client_uuid = system_profile_proto->client_uuid();
-      if (!client_uuid.empty()) {
-        uma_proto->set_client_id(MetricsLog::Hash(client_uuid));
-      }
+    // Use the client UUID stored in the system profile (if there is one) as the
+    // independent log's client ID. Usually, this has no effect, but there are
+    // scenarios where the log may have come from a session that had a different
+    // client ID than the one currently in use (e.g., client ID was reset due to
+    // being detected as a cloned install), so make sure to associate it with
+    // the proper one.
+    const std::string& client_uuid = system_profile_proto->client_uuid();
+    if (!client_uuid.empty()) {
+      uma_proto->set_client_id(MetricsLog::Hash(client_uuid));
     }
 
-    // If |kMetricsServiceAsyncIndependentLogs| is enabled, serialize the log
-    // while we are still in the background, instead of on the callback that
-    // runs on the main thread.
-    if (base::FeatureList::IsEnabled(
-            metrics::features::kMetricsServiceAsyncIndependentLogs)) {
-      std::move(serialize_log_callback).Run();
-    }
+    // Serialize the log while we are still in the background, instead of on the
+    // callback that runs on the main thread.
+    std::move(serialize_log_callback).Run();
 
     return true;
   }
@@ -924,21 +919,7 @@ void FileMetricsProvider::ProvideIndependentMetricsCleanup(
   sources_to_check_.push_back(std::move(source));
   ScheduleSourcesCheck();
 
-  // Execute the chained callback.
-  // TODO(crbug/1428679): Remove the UMA timer code, which is currently used to
-  // determine if it is worth to finalize independent logs in the background
-  // by measuring the time it takes to execute the callback
-  // MetricsService::PrepareProviderMetricsLogDone().
-  base::TimeTicks start_time = base::TimeTicks::Now();
   std::move(done_callback).Run(success);
-  if (success) {
-    // We don't use the SCOPED_UMA_HISTOGRAM_TIMER macro because we want to
-    // measure the time it takes to finalize an independent log, and that only
-    // happens when |success| is true.
-    base::UmaHistogramTimes(
-        "UMA.IndependentLog.FileMetricsProvider.FinalizeTime",
-        base::TimeTicks::Now() - start_time);
-  }
 }
 
 bool FileMetricsProvider::HasPreviousSessionData() {

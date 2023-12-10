@@ -67,8 +67,7 @@ void LayoutSVGRoot::Trace(Visitor* visitor) const {
 }
 
 void LayoutSVGRoot::UnscaledIntrinsicSizingInfo(
-    IntrinsicSizingInfo& intrinsic_sizing_info,
-    bool use_correct_viewbox) const {
+    IntrinsicSizingInfo& intrinsic_sizing_info) const {
   NOT_DESTROYED();
   // https://www.w3.org/TR/SVG/coords.html#IntrinsicSizing
 
@@ -85,10 +84,7 @@ void LayoutSVGRoot::UnscaledIntrinsicSizingInfo(
   if (!intrinsic_sizing_info.size.IsEmpty()) {
     intrinsic_sizing_info.aspect_ratio = intrinsic_sizing_info.size;
   } else {
-    const SVGRect& view_box = use_correct_viewbox
-                                  ? svg->CurrentViewBox()
-                                  : *svg->viewBox()->CurrentValue();
-    const gfx::SizeF view_box_size = view_box.Rect().size();
+    const gfx::SizeF view_box_size = svg->CurrentViewBox().Rect().size();
     if (!view_box_size.IsEmpty()) {
       // The viewBox can only yield an intrinsic ratio, not an intrinsic size.
       intrinsic_sizing_info.aspect_ratio = view_box_size;
@@ -225,7 +221,7 @@ void LayoutSVGRoot::RecalcVisualOverflow() {
     AddContentsVisualOverflow(ComputeContentsVisualOverflow());
 }
 
-LayoutRect LayoutSVGRoot::ComputeContentsVisualOverflow() const {
+PhysicalRect LayoutSVGRoot::ComputeContentsVisualOverflow() const {
   NOT_DESTROYED();
   gfx::RectF content_visual_rect = VisualRectInLocalSVGCoordinates();
   content_visual_rect =
@@ -235,8 +231,8 @@ LayoutRect LayoutSVGRoot::ComputeContentsVisualOverflow() const {
   // overflow that would never be seen anyway.
   // To condition, we intersect with something that we oftentimes
   // consider to be "infinity".
-  return Intersection(EnclosingLayoutRect(content_visual_rect),
-                      LayoutRect(InfiniteIntRect()));
+  return Intersection(PhysicalRect::EnclosingRect(content_visual_rect),
+                      PhysicalRect(InfiniteIntRect()));
 }
 
 void LayoutSVGRoot::PaintReplaced(const PaintInfo& paint_info,
@@ -406,13 +402,8 @@ PositionWithAffinity LayoutSVGRoot::PositionForPoint(
 
   LayoutObject* layout_object = closest_descendant;
   AffineTransform transform = layout_object->LocalToSVGParentTransform();
-  if (RuntimeEnabledFeatures::LayoutNGNoLocationEnabled()) {
-    PhysicalOffset location = To<LayoutBox>(layout_object)->PhysicalLocation();
-    transform.Translate(location.left, location.top);
-  } else {
-    transform.Translate(To<LayoutBox>(layout_object)->Location().X(),
-                        To<LayoutBox>(layout_object)->Location().Y());
-  }
+  PhysicalOffset location = To<LayoutBox>(layout_object)->PhysicalLocation();
+  transform.Translate(location.left, location.top);
   while (layout_object) {
     layout_object = layout_object->Parent();
     if (layout_object->IsSVGRoot())
@@ -450,14 +441,9 @@ SVGTransformChange LayoutSVGRoot::BuildLocalToBorderBoxTransform() {
 
 AffineTransform LayoutSVGRoot::LocalToSVGParentTransform() const {
   NOT_DESTROYED();
-  if (RuntimeEnabledFeatures::LayoutNGNoLocationEnabled()) {
-    PhysicalOffset location = PhysicalLocation();
-    return AffineTransform::Translation(RoundToInt(location.left),
-                                        RoundToInt(location.top)) *
-           local_to_border_box_transform_;
-  }
-  return AffineTransform::Translation(RoundToInt(Location().X()),
-                                      RoundToInt(Location().Y())) *
+  PhysicalOffset location = PhysicalLocation();
+  return AffineTransform::Translation(RoundToInt(location.left),
+                                      RoundToInt(location.top)) *
          local_to_border_box_transform_;
 }
 

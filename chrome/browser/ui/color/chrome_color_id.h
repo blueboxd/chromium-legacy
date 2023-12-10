@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_COLOR_CHROME_COLOR_ID_H_
 
 #include "chrome/browser/themes/theme_properties.h"
+#include "components/color/color_id.h"
 #include "ui/color/color_id.h"
 
 // TODO(pkasting): Add the rest of the colors.
@@ -401,6 +402,9 @@
   E_CPONLY(kColorSidePanelCardBackground) \
   E_CPONLY(kColorSidePanelCardPrimaryForeground) \
   E_CPONLY(kColorSidePanelCardSecondaryForeground) \
+  E_CPONLY(kColorSidePanelCommerceGraphAxis) \
+  E_CPONLY(kColorSidePanelCommerceGraphBubbleBackground) \
+  E_CPONLY(kColorSidePanelCommerceGraphLine) \
   E_CPONLY(kColorSidePanelContentAreaSeparator) \
   E_CPONLY(kColorSidePanelContentBackground) \
   E_CPONLY(kColorSidePanelCustomizeChromeClassicChromeTileBorder) \
@@ -710,6 +714,23 @@
   E_CPONLY(kColorPreviousReadAloudHighlightDark) \
   E_CPONLY(kColorPreviousReadAloudHighlightLight) \
   E_CPONLY(kColorPreviousReadAloudHighlightYellow) \
+  /* Compose colors */ \
+  E_CPONLY(kColorComposeDialogBackground) \
+  E_CPONLY(kColorComposeDialogDivider) \
+  E_CPONLY(kColorComposeDialogError) \
+  E_CPONLY(kColorComposeDialogForegroundSubtle) \
+  E_CPONLY(kColorComposeDialogLink) \
+  E_CPONLY(kColorComposeDialogResultBackground) \
+  E_CPONLY(kColorComposeDialogResultForeground) \
+  E_CPONLY(kColorComposeDialogResultIcon) \
+  E_CPONLY(kColorComposeDialogScrollbarThumb) \
+  E_CPONLY(kColorComposeDialogTitle) \
+  E_CPONLY(kColorComposeDialogTextarea) \
+  E_CPONLY(kColorComposeDialogTextareaOutline) \
+  E_CPONLY(kColorComposeDialogTextareaPlaceholder) \
+  E_CPONLY(kColorComposeDialogTextareaReadonlyBackground) \
+  E_CPONLY(kColorComposeDialogTextareaReadonlyForeground) \
+  E_CPONLY(kColorComposeDialogTextareaIcon) \
 
 #if BUILDFLAG(IS_CHROMEOS)
 #define CHROME_PLATFORM_SPECIFIC_COLOR_IDS \
@@ -733,15 +754,7 @@
     E_CPONLY(kColorCaptionForegroundActive) \
     E_CPONLY(kColorCaptionForegroundInactive) \
     /* Tab search caption button colors. */ \
-    E_CPONLY(kColorTabSearchCaptionButtonFocusRing) \
-    /* Try Chrome dialog colors. */ \
-    E_CPONLY(kColorTryChromeBackground) \
-    E_CPONLY(kColorTryChromeBorder) \
-    E_CPONLY(kColorTryChromeButtonBackgroundAccept) \
-    E_CPONLY(kColorTryChromeButtonBackgroundNoThanks) \
-    E_CPONLY(kColorTryChromeButtonForeground) \
-    E_CPONLY(kColorTryChromeForeground) \
-    E_CPONLY(kColorTryChromeHeaderForeground)
+    E_CPONLY(kColorTabSearchCaptionButtonFocusRing)
 #else
 #define CHROME_PLATFORM_SPECIFIC_COLOR_IDS
 #endif  // BUILDFLAG(IS_WIN)
@@ -752,7 +765,7 @@
 #include "ui/color/color_id_macros.inc"
 
 enum ChromeColorIds : ui::ColorId {
-  kChromeColorsStart = ui::kUiColorsEnd,
+  kChromeColorsStart = color::kComponentsColorsEnd,
 
   CHROME_COLOR_IDS
 

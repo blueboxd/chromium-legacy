@@ -175,12 +175,9 @@ base::TimeDelta GetDeferredInitDelay() {
 void LogWaitingForUpdatesReasonIfNeeded(
     DownloadStatusWaitingForUpdatesReason reason,
     ModelType type,
-    bool record_waiting_for_updates_metrics) {
-  if (record_waiting_for_updates_metrics) {
-    base::UmaHistogramEnumeration(
-        std::string("Sync.ModelTypeWaitingForUpdatesTimeoutReason.") +
-            ModelTypeToHistogramSuffix(type),
-        reason);
+    const std::string& waiting_for_updates_histogram_name) {
+  if (!waiting_for_updates_histogram_name.empty()) {
+    base::UmaHistogramEnumeration(waiting_for_updates_histogram_name, reason);
   }
 }
 
@@ -620,9 +617,12 @@ void SyncServiceImpl::Shutdown() {
   auth_manager_.reset();
 }
 
-void SyncServiceImpl::RecordReasonIfWaitingForUpdates(ModelType type) {
+void SyncServiceImpl::RecordReasonIfWaitingForUpdates(
+    ModelType type,
+    const std::string& histogram_name) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Ignore the actual returned status.
-  GetDownloadStatusForImpl(type, /*record_waiting_for_updates_metrics=*/true);
+  GetDownloadStatusForImpl(type, histogram_name);
 }
 
 void SyncServiceImpl::ResetEngine(ShutdownReason shutdown_reason,
@@ -736,7 +736,7 @@ void SyncServiceImpl::SetSyncFeatureRequested() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  sync_prefs_.ClearSyncFeatureDisabledViaDashboard();
+  user_settings_->ClearSyncFeatureDisabledViaDashboard();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // If the Sync engine was already initialized (probably running in transport
@@ -812,21 +812,13 @@ SyncService::TransportState SyncServiceImpl::GetTransportState() const {
   // The DataTypeManager gets created once the engine is initialized.
   DCHECK(data_type_manager_);
 
-  // At this point we should usually be able to configure our data types (and
-  // once the data types can be configured, they must actually get configured).
-  // However, if the initial setup hasn't been completed, then we can't
-  // configure the data types. Also if a later (non-initial) setup happens to be
-  // in progress, we won't configure them right now.
+  // At this point we should usually be able to configure our data types (so the
+  // DataTypeManager should not be STOPPED anymore), unless setup is in
+  // progress. But it can also happen if this gets called from DataTypeManager
+  // itself.
   if (data_type_manager_->state() == DataTypeManager::STOPPED) {
-    DCHECK(!CanConfigureDataTypes(/*bypass_setup_in_progress_check=*/false));
     return TransportState::PENDING_DESIRED_CONFIGURATION;
   }
-
-  // Note that if a setup is started after the data types have been configured,
-  // then they'll stay configured even though CanConfigureDataTypes will be
-  // false.
-  DCHECK(CanConfigureDataTypes(/*bypass_setup_in_progress_check=*/false) ||
-         IsSetupInProgress());
 
   if (data_type_manager_->state() != DataTypeManager::CONFIGURED) {
     return TransportState::CONFIGURING;
@@ -1073,7 +1065,7 @@ void SyncServiceImpl::OnActionableProtocolError(
       // On Ash, the primary account is always set and sync the feature
       // turned on, so a dedicated bit is needed to ensure that
       // Sync-the-feature remains off.
-      sync_prefs_.SetSyncFeatureDisabledViaDashboard();
+      user_settings_->SetSyncFeatureDisabledViaDashboard();
 #else  // !BUILDFLAG(IS_CHROMEOS_ASH)
       // On every platform except ash, revoke the Sync consent/Clear primary
       // account after a dashboard clear.
@@ -1266,7 +1258,9 @@ void SyncServiceImpl::PassphraseTypeChanged(PassphraseType passphrase_type) {
     // too. Payments should not be enabled when auto fill data type disabled.
     // TODO(crbug.com/1435431): This can be removed once kPayments is decoupled
     // from kAutofill.
-    GetUserSettings()->SetSelectedType(UserSelectableType::kPayments, false);
+    if (!base::FeatureList::IsEnabled(kSyncDecoupleAddressPaymentSettings)) {
+      GetUserSettings()->SetSelectedType(UserSelectableType::kPayments, false);
+    }
   }
   sync_prefs_.SetCachedPassphraseType(passphrase_type);
 }
@@ -1318,12 +1312,6 @@ base::Time SyncServiceImpl::GetAuthErrorTime() const {
 bool SyncServiceImpl::RequiresClientUpgrade() const {
   return last_actionable_error_.action == UPGRADE_CLIENT;
 }
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-bool SyncServiceImpl::IsSyncFeatureDisabledViaDashboard() const {
-  return sync_prefs_.IsSyncFeatureDisabledViaDashboard();
-}
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 bool SyncServiceImpl::CanConfigureDataTypes(
     bool bypass_setup_in_progress_check) const {
@@ -1401,7 +1389,7 @@ bool SyncServiceImpl::IsSyncFeatureConsideredRequested() const {
   // On Ash, `has_sync_consent` should always be true, and what actually matters
   // is whether sync was disabled via dashboard, which is detected when the
   // server responds with DISABLE_SYNC_ON_CLIENT.
-  return !IsSyncFeatureDisabledViaDashboard();
+  return !user_settings_->IsSyncFeatureDisabledViaDashboard();
 #else
   // On all platforms except Chrome Ash, IdentityManager determines via
   // consent level whether or not sync is condered requested.
@@ -1979,13 +1967,14 @@ void SyncServiceImpl::GetAllNodesForDebugging(
 SyncService::ModelTypeDownloadStatus SyncServiceImpl::GetDownloadStatusFor(
     ModelType type) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return GetDownloadStatusForImpl(type,
-                                  /*record_waiting_for_updates_metrics=*/false);
+  return GetDownloadStatusForImpl(
+      type,
+      /*waiting_for_updates_histogram_name=*/std::string());
 }
 
 SyncService::ModelTypeDownloadStatus SyncServiceImpl::GetDownloadStatusForImpl(
     ModelType type,
-    bool record_waiting_for_updates_metrics) const {
+    const std::string& waiting_for_updates_histogram_name) const {
   // Download status doesn't make sense for non-real data types.
   CHECK(IsRealDataType(type));
 
@@ -1998,7 +1987,7 @@ SyncService::ModelTypeDownloadStatus SyncServiceImpl::GetDownloadStatusForImpl(
       // GetDisableReasons() won't be empty until then.
       LogWaitingForUpdatesReasonIfNeeded(
           DownloadStatusWaitingForUpdatesReason::kRefreshTokensNotLoaded, type,
-          record_waiting_for_updates_metrics);
+          waiting_for_updates_histogram_name);
       return ModelTypeDownloadStatus::kWaitingForUpdates;
     }
 
@@ -2021,7 +2010,7 @@ SyncService::ModelTypeDownloadStatus SyncServiceImpl::GetDownloadStatusForImpl(
     DVLOG(1) << "Waiting for the sync engine to be fully initialized";
     LogWaitingForUpdatesReasonIfNeeded(
         DownloadStatusWaitingForUpdatesReason::kSyncEngineNotInitialized, type,
-        record_waiting_for_updates_metrics);
+        waiting_for_updates_histogram_name);
     return ModelTypeDownloadStatus::kWaitingForUpdates;
   }
   CHECK(engine_);
@@ -2035,7 +2024,7 @@ SyncService::ModelTypeDownloadStatus SyncServiceImpl::GetDownloadStatusForImpl(
     DVLOG(1) << "Data type is not active yet";
     LogWaitingForUpdatesReasonIfNeeded(
         DownloadStatusWaitingForUpdatesReason::kDataTypeNotActive, type,
-        record_waiting_for_updates_metrics);
+        waiting_for_updates_histogram_name);
     return ModelTypeDownloadStatus::kWaitingForUpdates;
   }
 
@@ -2043,7 +2032,7 @@ SyncService::ModelTypeDownloadStatus SyncServiceImpl::GetDownloadStatusForImpl(
     DVLOG(1) << "Waiting for invalidations to be initialized";
     LogWaitingForUpdatesReasonIfNeeded(
         DownloadStatusWaitingForUpdatesReason::kInvalidationsNotInitialized,
-        type, record_waiting_for_updates_metrics);
+        type, waiting_for_updates_histogram_name);
     return ModelTypeDownloadStatus::kWaitingForUpdates;
   }
 
@@ -2054,15 +2043,21 @@ SyncService::ModelTypeDownloadStatus SyncServiceImpl::GetDownloadStatusForImpl(
              << ModelTypeToDebugString(type);
     LogWaitingForUpdatesReasonIfNeeded(
         DownloadStatusWaitingForUpdatesReason::kIncomingInvalidation, type,
-        record_waiting_for_updates_metrics);
+        waiting_for_updates_histogram_name);
     return ModelTypeDownloadStatus::kWaitingForUpdates;
   }
 
-  if (engine_->IsNextPollTimeInThePast()) {
+  // Wait for the poll request only during browser startup (i.e. when there were
+  // not completed sync cycles). IsNextPollTimeInThePast() uses base::Time which
+  // while poll scheduler uses base::TimeTicks. They may diverge in sleep mode
+  // (TimeTicks may be paused) and it's possible that the actual timer for
+  // polling will take longer. This might result in a long-standing
+  // `kWaitingForUpdates` status.
+  if (!HasCompletedSyncCycle() && engine_->IsNextPollTimeInThePast()) {
     DVLOG(1) << "Waiting for updates due an upcoming poll request";
     LogWaitingForUpdatesReasonIfNeeded(
         DownloadStatusWaitingForUpdatesReason::kPollRequestScheduled, type,
-        record_waiting_for_updates_metrics);
+        waiting_for_updates_histogram_name);
     return ModelTypeDownloadStatus::kWaitingForUpdates;
   }
 
@@ -2379,7 +2374,9 @@ void SyncServiceImpl::DownloadStatusRecorder::OnTimeout() {
     // Ignore kError state for the purpose of the histogram. This is required to
     // filter out cases when data types are not running, e.g. due to transport
     // mode or because there is no signed-in user.
-    sync_service_->RecordReasonIfWaitingForUpdates(type);
+    sync_service_->RecordReasonIfWaitingForUpdates(
+        type, std::string("Sync.ModelTypeWaitingForUpdatesTimeoutReason.") +
+                  ModelTypeToHistogramSuffix(type));
   }
 
   // Delete current object after all the histograms are recorded.
@@ -2411,43 +2408,6 @@ void SyncServiceImpl::GetLocalDataDescriptions(
   // Only retain the types that are enabled.
   types.RetainAll(GetPreferredDataTypes());
 
-  // Check whether to return dummy data for testing.
-  if (base::FeatureList::IsEnabled(
-          syncer::kSyncEnableBatchUploadLocalDataWithDummyDataForTesting)) {
-    // Create dummy data.
-    std::map<syncer::ModelType, syncer::LocalDataDescription> result;
-    if (types.Has(syncer::PASSWORDS)) {
-      result.emplace(syncer::PASSWORDS,
-                     syncer::LocalDataDescription{
-                         syncer::PASSWORDS, /*item_count=*/5,
-                         std::vector<std::string>{"amazon.de", "airbnb.com",
-                                                  "facebook.com"},
-                         /*domain_count=*/4});
-    }
-    if (types.Has(syncer::BOOKMARKS)) {
-      result.emplace(syncer::BOOKMARKS,
-                     syncer::LocalDataDescription{
-                         syncer::BOOKMARKS, /*item_count=*/4,
-                         std::vector<std::string>{"amazon.de", "airbnb.com"},
-                         /*domain_count=*/2});
-    }
-    if (types.Has(syncer::READING_LIST)) {
-      result.emplace(syncer::READING_LIST,
-                     syncer::LocalDataDescription{
-                         syncer::READING_LIST, /*item_count=*/2,
-                         std::vector<std::string>{"medium.com", "nytimes.com"},
-                         /*domain_count=*/2});
-    }
-
-    // Run the callback asynchronously with configurable delay
-    // SyncResponseDelayForBatchUploadLocalDataWithDummyDataForTesting.
-    base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
-        FROM_HERE, base::BindOnce(std::move(callback), std::move(result)),
-        syncer::kSyncResponseDelayForBatchUploadLocalDataWithDummyDataForTesting
-            .Get());
-    return;
-  }
-
   sync_client_->GetLocalDataDescriptions(types, std::move(callback));
 }
 
@@ -2461,12 +2421,6 @@ void SyncServiceImpl::TriggerLocalDataMigration(ModelTypeSet types) {
 
   // Only retain the types that are enabled.
   types.RetainAll(GetPreferredDataTypes());
-
-  if (base::FeatureList::IsEnabled(
-          syncer::kSyncEnableBatchUploadLocalDataWithDummyDataForTesting)) {
-    // Return directly since there is nothing to do with the dummy data.
-    return;
-  }
 
   sync_client_->TriggerLocalDataMigration(types);
 }

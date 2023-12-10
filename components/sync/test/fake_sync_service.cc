@@ -110,13 +110,6 @@ base::Time FakeSyncService::GetAuthErrorTime() const {
 bool FakeSyncService::RequiresClientUpgrade() const {
   return false;
 }
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-bool FakeSyncService::IsSyncFeatureDisabledViaDashboard() const {
-  return false;
-}
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
 void FakeSyncService::DataTypePreconditionChanged(ModelType type) {}
 
 syncer::SyncTokenStatus FakeSyncService::GetSyncTokenStatusForDebugging()
@@ -173,6 +166,10 @@ SyncService::ModelTypeDownloadStatus FakeSyncService::GetDownloadStatusFor(
     ModelType type) const {
   return ModelTypeDownloadStatus::kUpToDate;
 }
+
+void FakeSyncService::RecordReasonIfWaitingForUpdates(
+    ModelType type,
+    const std::string& histogram_name) const {}
 
 void FakeSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {}
 

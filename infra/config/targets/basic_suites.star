@@ -138,40 +138,6 @@ targets.legacy_basic_suite(
 )
 
 targets.legacy_basic_suite(
-    name = "android_finch_smoke_tests",
-    tests = {
-        "chrome_finch_smoke_tests": targets.legacy_test_config(
-            mixins = [
-                "skia_gold_test",
-            ],
-            args = [
-                "--finch-seed-path",
-                "../../variations_seed",
-            ],
-        ),
-        "monochrome_finch_smoke_tests": targets.legacy_test_config(
-            mixins = [
-                "skia_gold_test",
-            ],
-            args = [
-                "--finch-seed-path",
-                "../../variations_seed",
-            ],
-        ),
-        "variations_smoke_tests": targets.legacy_test_config(
-            test = "variations_desktop_smoke_tests",
-            mixins = [
-                "skia_gold_test",
-                "has_native_resultdb_integration",
-            ],
-            args = [
-                "--target-platform=android",
-            ],
-        ),
-    },
-)
-
-targets.legacy_basic_suite(
     name = "android_isolated_scripts",
     tests = {
         "content_shell_crash_test": targets.legacy_test_config(
@@ -739,6 +705,7 @@ targets.legacy_basic_suite(
             # put the stub string here.
             tast_expr = "STUB_STRING_TO_RUN_TAST_TESTS",
             test_level_retries = 2,
+            ci_only = True,
             timeout_sec = 7200,
             experiment_percentage = 100,
             shards = 3,
@@ -757,6 +724,7 @@ targets.legacy_basic_suite(
             # put the stub string here.
             tast_expr = "STUB_STRING_TO_RUN_TAST_TESTS",
             test_level_retries = 1,
+            ci_only = True,
             timeout_sec = 7200,
             experiment_percentage = 100,
             shards = 2,
@@ -2571,7 +2539,6 @@ targets.legacy_basic_suite(
         "perfetto_unittests": None,
         # TODO(crbug.com/1459686): Enable this.
         # "rust_gtest_interop_unittests": None,
-        "service_manager_unittests": None,
         "services_unittests": targets.legacy_test_config(
             args = [
                 "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.services_unittests.filter",
@@ -3134,6 +3101,30 @@ targets.legacy_basic_suite(
                 # Increase the timeout when using backend validation layers (crbug.com/1208253)
                 "--timeout-ms=30000",
             ],
+        ),
+    },
+)
+
+targets.legacy_basic_suite(
+    name = "gpu_dawn_webgpu_compat_cts",
+    tests = {
+        "webgpu_cts_compat_tests": targets.legacy_test_config(
+            telemetry_test_name = "webgpu_compat_cts",
+            mixins = [
+                "has_native_resultdb_integration",
+                "webgpu_telemetry_cts",
+            ],
+            args = [
+                "--extra-browser-args=--use-angle=gl --use-webgpu-adapter=opengles --enable-webgpu-developer-features",
+            ],
+            ci_only = True,
+            swarming = targets.swarming(
+                shards = 14,
+            ),
+            android_swarming = targets.swarming(
+                shards = 36,
+            ),
+            experiment_percentage = 100,
         ),
     },
 )
@@ -4762,9 +4753,7 @@ targets.legacy_basic_suite(
 targets.legacy_basic_suite(
     name = "lacros_device_or_vm_gtests",
     tests = {
-        "aura_unittests": None,
         "cc_unittests": None,
-        "interactive_ui_tests": None,
         "ozone_unittests": None,
         "vaapi_unittest": targets.legacy_test_config(
             args = [
@@ -4988,16 +4977,34 @@ targets.legacy_basic_suite(
 )
 
 targets.legacy_basic_suite(
+    name = "linux_force_accessibility_gtests",
+    tests = {
+        "browser_tests": targets.legacy_test_config(
+            args = [
+                "--force-renderer-accessibility",
+                "--test-launcher-filter-file=../../testing/buildbot/filters/accessibility-linux.browser_tests.filter",
+            ],
+            swarming = targets.swarming(
+                shards = 20,
+            ),
+        ),
+        "content_browsertests": targets.legacy_test_config(
+            args = [
+                "--force-renderer-accessibility",
+                "--test-launcher-filter-file=../../testing/buildbot/filters/accessibility-linux.content_browsertests.filter",
+            ],
+            swarming = targets.swarming(
+                shards = 8,
+            ),
+        ),
+    },
+)
+
+targets.legacy_basic_suite(
     name = "linux_lacros_chrome_browsertests_non_version_skew",
     tests = {
         "lacros_chrome_browsertests": targets.legacy_test_config(
             test = "lacros_chrome_browsertests",
-            args = [
-                "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.filter",
-            ],
-        ),
-        "lacros_chrome_browsertests_run_in_series": targets.legacy_test_config(
-            test = "lacros_chrome_browsertests_run_in_series",
             args = [
                 "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.filter",
             ],
@@ -5013,12 +5020,7 @@ targets.legacy_basic_suite(
     tests = {
         "lacros_chrome_browsertests": targets.legacy_test_config(
             args = [
-                "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-            ],
-        ),
-        "lacros_chrome_browsertests_run_in_series": targets.legacy_test_config(
-            args = [
-                "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
+                "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.filter;../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
             ],
             swarming = targets.swarming(
                 shards = 2,
@@ -5033,52 +5035,7 @@ targets.legacy_basic_suite(
         "interactive_ui_tests": targets.legacy_test_config(
             test = "interactive_ui_tests",
             args = [
-                "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
-            ],
-            swarming = targets.swarming(
-                shards = 3,
-            ),
-        ),
-    },
-)
-
-targets.legacy_basic_suite(
-    name = "linux_lacros_chrome_interactive_ui_tests_version_skew_beta",
-    tests = {
-        "interactive_ui_tests": targets.legacy_test_config(
-            test = "interactive_ui_tests",
-            args = [
-                "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
-            ],
-            swarming = targets.swarming(
-                shards = 3,
-            ),
-        ),
-    },
-)
-
-targets.legacy_basic_suite(
-    name = "linux_lacros_chrome_interactive_ui_tests_version_skew_dev",
-    tests = {
-        "interactive_ui_tests": targets.legacy_test_config(
-            test = "interactive_ui_tests",
-            args = [
-                "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
-            ],
-            swarming = targets.swarming(
-                shards = 3,
-            ),
-        ),
-    },
-)
-
-targets.legacy_basic_suite(
-    name = "linux_lacros_chrome_interactive_ui_tests_version_skew_stable",
-    tests = {
-        "interactive_ui_tests": targets.legacy_test_config(
-            test = "interactive_ui_tests",
-            args = [
-                "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
+                "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter;../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
             ],
             swarming = targets.swarming(
                 shards = 3,
@@ -5273,10 +5230,9 @@ targets.legacy_basic_suite(
     name = "model_validation_tests",
     tests = {
         "model_validation_tests": targets.legacy_test_config(
-            resultdb = targets.resultdb(
-                enable = True,
-                result_format = "single",
-            ),
+            mixins = [
+                "has_native_resultdb_integration",
+            ],
         ),
     },
 )
@@ -5347,6 +5303,12 @@ targets.legacy_basic_suite(
             swarming = targets.swarming(
                 shards = 10,
             ),
+        ),
+        "extensions_browsertests_network_sandbox": targets.legacy_test_config(
+            test = "extensions_browsertests",
+            args = [
+                "--enable-features=NetworkServiceSandbox",
+            ],
         ),
         "interactive_ui_tests_network_sandbox": targets.legacy_test_config(
             test = "interactive_ui_tests",
@@ -5419,7 +5381,6 @@ targets.legacy_basic_suite(
         "ppapi_unittests": None,
         "printing_unittests": None,
         "remoting_unittests": None,
-        "service_manager_unittests": None,  # https://crbug.com/843134
         "snapshot_unittests": None,
         "sync_integration_tests": targets.legacy_test_config(
             swarming = targets.swarming(
@@ -5457,7 +5418,6 @@ targets.legacy_basic_suite(
         "pdf_unittests": None,
         "printing_unittests": None,
         "remoting_unittests": None,
-        "service_manager_unittests": None,  # https://crbug.com/843134
         "snapshot_unittests": None,
         "sync_integration_tests": targets.legacy_test_config(
             swarming = targets.swarming(
@@ -6642,7 +6602,7 @@ targets.legacy_basic_suite(
                 "--no-wpt-internal",
             ],
             swarming = targets.swarming(
-                shards = 15,
+                shards = 4,
                 expiration_sec = 18000,
                 hard_timeout_sec = 14400,
             ),

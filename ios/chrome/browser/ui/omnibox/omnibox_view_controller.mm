@@ -12,7 +12,7 @@
 #import "components/omnibox/browser/omnibox_field_trial.h"
 #import "components/open_from_clipboard/clipboard_recent_content.h"
 #import "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/default_browser/utils.h"
+#import "ios/chrome/browser/default_browser/model/utils.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
@@ -445,20 +445,8 @@ const CGFloat kClearButtonImageSize = 17.0f;
 
 #pragma mark - EditViewAnimatee
 
-- (void)setLeadingIconFaded:(BOOL)faded {
-  CATransition* transition = [CATransition animation];
-  transition.duration = 0.3;
-  transition.timingFunction = [CAMediaTimingFunction
-      functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
-  transition.type = kCATransitionFade;
-  [self.view.layer addAnimation:transition forKey:nil];
-  if (faded) {
-    [self.view setLeadingImageAlpha:0];
-    [self.view setLeadingImageScale:0];
-  } else {
-    [self.view setLeadingImageAlpha:1];
-    [self.view setLeadingImageScale:1];
-  }
+- (void)setLeadingIconScale:(CGFloat)scale {
+  [self.view setLeadingImageScale:scale];
 }
 
 - (void)setClearButtonFaded:(BOOL)faded {

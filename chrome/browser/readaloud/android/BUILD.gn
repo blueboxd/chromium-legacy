@@ -3,18 +3,15 @@
 # found in the LICENSE file.
 
 import("//build/config/android/rules.gni")
+
 android_library("java") {
   sources = [
     "java/src/org/chromium/chrome/browser/readaloud/ReadAloudController.java",
-    "java/src/org/chromium/chrome/browser/readaloud/ReadAloudFeatures.java",
     "java/src/org/chromium/chrome/browser/readaloud/ReadAloudToolbarButtonController.java",
   ]
   deps = [
-    ":expanded_player_java",
     ":hooks_java",
-    ":java_resources",
     ":player_java",
-    ":player_state_java",
     "//base:base_java",
     "//chrome/android:chrome_app_java_resources",
     "//chrome/android/modules/readaloud/public:java",
@@ -31,13 +28,25 @@ android_library("java") {
     "//components/browser_ui/bottomsheet/android:java",
     "//components/embedder_support/android:util_java",
     "//components/feature_engagement/public:public_java",
+    "//content/public/android:content_java",
     "//third_party/android_deps:guava_android_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
-    "//ui/android:ui_java",
-    "//ui/android:ui_java_resources",
+    "//ui/android:ui_no_recycler_view_java",
     "//url:gurl_java",
   ]
   resources_package = "org.chromium.chrome.browser.readaloud"
+}
+
+android_library("features_java") {
+  sources = [
+    "java/src/org/chromium/chrome/browser/readaloud/ReadAloudFeatures.java",
+  ]
+  deps = [
+    "//chrome/browser/flags:java",
+    "//chrome/browser/profiles/android:java",
+    "//chrome/browser/signin/services/android:java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
+  ]
 }
 
 android_resources("java_resources") {
@@ -62,7 +71,7 @@ android_resources("java_resources") {
     "java/res/values/dimens.xml",
   ]
   deps = [
-    "//chrome/browser/ui/android/strings:ui_strings_grd",
+    "//chrome/browser/readaloud/android/resources:ui_strings_grd",
     "//components/browser_ui/styles/android:java_resources",
     "//components/browser_ui/widget/android:java_resources",
     "//ui/android:ui_java_resources",
@@ -99,17 +108,14 @@ robolectric_library("junit") {
     "java/src/org/chromium/chrome/browser/readaloud/ReadAloudToolbarButtonControllerUnitTest.java",
   ]
   deps = [
-    ":expanded_player_java",
     ":hooks_java",
     ":java",
     ":java_resources",
     ":player_java",
     ":player_junit_java",
-    ":player_state_java",
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
-    "//base:jni_java",
     "//chrome/android/modules/readaloud/public:java",
     "//chrome/browser/flags:java",
     "//chrome/browser/language/android:java",
@@ -122,9 +128,11 @@ robolectric_library("junit") {
     "//chrome/test/android:chrome_java_unit_test_support",
     "//components/browser_ui/bottomsheet/android:java",
     "//components/feature_engagement/public:public_java",
+    "//content/public/android:content_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_test_core_java",
     "//third_party/androidx:androidx_test_ext_junit_java",
+    "//third_party/jni_zero:jni_zero_java",
     "//third_party/junit",
     "//third_party/mockito:mockito_java",
     "//ui/android:ui_java",
@@ -134,35 +142,6 @@ robolectric_library("junit") {
   ]
 }
 
-android_library("expanded_player_java") {
-  sources = [
-    "java/src/org/chromium/chrome/browser/readaloud/expandedplayer/ExpandedPlayerCoordinator.java",
-    "java/src/org/chromium/chrome/browser/readaloud/expandedplayer/ExpandedPlayerMediator.java",
-    "java/src/org/chromium/chrome/browser/readaloud/expandedplayer/ExpandedPlayerProperties.java",
-    "java/src/org/chromium/chrome/browser/readaloud/expandedplayer/ExpandedPlayerSheetContent.java",
-    "java/src/org/chromium/chrome/browser/readaloud/expandedplayer/ExpandedPlayerViewBinder.java",
-  ]
-  deps = [
-    ":java_resources",
-    ":player_state_java",
-    "//base:base_java",
-    "//chrome/android:chrome_app_java_resources",
-    "//chrome/android/modules/readaloud/public:java",
-    "//chrome/browser/ui/android/strings:ui_strings_grd",
-    "//components/browser_ui/bottomsheet/android:java",
-    "//third_party/androidx:androidx_annotation_annotation_java",
-    "//ui/android:ui_java",
-    "//ui/android:ui_java_resources",
-  ]
-  resources_package = "org.chromium.chrome.browser.readaloud.expandedplayer"
-}
-
-android_library("player_state_java") {
-  sources =
-      [ "java/src/org/chromium/chrome/browser/readaloud/PlayerState.java" ]
-  deps = [ "//third_party/androidx:androidx_annotation_annotation_java" ]
-}
-
 android_library("player_java") {
   sources = [
     "java/src/org/chromium/chrome/browser/readaloud/player/InteractionHandler.java",
@@ -170,6 +149,10 @@ android_library("player_java") {
     "java/src/org/chromium/chrome/browser/readaloud/player/PlayerMediator.java",
     "java/src/org/chromium/chrome/browser/readaloud/player/PlayerProperties.java",
     "java/src/org/chromium/chrome/browser/readaloud/player/VisibilityState.java",
+    "java/src/org/chromium/chrome/browser/readaloud/player/expanded/ExpandedPlayerCoordinator.java",
+    "java/src/org/chromium/chrome/browser/readaloud/player/expanded/ExpandedPlayerMediator.java",
+    "java/src/org/chromium/chrome/browser/readaloud/player/expanded/ExpandedPlayerSheetContent.java",
+    "java/src/org/chromium/chrome/browser/readaloud/player/expanded/ExpandedPlayerViewBinder.java",
     "java/src/org/chromium/chrome/browser/readaloud/player/mini/MiniPlayerCoordinator.java",
     "java/src/org/chromium/chrome/browser/readaloud/player/mini/MiniPlayerLayout.java",
     "java/src/org/chromium/chrome/browser/readaloud/player/mini/MiniPlayerMediator.java",
@@ -180,11 +163,12 @@ android_library("player_java") {
     "//base:base_java",
     "//chrome/android:chrome_app_java_resources",
     "//chrome/android/modules/readaloud/public:java",
-    "//chrome/browser/ui/android/strings:ui_strings_grd",
+    "//chrome/browser/readaloud/android/resources:ui_strings_grd",
     "//components/browser_ui/bottomsheet/android:java",
     "//third_party/android_deps:material_design_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_appcompat_appcompat_java",
+    "//third_party/androidx:androidx_interpolator_interpolator_java",
     "//ui/android:ui_java_resources",
     "//ui/android:ui_no_recycler_view_java",
   ]
@@ -195,6 +179,10 @@ robolectric_library("player_junit_java") {
   testonly = true
   sources = [
     "java/src/org/chromium/chrome/browser/readaloud/player/PlayerCoordinatorUnitTest.java",
+    "java/src/org/chromium/chrome/browser/readaloud/player/PlayerMediatorUnitTest.java",
+    "java/src/org/chromium/chrome/browser/readaloud/player/expanded/ExpandedPlayerCoordinatorUnitTest.java",
+    "java/src/org/chromium/chrome/browser/readaloud/player/expanded/ExpandedPlayerMediatorUnitTest.java",
+    "java/src/org/chromium/chrome/browser/readaloud/player/expanded/ExpandedPlayerSheetContentUnitTest.java",
     "java/src/org/chromium/chrome/browser/readaloud/player/mini/MiniPlayerCoordinatorUnitTest.java",
     "java/src/org/chromium/chrome/browser/readaloud/player/mini/MiniPlayerLayoutUnitTest.java",
     "java/src/org/chromium/chrome/browser/readaloud/player/mini/MiniPlayerMediatorUnitTest.java",
@@ -208,6 +196,7 @@ robolectric_library("player_junit_java") {
     "//chrome/browser/tab:java",
     "//components/browser_ui/bottomsheet/android:java",
     "//third_party/androidx:androidx_appcompat_appcompat_java",
+    "//third_party/androidx:androidx_interpolator_interpolator_java",
     "//third_party/androidx:androidx_test_core_java",
     "//third_party/androidx:androidx_test_ext_junit_java",
     "//third_party/junit:junit",

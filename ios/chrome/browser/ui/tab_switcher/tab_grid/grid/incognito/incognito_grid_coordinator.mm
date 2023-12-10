@@ -76,7 +76,6 @@
   _mediator.toolbarsMutator = _toolbarsMutator;
   _mediator.actionWrangler = self.incognitoViewController;
   _mediator.incognitoDelegate = self;
-  _mediator.reauthSceneAgent = reauthAgent;
 
   _incognitoAuthMediator =
       [[IncognitoReauthMediator alloc] initWithReauthAgent:reauthAgent];

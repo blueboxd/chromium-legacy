@@ -340,42 +340,46 @@ BrowserContext* EventRouter::GetIncognitoContext() {
 }
 
 void EventRouter::AddListenerForMainThread(
-    mojom::EventListenerOwnerPtr listener_owner,
-    const std::string& event_name) {
+    mojom::EventListenerPtr event_listener) {
   auto* process = GetRenderProcessHostForCurrentReceiver();
   if (!process)
     return;
 
-  if (listener_owner->is_extension_id() &&
-      crx_file::id_util::IdIsValid(listener_owner->get_extension_id())) {
-    AddEventListener(event_name, process, listener_owner->get_extension_id());
-  } else if (listener_owner->is_listener_url() &&
-             listener_owner->get_listener_url().is_valid()) {
-    AddEventListenerForURL(event_name, process,
-                           listener_owner->get_listener_url());
+  const mojom::EventListenerOwner& listener_owner =
+      *event_listener->listener_owner;
+  if (listener_owner.is_extension_id() &&
+      crx_file::id_util::IdIsValid(listener_owner.get_extension_id())) {
+    AddEventListener(event_listener->event_name, process,
+                     listener_owner.get_extension_id());
+  } else if (listener_owner.is_listener_url() &&
+             listener_owner.get_listener_url().is_valid()) {
+    AddEventListenerForURL(event_listener->event_name, process,
+                           listener_owner.get_listener_url());
   } else {
     mojo::ReportBadMessage(kAddEventListenerWithInvalidParam);
   }
 }
 
 void EventRouter::AddListenerForServiceWorker(
-    const std::string& extension_id,
-    const std::string& event_name,
-    mojom::ServiceWorkerContextPtr service_worker_context) {
+    mojom::EventListenerPtr event_listener) {
   auto* process = GetRenderProcessHostForCurrentReceiver();
   if (!process)
     return;
 
-  if (crx_file::id_util::IdIsValid(extension_id)) {
-    if (!service_worker_context->scope_url.is_valid()) {
-      mojo::ReportBadMessage(kAddEventListenerWithInvalidWorkerScopeURL);
-      return;
-    }
-    AddServiceWorkerEventListener(event_name, process, extension_id,
-                                  std::move(service_worker_context));
-  } else {
+  const mojom::EventListenerOwner& listener_owner =
+      *event_listener->listener_owner;
+  if (!listener_owner.is_extension_id() ||
+      !crx_file::id_util::IdIsValid(listener_owner.get_extension_id())) {
     mojo::ReportBadMessage(kAddEventListenerWithInvalidExtensionID);
+    return;
   }
+
+  if (!event_listener->service_worker_context->scope_url.is_valid()) {
+    mojo::ReportBadMessage(kAddEventListenerWithInvalidWorkerScopeURL);
+    return;
+  }
+
+  AddServiceWorkerEventListener(std::move(event_listener), process);
 }
 
 void EventRouter::AddLazyListenerForMainThread(const std::string& extension_id,
@@ -434,43 +438,46 @@ void EventRouter::AddFilteredListenerForServiceWorker(
 }
 
 void EventRouter::RemoveListenerForMainThread(
-    mojom::EventListenerOwnerPtr listener_owner,
-    const std::string& event_name) {
+    mojom::EventListenerPtr event_listener) {
   auto* process = GetRenderProcessHostForCurrentReceiver();
   if (!process)
     return;
 
-  if (listener_owner->is_extension_id() &&
-      crx_file::id_util::IdIsValid(listener_owner->get_extension_id())) {
-    RemoveEventListener(event_name, process,
-                        listener_owner->get_extension_id());
-  } else if (listener_owner->is_listener_url() &&
-             listener_owner->get_listener_url().is_valid()) {
-    RemoveEventListenerForURL(event_name, process,
-                              listener_owner->get_listener_url());
+  const mojom::EventListenerOwner& listener_owner =
+      *event_listener->listener_owner;
+  if (listener_owner.is_extension_id() &&
+      crx_file::id_util::IdIsValid(listener_owner.get_extension_id())) {
+    RemoveEventListener(event_listener->event_name, process,
+                        listener_owner.get_extension_id());
+  } else if (listener_owner.is_listener_url() &&
+             listener_owner.get_listener_url().is_valid()) {
+    RemoveEventListenerForURL(event_listener->event_name, process,
+                              listener_owner.get_listener_url());
   } else {
     mojo::ReportBadMessage(kRemoveEventListenerWithInvalidParam);
   }
 }
 
 void EventRouter::RemoveListenerForServiceWorker(
-    const std::string& extension_id,
-    const std::string& event_name,
-    mojom::ServiceWorkerContextPtr service_worker_context) {
+    mojom::EventListenerPtr event_listener) {
   auto* process = GetRenderProcessHostForCurrentReceiver();
   if (!process)
     return;
 
-  if (crx_file::id_util::IdIsValid(extension_id)) {
-    if (!service_worker_context->scope_url.is_valid()) {
-      mojo::ReportBadMessage(kRemoveEventListenerWithInvalidWorkerScopeURL);
-      return;
-    }
-    RemoveServiceWorkerEventListener(event_name, process, extension_id,
-                                     std::move(service_worker_context));
-  } else {
+  const mojom::EventListenerOwner& listener_owner =
+      *event_listener->listener_owner;
+  if (!listener_owner.is_extension_id() ||
+      !crx_file::id_util::IdIsValid(listener_owner.get_extension_id())) {
     mojo::ReportBadMessage(kRemoveEventListenerWithInvalidExtensionID);
+    return;
   }
+
+  if (!event_listener->service_worker_context->scope_url.is_valid()) {
+    mojo::ReportBadMessage(kRemoveEventListenerWithInvalidWorkerScopeURL);
+    return;
+  }
+
+  RemoveServiceWorkerEventListener(std::move(event_listener), process);
 }
 
 void EventRouter::RemoveLazyListenerForMainThread(
@@ -537,14 +544,15 @@ void EventRouter::AddEventListener(const std::string& event_name,
 }
 
 void EventRouter::AddServiceWorkerEventListener(
-    const std::string& event_name,
-    RenderProcessHost* process,
-    const ExtensionId& extension_id,
-    mojom::ServiceWorkerContextPtr service_worker_context) {
+    mojom::EventListenerPtr event_listener,
+    RenderProcessHost* process) {
+  const mojom::ServiceWorkerContext& service_worker =
+      *event_listener->service_worker_context;
   listeners_.AddListener(EventListener::ForExtensionServiceWorker(
-      event_name, extension_id, process, process->GetBrowserContext(),
-      service_worker_context->scope_url, service_worker_context->version_id,
-      service_worker_context->thread_id, absl::nullopt));
+      event_listener->event_name,
+      event_listener->listener_owner->get_extension_id(), process,
+      process->GetBrowserContext(), service_worker.scope_url,
+      service_worker.version_id, service_worker.thread_id, absl::nullopt));
   CHECK(base::Contains(observed_process_set_, process));
 }
 
@@ -557,15 +565,16 @@ void EventRouter::RemoveEventListener(const std::string& event_name,
 }
 
 void EventRouter::RemoveServiceWorkerEventListener(
-    const std::string& event_name,
-    RenderProcessHost* process,
-    const ExtensionId& extension_id,
-    mojom::ServiceWorkerContextPtr service_worker_context) {
+    mojom::EventListenerPtr event_listener,
+    RenderProcessHost* process) {
+  const mojom::ServiceWorkerContext& service_worker =
+      *event_listener->service_worker_context;
   std::unique_ptr<EventListener> listener =
       EventListener::ForExtensionServiceWorker(
-          event_name, extension_id, process, process->GetBrowserContext(),
-          service_worker_context->scope_url, service_worker_context->version_id,
-          service_worker_context->thread_id, absl::nullopt);
+          event_listener->event_name,
+          event_listener->listener_owner->get_extension_id(), process,
+          process->GetBrowserContext(), service_worker.scope_url,
+          service_worker.version_id, service_worker.thread_id, absl::nullopt);
   listeners_.RemoveListener(listener.get());
 }
 
@@ -1063,27 +1072,35 @@ void EventRouter::DispatchEventToProcess(
       process_map->GetMostLikelyContextType(extension, process->GetID(), url);
 
   // We shouldn't be dispatching an event to a webpage, since all such events
-  // (e.g.  messaging) don't go through EventRouter. The one exception to this
-  // is the new chrome webstore domain, which has permission to receive
-  // extension events.
-  if (target_context == Feature::WEB_PAGE_CONTEXT) {
-    // |url| can only be null for service workers, so should never be null here.
-    CHECK(url);
-    bool is_new_webstore_origin =
-        url::Origin::Create(extension_urls::GetNewWebstoreLaunchURL())
-            .IsSameOriginWith(*url);
-    CHECK(is_new_webstore_origin)
-        << "Trying to dispatch event " << event.event_name << " to a webpage,"
-        << " but this shouldn't be possible";
-  }
-
+  // (e.g.  messaging) don't go through EventRouter. The exceptions to this are
+  // the new chrome webstore domain, which has permission to receive extension
+  // events and features with delegated availability checks, such as Controlled
+  // Frame which runs within Isolated Web Apps and appear as web pages.
   Feature::Availability availability =
       ExtensionAPI::GetSharedInstance()->IsAvailable(
           event.event_name, extension, target_context, listener_url,
           CheckAliasStatus::ALLOWED,
           util::GetBrowserContextId(browser_context_),
           BrowserProcessContextData(process));
-  if (!availability.is_available()) {
+  bool feature_available_to_context = availability.is_available();
+  if (target_context == Feature::WEB_PAGE_CONTEXT) {
+    // |url| can only be null for service workers, so should never be null here.
+    CHECK(url);
+    bool is_new_webstore_origin =
+        url::Origin::Create(extension_urls::GetNewWebstoreLaunchURL())
+            .IsSameOriginWith(*url);
+    const Feature* feature =
+        ExtensionAPI::GetSharedInstance()->GetFeatureDependency(
+            event.event_name);
+    bool feature_available_to_web_page_context =
+        feature_available_to_context &&
+        feature->RequiresDelegatedAvailabilityCheck();
+
+    CHECK(feature_available_to_web_page_context || is_new_webstore_origin)
+        << "Trying to dispatch event " << event.event_name << " to a webpage,"
+        << " but this shouldn't be possible";
+  }
+  if (!feature_available_to_context) {
     // TODO(crbug.com/1412151): Ideally it shouldn't be possible to reach here,
     // because access is checked on registration. However, we don't always
     // refresh the list of events an extension has registered when other factors

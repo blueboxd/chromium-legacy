@@ -9,9 +9,7 @@
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_strip/tab_strip_mediator.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_strip/tab_strip_view_controller.h"
-
-@protocol TabStripContaining;
+#import "ios/chrome/browser/ui/tab_switcher/tab_strip/tab_strip_swift.h"
 
 @interface TabStripCoordinator ()
 
@@ -37,19 +35,17 @@
 
   ChromeBrowserState* browserState = self.browser->GetBrowserState();
   CHECK(browserState);
-
   self.tabStripViewController = [[TabStripViewController alloc] init];
   self.tabStripViewController.overrideUserInterfaceStyle =
       browserState->IsOffTheRecord() ? UIUserInterfaceStyleDark
                                      : UIUserInterfaceStyleUnspecified;
-  self.tabStripViewController.isOffTheRecord = browserState->IsOffTheRecord();
 
   self.mediator =
       [[TabStripMediator alloc] initWithConsumer:self.tabStripViewController];
   self.mediator.webStateList = self.browser->GetWebStateList();
   self.mediator.browserState = browserState;
 
-  self.tabStripViewController.delegate = self.mediator;
+  self.tabStripViewController.mutator = self.mediator;
 }
 
 - (void)stop {
@@ -62,10 +58,6 @@
 
 - (UIViewController*)viewController {
   return self.tabStripViewController;
-}
-
-- (UIView<TabStripContaining>*)view {
-  return static_cast<UIView<TabStripContaining>*>(self.viewController.view);
 }
 
 #pragma mark - Public

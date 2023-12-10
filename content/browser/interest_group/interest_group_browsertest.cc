@@ -16393,7 +16393,7 @@ class InterestGroupBiddingAndAuctionServerBrowserTest
                   JsReplace(R"(
     let config = {seller: $1}
     if ($2) {
-      config.coordinator = $2;
+      config.coordinatorOrigin = $2;
     }
     (async function() {
       try {
@@ -16419,7 +16419,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBiddingAndAuctionServerBrowserTest,
 
   ASSERT_TRUE(NavigateToURL(shell(), test_url));
 
-  EXPECT_EQ("|", GetInterestGroupAdAuctionData(test_origin, "gcp"));
+  EXPECT_EQ("|", GetInterestGroupAdAuctionData(test_origin, absl::nullopt));
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBiddingAndAuctionServerBrowserTest,
@@ -16433,7 +16433,8 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBiddingAndAuctionServerBrowserTest,
       "TypeError: Failed to execute 'getInterestGroupAdAuctionData' on "
       "'Navigator': seller 'null' for AdAuctionDataConfig must be a valid "
       "https origin.",
-      GetInterestGroupAdAuctionData(url::Origin(), "gcp"));
+      GetInterestGroupAdAuctionData(
+          url::Origin(), kDefaultBiddingAndAuctionGCPCoordinatorOrigin));
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBiddingAndAuctionServerBrowserTest,
@@ -16445,9 +16446,8 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBiddingAndAuctionServerBrowserTest,
 
   EXPECT_EQ(
       "TypeError: Failed to execute 'getInterestGroupAdAuctionData' on "
-      "'Navigator': Failed to read the 'coordinator' property from "
-      "'AdAuctionDataConfig': The provided value 'foo' is not a valid enum "
-      "value of type AdAuctionCoordinator.",
+      "'Navigator': coordinatorOrigin 'foo' for AdAuctionDataConfig must be "
+      "a valid https origin.",
       GetInterestGroupAdAuctionData(test_origin, "foo"));
 }
 
@@ -16493,8 +16493,10 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBiddingAndAuctionServerBrowserTest,
     WebContentsConsoleObserver console_observer(shell()->web_contents());
     console_observer.SetPattern(WarningPermissionsPolicy("*", "*"));
 
-    EXPECT_EQ("|", GetInterestGroupAdAuctionData(test_origin, "gcp",
-                                                 execution_target));
+    EXPECT_EQ("|",
+              GetInterestGroupAdAuctionData(
+                  test_origin, kDefaultBiddingAndAuctionGCPCoordinatorOrigin,
+                  execution_target));
 #if BUILDFLAG(IS_ANDROID)
     RenderFrameHost* execution_targets_with_message[] = {cross_origin_iframe};
 #else
@@ -16846,10 +16848,14 @@ IN_PROC_BROWSER_TEST_F(
           "NotAllowedError: Failed to execute 'getInterestGroupAdAuctionData' "
           "on 'Navigator': "
           "Feature run-ad-auction is not enabled by Permissions Policy",
-          GetInterestGroupAdAuctionData(test_origin, "gcp", execution_target));
+          GetInterestGroupAdAuctionData(
+              test_origin, kDefaultBiddingAndAuctionGCPCoordinatorOrigin,
+              execution_target));
     } else {
-      EXPECT_EQ("|", GetInterestGroupAdAuctionData(test_origin, "gcp",
-                                                   execution_target));
+      EXPECT_EQ("|",
+                GetInterestGroupAdAuctionData(
+                    test_origin, kDefaultBiddingAndAuctionGCPCoordinatorOrigin,
+                    execution_target));
     }
   }
 }
@@ -18739,6 +18745,61 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, NotificationOrder) {
        {TestInterestGroupObserver::kClear, test_origin, "golf carts"},
        {TestInterestGroupObserver::kLoaded, test_origin, "cars"},
        {TestInterestGroupObserver::kLeave, test_origin, "cars"}});
+}
+
+// Make sure we don't crash when cross-frame promise resolution tries to notify
+// an auction in a detached frame.
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, DetachedFramePromiseResolve) {
+  constexpr char kTestOrigin[] = "a.test";
+  GURL test_url = https_server_->GetURL(kTestOrigin, "/page_with_iframe.html");
+  GURL ad_url = https_server_->GetURL(kTestOrigin, "/echo?render_cars");
+
+  ASSERT_TRUE(NavigateToURL(shell(), test_url));
+  EXPECT_EQ(kSuccess,
+            JoinInterestGroupAndVerify(
+                blink::TestInterestGroupBuilder(
+                    /*owner=*/url::Origin::Create(test_url),
+                    /*name=*/"cars")
+                    .SetBiddingUrl(https_server_->GetURL(
+                        kTestOrigin, "/interest_group/bidding_logic.js"))
+                    .SetAds(/*ads=*/{{{ad_url, /*metadata=*/absl::nullopt}}})
+                    .Build()));
+  FrameTreeNode* parent =
+      FrameTreeNode::From(web_contents()->GetPrimaryMainFrame());
+  ASSERT_GT(parent->child_count(), 0u);
+  RenderFrameHost* iframe = parent->child_at(0)->current_frame_host();
+
+  const char kFrameScriptTemplate[] = R"(
+    let auctionSignalsPromise = new Promise((resolve, reject) => {
+     window.resolveFunc = () => {
+       resolve({a: "foo"});
+     }
+    });
+
+    const auctionConfig = {
+      seller: $1,
+      decisionLogicUrl: $2,
+      interestGroupBuyers: [$1],
+      auctionSignals: auctionSignalsPromise
+    }
+    navigator.runAdAuction(auctionConfig);
+    "ok";
+  )";
+
+  const char kTopLevelScript[] = R"(
+    let frame = document.getElementById("test_iframe");
+    let resolveFn = frame.contentWindow.resolveFunc;
+    frame.remove();
+    resolveFn();
+  )";
+
+  EXPECT_EQ(
+      "ok",
+      EvalJs(iframe,
+             JsReplace(kFrameScriptTemplate, url::Origin::Create(test_url),
+                       https_server_->GetURL(
+                           kTestOrigin, "/interest_group/decision_logic.js"))));
+  EXPECT_EQ(nullptr, EvalJs(shell(), kTopLevelScript));
 }
 
 }  // namespace

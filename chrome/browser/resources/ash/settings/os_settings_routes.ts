@@ -10,7 +10,7 @@
  * the Router singleton instance, rather than imported from here.
  */
 
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 
 import {androidAppsVisible, isArcVmEnabled, isCrostiniSupported, isGuest, isInputDeviceSettingsSplitEnabled, isKerberosEnabled, isPluginVmAvailable, isPowerwashAllowed, isRevampWayfindingEnabled} from './common/load_time_booleans.js';
@@ -121,6 +121,7 @@ export interface OsSettingsRoutes extends MinimumRoutes {
   ADVANCED: Route;
   APN: Route;
   APP_NOTIFICATIONS: Route;
+  APP_NOTIFICATIONS_MANAGER: Route;
   APP_MANAGEMENT: Route;
   APP_MANAGEMENT_DETAIL: Route;
   APP_MANAGEMENT_PLUGIN_VM_SHARED_PATHS: Route;
@@ -316,10 +317,14 @@ export function createRoutes(): OsSettingsRoutes {
         r.BASIC, routesMojom.PEOPLE_SECTION_PATH, Section.kPeople);
     r.ACCOUNT_MANAGER = createSubpage(
         r.OS_PEOPLE, routesMojom.MY_ACCOUNTS_SUBPAGE_PATH, Subpage.kMyAccounts);
-    r.OS_SYNC = createSubpage(
-        r.OS_PEOPLE, routesMojom.SYNC_SUBPAGE_PATH, Subpage.kSync);
-    r.SYNC = createSubpage(
-        r.OS_PEOPLE, routesMojom.SYNC_SETUP_SUBPAGE_PATH, Subpage.kSyncSetup);
+
+    if (!isRevampWayfindingEnabled()) {
+      // TODO(b/305747266) : Disambiguate the names for OS_SYNC and SYNC.
+      r.OS_SYNC = createSubpage(
+          r.OS_PEOPLE, routesMojom.SYNC_SUBPAGE_PATH, Subpage.kSync);
+      r.SYNC = createSubpage(
+          r.OS_PEOPLE, routesMojom.SYNC_SETUP_SUBPAGE_PATH, Subpage.kSyncSetup);
+    }
   }
 
   // Kerberos section.
@@ -391,6 +396,11 @@ export function createRoutes(): OsSettingsRoutes {
   r.APP_NOTIFICATIONS = createSubpage(
       r.APPS, routesMojom.APP_NOTIFICATIONS_SUBPAGE_PATH,
       Subpage.kAppNotifications);
+  if (isRevampWayfindingEnabled()) {
+    r.APP_NOTIFICATIONS_MANAGER = createSubpage(
+        r.APP_NOTIFICATIONS, routesMojom.APP_NOTIFICATIONS_MANAGER_SUBPAGE_PATH,
+        Subpage.kAppNotificationsManager);
+  }
   r.APP_MANAGEMENT = createSubpage(
       r.APPS, routesMojom.APP_MANAGEMENT_SUBPAGE_PATH, Subpage.kAppManagement);
   r.APP_MANAGEMENT_DETAIL = createSubpage(
@@ -440,13 +450,9 @@ export function createRoutes(): OsSettingsRoutes {
   r.A11Y_AUDIO_AND_CAPTIONS = createSubpage(
       r.OS_ACCESSIBILITY, routesMojom.AUDIO_AND_CAPTIONS_SUBPAGE_PATH,
       Subpage.kAudioAndCaptions);
-  if (loadTimeData.valueExists(
-          'isAccessibilityChromeVoxPageMigrationEnabled') &&
-      loadTimeData.getBoolean('isAccessibilityChromeVoxPageMigrationEnabled')) {
-    r.A11Y_CHROMEVOX = createSubpage(
-        r.A11Y_TEXT_TO_SPEECH, routesMojom.CHROME_VOX_SUBPAGE_PATH,
-        Subpage.kChromeVox);
-  }
+  r.A11Y_CHROMEVOX = createSubpage(
+      r.A11Y_TEXT_TO_SPEECH, routesMojom.CHROME_VOX_SUBPAGE_PATH,
+      Subpage.kChromeVox);
   r.A11Y_SELECT_TO_SPEAK = createSubpage(
       r.A11Y_TEXT_TO_SPEECH, routesMojom.SELECT_TO_SPEAK_SUBPAGE_PATH,
       Subpage.kSelectToSpeak);
@@ -574,6 +580,17 @@ export function createRoutes(): OsSettingsRoutes {
       r.BRUSCHETTA_DETAILS = createSubpage(
           r.ABOUT, routesMojom.BRUSCHETTA_DETAILS_SUBPAGE_PATH,
           Subpage.kBruschettaDetails);
+    }
+
+    // Sync subpages.
+    if (!isGuest()) {
+      assert(r.OS_PRIVACY);
+      // TODO(b/305747266) : Disambiguate the names for OS_SYNC and SYNC.
+      r.OS_SYNC = createSubpage(
+          r.OS_PRIVACY, routesMojom.SYNC_SUBPAGE_PATH, Subpage.kSync);
+      r.SYNC = createSubpage(
+          r.OS_PRIVACY, routesMojom.SYNC_SETUP_SUBPAGE_PATH,
+          Subpage.kSyncSetup);
     }
   } else {
     // Date and Time section.

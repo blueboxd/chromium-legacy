@@ -51,6 +51,7 @@ class AmbientManagedSlideshowUiLauncher
   void Finalize() override;
   AmbientBackendModel* GetAmbientBackendModel() override;
   AmbientPhotoController* GetAmbientPhotoController() override;
+  bool IsActive() override;
   std::unique_ptr<AmbientSessionMetricsRecorder::Delegate>
   CreateMetricsDelegate(AmbientUiSettings current_ui_settings) override;
 

@@ -32,12 +32,14 @@
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/window_positioning_utils.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
+#include "base/trace_event/trace_event.h"
 #include "base/uuid.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -822,7 +824,7 @@ std::unique_ptr<views::Widget> DeskBarViewBase::CreateDeskWidget(
     // Even though this widget exists on the active desk container, it should
     // not show up in the MRU list, and it should not be mirrored in the desks
     // mini_views.
-    params.init_properties_container.SetProperty(kExcludeInMruKey, true);
+    params.init_properties_container.SetProperty(kOverviewUiKey, true);
     params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);
   } else {
     // Desk button desk bar should live under the shelf bubble container on
@@ -836,7 +838,7 @@ std::unique_ptr<views::Widget> DeskBarViewBase::CreateDeskWidget(
 
   auto* window = widget->GetNativeWindow();
   window->SetId(kShellWindowId_DesksBarWindow);
-  ::wm::SetWindowVisibilityAnimationTransition(window, ::wm::ANIMATE_NONE);
+  wm::SetWindowVisibilityAnimationTransition(window, wm::ANIMATE_NONE);
 
   return widget;
 }

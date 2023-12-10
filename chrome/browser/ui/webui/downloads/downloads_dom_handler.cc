@@ -98,7 +98,7 @@ void CountDownloadsDOMEvents(DownloadsDOMEvent event) {
 
 void PromptForScanningInBubble(content::WebContents* web_contents,
                                download::DownloadItem* download) {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  Browser* browser = chrome::FindBrowserWithTab(web_contents);
   if (!browser) {
     return;
   }
@@ -490,7 +490,7 @@ void DownloadsDOMHandler::BypassDeepScanRequiringGesture(
   if (download) {
     DownloadItemModel model(download);
     DownloadCommands commands(model.GetWeakPtr());
-    commands.ExecuteCommand(DownloadCommands::BYPASS_DEEP_SCANNING_AND_OPEN);
+    commands.ExecuteCommand(DownloadCommands::BYPASS_DEEP_SCANNING);
   }
 }
 

@@ -20,7 +20,6 @@
 #include "components/search_engines/prepopulated_engines.h"
 #include "components/search_engines/search_engine_choice_utils.h"
 #include "components/search_engines/search_engines_pref_names.h"
-#include "components/search_engines/search_engines_test_util.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_data_util.h"
@@ -126,6 +125,25 @@ const int kAllCountryIds[] = {'A' << 8 | 'D', 'A' << 8 | 'E', 'A' << 8 | 'F',
                               'V' << 8 | 'U', 'W' << 8 | 'F', 'W' << 8 | 'S',
                               'Y' << 8 | 'E', 'Y' << 8 | 'T', 'Z' << 8 | 'A',
                               'Z' << 8 | 'M', 'Z' << 8 | 'W', -1};
+
+void CheckUrlIsEmptyOrSecure(const std::string url) {
+  ASSERT_TRUE(url.empty() || url.starts_with("{google:") ||
+              url.starts_with(url::kHttpsScheme));
+}
+
+void CheckTemplateUrlRefIsCryptographic(const TemplateURLRef& url_ref) {
+  TestingSearchTermsData search_terms_data("https://www.google.com/");
+  if (!url_ref.IsValid(search_terms_data)) {
+    ADD_FAILURE() << url_ref.GetURL();
+    return;
+  }
+
+  // Double parentheses around the string16 constructor to prevent the compiler
+  // from parsing it as a function declaration.
+  TemplateURLRef::SearchTermsArgs search_term_args((std::u16string()));
+  GURL url(url_ref.ReplaceSearchTerms(search_term_args, search_terms_data));
+  EXPECT_TRUE(url.is_empty() || url.SchemeIsCryptographic()) << url;
+}
 
 }  // namespace
 
@@ -392,6 +410,29 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrepopulated) {
                 SearchTermsData()));
 }
 
+// Verifies that all built-in search providers available across all countries
+// use https urls.
+TEST_F(TemplateURLPrepopulateDataTest, PrepopulatedAreHttps) {
+  for (int country_id : kAllCountryIds) {
+    prefs_.SetInteger(country_codes::kCountryIDAtInstall, country_id);
+
+    std::vector<std::unique_ptr<TemplateURLData>> t_urls =
+        TemplateURLPrepopulateData::GetPrepopulatedEngines(&prefs_, nullptr);
+
+    ASSERT_FALSE(t_urls.empty());
+    for (const auto& t_url : t_urls) {
+      CheckUrlIsEmptyOrSecure(t_url->url());
+      CheckUrlIsEmptyOrSecure(t_url->image_url);
+      CheckUrlIsEmptyOrSecure(t_url->image_translate_url);
+      CheckUrlIsEmptyOrSecure(t_url->new_tab_url);
+      CheckUrlIsEmptyOrSecure(t_url->contextual_search_url);
+      CheckUrlIsEmptyOrSecure(t_url->suggestions_url);
+      CheckUrlIsEmptyOrSecure(t_url->favicon_url.scheme());
+      CheckUrlIsEmptyOrSecure(t_url->logo_url.scheme());
+    }
+  }
+}
+
 TEST_F(TemplateURLPrepopulateDataTest, GetEngineTypeBasic) {
   EXPECT_EQ(SEARCH_ENGINE_OTHER, GetEngineType("http://example.com/"));
   EXPECT_EQ(SEARCH_ENGINE_ASK, GetEngineType("http://www.ask.com/"));
@@ -479,24 +520,6 @@ TEST_F(TemplateURLPrepopulateDataTest, CheckSearchURLDetection) {
   }
 }
 
-namespace {
-
-void CheckTemplateUrlRefIsCryptographic(const TemplateURLRef& url_ref) {
-  TestingSearchTermsData search_terms_data("https://www.google.com/");
-  if (!url_ref.IsValid(search_terms_data)) {
-    ADD_FAILURE() << url_ref.GetURL();
-    return;
-  }
-
-  // Double parentheses around the string16 constructor to prevent the compiler
-  // from parsing it as a function declaration.
-  TemplateURLRef::SearchTermsArgs search_term_args((std::u16string()));
-  GURL url(url_ref.ReplaceSearchTerms(search_term_args, search_terms_data));
-  EXPECT_TRUE(url.is_empty() || url.SchemeIsCryptographic()) << url;
-}
-
-}  // namespace
-
 TEST_F(TemplateURLPrepopulateDataTest, HttpsUrls) {
   // Search engines that don't use HTTPS URLs.
   // Since Chrome and the Internet are trying to transition from HTTP to HTTPS,
@@ -560,29 +583,4 @@ TEST_F(TemplateURLPrepopulateDataTest, FindGoogleIndex) {
   EXPECT_GT(index, size_t{0});
   EXPECT_LT(index, urls.size());
   EXPECT_EQ(urls[index]->prepopulate_id, kGoogleId);
-}
-
-// Regression test for https://crbug.com/1500526.
-TEST_F(TemplateURLPrepopulateDataTest, GetPrepopulatedEngineFromFullList) {
-  // Ensure that we use the default set of search engines, which is google,
-  // bing, yahoo.
-  prefs_.SetInteger(country_codes::kCountryIDAtInstall,
-                    country_codes::kCountryIDUnknown);
-  ASSERT_EQ(TemplateURLPrepopulateData::GetPrepopulatedEngines(&prefs_, nullptr)
-                .size(),
-            3u);
-
-  // `GetPrepopulatedEngine()` only looks in the profile country's prepopulated
-  // list.
-  EXPECT_FALSE(TemplateURLPrepopulateData::GetPrepopulatedEngine(
-      &prefs_, TemplateURLPrepopulateData::ecosia.id));
-
-  // Here we look in the full list.
-  auto found_engine =
-      TemplateURLPrepopulateData::GetPrepopulatedEngineFromFullList(
-          &prefs_, TemplateURLPrepopulateData::ecosia.id);
-  EXPECT_TRUE(found_engine);
-  auto expected_engine =
-      TemplateURLDataFromPrepopulatedEngine(TemplateURLPrepopulateData::ecosia);
-  ExpectSimilar(expected_engine.get(), found_engine.get());
 }

@@ -20,15 +20,12 @@
 #include "base/values.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/socket_permission_request.h"
-#include "extensions/common/api/messaging/channel_type.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/api/messaging/messaging_endpoint.h"
 #include "extensions/common/api/messaging/port_context.h"
 #include "extensions/common/api/messaging/port_id.h"
-#include "extensions/common/api/messaging/serialization_format.h"
 #include "extensions/common/common_param_traits.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/draggable_region.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_guid.h"
 #include "extensions/common/extension_param_traits.h"
@@ -41,6 +38,7 @@
 #include "extensions/common/mojom/host_id.mojom.h"
 #include "extensions/common/mojom/injection_type.mojom-shared.h"
 #include "extensions/common/mojom/manifest.mojom-shared.h"
+#include "extensions/common/mojom/message_port.mojom.h"
 #include "extensions/common/mojom/run_location.mojom-shared.h"
 #include "extensions/common/permissions/socket_permission_data.h"
 #include "extensions/common/permissions/usb_device_permission_data.h"
@@ -62,14 +60,14 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::SocketPermissionRequest::OperationType,
 IPC_ENUM_TRAITS_MAX_VALUE(extensions::mojom::RunLocation,
                           extensions::mojom::RunLocation::kMaxValue)
 
-IPC_ENUM_TRAITS_MAX_VALUE(extensions::MessagingEndpoint::Type,
-                          extensions::MessagingEndpoint::Type::kLast)
+IPC_ENUM_TRAITS_MAX_VALUE(extensions::mojom::MessagingEndpointType,
+                          extensions::mojom::MessagingEndpointType::kMaxValue)
 
-IPC_ENUM_TRAITS_MAX_VALUE(extensions::SerializationFormat,
-                          extensions::SerializationFormat::kLast)
+IPC_ENUM_TRAITS_MAX_VALUE(extensions::mojom::SerializationFormat,
+                          extensions::mojom::SerializationFormat::kMaxValue)
 
-IPC_ENUM_TRAITS_MAX_VALUE(extensions::ChannelType,
-                          extensions::ChannelType::kLast)
+IPC_ENUM_TRAITS_MAX_VALUE(extensions::mojom::ChannelType,
+                          extensions::mojom::ChannelType::kMaxValue)
 
 // Struct containing information about the sender of connect() calls that
 // originate from a tab.
@@ -129,11 +127,6 @@ IPC_STRUCT_BEGIN(ExtensionMsg_ExternalConnectionInfo)
   IPC_STRUCT_MEMBER(int, guest_render_frame_routing_id)
 IPC_STRUCT_END()
 
-IPC_STRUCT_TRAITS_BEGIN(extensions::DraggableRegion)
-  IPC_STRUCT_TRAITS_MEMBER(draggable)
-  IPC_STRUCT_TRAITS_MEMBER(bounds)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(content::SocketPermissionRequest)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(host)
@@ -183,32 +176,14 @@ IPC_STRUCT_TRAITS_BEGIN(extensions::PortId)
   IPC_STRUCT_TRAITS_MEMBER(serialization_format)
 IPC_STRUCT_TRAITS_END()
 
-// Struct to work around the maximum number of parameters in the
-// ExtensionMsg_ResponseWorker message.
-IPC_STRUCT_BEGIN(ExtensionMsg_ResponseWorkerData)
-  // Response wrapper, the response data (if any) is the first element in this
-  // list.
-  IPC_STRUCT_MEMBER(base::Value::List, results)
-  IPC_STRUCT_MEMBER(extensions::mojom::ExtraResponseDataPtr, extra_data)
-IPC_STRUCT_END()
-
 IPC_STRUCT_BEGIN(ExtensionMsg_OnConnectData)
   IPC_STRUCT_MEMBER(extensions::PortId, target_port_id)
-  IPC_STRUCT_MEMBER(extensions::ChannelType, channel_type)
+  IPC_STRUCT_MEMBER(extensions::mojom::ChannelType, channel_type)
   IPC_STRUCT_MEMBER(std::string, channel_name)
   IPC_STRUCT_MEMBER(ExtensionMsg_TabConnectionInfo, tab_source)
   IPC_STRUCT_MEMBER(ExtensionMsg_ExternalConnectionInfo,
                     external_connection_info)
 IPC_STRUCT_END()
-
-// Singly-included section for custom IPC traits.
-#ifndef INTERNAL_EXTENSIONS_COMMON_EXTENSION_MESSAGES_H_
-#define INTERNAL_EXTENSIONS_COMMON_EXTENSION_MESSAGES_H_
-
-// Map of extensions IDs to the executing script paths.
-typedef std::map<std::string, std::set<std::string>> ExecutingScriptsMap;
-
-#endif  // INTERNAL_EXTENSIONS_COMMON_EXTENSION_MESSAGES_H_
 
 // Messages sent from the browser to the renderer:
 
@@ -257,7 +232,7 @@ IPC_MESSAGE_ROUTED1(ExtensionHostMsg_EventAck, int /* message_id */)
 IPC_MESSAGE_CONTROL5(ExtensionHostMsg_OpenChannelToExtension,
                      extensions::PortContext /* source_context */,
                      ExtensionMsg_ExternalConnectionInfo,
-                     extensions::ChannelType /* channel_type */,
+                     extensions::mojom::ChannelType /* channel_type */,
                      std::string /* channel_name */,
                      extensions::PortId /* port_id */)
 
@@ -271,7 +246,7 @@ IPC_MESSAGE_CONTROL3(ExtensionHostMsg_OpenChannelToNativeApp,
 IPC_MESSAGE_CONTROL5(ExtensionHostMsg_OpenChannelToTab,
                      extensions::PortContext /* source_context */,
                      ExtensionMsg_TabTargetConnectionInfo,
-                     extensions::ChannelType /* channel_type */,
+                     extensions::mojom::ChannelType /* channel_type */,
                      std::string /* channel_name */,
                      extensions::PortId /* port_id */)
 
@@ -307,28 +282,6 @@ IPC_SYNC_MESSAGE_CONTROL1_1(
     std::string /* extension id */,
     extensions::MessageBundle::SubstitutionMap /* message bundle */)
 
-// Sent from the renderer to the browser to notify that content scripts are
-// running in the renderer that the IPC originated from.
-IPC_MESSAGE_ROUTED2(ExtensionHostMsg_ContentScriptsExecuting,
-                    ExecutingScriptsMap,
-                    GURL /* url of the _topmost_ frame */)
-
-// Informs the browser to increment the keepalive count for the lazy background
-// page, keeping it alive.
-IPC_MESSAGE_ROUTED0(ExtensionHostMsg_IncrementLazyKeepaliveCount)
-
-// Informs the browser there is one less thing keeping the lazy background page
-// alive.
-IPC_MESSAGE_ROUTED0(ExtensionHostMsg_DecrementLazyKeepaliveCount)
-
-// Notify the browser that an app window is ready and can resume resource
-// requests.
-IPC_MESSAGE_ROUTED0(ExtensionHostMsg_AppWindowReady)
-
-// Sent by the renderer when the draggable regions are updated.
-IPC_MESSAGE_ROUTED1(ExtensionHostMsg_UpdateDraggableRegions,
-                    std::vector<extensions::DraggableRegion> /* regions */)
-
 // Asks the browser to wake the event page of an extension.
 // The browser will reply with ExtensionHostMsg_WakeEventPageResponse.
 IPC_MESSAGE_CONTROL2(ExtensionHostMsg_WakeEventPage,
@@ -338,15 +291,6 @@ IPC_MESSAGE_CONTROL2(ExtensionHostMsg_WakeEventPage,
 // Messages related to Extension Service Worker.
 #undef IPC_MESSAGE_START
 #define IPC_MESSAGE_START ExtensionWorkerMsgStart
-
-// The browser sends this message in response to all service worker extension
-// api calls.
-IPC_MESSAGE_CONTROL5(ExtensionMsg_ResponseWorker,
-                     int /* thread_id */,
-                     int /* request_id */,
-                     bool /* success */,
-                     ExtensionMsg_ResponseWorkerData /* response */,
-                     std::string /* error */)
 
 // Tells the browser that an event with |event_id| was successfully dispatched
 // to the worker with version |service_worker_version_id|.

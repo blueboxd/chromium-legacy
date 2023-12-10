@@ -100,7 +100,7 @@ class TransactionFulfilledFunction : public ScriptFunction::Callable {
                                    "SmartCardConnection", "startTransaction");
 
     if (value.IsUndefined()) {
-      connection_->OnTransactionCallbackDone(SmartCardDisposition::kLeave);
+      connection_->OnTransactionCallbackDone(SmartCardDisposition::kReset);
       return ScriptValue();
     }
 
@@ -178,7 +178,7 @@ class SmartCardConnection::TransactionState final
       base::OnceCallback<void(device::mojom::blink::SmartCardResultPtr)>);
 
   ScriptPromiseResolver* GetStartTransactionRequest() const {
-    return start_transaction_request_;
+    return start_transaction_request_.Get();
   }
 
  private:
@@ -524,9 +524,9 @@ void SmartCardConnection::OnTransactionCallbackFailed(
   transaction_state_->SetCallbackException(exception);
 
   if (smart_card_context_->IsOperationInProgress()) {
-    transaction_state_->SetPendingEnd(SmartCardDisposition::kLeave);
+    transaction_state_->SetPendingEnd(SmartCardDisposition::kReset);
   } else {
-    EndTransaction(SmartCardDisposition::kLeave);
+    EndTransaction(SmartCardDisposition::kReset);
   }
 }
 

@@ -289,8 +289,12 @@ if (is_android || is_chromeos) {
     enable_startup_profiles = false
 
     # The target to use as the system WebView implementation.
-    if (android_64bit_target_cpu && skip_secondary_abi_for_cq) {
-      system_webview_apk_target = "//android_webview:system_webview_64_apk"
+    if (android_64bit_target_cpu) {
+      if (skip_secondary_abi_for_cq) {
+        system_webview_apk_target = "//android_webview:system_webview_64_apk"
+      } else {
+        system_webview_apk_target = "//android_webview:system_webview_32_64_apk"
+      }
     } else {
       system_webview_apk_target = "//android_webview:system_webview_apk"
     }
@@ -323,6 +327,14 @@ if (is_android || is_chromeos) {
 
   assert(!incremental_install || is_java_debug,
          "incremental_install=true && is_java_debug=false is not supported.")
+
+  # We overwrite system_webview_apk_target if it is an alias
+  if (android_64bit_target_cpu) {
+    system_webview_apk_target =
+        string_replace(system_webview_apk_target,
+                       "system_webview_google_apk",
+                       "system_webview_google_32_64_apk")
+  }
 
   # Host stuff -----------------------------------------------------------------
 

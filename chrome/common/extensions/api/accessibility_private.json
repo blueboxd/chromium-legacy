@@ -240,7 +240,7 @@
       {
         "id": "AccessibilityFeature",
         "type": "string",
-        "enum": [ "googleTtsLanguagePacks", "dictationContextChecking", "chromevoxSettingsMigration", "gameFaceIntegration", "googleTtsHighQualityVoices"],
+        "enum": [ "googleTtsLanguagePacks", "dictationContextChecking", "gameFaceIntegration", "googleTtsHighQualityVoices"],
         "description": "Subset of accessibility features."
       },
       {
@@ -531,7 +531,7 @@
         "parameters": [
           {
             "type": "boolean",
-            "name": "enabled",
+            "name": "darken",
             "description": "True to darken screen; false to undarken screen."
           }
         ]

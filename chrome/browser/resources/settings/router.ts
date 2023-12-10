@@ -4,7 +4,7 @@
 
 import './i18n_setup.js';
 
-import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {dedupingMixin, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -85,6 +85,7 @@ export interface SettingsRoutes {
   SITE_SETTINGS_MICROPHONE: Route;
   SITE_SETTINGS_MIDI_DEVICES: Route;
   SITE_SETTINGS_FILE_SYSTEM_WRITE: Route;
+  SITE_SETTINGS_FILE_SYSTEM_WRITE_DETAILS: Route;
   SITE_SETTINGS_NOTIFICATIONS: Route;
   SITE_SETTINGS_PAYMENT_HANDLER: Route;
   SITE_SETTINGS_PDF_DOCUMENTS: Route;
@@ -263,8 +264,8 @@ export class Router {
   /**
    * Helper function to set the current route and notify all observers.
    */
-  setCurrentRoute(route: Route, queryParameters: URLSearchParams,
-                  isPopstate: boolean) {
+  setCurrentRoute(
+      route: Route, queryParameters: URLSearchParams, isPopstate: boolean) {
     this.recordMetrics(route.path);
 
     const oldRoute = this.currentRoute;
@@ -359,7 +360,8 @@ export class Router {
    * @param removeSearch Whether to strip the 'search' URL
    *     parameter during navigation. Defaults to false.
    */
-  navigateTo(route: Route, dynamicParameters?: URLSearchParams,
+  navigateTo(
+      route: Route, dynamicParameters?: URLSearchParams,
       removeSearch: boolean = false) {
     // The ADVANCED route only serves as a parent of subpages, and should not
     // be possible to navigate to it directly.
@@ -460,7 +462,6 @@ type Constructor<T> = new (...args: any[]) => T;
 export const RouteObserverMixin = dedupingMixin(
     <T extends Constructor<PolymerElement>>(superClass: T): T&
     Constructor<RouteObserverMixinInterface> => {
-
       class RouteObserverMixin extends superClass implements
           RouteObserverMixinInterface {
         override connectedCallback() {

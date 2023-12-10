@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/location.h"
@@ -180,6 +181,14 @@ FourccAndFlip GetFourccAndFlipFromPixelFormat(
 
 namespace media {
 
+#if BUILDFLAG(IS_MAC)
+// TODO(https://crbug.com/1474871): When this code path has been verified on
+// Canary, change to enabled-by-default.
+BASE_FEATURE(kFallbackToSharedMemoryIfNotNv12OnMac,
+             "FallbackToSharedMemoryIfNotNv12OnMac",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
 namespace {
 
 class ScopedAccessPermissionEndWithCallback
@@ -241,16 +250,27 @@ VideoCaptureDeviceClient::VideoCaptureDeviceClient(
 VideoCaptureDeviceClient::VideoCaptureDeviceClient(
     VideoCaptureBufferType target_buffer_type,
     std::unique_ptr<VideoFrameReceiver> receiver,
-    scoped_refptr<VideoCaptureBufferPool> buffer_pool)
+    scoped_refptr<VideoCaptureBufferPool> buffer_pool,
+    mojo::PendingRemote<video_capture::mojom::VideoEffectsManager>
+        video_effects_manager)
     : target_buffer_type_(target_buffer_type),
       receiver_(std::move(receiver)),
       buffer_pool_(std::move(buffer_pool)),
-      last_captured_pixel_format_(PIXEL_FORMAT_UNKNOWN) {}
+      last_captured_pixel_format_(PIXEL_FORMAT_UNKNOWN),
+      mojo_task_runner_(base::SequencedTaskRunner::GetCurrentDefault()),
+      effects_manager_(std::move(video_effects_manager), mojo_task_runner_) {}
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 VideoCaptureDeviceClient::~VideoCaptureDeviceClient() {
-  for (int buffer_id : buffer_ids_known_by_receiver_)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  // Make sure that the remote is destroyed from the same sequence that it was
+  // created on.
+  mojo_task_runner_->PostTask(
+      FROM_HERE, base::DoNothingWithBoundArgs(std::move(effects_manager_)));
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+  for (int buffer_id : buffer_ids_known_by_receiver_) {
     receiver_->OnBufferRetired(buffer_id);
+  }
   receiver_->OnStopped();
 }
 
@@ -496,7 +516,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedExternalBuffer(
                 "trakcer failed.";
     return;
   }
-  receiver_->OnFrameReadyInBuffer(std::move(ready_frame), {});
+  receiver_->OnFrameReadyInBuffer(std::move(ready_frame));
 }
 
 VideoCaptureDevice::Client::ReserveResult
@@ -607,11 +627,17 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(const gfx::Size& frame_size,
 
   if (!base::Contains(buffer_ids_known_by_receiver_, buffer_id)) {
     VideoCaptureBufferType target_buffer_type = target_buffer_type_;
-#if BUILDFLAG(IS_WIN)
-    // If MediaFoundationD3D11VideoCapture fails, a shared memory buffer may be
-    // sent instead.
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+    // If MediaFoundationD3D11VideoCapture or VideoCaptureDeviceAVFoundation
+    // fails to produce NV12 as is expected on these platforms when the target
+    // buffer type is `kGpuMemoryBuffer`, a shared memory buffer may be sent
+    // instead.
     if (target_buffer_type == VideoCaptureBufferType::kGpuMemoryBuffer &&
-        pixel_format != PIXEL_FORMAT_NV12) {
+        pixel_format != PIXEL_FORMAT_NV12
+#if BUILDFLAG(IS_MAC)
+        && base::FeatureList::IsEnabled(kFallbackToSharedMemoryIfNotNv12OnMac)
+#endif
+    ) {
       target_buffer_type = VideoCaptureBufferType::kSharedMemory;
     }
 #endif
@@ -675,13 +701,11 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBufferExt(
   info->is_premapped = buffer.is_premapped;
 
   buffer_pool_->HoldForConsumers(buffer.id, 1);
-  receiver_->OnFrameReadyInBuffer(
-      ReadyFrameInBuffer(
-          buffer.id, buffer.frame_feedback_id,
-          std::make_unique<ScopedBufferPoolReservation<ConsumerReleaseTraits>>(
-              buffer_pool_, buffer.id),
-          std::move(info)),
-      {});
+  receiver_->OnFrameReadyInBuffer(ReadyFrameInBuffer(
+      buffer.id, buffer.frame_feedback_id,
+      std::make_unique<ScopedBufferPoolReservation<ConsumerReleaseTraits>>(
+          buffer_pool_, buffer.id),
+      std::move(info)));
 }
 
 void VideoCaptureDeviceClient::OnError(VideoCaptureError error,
@@ -742,5 +766,4 @@ void VideoCaptureDeviceClient::OnIncomingCapturedY16Data(
   OnIncomingCapturedBuffer(std::move(buffer), output_format, reference_time,
                            timestamp);
 }
-
 }  // namespace media

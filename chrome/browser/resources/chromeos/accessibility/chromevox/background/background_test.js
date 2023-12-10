@@ -29,11 +29,6 @@ ChromeVoxBackgroundTest = class extends ChromeVoxE2ETest {
       importModule(
           'ChromeVoxState', '/chromevox/background/chromevox_state.js'),
       importModule(
-          'ChromeVoxBackground', '/chromevox/background/classic_background.js'),
-      importModule(
-          'CommandHandlerInterface',
-          '/chromevox/background/command_handler_interface.js'),
-      importModule(
           'BaseAutomationHandler',
           '/chromevox/background/event/base_automation_handler.js'),
       importModule(
@@ -46,11 +41,14 @@ ChromeVoxBackgroundTest = class extends ChromeVoxE2ETest {
           'PointerHandler', '/chromevox/background/event/pointer_handler.js'),
       importModule('FocusBounds', '/chromevox/background/focus_bounds.js'),
       importModule(
+          'CommandHandlerInterface',
+          '/chromevox/background/input/command_handler_interface.js'),
+      importModule(
           'GestureCommandHandler',
-          '/chromevox/background/gesture_command_handler.js'),
+          '/chromevox/background/input/gesture_command_handler.js'),
       importModule(
           'BackgroundKeyboardHandler',
-          '/chromevox/background/keyboard_handler.js'),
+          '/chromevox/background/input/keyboard_handler.js'),
       importModule('Output', '/chromevox/background/output/output.js'),
       importModule(
           'OutputAction', '/chromevox/background/output/output_types.js'),
@@ -260,11 +258,6 @@ ChromeVoxBackgroundTestWithTestServer = class extends ChromeVoxBackgroundTest {
     return true;
   }
 };
-
-/** Tests that ChromeVox classic is in this context. */
-AX_TEST_F('ChromeVoxBackgroundTest', 'ClassicNamespaces', function() {
-  assertEquals('function', typeof (ChromeVoxBackground));
-});
 
 /** Tests that ChromeVox's background object is not available globally. */
 AX_TEST_F('ChromeVoxBackgroundTest', 'NextNamespaces', function() {
@@ -3881,11 +3874,11 @@ TEST_F('ChromeVoxBackgroundTest', 'NewWindowWebSpeech', function() {
       }
     };
 
-    chrome.runtime.openOptionsPage();
+    this.runWithLoadedTree('<h1>ChromeVox Rocks</h1><p>We love ChromeVox</p>');
 
     await new Promise(resolve => {
       onSpeech = textString => {
-        if (textString === 'ChromeVox Options') {
+        if (textString === 'ChromeVox Rocks') {
           resolve();
         }
       };
@@ -3899,8 +3892,8 @@ TEST_F('ChromeVoxBackgroundTest', 'NewWindowWebSpeech', function() {
 
     // Check to ensure there are no duplicate announcements.
     assertEquals(
-        speech.indexOf('ChromeVox Options'),
-        speech.lastIndexOf('ChromeVox Options'));
+        speech.indexOf('ChromeVox Rocks'),
+        speech.lastIndexOf('ChromeVox Rocks'));
 
     // Ensure there are no announcements about the Tab role.
     assertTrue(speech.every(text => {

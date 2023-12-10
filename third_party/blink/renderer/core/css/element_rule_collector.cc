@@ -101,7 +101,7 @@ const CSSStyleSheet* FindStyleSheet(const TreeScope* tree_scope_containing_rule,
   }
   for (const auto& [sheet, rule_set] : style_engine.ActiveUserStyleSheets()) {
     if (FindStyleRule(sheet.Get(), rule) != nullptr) {
-      return sheet;
+      return sheet.Get();
     }
   }
 
@@ -189,7 +189,7 @@ class Seeker {
     if (iter_ == intervals_.begin()) {
       return nullptr;
     }
-    return std::prev(iter_)->value;
+    return std::prev(iter_)->value.Get();
   }
 
  private:
@@ -284,7 +284,7 @@ SelectorStatisticsRuleMap& GetSelectorStatisticsRuleMap() {
 void AggregateRulePerfData(
     const TreeScope* tree_scope_containing_rule,
     const StyleEngine& style_engine,
-    const HeapVector<RulePerfDataPerRequest>& rules_statistics) {
+    const Vector<RulePerfDataPerRequest>& rules_statistics) {
   SelectorStatisticsRuleMap& map = GetSelectorStatisticsRuleMap();
   for (const auto& rule_stats : rules_statistics) {
     const RuleData* rule = rule_stats.rule;
@@ -369,7 +369,7 @@ inline StyleRuleList* ElementRuleCollector::EnsureStyleRuleList() {
   if (!style_rule_list_) {
     style_rule_list_ = MakeGarbageCollected<StyleRuleList>();
   }
-  return style_rule_list_;
+  return style_rule_list_.Get();
 }
 
 inline RuleIndexList* ElementRuleCollector::EnsureRuleList() {

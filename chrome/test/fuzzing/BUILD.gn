@@ -29,13 +29,28 @@ if (fuzzing_engine_supports_custom_main) {
 
   buildflag_header("in_process_fuzzer_buildflags") {
     header = "in_process_fuzzer_buildflags.h"
-    flags = [ "AVOID_SINGLE_PROCESS_MODE=$use_libfuzzer" ]
+    flags = [
+      "AVOID_SINGLE_PROCESS_MODE=$use_libfuzzer",
+
+      # crbug.com/1474421: remove these lines once the bug is fixed.
+      "DEBUG_CLUSTERFUZZ_FAILURE=$use_libfuzzer",
+    ]
+  }
+
+  source_set("in_process_proto_fuzzer_runner") {
+    testonly = true
+    sources = [ "in_process_proto_fuzzer.h" ]
+    public_deps = [ ":in_process_fuzzer_runner" ]
   }
 }
 
 if (!is_android) {
   in_process_fuzzer("html_in_process_fuzzer") {
     sources = [ "html_in_process_fuzzer.cc" ]
+  }
+  in_process_proto_fuzzer("page_load_in_process_fuzzer") {
+    sources = [ "page_load_in_process_fuzzer.cc" ]
+    proto_source = "page_load_in_process_fuzzer.proto"
   }
   in_process_proto_fuzzer("kombucha_in_process_fuzzer") {
     sources = [

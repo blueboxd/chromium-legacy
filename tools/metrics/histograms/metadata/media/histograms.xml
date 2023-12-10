@@ -2347,6 +2347,31 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Media.ElementCapture.ProduceTarget.Function.Result"
+    enum="ProduceTargetFunctionResult" expires_after="2024-08-29">
+  <owner>eladalon@chromium.org</owner>
+  <owner>jophba@chromium.org</owner>
+  <owner>mfoltz@chromium.org</owner>
+  <summary>
+    Tracks the result of calls to RestrictionTarget.fromElement(). Specifically,
+    this histogram tracks whether a new Promise was produced, and if not, why
+    not. Another histogram tracks the result of new Promises, i.e. whether they
+    were resolved or rejected.
+  </summary>
+</histogram>
+
+<histogram name="Media.ElementCapture.ProduceTarget.Promise.Result"
+    enum="ProduceTargetPromiseResult" expires_after="2024-08-29">
+  <owner>eladalon@chromium.org</owner>
+  <owner>jophba@chromium.org</owner>
+  <owner>mfoltz@chromium.org</owner>
+  <summary>
+    When RestrictionTarget.fromElement() is called for the first time on a given
+    Element, a new Promise is produced. This histogram tracks the result of this
+    Promise - whether it was resolved or rejected.
+  </summary>
+</histogram>
+
 <histogram name="Media.EME.CdmFileIO.FileSizeKBOnError" units="KB"
     expires_after="2024-04-11">
   <owner>xhwang@chromium.org</owner>
@@ -2528,126 +2553,137 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Media.EME.CdmStorageManager.DatabaseOpenError.Incognito"
+<histogram name="Media.EME.CdmStorageManager.DatabaseOpenError.{ProfileType}"
     enum="CdmStorageOpenError" expires_after="2024-08-11">
   <owner>vpasupathy@chromium.org</owner>
   <owner>media-dev-uma@chromium.org</owner>
   <summary>
     This UMA logs overall error rates from opening the CdmStorageDatabase.
-    Recorded on every open from an Incognito profile.
+    Recorded on every open from an {ProfileType} profile.
   </summary>
+  <token key="ProfileType">
+    <variant name="Incognito"/>
+    <variant name="NonIncognito"/>
+  </token>
 </histogram>
 
-<histogram name="Media.EME.CdmStorageManager.DatabaseOpenError.NotIncognito"
+<histogram
+    name="Media.EME.CdmStorageManager.DatabaseOpenError.{ProfileType}.Migration"
     enum="CdmStorageOpenError" expires_after="2024-08-11">
   <owner>vpasupathy@chromium.org</owner>
   <owner>media-dev-uma@chromium.org</owner>
   <summary>
     This UMA logs overall error rates from opening the CdmStorageDatabase.
-    Recorded on every open from a non-Incognito profile.
+    Recorded on every open from an {ProfileType} profile when
+    'kCdmStorageDatabaseMigration' is enabled.
   </summary>
+  <token key="ProfileType">
+    <variant name="Incognito"/>
+    <variant name="NonIncognito"/>
+  </token>
 </histogram>
 
-<histogram name="Media.EME.CdmStorageManager.DeleteDatabaseError.Incognito"
+<histogram name="Media.EME.CdmStorageManager.DeleteDatabaseError.{ProfileType}"
     enum="BooleanError" expires_after="2024-08-11">
   <owner>vpasupathy@chromium.org</owner>
   <owner>media-dev-uma@chromium.org</owner>
   <summary>
     This UMA logs overall error rates from the DeleteDatabase function. Recorded
-    after every call of DeleteDatabase on Incognito profile.
+    after every call of DeleteDatabase on {ProfileType} profile.
   </summary>
+  <token key="ProfileType">
+    <variant name="Incognito"/>
+    <variant name="NonIncognito"/>
+  </token>
 </histogram>
 
-<histogram name="Media.EME.CdmStorageManager.DeleteDatabaseError.NotIncognito"
-    enum="BooleanError" expires_after="2024-08-11">
-  <owner>vpasupathy@chromium.org</owner>
-  <owner>media-dev-uma@chromium.org</owner>
-  <summary>
-    This UMA logs overall error rates from the DeleteDatabase function. Recorded
-    after every call of DeleteDatabase on non-Incognito profile.
-  </summary>
-</histogram>
-
-<histogram name="Media.EME.CdmStorageManager.DeleteFileError.Incognito"
+<histogram name="Media.EME.CdmStorageManager.DeleteFileError.{ProfileType}"
     enum="BooleanError" expires_after="2024-08-11">
   <owner>vpasupathy@chromium.org</owner>
   <owner>media-dev-uma@chromium.org</owner>
   <summary>
     This UMA logs overall error rates from the DeleteFile function. Recorded
-    after every call of DeleteFile on Incognito profile.
+    after every call of DeleteFile on {ProfileType} profile.
   </summary>
+  <token key="ProfileType">
+    <variant name="Incognito"/>
+    <variant name="NonIncognito"/>
+  </token>
 </histogram>
 
-<histogram name="Media.EME.CdmStorageManager.DeleteFileError.NotIncognito"
+<histogram
+    name="Media.EME.CdmStorageManager.DeleteFileError.{ProfileType}.Migration"
     enum="BooleanError" expires_after="2024-08-11">
   <owner>vpasupathy@chromium.org</owner>
   <owner>media-dev-uma@chromium.org</owner>
   <summary>
     This UMA logs overall error rates from the DeleteFile function. Recorded
-    after every call of DeleteFile on non-Incognito profile.
+    after every call of DeleteFile on {ProfileType} profile when
+    'kCdmStorageDatabaseMigration' is enabled.
   </summary>
+  <token key="ProfileType">
+    <variant name="Incognito"/>
+    <variant name="NonIncognito"/>
+  </token>
 </histogram>
 
 <histogram
-    name="Media.EME.CdmStorageManager.DeleteForStorageKeyError.Incognito"
+    name="Media.EME.CdmStorageManager.DeleteForStorageKeyError.{ProfileType}"
     enum="BooleanError" expires_after="2024-08-11">
   <owner>vpasupathy@chromium.org</owner>
   <owner>media-dev-uma@chromium.org</owner>
   <summary>
     This UMA logs overall error rates from the DeleteForStorageKey function.
-    Recorded after every call of DeleteForStorageKey on Incognito profile.
+    Recorded after every call of DeleteForStorageKey on {ProfileType} profile.
   </summary>
+  <token key="ProfileType">
+    <variant name="Incognito"/>
+    <variant name="NonIncognito"/>
+  </token>
+</histogram>
+
+<histogram name="Media.EME.CdmStorageManager.ReadFileError.{ProfileType}"
+    enum="BooleanError" expires_after="2024-08-11">
+  <owner>vpasupathy@chromium.org</owner>
+  <owner>media-dev-uma@chromium.org</owner>
+  <summary>
+    This UMA logs overall error rates from the ReadFile function. Recorded after
+    every call of ReadFile on {ProfileType} profile.
+  </summary>
+  <token key="ProfileType">
+    <variant name="Incognito"/>
+    <variant name="NonIncognito"/>
+  </token>
+</histogram>
+
+<histogram name="Media.EME.CdmStorageManager.WriteFileError.{ProfileType}"
+    enum="BooleanError" expires_after="2024-08-11">
+  <owner>vpasupathy@chromium.org</owner>
+  <owner>media-dev-uma@chromium.org</owner>
+  <summary>
+    This UMA logs overall error rates from the WriteFile function. Recorded
+    after every call of WriteFile on {ProfileType} profile.
+  </summary>
+  <token key="ProfileType">
+    <variant name="Incognito"/>
+    <variant name="NonIncognito"/>
+  </token>
 </histogram>
 
 <histogram
-    name="Media.EME.CdmStorageManager.DeleteForStorageKeyError.NotIncognito"
-    enum="BooleanError" expires_after="2024-08-11">
-  <owner>vpasupathy@chromium.org</owner>
-  <owner>media-dev-uma@chromium.org</owner>
-  <summary>
-    This UMA logs overall error rates from the DeleteForStorageKey function.
-    Recorded after every call of DeleteForStorageKey on non-Incognito profile.
-  </summary>
-</histogram>
-
-<histogram name="Media.EME.CdmStorageManager.ReadFileError.Incognito"
-    enum="BooleanError" expires_after="2024-08-11">
-  <owner>vpasupathy@chromium.org</owner>
-  <owner>media-dev-uma@chromium.org</owner>
-  <summary>
-    This UMA logs overall error rates from the ReadFile function. Recorded after
-    every call of ReadFile on Incognito profile.
-  </summary>
-</histogram>
-
-<histogram name="Media.EME.CdmStorageManager.ReadFileError.NotIncognito"
-    enum="BooleanError" expires_after="2024-08-11">
-  <owner>vpasupathy@chromium.org</owner>
-  <owner>media-dev-uma@chromium.org</owner>
-  <summary>
-    This UMA logs overall error rates from the ReadFile function. Recorded after
-    every call of ReadFile on non-Incognito profile.
-  </summary>
-</histogram>
-
-<histogram name="Media.EME.CdmStorageManager.WriteFileError.Incognito"
+    name="Media.EME.CdmStorageManager.WriteFileError.{ProfileType}.Migration"
     enum="BooleanError" expires_after="2024-08-11">
   <owner>vpasupathy@chromium.org</owner>
   <owner>media-dev-uma@chromium.org</owner>
   <summary>
     This UMA logs overall error rates from the WriteFile function. Recorded
-    after every call of WriteFile on Incognito profile.
+    after every call of WriteFile on {ProfileType} profile when
+    'kCdmStorageDatabaseMigration' is enabled.
   </summary>
-</histogram>
-
-<histogram name="Media.EME.CdmStorageManager.WriteFileError.NotIncognito"
-    enum="BooleanError" expires_after="2024-08-11">
-  <owner>vpasupathy@chromium.org</owner>
-  <owner>media-dev-uma@chromium.org</owner>
-  <summary>
-    This UMA logs overall error rates from the WriteFile function. Recorded
-    after every call of WriteFile on non-Incognito profile.
-  </summary>
+  <token key="ProfileType">
+    <variant name="Incognito"/>
+    <variant name="NonIncognito"/>
+  </token>
 </histogram>
 
 <histogram name="Media.EME.CrosCdmType" enum="CrosCdmType"
@@ -4451,13 +4487,23 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.Notification.Count" units="count"
-    expires_after="2024-03-17">
-  <owner>beccahughes@chromium.org</owner>
+    expires_after="2024-03-31">
+  <owner>yrw@chromium.org</owner>
   <owner>media-dev-uma@chromium.org</owner>
   <summary>
     The number of media notifications that are currently being displayed
     (including ones for Cast sessions). This is recorded when a media
     notification starts being displayed.
+  </summary>
+</histogram>
+
+<histogram name="Media.Notification.DisplayPage"
+    enum="MediaNotificationDisplayPage" expires_after="2024-03-31">
+  <owner>yrw@chromium.org</owner>
+  <owner>media-dev-uma@chromium.org</owner>
+  <summary>
+    The page where the media notification is displayed to users. This is
+    recorded when a media notification starts being displayed.
   </summary>
 </histogram>
 
@@ -4473,8 +4519,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.Notification.Source" enum="MediaNotificationSource"
-    expires_after="2024-02-04">
-  <owner>beccahughes@chromium.org</owner>
+    expires_after="2024-03-31">
+  <owner>yrw@chromium.org</owner>
   <owner>media-dev-uma@chromium.org</owner>
   <summary>
     The source of the underlying media session (e.g. ARC, web, Cast) that
@@ -4484,11 +4530,11 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.Notification.UserAction" enum="MediaSessionAction"
-    expires_after="2024-03-17">
-  <owner>beccahughes@chromium.org</owner>
+    expires_after="2024-03-31">
+  <owner>yrw@chromium.org</owner>
   <owner>media-dev-uma@chromium.org</owner>
   <summary>
-    The action (e.g. pause) that a user clicked on a media notification
+    The media session action that a user clicked on a media notification
     (including ones for Cast sessions).
   </summary>
 </histogram>
@@ -4683,27 +4729,27 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.RegionCapture.ProduceCropTarget.Function.Result"
-    enum="ProduceCropTargetFunctionResult" expires_after="2024-01-15">
+    enum="ProduceTargetFunctionResult" expires_after="2024-08-29">
   <owner>eladalon@chromium.org</owner>
   <owner>jophba@chromium.org</owner>
   <owner>mfoltz@chromium.org</owner>
   <summary>
-    Tracks the result of calls to MediaDevices.produceCropTarget().
-    Specifically, this histogram tracks whether a new Promise was produced, and
-    if not, why not. Another histogram tracks the result of new Promises, i.e.
-    whether they were resolved or rejected.
+    Tracks the result of calls to CropTarget.fromElement(). Specifically, this
+    histogram tracks whether a new Promise was produced, and if not, why not.
+    Another histogram tracks the result of new Promises, i.e. whether they were
+    resolved or rejected.
   </summary>
 </histogram>
 
 <histogram name="Media.RegionCapture.ProduceCropTarget.Promise.Result"
-    enum="ProduceCropTargetPromiseResult" expires_after="2024-01-15">
+    enum="ProduceTargetPromiseResult" expires_after="2024-08-29">
   <owner>eladalon@chromium.org</owner>
   <owner>jophba@chromium.org</owner>
   <owner>mfoltz@chromium.org</owner>
   <summary>
-    When ProduceCropTarget() is called for the first time on a given
-    HTMLElement, a new Promise is produced. This histogram tracks the result of
-    this Promise - whether it was resolved or rejected.
+    When CropTarget.fromElement() is called for the first time on a given
+    Element, a new Promise is produced. This histogram tracks the result of this
+    Promise - whether it was resolved or rejected.
   </summary>
 </histogram>
 
@@ -4934,7 +4980,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.RtcLowLatencyVideoRenderer.MaxSizeDropQueueCount"
-    units="count" expires_after="2023-10-22">
+    units="count" expires_after="2024-02-25">
   <owner>kron@chromium.org</owner>
   <owner>webrtc-video@google.com</owner>
   <summary>
@@ -5072,7 +5118,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.RTCVideoDecoderReinitializationLatencyMs" units="ms"
-    expires_after="2023-10-10">
+    expires_after="2024-10-10">
   <owner>kron@chromium.org</owner>
   <owner>webrtc-video@google.com</owner>
   <summary>
@@ -5177,6 +5223,18 @@ chromium-metrics-reviews@google.com.
     suspended. If a session is activated after being deactivated, there will be
     two entries. For example, if a user plays a song but is interrupted by a
     phone call, it will only account for the song playing time.
+  </summary>
+</histogram>
+
+<histogram name="Media.Session.EnterPictureInPicture"
+    enum="MediaSessionEnterPictureInPictureType" expires_after="2024-04-30">
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev-uma@chromium.org</owner>
+  <summary>
+    Recorded when EnterPictureInPicture or EnterAutoPictureInPicture is called
+    on a MediaSessionImpl. Records why picture-in-picture was triggered (whether
+    it was for the default handler or a website-provided one, and whether the
+    trigger was manual or automatic).
   </summary>
 </histogram>
 
@@ -5377,6 +5435,18 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records when errors happen with media controller API ioctl requests during
     video decoding session using V4L2 API. Depending on a ioctl request, video
+    decoding session can proceed or stop immediately when an error happens. So
+    multiple errors can be recorded during the object lifetime.
+  </summary>
+</histogram>
+
+<histogram name="Media.V4l2VideoDecoder.VidiocIoctlError"
+    enum="VidiocIoctlRequests" expires_after="2024-01-26">
+  <owner>stevecho@chromium.org</owner>
+  <owner>chromeos-gfx-video@google.com</owner>
+  <summary>
+    Records when errors happen with V4L2 API ioctl requests during video
+    decoding session using V4L2 API. Depending on a ioctl request, video
     decoding session can proceed or stop immediately when an error happens. So
     multiple errors can be recorded during the object lifetime.
   </summary>
@@ -5724,24 +5794,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Media.VideoCapture.FrameDrop"
-    enum="VideoCaptureFrameDropReason" expires_after="2024-03-03">
-  <owner>mcasas@chromium.org</owner>
-  <owner>guidou@chromium.org</owner>
-  <owner>armax@chromium.org</owner>
-  <owner>jophba@chromium.org</owner>
-  <summary>
-    An event for this histogram is emitted once for each time a video frame is
-    dropped on the way from a capture source, e.g. a webcam, to a corresponding
-    media::VideoCaptureController instance running in the Browser process. If
-    more than
-    |VideoCaptureController::max_consecutive_frame_drop_for_same_reason_count()|
-    frames are dropped consecutively for the same reason, no more events for the
-    same reason will be counted for that session until either a frame is
-    delivered successfully or the reason for the frame dropping changes.
-  </summary>
-</histogram>
-
 <histogram name="Media.VideoCapture.FrameRate" units="fps"
     expires_after="2024-03-03">
   <owner>mcasas@chromium.org</owner>
@@ -5853,21 +5905,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Media.VideoCapture.MaxFrameDropExceeded"
-    enum="VideoCaptureFrameDropReason" expires_after="M77">
-  <owner>chfremer@chromium.org</owner>
-  <summary>
-    An event for this histogram is emitted when a video capture session drops
-    more than
-    |VideoCaptureController::max_consecutive_frame_drop_for_same_reason_count()|
-    consecutive video frames for the same reason. After this event is emitted
-    once, no additional events are emitted for consecutively dropped frames for
-    the same reason until the count is reset by either a frame being delivered
-    successfully or a frame being dropped for a different reason. See also
-    Media.VideoCapture.FrameDrop.
-  </summary>
-</histogram>
-
 <histogram name="Media.VideoCapture.NumberOfClients" units="units"
     expires_after="2021-12-12">
   <owner>fbeaufort@chromium.org</owner>
@@ -5941,6 +5978,30 @@ chromium-metrics-reviews@google.com.
     Total time for a VideoSourceImpl to start a device to serve the first push
     subscription mojo connection. Only recorded if starting is successful.
   </summary>
+</histogram>
+
+<histogram name="Media.VideoCapture.Track.FrameDrop.{StreamType}"
+    enum="VideoCaptureFrameDropReason" expires_after="2024-03-03">
+  <owner>mcasas@chromium.org</owner>
+  <owner>guidou@chromium.org</owner>
+  <owner>armax@chromium.org</owner>
+  <owner>jophba@chromium.org</owner>
+  <summary>
+    An event for this histogram is emitted once for each time a video frame is
+    dropped for a {StreamType} video source, but gets suppressed after
+    `MediaStreamVideoTrack::kMaxConsecutiveFrameDropForSameReasonCount`
+    consecutive drops. Logging resumes again if another frame is delivered or if
+    the frame drop reason changes. The frame drop is recorder on a per-track
+    basis (i.e. cloned tracks also log) and includes out-of-process frame drops
+    (e.g. a DeviceCapture webcam source dropping frames in the capture process).
+  </summary>
+  <token key="StreamType">
+    <variant name="DeviceCapture"/>
+    <variant name="DisplayCapture"/>
+    <variant name="DisplayCaptureCurrentTab"/>
+    <variant name="GumDesktopCapture"/>
+    <variant name="GumTabCapture"/>
+  </token>
 </histogram>
 
 <histogram name="Media.VideoCapture.Width" units="pixels"
@@ -6104,7 +6165,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.VideoCaptureManager.DesktopCaptureImplementationAndType"
-    enum="DesktopCaptureImplementationAndType" expires_after="2024-01-23">
+    enum="DesktopCaptureImplementationAndType" expires_after="2024-03-31">
   <owner>handellm@chromium.org</owner>
   <owner>ccameron@chromium.org</owner>
   <summary>
@@ -6912,7 +6973,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MediaRouter.CastStreaming.Audio.PlaybackOnReceiver"
-    enum="Boolean" expires_after="2023-11-12">
+    enum="Boolean" expires_after="2024-04-01">
   <owner>takumif@chromium.org</owner>
   <owner>muyaoxu@google.com</owner>
   <owner>openscreen-eng@google.com</owner>
@@ -7307,42 +7368,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="MediaRouter.Ui.Action.CloseLatency" units="ms"
-    expires_after="2023-11-12">
-  <owner>takumif@chromium.org</owner>
-  <owner>openscreen-eng@google.com</owner>
-  <summary>
-    Duration in milliseconds taken from the user opening the Media Router dialog
-    to the user closing the dialog. This is only recorded if closing the dialog
-    is the first action the user takes.
-  </summary>
-</histogram>
-
-<histogram name="MediaRouter.Ui.Action.StartLocal.Latency" units="ms"
-    expires_after="2023-11-12">
-  <owner>takumif@chromium.org</owner>
-  <owner>openscreen-eng@google.com</owner>
-  <summary>
-    Duration in milliseconds taken from the Media Router dialog showing the sink
-    list and being populated with at least one device to the user selecting a
-    device immediately after to create a new route.
-  </summary>
-</histogram>
-
-<histogram name="MediaRouter.Ui.Action.StartLocalPosition"
-    enum="MediaRouterSinkPositionLabel" expires_after="2023-11-12">
-  <owner>takumif@chromium.org</owner>
-  <owner>openscreen-eng@google.com</owner>
-  <summary>The index of the sink that was selected in the sink list.</summary>
-</histogram>
-
-<histogram name="MediaRouter.Ui.Action.StopRoute" enum="MediaRouteType"
-    expires_after="2023-11-12">
-  <owner>takumif@chromium.org</owner>
-  <owner>openscreen-eng@google.com</owner>
-  <summary>The number of times a user stops different types of routes.</summary>
-</histogram>
-
 <histogram name="MediaRouter.Ui.Android.DialogAction"
     enum="MediaRouterAndroidDialogAction" expires_after="2024-05-01">
   <owner>muyaoxu@google.com</owner>
@@ -7406,16 +7431,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Duration in milliseconds taken from the user click to open the Media Router
     dialog to initializing the dialog with data.
-  </summary>
-</histogram>
-
-<histogram name="MediaRouter.Ui.Dialog.Paint" units="ms"
-    expires_after="2023-11-12">
-  <owner>takumif@chromium.org</owner>
-  <owner>openscreen-eng@google.com</owner>
-  <summary>
-    Duration in milliseconds taken from a user click to open the Media Router
-    dialog to the initial paint.
   </summary>
 </histogram>
 

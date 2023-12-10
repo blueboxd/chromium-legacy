@@ -7,8 +7,9 @@ package org.chromium.chrome.browser.autofill;
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlockingNoException;
 
-import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeMethods;
+import org.jni_zero.JNINamespace;
+import org.jni_zero.NativeMethods;
+
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.components.autofill.AddressNormalizer;
@@ -282,10 +283,8 @@ public class AutofillTestHelper {
         runOnUiThreadBlocking(() -> PersonalDataManager.getInstance().clearImageDataForTesting());
         // Clear remaining local profiles and cards.
         for (AutofillProfile profile : getProfilesForSettings()) {
-            if (profile.getIsLocal()) {
-                runOnUiThreadBlocking(
-                        () -> PersonalDataManager.getInstance().deleteProfile(profile.getGUID()));
-            }
+            runOnUiThreadBlocking(
+                    () -> PersonalDataManager.getInstance().deleteProfile(profile.getGUID()));
         }
         for (CreditCard card : getCreditCardsForSettings()) {
             if (card.getIsLocal()) {

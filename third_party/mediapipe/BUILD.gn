@@ -2,13 +2,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//third_party/flatbuffers/flatbuffer.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//third_party/tflite/features.gni")
 import("//third_party/tflite/tflite_target.gni")
 
 declare_args() {
-  mediapipe_build_with_gpu_support = is_win
+  mediapipe_build_with_gpu_support = false
+}
+
+# Generate a buildflag header for compile-time checking of MediaPipe GPU support.
+buildflag_header("buildflags") {
+  header = "buildflags.h"
+  flags =
+      [ "MEDIAPIPE_BUILD_WITH_GPU_SUPPORT=$mediapipe_build_with_gpu_support" ]
 }
 
 action("stamp_metadata_parser_version") {
@@ -44,12 +52,20 @@ config("mediapipe_config") {
   ]
 }
 
-config("mediapipe_flags") {
+# This target contains compiler warnings that need to be supressed. This
+# config is not public (hence named internal).
+config("mediapipe_internal_config") {
   cflags = [
+    "-Wno-unused-function",
+    "-Wno-deprecated-declarations",
     # MediaPipe's CHECK macros are redefined from absl's.
     "-Wno-macro-redefined",
   ]
+}
 
+config("mediapipe_flags") {
+  # This config is added to the public_config. Don't add cflags that disable
+  # warnings here.
   defines = [ "MEDIAPIPE_PROTO_LITE=1" ]
 
   if (!mediapipe_build_with_gpu_support) {
@@ -108,6 +124,7 @@ proto_library("mediapipe_proto") {
     "src/mediapipe/framework/tool/field_data.proto",
     "src/mediapipe/framework/tool/packet_generator_wrapper_calculator.proto",
     "src/mediapipe/gpu/gl_context_options.proto",
+    "src/mediapipe/gpu/gpu_origin.proto",
     "src/mediapipe/tasks/cc/components/calculators/classification_aggregation_calculator.proto",
     "src/mediapipe/tasks/cc/components/calculators/score_calibration_calculator.proto",
     "src/mediapipe/tasks/cc/components/containers/proto/classifications.proto",
@@ -190,6 +207,7 @@ tflite_source_set("mediapipe_tasks_always_link") {
     "//build/config/compiler:no_chromium_code",
     ":mediapipe_flags",
     ":mediapipe_config",
+    ":mediapipe_internal_config",
   ]
 
   conditional_deps = [
@@ -422,19 +440,9 @@ tflite_static_library("mediapipe_core") {
     sources += [ "src/mediapipe/util/resource_util_apple.cc" ]
     cflags = [ "-ObjC++" ]
   } else if (is_android) {
-    sources += [
-      "src/mediapipe/java/com/google/mediapipe/framework/jni/jni_util.cc",
-      "src/mediapipe/java/com/google/mediapipe/framework/jni/jni_util.h",
-      "src/mediapipe/util/android/asset_manager_util.cc",
-      "src/mediapipe/util/android/asset_manager_util.h",
-      "src/mediapipe/util/android/file/base/file.cc",
-      "src/mediapipe/util/android/file/base/file.h",
-      "src/mediapipe/util/android/file/base/filesystem.cc",
-      "src/mediapipe/util/android/file/base/filesystem.h",
-      "src/mediapipe/util/android/file/base/helpers.cc",
-      "src/mediapipe/util/android/file/base/helpers.h",
-      "src/mediapipe/util/resource_util_android.cc",
-    ]
+    # This is by design - our Windows no-op implementation works for Android
+    # too, and in general we don't need this functionality.
+    sources += [ "src/mediapipe/util/resource_util_windows.cc" ]
   } else {
     sources += [ "src/mediapipe/util/resource_util_default.cc" ]
   }
@@ -485,8 +493,8 @@ tflite_static_library("mediapipe_core") {
 
     public_deps = [
       "//third_party/angle:includes",
-      "//third_party/angle:libEGL",
-      "//third_party/angle:libGLESv2",
+      "//third_party/angle:libEGL_static",
+      "//third_party/angle:libGLESv2_static",
     ]
   }
 
@@ -499,6 +507,7 @@ tflite_static_library("mediapipe_core") {
     "//build/config/compiler:no_chromium_code",
     ":mediapipe_flags",
     ":mediapipe_config",
+    ":mediapipe_internal_config",
   ]
 
   conditional_deps = [
@@ -533,6 +542,7 @@ tflite_static_library("mediapipe_core_api2") {
     "//build/config/compiler:no_chromium_code",
     ":mediapipe_flags",
     ":mediapipe_config",
+    ":mediapipe_internal_config",
   ]
 
   conditional_deps = [
@@ -633,6 +643,7 @@ tflite_static_library("mediapipe_tasks") {
 
 tflite_group("mediapipe") {
   public_deps = [
+    ":buildflags",
     ":mediapipe_flatbuffer_schema",
     ":mediapipe_proto",
   ]

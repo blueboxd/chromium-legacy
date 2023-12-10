@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
+import {assertEquals, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 
 import {MockVolumeManager} from '../../background/js/mock_volume_manager.js';
 import {EntryList, FakeEntryImpl, VolumeEntry} from '../../common/js/files_app_entry_types.js';
@@ -10,7 +10,7 @@ import {waitUntil} from '../../common/js/test_error_reporting.js';
 import {str, util} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {FileData, State, Volume} from '../../externs/ts/state.js';
-import {VolumeInfo} from '../../externs/volume_info.js';
+import type {VolumeInfo} from '../../externs/volume_info.js';
 import {constants} from '../../foreground/js/constants.js';
 import {convertEntryToFileData} from '../ducks/all_entries.js';
 import {createFakeVolumeMetadata, setUpFileManagerOnWindow, setupStore, waitDeepEquals} from '../for_tests.js';
@@ -143,7 +143,7 @@ export async function testAddNestedMyFilesVolume(done: () => void) {
   }));
 
   // Expect the new play file volume will be nested inside MyFiles and the old
-  // placeholder will be removed.
+  // placeholder will be removed from MyFiles children but still in the store.
   const playFilesVolumeEntry = new VolumeEntry(playFilesVolumeInfo);
   myFilesVolumeEntry.addEntry(playFilesVolumeEntry);
   const want: Partial<State> = {
@@ -152,6 +152,7 @@ export async function testAddNestedMyFilesVolume(done: () => void) {
         ...fileData,
         children: [playFilesVolumeEntry.toURL()],
       },
+      [playFilesUiEntry.toURL()]: convertEntryToFileData(playFilesUiEntry),
       [playFilesVolumeEntry.toURL()]:
           convertEntryToFileData(playFilesVolumeEntry),
     },
@@ -163,7 +164,7 @@ export async function testAddNestedMyFilesVolume(done: () => void) {
         prefixKey: myFilesVolumeEntry.toURL(),
       },
     },
-    uiEntries: [],
+    uiEntries: [playFilesUiEntry.toURL()],
   };
   await waitDeepEquals(store, want, (state) => ({
                                       allEntries: state.allEntries,
@@ -200,9 +201,9 @@ export async function testAddDriveVolume(done: () => void) {
   const {sharedDriveDisplayRoot, computersDisplayRoot, fakeEntries} =
       driveVolumeInfo;
   const fakeSharedWithMeEntry =
-      fakeEntries[VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME];
+      fakeEntries[VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME]!;
   const fakeOfflineEntry =
-      fakeEntries[VolumeManagerCommon.RootType.DRIVE_OFFLINE];
+      fakeEntries[VolumeManagerCommon.RootType.DRIVE_OFFLINE]!;
   driveFakeRootEntryList.addEntry(driveVolumeEntry);
   driveFakeRootEntryList.addEntry(sharedDriveDisplayRoot);
   driveFakeRootEntryList.addEntry(computersDisplayRoot);
@@ -402,6 +403,50 @@ export async function testAddDisabledDriveVolume(done: () => void) {
   done();
 }
 
+/** Tests that archive volume can be added correctly. */
+export async function testAddArchiveVolume(done: () => void) {
+  const initialState = getEmptyState();
+  const store = setupStore(initialState);
+
+  const {volumeManager} = window.fileManager;
+  const volumeInfo = MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.ARCHIVE, 'test', 'test.zip');
+  // Archive's source should be File.
+  // @ts-ignore: access private variable to customize the source.
+  volumeInfo.source_ = VolumeManagerCommon.Source.FILE;
+  volumeManager.volumeInfoList.add(volumeInfo);
+  const volumeEntry = new VolumeEntry(volumeInfo);
+  const volumeMetadata = createFakeVolumeMetadata(volumeInfo);
+
+  // Dispatch an action to add the archive volume.
+  store.dispatch(addVolume({volumeInfo, volumeMetadata}));
+
+  // Expect the volume will be added from the store.
+  const myFilesFileData = createMyFilesDataWithEntryList();
+  const want: Partial<State> = {
+    allEntries: {
+      // My Files entry list.
+      [myFilesFileData.entry.toURL()]: myFilesFileData,
+      // Archive.
+      [volumeEntry.toURL()]: {
+        ...convertEntryToFileData(volumeEntry),
+        isEjectable: true,
+      },
+    },
+    volumes: {
+      [volumeInfo.volumeId]: {
+        ...convertVolumeInfoAndMetadataToVolume(volumeInfo, volumeMetadata),
+      },
+    },
+  };
+  await waitDeepEquals(store, want, (state) => ({
+                                      allEntries: state.allEntries,
+                                      volumes: state.volumes,
+                                    }));
+
+  done();
+}
+
 /** Tests that volume can be removed correctly. */
 export async function testRemoveVolume(done: () => void) {
   const initialState = getEmptyState();
@@ -420,6 +465,72 @@ export async function testRemoveVolume(done: () => void) {
 
   // Expect the volume will be removed from the store.
   await waitDeepEquals(store, {}, (state) => state.volumes);
+
+  done();
+}
+
+/**
+ * Tests removing volume from MyFiles will also update the MyFiles entry.
+ */
+export async function testRemoveVolumeFromMyFiles(done: () => void) {
+  const initialState = getEmptyState();
+  // Put MyFiles in the store.
+  const {fileData, volumeInfo} = createMyFilesDataWithVolumeEntry();
+  const myFilesVolumeEntry = fileData.entry as VolumeEntry;
+  const myFilesVolume = convertVolumeInfoAndMetadataToVolume(
+      volumeInfo, createFakeVolumeMetadata(volumeInfo));
+  initialState.allEntries[myFilesVolumeEntry.toURL()] = fileData;
+  initialState.volumes[volumeInfo.volumeId] = myFilesVolume;
+  // Put Crostini in the store.
+  const {volumeManager} = window.fileManager;
+  const crostiniVolumeInfo = MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.CROSTINI, 'crostiniId', 'Linux files');
+  volumeManager.volumeInfoList.add(crostiniVolumeInfo);
+  const crostiniVolume = convertVolumeInfoAndMetadataToVolume(
+      crostiniVolumeInfo, createFakeVolumeMetadata(crostiniVolumeInfo));
+  const crostiniVolumeEntry = new VolumeEntry(crostiniVolumeInfo);
+  const crostiniFileData = convertEntryToFileData(crostiniVolumeEntry);
+  initialState.allEntries[crostiniVolumeEntry.toURL()] = crostiniFileData;
+  initialState.volumes[crostiniVolume.volumeId] = crostiniVolume;
+  fileData.children.push(crostiniVolumeEntry.toURL());
+  myFilesVolumeEntry.addEntry(crostiniVolumeEntry);
+  // Put Linux files placeholder in the store.
+  const linuxFilesUiEntry = new FakeEntryImpl(
+      crostiniVolume.label, VolumeManagerCommon.RootType.CROSTINI);
+  initialState.uiEntries.push(linuxFilesUiEntry.toURL());
+  initialState.allEntries[linuxFilesUiEntry.toURL()] =
+      convertEntryToFileData(linuxFilesUiEntry);
+
+  const store = setupStore(initialState);
+
+  // Dispatch an action to remove volume entry.
+  store.dispatch(removeVolume({volumeId: crostiniVolume.volumeId}));
+
+  // Expect the volume entry has been removed from MyFiles and the UI entry has
+  // been added back.
+  const want: Partial<State> = {
+    allEntries: {
+      [myFilesVolumeEntry.toURL()]: {
+        ...convertEntryToFileData(myFilesVolumeEntry),
+        children: [linuxFilesUiEntry.toURL()],
+      },
+      [crostiniVolumeEntry.toURL()]:
+          convertEntryToFileData(crostiniVolumeEntry),
+      [linuxFilesUiEntry.toURL()]: convertEntryToFileData(linuxFilesUiEntry),
+    },
+    volumes: {
+      [myFilesVolume.volumeId]: myFilesVolume,
+    },
+  };
+  await waitDeepEquals(store, want, (state) => ({
+                                      allEntries: state.allEntries,
+                                      volumes: state.volumes,
+                                    }));
+
+  // Check the volume entry has also been removed from MyFiles entry.
+  const uiChildren = myFilesVolumeEntry.getUIChildren();
+  assertEquals(1, uiChildren.length);
+  assertTrue(util.isSameEntry(linuxFilesUiEntry, uiChildren[0]!));
 
   done();
 }

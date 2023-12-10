@@ -16,12 +16,12 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
-import org.chromium.base.annotations.CalledByNative;
+import org.jni_zero.CalledByNative;
+
 import org.chromium.base.compat.ApiHelperForM;
 import org.chromium.base.compat.ApiHelperForQ;
 import org.chromium.base.compat.ApiHelperForR;
 import org.chromium.base.task.AsyncTask;
-import org.chromium.build.annotations.MainDex;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -34,7 +34,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * This class provides the path related methods for the native library.
  */
-@MainDex
 public abstract class PathUtils {
     private static final String TAG = "PathUtils";
     private static final String THUMBNAIL_DIRECTORY_NAME = "textures";

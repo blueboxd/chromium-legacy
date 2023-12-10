@@ -28,6 +28,7 @@
 
 namespace blink {
 
+// Must follow css_value_keywords.json5 order
 // kAutoPart is never returned by ComputedStyle::EffectiveAppearance()
 enum ControlPart {
   kNoControlPart,
@@ -44,6 +45,8 @@ enum ControlPart {
   kSearchFieldPart,
   kTextFieldPart,
   kTextAreaPart,
+  // Order matters when determinating what keyword is valid in the CSSParser.
+  // Values after kTextAreaPart should not be recognized as appearance values.
   kInnerSpinButtonPart,
   kMediaSliderPart,
   kMediaSliderThumbPart,

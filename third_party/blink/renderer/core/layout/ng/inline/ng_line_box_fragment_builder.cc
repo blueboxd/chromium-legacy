@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
 
-#include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
+#include "third_party/blink/renderer/core/layout/exclusions/exclusion_space.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
@@ -23,7 +23,7 @@ void NGLineBoxFragmentBuilder::Reset() {
   child_break_tokens_.Shrink(0);
   last_inline_break_token_ = nullptr;
   oof_positioned_candidates_.Shrink(0);
-  unpositioned_list_marker_ = NGUnpositionedListMarker();
+  unpositioned_list_marker_ = UnpositionedListMarker();
 
   annotation_overflow_ = LayoutUnit();
   bfc_block_offset_.reset();

@@ -3,6 +3,11 @@
 // found in the LICENSE file.
 
 #include "services/webnn/webnn_graph_impl.h"
+
+#include <limits>
+
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "components/ml/webnn/graph_validation_utils.h"
@@ -189,12 +194,8 @@ struct ClampTester {
         builder.BuildInput("input", input.dimensions, input.type);
     uint64_t output_operand_id =
         builder.BuildOutput("output", output.dimensions, output.type);
-    mojom::ClampAttributesPtr mojo_attributes = mojom::ClampAttributes::New();
-    mojo_attributes->min_value = attributes.min_value;
-    mojo_attributes->max_value = attributes.max_value;
-    builder.BuildOperator(
-        mojom::Operator::Kind::kClamp, {input_operand_id}, {output_operand_id},
-        mojom::OperatorAttributes::NewClamp(std::move(mojo_attributes)));
+    builder.BuildClamp(input_operand_id, output_operand_id,
+                       attributes.min_value, attributes.max_value);
     EXPECT_EQ(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()), expected);
   }
 };
@@ -291,6 +292,153 @@ TEST_F(WebNNGraphImplTest, ClampTest) {
   }
 }
 
+struct ConcatTester {
+  std::vector<OperandInfo> inputs;
+  uint32_t axis;
+  OperandInfo output;
+  bool expected;
+
+  void Test() {
+    // Build the graph with mojo type.
+    GraphInfoBuilder builder;
+    std::vector<uint64_t> input_operand_ids;
+    input_operand_ids.reserve(inputs.size());
+    for (size_t i = 0; i < inputs.size(); ++i) {
+      input_operand_ids.push_back(
+          builder.BuildInput(base::StringPrintf("input%zu", i),
+                             inputs[i].dimensions, inputs[i].type));
+    }
+    uint64_t output_operand_id =
+        builder.BuildOutput("output", output.dimensions, output.type);
+    builder.BuildConcat(std::move(input_operand_ids), output_operand_id, axis);
+    EXPECT_EQ(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()), expected);
+  }
+};
+
+TEST_F(WebNNGraphImplTest, ConcatTest) {
+  {
+    // Test concat operator with three inputs.
+    ConcatTester{.inputs = {{.type = mojom::Operand::DataType::kFloat32,
+                             .dimensions = {3, 1, 5, 6}},
+                            {.type = mojom::Operand::DataType::kFloat32,
+                             .dimensions = {3, 2, 5, 6}},
+                            {.type = mojom::Operand::DataType::kFloat32,
+                             .dimensions = {3, 3, 5, 6}}},
+                 .axis = 1,
+                 .output = {.type = mojom::Operand::DataType::kFloat32,
+                            .dimensions = {3, 6, 5, 6}},
+                 .expected = true}
+        .Test();
+  }
+  {
+    // Test concat operator when the input is the same as output.
+    ConcatTester{.inputs = {{.type = mojom::Operand::DataType::kFloat32,
+                             .dimensions = {3, 1, 5, 6}}},
+                 .axis = 1,
+                 .output = {.type = mojom::Operand::DataType::kFloat32,
+                            .dimensions = {3, 1, 5, 6}},
+                 .expected = true}
+        .Test();
+  }
+  {
+    // Test concat operator with empty inputs.
+    ConcatTester{
+        .inputs = {},
+        .axis = 0,
+        .output = {.type = mojom::Operand::DataType::kInt32, .dimensions = {1}},
+        .expected = false}
+        .Test();
+  }
+  {
+    // Test concat operator when the inputs' datatypes don't match each other.
+    ConcatTester{.inputs = {{.type = mojom::Operand::DataType::kFloat32,
+                             .dimensions = {3, 1, 5, 6}},
+                            {.type = mojom::Operand::DataType::kInt32,
+                             .dimensions = {3, 2, 5, 6}}},
+                 .axis = 1,
+                 .output = {.type = mojom::Operand::DataType::kFloat32,
+                            .dimensions = {3, 3, 5, 6}},
+                 .expected = false}
+        .Test();
+  }
+  {
+    // Test concat operator when the inputs can not be concatenated.
+    ConcatTester{.inputs = {{.type = mojom::Operand::DataType::kFloat32,
+                             .dimensions = {3, 1, 5}},
+                            {.type = mojom::Operand::DataType::kFloat32,
+                             .dimensions = {3, 2, 5, 6}}},
+                 .axis = 1,
+                 .output = {.type = mojom::Operand::DataType::kFloat32,
+                            .dimensions = {3, 3, 5}},
+                 .expected = false}
+        .Test();
+  }
+  {
+    // Test concat operator when the axis is equal to or greater than the
+    // size of dimension.
+    ConcatTester{.inputs = {{.type = mojom::Operand::DataType::kFloat32,
+                             .dimensions = {3, 1, 5, 6}},
+                            {.type = mojom::Operand::DataType::kFloat32,
+                             .dimensions = {3, 1, 5, 6}}},
+                 .axis = 4,
+                 .output = {.type = mojom::Operand::DataType::kFloat32,
+                            .dimensions = {3, 1, 5, 12}},
+                 .expected = false}
+        .Test();
+  }
+  {
+    // Test concat operator when the inputs have other axes with different
+    // sizes except on the axis.
+    ConcatTester{.inputs = {{.type = mojom::Operand::DataType::kFloat32,
+                             .dimensions = {3, 1, 5, 6}},
+                            {.type = mojom::Operand::DataType::kFloat32,
+                             .dimensions = {3, 1, 5, 1}}},
+                 .axis = 1,
+                 .output = {.type = mojom::Operand::DataType::kFloat32,
+                            .dimensions = {3, 2, 5, 7}},
+                 .expected = false}
+        .Test();
+  }
+  {
+    // Test concat operator when the concatenated dimension size overflows.
+    ConcatTester{
+        .inputs = {{.type = mojom::Operand::DataType::kFloat32,
+                    .dimensions = {std::numeric_limits<uint32_t>::max()}},
+                   {.type = mojom::Operand::DataType::kFloat32,
+                    .dimensions = {1}}},
+        .axis = 0,
+        .output = {.type = mojom::Operand::DataType::kFloat32,
+                   .dimensions = {0}},
+        .expected = false}
+        .Test();
+  }
+  {
+    // Test concat operator when the output datatype doesn't match the inputs'
+    // datatypes.
+    ConcatTester{.inputs = {{.type = mojom::Operand::DataType::kFloat32,
+                             .dimensions = {3, 1, 5, 6}},
+                            {.type = mojom::Operand::DataType::kFloat32,
+                             .dimensions = {3, 2, 5, 6}}},
+                 .axis = 1,
+                 .output = {.type = mojom::Operand::DataType::kInt32,
+                            .dimensions = {3, 3, 5, 6}},
+                 .expected = false}
+        .Test();
+  }
+  {
+    // Test concat operator when the output dimension is incorrect.
+    ConcatTester{.inputs = {{.type = mojom::Operand::DataType::kFloat32,
+                             .dimensions = {3, 1, 2}},
+                            {.type = mojom::Operand::DataType::kFloat32,
+                             .dimensions = {1, 1, 2}}},
+                 .axis = 0,
+                 .output = {.type = mojom::Operand::DataType::kFloat32,
+                            .dimensions = {5, 1, 2}},
+                 .expected = false}
+        .Test();
+  }
+}
+
 struct Conv2dTester {
   OperandInfo input;
   OperandInfo filter;
@@ -302,7 +450,8 @@ struct Conv2dTester {
     mojom::InputOperandLayout input_layout =
         mojom::InputOperandLayout::kChannelsFirst;
     absl::optional<OperandInfo> bias;
-    absl::optional<ClampTester::ClampAttributes> activation;
+    absl::optional<mojom::Operation::Tag> activation;
+    absl::optional<ClampTester::ClampAttributes> clamp_attributes;
   };
   Conv2dAttributes attributes;
   OperandInfo output;
@@ -315,39 +464,17 @@ struct Conv2dTester {
         builder.BuildInput("input", input.dimensions, input.type);
     uint64_t filter_operand_id =
         builder.BuildInput("filter", filter.dimensions, filter.type);
+
+    absl::optional<uint64_t> bias_operand_id;
+    if (attributes.bias) {
+      bias_operand_id = builder.BuildInput("bias", attributes.bias->dimensions,
+                                           attributes.bias->type);
+    }
+
     uint64_t output_operand_id =
         builder.BuildOutput("output", output.dimensions, output.type);
-    mojom::Conv2dAttributesPtr mojo_attributes = mojom::Conv2dAttributes::New();
-    mojo_attributes->padding = mojom::Padding2d::New(
-        mojom::Size2d::New(attributes.padding[0],
-                           attributes.padding[2]) /* beginning padding*/,
-        mojom::Size2d::New(attributes.padding[1],
-                           attributes.padding[3]) /* ending padding*/);
-    mojo_attributes->strides =
-        mojom::Size2d::New(attributes.strides[0], attributes.strides[1]);
-    mojo_attributes->dilations =
-        mojom::Size2d::New(attributes.dilations[0], attributes.dilations[1]);
-    mojo_attributes->groups = attributes.groups;
-    mojo_attributes->input_layout = attributes.input_layout;
-    if (attributes.bias) {
-      mojo_attributes->bias_operand_id = builder.BuildInput(
-          "bias", attributes.bias->dimensions, attributes.bias->type);
-    }
-    if (attributes.activation) {
-      auto activation = mojom::Operator::New();
-      activation->kind = mojom::Operator::Kind::kClamp;
-      mojom::ClampAttributesPtr clamp_attributes =
-          mojom::ClampAttributes::New();
-      clamp_attributes->min_value = attributes.activation->min_value;
-      clamp_attributes->max_value = attributes.activation->max_value;
-      activation->attributes =
-          mojom::OperatorAttributes::NewClamp(std::move(clamp_attributes));
-      mojo_attributes->activation = std::move(activation);
-    }
-    builder.BuildOperator(
-        mojom::Operator::Kind::kConv2d, {input_operand_id, filter_operand_id},
-        {output_operand_id},
-        mojom::OperatorAttributes::NewConv2d(std::move(mojo_attributes)));
+    builder.BuildConv2d(input_operand_id, filter_operand_id, output_operand_id,
+                        std::move(attributes), bias_operand_id);
     EXPECT_EQ(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()), expected);
   }
 };
@@ -419,7 +546,8 @@ TEST_F(WebNNGraphImplTest, Conv2dTest) {
                            .dimensions = {1, 1, 5, 5}},
                  .filter = {.type = mojom::Operand::DataType::kFloat32,
                             .dimensions = {1, 1, 3, 3}},
-                 .attributes = {.activation =
+                 .attributes = {.activation = mojom::Operation::Tag::kClamp,
+                                .clamp_attributes =
                                     ClampTester::ClampAttributes{
                                         .min_value = 1.0, .max_value = 6.0}},
                  .output = {.type = mojom::Operand::DataType::kFloat32,
@@ -499,7 +627,8 @@ TEST_F(WebNNGraphImplTest, Conv2dTest) {
                            .dimensions = {1, 1, 5, 5}},
                  .filter = {.type = mojom::Operand::DataType::kFloat32,
                             .dimensions = {1, 1, 3, 3}},
-                 .attributes = {.activation =
+                 .attributes = {.activation = mojom::Operation::Tag::kClamp,
+                                .clamp_attributes =
                                     ClampTester::ClampAttributes{
                                         .min_value = 6.0, .max_value = 1.0}},
                  .output = {.type = mojom::Operand::DataType::kFloat32,
@@ -532,7 +661,7 @@ TEST_F(WebNNGraphImplTest, Conv2dTest) {
 }
 
 struct ElementWiseBinaryTester {
-  mojom::Operator::Kind kind;
+  mojom::ElementWiseBinary::Kind kind;
   OperandInfo lhs;
   OperandInfo rhs;
   OperandInfo output;
@@ -547,8 +676,8 @@ struct ElementWiseBinaryTester {
         builder.BuildInput("rhs", rhs.dimensions, rhs.type);
     uint64_t output_operand_id =
         builder.BuildOutput("output", output.dimensions, output.type);
-    builder.BuildOperator(kind, {lhs_operand_id, rhs_operand_id},
-                          {output_operand_id});
+    builder.BuildElementWiseBinary(kind, lhs_operand_id, rhs_operand_id,
+                                   output_operand_id);
     EXPECT_EQ(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()), expected);
   }
 };
@@ -562,7 +691,7 @@ TEST_F(WebNNGraphImplTest, ElementWiseBinaryTest) {
     // b_dimensions     (3d)     7 * 1 * 5
     // output_dimenions (4d) 8 * 7 * 6 * 5
     ElementWiseBinaryTester{
-        .kind = mojom::Operator::Kind::kAdd,
+        .kind = mojom::ElementWiseBinary::Kind::kAdd,
         .lhs = {.type = mojom::Operand::DataType::kFloat32,
                 .dimensions = {8, 1, 6, 1}},
         .rhs = {.type = mojom::Operand::DataType::kFloat32,
@@ -578,7 +707,7 @@ TEST_F(WebNNGraphImplTest, ElementWiseBinaryTest) {
     // b_dimensions     (1d)         4
     // output_dimenions (3d) 4 * 2 * 4
     ElementWiseBinaryTester{
-        .kind = mojom::Operator::Kind::kSub,
+        .kind = mojom::ElementWiseBinary::Kind::kSub,
         .lhs = {.type = mojom::Operand::DataType::kFloat32,
                 .dimensions = {4, 2, 1}},
         .rhs = {.type = mojom::Operand::DataType::kFloat32, .dimensions = {4}},
@@ -590,7 +719,7 @@ TEST_F(WebNNGraphImplTest, ElementWiseBinaryTest) {
   {
     // Test the invalid graph for the input shapes are not broadcastable.
     ElementWiseBinaryTester{
-        .kind = mojom::Operator::Kind::kMul,
+        .kind = mojom::ElementWiseBinary::Kind::kMul,
         .lhs = {.type = mojom::Operand::DataType::kFloat32,
                 .dimensions = {4, 2}},
         .rhs = {.type = mojom::Operand::DataType::kFloat32, .dimensions = {4}},
@@ -602,7 +731,7 @@ TEST_F(WebNNGraphImplTest, ElementWiseBinaryTest) {
   {
     // Test the invalid graph for the output shapes are not expected.
     ElementWiseBinaryTester{
-        .kind = mojom::Operator::Kind::kDiv,
+        .kind = mojom::ElementWiseBinary::Kind::kDiv,
         .lhs = {.type = mojom::Operand::DataType::kFloat32,
                 .dimensions = {4, 2}},
         .rhs = {.type = mojom::Operand::DataType::kFloat32,
@@ -615,7 +744,7 @@ TEST_F(WebNNGraphImplTest, ElementWiseBinaryTest) {
   {
     // Test the invalid graph for input types don't match.
     ElementWiseBinaryTester{
-        .kind = mojom::Operator::Kind::kMax,
+        .kind = mojom::ElementWiseBinary::Kind::kMax,
         .lhs = {.type = mojom::Operand::DataType::kFloat32, .dimensions = {2}},
         .rhs = {.type = mojom::Operand::DataType::kInt32, .dimensions = {2}},
         .output = {.type = mojom::Operand::DataType::kFloat32,
@@ -626,7 +755,7 @@ TEST_F(WebNNGraphImplTest, ElementWiseBinaryTest) {
   {
     // Test the invalid graph for output types don't match.
     ElementWiseBinaryTester{
-        .kind = mojom::Operator::Kind::kMin,
+        .kind = mojom::ElementWiseBinary::Kind::kMin,
         .lhs = {.type = mojom::Operand::DataType::kFloat32, .dimensions = {2}},
         .rhs = {.type = mojom::Operand::DataType::kFloat32, .dimensions = {2}},
         .output = {.type = mojom::Operand::DataType::kInt32, .dimensions = {2}},
@@ -957,8 +1086,7 @@ struct ReluTester {
         builder.BuildInput("input", input.dimensions, input.type);
     uint64_t output_operand_id =
         builder.BuildOutput("output", output.dimensions, output.type);
-    builder.BuildOperator(mojom::Operator::Kind::kRelu, {input_operand_id},
-                          {output_operand_id});
+    builder.BuildRelu(input_operand_id, output_operand_id);
     EXPECT_EQ(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()), expected);
   }
 };
@@ -998,6 +1126,56 @@ TEST_F(WebNNGraphImplTest, ReluTest) {
                   .dimensions = {2}},
         .output = {.type = mojom::Operand::DataType::kInt32, .dimensions = {2}},
         .expected = false}
+        .Test();
+  }
+}
+
+struct Resample2dTester {
+  OperandInfo input;
+  mojom::Resample2d::InterpolationMode mode =
+      mojom::Resample2d::InterpolationMode::kNearestNeighbor;
+  OperandInfo output;
+  bool expected;
+
+  void Test() {
+    // Build the graph with mojo type.
+    GraphInfoBuilder builder;
+    uint64_t input_operand_id =
+        builder.BuildInput("input", input.dimensions, input.type);
+    uint64_t output_operand_id =
+        builder.BuildOutput("output", output.dimensions, output.type);
+    builder.BuildResample2d(input_operand_id, output_operand_id, mode);
+    EXPECT_EQ(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()), expected);
+  }
+};
+
+TEST_F(WebNNGraphImplTest, Resample2dTest) {
+  {
+    Resample2dTester{.input = {.type = mojom::Operand::DataType::kFloat32,
+                               .dimensions = {1, 1, 2, 4}},
+                     .output = {.type = mojom::Operand::DataType::kFloat32,
+                                .dimensions = {1, 1, 2, 4}},
+                     .expected = true}
+        .Test();
+  }
+  {
+    // Test resample2d with mode =
+    // "mojom::Resample2d::InterpolationMode::kLinear".
+    Resample2dTester{.input = {.type = mojom::Operand::DataType::kFloat32,
+                               .dimensions = {1, 1, 2, 4}},
+                     .mode = mojom::Resample2d::InterpolationMode::kLinear,
+                     .output = {.type = mojom::Operand::DataType::kFloat32,
+                                .dimensions = {1, 1, 4, 8}},
+                     .expected = true}
+        .Test();
+  }
+  {
+    // Test the invalid graph for output types don't match.
+    Resample2dTester{.input = {.type = mojom::Operand::DataType::kFloat32,
+                               .dimensions = {1, 1, 2, 4}},
+                     .output = {.type = mojom::Operand::DataType::kFloat16,
+                                .dimensions = {1, 1, 4, 8}},
+                     .expected = false}
         .Test();
   }
 }
@@ -1068,6 +1246,115 @@ TEST_F(WebNNGraphImplTest, ReshapeTest) {
         .Test();
   }
 }
+struct SliceTester {
+  struct SliceAttributes {
+    std::vector<uint32_t> starts;
+    std::vector<uint32_t> sizes;
+  };
+
+  OperandInfo input;
+  SliceAttributes attributes;
+  OperandInfo output;
+
+  bool expected;
+
+  void Test() {
+    // Build the graph with mojo type.
+    GraphInfoBuilder builder;
+    uint64_t input_operand_id =
+        builder.BuildInput("input", input.dimensions, input.type);
+    uint64_t output_operand_id =
+        builder.BuildOutput("output", output.dimensions, output.type);
+    builder.BuildSlice(input_operand_id, output_operand_id,
+                       std::move(attributes.starts),
+                       std::move(attributes.sizes));
+    EXPECT_EQ(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()), expected);
+  }
+};
+
+TEST_F(WebNNGraphImplTest, SliceTest) {
+  {
+    // Test slice with output dimensions equal to input dimensions.
+    SliceTester{.input = {.type = mojom::Operand::DataType::kFloat32,
+                          .dimensions = {4, 4}},
+                .attributes = {.starts = {0, 0}, .sizes = {4, 4}},
+                .output = {.type = mojom::Operand::DataType::kFloat32,
+                           .dimensions = {4, 4}},
+                .expected = true}
+        .Test();
+  }
+  {
+    // Test 4x4 2-D Tensor to 2x2 slice
+    SliceTester{.input = {.type = mojom::Operand::DataType::kFloat32,
+                          .dimensions = {4, 4}},
+                .attributes = {.starts = {0, 0}, .sizes = {2, 2}},
+                .output = {.type = mojom::Operand::DataType::kFloat32,
+                           .dimensions = {2, 2}},
+                .expected = true}
+        .Test();
+  }
+  {
+    // Test 4x4 2-D Tensor to 2x2 slice with offsets
+    SliceTester{.input = {.type = mojom::Operand::DataType::kFloat32,
+                          .dimensions = {4, 4}},
+                .attributes = {.starts = {2, 2}, .sizes = {2, 2}},
+                .output = {.type = mojom::Operand::DataType::kFloat32,
+                           .dimensions = {2, 2}},
+                .expected = true}
+        .Test();
+  }
+  {
+    // Test that going out-of-bounds of the input tensor fails.
+    SliceTester{.input = {.type = mojom::Operand::DataType::kFloat32,
+                          .dimensions = {2, 2}},
+                .attributes = {.starts = {1, 0}, .sizes = {2, 2}},
+                .output = {.type = mojom::Operand::DataType::kFloat32,
+                           .dimensions = {2, 2}},
+                .expected = false}
+        .Test();
+  }
+  {
+    // Test that mismatched output dimensions and size attribute will fail.
+    SliceTester{.input = {.type = mojom::Operand::DataType::kFloat32,
+                          .dimensions = {2, 2}},
+                .attributes = {.starts = {0, 0}, .sizes = {1, 1}},
+                .output = {.type = mojom::Operand::DataType::kFloat32,
+                           .dimensions = {2, 1}},
+                .expected = false}
+        .Test();
+  }
+  {
+    // Test that using size zero will result in failure.
+    SliceTester{.input = {.type = mojom::Operand::DataType::kFloat32,
+                          .dimensions = {2, 2}},
+                .attributes = {.starts = {0, 0}, .sizes = {0, 1}},
+                .output = {.type = mojom::Operand::DataType::kFloat32,
+                           .dimensions = {1}},
+                .expected = false}
+        .Test();
+  }
+  {
+    // Test that having starts and sizes lengths not equal to the input rank
+    // will fail.
+    SliceTester{.input = {.type = mojom::Operand::DataType::kFloat32,
+                          .dimensions = {4, 4}},
+                .attributes = {.starts = {0}, .sizes = {4}},
+                .output = {.type = mojom::Operand::DataType::kFloat32,
+                           .dimensions = {4, 4}},
+                .expected = false}
+        .Test();
+  }
+  {
+    // Test that input data type not equal to the output data type will fail.
+    SliceTester{.input = {.type = mojom::Operand::DataType::kFloat16,
+                          .dimensions = {4, 4}},
+                .attributes = {.starts = {0, 0}, .sizes = {4, 4}},
+                .output = {.type = mojom::Operand::DataType::kFloat32,
+                           .dimensions = {4, 4}},
+                .expected = false}
+        .Test();
+  }
+}
 
 struct SoftmaxTester {
   OperandInfo input;
@@ -1081,8 +1368,7 @@ struct SoftmaxTester {
         builder.BuildInput("input", input.dimensions, input.type);
     uint64_t output_operand_id =
         builder.BuildOutput("output", output.dimensions, output.type);
-    builder.BuildOperator(mojom::Operator::Kind::kSoftmax, {input_operand_id},
-                          {output_operand_id});
+    builder.BuildSoftmax(input_operand_id, output_operand_id);
     EXPECT_EQ(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()), expected);
   }
 };
@@ -1144,6 +1430,203 @@ TEST_F(WebNNGraphImplTest, SoftmaxTest) {
   }
 }
 
+struct SplitTester {
+  OperandInfo input;
+  std::vector<OperandInfo> outputs;
+  uint32_t axis = 0;
+  bool expected;
+
+  void Test() {
+    // Build the graph with mojo type.
+    GraphInfoBuilder builder;
+    uint64_t input_operand_id =
+        builder.BuildInput("input", input.dimensions, input.type);
+
+    std::vector<uint64_t> output_operand_ids;
+    for (size_t i = 0; i < outputs.size(); ++i) {
+      output_operand_ids.push_back(
+          builder.BuildOutput("output" + base::NumberToString(i),
+                              outputs[i].dimensions, outputs[i].type));
+    }
+    builder.BuildSplit(input_operand_id, output_operand_ids, axis);
+    EXPECT_EQ(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()), expected);
+  }
+};
+
+TEST_F(WebNNGraphImplTest, ValidateSplitTest) {
+  using mojom::Operand::DataType::kFloat32;
+  {
+    // Tests default axis split.
+    SplitTester{.input = {.type = kFloat32, .dimensions = {2, 2}},
+                .outputs = {{.type = kFloat32, .dimensions = {1, 2}},
+                            {.type = kFloat32, .dimensions = {1, 2}}},
+                .expected = true}
+        .Test();
+  }
+  {
+    // Tests axis=1 split.
+    SplitTester{.input = {.type = kFloat32, .dimensions = {2, 2}},
+                .outputs = {{.type = kFloat32, .dimensions = {2, 1}},
+                            {.type = kFloat32, .dimensions = {2, 1}}},
+                .axis = 1,
+                .expected = true}
+        .Test();
+  }
+  {
+    // Tests for an invalid graph where not all output types match the input
+    // type.
+    SplitTester{.input = {.type = kFloat32, .dimensions = {2, 2}},
+                .outputs = {{.type = kFloat32, .dimensions = {1, 2}},
+                            {.type = mojom::Operand::DataType::kFloat16,
+                             .dimensions = {1, 2}}},
+                .expected = false}
+        .Test();
+  }
+  {
+    // Tests for an invalid graph where the sum of the splits is less than the
+    // input tensor size.
+    SplitTester{.input = {.type = kFloat32, .dimensions = {2, 6}},
+                .outputs = {{.type = kFloat32, .dimensions = {2, 1}},
+                            {.type = kFloat32, .dimensions = {2, 2}},
+                            {.type = kFloat32, .dimensions = {2, 2}}},
+                .axis = 1,
+                .expected = false}
+        .Test();
+  }
+  {
+    // Tests for an invalid graph where the sum of the splits is greater than
+    // the input tensor size.
+    SplitTester{.input = {.type = kFloat32, .dimensions = {2, 6}},
+                .outputs = {{.type = kFloat32, .dimensions = {2, 1}},
+                            {.type = kFloat32, .dimensions = {2, 2}},
+                            {.type = kFloat32, .dimensions = {2, 4}}},
+                .axis = 1,
+                .expected = false}
+        .Test();
+  }
+  {
+    // Tests for an invalid graph where specified axis is greater then the rank
+    // of the input tensor
+    SplitTester{.input = {.type = kFloat32, .dimensions = {2, 2}},
+                .outputs = {{.type = kFloat32, .dimensions = {1, 2}},
+                            {.type = kFloat32, .dimensions = {1, 2}}},
+                .axis = 2,
+                .expected = false}
+        .Test();
+  }
+  {
+    // Tests for an invalid graph where a split of size 0 is specified.
+    SplitTester{.input = {.type = kFloat32, .dimensions = {2, 2}},
+                .outputs = {{.type = kFloat32, .dimensions = {0, 2}},
+                            {.type = kFloat32, .dimensions = {2, 2}}},
+                .expected = false}
+        .Test();
+  }
+  {
+    // Tests for an invalid graph where a split as specified along multiple
+    // axis.
+    SplitTester{.input = {.type = kFloat32, .dimensions = {4, 6}},
+                .outputs = {{.type = kFloat32, .dimensions = {1, 2}},
+                            {.type = kFloat32, .dimensions = {2, 3}},
+                            {.type = kFloat32, .dimensions = {1, 1}}},
+                .expected = false}
+        .Test();
+  }
+  {
+    GraphInfoBuilder builder;
+    uint64_t input_operand_id = builder.BuildInput("input", {4, 6}, kFloat32);
+
+    builder.BuildSplit(input_operand_id, {input_operand_id}, 0);
+    builder.BuildSplit(input_operand_id,
+                       {builder.BuildOutput("output", {4, 6}, kFloat32)}, 0);
+    EXPECT_EQ(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()), false);
+  }
+}
+
+struct TransposeTester {
+  OperandInfo input;
+  std::vector<uint32_t> permutation;
+  OperandInfo output;
+  bool expected;
+
+  void Test() {
+    // Build the graph with mojo type.
+    GraphInfoBuilder builder;
+    uint64_t input_operand_id =
+        builder.BuildInput("input", input.dimensions, input.type);
+    uint64_t output_operand_id =
+        builder.BuildOutput("output", output.dimensions, output.type);
+    builder.BuildTranspose(input_operand_id, output_operand_id,
+                           std::move(permutation));
+    EXPECT_EQ(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()), expected);
+  }
+};
+
+TEST_F(WebNNGraphImplTest, TransposeTest) {
+  {
+    // Test transpose operator with permutation [2, 3, 1, 0].
+    TransposeTester{.input = {.type = mojom::Operand::DataType::kFloat32,
+                              .dimensions = {1, 2, 3, 4}},
+                    .permutation = {2, 3, 1, 0},
+                    .output = {.type = mojom::Operand::DataType::kFloat32,
+                               .dimensions = {3, 4, 2, 1}},
+                    .expected = true}
+        .Test();
+  }
+  {
+    // Test the invalid graph when the rank of permutation is larger than the
+    // input rank.
+    TransposeTester{.input = {.type = mojom::Operand::DataType::kFloat32,
+                              .dimensions = {1, 2, 3}},
+                    .permutation = {0, 1, 2, 2},
+                    .output = {.type = mojom::Operand::DataType::kFloat32,
+                               .dimensions = {1, 2, 3, 3}},
+                    .expected = false}
+        .Test();
+  }
+  {
+    // Test the invalid graph when the permutation contains duplicate values.
+    TransposeTester{.input = {.type = mojom::Operand::DataType::kFloat32,
+                              .dimensions = {1, 2, 3, 4}},
+                    .permutation = {0, 1, 2, 2},
+                    .output = {.type = mojom::Operand::DataType::kFloat32,
+                               .dimensions = {1, 2, 3, 3}},
+                    .expected = false}
+        .Test();
+  }
+  {
+    // Test the invalid graph when one value in permutation is greater than
+    // input_rank - 1.
+    TransposeTester{.input = {.type = mojom::Operand::DataType::kFloat16,
+                              .dimensions = {1, 2, 3, 4}},
+                    .permutation = {0, 1, 2, 4},
+                    .output = {.type = mojom::Operand::DataType::kFloat16,
+                               .dimensions = {1, 2, 3, 4}},
+                    .expected = false}
+        .Test();
+  }
+  {
+    // Test the invalid graph for output shapes are not expected.
+    TransposeTester{.input = {.type = mojom::Operand::DataType::kFloat32,
+                              .dimensions = {1, 2, 3, 4}},
+                    .permutation = {0, 1, 2, 3},
+                    .output = {.type = mojom::Operand::DataType::kFloat32,
+                               .dimensions = {1, 2, 3}},
+                    .expected = false}
+        .Test();
+  }
+  {
+    // Test the invalid graph for output types don't match.
+    TransposeTester{.input = {.type = mojom::Operand::DataType::kFloat32,
+                              .dimensions = {1, 2, 3, 4}},
+                    .permutation = {0, 1, 2, 3},
+                    .output = {.type = mojom::Operand::DataType::kFloat16,
+                               .dimensions = {1, 2, 3, 4}},
+                    .expected = false}
+        .Test();
+  }
+}
+
 TEST_F(WebNNGraphImplTest, ValidateInputsTest) {
   const std::vector<uint32_t> dimensions = {3, 5};
   // Build the graph with mojo type.
@@ -1154,8 +1637,9 @@ TEST_F(WebNNGraphImplTest, ValidateInputsTest) {
       builder.BuildInput("rhs", dimensions, mojom::Operand::DataType::kUint8);
   uint64_t output_operand_id = builder.BuildOutput(
       "output", dimensions, mojom::Operand::DataType::kUint8);
-  builder.BuildOperator(mojom::Operator::Kind::kAdd,
-                        {lhs_operand_id, rhs_operand_id}, {output_operand_id});
+  builder.BuildElementWiseBinary(mojom::ElementWiseBinary::Kind::kAdd,
+                                 lhs_operand_id, rhs_operand_id,
+                                 output_operand_id);
   EXPECT_EQ(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()), true);
 
   auto byte_length =
@@ -1220,9 +1704,9 @@ struct ConstantOperandTester {
         dimensions, mojom::Operand::DataType::kUint8, values);
     uint64_t output_operand_id = builder.BuildOutput(
         "output", dimensions, mojom::Operand::DataType::kUint8);
-    builder.BuildOperator(mojom::Operator::Kind::kAdd,
-                          {lhs_operand_id, rhs_operand_id},
-                          {output_operand_id});
+    builder.BuildElementWiseBinary(mojom::ElementWiseBinary::Kind::kAdd,
+                                   lhs_operand_id, rhs_operand_id,
+                                   output_operand_id);
     EXPECT_EQ(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()), expected);
   }
 };

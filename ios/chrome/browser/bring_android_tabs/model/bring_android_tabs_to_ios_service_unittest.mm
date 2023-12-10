@@ -7,7 +7,6 @@
 #import "base/i18n/number_formatting.h"
 #import "base/strings/utf_string_conversions.h"
 #import "base/test/metrics/histogram_tester.h"
-#import "base/test/scoped_feature_list.h"
 #import "components/prefs/pref_registry_simple.h"
 #import "components/prefs/pref_service.h"
 #import "components/prefs/testing_pref_service.h"
@@ -30,7 +29,6 @@
 #import "components/sync_sessions/session_sync_service.h"
 #import "components/sync_sessions/session_sync_test_helper.h"
 #import "components/sync_sessions/synced_session.h"
-#import "ios/chrome/browser/bring_android_tabs/model/features.h"
 #import "ios/chrome/browser/bring_android_tabs/model/metrics.h"
 #import "ios/chrome/browser/segmentation_platform/segmentation_platform_config.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
@@ -38,14 +36,15 @@
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/sync/model/session_sync_service_factory.h"
-#import "ios/chrome/browser/url_loading/fake_url_loading_browser_agent.h"
-#import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
+#import "ios/chrome/browser/url_loading/model/fake_url_loading_browser_agent.h"
+#import "ios/chrome/browser/url_loading/model/url_loading_notifier_browser_agent.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/platform_test.h"
 #import "ui/base/device_form_factor.h"
 #import "url/gurl.h"
 
 namespace {
+
 // Number of test foreign sessions from a phone.
 const size_t kPhoneSessionCount = 2;
 // Maximum number of tabs that should be imported.
@@ -116,7 +115,6 @@ class MockSessionSyncService : public sync_sessions::SessionSyncService {
   MOCK_METHOD(base::WeakPtr<syncer::ModelTypeControllerDelegate>,
               GetControllerDelegate,
               ());
-  MOCK_METHOD(void, ProxyTabsStateChanged, (syncer::DataTypeController::State));
 };
 
 // Mock OpenTabsUIDelegate that takes the time the SyncedSession was last
@@ -249,10 +247,6 @@ class BringAndroidTabsToIOSServiceTest : public PlatformTest {
   // loads the user's tabs. Also records that the prompt is displayed if at
   // least one tab is loaded.
   void SetUpBringAndroidTabsServiceAndLoadTabs(bool is_android_switcher) {
-    // Enable feature.
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(kBringYourOwnTabsIOS);
-
     // Create BringAndroidTabsToIOSService dependencies. These dependencies are
     // only used in `LoadTabs()`, therefore they can be scoped within this
     // method.
@@ -282,9 +276,17 @@ class BringAndroidTabsToIOSServiceTest : public PlatformTest {
     }
   }
 
+  // Returns the fake Url Loader for testing purpose.
   FakeUrlLoadingBrowserAgent* GetTestUrlLoader() {
     return FakeUrlLoadingBrowserAgent::FromUrlLoadingBrowserAgent(
         UrlLoadingBrowserAgent::FromBrowser(browser_.get()));
+  }
+
+  // Sets the data types that are synced.
+  void SetSelectedTypes(syncer::UserSelectableTypeSet types) {
+    test_sync_service_->GetUserSettings()->SetSelectedTypes(
+        /*sync_everything=*/false,
+        /*types=*/types);
   }
 
   // Helper method that checks if `prompt_attempt_status` is recorded in the
@@ -305,7 +307,7 @@ class BringAndroidTabsToIOSServiceTest : public PlatformTest {
     return bring_android_tabs_service_.get();
   }
 
- protected:
+ private:
   web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   std::unique_ptr<TestBrowser> browser_;
@@ -324,9 +326,7 @@ class BringAndroidTabsToIOSServiceTest : public PlatformTest {
 TEST_F(BringAndroidTabsToIOSServiceTest, UserNotSynced) {
   SetUpOpenTabsUIDelegate(/*tab_per_session=*/2, /*tabs_recently_active=*/true);
   // Set something other than `kTabs` as the selected type.
-  test_sync_service_->GetUserSettings()->SetSelectedTypes(
-      /*sync_everything=*/false,
-      /*types=*/{syncer::UserSelectableType::kPasswords});
+  SetSelectedTypes({syncer::UserSelectableType::kPasswords});
   SetUpBringAndroidTabsServiceAndLoadTabs(/*is_android_switcher=*/true);
   EXPECT_EQ(bring_android_tabs_to_ios_service()->GetNumberOfAndroidTabs(), 0u);
   ExpectHistogram(bring_android_tabs::PromptAttemptStatus::kTabSyncDisabled);

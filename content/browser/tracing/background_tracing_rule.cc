@@ -85,8 +85,8 @@ bool BackgroundTracingRule::OnRuleTriggered() {
   if (trigger_chance_ < 1.0 && base::RandDouble() > trigger_chance_) {
     return false;
   }
-  if (!delay_.is_zero()) {
-    timer_.Start(FROM_HERE, delay_,
+  if (delay_) {
+    timer_.Start(FROM_HERE, *delay_,
                  base::BindOnce(base::IgnoreResult(trigger_callback_),
                                 base::Unretained(this)));
     return true;
@@ -132,8 +132,8 @@ perfetto::protos::gen::TriggerRule BackgroundTracingRule::ToProtoForTesting()
     config.set_trigger_chance(trigger_chance_);
   }
 
-  if (!delay_.is_zero()) {
-    config.set_delay_ms(delay_.InMilliseconds());
+  if (delay_) {
+    config.set_delay_ms(delay_->InMilliseconds());
   }
 
   config.set_name(rule_id_);
@@ -218,10 +218,9 @@ class NamedTriggerRule : public BackgroundTracingRule {
   }
 
   base::Value::Dict ToDict() const override {
-    base::Value::Dict dict = BackgroundTracingRule::ToDict();
-    dict.Set(kConfigRuleKey, kConfigRuleTypeMonitorNamed);
-    dict.Set(kConfigRuleTriggerNameKey, named_event_.c_str());
-    return dict;
+    return BackgroundTracingRule::ToDict()
+        .Set(kConfigRuleKey, kConfigRuleTypeMonitorNamed)
+        .Set(kConfigRuleTriggerNameKey, named_event_.c_str());
   }
 
   perfetto::protos::gen::TriggerRule ToProtoForTesting() const override {
@@ -346,12 +345,11 @@ class HistogramRule : public BackgroundTracingRule,
   }
 
   base::Value::Dict ToDict() const override {
-    base::Value::Dict dict = BackgroundTracingRule::ToDict();
-    dict.Set(kConfigRuleKey, kConfigRuleTypeMonitorHistogram);
-    dict.Set(kConfigRuleHistogramNameKey, histogram_name_.c_str());
-    dict.Set(kConfigRuleHistogramValue1Key, histogram_lower_value_);
-    dict.Set(kConfigRuleHistogramValue2Key, histogram_upper_value_);
-    return dict;
+    return BackgroundTracingRule::ToDict()
+        .Set(kConfigRuleKey, kConfigRuleTypeMonitorHistogram)
+        .Set(kConfigRuleHistogramNameKey, histogram_name_.c_str())
+        .Set(kConfigRuleHistogramValue1Key, histogram_lower_value_)
+        .Set(kConfigRuleHistogramValue2Key, histogram_upper_value_);
   }
 
   perfetto::protos::gen::TriggerRule ToProtoForTesting() const override {
@@ -504,7 +502,7 @@ class RepeatingIntervalRule : public BackgroundTracingRule {
   base::TimeTicks GetFireTimeForInterval(base::TimeTicks interval_start) const {
     if (randomized_) {
       return interval_start +
-             base::Microseconds(base::RandInt(0, period_.InMicroseconds() - 1));
+             base::Microseconds(base::RandGenerator(period_.InMicroseconds()));
     }
     return interval_start;
   }
@@ -586,8 +584,10 @@ std::unique_ptr<BackgroundTracingRule> BackgroundTracingRule::Create(
     tracing_rule = HistogramRule::Create(config);
   } else if (config.has_repeating_interval()) {
     tracing_rule = RepeatingIntervalRule::Create(config);
-  } else {
+  } else if (config.has_delay_ms()) {
     tracing_rule = TimerRule::Create(config);
+  } else {
+    return nullptr;
   }
   if (tracing_rule) {
     tracing_rule->Setup(config);

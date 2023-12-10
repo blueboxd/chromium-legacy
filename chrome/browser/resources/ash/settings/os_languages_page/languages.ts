@@ -17,7 +17,8 @@ import 'chrome://resources/cr_components/settings_prefs/prefs.js';
 
 import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import {CrSettingsPrefs} from 'chrome://resources/cr_components/settings_prefs/prefs_types.js';
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {assert} from 'chrome://resources/js/assert.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -249,6 +250,8 @@ export class SettingsLanguagesElement extends SettingsLanguagesElementBase
   private boundOnInputMethodChanged_:
       OmitThisParameter<SettingsLanguagesElement['onInputMethodChanged_']>|
       null = null;
+  private boundOnLanguagePackStatusChanged_: OmitThisParameter<
+      SettingsLanguagesElement['onLanguagePackStatusChanged_']>|null = null;
 
   override connectedCallback(): void {
     super.connectedCallback();
@@ -325,6 +328,18 @@ export class SettingsLanguagesElement extends SettingsLanguagesElementBase
       this.languageSettingsPrivate_.getSpellcheckDictionaryStatuses().then(
           this.boundOnSpellcheckDictionariesChanged_);
 
+      if (loadTimeData.getBoolean('languagePacksInSettingsEnabled')) {
+        // Poll language packs once to get the initial state of language pack
+        // statuses.
+        // Do so in the next microtask to prevent `connectedCallback()` from
+        // failing and stalling tests.
+        Promise.resolve().then(() => this.pollLanguagePacks_());
+        this.boundOnLanguagePackStatusChanged_ =
+            this.onLanguagePackStatusChanged_.bind(this);
+        this.inputMethodPrivate_.onLanguagePackStatusChanged.addListener(
+            this.boundOnLanguagePackStatusChanged_);
+      }
+
       this.resolver_.resolve(undefined);
     });
 
@@ -358,6 +373,11 @@ export class SettingsLanguagesElement extends SettingsLanguagesElementBase
       this.languageSettingsPrivate_.onSpellcheckDictionariesChanged
           .removeListener(this.boundOnSpellcheckDictionariesChanged_);
       this.boundOnSpellcheckDictionariesChanged_ = null;
+    }
+    if (this.boundOnLanguagePackStatusChanged_) {
+      this.inputMethodPrivate_.onLanguagePackStatusChanged.removeListener(
+          this.boundOnLanguagePackStatusChanged_);
+      this.boundOnLanguagePackStatusChanged_ = null;
     }
   }
 
@@ -650,6 +670,7 @@ export class SettingsLanguagesElement extends SettingsLanguagesElementBase
       enabled: this.getEnabledInputMethods_(),
       // Safety: `ModelArgs.currentInputMethodId` is always defined on CrOS.
       currentId: args.currentInputMethodId!,
+      imeLanguagePackStatus: {},
     };
 
     // Initialize the Polymer languages model.
@@ -1294,6 +1315,44 @@ export class SettingsLanguagesElement extends SettingsLanguagesElementBase
       return '';
     }
     return inputMethod.displayName;
+  }
+
+  private setLanguagePackStatus_(
+      id: string, status: chrome.inputMethodPrivate.LanguagePackStatus): void {
+    this.set(
+        ['languages', 'inputMethods', 'imeLanguagePackStatus', id], status);
+  }
+
+  /**
+   * Manually poll language packs for the status of enabled input methods.
+   * Required to get the initial language pack status of input methods - further
+   * updates will be done via a listener to changes.
+   */
+  private pollLanguagePacks_(): void {
+    if (!this.languages) {
+      return;
+    }
+    // Safety: `LanguagesModel.inputMethods` is always defined on CrOS.
+    for (const inputMethod of this.languages.inputMethods!.enabled) {
+      void this.inputMethodPrivate_.getLanguagePackStatus(inputMethod.id)
+          .then((status) => {
+            this.setLanguagePackStatus_(inputMethod.id, status);
+          });
+    }
+  }
+
+  private onLanguagePackStatusChanged_(
+      change: chrome.inputMethodPrivate.LanguagePackStatusChange): void {
+    for (const engineId of change.engineIds) {
+      this.setLanguagePackStatus_(engineId, change.status);
+    }
+  }
+
+  getImeLanguagePackStatus(id: string):
+      chrome.inputMethodPrivate.LanguagePackStatus {
+    // Safety: `LanguagesModel.inputMethods` is always defined on CrOS.
+    return this.languages?.inputMethods!.imeLanguagePackStatus[id] ??
+        chrome.inputMethodPrivate.LanguagePackStatus.UNKNOWN;
   }
 }
 

@@ -141,10 +141,6 @@
 
 namespace blink {
 
-BASE_FEATURE(kWebRtcLegacyGetStatsThrows,
-             "WebRtcLegacyGetStatsThrows",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 namespace {
 
 const char kSignalingStateClosedMessage[] =
@@ -1046,11 +1042,11 @@ RTCSessionDescription* RTCPeerConnection::localDescription() const {
 }
 
 RTCSessionDescription* RTCPeerConnection::currentLocalDescription() const {
-  return current_local_description_;
+  return current_local_description_.Get();
 }
 
 RTCSessionDescription* RTCPeerConnection::pendingLocalDescription() const {
-  return pending_local_description_;
+  return pending_local_description_.Get();
 }
 
 ScriptPromise RTCPeerConnection::setRemoteDescription(
@@ -1152,11 +1148,11 @@ RTCSessionDescription* RTCPeerConnection::remoteDescription() const {
 }
 
 RTCSessionDescription* RTCPeerConnection::currentRemoteDescription() const {
-  return current_remote_description_;
+  return current_remote_description_.Get();
 }
 
 RTCSessionDescription* RTCPeerConnection::pendingRemoteDescription() const {
-  return pending_remote_description_;
+  return pending_remote_description_.Get();
 }
 
 RTCConfiguration* RTCPeerConnection::getConfiguration(
@@ -1613,7 +1609,7 @@ MediaStream* RTCPeerConnection::getRemoteStreamById(const String& id) const {
   for (const auto& rtp_receiver : rtp_receivers_) {
     for (const auto& stream : rtp_receiver->streams()) {
       if (stream->id() == id) {
-        return stream;
+        return stream.Get();
       }
     }
   }
@@ -1691,28 +1687,23 @@ ScriptPromise RTCPeerConnection::LegacyCallbackBasedGetStats(
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
+  // This API is only usable if this Deprecation Trial is enabled:
+  // https://developer.chrome.com/origintrials/#/view_trial/3633278999381147649
+  // TODO(https://crbug.com/822696): In M122, delete this API.
   bool deprecation_trial_enabled =
       RuntimeEnabledFeatures::RTCLegacyCallbackBasedGetStatsEnabled(context);
   if (deprecation_trial_enabled) {
     // The deprecation trial is enabled, allow API usage without the warning.
-    // TODO(https://crbug.com/822696): In M122, delete this API.
     UseCounter::Count(context,
                       WebFeature::kRTCPeerConnectionLegacyGetStatsTrial);
   } else {
-    // The deprecation trial is NOT enabled: show a deprecation warning and
-    // maybe throw an exception.
+    // The deprecation trial is not enabled: count deprecation and throw.
     Deprecation::CountDeprecation(
         context, WebFeature::kRTCPeerConnectionGetStatsLegacyNonCompliant);
-    // The plan from the Intent to Deprecate is:
-    // - M114: Throw an exception in Canary/Beta.
-    // - M117: Throw in Stable.
-    // Which channel to throw on is controlled via the base::Feature.
-    if (base::FeatureList::IsEnabled(kWebRtcLegacyGetStatsThrows)) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kNotSupportedError,
-          "The callback-based getStats() method is no longer supported.");
-      return ScriptPromise();
-    }
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "The callback-based getStats() method is no longer supported.");
+    return ScriptPromise();
   }
   auto* stats_request = MakeGarbageCollected<RTCStatsRequestImpl>(
       GetExecutionContext(), this, success_callback, selector);
@@ -1962,7 +1953,7 @@ void RTCPeerConnection::removeTrack(RTCRtpSender* sender,
 }
 
 RTCSctpTransport* RTCPeerConnection::sctp() const {
-  return sctp_transport_;
+  return sctp_transport_.Get();
 }
 
 RTCDataChannel* RTCPeerConnection::createDataChannel(
@@ -2046,7 +2037,7 @@ MediaStreamTrack* RTCPeerConnection::GetTrackForTesting(
     MediaStreamComponent* component) const {
   auto it = tracks_.find(component);
   if (it != tracks_.end()) {
-    return it->value;
+    return it->value.Get();
   } else {
     return nullptr;
   }
@@ -2059,7 +2050,7 @@ RTCRtpSender* RTCPeerConnection::FindSenderForTrackAndStream(
     if (rtp_sender->track() == track) {
       auto streams = rtp_sender->streams();
       if (streams.size() == 1u && streams[0] == stream)
-        return rtp_sender;
+        return rtp_sender.Get();
     }
   }
   return nullptr;
@@ -2213,7 +2204,7 @@ RTCDtlsTransport* RTCPeerConnection::CreateOrUpdateDtlsTransport(
         GetExecutionContext(), std::move(native_transport), ice_transport);
   }
   transport->ChangeState(information);
-  return transport;
+  return transport.Get();
 }
 
 RTCIceTransport* RTCPeerConnection::CreateOrUpdateIceTransport(
@@ -2228,7 +2219,7 @@ RTCIceTransport* RTCPeerConnection::CreateOrUpdateIceTransport(
     transport = RTCIceTransport::Create(GetExecutionContext(),
                                         std::move(ice_transport), this);
   }
-  return transport;
+  return transport.Get();
 }
 
 RTCDTMFSender* RTCPeerConnection::createDTMFSender(

@@ -25,7 +25,7 @@
 #include "chrome/browser/autofill/mock_manual_filling_view.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/password_manager/password_manager_settings_service_factory.h"
-#include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/password_manager/profile_password_store_factory.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/user_interaction_observer.h"
 #include "chrome/browser/sync/sync_service_factory.h"
@@ -100,6 +100,7 @@ using autofill::CalculateFormSignature;
 using autofill::ContentAutofillClient;
 using autofill::ContentAutofillDriver;
 using autofill::FieldRendererId;
+using autofill::FormControlType;
 using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::mojom::FocusedFieldType;
@@ -382,7 +383,7 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
 void ChromePasswordManagerClientTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
 
-  PasswordStoreFactory::GetInstance()->SetTestingFactory(
+  ProfilePasswordStoreFactory::GetInstance()->SetTestingFactory(
       GetBrowserContext(),
       base::BindRepeating(&password_manager::BuildPasswordStoreInterface<
                           content::BrowserContext,
@@ -601,9 +602,10 @@ TEST_F(ChromePasswordManagerClientTest, ReceivesAutofillPredictions) {
   ASSERT_TRUE(autofill_driver);
 
   FormData form = CreateFormForRenderHost(
-      *main_rfh(),
-      {CreateTestFormField("Username", "username", "", "text"),
-       CreateTestFormField("Password", "password", "", "password")});
+      *main_rfh(), {CreateTestFormField("Username", "username", "",
+                                        FormControlType::kInputText),
+                    CreateTestFormField("Password", "password", "",
+                                        FormControlType::kInputPassword)});
   form.name = u"login";
 
   {
@@ -612,7 +614,7 @@ TEST_F(ChromePasswordManagerClientTest, ReceivesAutofillPredictions) {
         {autofill::AutofillManagerEvent::kFormsSeen});
     autofill_driver->renderer_events().FormsSeen(/*updated_forms=*/{form},
                                                  /*removed_forms=*/{});
-    waiter.Wait(/*num_awaiting_calls=*/1);
+    ASSERT_TRUE(waiter.Wait(/*num_awaiting_calls=*/1));
   }
 
   // Simulate that the field types have been determined, since server
@@ -648,11 +650,13 @@ TEST_F(ChromePasswordManagerClientTest,
   ASSERT_TRUE(child_driver);
 
   FormData main_form = CreateFormForRenderHost(
-      *main_rfh(),
-      {CreateTestFormField("Username", "username", "", "text"),
-       CreateTestFormField("Password", "password", "", "password")});
+      *main_rfh(), {CreateTestFormField("Username", "username", "",
+                                        FormControlType::kInputText),
+                    CreateTestFormField("Password", "password", "",
+                                        FormControlType::kInputPassword)});
   FormData child_form = CreateFormForRenderHost(
-      *child_rfh, {CreateTestFormField("OTP", "OTP", "", "text")});
+      *child_rfh,
+      {CreateTestFormField("OTP", "OTP", "", FormControlType::kInputText)});
 
   // Ensure that the child frame is picked up as a child frame of `main_form`.
   {
@@ -669,7 +673,7 @@ TEST_F(ChromePasswordManagerClientTest,
                                              /*removed_forms=*/{});
     child_driver->renderer_events().FormsSeen(/*updated_forms=*/{child_form},
                                               /*removed_forms=*/{});
-    waiter.Wait(/*num_awaiting_calls=*/2);
+    ASSERT_TRUE(waiter.Wait(/*num_awaiting_calls=*/2));
   }
 
   // Simulate that the field types have been determined, since server
@@ -801,7 +805,7 @@ class ChromePasswordManagerClientSchemeTest
  public:
   void SetUp() override {
     ChromePasswordManagerClientTest::SetUp();
-    PasswordStoreFactory::GetInstance()->SetTestingFactory(
+    ProfilePasswordStoreFactory::GetInstance()->SetTestingFactory(
         GetBrowserContext(),
         base::BindRepeating(&password_manager::BuildPasswordStoreInterface<
                             content::BrowserContext,
@@ -1112,7 +1116,7 @@ class ChromePasswordManagerClientAndroidTest
 
 void ChromePasswordManagerClientAndroidTest::SetUp() {
   ChromePasswordManagerClientTest::SetUp();
-  PasswordStoreFactory::GetInstance()->SetTestingFactory(
+  ProfilePasswordStoreFactory::GetInstance()->SetTestingFactory(
       GetBrowserContext(),
       base::BindRepeating(
           &password_manager::BuildPasswordStoreInterface<
@@ -1455,11 +1459,6 @@ TEST_F(ChromePasswordManagerClientAndroidTest,
 
 TEST_F(ChromePasswordManagerClientAndroidTest,
        RefreshPasswordManagerSettingsIfNeededUPMFeatureEnabled) {
-  const std::map<std::string, std::string> params = {
-      {"stage", base::NumberToString(static_cast<int>(
-                    password_manager::features::UpmExperimentVariation::
-                        kEnableForSyncingUsers))}};
-
   EXPECT_CALL(settings_service(), RequestSettingsFromBackend);
   GetClient()->RefreshPasswordManagerSettingsIfNeeded();
 }

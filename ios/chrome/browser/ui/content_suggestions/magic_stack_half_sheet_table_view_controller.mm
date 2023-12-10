@@ -6,8 +6,9 @@
 
 #import "base/apple/foundation_util.h"
 #import "ios/chrome/browser/ntp/features.h"
+#import "ios/chrome/browser/ntp/home/features.h"
 #import "ios/chrome/browser/ntp/set_up_list_prefs.h"
-#import "ios/chrome/browser/ntp_tiles/tab_resumption/tab_resumption_prefs.h"
+#import "ios/chrome/browser/ntp_tiles/model/tab_resumption/tab_resumption_prefs.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_backed_boolean.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
@@ -16,10 +17,10 @@
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/safety_check/safety_check_prefs.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
@@ -100,9 +101,9 @@ enum ItemType : NSInteger {
   [self.tableViewModel addSectionWithIdentifier:SectionIdentifierOptions];
 
   if (IsIOSSetUpListEnabled()) {
-    NSString* listSymbolName = kListBulletRectangle;
+    NSString* listSymbolName = kListBulletRectangleSymbol;
     if (@available(iOS 16.0, *)) {
-      listSymbolName = kListBulletClipboard;
+      listSymbolName = kListBulletClipboardSymbol;
     }
     _setUpListToggle = [self
         switchItemWithType:ItemTypeToggleSetUpList
@@ -117,7 +118,7 @@ enum ItemType : NSInteger {
     _safetyCheckToggle = [self
         switchItemWithType:ItemTypeToggleSafetyCheck
                      title:l10n_util::GetNSString(IDS_IOS_SAFETY_CHECK_TITLE)
-                    symbol:DefaultSymbolWithPointSize(kCheckmarkShield,
+                    symbol:DefaultSymbolWithPointSize(kCheckmarkShieldSymbol,
                                                       kIconPointSize)];
     _safetyCheckToggle.on = !_safetyCheckDisabled.value;
     [self.tableViewModel addItem:_safetyCheckToggle
@@ -127,7 +128,7 @@ enum ItemType : NSInteger {
     _tabResumptionToggle = [self
         switchItemWithType:ItemTypeToggleTabResumption
                      title:l10n_util::GetNSString(IDS_IOS_TAB_RESUMPTION_TITLE)
-                    symbol:DefaultSymbolWithPointSize(kMacbookAndIPhone,
+                    symbol:DefaultSymbolWithPointSize(kMacbookAndIPhoneSymbol,
                                                       kIconPointSize)];
     _tabResumptionToggle.on = !_tabResumptionDisabled.value;
     [self.tableViewModel addItem:_tabResumptionToggle

@@ -188,7 +188,7 @@
             }
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 17
+          "shards": 16
         },
         "test": "chrome_all_tast_tests",
         "test_id_prefix": "ninja://chromeos:chrome_all_tast_tests/"
@@ -1011,6 +1011,7 @@
           "-v",
           "--stable-jobs",
           "--extra-browser-args=--log-level=0 --js-flags=--expose-gc --force_high_performance_gpu --disable-features=BackgroundVideoPauseOptimization --disable-background-media-suspend --disable-renderer-backgrounding --disable-background-timer-throttling",
+          "--enforce-browser-version",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl1_conformance_linux_runtimes.json",
           "--jobs=1",
           "--remote=127.0.0.1",
@@ -1124,6 +1125,35 @@
     ]
   },
   "lacros-amd64-generic-rel": {
+    "additional_compile_targets": [
+      "chrome"
+    ],
+    "skylab_tests": [
+      {
+        "autotest_name": "tast.lacros-from-gcs",
+        "bucket": "chromiumos-image-archive",
+        "cros_board": "volteer",
+        "cros_img": "volteer-public/R120-15650.0.0",
+        "cros_model": "voxel",
+        "dut_pool": "chromium",
+        "name": "lacros_all_tast_tests VOLTEER_PUBLIC_LKGM",
+        "public_builder": "cros_test_platform_public",
+        "public_builder_bucket": "testplatform-public",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "shards": 2,
+        "tast_expr": "(\"group:mainline\" && (\"dep:lacros_stable\" || \"dep:lacros\") && !informational)",
+        "test": "lacros_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
+        "test_level_retries": 2,
+        "timeout_sec": 10800,
+        "variant_id": "VOLTEER_PUBLIC_LKGM"
+      }
+    ]
+  },
+  "lacros-amd64-generic-rel-non-skylab": {
     "additional_compile_targets": [
       "chrome",
       "browser_tests"
@@ -1246,7 +1276,6 @@
           "--board=amd64-generic",
           "--use-vm"
         ],
-        "ci_only": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -1400,34 +1429,38 @@
         "test": "vaapi_unittest",
         "test_id_prefix": "ninja://media/gpu/vaapi:vaapi_unittest/",
         "variant_id": "amd64-generic"
-      }
-    ]
-  },
-  "lacros-amd64-generic-rel-skylab": {
-    "additional_compile_targets": [
-      "chrome"
-    ],
-    "skylab_tests": [
+      },
       {
-        "bucket": "chromiumos-image-archive",
-        "cros_board": "volteer",
-        "cros_img": "volteer-public/R119-15629.0.0",
-        "cros_model": "voxel",
-        "dut_pool": "chromium",
-        "name": "lacros_all_tast_tests VOLTEER_PUBLIC_LKGM",
-        "public_builder": "cros_test_platform_public",
-        "public_builder_bucket": "testplatform-public",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
+        "args": [
+          "--stop-ui",
+          "--env-var",
+          "LIBVA_DRIVERS_PATH",
+          "./",
+          "--env-var",
+          "LIBVA_DRIVER_NAME",
+          "libfake",
+          "--gtest_filter=\"VaapiTest.*\"",
+          "--board=eve",
+          "--flash"
+        ],
+        "ci_only": true,
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "shards": 2,
-        "tast_expr": "(\"group:mainline\" && (\"dep:lacros_stable\" || \"dep:lacros\") && !informational)",
-        "test": "lacros_all_tast_tests",
-        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
-        "test_level_retries": 2,
-        "timeout_sec": 10800,
-        "variant_id": "VOLTEER_PUBLIC_LKGM"
+        "name": "vaapi_unittest eve",
+        "swarming": {
+          "dimensions": {
+            "device_type": "eve",
+            "os": "ChromeOS"
+          },
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "vaapi_unittest",
+        "test_id_prefix": "ninja://media/gpu/vaapi:vaapi_unittest/",
+        "trigger_script": {
+          "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
+        },
+        "variant_id": "eve"
       }
     ]
   },
@@ -1442,18 +1475,20 @@
     ],
     "skylab_tests": [
       {
+        "autotest_name": "chromium",
         "bucket": "chromiumos-image-archive",
         "cros_board": "jacuzzi",
-        "cros_img": "jacuzzi-public/R119-15629.0.0",
+        "cros_img": "jacuzzi-public/R120-15650.0.0",
         "name": "chromeos_integration_tests JACUZZI_PUBLIC_LKGM",
         "test": "chromeos_integration_tests",
         "test_id_prefix": "ninja://chrome/test:chromeos_integration_tests/",
         "variant_id": "JACUZZI_PUBLIC_LKGM"
       },
       {
+        "autotest_name": "tast.lacros-from-gcs",
         "bucket": "chromiumos-image-archive",
         "cros_board": "jacuzzi",
-        "cros_img": "jacuzzi-public/R119-15629.0.0",
+        "cros_img": "jacuzzi-public/R120-15650.0.0",
         "name": "lacros_all_tast_tests JACUZZI_PUBLIC_LKGM",
         "resultdb": {
           "enable": true,
@@ -1480,9 +1515,10 @@
     ],
     "skylab_tests": [
       {
+        "autotest_name": "tast.lacros-from-gcs",
         "bucket": "chromiumos-image-archive",
         "cros_board": "trogdor",
-        "cros_img": "trogdor-public/R119-15629.0.0",
+        "cros_img": "trogdor-public/R120-15650.0.0",
         "name": "lacros_all_tast_tests TROGDOR_PUBLIC_LKGM",
         "resultdb": {
           "enable": true,
@@ -2537,20 +2573,6 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "service_manager_unittests",
-        "swarming": {
-          "dimensions": {
-            "os": "Ubuntu-22.04"
-          },
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "service_manager_unittests",
-        "test_id_prefix": "ninja://services/service_manager/tests:service_manager_unittests/"
-      },
-      {
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
         "name": "services_unittests",
         "swarming": {
           "dimensions": {
@@ -2873,8 +2895,7 @@
         "name": "absl_hardening_tests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -2889,8 +2910,7 @@
         "name": "accessibility_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -2905,8 +2925,7 @@
         "name": "angle_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -2922,8 +2941,7 @@
         "name": "app_shell_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -2938,8 +2956,7 @@
         "name": "ash_components_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -2955,8 +2972,7 @@
         "name": "ash_crosapi_tests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -2980,8 +2996,7 @@
         ],
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
@@ -2997,8 +3012,7 @@
         "name": "ash_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
@@ -3014,8 +3028,7 @@
         "name": "ash_webui_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3030,8 +3043,7 @@
         "name": "aura_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3046,8 +3058,7 @@
         "name": "base_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3062,8 +3073,7 @@
         "name": "blink_common_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3078,8 +3088,7 @@
         "name": "blink_fuzzer_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3094,8 +3103,7 @@
         "name": "blink_heap_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3110,8 +3118,7 @@
         "name": "blink_platform_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3126,8 +3133,7 @@
         "name": "boringssl_crypto_tests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3142,8 +3148,7 @@
         "name": "boringssl_ssl_tests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3160,11 +3165,10 @@
         "swarming": {
           "dimensions": {
             "kvm": "1",
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 83
+          "shards": 90
         },
         "test": "browser_tests",
         "test_id_prefix": "ninja://chrome/test:browser_tests/"
@@ -3181,8 +3185,7 @@
         "name": "browser_tests_require_lacros",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 9
@@ -3201,8 +3204,7 @@
         "name": "capture_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3217,8 +3219,7 @@
         "name": "cast_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3233,8 +3234,7 @@
         "name": "cc_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3249,8 +3249,7 @@
         "name": "chrome_app_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3265,8 +3264,7 @@
         "name": "chromedriver_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3281,8 +3279,7 @@
         "name": "chromeos_components_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3297,8 +3294,7 @@
         "name": "chromeos_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3313,8 +3309,7 @@
         "name": "components_browsertests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3329,8 +3324,7 @@
         "name": "components_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3345,8 +3339,7 @@
         "name": "compositor_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3362,8 +3355,7 @@
         "retry_only_failed_tests": true,
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 7
@@ -3379,8 +3371,7 @@
         "name": "content_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3395,8 +3386,7 @@
         "name": "crashpad_tests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3411,8 +3401,7 @@
         "name": "crypto_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3427,8 +3416,7 @@
         "name": "dbus_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3443,8 +3431,7 @@
         "name": "device_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3459,8 +3446,7 @@
         "name": "display_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3476,8 +3462,7 @@
         "name": "env_chromium_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3492,8 +3477,7 @@
         "name": "events_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3508,8 +3492,7 @@
         "name": "exo_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3524,8 +3507,7 @@
         "name": "extensions_browsertests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3540,8 +3522,7 @@
         "name": "extensions_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3556,8 +3537,7 @@
         "name": "filesystem_service_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3572,8 +3552,7 @@
         "name": "gcm_unit_tests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3588,8 +3567,7 @@
         "name": "gfx_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3604,8 +3582,7 @@
         "name": "gin_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3620,8 +3597,7 @@
         "name": "gl_unittests_ozone",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3636,8 +3612,7 @@
         "name": "google_apis_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3652,8 +3627,7 @@
         "name": "gpu_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3668,8 +3642,7 @@
         "name": "gwp_asan_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3685,8 +3658,7 @@
         "retry_only_failed_tests": true,
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
@@ -3702,8 +3674,7 @@
         "name": "ipc_tests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3718,8 +3689,7 @@
         "name": "keyboard_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3734,8 +3704,7 @@
         "name": "latency_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3751,8 +3720,7 @@
         "name": "leveldb_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3767,8 +3735,7 @@
         "name": "libjingle_xmpp_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3783,8 +3750,7 @@
         "name": "liburlpattern_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3799,8 +3765,7 @@
         "name": "media_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3815,8 +3780,7 @@
         "name": "message_center_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3831,8 +3795,7 @@
         "name": "midi_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3847,8 +3810,7 @@
         "name": "mojo_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3863,8 +3825,7 @@
         "name": "nacl_loader_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3879,8 +3840,7 @@
         "name": "native_theme_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3895,8 +3855,7 @@
         "name": "net_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3914,8 +3873,7 @@
         "name": "ozone_gl_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3930,8 +3888,7 @@
         "name": "ozone_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3946,8 +3903,7 @@
         "name": "ozone_x11_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3962,8 +3918,7 @@
         "name": "pdf_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -3978,8 +3933,7 @@
         "name": "perfetto_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4006,8 +3960,7 @@
         ],
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4022,8 +3975,7 @@
         "name": "ppapi_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4038,8 +3990,7 @@
         "name": "printing_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4054,8 +4005,7 @@
         "name": "remoting_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4070,8 +4020,7 @@
         "name": "sandbox_linux_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4083,27 +4032,10 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "service_manager_unittests",
-        "swarming": {
-          "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
-          },
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "service_manager_unittests",
-        "test_id_prefix": "ninja://services/service_manager/tests:service_manager_unittests/"
-      },
-      {
-        "isolate_profile_data": true,
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
         "name": "services_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4118,8 +4050,7 @@
         "name": "shell_dialogs_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4134,8 +4065,7 @@
         "name": "shell_encryption_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4150,8 +4080,7 @@
         "name": "skia_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4166,8 +4095,7 @@
         "name": "snapshot_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4182,8 +4110,7 @@
         "name": "sql_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4198,8 +4125,7 @@
         "name": "storage_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4214,8 +4140,7 @@
         "name": "sync_integration_tests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
@@ -4231,8 +4156,7 @@
         "name": "ui_base_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4247,8 +4171,7 @@
         "name": "ui_chromeos_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4263,8 +4186,7 @@
         "name": "ui_touch_selection_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4279,8 +4201,7 @@
         "name": "ui_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4296,8 +4217,7 @@
         "retry_only_failed_tests": true,
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
@@ -4313,8 +4233,7 @@
         "name": "url_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4330,8 +4249,7 @@
         "name": "usage_time_limit_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4346,8 +4264,7 @@
         "name": "views_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4362,8 +4279,7 @@
         "name": "viz_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4378,8 +4294,7 @@
         "name": "wayland_client_perftests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4394,8 +4309,7 @@
         "name": "wayland_client_tests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4410,8 +4324,7 @@
         "name": "webkit_unit_tests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4426,8 +4339,7 @@
         "name": "wm_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4442,8 +4354,7 @@
         "name": "wtf_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4458,8 +4369,7 @@
         "name": "zlib_unittests",
         "swarming": {
           "dimensions": {
-            "os": "Ubuntu-22.04",
-            "zone": "us"
+            "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4495,7 +4405,6 @@
         "name": "absl_hardening_tests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4511,7 +4420,6 @@
         "name": "accessibility_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4527,7 +4435,6 @@
         "name": "app_shell_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4543,7 +4450,6 @@
         "name": "aura_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4559,7 +4465,6 @@
         "name": "base_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4575,7 +4480,6 @@
         "name": "blink_common_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4591,7 +4495,6 @@
         "name": "blink_fuzzer_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4607,7 +4510,6 @@
         "name": "blink_heap_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4623,7 +4525,6 @@
         "name": "blink_platform_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4639,7 +4540,6 @@
         "name": "boringssl_crypto_tests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4655,7 +4555,6 @@
         "name": "boringssl_ssl_tests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4672,11 +4571,10 @@
         "retry_only_failed_tests": true,
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 27
+          "shards": 28
         },
         "test": "browser_tests",
         "test_id_prefix": "ninja://chrome/test:browser_tests/"
@@ -4692,7 +4590,6 @@
         "name": "capture_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4708,7 +4605,6 @@
         "name": "cast_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4724,7 +4620,6 @@
         "name": "cc_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4740,7 +4635,6 @@
         "name": "chrome_app_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4756,7 +4650,6 @@
         "name": "chromedriver_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4772,7 +4665,6 @@
         "name": "chromeos_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4788,7 +4680,6 @@
         "name": "components_browsertests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4804,7 +4695,6 @@
         "name": "components_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4820,7 +4710,6 @@
         "name": "compositor_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4837,7 +4726,6 @@
         "retry_only_failed_tests": true,
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -4854,7 +4742,6 @@
         "name": "content_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4870,7 +4757,6 @@
         "name": "crashpad_tests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4886,7 +4772,6 @@
         "name": "crypto_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4902,7 +4787,6 @@
         "name": "dbus_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4918,7 +4802,6 @@
         "name": "device_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4934,7 +4817,6 @@
         "name": "display_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4951,7 +4833,6 @@
         "name": "env_chromium_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4967,7 +4848,6 @@
         "name": "events_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -4986,7 +4866,6 @@
         "name": "extensions_browsertests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5005,7 +4884,6 @@
         "name": "extensions_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5021,7 +4899,6 @@
         "name": "filesystem_service_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5037,7 +4914,6 @@
         "name": "gcm_unit_tests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5053,7 +4929,6 @@
         "name": "gfx_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5069,7 +4944,6 @@
         "name": "gin_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5085,7 +4959,6 @@
         "name": "google_apis_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5101,7 +4974,6 @@
         "name": "gpu_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5117,7 +4989,6 @@
         "name": "gwp_asan_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5134,7 +5005,6 @@
         "retry_only_failed_tests": true,
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -5145,10 +5015,10 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v119.0.6045.116/test_ash_chrome"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter;../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v119.0.6045.23/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 119.0.6045.116",
+        "description": "Run with ash-chrome version 119.0.6045.23",
         "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -5158,12 +5028,11 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v119.0.6045.116",
-              "revision": "version:119.0.6045.116"
+              "location": "lacros_version_skew_tests_v119.0.6045.23",
+              "revision": "version:119.0.6045.23"
             }
           ],
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -5175,10 +5044,10 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v121.0.6122.0/test_ash_chrome"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter;../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v120.0.6075.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 121.0.6122.0",
+        "description": "Run with ash-chrome version 120.0.6075.0",
         "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -5188,12 +5057,11 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v121.0.6122.0",
-              "revision": "version:121.0.6122.0"
+              "location": "lacros_version_skew_tests_v120.0.6075.0",
+              "revision": "version:120.0.6075.0"
             }
           ],
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -5205,10 +5073,10 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v120.0.6099.13/test_ash_chrome"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter;../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v119.0.6045.16/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 120.0.6099.13",
+        "description": "Run with ash-chrome version 119.0.6045.16",
         "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -5218,12 +5086,11 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v120.0.6099.13",
-              "revision": "version:120.0.6099.13"
+              "location": "lacros_version_skew_tests_v119.0.6045.16",
+              "revision": "version:119.0.6045.16"
             }
           ],
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -5235,10 +5102,10 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v118.0.5993.124/test_ash_chrome"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter;../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v118.0.5993.86/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 118.0.5993.124",
+        "description": "Run with ash-chrome version 118.0.5993.86",
         "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -5248,12 +5115,11 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v118.0.5993.124",
-              "revision": "version:118.0.5993.124"
+              "location": "lacros_version_skew_tests_v118.0.5993.86",
+              "revision": "version:118.0.5993.86"
             }
           ],
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -5271,7 +5137,6 @@
         "name": "ipc_tests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5290,20 +5155,20 @@
         "name": "lacros_chrome_browsertests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 5
         },
         "test": "lacros_chrome_browsertests",
         "test_id_prefix": "ninja://chrome/test:lacros_chrome_browsertests/"
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v119.0.6045.116/test_ash_chrome"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.filter;../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v119.0.6045.23/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 119.0.6045.116",
+        "description": "Run with ash-chrome version 119.0.6045.23",
         "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -5313,15 +5178,15 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v119.0.6045.116",
-              "revision": "version:119.0.6045.116"
+              "location": "lacros_version_skew_tests_v119.0.6045.23",
+              "revision": "version:119.0.6045.23"
             }
           ],
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 4
         },
         "test": "lacros_chrome_browsertests",
         "test_id_prefix": "ninja://chrome/test:lacros_chrome_browsertests/",
@@ -5329,10 +5194,10 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v121.0.6122.0/test_ash_chrome"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.filter;../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v120.0.6075.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 121.0.6122.0",
+        "description": "Run with ash-chrome version 120.0.6075.0",
         "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -5342,15 +5207,15 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v121.0.6122.0",
-              "revision": "version:121.0.6122.0"
+              "location": "lacros_version_skew_tests_v120.0.6075.0",
+              "revision": "version:120.0.6075.0"
             }
           ],
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 4
         },
         "test": "lacros_chrome_browsertests",
         "test_id_prefix": "ninja://chrome/test:lacros_chrome_browsertests/",
@@ -5358,10 +5223,10 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v120.0.6099.13/test_ash_chrome"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.filter;../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v119.0.6045.16/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 120.0.6099.13",
+        "description": "Run with ash-chrome version 119.0.6045.16",
         "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -5371,15 +5236,15 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v120.0.6099.13",
-              "revision": "version:120.0.6099.13"
+              "location": "lacros_version_skew_tests_v119.0.6045.16",
+              "revision": "version:119.0.6045.16"
             }
           ],
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 4
         },
         "test": "lacros_chrome_browsertests",
         "test_id_prefix": "ninja://chrome/test:lacros_chrome_browsertests/",
@@ -5387,10 +5252,10 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v118.0.5993.124/test_ash_chrome"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.filter;../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v118.0.5993.86/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 118.0.5993.124",
+        "description": "Run with ash-chrome version 118.0.5993.86",
         "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -5400,158 +5265,18 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v118.0.5993.124",
-              "revision": "version:118.0.5993.124"
+              "location": "lacros_version_skew_tests_v118.0.5993.86",
+              "revision": "version:118.0.5993.86"
             }
           ],
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 4
         },
         "test": "lacros_chrome_browsertests",
         "test_id_prefix": "ninja://chrome/test:lacros_chrome_browsertests/",
-        "variant_id": "Lacros version skew testing ash stable"
-      },
-      {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.filter"
-        ],
-        "isolate_profile_data": true,
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "lacros_chrome_browsertests_run_in_series",
-        "swarming": {
-          "dimensions": {
-            "kvm": "1",
-            "os": "Ubuntu-22.04"
-          },
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 5
-        },
-        "test": "lacros_chrome_browsertests_run_in_series",
-        "test_id_prefix": "ninja://chrome/test:lacros_chrome_browsertests_run_in_series/"
-      },
-      {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v119.0.6045.116/test_ash_chrome"
-        ],
-        "description": "Run with ash-chrome version 119.0.6045.116",
-        "isolate_profile_data": true,
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "lacros_chrome_browsertests_run_in_series Lacros version skew testing ash beta",
-        "swarming": {
-          "cipd_packages": [
-            {
-              "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v119.0.6045.116",
-              "revision": "version:119.0.6045.116"
-            }
-          ],
-          "dimensions": {
-            "kvm": "1",
-            "os": "Ubuntu-22.04"
-          },
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
-        },
-        "test": "lacros_chrome_browsertests_run_in_series",
-        "test_id_prefix": "ninja://chrome/test:lacros_chrome_browsertests_run_in_series/",
-        "variant_id": "Lacros version skew testing ash beta"
-      },
-      {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v121.0.6122.0/test_ash_chrome"
-        ],
-        "description": "Run with ash-chrome version 121.0.6122.0",
-        "isolate_profile_data": true,
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "lacros_chrome_browsertests_run_in_series Lacros version skew testing ash canary",
-        "swarming": {
-          "cipd_packages": [
-            {
-              "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v121.0.6122.0",
-              "revision": "version:121.0.6122.0"
-            }
-          ],
-          "dimensions": {
-            "kvm": "1",
-            "os": "Ubuntu-22.04"
-          },
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
-        },
-        "test": "lacros_chrome_browsertests_run_in_series",
-        "test_id_prefix": "ninja://chrome/test:lacros_chrome_browsertests_run_in_series/",
-        "variant_id": "Lacros version skew testing ash canary"
-      },
-      {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v120.0.6099.13/test_ash_chrome"
-        ],
-        "description": "Run with ash-chrome version 120.0.6099.13",
-        "isolate_profile_data": true,
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "lacros_chrome_browsertests_run_in_series Lacros version skew testing ash dev",
-        "swarming": {
-          "cipd_packages": [
-            {
-              "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v120.0.6099.13",
-              "revision": "version:120.0.6099.13"
-            }
-          ],
-          "dimensions": {
-            "kvm": "1",
-            "os": "Ubuntu-22.04"
-          },
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
-        },
-        "test": "lacros_chrome_browsertests_run_in_series",
-        "test_id_prefix": "ninja://chrome/test:lacros_chrome_browsertests_run_in_series/",
-        "variant_id": "Lacros version skew testing ash dev"
-      },
-      {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v118.0.5993.124/test_ash_chrome"
-        ],
-        "description": "Run with ash-chrome version 118.0.5993.124",
-        "isolate_profile_data": true,
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "lacros_chrome_browsertests_run_in_series Lacros version skew testing ash stable",
-        "swarming": {
-          "cipd_packages": [
-            {
-              "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v118.0.5993.124",
-              "revision": "version:118.0.5993.124"
-            }
-          ],
-          "dimensions": {
-            "kvm": "1",
-            "os": "Ubuntu-22.04"
-          },
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 5
-        },
-        "test": "lacros_chrome_browsertests_run_in_series",
-        "test_id_prefix": "ninja://chrome/test:lacros_chrome_browsertests_run_in_series/",
         "variant_id": "Lacros version skew testing ash stable"
       },
       {
@@ -5562,7 +5287,6 @@
         "name": "lacros_chrome_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5578,7 +5302,6 @@
         "name": "latency_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5595,7 +5318,6 @@
         "name": "leveldb_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5611,7 +5333,6 @@
         "name": "libjingle_xmpp_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5627,7 +5348,6 @@
         "name": "liburlpattern_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5643,7 +5363,6 @@
         "name": "media_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5659,7 +5378,6 @@
         "name": "message_center_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5675,7 +5393,6 @@
         "name": "midi_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5691,7 +5408,6 @@
         "name": "mojo_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5707,7 +5423,6 @@
         "name": "nacl_loader_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5723,7 +5438,6 @@
         "name": "native_theme_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5739,7 +5453,6 @@
         "name": "net_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5755,7 +5468,6 @@
         "name": "ozone_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5771,7 +5483,6 @@
         "name": "pdf_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5787,7 +5498,6 @@
         "name": "perfetto_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5803,7 +5513,6 @@
         "name": "ppapi_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5819,7 +5528,6 @@
         "name": "printing_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5835,7 +5543,6 @@
         "name": "remoting_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5851,7 +5558,6 @@
         "name": "sandbox_linux_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5864,26 +5570,9 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "service_manager_unittests",
-        "swarming": {
-          "dimensions": {
-            "kvm": "1",
-            "os": "Ubuntu-22.04"
-          },
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "service_manager_unittests",
-        "test_id_prefix": "ninja://services/service_manager/tests:service_manager_unittests/"
-      },
-      {
-        "isolate_profile_data": true,
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
         "name": "services_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5899,7 +5588,6 @@
         "name": "shell_dialogs_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5915,7 +5603,6 @@
         "name": "skia_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5931,7 +5618,6 @@
         "name": "snapshot_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5947,7 +5633,6 @@
         "name": "sql_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5963,7 +5648,6 @@
         "name": "storage_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5979,7 +5663,6 @@
         "name": "sync_integration_tests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -5996,7 +5679,6 @@
         "name": "ui_base_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6012,7 +5694,6 @@
         "name": "ui_touch_selection_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6028,7 +5709,6 @@
         "name": "ui_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6045,7 +5725,6 @@
         "retry_only_failed_tests": true,
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6061,7 +5740,6 @@
         "name": "url_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6080,7 +5758,6 @@
         "name": "views_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6096,7 +5773,6 @@
         "name": "viz_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6112,7 +5788,6 @@
         "name": "webkit_unit_tests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6128,7 +5803,6 @@
         "name": "wm_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6144,7 +5818,6 @@
         "name": "wtf_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -6160,7 +5833,6 @@
         "name": "zlib_unittests",
         "swarming": {
           "dimensions": {
-            "kvm": "1",
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"

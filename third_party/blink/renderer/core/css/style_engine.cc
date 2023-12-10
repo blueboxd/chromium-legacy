@@ -100,12 +100,14 @@
 #include "third_party/blink/renderer/core/loader/render_blocking_resource_manager.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/page_popup_controller.h"
+#include "third_party/blink/renderer/core/preferences/preference_overrides.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/filter_operations.h"
 #include "third_party/blink/renderer/core/style/style_initial_data.h"
 #include "third_party/blink/renderer/core/svg/svg_resource.h"
 #include "third_party/blink/renderer/core/view_transition/view_transition.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition_supplement.h"
 #include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
@@ -138,7 +140,8 @@ enum RuleSetFlags {
   kLayerRules = 1 << 5,
   kFontPaletteValuesRules = 1 << 6,
   kPositionFallbackRules = 1 << 7,
-  kFontFeatureValuesRules = 1 << 8
+  kFontFeatureValuesRules = 1 << 8,
+  kViewTransitionsRules = 1 << 9
 };
 
 const unsigned kRuleSetFlagsAll = ~0u;
@@ -172,6 +175,9 @@ unsigned GetRuleSetFlags(const HeapHashSet<Member<RuleSet>> rule_sets) {
     }
     if (!rule_set->PositionFallbackRules().empty()) {
       flags |= kPositionFallbackRules;
+    }
+    if (!rule_set->ViewTransitionsRules().empty()) {
+      flags |= kViewTransitionsRules;
     }
   }
   return flags;
@@ -2287,12 +2293,13 @@ void StyleEngine::CollectFeaturesTo(RuleFeatureSet& features) {
   CollectScopedStyleFeaturesTo(features);
 }
 
-void StyleEngine::EnsureUAStyleForFullscreen() {
+void StyleEngine::EnsureUAStyleForFullscreen(const Element& element) {
   DCHECK(global_rule_set_);
   if (global_rule_set_->HasFullscreenUAStyle()) {
     return;
   }
-  CSSDefaultStyleSheets::Instance().EnsureDefaultStyleSheetForFullscreen();
+  CSSDefaultStyleSheets::Instance().EnsureDefaultStyleSheetForFullscreen(
+      element);
   global_rule_set_->MarkDirty();
   UpdateActiveStyle();
 }
@@ -2336,6 +2343,23 @@ RuleSet* StyleEngine::DefaultViewTransitionStyle() const {
   auto* css_style_sheet = transition->UAStyleSheet();
   return &css_style_sheet->Contents()->EnsureRuleSet(
       CSSDefaultStyleSheets::ScreenEval());
+}
+
+void StyleEngine::UpdateViewTransitionsOptIn() {
+  bool cross_document_enabled = false;
+
+  // TODO(https://crbug.com/1463966): This will likely need to change to a
+  // CSSValueList if we want to support multiple tokens as a trigger.
+  if (view_transitions_rule_) {
+    if (const CSSValue* value =
+            view_transitions_rule_->GetNavigationTrigger()) {
+      cross_document_enabled = To<CSSIdentifierValue>(value)->GetValueID() ==
+                               CSSValueID::kCrossDocumentSameOrigin;
+    }
+  }
+
+  ViewTransitionSupplement::From(GetDocument())
+      ->OnViewTransitionsStyleUpdated(cross_document_enabled);
 }
 
 bool StyleEngine::HasRulesForId(const AtomicString& id) const {
@@ -2598,9 +2622,6 @@ void StyleEngine::ApplyUserRuleSetChanges(
     MarkPositionFallbackStylesDirty();
   }
 
-  // TODO(crbug.com/1463966): @view-transitions doesn't yet work from user
-  // stylesheets.
-
   InvalidateForRuleSetChanges(GetDocument(), changed_rule_sets,
                               changed_rule_flags, kInvalidateAllScopes);
 }
@@ -2731,6 +2752,14 @@ void StyleEngine::ApplyRuleSetChanges(
 
   if (changed_rule_flags & kPositionFallbackRules) {
     MarkPositionFallbackStylesDirty();
+  }
+
+  if (changed_rule_flags & kViewTransitionsRules) {
+    // Since a shadow-tree isn't an independent navigable, @view-transition
+    // doesn't apply within one.
+    if (tree_scope.RootNode().IsDocumentNode()) {
+      AddViewTransitionsRules(new_style_sheets);
+    }
   }
 
   if (!new_style_sheets.empty()) {
@@ -2978,6 +3007,36 @@ bool StyleEngine::UserKeyframeStyleShouldOverride(
   return !user_cascade_layer_map_ || user_cascade_layer_map_->CompareLayerOrder(
                                          existing_rule->GetCascadeLayer(),
                                          new_rule->GetCascadeLayer()) <= 0;
+}
+
+void StyleEngine::AddViewTransitionsRules(
+    const ActiveStyleSheetVector& sheets) {
+  if (!RuntimeEnabledFeatures::ViewTransitionOnNavigationEnabled()) {
+    return;
+  }
+  view_transitions_rule_.Clear();
+
+  for (const ActiveStyleSheet& active_sheet : sheets) {
+    RuleSet* rule_set = active_sheet.second;
+    if (!rule_set || rule_set->ViewTransitionsRules().empty()) {
+      continue;
+    }
+
+    const CascadeLayerMap* layer_map =
+        document_->GetScopedStyleResolver()
+            ? document_->GetScopedStyleResolver()->GetCascadeLayerMap()
+            : nullptr;
+    for (auto& rule : rule_set->ViewTransitionsRules()) {
+      if (!view_transitions_rule_ || !layer_map ||
+          layer_map->CompareLayerOrder(
+              view_transitions_rule_->GetCascadeLayer(),
+              rule->GetCascadeLayer()) <= 0) {
+        view_transitions_rule_ = rule;
+      }
+    }
+  }
+
+  UpdateViewTransitionsOptIn();
 }
 
 void StyleEngine::AddFontPaletteValuesRules(const RuleSet& rule_set) {
@@ -3323,6 +3382,7 @@ void StyleEngine::UpdateStyleAndLayoutTreeForContainer(
   // Update quotes only if there are any scopes marked dirty.
   if (StyleContainmentScopeTree* tree = GetStyleContainmentScopeTree()) {
     tree->UpdateQuotes();
+    tree->UpdateCounters();
   }
   if (container == GetDocument().documentElement()) {
     // If the container is the root element, there may be body styles which have
@@ -3500,6 +3560,7 @@ void StyleEngine::UpdateStyleAndLayoutTree() {
     // Update quotes only if there are any scopes marked dirty.
     if (StyleContainmentScopeTree* tree = GetStyleContainmentScopeTree()) {
       tree->UpdateQuotes();
+      tree->UpdateCounters();
     }
   } else {
     style_recalc_root_.Clear();
@@ -3720,8 +3781,11 @@ void StyleEngine::UpdateColorScheme() {
   preferred_color_scheme_ = settings->GetPreferredColorScheme();
   bool old_force_dark_mode_enabled = force_dark_mode_enabled_;
   force_dark_mode_enabled_ = settings->GetForceDarkModeEnabled();
+  bool media_feature_override_color_scheme = false;
 
-  if (const auto* overrides =
+  // TODO(1479201): Should DevTools emulation use the WebPreferences API
+  // overrides?
+  if (const MediaFeatureOverrides* overrides =
           GetDocument().GetPage()->GetMediaFeatureOverrides()) {
     if (absl::optional<ForcedColors> forced_color_override =
             overrides->GetForcedColors()) {
@@ -3730,6 +3794,18 @@ void StyleEngine::UpdateColorScheme() {
     if (absl::optional<mojom::blink::PreferredColorScheme>
             preferred_color_scheme_override =
                 overrides->GetPreferredColorScheme()) {
+      preferred_color_scheme_ = preferred_color_scheme_override.value();
+      media_feature_override_color_scheme = true;
+    }
+  }
+
+  const PreferenceOverrides* preference_overrides =
+      GetDocument().GetPage()->GetPreferenceOverrides();
+  if (preference_overrides && !media_feature_override_color_scheme) {
+    absl::optional<mojom::blink::PreferredColorScheme>
+        preferred_color_scheme_override =
+            preference_overrides->GetPreferredColorScheme();
+    if (preferred_color_scheme_override.has_value()) {
       preferred_color_scheme_ = preferred_color_scheme_override.value();
     }
   }
@@ -4024,6 +4100,7 @@ void StyleEngine::Trace(Visitor* visitor) const {
   visitor->Trace(text_tracks_);
   visitor->Trace(vtt_originating_element_);
   visitor->Trace(parent_for_detached_subtree_);
+  visitor->Trace(view_transitions_rule_);
   visitor->Trace(style_image_cache_);
   visitor->Trace(fill_or_clip_path_uri_value_cache_);
   visitor->Trace(style_containment_scope_tree_);

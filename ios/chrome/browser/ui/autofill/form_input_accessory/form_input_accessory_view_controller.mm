@@ -13,7 +13,6 @@
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/autofill/branding/branding_view_controller.h"
-#import "ios/chrome/browser/ui/autofill/features.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_suggestion_view.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
@@ -298,21 +297,18 @@
   UMA_HISTOGRAM_COUNTS_100("ManualFallback.VisibleSuggestions.OpenProfiles",
                            self.formSuggestionView.suggestions.count);
   [self.manualFillAccessoryViewControllerDelegate accountButtonPressed:sender];
-  [self.brandingViewController notifyFormInputAccessoryTapped];
 }
 
 - (void)cardButtonPressed:(UIButton*)sender {
   UMA_HISTOGRAM_COUNTS_100("ManualFallback.VisibleSuggestions.OpenCreditCards",
                            self.formSuggestionView.suggestions.count);
   [self.manualFillAccessoryViewControllerDelegate cardButtonPressed:sender];
-  [self.brandingViewController notifyFormInputAccessoryTapped];
 }
 
 - (void)passwordButtonPressed:(UIButton*)sender {
   UMA_HISTOGRAM_COUNTS_100("ManualFallback.VisibleSuggestions.OpenPasswords",
                            self.formSuggestionView.suggestions.count);
   [self.manualFillAccessoryViewControllerDelegate passwordButtonPressed:sender];
-  [self.brandingViewController notifyFormInputAccessoryTapped];
 }
 
 #pragma mark - FormSuggestionViewDelegate
@@ -320,7 +316,6 @@
 - (void)formSuggestionView:(FormSuggestionView*)formSuggestionView
        didAcceptSuggestion:(FormSuggestion*)suggestion {
   [self.formSuggestionClient didSelectSuggestion:suggestion];
-  [self.brandingViewController notifyFormInputAccessoryTapped];
 }
 
 - (void)formSuggestionViewShouldResetFromPull:

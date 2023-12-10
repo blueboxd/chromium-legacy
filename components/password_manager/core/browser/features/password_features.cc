@@ -72,18 +72,13 @@ BASE_FEATURE(kNewConfirmationBubbleForGeneratedPasswords,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
-#if BUILDFLAG(IS_IOS)
-// Enables migration to OSCrypt with a single query to the keychain.
-BASE_FEATURE(kOneReadLoginDatabaseMigration,
-             "OneReadLoginDatabaseMigration",
+// Enables different experiments that modify content and behavior of the
+// existing generated password suggestion dropdown.
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
+BASE_FEATURE(kPasswordGenerationExperiment,
+             "PasswordGenerationExperiment",
              base::FEATURE_DISABLED_BY_DEFAULT);
-#endif  // BUILDFLAG(IS_IOS)
-
-// Enables the notification UI that is displayed to the user when visiting a
-// website for which a stored password has been shared by another user.
-BASE_FEATURE(kSharedPasswordNotificationUI,
-             "SharedPasswordNotificationUI",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 // Enables password receiving service including incoming password sharing
 // invitation sync data type.
@@ -103,11 +98,34 @@ BASE_FEATURE(kPasswordManagerLogToTerminal,
              "PasswordManagerLogToTerminal",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables the notification UI that is displayed to the user when visiting a
+// website for which a stored password has been shared by another user.
+BASE_FEATURE(kSharedPasswordNotificationUI,
+             "SharedPasswordNotificationUI",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Displays at least the decryptable and never saved logins in the password
 // manager
 BASE_FEATURE(kSkipUndecryptablePasswords,
              "SkipUndecryptablePasswords",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_ANDROID)
+// Enables use of Google Mobile services for non-synced password storage that
+// contains no passwords, so no migration will be necessary.
+// UnifiedPasswordManagerLocalPasswordsAndroidWithMigration will replace this
+// feature once UPM starts to be rolled out to users who have saved local
+// passwords.
+BASE_FEATURE(kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration,
+             "kUnifiedPasswordManagerLocalPasswordsAndroidNoMigration",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables use of Google Mobile services for non-synced password storage add for
+// users who have local passwords saved.
+BASE_FEATURE(kUnifiedPasswordManagerLocalPasswordsAndroidWithMigration,
+             "kUnifiedPasswordManagerLocalPasswordsAndroidWithMigration",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 // Improves PSL matching capabilities by utilizing PSL-extension list from
 // affiliation service. It fixes problem with incorrect password suggestions on
@@ -119,5 +137,39 @@ BASE_FEATURE(kUseExtensionListForPSLMatching,
 #else
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
+
+// Enables using server prediction when parsing password forms for saving.
+// If disabled, password server predictions are only used when parsing forms
+// for filling.
+BASE_FEATURE(kUseServerPredictionsOnSaveParsing,
+             "UseServerPredictionsOnSaveParsing",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables support of sending additional votes on username first flow. The votes
+// are sent on single password forms and contain information about preceding
+// single username forms.
+// TODO(crbug.com/959776): Clean up if the main crowdsourcing is good enough and
+// we don't need additional signals.
+BASE_FEATURE(kUsernameFirstFlowFallbackCrowdsourcing,
+             "UsernameFirstFlowFallbackCrowdsourcing",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables suggesting username in the save/update prompt in the case of
+// autocomplete="username".
+BASE_FEATURE(kUsernameFirstFlowHonorAutocomplete,
+             "UsernameFirstFlowHonorAutocomplete",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables storing more possible username values in the LRU cache. Part of the
+// `kUsernameFirstFlowWithIntermediateValues` feature.
+BASE_FEATURE(kUsernameFirstFlowStoreSeveralValues,
+             "UsernameFirstFlowStoreSeveralValues",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables tolerating intermediate fields like OTP or CAPTCHA
+// between username and password fields in Username First Flow.
+BASE_FEATURE(kUsernameFirstFlowWithIntermediateValues,
+             "UsernameFirstFlowWithIntermediateValues",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace password_manager::features

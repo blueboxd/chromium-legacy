@@ -310,7 +310,6 @@
 <translation id="2276987123919776440">15 минут</translation>
 <translation id="2277103315734023688">Перемотать вперед</translation>
 <translation id="2282073721614284166">Открыть ссылку в этой вкладке</translation>
-<translation id="2284237890386182187">Точка доступа работает. Подключенных устройств нет.</translation>
 <translation id="2292698582925480719">Масштаб экрана</translation>
 <translation id="229397294990920565">Отключение мобильного Интернета…</translation>
 <translation id="2295777434187870477">Микрофон включен. Нажмите, чтобы отключить его.</translation>
@@ -352,7 +351,6 @@
 <translation id="243878895369688216">Открыто вчера</translation>
 <translation id="2440978926514840421">Выполнена запись в формате GIF</translation>
 <translation id="2441427462554639370">Запись приостановлена, потому что в хранилище почти нет свободного места.</translation>
-<translation id="24452542372838207">Развернуть уведомление</translation>
 <translation id="2448312741937722512">Тип</translation>
 <translation id="2449089818483227734">Низкий заряд батареи</translation>
 <translation id="2450205753526923158">Режим создания скриншота</translation>
@@ -493,7 +491,6 @@
 <translation id="3062298103034426069">Не поддерживается</translation>
 <translation id="3068622547379332530">Версия <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />), <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">Временное хранилище расположено слева</translation>
-<translation id="3070639127620815135">Поиск + Esc</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Развернуть меню</translation>
 <translation id="3087734570205094154">Снизу</translation>
@@ -572,7 +569,6 @@
 <translation id="3387527074123400161">Chromium OS</translation>
 <translation id="3389599499324569679">Включить голосовой ввод?</translation>
 <translation id="3394432020929931914">, развернуто</translation>
-<translation id="3400357268283240774">Дополнительные настройки</translation>
 <translation id="3405101454990027959">Предоставить доступ к микрофону</translation>
 <translation id="3408735331120433841">Идет трансляция экрана.</translation>
 <translation id="3409584356742878290">Показать или скрыть инспектор инструментов разработчика</translation>
@@ -620,7 +616,6 @@
 <translation id="3563775809269155755">Включить точку доступа</translation>
 <translation id="3566240529365775567">Открыто только что</translation>
 <translation id="3571734092741541777">Настроить</translation>
-<translation id="3572988532398145777">Нельзя развернуть уведомление, пока открыта панель. Сначала закройте панель внизу.</translation>
 <translation id="3573179567135747900">Вернуться к языку: "<ph name="FROM_LOCALE" />" (потребуется перезагрузка)</translation>
 <translation id="3576141592585647168">Изменение часового пояса</translation>
 <translation id="3577473026931028326">Произошла ошибка. Повторите попытку.</translation>
@@ -703,7 +698,6 @@
 <translation id="385300504083504382">В начало</translation>
 <translation id="3859364108019690">Ошибка трансляции приложений</translation>
 <translation id="3861651314799684201">Нажмите Ввод, чтобы записать видео со всего экрана</translation>
-<translation id="3865912916886104060">Нет подключенных устройств. Чтобы вы могли использовать точку доступа, Wi-Fi будет отключен.</translation>
 <translation id="3886872229787704059">Открыто сегодня</translation>
 <translation id="3891340733213178823">Чтобы выйти, дважды нажмите Ctrl+Shift+Q.</translation>
 <translation id="3893630138897523026">ChromeVox (голосовое сопровождение)</translation>
@@ -788,7 +782,6 @@
 <translation id="4197790712631116042">Отключено</translation>
 <translation id="4201033867194214117">Функция "<ph name="FEATURE_NAME" />" недоступна</translation>
 <translation id="4201051445878709314">Показать предыдущий месяц</translation>
-<translation id="4202362334312791952">Подключено 1 устройство. Чтобы вы могли использовать точку доступа, Wi-Fi будет отключен.</translation>
 <translation id="4209973997261364186">Wi-Fi включен</translation>
 <translation id="4212472694152630271">Войти с помощью PIN-кода</translation>
 <translation id="4215497585250573029">Настройки VPN</translation>
@@ -905,7 +898,6 @@
 <translation id="468293128311738995">Приложения на вашем телефоне</translation>
 <translation id="4690510401873698237">Временное хранилище размещено в нижней части экрана</translation>
 <translation id="4696813013609194136">Требуется родительский код доступа</translation>
-<translation id="4698850295812410683">Показать инструменты стилуса</translation>
 <translation id="4702647871202761252">Экран конфиденциальности отключен</translation>
 <translation id="4706121060329443414">Повторное скачивание запустится позже. Сейчас запись речи будет передана для обработки в Google.</translation>
 <translation id="470644585772471629">Инверсия цветов</translation>
@@ -1053,6 +1045,7 @@
 <translation id="5260676007519551770">Рабочий стол 4</translation>
 <translation id="5268819379131021772">Список задач Google</translation>
 <translation id="5275923704957843041">Предварительный просмотр рабочего стола</translation>
+<translation id="5277869901083657836">Показать или скрыть инструменты стилуса</translation>
 <translation id="5278086053818066789">Включить или отключить ChromeVox (озвучивание текста на экране)</translation>
 <translation id="5283099933536931082">Приложение "<ph name="APP_ITEM_TITLE" />" требует вашего внимания.</translation>
 <translation id="5283198616748585639">Добавить 1 мин.</translation>
@@ -1095,7 +1088,6 @@
 <translation id="5426063383988017631">Меню настроек закрыто</translation>
 <translation id="5428899915242071344">Начать выбор текста</translation>
 <translation id="5429993543155113935">Окна в режиме инкогнито пока не поддерживаются</translation>
-<translation id="5430931332414098647">Мгновенная точка доступа</translation>
 <translation id="5431318178759467895">Цветная печать</translation>
 <translation id="5433020815079095860">Ввод аудио</translation>
 <translation id="544691375626129091">В этот сеанс уже добавлены все доступные пользователи.</translation>
@@ -1124,6 +1116,7 @@
 <translation id="554893713779400387">Включение голосового ввода</translation>
 <translation id="5551456515017410630">Открыть или закрыть календарь</translation>
 <translation id="5551974246223970793">Перейти к следующему результату поиска по странице</translation>
+<translation id="5555639311269196631">Отключить точку доступа</translation>
 <translation id="5558091555391176027">Включить или отключить широкий доступ для Обмена с окружением</translation>
 <translation id="556042886152191864">Кнопка</translation>
 <translation id="5570122939431135380">Открыть вкладку в новом окне в режиме инкогнито</translation>
@@ -1169,7 +1162,6 @@
 <translation id="5707775774148071965">Поддерживаемая скорость передачи данных для устройства выше, чем для кабеля. Производительность устройства может быть ограничена.</translation>
 <translation id="5710450975648804523">Режим "Не беспокоить" включен</translation>
 <translation id="571295407079589142">Передача данных отключена</translation>
-<translation id="5716891621595980681">Подключено несколько устройств (<ph name="DEVICECOUNT" />). Чтобы вы могли использовать точку доступа, Wi-Fi будет отключен.</translation>
 <translation id="5727460725221669831">Если вы забыли или недавно сменили пароль от аккаунта Google, попробуйте восстановить пользователя.</translation>
 <translation id="573413375004481890">Вы подключили к устройству больше дисплеев, чем оно может поддерживать, поэтому один из них пришлось отключить</translation>
 <translation id="5740328398383587084">Обмен с окружением</translation>
@@ -1219,7 +1211,6 @@
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">ВКЛ</translation>
 <translation id="5920710855273935292">Микрофон отключен.</translation>
-<translation id="5924855612669061715">Точка доступа включена</translation>
 <translation id="5946788582095584774">Функция "<ph name="FEATURE_NAME" />" включена</translation>
 <translation id="5947494881799873997">Отменить</translation>
 <translation id="595202126637698455">Включено отслеживание эффективности</translation>
@@ -1235,6 +1226,7 @@
 <translation id="598407983968395253">Использовать шаблон</translation>
 <translation id="598882571027504733">Чтобы выполнить обновление, перезагрузите устройство Chromebook, не отключая от него клавиатуру.</translation>
 <translation id="6000279412553873020">Клавиши, кнопки и прочее</translation>
+<translation id="6002122790816966947">Ваши устройства</translation>
 <translation id="6012623610530968780">Страница <ph name="SELECTED_PAGE" /> из <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="601304062528754300">Выделить следующий элемент на панели запуска</translation>
 <translation id="6015573907265691211">Отметить как выполненную</translation>
@@ -1303,7 +1295,6 @@
 <translation id="6231419273573514727">Производительность периферийных устройств может быть ограничена</translation>
 <translation id="6232891689835436217">Сейчас использует камеру и микрофон: <ph name="APP_NAME" />.</translation>
 <translation id="6237231532760393653">1X</translation>
-<translation id="6244986124527896815">Чтобы открыть диспетчер задач, нажмите <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="6247728804802644171">Открыть уведомления</translation>
 <translation id="6254629735336163724">Заблокировано в горизонтальном положении</translation>
 <translation id="6259254695169772643">Выберите нужное с помощью стилуса</translation>
@@ -1525,6 +1516,7 @@
 <translation id="7188494361780961876">Меню перемещено в левый верхний угол экрана.</translation>
 <translation id="7189412385142492784">Расстояние до Венеры</translation>
 <translation id="7198435252016571249">Окно предварительного просмотра камеры привязано к правому нижнему углу, так как перекрывало элементы системного интерфейса</translation>
+<translation id="7219573373513695352">Нет подключенных устройств.</translation>
 <translation id="7229029500464092426">Доступно памяти: <ph name="AVAILABLE_MEMORY" /> | Всего памяти: <ph name="TOTAL_MEMORY" /></translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" /> Для установки обновления необходимо перезапустить Chromebook. Это может занять около минуты.</translation>
 <translation id="7256634071279256947">Основной микрофон</translation>
@@ -1950,7 +1942,6 @@
 <translation id="9030665205623277906">Использование процессора: <ph name="CPU_USEAGE" /> %</translation>
 <translation id="9034924485347205037">Файлы Linux</translation>
 <translation id="9047624247355796468">Открыть настройки сети "<ph name="NETWORK_NAME" />"</translation>
-<translation id="9059834730836941392">Свернуть уведомление</translation>
 <translation id="906458777597946297">Развернуть окно</translation>
 <translation id="9065203028668620118">Изменить</translation>
 <translation id="9070640332319875144">Настройки Ассистента</translation>

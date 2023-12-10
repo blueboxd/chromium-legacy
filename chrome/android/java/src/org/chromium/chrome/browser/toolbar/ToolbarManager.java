@@ -602,7 +602,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
         mIsStartSurfaceRefactorEnabled =
                 ReturnToChromeUtil.isStartSurfaceRefactorEnabled(mActivity);
 
-        // clang-format off
         mToolbarTabController = new ToolbarTabControllerImpl(mLocationBarModel::getTab,
                 () -> mShowStartSurfaceSupplier != null && mShowStartSurfaceSupplier.get(),
                 () -> {
@@ -611,7 +610,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 },
                 mBottomControlsCoordinatorSupplier, ToolbarManager::homepageUrl,
                 this::updateButtonStatus, mActivityTabProvider);
-        // clang-format on
         if (backPressManager != null && BackPressManager.isEnabled()) {
             OnBackPressHandler handler = new OnBackPressHandler();
             backPressManager.addHandler(handler, BackPressHandler.Type.TAB_HISTORY);
@@ -705,30 +703,44 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                     toolbarLayout instanceof OmniboxSuggestionsDropdownScrollListener
                     ? (OmniboxSuggestionsDropdownScrollListener) toolbarLayout
                     : null;
-            // clang-format off
-            LocationBarCoordinator locationBarCoordinator = new LocationBarCoordinator(
-                    mActivity.findViewById(R.id.location_bar), toolbarLayout, profileSupplier,
-                    PrivacyPreferencesManagerImpl.getInstance(), mLocationBarModel,
-                    mActionModeController.getActionModeCallback(),
-                    new WindowDelegate(mActivity.getWindow()), windowAndroid, mActivityTabProvider,
-                    modalDialogManagerSupplier, shareDelegateSupplier, mIncognitoStateProvider,
-                    activityLifecycleDispatcher, overrideUrlLoadingDelegate,
-                    new BackKeyBehaviorDelegate() {}, SearchEngineLogoUtils.getInstance(),
-                    toolbarPageInfo::show, IntentHandler::bringTabToFront,
-                    DownloadUtils::isAllowedToDownloadPage, NewTabPageUma::recordOmniboxNavigation,
-                    TabWindowManagerSingleton::getInstance,
-                    (url) -> mBookmarkModelSupplier.hasValue()
-                            && mBookmarkModelSupplier.get().isBookmarked(url),
-                    () ->
-                    {
-                        return mToolbar.getCurrentOptionalButtonVariant() ==
-                            AdaptiveToolbarButtonVariant.VOICE;
-                    },
-                    merchantTrustSignalsCoordinatorSupplier,
-                    omniboxActionDelegate, mControlsVisibilityDelegate,
-                    ChromePureJavaExceptionReporter::reportJavaException, backPressManager,
-                    scrollListener, openHistoryClustersDelegate, tabModelSelectorSupplier);
-            // clang-format on
+            LocationBarCoordinator locationBarCoordinator =
+                    new LocationBarCoordinator(
+                            mActivity.findViewById(R.id.location_bar),
+                            toolbarLayout,
+                            profileSupplier,
+                            PrivacyPreferencesManagerImpl.getInstance(),
+                            mLocationBarModel,
+                            mActionModeController.getActionModeCallback(),
+                            new WindowDelegate(mActivity.getWindow()),
+                            windowAndroid,
+                            mActivityTabProvider,
+                            modalDialogManagerSupplier,
+                            shareDelegateSupplier,
+                            mIncognitoStateProvider,
+                            activityLifecycleDispatcher,
+                            overrideUrlLoadingDelegate,
+                            new BackKeyBehaviorDelegate() {},
+                            SearchEngineLogoUtils.getInstance(),
+                            toolbarPageInfo::show,
+                            IntentHandler::bringTabToFront,
+                            DownloadUtils::isAllowedToDownloadPage,
+                            NewTabPageUma::recordOmniboxNavigation,
+                            TabWindowManagerSingleton::getInstance,
+                            (url) ->
+                                    mBookmarkModelSupplier.hasValue()
+                                            && mBookmarkModelSupplier.get().isBookmarked(url),
+                            () -> {
+                                return mToolbar.getCurrentOptionalButtonVariant()
+                                        == AdaptiveToolbarButtonVariant.VOICE;
+                            },
+                            merchantTrustSignalsCoordinatorSupplier,
+                            omniboxActionDelegate,
+                            mControlsVisibilityDelegate,
+                            ChromePureJavaExceptionReporter::reportJavaException,
+                            BackPressManager.isEnabled() ? backPressManager : null,
+                            scrollListener,
+                            openHistoryClustersDelegate,
+                            tabModelSelectorSupplier);
             toolbarLayout.setLocationBarCoordinator(locationBarCoordinator);
             toolbarLayout.setBrowserControlsVisibilityDelegate(mControlsVisibilityDelegate);
             mLocationBar = locationBarCoordinator;
@@ -1176,7 +1188,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             ObservableSupplier<Integer> constraintsSupplier) {
         ViewStub tabSwitcherToolbarStub = mActivity.findViewById(R.id.tab_switcher_toolbar_stub);
 
-        // clang-format off
         TopToolbarCoordinator toolbar = new TopToolbarCoordinator(controlContainer,
                 tabSwitcherToolbarStub, toolbarLayout,
                 mLocationBarModel, mToolbarTabController,
@@ -1207,7 +1218,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                     && !ReturnToChromeUtil.moveDownLogo(),
                 mFullscreenManager);
 
-        // clang-format on
         mHomepageStateListener = () -> {
             mHomepageEnabledSupplier.set(HomepageManager.isHomepageEnabled());
             // Whether to show start surface as homepage is affected by whether homepage URI is
@@ -1946,11 +1956,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
      * @return Whether url bar is focused when this method is called.
      */
     public boolean unfocusUrlBarOnBackPress() {
-        if (mOmniboxFocusStateSupplier.get()) {
-            setUrlBarFocus(false, OmniboxFocusReason.UNFOCUS);
-            return true;
-        }
-        return false;
+        return mLocationBar.unfocusUrlBarOnBackPressed();
     }
 
     /**

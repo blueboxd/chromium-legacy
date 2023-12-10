@@ -27,10 +27,10 @@
 
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
+#include "third_party/blink/renderer/core/layout/geometry/box_strut.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/multi_column_fragmentainer_group.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -103,13 +103,12 @@ class ChildFragmentIterator {
   wtf_size_t child_index_ = 0;
 };
 
-LayoutPoint ComputeLocation(
-    const NGPhysicalBoxFragment& column_box,
-    PhysicalOffset column_offset,
-    LayoutUnit set_inline_size,
-    const LayoutBlockFlow& container,
-    wtf_size_t fragment_index,
-    const NGPhysicalBoxStrut& border_padding_scrollbar) {
+LayoutPoint ComputeLocation(const NGPhysicalBoxFragment& column_box,
+                            PhysicalOffset column_offset,
+                            LayoutUnit set_inline_size,
+                            const LayoutBlockFlow& container,
+                            wtf_size_t fragment_index,
+                            const PhysicalBoxStrut& border_padding_scrollbar) {
   const NGPhysicalBoxFragment* container_fragment =
       container.GetPhysicalFragment(fragment_index);
   WritingModeConverter converter(
@@ -198,12 +197,11 @@ unsigned LayoutMultiColumnSet::FragmentainerGroupIndexAtFlowThreadOffset(
 
 const MultiColumnFragmentainerGroup&
 LayoutMultiColumnSet::FragmentainerGroupAtVisualPoint(
-    const LayoutPoint& visual_point) const {
+    const LogicalOffset& visual_point) const {
   NOT_DESTROYED();
   UpdateGeometryIfNeeded();
   DCHECK_GT(fragmentainer_groups_.size(), 0u);
-  LayoutUnit block_offset =
-      IsHorizontalWritingMode() ? visual_point.Y() : visual_point.X();
+  LayoutUnit block_offset = visual_point.block_offset;
   for (unsigned index = 0; index < fragmentainer_groups_.size(); index++) {
     const auto& row = fragmentainer_groups_[index];
     if (row.LogicalTop() + row.GroupLogicalHeight() > block_offset)
@@ -303,20 +301,15 @@ PhysicalOffset LayoutMultiColumnSet::FlowThreadTranslationAtOffset(
       .FlowThreadTranslationAtOffset(block_offset, rule, mode);
 }
 
-// `visual_point` is in the flipped block-flow coordinate system.
-LayoutPoint LayoutMultiColumnSet::VisualPointToFlowThreadPoint(
-    const LayoutPoint& visual_point) const {
+LogicalOffset LayoutMultiColumnSet::VisualPointToFlowThreadPoint(
+    const PhysicalOffset& visual_point) const {
   NOT_DESTROYED();
-  const MultiColumnFragmentainerGroup& row =
-      FragmentainerGroupAtVisualPoint(visual_point);
   LogicalOffset logical_point =
-      IsHorizontalWritingMode()
-          ? LogicalOffset(visual_point.X(), visual_point.Y())
-          : LogicalOffset(visual_point.Y(), visual_point.X());
-  LogicalOffset logical_result = row.VisualPointToFlowThreadPoint(
-      logical_point - row.OffsetFromColumnSet());
-  LayoutPoint result(logical_result.inline_offset, logical_result.block_offset);
-  return IsHorizontalWritingMode() ? result : result.TransposedPoint();
+      CreateWritingModeConverter().ToLogical(visual_point, {});
+  const MultiColumnFragmentainerGroup& row =
+      FragmentainerGroupAtVisualPoint(logical_point);
+  return row.VisualPointToFlowThreadPoint(logical_point -
+                                          row.OffsetFromColumnSet());
 }
 
 void LayoutMultiColumnSet::ResetColumnHeight() {
@@ -437,9 +430,9 @@ void LayoutMultiColumnSet::UpdateGeometry() {
 
   const auto* first_fragment = container->GetPhysicalFragment(0);
   WritingMode writing_mode = first_fragment->Style().GetWritingMode();
-  NGPhysicalBoxStrut border_padding_scrollbar = first_fragment->Borders() +
-                                                first_fragment->Padding() +
-                                                container->ComputeScrollbars();
+  PhysicalBoxStrut border_padding_scrollbar = first_fragment->Borders() +
+                                              first_fragment->Padding() +
+                                              container->ComputeScrollbars();
 
   // Set the inline-size to that of the content-box of the multicol container.
   PhysicalSize content_size =

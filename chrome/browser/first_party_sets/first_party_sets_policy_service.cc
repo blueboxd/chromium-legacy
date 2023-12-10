@@ -13,6 +13,7 @@
 #include "chrome/browser/first_party_sets/first_party_sets_pref_names.h"
 #include "chrome/browser/privacy_sandbox/tracking_protection_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_constraints.h"
 #include "components/prefs/pref_service.h"
@@ -43,14 +44,11 @@ network::mojom::FirstPartySetsReadyEventPtr MakeReadyEvent(
 
 const base::Value::Dict* GetOverridesPolicyForProfile(
     const PrefService* prefs) {
-  return prefs ? &prefs->GetDict(first_party_sets::kFirstPartySetsOverrides)
+  return prefs ? &prefs->GetDict(first_party_sets::kRelatedWebsiteSetsOverrides)
                : nullptr;
 }
 
 bool GetEnabledStateForProfile(Profile* profile) {
-  if (profile->IsOffTheRecord()) {
-    return false;
-  }
   if (base::FeatureList::IsEnabled(
           net::features::kForceThirdPartyCookieBlocking)) {
     return true;
@@ -102,8 +100,9 @@ void FirstPartySetsPolicyService::Init() {
   PrefService* prefs = profile->GetPrefs();
   pref_enabled_ = GetEnabledStateForProfile(profile);
 
-  if (profile->IsSystemProfile() || profile->IsGuestSession() ||
-      profile->IsOffTheRecord()) {
+  // If `profile` is a system profile or a guest profile, use an empty config
+  // and cache filter.
+  if (profile->IsSystemProfile() || profile->IsGuestSession()) {
     OnReadyToNotifyDelegates(net::FirstPartySetsContextConfig(),
                              net::FirstPartySetsCacheFilter());
     return;
@@ -179,11 +178,6 @@ void FirstPartySetsPolicyService::AddRemoteAccessDelegate(
 
 void FirstPartySetsPolicyService::OnFirstPartySetsEnabledChanged(bool enabled) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  Profile* profile = Profile::FromBrowserContext(browser_context_);
-  if (profile && profile->IsOffTheRecord()) {
-    CHECK(!pref_enabled_);
-    return;
-  }
   if (base::FeatureList::IsEnabled(
           net::features::kForceThirdPartyCookieBlocking)) {
     CHECK(pref_enabled_);
@@ -198,6 +192,7 @@ void FirstPartySetsPolicyService::OnFirstPartySetsEnabledChanged(bool enabled) {
 
   // Clear all the existing permission decisions that were made by FPS, since
   // the enabled/disabled state of FPS has now changed.
+  Profile* profile = Profile::FromBrowserContext(browser_context_);
   ClearContentSettings(profile);
   for (Profile* otr_profile : profile->GetAllOffTheRecordProfiles()) {
     ClearContentSettings(otr_profile);
@@ -205,19 +200,21 @@ void FirstPartySetsPolicyService::OnFirstPartySetsEnabledChanged(bool enabled) {
 }
 
 void FirstPartySetsPolicyService::ClearContentSettings(Profile* profile) const {
-  auto is_nonrestorable =
-      [](const ContentSettingPatternSource& setting) -> bool {
-    return setting.metadata.session_model() ==
-           content_settings::SessionModel::NonRestorableUserSession;
-  };
-
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile);
 
   host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
-      ContentSettingsType::STORAGE_ACCESS, is_nonrestorable);
+      ContentSettingsType::STORAGE_ACCESS,
+      [](const ContentSettingPatternSource& setting) -> bool {
+        return content_settings::IsGrantedByRelatedWebsiteSets(
+            ContentSettingsType::STORAGE_ACCESS, setting.metadata);
+      });
   host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
-      ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS, is_nonrestorable);
+      ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS,
+      [](const ContentSettingPatternSource& setting) -> bool {
+        return content_settings::IsGrantedByRelatedWebsiteSets(
+            ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS, setting.metadata);
+      });
 }
 
 void FirstPartySetsPolicyService::RegisterThrottleResumeCallback(

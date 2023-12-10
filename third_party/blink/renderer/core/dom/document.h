@@ -244,7 +244,6 @@ class TreeWalker;
 class TrustedHTML;
 class V8NodeFilter;
 class V8ObservableArrayCSSStyleSheet;
-class V8UnionElementCreationOptionsOrString;
 class V8UnionStringOrTrustedHTML;
 class ViewportData;
 class VisitedLinkState;
@@ -448,20 +447,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   Location* location() const;
 
-  Element* CreateElementForBinding(const AtomicString& local_name,
-                                   ExceptionState& = ASSERT_NO_EXCEPTION);
-  Element* CreateElementForBinding(
-      const AtomicString& local_name,
-      const V8UnionElementCreationOptionsOrString* string_or_options,
-      ExceptionState& exception_state);
-  Element* createElementNS(const AtomicString& namespace_uri,
-                           const AtomicString& qualified_name,
-                           ExceptionState&);
-  Element* createElementNS(
-      const AtomicString& namespace_uri,
-      const AtomicString& qualified_name,
-      const V8UnionElementCreationOptionsOrString* string_or_options,
-      ExceptionState& exception_state);
   DocumentFragment* createDocumentFragment();
   Text* createTextNode(const String& data);
   Comment* createComment(const String& data);
@@ -475,11 +460,6 @@ class CORE_EXPORT Document : public ContainerNode,
                           ExceptionState&);
   Node* importNode(Node* imported_node, bool deep, ExceptionState&);
 
-  // "create an element" defined in DOM standard. This supports both of
-  // autonomous custom elements and customized built-in elements.
-  Element* CreateElement(const QualifiedName&,
-                         const CreateElementFlags,
-                         const AtomicString& is);
   // Creates an element without custom element processing.
   Element* CreateRawElement(const QualifiedName&,
                             const CreateElementFlags = CreateElementFlags());
@@ -758,11 +738,10 @@ class CORE_EXPORT Document : public ContainerNode,
   // Gets the description for the specified page. This includes preferred page
   // size and margins in pixels, assuming 96 pixels per inch. The size and
   // margins must be initialized to the default values that are used if auto is
-  // specified. Updates layout as needed to get the description.
+  // specified. Note that, if the |page_index| variant of the function is used,
+  // layout needs to be complete, since page names are determined during layout.
   void GetPageDescription(uint32_t page_index, WebPrintPageDescription*);
   void GetPageDescription(const ComputedStyle&, WebPrintPageDescription*);
-  void GetPageDescriptionNoLifecycleUpdate(const ComputedStyle&,
-                                           WebPrintPageDescription*);
 
   ResourceFetcher* Fetcher() const { return fetcher_.Get(); }
 
@@ -772,7 +751,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // If you have a Document, use GetLayoutView() instead which is faster.
   void GetLayoutObject() const = delete;
 
-  LayoutView* GetLayoutView() const { return layout_view_; }
+  LayoutView* GetLayoutView() const { return layout_view_.Get(); }
 
   // This will return an AXObjectCache only if there's one or more
   // AXContext associated with this document. When all associated
@@ -1056,7 +1035,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // Updates for :target (CSS3 selector).
   void SetCSSTarget(Element*);
-  Element* CssTarget() const { return css_target_; }
+  Element* CssTarget() const { return css_target_.Get(); }
   void SetSelectorFragmentAnchorCSSTarget(Element*);
 
   void ScheduleLayoutTreeUpdateIfNeeded();
@@ -1094,7 +1073,7 @@ class CORE_EXPORT Document : public ContainerNode,
                          unsigned old_length);
   void DidSplitTextNode(const Text& old_node);
 
-  LocalDOMWindow* domWindow() const { return dom_window_; }
+  LocalDOMWindow* domWindow() const { return dom_window_.Get(); }
 
   // Helper functions for forwarding LocalDOMWindow event related tasks to the
   // LocalDOMWindow if it exists.
@@ -1584,7 +1563,9 @@ class CORE_EXPORT Document : public ContainerNode,
 
   HTMLDialogElement* ActiveModalDialog() const;
 
-  HTMLElement* PopoverHintShowing() const { return popover_hint_showing_; }
+  HTMLElement* PopoverHintShowing() const {
+    return popover_hint_showing_.Get();
+  }
   void SetPopoverHintShowing(HTMLElement* element);
   HeapVector<Member<HTMLElement>>& PopoverStack() { return popover_stack_; }
   const HeapVector<Member<HTMLElement>>& PopoverStack() const {
@@ -1599,7 +1580,7 @@ class CORE_EXPORT Document : public ContainerNode,
     return popovers_waiting_to_hide_;
   }
   const HTMLElement* PopoverPointerdownTarget() const {
-    return popover_pointerdown_target_;
+    return popover_pointerdown_target_.Get();
   }
   void SetPopoverPointerdownTarget(const HTMLElement*);
 
@@ -1612,20 +1593,23 @@ class CORE_EXPORT Document : public ContainerNode,
   // Call SetNeedsStyleRecalc for elements from AddToRecalcStyleForToggle;
   // return whether any calls were made.
   bool SetNeedsStyleRecalcForToggles();
-  CSSToggleInference* GetCSSToggleInference() { return css_toggle_inference_; }
+  CSSToggleInference* GetCSSToggleInference() {
+    return css_toggle_inference_.Get();
+  }
   CSSToggleInference& EnsureCSSToggleInference();
 
   // https://crbug.com/1453291
-  // The DOM Parts API: https://github.com/tbondwilkinson/dom-parts.
+  // The DOM Parts API:
+  // https://github.com/WICG/webcomponents/blob/gh-pages/proposals/DOM-Parts.md.
   DocumentPartRoot& getPartRoot();
   DocumentPartRoot& EnsureDocumentPartRoot();
-  bool DOMPartsInUse() const { return document_part_root_; }
+  bool DOMPartsInUse() const { return document_part_root_ != nullptr; }
 
   // A non-null template_document_host_ implies that |this| was created by
   // EnsureTemplateDocument().
-  bool IsTemplateDocument() const { return template_document_host_; }
+  bool IsTemplateDocument() const { return template_document_host_ != nullptr; }
   Document& EnsureTemplateDocument();
-  Document* TemplateDocumentHost() { return template_document_host_; }
+  Document* TemplateDocumentHost() { return template_document_host_.Get(); }
 
   void DidAddOrRemoveFormRelatedElement(Element*);
 
@@ -1721,7 +1705,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsInOutermostMainFrame() const;
 
   const PropertyRegistry* GetPropertyRegistry() const {
-    return property_registry_;
+    return property_registry_.Get();
   }
   PropertyRegistry& EnsurePropertyRegistry();
 
@@ -1921,7 +1905,7 @@ class CORE_EXPORT Document : public ContainerNode,
                               const AtomicString& new_value);
 
   RenderBlockingResourceManager* GetRenderBlockingResourceManager() {
-    return render_blocking_resource_manager_;
+    return render_blocking_resource_manager_.Get();
   }
 
   // Called when a previously render-blocking resource is no longer render-
@@ -2009,6 +1993,10 @@ class CORE_EXPORT Document : public ContainerNode,
   bool SupportsLegacyDOMMutations();
 
   void EnqueuePageRevealEvent();
+
+  // https://github.com/whatwg/html/pull/9538
+  static Document* parseHTMLUnsafe(ExecutionContext* context,
+                                   const String& html);
 
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }

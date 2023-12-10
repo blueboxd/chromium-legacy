@@ -7,13 +7,17 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/ui/actions/chrome_action_id.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_activity_simulator.h"
 #include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/toolbar/pinned_toolbar_actions_model.h"
+#include "chrome/browser/ui/toolbar/pinned_toolbar_actions_model_factory.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
+#include "chrome/browser/ui/views/frame/browser_actions.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
@@ -24,8 +28,10 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/branded_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/vector_icons/vector_icons.h"
 #include "components/version_info/channel.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
@@ -84,7 +90,35 @@ std::u16string SubBrowserName(const char* fmt) {
 
 }  // namespace
 
-using BrowserViewTest = TestWithBrowserView;
+class BrowserViewTest : public TestWithBrowserView {
+ public:
+  BrowserViewTest() {
+    feature_list_.InitAndEnableFeature(features::kSidePanelPinning);
+  }
+
+  BrowserViewTest(const BrowserViewTest&) = delete;
+  BrowserViewTest& operator=(const BrowserViewTest&) = delete;
+
+  ~BrowserViewTest() override {}
+
+  TestingProfile::TestingFactories GetTestingFactories() override {
+    TestingProfile::TestingFactories factories =
+        TestWithBrowserView::GetTestingFactories();
+    factories.emplace_back(
+        PinnedToolbarActionsModelFactory::GetInstance(),
+        base::BindRepeating(&BrowserViewTest::BuildPinnedToolbarActionsModel));
+    return factories;
+  }
+
+  static std::unique_ptr<KeyedService> BuildPinnedToolbarActionsModel(
+      content::BrowserContext* context) {
+    return std::make_unique<PinnedToolbarActionsModel>(
+        Profile::FromBrowserContext(context));
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
 
 // Test basic construction and initialization.
 TEST_F(BrowserViewTest, BrowserView) {
@@ -102,12 +136,37 @@ TEST_F(BrowserViewTest, BrowserView) {
   EXPECT_FALSE(browser_view()->IsBookmarkBarVisible());
   EXPECT_FALSE(browser_view()->IsBookmarkBarAnimating());
 
-  // Test ActionItem creation
+  // Test action item creation and removal.
+  BrowserActions* browser_actions = BrowserActions::FromBrowser(browser());
+  const int side_panel_icon_size =
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          ChromeDistanceMetric::DISTANCE_SIDE_PANEL_HEADER_VECTOR_ICON_SIZE);
+
+  ASSERT_NE(browser_actions->root_action_item(), nullptr);
+  EXPECT_GE(
+      browser_actions->root_action_item()->GetChildren().children().size(),
+      1UL);
+
+  actions::ActionItemVector actions;
   auto& manager = actions::ActionManager::GetForTesting();
-  manager.IndexActions();
-  ASSERT_NE(browser_view()->root_action_item(), nullptr);
-  EXPECT_GE(browser_view()->root_action_item()->GetChildren().children().size(),
-            1UL);
+  manager.GetActions(actions);
+  size_t non_browser_scoped_actions =
+      actions.size() -
+      browser_actions->root_action_item()->GetChildren().children().size() - 1;
+
+  actions::ActionItem* customize_chrome_action = manager.FindAction(
+      kActionSidePanelShowCustomizeChrome, browser_actions->root_action_item());
+  EXPECT_EQ(customize_chrome_action->GetText(),
+            l10n_util::GetStringUTF16(IDS_SIDE_PANEL_CUSTOMIZE_CHROME_TITLE));
+  EXPECT_EQ(customize_chrome_action->GetImage(),
+            ui::ImageModel::FromVectorIcon(
+                vector_icons::kEditIcon, ui::kColorIcon, side_panel_icon_size));
+
+  browser()->RemoveUserData(BrowserActions::UserDataKey());
+
+  actions.clear();
+  manager.GetActions(actions);
+  EXPECT_EQ(actions.size(), non_browser_scoped_actions);
 }
 
 // Test layout of the top-of-window UI.

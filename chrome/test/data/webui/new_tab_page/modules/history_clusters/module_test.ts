@@ -314,6 +314,9 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
             handler.setResultFor('getClusters', Promise.resolve({clusters}));
             handler.setResultFor(
                 'getCartForCluster', Promise.resolve({cart: null}));
+            handler.setResultFor(
+                'getDiscountsForCluster',
+                Promise.resolve({discounts: new Map<Url, Discount[]>()}));
             const moduleElement = await historyClustersDescriptor.initialize(
                                       0) as HistoryClustersModuleElement;
             await handler.whenCalled('getClusters');
@@ -457,8 +460,8 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
         });
   });
 
-  suite('UnloadMetricNoImages', () => {
-    test('Module records no images state metric on unload', async () => {
+  suite('PagehideMetricNoImages', () => {
+    test('Module records no images state metric on pagehide', async () => {
       imageServiceHandler.setResultFor(
           'getPageImageUrl', Promise.resolve(null));
 
@@ -467,7 +470,7 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
       assertTrue(!!moduleElement);
       await waitAfterNextRender(moduleElement);
 
-      window.dispatchEvent(new Event('unload'));
+      window.dispatchEvent(new Event('pagehide'));
 
       assertEquals(2, imageServiceHandler.getCallCount('getPageImageUrl'));
       assertEquals(
@@ -483,8 +486,8 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
     });
   });
 
-  suite('UnloadMetricAllImages', () => {
-    test('Module records all images state metric on unload', async () => {
+  suite('PagehideMetricAllImages', () => {
+    test('Module records all images state metric on pagehide', async () => {
       imageServiceHandler.setResultFor('getPageImageUrl', Promise.resolve({
         result: {imageUrl: {url: 'https://example.com/image.png'}},
       }));
@@ -494,7 +497,7 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
       assertTrue(!!moduleElement);
       await waitAfterNextRender(moduleElement);
 
-      window.dispatchEvent(new Event('unload'));
+      window.dispatchEvent(new Event('pagehide'));
 
       assertEquals(2, imageServiceHandler.getCallCount('getPageImageUrl'));
       assertEquals(

@@ -56,15 +56,6 @@ class GPU_GLES2_EXPORT TexturePassthrough final
       public base::SupportsWeakPtr<TexturePassthrough> {
  public:
   TexturePassthrough(GLuint service_id, GLenum target);
-  TexturePassthrough(GLuint service_id,
-                     GLenum target,
-                     GLenum internal_format,
-                     GLsizei width,
-                     GLsizei height,
-                     GLsizei depth,
-                     GLint border,
-                     GLenum format,
-                     GLenum type);
 
   TexturePassthrough(const TexturePassthrough&) = delete;
   TexturePassthrough& operator=(const TexturePassthrough&) = delete;
@@ -82,14 +73,6 @@ class GPU_GLES2_EXPORT TexturePassthrough final
   void BindToServiceId(GLuint service_id);
 #endif
 
-#if BUILDFLAG(IS_APPLE)
-  // Return true if and only if the decoder should BindTexImage / CopyTexImage
-  // us before sampling.
-  bool is_bind_pending() const { return is_bind_pending_; }
-  void set_bind_pending() { is_bind_pending_ = true; }
-  void clear_bind_pending() { is_bind_pending_ = false; }
-#endif
-
   void SetEstimatedSize(size_t size);
   size_t estimated_size() const { return estimated_size_; }
 
@@ -97,37 +80,13 @@ class GPU_GLES2_EXPORT TexturePassthrough final
   ~TexturePassthrough() override;
 
  private:
-  bool LevelInfoExists(GLenum target, GLint level, size_t* out_face_idx) const;
-
   friend class base::RefCounted<TexturePassthrough>;
 
   const GLuint owned_service_id_ = 0;
 
   bool have_context_;
-#if BUILDFLAG(IS_APPLE)
-  bool is_bind_pending_ = false;
-#endif
 
   size_t estimated_size_ = 0;
-
-  // Bound images divided into faces and then levels
-  struct LevelInfo {
-    LevelInfo();
-    LevelInfo(const LevelInfo& rhs);
-    ~LevelInfo();
-
-    GLenum internal_format = 0;
-    GLsizei width = 0;
-    GLsizei height = 0;
-    GLsizei depth = 0;
-    GLint border = 0;
-    GLenum format = 0;
-    GLenum type = 0;
-  };
-
-  LevelInfo* GetLevelInfo(GLenum target, GLint level);
-
-  std::vector<std::vector<LevelInfo>> level_images_;
 };
 
 // Info about Textures currently in the system.

@@ -44,7 +44,8 @@ class MODULES_EXPORT TaskAttributionTrackerImpl
   AncestorStatus IsAncestor(ScriptState*, TaskAttributionId parent_id) override;
   AncestorStatus HasAncestorInSet(
       ScriptState*,
-      const WTF::HashSet<scheduler::TaskAttributionIdType>&) override;
+      const WTF::HashSet<scheduler::TaskAttributionIdType>& set,
+      const TaskAttributionInfo& task) override;
 
   std::unique_ptr<TaskScope> CreateTaskScope(ScriptState* script_state,
                                              TaskAttributionInfo* parent_task,
@@ -89,6 +90,9 @@ class MODULES_EXPORT TaskAttributionTrackerImpl
   virtual ScriptWrappableTaskState* GetCurrentTaskContinuationData(
       ScriptState*) const;
 
+  Observer* GetObserverForTaskDisposal(TaskAttributionId) override;
+  void SetObserverForTaskDisposal(TaskAttributionId, Observer*) override;
+
  private:
   struct TaskAttributionIdPair {
     TaskAttributionIdPair() = default;
@@ -102,7 +106,9 @@ class MODULES_EXPORT TaskAttributionTrackerImpl
   };
 
   template <typename F>
-  AncestorStatus IsAncestorInternal(ScriptState*, F callback);
+  AncestorStatus IsAncestorInternal(ScriptState*,
+                                    F callback,
+                                    const TaskAttributionInfo* task);
 
   // The TaskScope class maintains information about a task. The task's lifetime
   // match those of TaskScope, and the task is considered terminated when
@@ -148,6 +154,9 @@ class MODULES_EXPORT TaskAttributionTrackerImpl
   Persistent<TaskAttributionInfo> running_task_ = nullptr;
 
   WTF::HashSet<WeakPersistent<TaskAttributionTracker::Observer>> observers_;
+  WTF::HashMap<TaskAttributionIdType,
+               WeakPersistent<TaskAttributionTracker::Observer>>
+      task_id_observers_;
 
   // A queue of TaskAttributionInfo objects representing tasks that initiated a
   // same-document navigation that was sent to the browser side. They are kept

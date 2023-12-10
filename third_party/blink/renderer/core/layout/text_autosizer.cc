@@ -49,7 +49,7 @@
 #include "third_party/blink/renderer/core/layout/layout_ruby_column.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
+#include "third_party/blink/renderer/core/layout/list/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_row.h"
@@ -500,7 +500,7 @@ float TextAutosizer::Inflate(LayoutObject* parent,
     ApplyMultiplier(parent, 1);
   }
 
-  if (parent->IsLayoutNGListItem()) {
+  if (parent->IsLayoutListItem()) {
     float list_item_multiplier = ClusterMultiplier(cluster);
     ApplyMultiplier(parent, list_item_multiplier);
 
@@ -508,7 +508,7 @@ float TextAutosizer::Inflate(LayoutObject* parent,
     // that you have a list item for a form inside it. The list marker then ends
     // up inside the form and when we try to get the clusterMultiplier we have
     // the wrong cluster root to work from and get the wrong value.
-    LayoutObject* marker = To<LayoutNGListItem>(parent)->Marker();
+    LayoutObject* marker = To<LayoutListItem>(parent)->Marker();
 
     // A LayoutNGOutsideListMarker has a text child that needs its font
     // multiplier updated. Just mark the entire subtree, to make sure we get to
@@ -916,7 +916,7 @@ TextAutosizer::FingerprintMapper::CreateSuperclusterIfNeeded(
       superclusters_.insert(fingerprint, nullptr);
   is_new_entry = add_result.is_new_entry;
   if (!add_result.is_new_entry)
-    return add_result.stored_value->value;
+    return add_result.stored_value->value.Get();
 
   Supercluster* supercluster = MakeGarbageCollected<Supercluster>(roots);
   add_result.stored_value->value = supercluster;
@@ -1082,7 +1082,7 @@ const LayoutBlock* TextAutosizer::DeepestBlockContainingAllText(
     cluster->deepest_block_containing_all_text_ =
         DeepestBlockContainingAllText(cluster->root_);
 
-  return cluster->deepest_block_containing_all_text_;
+  return cluster->deepest_block_containing_all_text_.Get();
 }
 
 // FIXME: Refactor this to look more like TextAutosizer::deepestCommonAncestor.
@@ -1290,7 +1290,7 @@ void TextAutosizer::Supercluster::Trace(Visitor* visitor) const {
 
 TextAutosizer::Cluster* TextAutosizer::CurrentCluster() const {
   SECURITY_DCHECK(!cluster_stack_.empty());
-  return cluster_stack_.back();
+  return cluster_stack_.back().Get();
 }
 
 TextAutosizer::Cluster::Cluster(const LayoutBlock* root,
@@ -1456,7 +1456,7 @@ TextAutosizer::NGLayoutScope::NGLayoutScope(LayoutBox* box,
   //    typically false, overriding whatever its parent has already correctly
   //    determined).
   if (!text_autosizer_ || !text_autosizer_->ShouldHandleLayout() || !block_ ||
-      block_->IsLayoutNGOutsideListMarker()) {
+      block_->IsLayoutOutsideListMarker()) {
     text_autosizer_ = nullptr;
     return;
   }

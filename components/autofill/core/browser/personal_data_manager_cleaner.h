@@ -38,55 +38,12 @@ class PersonalDataManagerCleaner {
 
   // Applies address/credit card fixes and cleanups depending on the
   // |model_type|.
-  // TODO(crbug.com/1477292): For syncing users, SyncStarted is called just once
-  // when the sync is enabled. Instead, it should be called every time on
-  // browser startup.
+  void ApplyAddressAndCardFixesAndCleanups(syncer::ModelType model_type);
+
+  // TODO(crbug.com/1477292): Remove.
   void SyncStarted(syncer::ModelType model_type);
 
 #if defined(UNIT_TEST)
-  // A wrapper around |ApplyDedupingRoutine()| used for testing purposes.
-  bool ApplyDedupingRoutineForTesting() { return ApplyDedupingRoutine(); }
-
-  // A wrapper around `ApplyAddressFixesAndCleanups` used for testing purposes.
-  bool ApplyAddressFixesAndCleanupsForTesting() {
-    return ApplyAddressFixesAndCleanups();
-  }
-
-  // A wrapper around |RemoveInaccessibleProfileValues()| used for testing
-  // purposes.
-  void RemoveInaccessibleProfileValuesForTesting() {
-    RemoveInaccessibleProfileValues();
-  }
-
-  // A wrapper around |DedupeProfiles()| used for testing purposes.
-  void DedupeProfilesForTesting(
-      std::vector<std::unique_ptr<AutofillProfile>>* existing_profiles,
-      std::unordered_set<std::string>* profile_guids_to_delete,
-      std::unordered_map<std::string, std::string>* guids_merge_map) const {
-    DedupeProfiles(existing_profiles, profile_guids_to_delete, guids_merge_map);
-  }
-
-  // A wrapper around |UpdateCardsBillingAddressReference()| used for testing
-  // purposes.
-  void UpdateCardsBillingAddressReferenceForTesting(
-      const std::unordered_map<std::string, std::string>& guids_merge_map) {
-    UpdateCardsBillingAddressReference(guids_merge_map);
-  }
-
-  // A wrapper around |DeleteDisusedAddresses()| used for testing purposes.
-  bool DeleteDisusedAddressesForTesting() { return DeleteDisusedAddresses(); }
-
-  // A wrapper around |DeleteDisusedCreditCards()| used for testing purposes.
-  bool DeleteDisusedCreditCardsForTesting() {
-    return DeleteDisusedCreditCards();
-  }
-
-  // A wrapper around |ClearCreditCardNonSettingsOrigins()| used for testing
-  // purposes.
-  void ClearCreditCardNonSettingsOriginsForTesting() {
-    ClearCreditCardNonSettingsOrigins();
-  }
-
   // Getter for |alternative_state_name_map_updater_| used for testing purposes.
   AlternativeStateNameMapUpdater*
   alternative_state_name_map_updater_for_testing() {
@@ -94,9 +51,12 @@ class PersonalDataManagerCleaner {
   }
 #endif  // defined(UNIT_TEST)
 
+ protected:
+  friend class PersonalDataManagerCleanerTest;
+
  private:
   // Applies various fixes and cleanups on autofill addresses.
-  bool ApplyAddressFixesAndCleanups();
+  void ApplyAddressFixesAndCleanups();
 
   // Applies various fixes and cleanups on autofill credit cards.
   void ApplyCardFixesAndCleanups();
@@ -143,8 +103,12 @@ class PersonalDataManagerCleaner {
   // the settings page.
   void ClearCreditCardNonSettingsOrigins();
 
-  // True if autofill profile cleanup needs to be performed.
-  bool is_autofill_profile_cleanup_pending_ = false;
+  // True if autofill profile dedupe needs to be performed.
+  bool is_autofill_profile_dedupe_pending_ = true;
+
+  // True if the profile or credit card cleanups need to be performed.
+  bool is_profile_cleanup_pending_ = true;
+  bool is_credit_card_cleanup_pending_ = true;
 
   // The personal data manager, used to load and update the personal data
   // from/to the web database.

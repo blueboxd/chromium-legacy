@@ -38,10 +38,6 @@ class BrowserAutofillManagerTestApi : public AutofillManagerTestApi {
   [[nodiscard]] testing::AssertionResult FlushPendingVotes(
       base::TimeDelta timeout = base::Seconds(10));
 
-  const std::vector<autofill::AutofillProfile>& test_addresses() {
-    return manager_->test_addresses_;
-  }
-
   void SetExternalDelegate(
       std::unique_ptr<AutofillExternalDelegate> external_delegate) {
     manager_->external_delegate_ = std::move(external_delegate);
@@ -100,7 +96,7 @@ class BrowserAutofillManagerTestApi : public AutofillManagerTestApi {
   }
 
   void FillOrPreviewDataModelForm(
-      mojom::AutofillActionPersistence action_persistence,
+      mojom::ActionPersistence action_persistence,
       const FormData& form,
       const FormFieldData& field,
       absl::variant<const AutofillProfile*, const CreditCard*>
@@ -129,6 +125,20 @@ class BrowserAutofillManagerTestApi : public AutofillManagerTestApi {
   void SetFourDigitCombinationsInDOM(
       const std::vector<std::string>& combinations) {
     manager_->four_digit_combinations_in_dom_ = combinations;
+  }
+
+  void SetConsiderFormAsSecureForTesting(
+      absl::optional<bool> consider_form_as_secure_for_testing) {
+    manager_->consider_form_as_secure_for_testing_ =
+        consider_form_as_secure_for_testing;
+  }
+
+  void AddFormFillEntry(
+      base::span<const FormFieldData* const> filled_fields,
+      base::span<const AutofillField* const> filled_autofill_fields,
+      bool is_refill) {
+    manager_->form_autofill_history_.AddFormFillEntry(
+        filled_fields, filled_autofill_fields, is_refill);
   }
 
  private:

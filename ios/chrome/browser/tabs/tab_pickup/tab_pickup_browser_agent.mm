@@ -10,15 +10,19 @@
 #import "components/sync_sessions/session_sync_service.h"
 #import "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/ntp/home/features.h"
+#import "ios/chrome/browser/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/sync/model/session_sync_service_factory.h"
-#import "ios/chrome/browser/synced_sessions/distant_session.h"
-#import "ios/chrome/browser/synced_sessions/synced_sessions.h"
+#import "ios/chrome/browser/synced_sessions/model/distant_session.h"
+#import "ios/chrome/browser/synced_sessions/model/distant_tab.h"
+#import "ios/chrome/browser/synced_sessions/model/synced_sessions.h"
 #import "ios/chrome/browser/tabs/tab_pickup/features.h"
 #import "ios/chrome/browser/tabs/tab_pickup/tab_pickup_infobar_delegate.h"
+#import "ios/chrome/browser/tabs/tab_sync_util.h"
 #import "ios/web/public/web_state.h"
 
 namespace {
@@ -126,6 +130,13 @@ void TabPickupBrowserAgent::ForeignSessionsChanged() {
     return;
   }
 
+  // Don't present a tab pickup banner on the NTP if the tab resumption feature
+  // is enabled.
+  if (IsTabResumptionEnabled() &&
+      IsURLNewTabPage(active_web_state_->GetVisibleURL())) {
+    return;
+  }
+
   if (!active_web_state_->IsRealized()) {
     web_state_observations_.AddObservation(active_web_state_);
     return;
@@ -134,21 +145,12 @@ void TabPickupBrowserAgent::ForeignSessionsChanged() {
   auto const synced_sessions =
       std::make_unique<synced_sessions::SyncedSessions>(session_sync_service_);
 
-  for (size_t i = 0; i < synced_sessions->GetSessionCount(); ++i) {
-    const synced_sessions::DistantSession* session =
-        synced_sessions->GetSession(i);
-    // Check if the synced tab meets tab pickup time
-    // thresholds.
-    const base::TimeDelta modified_time =
-        base::Time::Now() - session->modified_time;
-    if (modified_time > TabPickupMaxTimeThreshold()) {
-      return;
-    }
-    if (modified_time > TabPickupMinTimeThreshold()) {
-      session_ = session;
-      SetupInfoBarDelegate();
-      return;
-    }
+  LastActiveDistantTab last_active_tab =
+      GetLastActiveDistantTab(synced_sessions.get(), TabPickupTimeThreshold());
+  if (last_active_tab.tab) {
+    session_ = last_active_tab.session;
+    tab_ = last_active_tab.tab;
+    SetupInfoBarDelegate();
   }
 }
 
@@ -156,7 +158,8 @@ void TabPickupBrowserAgent::SetupInfoBarDelegate() {
   CHECK(IsTabPickupEnabled());
   CHECK(!IsTabPickupDisabledByUser());
 
-  delegate_ = std::make_unique<TabPickupInfobarDelegate>(browser_, session_);
+  delegate_ =
+      std::make_unique<TabPickupInfobarDelegate>(browser_, session_, tab_);
   if (!UpdateNewDistantTab(delegate_->GetTabURL())) {
     return;
   }

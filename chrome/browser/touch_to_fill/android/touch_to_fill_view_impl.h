@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_TOUCH_TO_FILL_ANDROID_TOUCH_TO_FILL_VIEW_IMPL_H_
 
 #include "base/android/scoped_java_ref.h"
-#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/touch_to_fill/touch_to_fill_view.h"
 
@@ -47,6 +46,7 @@ class TouchToFillViewImpl : public TouchToFillView {
       const base::android::JavaParamRef<jobject>& credential);
   void OnManagePasswordsSelected(JNIEnv* env, jboolean passkeys_shown);
   void OnHybridSignInSelected(JNIEnv* env);
+  void OnShowCredManSelected(JNIEnv* env);
   void OnDismiss(JNIEnv* env);
 
  private:

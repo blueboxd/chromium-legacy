@@ -38,6 +38,7 @@ import org.robolectric.Robolectric;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.dragdrop.ChromeDragAndDropBrowserDelegate;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.multiwindow.MultiInstanceManager;
 import org.chromium.chrome.browser.tab.MockTab;
@@ -48,10 +49,8 @@ import org.chromium.ui.base.LocalizationUtils;
 
 /** Tests for {@link TabDropTarget}. */
 @RunWith(BaseRobolectricTestRunner.class)
-// clang-format off
 @EnableFeatures({ChromeFeatureList.TAB_DRAG_DROP_ANDROID})
 public class TabDropTargetTest {
-    // clang-format on
     @Rule
     public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
     @Mock
@@ -114,10 +113,13 @@ public class TabDropTargetTest {
     }
 
     private ClipData createClipData(View view, Tab tab) {
-        String clipData = mTabDragSource.getClipDataInfo(tab);
-        ClipData.Item item = new ClipData.Item((CharSequence) clipData);
+        ClipData.Item item =
+                new ClipData.Item("TabId=" + (tab != null ? tab.getId() : Tab.INVALID_TAB_ID));
         ClipData dragData =
-                new ClipData((CharSequence) view.getTag(), TabDragSource.SUPPORTED_MIMETYPES, item);
+                new ClipData(
+                        (CharSequence) view.getTag(),
+                        ChromeDragAndDropBrowserDelegate.SUPPORTED_MIME_TYPES,
+                        item);
         return dragData;
     }
 

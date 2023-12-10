@@ -30,6 +30,7 @@
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/functional/identity.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -240,12 +241,10 @@ base::Value::Dict NetLogDnsTaskFailedParams(
 
 base::Value::Dict NetLogDnsTaskExtractionFailureParams(
     DnsResponseResultExtractor::ExtractionError extraction_error,
-    DnsQueryType dns_query_type,
-    const HostCache::Entry& results) {
+    DnsQueryType dns_query_type) {
   base::Value::Dict dict;
   dict.Set("extraction_error", base::strict_cast<int>(extraction_error));
   dict.Set("dns_query_type", kDnsQueryTypes.at(dns_query_type));
-  dict.Set("results", results.NetLogParams());
   return dict;
 }
 
@@ -1203,6 +1202,8 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
   }
 
  private:
+  using Results = std::set<std::unique_ptr<HostResolverInternalResult>>;
+
   enum class TransactionErrorBehavior {
     // Errors lead to task fallback (immediately unless another pending/started
     // transaction has the `kFatalOrEmpty` behavior).
@@ -1476,25 +1477,12 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
         results.error_or(DnsResponseResultExtractor::ExtractionError::kOk),
         DnsResponseResultExtractor::ExtractionError::kUnexpected);
 
-    // TODO(crbug.com/1381506): Use new results type directly instead of
-    // converting to HostCache::Entry.
-    DnsResponseResultExtractor::ExtractionError extraction_error =
-        results.error_or(DnsResponseResultExtractor::ExtractionError::kOk);
-    HostCache::Entry legacy_results(ERR_DNS_MALFORMED_RESPONSE,
-                                    HostCache::Entry::SOURCE_DNS);
-    if (results.has_value()) {
-      legacy_results = HostCache::Entry(
-          std::move(results).value(), base::Time::Now(),
-          tick_clock_->NowTicks(), HostCache::Entry::SOURCE_DNS);
-    }
-
-    if (legacy_results.error() != OK &&
-        legacy_results.error() != ERR_NAME_NOT_RESOLVED) {
+    if (!results.has_value()) {
       net_log_.AddEvent(
           NetLogEventType::HOST_RESOLVER_MANAGER_DNS_TASK_EXTRACTION_FAILURE,
           [&] {
-            return NetLogDnsTaskExtractionFailureParams(
-                extraction_error, transaction_info.type, legacy_results);
+            return NetLogDnsTaskExtractionFailureParams(results.error(),
+                                                        transaction_info.type);
           });
       if (transaction_info.error_behavior ==
               TransactionErrorBehavior::kFatalOrEmpty ||
@@ -1505,21 +1493,30 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
         // IsFatalTransactionExtractionError() function.
         DCHECK(!fatal_error);
         DCHECK_EQ(transaction_info.type, DnsQueryType::HTTPS);
-        legacy_results =
-            HostCache::Entry(ERR_NAME_NOT_RESOLVED, std::vector<bool>(),
-                             HostCache::Entry::SOURCE_DNS);
+        results = Results();
       } else {
-        OnFailure(legacy_results.error(), /*allow_fallback=*/true,
-                  legacy_results.GetOptionalTtl(), transaction_info.type);
+        OnFailure(ERR_DNS_MALFORMED_RESPONSE, /*allow_fallback=*/true,
+                  /*ttl=*/absl::nullopt, transaction_info.type);
         return;
       }
     }
+    CHECK(results.has_value());
 
     if (httpssvc_metrics_) {
       if (transaction_info.type == DnsQueryType::HTTPS) {
-        httpssvc_metrics_->SaveForHttps(
-            rcode_for_httpssvc, legacy_results.https_record_compatibility(),
-            elapsed_time);
+        bool has_compatible_https = base::ranges::any_of(
+            results.value(),
+            [](const std::unique_ptr<HostResolverInternalResult>& result) {
+              return result->type() ==
+                     HostResolverInternalResult::Type::kMetadata;
+            });
+        if (has_compatible_https) {
+          httpssvc_metrics_->SaveForHttps(
+              rcode_for_httpssvc, std::vector<bool>{true}, elapsed_time);
+        } else {
+          httpssvc_metrics_->SaveForHttps(rcode_for_httpssvc,
+                                          std::vector<bool>(), elapsed_time);
+        }
       } else {
         httpssvc_metrics_->SaveForAddressQuery(elapsed_time,
                                                rcode_for_httpssvc);
@@ -1529,15 +1526,16 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     // Trigger HTTP->HTTPS upgrade if an HTTPS record is received for an "http"
     // or "ws" request.
     if (transaction_info.type == DnsQueryType::HTTPS &&
-        ShouldTriggerHttpToHttpsUpgrade(legacy_results)) {
+        ShouldTriggerHttpToHttpsUpgrade(results.value())) {
       // Disallow fallback. Otherwise DNS could be reattempted without HTTPS
       // queries, and that would hide this error instead of triggering upgrade.
-      OnFailure(ERR_DNS_NAME_HTTPS_ONLY, /*allow_fallback=*/false,
-                legacy_results.GetOptionalTtl(), transaction_info.type);
+      OnFailure(
+          ERR_DNS_NAME_HTTPS_ONLY, /*allow_fallback=*/false,
+          HostCache::Entry::TtlFromInternalResults(
+              results.value(), base::Time::Now(), tick_clock_->NowTicks()),
+          transaction_info.type);
       return;
     }
-
-    HideMetadataResultsIfNotDesired(legacy_results);
 
     switch (transaction_info.type) {
       case DnsQueryType::A:
@@ -1566,6 +1564,12 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       default:
         break;
     }
+
+    // TODO(crbug.com/1381506): Use new results type directly instead of
+    // converting to HostCache::Entry.
+    HostCache::Entry legacy_results(std::move(results).value(),
+                                    base::Time::Now(), tick_clock_->NowTicks(),
+                                    HostCache::Entry::SOURCE_DNS);
 
     // Merge results with saved results from previous transactions.
     if (saved_results_) {
@@ -1870,29 +1874,17 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
           base::BindOnce(&DnsTask::OnTimeout, base::Unretained(this)));
   }
 
-  bool ShouldTriggerHttpToHttpsUpgrade(const HostCache::Entry& results) {
+  bool ShouldTriggerHttpToHttpsUpgrade(const Results& results) {
     // Upgrade if at least one HTTPS record was compatible, and the host uses an
     // upgradable scheme.
-    return base::ranges::any_of(results.https_record_compatibility(),
-                                base::identity()) &&
+    return base::ranges::any_of(
+               results,
+               [](const std::unique_ptr<HostResolverInternalResult>& result) {
+                 return result->type() ==
+                        HostResolverInternalResult::Type::kMetadata;
+               }) &&
            (GetScheme(host_) == url::kHttpScheme ||
             GetScheme(host_) == url::kWsScheme);
-  }
-
-  // Only keep metadata results (from HTTPS records) for appropriate schemes.
-  // This is needed to ensure metadata isn't included in results if the current
-  // Feature setup allows querying HTTPS for http:// or ws:// but doesn't enable
-  // scheme upgrade to error out on finding an HTTPS record.
-  //
-  // TODO(crbug.com/1206455): Remove once all requests that query HTTPS will
-  // either allow metadata results or error out.
-  void HideMetadataResultsIfNotDesired(HostCache::Entry& results) {
-    if (GetScheme(host_) == url::kHttpsScheme ||
-        GetScheme(host_) == url::kWssScheme) {
-      return;
-    }
-
-    results.ClearMetadatas();
   }
 
   const raw_ptr<DnsClient> client_;
@@ -2953,6 +2945,8 @@ HostResolverManager::HostResolverManager(
       system_dns_config_notifier_(system_dns_config_notifier),
       target_network_(target_network),
       check_ipv6_on_wifi_(options.check_ipv6_on_wifi),
+      ipv6_reachability_override_(base::FeatureList::IsEnabled(
+          features::kEnableIPv6ReachabilityOverride)),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       https_svcb_options_(
           options.https_svcb_options
@@ -3176,6 +3170,11 @@ void HostResolverManager::DeregisterResolveContext(
 void HostResolverManager::SetTickClockForTesting(
     const base::TickClock* tick_clock) {
   tick_clock_ = tick_clock;
+}
+
+void HostResolverManager::SetIPv6ReachabilityOverride(
+    bool reachability_override) {
+  ipv6_reachability_override_ = reachability_override;
 }
 
 void HostResolverManager::SetMaxQueuedJobsForTesting(size_t value) {
@@ -3842,7 +3841,8 @@ void HostResolverManager::GetEffectiveParametersForRequest(
   // resolution based on a probe. Prior logic ensures that this is an automatic
   // query, so the code requesting the resolution should be amenable to
   // receiving an IPv6 resolution.
-  if (!use_local_ipv6 && !is_ip && !last_ipv6_probe_result_) {
+  if (!use_local_ipv6 && !is_ip && !last_ipv6_probe_result_ &&
+      !ipv6_reachability_override_) {
     *out_effective_flags |= HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
     effective_types.Remove(DnsQueryType::AAAA);
   }

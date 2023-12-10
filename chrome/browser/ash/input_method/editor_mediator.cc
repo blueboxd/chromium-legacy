@@ -11,6 +11,8 @@
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/check_op.h"
+#include "base/containers/contains.h"
+#include "base/containers/fixed_flat_set.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/ash/mako/mako_bubble_coordinator.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -20,12 +22,30 @@ namespace ash::input_method {
 namespace {
 
 EditorMediator* g_instance_ = nullptr;
+constexpr auto striped_symbols =
+    base::MakeFixedFlatSet<char>({' ', '\t', '\n', '.', ','});
+
+size_t NonWhitespaceAndSymbolsLength(const std::u16string& text,
+                                     gfx::Range selection_range) {
+  size_t start = selection_range.start();
+  while (start < selection_range.end() &&
+         striped_symbols.contains(text[start])) {
+    start++;
+  }
+
+  size_t end = selection_range.end();
+  while (end > selection_range.start() && end < text.length() &&
+         striped_symbols.contains(text[end])) {
+    end--;
+  }
+
+  return std::max(static_cast<int>(end) - static_cast<int>(start), 0);
+}
 
 }  // namespace
 
 EditorMediator::EditorMediator(Profile* profile, std::string_view country_code)
     : profile_(profile),
-      editor_instance_impl_(this),
       panel_manager_(this),
       editor_switch_(std::make_unique<EditorSwitch>(profile, country_code)),
       consent_store_(
@@ -160,13 +180,22 @@ void EditorMediator::OnSurroundingTextChanged(const std::u16string& text,
   if (editor_event_proxy_ != nullptr) {
     editor_event_proxy_->OnSurroundingTextChanged(text, selection_range);
   }
-  editor_switch_->OnTextSelectionLengthChanged(selection_range.length());
+  size_t selected_length = NonWhitespaceAndSymbolsLength(text, selection_range);
+  editor_switch_->OnTextSelectionLengthChanged(selected_length);
 }
 
 void EditorMediator::ProcessConsentAction(ConsentAction consent_action) {
   consent_store_->ProcessConsentAction(consent_action);
   HandleTrigger(/*preset_query_id=*/absl::nullopt,
                 /*freeform_text=*/absl::nullopt);
+}
+
+void EditorMediator::ShowUI() {
+  mako_bubble_coordinator_.ShowUI();
+}
+
+void EditorMediator::CloseUI() {
+  mako_bubble_coordinator_.CloseUI();
 }
 
 void EditorMediator::OnPromoCardDeclined() {
@@ -178,19 +207,26 @@ void EditorMediator::HandleTrigger(
     absl::optional<std::string_view> freeform_text) {
   switch (GetEditorMode()) {
     case EditorMode::kRewrite:
-      mako_bubble_coordinator_.ShowEditorUI(profile_, MakoEditorMode::kRewrite,
+      mako_bubble_coordinator_.LoadEditorUI(profile_, MakoEditorMode::kRewrite,
                                             preset_query_id, freeform_text);
       break;
     case EditorMode::kWrite:
-      mako_bubble_coordinator_.ShowEditorUI(profile_, MakoEditorMode::kWrite,
+      mako_bubble_coordinator_.LoadEditorUI(profile_, MakoEditorMode::kWrite,
                                             preset_query_id, freeform_text);
       break;
     case EditorMode::kConsentNeeded:
-      mako_bubble_coordinator_.ShowConsentUI(profile_);
+      mako_bubble_coordinator_.LoadConsentUI(profile_);
+      // TODO: b:301518440: remove the following line once ShowUI method for the consent
+      // screen is implemented.
+      mako_bubble_coordinator_.ShowUI();
       break;
     case EditorMode::kBlocked:
       mako_bubble_coordinator_.CloseUI();
   }
+}
+
+void EditorMediator::CacheContextCaretBounds() {
+  mako_bubble_coordinator_.CacheContextCaretBounds();
 }
 
 void EditorMediator::OnTextInserted() {

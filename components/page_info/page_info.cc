@@ -343,11 +343,14 @@ void PageInfo::OnStatefulBounceCountChanged(int bounce_count) {}
 
 void PageInfo::OnStatusChanged(CookieControlsStatus status,
                                CookieControlsEnforcement enforcement,
+                               CookieBlocking3pcdStatus blocking_status,
                                base::Time expiration) {
   if (status != status_ || enforcement != enforcement_ ||
+      blocking_status != blocking_status_ ||
       expiration != cookie_exception_expiration_) {
     status_ = status;
     enforcement_ = enforcement;
+    blocking_status_ = blocking_status;
     cookie_exception_expiration_ = expiration;
     PresentSiteData(base::DoNothing());
   }
@@ -1373,12 +1376,12 @@ void PageInfo::PresentSitePermissions() {
       ContentSetting setting = content_settings->GetContentSetting(
           requester.GetURL(), site_url_, permission_info.type, &info);
 
-      if (type == ContentSettingsType::STORAGE_ACCESS) {
-        if (info.metadata.session_model() ==
-            content_settings::SessionModel::NonRestorableUserSession) {
-          continue;  // Skip auto-granted settings.
-        }
+      if (IsGrantedByRelatedWebsiteSets(type, info.metadata) &&
+          !base::FeatureList::IsEnabled(
+              permissions::features::kShowRelatedWebsiteSetsPermissionGrants)) {
+        continue;
       }
+
       PopulatePermissionInfo(permission_info, content_settings, info, setting);
       if (ShouldShowPermission(permission_info)) {
         permission_info_list.push_back(permission_info);
@@ -1437,9 +1440,10 @@ std::set<net::SchemefulSite> PageInfo::GetTwoSitePermissionRequesters(
       if (setting.primary_pattern.Matches(site_url_)) {
         continue;  // Skip first-party settings.
       }
-      if (setting.metadata.session_model() ==
-          content_settings::SessionModel::NonRestorableUserSession) {
-        continue;  // Skip auto-granted settings.
+      if (IsGrantedByRelatedWebsiteSets(type, setting.metadata) &&
+          !base::FeatureList::IsEnabled(
+              permissions::features::kShowRelatedWebsiteSetsPermissionGrants)) {
+        continue;
       }
     }
     GURL requesting_url = setting.primary_pattern.ToRepresentativeUrl();
@@ -1484,6 +1488,7 @@ void PageInfo::PresentSiteDataInternal(base::OnceClosure done) {
 
   cookies_info.status = status_;
   cookies_info.enforcement = enforcement_;
+  cookies_info.blocking_status = blocking_status_;
   cookies_info.expiration = cookie_exception_expiration_;
   cookies_info.confidence = cookie_controls_confidence_;
   ui_->SetCookieInfo(cookies_info);
@@ -1714,14 +1719,6 @@ int PageInfo::GetThirdPartySitesWithBlockedCookiesAccessCount(
   return browsing_data::GetUniqueThirdPartyCookiesHostCount(
       site_url, settings->blocked_local_shared_objects(),
       *(settings->blocked_browsing_data_model()));
-}
-
-bool PageInfo::IsTrackingProtection3pcdEnabled() const {
-  return delegate_->IsTrackingProtection3pcdEnabled();
-}
-
-bool PageInfo::AreAllThirdPartyCookiesBlocked() const {
-  return delegate_->AreAllThirdPartyCookiesBlocked();
 }
 
 int PageInfo::GetFirstPartyBlockedCookiesCount(const GURL& site_url) {

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "ash/accelerators/accelerator_controller_impl.h"
+#include "ash/accelerators/accelerator_encoding.h"
 #include "ash/accelerators/ash_accelerator_configuration.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
@@ -1861,7 +1862,8 @@ TEST_F(AcceleratorConfigurationProviderTest, ReservedKeysNotAllowed) {
       AcceleratorConfigurationProviderAsyncWaiter(provider_.get())
           .AddAccelerator(mojom::AcceleratorSource::kAsh, kToggleMirrorMode,
                           power_accelerator, &result);
-  EXPECT_EQ(mojom::AcceleratorConfigResult::kKeyNotAllowed, result->result);
+  EXPECT_EQ(mojom::AcceleratorConfigResult::kReservedKeyNotAllowed,
+            result->result);
 
   // Sleep key.
   const ui::Accelerator sleep_accelerator(ui::VKEY_SLEEP, ui::EF_COMMAND_DOWN);
@@ -1869,7 +1871,8 @@ TEST_F(AcceleratorConfigurationProviderTest, ReservedKeysNotAllowed) {
       AcceleratorConfigurationProviderAsyncWaiter(provider_.get())
           .AddAccelerator(mojom::AcceleratorSource::kAsh, kToggleMirrorMode,
                           sleep_accelerator, &result);
-  EXPECT_EQ(mojom::AcceleratorConfigResult::kKeyNotAllowed, result->result);
+  EXPECT_EQ(mojom::AcceleratorConfigResult::kReservedKeyNotAllowed,
+            result->result);
 
   // Lock/f13 key.
   const ui::Accelerator lock_accelerator(ui::VKEY_F13, ui::EF_COMMAND_DOWN);
@@ -1877,7 +1880,8 @@ TEST_F(AcceleratorConfigurationProviderTest, ReservedKeysNotAllowed) {
       AcceleratorConfigurationProviderAsyncWaiter(provider_.get())
           .AddAccelerator(mojom::AcceleratorSource::kAsh, kToggleMirrorMode,
                           lock_accelerator, &result);
-  EXPECT_EQ(mojom::AcceleratorConfigResult::kKeyNotAllowed, result->result);
+  EXPECT_EQ(mojom::AcceleratorConfigResult::kReservedKeyNotAllowed,
+            result->result);
 
   // Capslock key.
   const ui::Accelerator capslock_accelerator(ui::VKEY_CAPITAL,
@@ -1886,7 +1890,8 @@ TEST_F(AcceleratorConfigurationProviderTest, ReservedKeysNotAllowed) {
       AcceleratorConfigurationProviderAsyncWaiter(provider_.get())
           .AddAccelerator(mojom::AcceleratorSource::kAsh, kToggleMirrorMode,
                           capslock_accelerator, &result);
-  EXPECT_EQ(mojom::AcceleratorConfigResult::kKeyNotAllowed, result->result);
+  EXPECT_EQ(mojom::AcceleratorConfigResult::kReservedKeyNotAllowed,
+            result->result);
 
   // ScrollLock key.
   const ui::Accelerator scrolllock_accelerator(ui::VKEY_SCROLL,
@@ -1895,7 +1900,8 @@ TEST_F(AcceleratorConfigurationProviderTest, ReservedKeysNotAllowed) {
       AcceleratorConfigurationProviderAsyncWaiter(provider_.get())
           .AddAccelerator(mojom::AcceleratorSource::kAsh, kToggleMirrorMode,
                           scrolllock_accelerator, &result);
-  EXPECT_EQ(mojom::AcceleratorConfigResult::kKeyNotAllowed, result->result);
+  EXPECT_EQ(mojom::AcceleratorConfigResult::kReservedKeyNotAllowed,
+            result->result);
 
   // NumLock key.
   const ui::Accelerator numlock_accelerator(ui::VKEY_NUMLOCK,
@@ -1904,7 +1910,8 @@ TEST_F(AcceleratorConfigurationProviderTest, ReservedKeysNotAllowed) {
       AcceleratorConfigurationProviderAsyncWaiter(provider_.get())
           .AddAccelerator(mojom::AcceleratorSource::kAsh, kToggleMirrorMode,
                           numlock_accelerator, &result);
-  EXPECT_EQ(mojom::AcceleratorConfigResult::kKeyNotAllowed, result->result);
+  EXPECT_EQ(mojom::AcceleratorConfigResult::kReservedKeyNotAllowed,
+            result->result);
 }
 
 TEST_F(AcceleratorConfigurationProviderTest, AddAcceleratorNonConfigConflict) {
@@ -2341,6 +2348,12 @@ TEST_F(AcceleratorConfigurationProviderTest,
   const ui::Accelerator new_accelerator(ui::VKEY_K,
                                         ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN);
 
+  histogram_tester_->ExpectBucketCount(
+      "Ash.ShortcutCustomization.AddAccelerator.ToggleMirrorMode",
+      GetEncodedShortcut(new_accelerator.modifiers(),
+                         new_accelerator.key_code()),
+      0);
+
   // Upon first input: expect a conflict error that is overridable.
   ash::shortcut_customization::mojom::
       AcceleratorConfigurationProviderAsyncWaiter(provider_.get())
@@ -2367,6 +2380,12 @@ TEST_F(AcceleratorConfigurationProviderTest,
                               AcceleratorAction::kToggleMirrorMode,
                               old_accelerator, new_accelerator, &result);
   EXPECT_EQ(mojom::AcceleratorConfigResult::kSuccess, result->result);
+
+  histogram_tester_->ExpectBucketCount(
+      "Ash.ShortcutCustomization.AddAccelerator.ToggleMirrorMode",
+      GetEncodedShortcut(new_accelerator.modifiers(),
+                         new_accelerator.key_code()),
+      1);
 }
 
 TEST_F(AcceleratorConfigurationProviderTest, ReplaceWithNonSearchAccelerator) {
@@ -2590,6 +2609,11 @@ TEST_F(AcceleratorConfigurationProviderTest, ReplaceDefaultAccelerator) {
   const ui::Accelerator old_accelerator(ui::VKEY_SPACE, ui::EF_CONTROL_DOWN);
   const ui::Accelerator new_accelerator(ui::VKEY_M,
                                         ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  histogram_tester_->ExpectBucketCount(
+      "Ash.ShortcutCustomization.AddAccelerator.ToggleMirrorMode",
+      GetEncodedShortcut(new_accelerator.modifiers(),
+                         new_accelerator.key_code()),
+      0);
   ash::shortcut_customization::mojom::
       AcceleratorConfigurationProviderAsyncWaiter(provider_.get())
           .ReplaceAccelerator(mojom::AcceleratorSource::kAsh,
@@ -2602,6 +2626,11 @@ TEST_F(AcceleratorConfigurationProviderTest, ReplaceDefaultAccelerator) {
   histogram_tester_->ExpectBucketCount(
       "Ash.ShortcutCustomization.CustomizationAction",
       ash::shortcut_ui::ShortcutCustomizationAction::kReplaceAccelerator, 1);
+  histogram_tester_->ExpectBucketCount(
+      "Ash.ShortcutCustomization.AddAccelerator.ToggleMirrorMode",
+      GetEncodedShortcut(new_accelerator.modifiers(),
+                         new_accelerator.key_code()),
+      1);
 
   const AcceleratorData updated_test_data[] = {
       {/*trigger_on_press=*/true, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN,
@@ -3039,7 +3068,9 @@ TEST_F(AcceleratorConfigurationProviderTest, AddRemoveAcceleratorMetrics) {
   const ui::Accelerator good_accelerator(ui::VKEY_M, ui::EF_COMMAND_DOWN);
   histogram_tester_->ExpectBucketCount(
       "Ash.ShortcutCustomization.AddAccelerator.ToggleMirrorMode",
-      GetEncodedShortcut(good_accelerator), 0);
+      GetEncodedShortcut(good_accelerator.modifiers(),
+                         good_accelerator.key_code()),
+      0);
 
   AcceleratorResultDataPtr result;
   ash::shortcut_customization::mojom::
@@ -3063,14 +3094,18 @@ TEST_F(AcceleratorConfigurationProviderTest, AddRemoveAcceleratorMetrics) {
 
   histogram_tester_->ExpectBucketCount(
       "Ash.ShortcutCustomization.AddAccelerator.ToggleMirrorMode",
-      GetEncodedShortcut(good_accelerator), 1);
+      GetEncodedShortcut(good_accelerator.modifiers(),
+                         good_accelerator.key_code()),
+      1);
 
   // Remove a default accelerator and expect a metric to be recorded.
   const ui::Accelerator removed_accelerator(ui::VKEY_SPACE,
                                             ui::EF_CONTROL_DOWN);
   histogram_tester_->ExpectBucketCount(
       "Ash.ShortcutCustomization.RemoveDefaultAccelerator.ToggleMirrorMode",
-      GetEncodedShortcut(removed_accelerator), 0);
+      GetEncodedShortcut(removed_accelerator.modifiers(),
+                         removed_accelerator.key_code()),
+      0);
   ash::shortcut_customization::mojom::
       AcceleratorConfigurationProviderAsyncWaiter(provider_.get())
           .RemoveAccelerator(mojom::AcceleratorSource::kAsh,
@@ -3078,7 +3113,9 @@ TEST_F(AcceleratorConfigurationProviderTest, AddRemoveAcceleratorMetrics) {
                              removed_accelerator, &result);
   histogram_tester_->ExpectBucketCount(
       "Ash.ShortcutCustomization.RemoveDefaultAccelerator.ToggleMirrorMode",
-      GetEncodedShortcut(removed_accelerator), 1);
+      GetEncodedShortcut(removed_accelerator.modifiers(),
+                         removed_accelerator.key_code()),
+      1);
 
   // Now remove the recently added Meta + M custom accelerator, expect no
   // metrics to be recorded.
@@ -3089,7 +3126,9 @@ TEST_F(AcceleratorConfigurationProviderTest, AddRemoveAcceleratorMetrics) {
                              good_accelerator, &result);
   histogram_tester_->ExpectBucketCount(
       "Ash.ShortcutCustomization.RemoveDefaultAccelerator.ToggleMirrorMode",
-      GetEncodedShortcut(good_accelerator), 0);
+      GetEncodedShortcut(good_accelerator.modifiers(),
+                         good_accelerator.key_code()),
+      0);
 }
 
 TEST_F(AcceleratorConfigurationProviderTest, UserActions) {

@@ -105,8 +105,11 @@ enum class TestFileSystemType {
 //   - change types
 //   - observing a handle without permission should fail
 //   - changes should not be reported to swap files
+//     (see https://crbug.com/1488874)
 //   - changes should not be reported if permission to the handle is lost
+//     (see https://crbug.com/1489035)
 //   - changes should not be reported if the page is not fully-active
+//     (see https://crbug.com/1488875)
 //   - moving an observed handle
 
 class FileSystemAccessObserverBrowserTestBase : public ContentBrowserTest {
@@ -250,6 +253,115 @@ IN_PROC_BROWSER_TEST_F(FileSystemAccessObserveWithFlagBrowserTest,
                      "observer.disconnect();"
                      "observer.disconnect();"
                      "observer.disconnect(); })()"));
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemAccessObserveWithFlagBrowserTest,
+                       ObserveSyncAccessHandleWrite) {
+  const GURL& test_url =
+      embedded_test_server()->GetURL("/run_async_code_on_worker.html");
+  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url,
+                                             /*number_of_navigations=*/1);
+  const std::string script =
+      // clang-format off
+      R"(runOnWorkerAndWaitForResult(`)"
+         CREATE_PROMISE_AND_RESOLVERS
+         START_OBSERVING_FILE(TestFileSystemType::kBucket)
+         "const accessHandle = await file.createSyncAccessHandle();"
+         "const writeBuffer = new TextEncoder().encode('contents');"
+         "accessHandle.write(writeBuffer);"
+         SET_CHANGE_TIMEOUT
+         "accessHandle.close();"
+      R"(`);)";
+  // clang-format on
+  auto records = EvalJs(shell(), script).ExtractList();
+  ASSERT_THAT(records.GetList(), testing::Not(testing::IsEmpty()));
+  EXPECT_THAT(*records.GetList().front().GetDict().FindString("type"),
+              testing::StrEq("modified"));
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemAccessObserveWithFlagBrowserTest,
+                       ObserveSyncAccessHandleMultipleWrites) {
+  const GURL& test_url =
+      embedded_test_server()->GetURL("/run_async_code_on_worker.html");
+  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url,
+                                             /*number_of_navigations=*/1);
+  const std::string script =
+      // clang-format off
+      R"(runOnWorkerAndWaitForResult(`)"
+         CREATE_PROMISE_AND_RESOLVERS
+         "let timesCallbackFired = 0;"
+         "let serializedRecords = [];"
+         "async function onChange(records, observer) {"
+         "  timesCallbackFired++;"
+         "  for (const record of records) {"
+         "    let info = {};"
+         "    info.type = record.type;"
+         "    serializedRecords.push(info);"
+         "  }"
+         "  if (timesCallbackFired >= 3) {"  // Expect three events.
+         "    promiseResolve(serializedRecords);"
+         "  }"
+         "}"
+         START_OBSERVING_FILE(TestFileSystemType::kBucket)
+         "const accessHandle = await file.createSyncAccessHandle();"
+         "const writeBuffer = new TextEncoder().encode('contents');"
+         "accessHandle.write(writeBuffer);"
+         "accessHandle.write(writeBuffer);"
+         "accessHandle.write(writeBuffer);"  // Write thrice.
+         SET_CHANGE_TIMEOUT
+         "accessHandle.close();"
+      R"(`);)";
+  // clang-format on
+  auto records = EvalJs(shell(), script).ExtractList();
+  ASSERT_THAT(records.GetList(), testing::SizeIs(3));
+  EXPECT_THAT(*records.GetList().front().GetDict().FindString("type"),
+              testing::StrEq("modified"));
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemAccessObserveWithFlagBrowserTest,
+                       ObserveSyncAccessHandleTruncate) {
+  const GURL& test_url =
+      embedded_test_server()->GetURL("/run_async_code_on_worker.html");
+  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url,
+                                             /*number_of_navigations=*/1);
+  const std::string script =
+      // clang-format off
+      R"(runOnWorkerAndWaitForResult(`)"
+         CREATE_PROMISE_AND_RESOLVERS
+         START_OBSERVING_FILE(TestFileSystemType::kBucket)
+         "const accessHandle = await file.createSyncAccessHandle();"
+         "accessHandle.truncate(20);"
+         SET_CHANGE_TIMEOUT
+         "accessHandle.close();"
+      R"(`);)";
+  // clang-format on
+  auto records = EvalJs(shell(), script).ExtractList();
+  ASSERT_THAT(records.GetList(), testing::Not(testing::IsEmpty()));
+  EXPECT_THAT(*records.GetList().front().GetDict().FindString("type"),
+              testing::StrEq("modified"));
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemAccessObserveWithFlagBrowserTest,
+                       DoNotObserveSyncAccessHandleWithNoChanges) {
+  const GURL& test_url =
+      embedded_test_server()->GetURL("/run_async_code_on_worker.html");
+  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url,
+                                             /*number_of_navigations=*/1);
+  const std::string script =
+      // clang-format off
+      R"(runOnWorkerAndWaitForResult(`)"
+         CREATE_PROMISE_AND_RESOLVERS
+         START_OBSERVING_FILE(TestFileSystemType::kBucket)
+         "const accessHandle = await file.createSyncAccessHandle();"
+         "const readBuffer = new Uint8Array(24);"
+         "accessHandle.read(readBuffer);"
+         "accessHandle.flush();"
+         "accessHandle.close();"
+         SET_CHANGE_TIMEOUT
+      R"(`);)";
+  // clang-format on
+  auto records = EvalJs(shell(), script).ExtractList();
+  EXPECT_THAT(records.GetList(), testing::IsEmpty());
 }
 
 class FileSystemAccessObserverBrowserTest
@@ -478,7 +590,7 @@ IN_PROC_BROWSER_TEST_P(FileSystemAccessObserverBrowserTest,
   EXPECT_THAT(records.GetList(), testing::IsEmpty());
 }
 
-// TODO(https://crbug.com/1019297): Add a ReObserveAfterUnobserve test once the
+// TODO(https://crbug.com/1489029): Add a ReObserveAfterUnobserve test once the
 // unobserve() method is no longer racy. See https://crrev.com/c/4814709.
 IN_PROC_BROWSER_TEST_P(FileSystemAccessObserverBrowserTest,
                        ReObserveAfterDisconnect) {

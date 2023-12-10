@@ -57,10 +57,13 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
     <owner>zentaro@chromium.org</owner>
     <owner>cros-peripherals@google.com</owner>
   </variant>
-  <variant name="ESim" summary="esim">
-    <owner>azeemarshad@chromium.org</owner>
+  <variant name="EnterpriseESim" summary="enterprise eSIM">
+    <owner>chadduffin@chromium.org</owner>
     <owner>cros-connectivity@google.com</owner>
+  </variant>
+  <variant name="ESim" summary="eSIM">
     <owner>hsuregan@chromium.org</owner>
+    <owner>cros-connectivity@google.com</owner>
   </variant>
   <variant name="FakeKeyboardHeuristic" summary="Fake Keyboard Heuristic">
     <owner>wmahon@chromium.org</owner>
@@ -179,7 +182,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </variants>
 
 <histogram name="ChromeOS.AnomalousProcCount.AttemptedMemfdExec"
-    units="processes" expires_after="2024-01-31">
+    units="processes" expires_after="2024-03-31">
   <owner>enlightened@chromium.org</owner>
   <owner>chromeos-hardening@google.com</owner>
   <summary>
@@ -195,7 +198,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.AnomalousProcCount.ForbiddenIntersection"
-    units="processes" expires_after="2024-01-31">
+    units="processes" expires_after="2024-03-31">
   <owner>enlightened@chromium.org</owner>
   <owner>chromeos-hardening@google.com</owner>
   <summary>
@@ -306,6 +309,16 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
   <summary>
     Records the median of sampled zoom ratios when Auto Framing zooms in camera
     frames to the subject during a camera session.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.Camera.ConcurrentAccess" enum="Boolean"
+    expires_after="2024-03-01">
+  <owner>dorahkim@google.com</owner>
+  <owner>chromeos-camera-eng@google.com</owner>
+  <summary>
+    Records when attempting to access a camera, whether Ash and Lacros are
+    accessing the same camera or not.
   </summary>
 </histogram>
 
@@ -989,7 +1002,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.Debugd.Perf.{FunctionName}" units="ms"
-    expires_after="2024-01-31">
+    expires_after="2024-03-31">
   <owner>enlightened@google.com</owner>
   <owner>jorgelo@google.com</owner>
   <owner>chromeos-security-core@google.com</owner>
@@ -1298,7 +1311,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.HardwareVerifier.TimeToFinish" units="ms"
-    expires_after="2024-01-31">
+    expires_after="2024-03-31">
   <owner>itspeter@chromium.org</owner>
   <owner>stimim@chromium.org</owner>
   <owner>chromeos-runtime-probe@google.com</owner>
@@ -1308,7 +1321,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.HardwareVerifier.TimeToProbe" units="ms"
-    expires_after="2024-01-31">
+    expires_after="2024-03-31">
   <owner>itspeter@chromium.org</owner>
   <owner>stimim@chromium.org</owner>
   <owner>chromeos-runtime-probe@google.com</owner>
@@ -1619,7 +1632,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 
 <histogram
     name="ChromeOS.Inputs.TouchscreenUsage.Temporary.{TimePeriod}.{Mode}"
-    units="ms" expires_after="2024-01-31">
+    units="ms" expires_after="2024-03-31">
 <!-- TODO(b/270610982): Remove excess time periods once an optimal time period has been selected. -->
 
   <owner>wmahon@google.com</owner>
@@ -2179,7 +2192,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 <histogram name="ChromeOS.Sandboxing.LandlockEnabled" enum="Boolean"
     expires_after="2024-02-04">
   <owner>enlightened@chromium.org</owner>
-  <owner>chromeos-security-core@google.com</owner>
+  <owner>chromeos-hardening@google.com</owner>
   <summary>
     Records the status of the Landlock LSM on the system. Records true if
     Landlock is enabled, and records false if it is disabled (not configured),
@@ -2191,7 +2204,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.Sandboxing.NoNewPrivsProcPercentage" units="%"
-    expires_after="2024-01-31">
+    expires_after="2024-03-31">
   <owner>enlightened@chromium.org</owner>
   <owner>chromeos-hardening@google.com</owner>
   <summary>
@@ -2205,7 +2218,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.Sandboxing.NonInitNsProcPercentage" units="%"
-    expires_after="2024-01-31">
+    expires_after="2024-03-31">
   <owner>enlightened@chromium.org</owner>
   <owner>chromeos-hardening@google.com</owner>
   <summary>
@@ -2219,7 +2232,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.Sandboxing.NonRootProcPercentage" units="%"
-    expires_after="2024-01-31">
+    expires_after="2024-03-31">
   <owner>enlightened@chromium.org</owner>
   <owner>chromeos-hardening@google.com</owner>
   <summary>
@@ -2233,7 +2246,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.Sandboxing.SecCompCoverage" units="%"
-    expires_after="2024-01-31">
+    expires_after="2024-03-31">
   <owner>enlightened@chromium.org</owner>
   <owner>chromeos-hardening@google.com</owner>
   <summary>
@@ -2247,7 +2260,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.Sandboxing.UnprivProcPercentage" units="%"
-    expires_after="2024-01-31">
+    expires_after="2024-03-31">
   <owner>enlightened@chromium.org</owner>
   <owner>chromeos-hardening@google.com</owner>
   <summary>
@@ -2392,9 +2405,9 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.SecurityAnomaly" enum="SecurityAnomaly"
-    expires_after="2024-02-25">
+    expires_after="2024-03-31">
   <owner>jorgelo@chromium.org</owner>
-  <owner>chromeos-security-core@google.com</owner>
+  <owner>chromeos-hardening@google.com</owner>
   <summary>
     Records when an event representing a deviation from the ChromeOS security
     posture happens.
@@ -2410,9 +2423,9 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.SecurityAnomalyUploadSuccess" enum="Boolean"
-    expires_after="2023-11-12">
+    expires_after="2024-03-31">
   <owner>jorgelo@chromium.org</owner>
-  <owner>chromeos-security-core@google.com</owner>
+  <owner>chromeos-hardening@google.com</owner>
   <summary>
     Records the result (boolean success or failure) of attempting to report a
     Chrome OS system as anomalous via the crash reporting service.
@@ -2831,6 +2844,26 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram
+    name="ChromeOS.Settings.Device.{Peripheral}.ButtonRemapping.KeyEvent.Initial"
+    units="KeyEventEncodedInt" expires_after="2024-03-22">
+  <owner>dpad@google.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Records the value of the button_remapping KeyEvent property when the
+    {Peripheral} device button_remapping is first initialized. A KeyEvent is
+    encoded as an int where the low 16 bits represent the KeyEvent's
+    KeyboardCode/vkey, and the high 16 bits represent the KeyEvent's modifiers.
+    See ui/events/keycodes/keyboard_codes_posix.h for the KeyboardCode values.
+    and ui/events/event_constants.h for the modifier values.
+  </summary>
+  <token key="Peripheral">
+    <variant name="GraphicsTablet"/>
+    <variant name="GraphicsTabletPen"/>
+    <variant name="Mouse"/>
+  </token>
+</histogram>
+
+<histogram
     name="ChromeOS.Settings.Device.{Peripheral}.ButtonRemapping.Name.Changed.CustomizableButton"
     enum="CustomizableButton" expires_after="2024-03-22">
   <owner>dpad@google.com</owner>
@@ -3098,7 +3131,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.Stability.{Severity}" enum="CrashSeverityProductType"
-    expires_after="2024-01-31">
+    expires_after="2024-03-31">
   <owner>mutexlox@google.com</owner>
   <owner>palaksh@google.com</owner>
   <owner>kendraketsui@google.com</owner>
@@ -3506,7 +3539,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 <histogram name="ChromeOS.WXMountCount" units="count"
     expires_after="2024-02-25">
   <owner>jorgelo@chromium.org</owner>
-  <owner>chromeos-security-core@google.com</owner>
+  <owner>chromeos-hardening@google.com</owner>
   <summary>
     Records the number of writable+executable mounts on the system. The count
     itself is updated every 30 seconds, but this metric is reported every two

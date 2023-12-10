@@ -63,6 +63,19 @@ uint64_t GraphInfoBuilder::BuildOutput(const std::string& name,
   return operand_id;
 }
 
+void GraphInfoBuilder::BuildSplit(
+    uint64_t input_operand_id,
+    const std::vector<uint64_t>& output_operand_ids,
+    uint32_t axis) {
+  mojom::SplitPtr split = mojom::Split::New();
+  split->input_operand_id = input_operand_id;
+  split->output_operand_ids = output_operand_ids;
+  split->axis = axis;
+
+  graph_info_->operations.push_back(
+      mojom::Operation::NewSplit(std::move(split)));
+}
+
 void GraphInfoBuilder::BuildOperator(
     mojom::Operator::Kind kind,
     const std::vector<uint64_t>& inputs,
@@ -75,6 +88,91 @@ void GraphInfoBuilder::BuildOperator(
   operation->attributes = std::move(operator_attributes);
   graph_info_->operations.push_back(
       mojom::Operation::NewGenericOperator(std::move(operation)));
+}
+
+void GraphInfoBuilder::BuildClamp(uint64_t input_operand_id,
+                                  uint64_t output_operand_id,
+                                  float min_value,
+                                  float max_value) {
+  mojom::ClampPtr clamp = mojom::Clamp::New();
+  clamp->input_operand_id = input_operand_id;
+  clamp->output_operand_id = output_operand_id;
+  clamp->min_value = min_value;
+  clamp->max_value = max_value;
+  graph_info_->operations.push_back(
+      mojom::Operation::NewClamp(std::move(clamp)));
+}
+
+void GraphInfoBuilder::BuildConcat(std::vector<uint64_t> input_operand_ids,
+                                   uint64_t output_operand_id,
+                                   uint32_t axis) {
+  mojom::ConcatPtr concat = mojom::Concat::New();
+  concat->input_operand_ids = std::move(input_operand_ids);
+  concat->output_operand_id = output_operand_id;
+  concat->axis = axis;
+  graph_info_->operations.push_back(
+      mojom::Operation::NewConcat(std::move(concat)));
+}
+
+void GraphInfoBuilder::BuildElementWiseBinary(
+    mojom::ElementWiseBinary::Kind kind,
+    uint64_t lhs_operand,
+    uint64_t rhs_operand,
+    uint64_t output_operand) {
+  mojom::ElementWiseBinaryPtr binary = mojom::ElementWiseBinary::New();
+  binary->kind = kind;
+  binary->lhs_operand = lhs_operand;
+  binary->rhs_operand = rhs_operand;
+  binary->output_operand = output_operand;
+  graph_info_->operations.push_back(
+      mojom::Operation::NewElementWiseBinary(std::move(binary)));
+}
+
+void GraphInfoBuilder::BuildRelu(uint64_t input_operand_id,
+                                 uint64_t output_operand_id) {
+  mojom::ReluPtr relu = mojom::Relu::New();
+  relu->input_operand_id = input_operand_id;
+  relu->output_operand_id = output_operand_id;
+  graph_info_->operations.push_back(mojom::Operation::NewRelu(std::move(relu)));
+}
+
+void GraphInfoBuilder::BuildSoftmax(uint64_t input_operand_id,
+                                    uint64_t output_operand_id) {
+  mojom::SoftmaxPtr softmax = mojom::Softmax::New();
+  softmax->input_operand_id = input_operand_id;
+  softmax->output_operand_id = output_operand_id;
+  graph_info_->operations.push_back(
+      mojom::Operation::NewSoftmax(std::move(softmax)));
+}
+
+void GraphInfoBuilder::BuildTranspose(uint64_t input_operand_id,
+                                      uint64_t output_operand_id,
+                                      std::vector<uint32_t> permutation) {
+  mojom::TransposePtr transpose = mojom::Transpose::New();
+  transpose->input_operand_id = input_operand_id;
+  transpose->output_operand_id = output_operand_id;
+  transpose->permutation = std::move(permutation);
+  graph_info_->operations.push_back(
+      mojom::Operation::NewTranspose(std::move(transpose)));
+}
+
+void GraphInfoBuilder::BuildSlice(uint64_t input_operand_id,
+                                  uint64_t output_operand_id,
+                                  std::vector<uint32_t> starts,
+                                  std::vector<uint32_t> sizes) {
+  CHECK(starts.size() == sizes.size());
+  mojom::SlicePtr slice = mojom::Slice::New();
+  slice->input_operand_id = input_operand_id;
+  slice->output_operand_id = output_operand_id;
+  for (uint32_t i = 0; i < starts.size(); ++i) {
+    mojom::StartAndSizePtr start_and_size = mojom::StartAndSize::New();
+    start_and_size->start = starts[i];
+    start_and_size->size = sizes[i];
+    slice->starts_and_sizes.push_back(std::move(start_and_size));
+  }
+
+  graph_info_->operations.push_back(
+      mojom::Operation::NewSlice(std::move(slice)));
 }
 
 mojom::GraphInfoPtr GraphInfoBuilder::CloneGraphInfo() const {

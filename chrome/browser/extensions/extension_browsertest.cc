@@ -59,8 +59,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/url_data_source.h"
@@ -151,16 +149,14 @@ void ExtensionProtocolTestResourcesHandler(const base::FilePath& test_dir_root,
   // Infer |test_dir_gen_root| from |test_dir_root|.
   // E.g., if |test_dir_root| is /abs/path/src/chrome/test/data,
   // |test_dir_gen_root| will be /abs/path/out/<out_dir>/gen/chrome/test/data.
-  base::FilePath dir_source_root;
-  base::PathService::Get(base::DIR_SOURCE_ROOT, &dir_source_root);
-  base::FilePath exe_dir;
-  base::PathService::Get(base::DIR_EXE, &exe_dir);
+  base::FilePath dir_src_test_data_root;
+  base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &dir_src_test_data_root);
+  base::FilePath gen_test_data_root_dir;
+  base::PathService::Get(base::DIR_GEN_TEST_DATA_ROOT, &gen_test_data_root_dir);
   base::FilePath relative_root_path;
-  dir_source_root.AppendRelativePath(test_dir_root, &relative_root_path);
-  // TODO(dpapad): Add a new DIR_GEN key to PathService instead of manually
-  // appending "gen".
+  dir_src_test_data_root.AppendRelativePath(test_dir_root, &relative_root_path);
   base::FilePath test_dir_gen_root =
-      exe_dir.AppendASCII("gen").Append(relative_root_path);
+      gen_test_data_root_dir.Append(relative_root_path);
 
   // Then check if the file exists in the |test_dir_gen_root| folder
   // covering cases where the test file is generated at build time.

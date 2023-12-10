@@ -765,7 +765,7 @@ BASE_FEATURE(kFencedFrames, "FencedFrames", base::FEATURE_DISABLED_BY_DEFAULT);
 //   event data to be in place.
 BASE_FEATURE(kFencedFramesM119Features,
              "FencedFramesM119Features",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // File handling icons. https://crbug.com/1218213
 BASE_FEATURE(kFileHandlingIcons,
@@ -806,6 +806,8 @@ BASE_FEATURE(kFledgeBiddingAndAuctionServer,
              base::FEATURE_DISABLED_BY_DEFAULT);
 const base::FeatureParam<std::string> kFledgeBiddingAndAuctionKeyURL{
     &kFledgeBiddingAndAuctionServer, "FledgeBiddingAndAuctionKeyURL", ""};
+const base::FeatureParam<std::string> kFledgeBiddingAndAuctionKeyConfig{
+    &kFledgeBiddingAndAuctionServer, "FledgeBiddingAndAuctionKeyConfig", ""};
 
 // See in the header.
 BASE_FEATURE(kFledgeConsiderKAnonymity,
@@ -1086,6 +1088,9 @@ BASE_FEATURE(kLightweightNoStatePrefetch,
 );
 
 BASE_FEATURE(kLinkPreview, "LinkPreview", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kLinkPreviewNavigation,
+             "LinkPreviewNavigation",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // A feature to control whether the loading phase should be extended beyond
 // First Meaningful Paint by a configurable buffer.
@@ -1236,6 +1241,10 @@ BASE_FEATURE(kOriginAgentClusterDefaultWarning,
              "OriginAgentClusterDefaultWarning",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kOriginTrialStateHostApplyFeatureDiff,
+             "OriginTrialStateHostApplyFeatureDiff",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Enable defer commits to avoid flash of unstyled content, for same origin
 // navigation only.
 BASE_FEATURE(kPaintHolding, "PaintHolding", base::FEATURE_ENABLED_BY_DEFAULT);
@@ -1249,14 +1258,14 @@ BASE_FEATURE(kParkableImagesToDisk,
              "ParkableImagesToDisk",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
 // A parameter to exclude or not exclude CanvasFontCache from
 // PartialLowModeOnMidRangeDevices. This is used to see how
 // CanvasFontCache affects graphics smoothness and renderer memory usage.
 const base::FeatureParam<bool> kPartialLowEndModeExcludeCanvasFontCache{
     &base::features::kPartialLowEndModeOnMidRangeDevices,
     "exclude-canvas-font-cache", false};
-#endif  // BUILDFLAG(IS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
 
 // Enables the use of the PaintCache for Path2D objects that are rasterized
 // out of process.  Has no effect when kCanvasOopRasterization is disabled.
@@ -1554,10 +1563,6 @@ BASE_FEATURE(kRunTextInputUpdatePostLifecycle,
              "RunTextInputUpdatePostLifecycle",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kOriginTrialStateHostApplyFeatureDiff,
-             "OriginTrialStateHostApplyFeatureDiff",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // https://html.spec.whatwg.org/multipage/system-state.html#safelisted-scheme
 BASE_FEATURE(kSafelistFTPToRegisterProtocolHandler,
              "SafelistFTPToRegisterProtocolHandler",
@@ -1615,7 +1620,8 @@ BASE_FEATURE(kSendCnameAliasesToSubresourceFilterFromRenderer,
 
 BASE_FEATURE(kSerializeAccessibilityPostLifecycle,
              "SerializeAccessibilityPostLifecycle",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT
+);
 
 // Experiment of the delay from navigation to starting an update of a service
 // worker's script.
@@ -1835,6 +1841,10 @@ const base::FeatureParam<base::TimeDelta>
     kStorageAccessAPITopLevelUserInteractionBound{
         &kStorageAccessAPI,
         "storage_access_api_top_level_user_interaction_bound", base::Days(30)};
+const base::FeatureParam<base::TimeDelta>
+    kStorageAccessAPIRelatedWebsiteSetsLifetime{
+        &kStorageAccessAPI, "related_website_sets_permission_lifetime",
+        base::Days(30)};
 const base::FeatureParam<base::TimeDelta>
     kStorageAccessAPIImplicitPermissionLifetime{
         &kStorageAccessAPI, "storage_access_api_implicit_permission_lifetime",

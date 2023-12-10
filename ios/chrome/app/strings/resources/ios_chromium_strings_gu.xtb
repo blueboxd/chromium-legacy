@@ -17,6 +17,7 @@
 <translation id="1591119736686995611">Chromium ટૅબ ગ્રિડ ખોલે છે.</translation>
 <translation id="1617663976202781617">Chromium સિંકમાંનો ડેટા</translation>
 <translation id="1647558790457890304">Chromiumના સેટિંગ</translation>
+<translation id="164952285225495380">આ પૅકેજને Chromium પર પહેલેથી જ ટ્રૅક કરવામાં આવ્યું છે.</translation>
 <translation id="1722370509450468186">તમારો પાસવર્ડ તમારા એકાઉન્ટ (<ph name="EMAIL" />)માં સાચવવામાં આવશે.</translation>
 <translation id="1736662517232558588">Chromium ડેટા સાફ કર્યો</translation>
 <translation id="1791845338122684020">તમારા Chromium ઇતિહાસનું પેજ ખોલે છે.</translation>
@@ -95,7 +96,6 @@
 <translation id="4736424910885271643">તમારું એકાઉન્ટ <ph name="HOSTED_DOMAIN" /> દ્વારા મેનેજ કરવામાં આવતું હોવાથી, આ ડિવાઇસમાંથી તમારો Chromium ડેટા સાફ કરવામાં આવશે</translation>
 <translation id="4790638144988730920">તમારા Google એકાઉન્ટમાં Chromiumના ડેટાનો ઉપયોગ કરવાનું ચાલુ રાખો.</translation>
 <translation id="4828317641996116749">Chromium બધા પાસવર્ડ ચેક કરી શક્યું નથી. થોડા સમય પછી ફરી પ્રયાસ કરો.</translation>
-<translation id="4935539884203837577">Chromium પરના શૉપિંગના અન્ય અનુભવોમાં સહાય કરવાની સાથે, Chromium તમે આપેલા ટ્રૅકિંગ નંબરની ભાળ મેળવી શકે છે તેમજ નવા ટૅબ પેજ પર તમારા પૅકેજને ટ્રૅક કરી શકે છે.</translation>
 <translation id="4985291216379576555">ઑફલાઇન, Chromium અપડેટ ચેક કરી શકતાં નથી</translation>
 <translation id="4996471330284142407">Chromiumના સરળ, સુરક્ષિત અને અત્યાર સુધીના સૌથી ઝડપી વર્ઝન વડે વધુ કાર્યો પૂર્ણ કરો.</translation>
 <translation id="4999538639245140991">કારણ કે તમે <ph name="SIGNOUT_MANAGED_DOMAIN" /> દ્વારા મેનેજ કરવામાં આવેલ એકાઉન્ટમાંથી સાઇન આઉટ કરી રહ્યાં છો, આ ડિવાઇસમાંથી તમારા Chromium ડેટા ડિલીટ થઈ જશે. તમારો ડેટા તમારા Google એકાઉન્ટમાં જળવાઈ રહેશે.</translation>
@@ -120,7 +120,6 @@
 <translation id="5688047395118852662">આ કાર્ડ તમને Chromiumનો મહત્તમ લાભ મેળવવા માટેના સૂચનો બતાવે છે.</translation>
 <translation id="5700709190537129682">Chromium તમારા પાસવર્ડ ચેક કરી શકતું નથી</translation>
 <translation id="5777187867430702742">Chromium પેજ</translation>
-<translation id="584303319228224680">Chromium પર તમારા પૅકેજ ઑટોમૅટિક રીતે ટ્રૅક કરો</translation>
 <translation id="5889847953983052353">જ્યારે ચાલુ હોય:
 <ph name="BEGIN_INDENT" />  • તમે જે રીતે ઉપયોગ કરો છો, તે રીતે Chromium વાપરતા લોકો માટે તેને બહેતર બનાવવામાં સહાય કરો.<ph name="END_INDENT" />
 
@@ -160,6 +159,7 @@
 <translation id="6911341667534646387">તમારા Google એકાઉન્ટમાં Chromiumના ડેટાનો ઉપયોગ કરવાનું ચાલુ રાખો</translation>
 <translation id="7006920032187763988">તમે પાસવર્ડ મેનેજરમાં સાચવેલા તમારા પાસવર્ડનો ઉપયોગ તમારા iPad પરની અન્ય ઍપમાં કરી શકો છો.</translation>
 <translation id="7018284295775193585">Chromium અપડેટ થઈ શકતું નથી</translation>
+<translation id="7025471822960602362">Chromium પર ભાળ મેળવેલા પૅકેજને ટ્રૅક કરો</translation>
 <translation id="7045244423563602563">Chromium કસ્ટમાઇઝ કરો</translation>
 <translation id="7055269218854630176">તમે જેમાં સાઇન ઇન કરી રહ્યાં હો તે એકાઉન્ટને અને Chromiumના વપરાશની રીતને તમારી સંસ્થા <ph name="DOMAIN" /> મેનેજ કરે છે. તમારા ઍડમિનિસ્ટ્રેટર અમુક સુવિધાઓનું સેટઅપ અથવા તેને પ્રતિબંધિત કરી શકે છે.</translation>
 <translation id="7099326575020694068">Chromium, વિભાજિત વ્યૂ મોડમાં તમારા કૅમેરાનો ઉપયોગ કરી શકતુંં નથી</translation>
@@ -188,6 +188,7 @@
 <translation id="7931842119211730154">તમે Chromium બંધ કરો, ત્યારે છૂપી ટૅબ લૉક કરો</translation>
 <translation id="7934404985878918282">Chromium વાંચન સૂચિ જુઓ</translation>
 <translation id="7980860476903281594">Chromium તમે મંજૂરી આપો છો તે સાઇટ સાથે તમારા સ્થાનની માહિતી શેર કરે છે.</translation>
+<translation id="7995166854192397899">તમારા અન્ય ડિવાઇસ પરની તમારી બ્રાઉઝિંગ પ્રવૃત્તિના આધારે સૂચનો બતાવવામાં આવે છે. સૂચનો મેળવવા માટે, તમારા બધા ડિવાઇસ પર Chromiumમાં સાઇન ઇન કરો.</translation>
 <translation id="8013573822802650211">તમે જ્યાંથી Chromiumનો ઉપયોગ કરો ત્યાંથી તમારી ટૅબ જોવા માટે, તમારા બધાં ડિવાઇસ પર સાઇન ઇન કરો</translation>
 <translation id="8071041515667087705">Chromium સેટિંગ પર જાઓ.</translation>
 <translation id="8073677936375100957">ડિવાઇસમાંથી તમારા Chromium ડેટાને સાફ કરીએ?</translation>

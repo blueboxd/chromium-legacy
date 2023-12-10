@@ -10,12 +10,15 @@ fuzzable_proto_library("proto") {
 
 source_set("leak_detection_interface_headers") {
   sources = [
+    "bulk_leak_check.h",
+    "bulk_leak_check_service_interface.h",
     "leak_detection_check.h",
     "leak_detection_check_factory.h",
     "leak_detection_delegate_interface.h",
   ]
   deps = [
     "//base",
+    "//components/keyed_service/core",
     "//url",
   ]
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
@@ -23,9 +26,9 @@ source_set("leak_detection_interface_headers") {
 
 source_set("leak_detection") {
   sources = [
-    "bulk_leak_check.h",
     "bulk_leak_check_impl.cc",
     "bulk_leak_check_impl.h",
+    "bulk_leak_check_service_interface.cc",
     "encryption_utils.cc",
     "encryption_utils.h",
     "leak_detection_check.h",
@@ -52,7 +55,11 @@ source_set("leak_detection") {
   deps = [
     ":proto",
     "//base",
+    "//components/autofill/core/common",
+    "//components/password_manager/core/common",
     "//components/password_manager/core/common:features",
+    "//components/prefs",
+    "//components/safe_browsing/core/common:safe_browsing_prefs",
     "//components/signin/public/identity_manager",
     "//components/version_info:channel",
     "//third_party/private-join-and-compute/src:ec_commutative_cipher",

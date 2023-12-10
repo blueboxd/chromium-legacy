@@ -276,8 +276,7 @@ void SupervisedUserExtensionsManager::SetActiveForSupervisedUsers() {
   supervised_user::SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForBrowserContext(context_);
   is_active_policy_for_supervised_users_ =
-      supervised_user_service &&
-      supervised_user_service->AreExtensionsPermissionsEnabled();
+      supervised_user_service->IsSubjectToParentalControls();
 }
 
 void SupervisedUserExtensionsManager::

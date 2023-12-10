@@ -57,6 +57,9 @@ class BASE_EXPORT SysInfo {
   // system, but could instead be the number of physical cores when
   // SetCpuSecurityMitigationsEnabled() has been invoked to indicate that CPU
   // security mitigations are enabled on Mac.
+  // On some platforms this may cache the resulting value in its implementation,
+  // e.g. on Linux/ChromeOS where this function cannot run in a sandbox and so
+  // a cached value must be returned.
   static int NumberOfProcessors();
 
   // Returns the number of the most efficient logical processors for the current
@@ -293,6 +296,20 @@ class BASE_EXPORT SysInfo {
   static bool IsLowEndDeviceOrPartialLowEndModeEnabled();
   static bool IsLowEndDeviceOrPartialLowEndModeEnabled(
       const FeatureParam<bool>& param_for_exclusion);
+
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
+  // Returns true for Android devices whose memory is X GB, considering
+  // carveouts. The carveouts is memory reserved by the system, e.g.
+  // for drivers, MTE, etc. It's very common for querying app to see
+  // hundreds MBs less than actual physical memory installed on the system.
+  // Addendum: This logic should also work for ChromeOS.
+  static bool Is3GbDevice();
+  static bool Is4GbDevice();
+  static bool Is6GbDevice();
+  // Returns true for Android devices whose memory is 4GB or 6GB, considering
+  // carveouts.
+  static bool Is4GbOr6GbDevice();
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_MAC)
   // Indicates that CPU security mitigations are enabled for the current

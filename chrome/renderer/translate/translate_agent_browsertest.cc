@@ -92,7 +92,7 @@ base::File LoadModelFile(const base::FilePath& model_file_path) {
 
 base::FilePath model_file_path() {
   base::FilePath source_root_dir;
-  base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root_dir);
+  base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &source_root_dir);
   return source_root_dir.AppendASCII("components")
       .AppendASCII("test")
       .AppendASCII("data")
@@ -211,7 +211,7 @@ class TranslateAgentBrowserTest : public ChromeRenderViewTest {
     ChromeRenderViewTest::TearDown();
   }
 
-  raw_ptr<TestTranslateAgent, ExperimentalRenderer> translate_agent_;
+  raw_ptr<TestTranslateAgent, DanglingUntriaged> translate_agent_;
   FakeContentTranslateDriver fake_translate_driver_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };

@@ -111,6 +111,9 @@
 // Returns the number of open browsers.
 + (NSUInteger)browserCount [[nodiscard]];
 
+// Returns the number of the realized web states from the existing web states.
++ (NSInteger)realizedWebStatesCount [[nodiscard]];
+
 // Simulates a backgrounding.
 // If not succeed returns an NSError indicating  why the
 // operation failed, otherwise nil.
@@ -565,6 +568,9 @@
 
 // Removes the object for the provided `key` in NSUserDefaults.
 + (void)removeUserDefaultObjectForKey:(NSString*)key;
+
+// Returns the value for provided key from NSUserDefaults.
++ (id)userDefaultObjectForKey:(NSString*)key;
 
 #pragma mark - Pref Utilities (EG2)
 

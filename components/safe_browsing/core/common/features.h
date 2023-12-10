@@ -69,32 +69,12 @@ BASE_DECLARE_FEATURE(kDownloadBubbleV2);
 // server-side.
 BASE_DECLARE_FEATURE(kDownloadTailoredWarnings);
 
-// Enables instructional improvements when users are directed to the security
-// settings page to enable Enhanced Safe Browsing. Enables the In-page help
-// (IPH) Bubble to be shown when the user is referred from an ESB promotion.
-// The ESB option will also be collapsed on page load. If not enabled,
-// no IPH bubble will appear and the ESB option will be expanded on page load.
-BASE_DECLARE_FEATURE(kEsbIphBubbleAndCollapseSettings);
-
-// Specifies whether the ESB IPH bubble on the security settings page is
-// enabled or not.
-extern const base::FeatureParam<bool> kEsbIphBubbleAndCollapseSettingsEnableIph;
-
-// Specifies whether the ESB option on the security settings page is collapsed
-// or not.
-extern const base::FeatureParam<bool>
-    kEsbIphBubbleAndCollapseSettingsEnableCollapse;
-
 // Enables decreased Phishguard password length minimum.
 BASE_DECLARE_FEATURE(kEvaluateProtectedPasswordLengthMinimum);
 
 // Specifies the minimum password length for password protection.
 extern const base::FeatureParam<int>
     kEvaluateProtectedPasswordLengthMinimumValue;
-
-// Enables collection of signals related to extension activity and uploads
-// of telemetry reports to SB servers.
-BASE_DECLARE_FEATURE(kExtensionTelemetry);
 
 // Allows the Extension Telemetry Service to accept and use configurations
 // sent by the server.
@@ -123,13 +103,6 @@ extern const base::FeatureParam<int>
 // offstore extension file data.
 extern const base::FeatureParam<int>
     kExtensionTelemetryFileDataStartupDelaySeconds;
-
-// Specifies the upload interval for extension telemetry reports.
-extern const base::FeatureParam<int> kExtensionTelemetryUploadIntervalSeconds;
-
-// Specifies the number of writes the telemetry service will perform during
-// a full upload interval.
-extern const base::FeatureParam<int> kExtensionTelemetryWritesPerInterval;
 
 // Enables collection of telemetry signal whenever an extension invokes the
 // chrome.tabs API methods.
@@ -207,11 +180,6 @@ extern const base::FeatureParam<bool> kMmapSafeBrowsingDatabaseAsync;
 // Enables unpacking of nested archives during downloads.
 BASE_DECLARE_FEATURE(kNestedArchives);
 
-// Controls whether we are using admin rules for filtering URLs, showing warn or
-// block intersitial and reporting the interstitial shown event on enterprise
-// managed browsers.
-BASE_DECLARE_FEATURE(kRealTimeUrlFilteringForEnterprise);
-
 // Controls whether we are using red interstitial facelift updates.
 BASE_DECLARE_FEATURE(kRedInterstitialFacelift);
 
@@ -245,6 +213,11 @@ BASE_DECLARE_FEATURE(kSafeBrowsingLookupMechanismExperiment);
 extern const base::FeatureParam<bool>
     kUrlLevelValidationForHprtExperimentEnabled;
 
+#if BUILDFLAG(IS_ANDROID)
+// Use new GMSCore API for hash database check on browser URLs.
+BASE_DECLARE_FEATURE(kSafeBrowsingNewGmsApiForBrowseUrlDatabaseCheck);
+#endif
+
 // Run Safe Browsing code on UI thread.
 BASE_DECLARE_FEATURE(kSafeBrowsingOnUIThread);
 
@@ -261,6 +234,10 @@ BASE_DECLARE_FEATURE(kSafeBrowsingSkipImageCssFont);
 // Controls whether to skip Safe Browsing checks on all subresource URLs in
 // renderer and browser URL loader throttles.
 BASE_DECLARE_FEATURE(kSafeBrowsingSkipSubresources);
+
+// Controls whether to skip Safe Browsing checks for WebSockets and Web API
+// handshakes.
+BASE_DECLARE_FEATURE(kSafeBrowsingSkipSubresources2);
 
 // Controls whether the new 7z evaluation is performed on downloads.
 BASE_DECLARE_FEATURE(kSevenZipEvaluationEnabled);

@@ -115,11 +115,9 @@ CGVirtualDisplay* CreateVirtualDisplay(int width,
                                        int height,
                                        int ppi,
                                        BOOL hiDPI,
-                                       NSString* name)
+                                       NSString* name,
+                                       int serial_number)
     API_AVAILABLE(macos(10.14)) {
-  CGVirtualDisplaySettings* settings = [[CGVirtualDisplaySettings alloc] init];
-  settings.hiDPI = hiDPI;
-
   CGVirtualDisplayDescriptor* descriptor =
       [[CGVirtualDisplayDescriptor alloc] init];
   descriptor.queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0);
@@ -132,12 +130,16 @@ CGVirtualDisplay* CreateVirtualDisplay(int width,
   descriptor.maxPixelsWide = width;
   descriptor.sizeInMillimeters =
       CGSizeMake(25.4 * width / ppi, 25.4 * height / ppi);
-  descriptor.serialNum = 0;
+  // macOS 14 expects different virtual displays to have different serial
+  // numbers.
+  descriptor.serialNum = serial_number;
   descriptor.productID = 0;
-  descriptor.vendorID = 0;
+  // macOS 14 expects a non-zero vendorID. Choose an arbitrary value.
+  int kVendorID = 505;
+  descriptor.vendorID = kVendorID;
   descriptor.terminationHandler = nil;
   if (@available(macos 11.0, *)) {
-    descriptor.serialNumber = 0;
+    descriptor.serialNumber = serial_number;
   }
 
   CGVirtualDisplay* display =
@@ -337,12 +339,12 @@ int64_t VirtualDisplayMacUtil::AddDisplay(int64_t display_id,
   if (@available(macos 10.14, *)) {
     DCHECK(display_params.IsValid());
 
-    NSString* display_name =
-        [NSString stringWithFormat:@"Virtual Display #%lld", display_id];
-    CGVirtualDisplay* display = CreateVirtualDisplay(
-        display_params.width, display_params.height, display_params.ppi,
-        display_params.hiDPI, display_name);
-    DCHECK(display);
+  NSString* display_name =
+      [NSString stringWithFormat:@"Virtual Display #%lld", display_id];
+  CGVirtualDisplay* display = CreateVirtualDisplay(
+      display_params.width, display_params.height, display_params.ppi,
+      display_params.hiDPI, display_name, display_id);
+  DCHECK(display);
 
     // TODO(crbug.com/1126278): Please remove this log or replace it with
     // [D]CHECK() ASAP when the TEST is stable.

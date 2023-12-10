@@ -9,7 +9,7 @@
  */
 
 import {assertNotReached} from 'chrome://resources/ash/common/assert.js';
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {sanitizeInnerHtml} from 'chrome://resources/js/parse_html_subset.js';
 
 import {getDisallowedTransfers, grantAccess, startIOTask} from '../../common/js/api.js';
@@ -25,11 +25,12 @@ import {ProgressCenter} from '../../externs/background/progress_center.js';
 import {EntryLocation} from '../../externs/entry_location.js';
 import {FakeEntry, FilesAppDirEntry} from '../../externs/files_app_entry_interfaces.js';
 import {FileKey} from '../../externs/ts/state.js';
-import {VolumeInfo} from '../../externs/volume_info.js';
+import type {VolumeInfo} from '../../externs/volume_info.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
 import {getFileData, getStore} from '../../state/store.js';
 import {XfTree} from '../../widgets/xf_tree.js';
 import {XfTreeItem} from '../../widgets/xf_tree_item.js';
+import {isTreeItem} from '../../widgets/xf_tree_util.js';
 import {FilesToast} from '../elements/files_toast.js';
 
 import {DirectoryModel} from './directory_model.js';
@@ -129,7 +130,7 @@ export class FileTransferController {
   /**
    * The array of the pending task IDs.
    */
-  public pendingTaskIds: string[] = [];
+  pendingTaskIds: string[] = [];
 
   /**
    * File objects for selected files.
@@ -496,7 +497,7 @@ export class FileTransferController {
             // A File which does not resolve for webkitGetAsEntry() must be an
             // image drag drop from the browser. Write it to destination dir.
             this.fileOperationManager_.writeFile(
-                item.getAsFile()!, destinationEntry);
+                item.getAsFile()!, destinationEntry as DirectoryEntry);
           }
         }
       }
@@ -543,7 +544,7 @@ export class FileTransferController {
    */
   executePaste(pastePlan: PastePlan) {
     const toMove = pastePlan.isMove;
-    const destinationEntry = pastePlan.destinationEntry;
+    const destinationEntry = pastePlan.destinationEntry as DirectoryEntry;
 
     // Execute the IOTask in asynchronously.
     (async () => {
@@ -965,9 +966,15 @@ export class FileTransferController {
 
     // If current focus is on DirectoryTree, write selected item of
     // DirectoryTree to system clipboard.
-    if (isDirectoryTree(document.activeElement)) {
-      const tree = document.activeElement as DirectoryTree | XfTree;
-      this.cutOrCopyFromDirectoryTree(tree, clipboardData, effectAllowed);
+    if (document.activeElement && isDirectoryTree(document.activeElement)) {
+      const focusedItem = getFocusedTreeItem(document.activeElement);
+      this.cutOrCopyFromDirectoryTree(
+          focusedItem, clipboardData, effectAllowed);
+      return;
+    }
+    if (document.activeElement && isTreeItem(document.activeElement)) {
+      this.cutOrCopyFromDirectoryTree(
+          document.activeElement, clipboardData, effectAllowed);
       return;
     }
 
@@ -981,9 +988,9 @@ export class FileTransferController {
    * Performs cut or copy operation dispatched from directory tree.
    */
   cutOrCopyFromDirectoryTree(
-      _: DirectoryTree|XfTree, clipboardData: DataTransfer|null,
+      focusedItem: DirectoryItem|XfTreeItem|null,
+      clipboardData: DataTransfer|null,
       effectAllowed: DataTransfer['effectAllowed']) {
-    const focusedItem = getFocusedTreeItem(document.activeElement);
     if (focusedItem === null) {
       return;
     }
@@ -1215,8 +1222,8 @@ export class FileTransferController {
     }
 
     // Destination entry needs the 'canAddChildren' permission.
-    const metadata =
-        this.metadataModel_.getCache([destinationEntry], ['canAddChildren']);
+    const metadata = this.metadataModel_.getCache(
+        [destinationEntry as DirectoryEntry], ['canAddChildren']);
     if (metadata[0]?.canAddChildren === false) {
       return false;
     }
@@ -1367,8 +1374,8 @@ export class FileTransferController {
             VolumeManagerCommon.RootType.DRIVE) {
       return DropEffectType.NONE;
     }
-    const destinationMetadata =
-        this.metadataModel_.getCache([destinationEntry], ['canAddChildren']);
+    const destinationMetadata = this.metadataModel_.getCache(
+        [destinationEntry as DirectoryEntry], ['canAddChildren']);
     if (destinationMetadata.length === 1 &&
         destinationMetadata[0]!.canAddChildren === false) {
       // TODO(sashab): Distinguish between copy/move operations and display
@@ -1493,11 +1500,11 @@ export class FileTransferController {
  * Container for defining a copy/move operation.
  */
 export class PastePlan {
-  public failureUrls: string[] = [];
+  failureUrls: string[] = [];
 
   constructor(
       public sourceURLs: string[], public sourceEntries: Entry[],
-      public destinationEntry: DirectoryEntry,
+      public destinationEntry: DirectoryEntry|FilesAppDirEntry,
       private metadataModel_: MetadataModel, public isMove: boolean) {}
 
   /**
@@ -1522,8 +1529,8 @@ export class PastePlan {
     // Confirmation type for local drive.
     const sourceEntryCache =
         this.metadataModel_.getCache([this.sourceEntries[0]], ['shared']);
-    const destinationEntryCache =
-        this.metadataModel_.getCache([this.destinationEntry], ['shared']);
+    const destinationEntryCache = this.metadataModel_.getCache(
+        [this.destinationEntry as DirectoryEntry], ['shared']);
 
     // The shared property tells us whether an entry is shared on Drive, and is
     // potentially undefined.

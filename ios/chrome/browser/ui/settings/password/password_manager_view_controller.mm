@@ -32,7 +32,7 @@
 #import "components/sync/service/sync_service_utils.h"
 #import "components/sync/service/sync_user_settings.h"
 #import "ios/chrome/browser/net/crurl.h"
-#import "ios/chrome/browser/passwords/password_checkup_metrics.h"
+#import "ios/chrome/browser/passwords/model/password_checkup_metrics.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
@@ -404,8 +404,6 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
   if (!_didReceivePasswords) {
     [self showLoadingSpinnerBackground];
   }
-
-  base::RecordAction(base::UserMetricsAction("MobilePasswordManagerOpen"));
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -468,7 +466,13 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
   [self updatePasswordCheckStatusLabelWithState:self.passwordCheckState];
   [self reconfigurePasswordCheckSectionCellsWithState:self.passwordCheckState];
   [self setAddPasswordButtonEnabled:!editing];
-  [self updateUIForEditState];
+
+  //  We want to update the toolbar only if the current view is the Password
+  //  Manager.
+  if ([self.navigationController.topViewController
+          isKindOfClass:[PasswordManagerViewController class]]) {
+    [self updateUIForEditState];
+  }
 }
 
 - (BOOL)hasPasswords {
@@ -953,8 +957,14 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
     }
     // If section doesn't exist but it should - add it.
     else if (needsSection && !hasSection) {
-      // This is very rare condition, in this case just reload all data.
-      [self updateUIForEditState];
+      // This is very rare condition, in this case just reload all data and
+      // update the toolbar UI.
+      //  We want to update the toolbar only if the current view is the Password
+      //  Manager.
+      if ([self.navigationController.topViewController
+              isKindOfClass:[PasswordManagerViewController class]]) {
+        [self updateUIForEditState];
+      }
       [self reloadData];
       return;
     }

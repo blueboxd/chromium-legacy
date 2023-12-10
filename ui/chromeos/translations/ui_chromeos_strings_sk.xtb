@@ -329,6 +329,7 @@
 <translation id="3619115746895587757">Kapučíno</translation>
 <translation id="3619593063686672873">Žiadne nedávne videá</translation>
 <translation id="3634507049637220048"><ph name="NETWORK_INDEX" />. sieť z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, ovládaná správcom, podrobnosti</translation>
+<translation id="36451918667380448">Poskytovateľ mobilnej siete je uzamknutý. Ak potrebujete podporu, kontaktujte svojho poskytovateľa.</translation>
 <translation id="3645233063072417428">Počet presunutých položiek: <ph name="NUMBER_OF_ITEMS" />.</translation>
 <translation id="3658269352872031728">Počet vybraných súborov: <ph name="SELECTED_FILE_COUNT" /></translation>
 <translation id="3685122418104378273">Synchronizácia Disku Google je pri používaní mobilných dát v predvolenom nastavení zakázaná.</translation>
@@ -1014,6 +1015,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="8698877009525468705">Tento súbor je dôverný a na základe pravidiel správcu sa naň vzťahujú obmedzenia.</translation>
 <translation id="8712637175834984815">Dobre</translation>
 <translation id="8713112442029511308">Maltská klávesnica</translation>
+<translation id="8714138378966541668">Uzamknuté poskytovateľom</translation>
 <translation id="8714406895390098252">Bicykel</translation>
 <translation id="8719721339511222681">Bola vybraná položka <ph name="ENTRY_NAME" />.</translation>
 <translation id="872537912056138402">Chorvátčina</translation>

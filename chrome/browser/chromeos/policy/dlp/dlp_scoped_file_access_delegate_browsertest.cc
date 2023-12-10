@@ -217,7 +217,8 @@ class DlpScopedFileAccessDelegateBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
     base::FilePath test_data_path;
-    EXPECT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_path));
+    EXPECT_TRUE(
+        base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &test_data_path));
     embedded_test_server()->ServeFilesFromDirectory(
         test_data_path.AppendASCII("chrome/test/data/dlp"));
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -225,7 +226,7 @@ class DlpScopedFileAccessDelegateBrowserTest : public InProcessBrowserTest {
     chromeos::DlpClient::Shutdown();
     chromeos::DlpClient::InitializeFake();
     delegate_ = std::make_unique<DlpScopedFileAccessDelegate>(
-        chromeos::DlpClient::Get());
+        base::BindRepeating(chromeos::DlpClient::Get));
     EXPECT_TRUE(tmp_.CreateUniqueTempDir());
 
     content::WebContents* const web_contents =
@@ -243,7 +244,6 @@ class DlpScopedFileAccessDelegateBrowserTest : public InProcessBrowserTest {
 
   void TearDownOnMainThread() override {
     fake_dlp_client_ = nullptr;
-    permission_context_.reset();
   }
 
   // Executes `action` as JavaScript in the context of the opened website. The
@@ -288,9 +288,38 @@ class DlpScopedFileAccessDelegateBrowserTest : public InProcessBrowserTest {
     ui::SelectFileDialog::SetFactory(std::move(factory));
   }
 
+  class PermissionContextHandle {
+   public:
+    PermissionContextHandle() = default;
+
+    PermissionContextHandle(
+        content::BrowserContext* browser_context,
+        std::unique_ptr<TestFileSystemAccessPermissionContext>
+            permission_context)
+        : browser_context_(browser_context),
+          permission_context_(std::move(permission_context)) {
+      content::SetFileSystemAccessPermissionContext(browser_context_,
+                                                    permission_context_.get());
+    }
+
+    ~PermissionContextHandle() {
+      if (browser_context_) {
+        content::SetFileSystemAccessPermissionContext(browser_context_,
+                                                      nullptr);
+      }
+    }
+
+    PermissionContextHandle(PermissionContextHandle&&) = default;
+    PermissionContextHandle& operator=(PermissionContextHandle&&) = default;
+
+   private:
+    raw_ptr<content::BrowserContext> browser_context_;
+    std::unique_ptr<TestFileSystemAccessPermissionContext> permission_context_;
+  };
+
   // Setup a delegate to answer directory picker requests with a directory of a
   // specific file. If `createFile` is set the file is created.
-  void PrepareDirPicker(bool createFile) {
+  [[nodiscard]] PermissionContextHandle PrepareDirPicker(bool createFile) {
     base::FilePath file = tmp_.GetPath().AppendASCII(kTestFileName);
     if (createFile) {
       base::ScopedAllowBlockingForTesting allow_blocking;
@@ -303,13 +332,13 @@ class DlpScopedFileAccessDelegateBrowserTest : public InProcessBrowserTest {
     content::WebContents* const web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
 
-    permission_context_ = std::make_unique<
+    auto permission_context = std::make_unique<
         testing::NiceMock<TestFileSystemAccessPermissionContext>>(
         browser()->profile(), embedded_test_server()->GetOrigin(),
         file.DirName());
 
-    content::SetFileSystemAccessPermissionContext(
-        web_contents->GetBrowserContext(), permission_context_.get());
+    return PermissionContextHandle(web_contents->GetBrowserContext(),
+                                   std::move(permission_context));
   }
 
  protected:
@@ -319,7 +348,6 @@ class DlpScopedFileAccessDelegateBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<DlpScopedFileAccessDelegate> delegate_;
   base::ScopedTempDir tmp_;
   raw_ptr<chromeos::FakeDlpClient> fake_dlp_client_;
-  std::unique_ptr<TestFileSystemAccessPermissionContext> permission_context_;
 };
 
 // These tests covers using the File API with dlp files. The parameter
@@ -452,15 +480,19 @@ class DlpFileSystemAccessMoveTest
 
 IN_PROC_BROWSER_TEST_F(DlpFileSystemAccessMoveTest,
                        FileSystemAccessMoveProtectedAllow) {
-  PrepareDirPicker(/*createFile=*/true);
+  PermissionContextHandle permission_context_handle =
+      PrepareDirPicker(/*createFile=*/true);
 
-  DlpScopedFileAccessDelegate::Initialize(fake_dlp_client_);
+  DlpScopedFileAccessDelegate::Initialize(base::BindLambdaForTesting(
+      [this]() -> chromeos::DlpClient* { return fake_dlp_client_.get(); }));
 
   policy::DlpRulesManagerFactory::GetInstance()->SetTestingFactory(
       browser()->profile(),
       base::BindLambdaForTesting(
-          [this](content::BrowserContext*) -> std::unique_ptr<KeyedService> {
-            auto rules_manager = std::make_unique<MockDlpRulesManager>();
+          [this](content::BrowserContext* context)
+              -> std::unique_ptr<KeyedService> {
+            auto rules_manager = std::make_unique<MockDlpRulesManager>(
+                Profile::FromBrowserContext(context));
             files_controller =
                 std::make_unique<MockDlpFilesController>(*rules_manager);
             ON_CALL(*rules_manager, IsFilesPolicyEnabled)
@@ -521,8 +553,9 @@ IN_PROC_BROWSER_TEST_P(
   auto [isAllowed, directoryPicker, jsId] = GetParam();
   fake_dlp_client_->SetFileAccessAllowed(isAllowed);
 
+  absl::optional<PermissionContextHandle> permission_context_handle;
   if (directoryPicker) {
-    PrepareDirPicker(/*createFile=*/true);
+    permission_context_handle = PrepareDirPicker(/*createFile=*/true);
   } else {
     PrepareFilePicker(/*createFile=*/true);
   }
@@ -574,8 +607,9 @@ IN_PROC_BROWSER_TEST_P(
           ::dlp::AddFilesResponse::default_instance()));
   fake_dlp_client_->SetAddFilesMock(request.Get());
 
+  absl::optional<PermissionContextHandle> permission_context_handle;
   if (directoryPicker) {
-    PrepareDirPicker(/*createFile=*/false);
+    permission_context_handle = PrepareDirPicker(/*createFile=*/false);
   } else {
     PrepareFilePicker(/*createFile=*/false);
   }

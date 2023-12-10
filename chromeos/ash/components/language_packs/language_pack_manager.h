@@ -12,6 +12,7 @@
 #include "base/functional/callback.h"
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
+#include "base/scoped_observation.h"
 #include "base/strings/strcat.h"
 #include "chromeos/ash/components/dbus/dlcservice/dlcservice_client.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -230,7 +231,7 @@ class LanguagePackManager : public DlcserviceClient::Observer {
   // This method is called internally each time we detect a change to the list
   // of input methods in the current session.
   void UpdatePacksForInputMethods(
-      base::span<const std::string> current_dlcs,
+      base::span<const std::string> current_hwr_locales,
       input_method::InputMethodManager* input_method_manager);
 
   // Adds an observer to the observer list.
@@ -238,9 +239,6 @@ class LanguagePackManager : public DlcserviceClient::Observer {
 
   // Removes an observer from the observer list.
   void RemoveObserver(Observer* observer);
-
-  // Must be called before using the class.
-  void Initialize();
 
   // Testing only: called to free up resources since this object should never
   // be destroyed.
@@ -265,6 +263,8 @@ class LanguagePackManager : public DlcserviceClient::Observer {
                               const dlcservice::DlcState& dlc_state);
 
   base::ObserverList<Observer> observers_;
+  base::ScopedObservation<DlcserviceClient, DlcserviceClient::Observer> obs_{
+      this};
 };
 
 }  // namespace ash::language_packs

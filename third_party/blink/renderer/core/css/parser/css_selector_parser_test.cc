@@ -240,8 +240,6 @@ TEST(CSSSelectorParserTest, InvalidSimpleAfterPseudoElementInCompound) {
 }
 
 TEST(CSSSelectorParserTest, TransitionPseudoStyles) {
-  ScopedViewTransitionForTest view_transition_enabled(true);
-
   struct TestCase {
     const char* selector;
     bool valid;
@@ -498,6 +496,9 @@ static const SelectorTestCase invalid_pseudo_is_argments_data[] = {
     {":is(:cue)", ":is()"},
     {":is(:first-letter)", ":is()"},
     {":is(:first-line)", ":is()"},
+    // If the selector is nest-containing, it serializes as-is:
+    // https://drafts.csswg.org/css-nesting-1/#syntax
+    {":is(:unknown(&))"},
     // clang-format on
 };
 

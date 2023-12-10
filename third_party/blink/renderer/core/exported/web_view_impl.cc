@@ -92,6 +92,7 @@
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/ime/edit_context.h"
 #include "third_party/blink/renderer/core/editing/ime/input_method_controller.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
@@ -397,6 +398,8 @@ ui::mojom::blink::WindowOpenDisposition NavigationPolicyToDisposition(
       return ui::mojom::blink::WindowOpenDisposition::NEW_POPUP;
     case kNavigationPolicyPictureInPicture:
       return ui::mojom::blink::WindowOpenDisposition::NEW_PICTURE_IN_PICTURE;
+    case kNavigationPolicyLinkPreview:
+      NOTREACHED_NORETURN();
   }
   NOTREACHED() << "Unexpected NavigationPolicy";
   return ui::mojom::blink::WindowOpenDisposition::IGNORE_ACTION;
@@ -1286,10 +1289,9 @@ void WebViewImpl::ResizeViewWhileAnchored(
     LocalFrameView* frame_view = MainFrameImpl()->GetFrameView();
     gfx::Size old_size = frame_view->Size();
     UpdateICBAndResizeViewport(visible_viewport_size);
-    gfx::Size new_size = frame_view->Size();
-    frame_view->InvalidateLayoutForViewportConstrainedObjects(
-        old_size.width() != new_size.width(),
-        old_size.height() != new_size.height());
+    if (old_size != frame_view->Size()) {
+      frame_view->InvalidateLayoutForViewportConstrainedObjects();
+    }
   }
 
   fullscreen_controller_->UpdateSize();
@@ -1892,7 +1894,11 @@ void WebViewImpl::SetPageFocus(bool enable) {
     LocalFrame* focused_frame = page_->GetFocusController().FocusedFrame();
     if (focused_frame) {
       // Finish an ongoing composition to delete the composition node.
-      if (focused_frame->GetInputMethodController().HasComposition()) {
+      if (focused_frame->GetInputMethodController().GetActiveEditContext()) {
+        focused_frame->GetInputMethodController()
+            .GetActiveEditContext()
+            ->FinishComposingText(WebInputMethodController::kKeepSelection);
+      } else if (focused_frame->GetInputMethodController().HasComposition()) {
         // TODO(editing-dev): The use of
         // UpdateStyleAndLayout needs to be audited.
         // See http://crbug.com/590369 for more details.
@@ -2439,7 +2445,11 @@ void WebViewImpl::SetPageLifecycleStateInternal(
     // we're navigating away from a page, if the page is already hidden.
     DispatchPagehide(new_state->pagehide_dispatch);
   }
-  if (hiding_page) {
+  // Both `kHidden` and `kHiddenButPainting` count as `hiding_page`, but we also
+  // want to dispatch events if we switch between the two.  Otherwise, things
+  // that might want to start painting (e.g., video), won't find out about it.
+  if (hiding_page ||
+      (!showing_page && old_state->visibility != new_state->visibility)) {
     SetVisibilityState(new_state->visibility, /*is_initial_state=*/false);
   }
   if (storing_in_bfcache) {
@@ -3040,6 +3050,11 @@ void WebViewImpl::SendWindowRectToMainFrameHost(
 void WebViewImpl::DidAccessInitialMainDocument() {
   DCHECK(local_main_frame_host_remote_);
   local_main_frame_host_remote_->DidAccessInitialMainDocument();
+}
+
+void WebViewImpl::SetResizable(bool resizable) {
+  DCHECK(local_main_frame_host_remote_);
+  local_main_frame_host_remote_->SetResizable(resizable);
 }
 
 void WebViewImpl::UpdateTargetURL(const WebURL& url,
@@ -3884,8 +3899,11 @@ void WebViewImpl::SetVisibilityState(
     bool is_initial_state) {
   DCHECK(GetPage());
   GetPage()->SetVisibilityState(visibility_state, is_initial_state);
+  // Do not throttle if the page should be painting.
   GetPage()->GetPageScheduler()->SetPageVisible(
-      visibility_state == mojom::blink::PageVisibilityState::kVisible);
+      visibility_state == mojom::blink::PageVisibilityState::kVisible ||
+      visibility_state ==
+          mojom::blink::PageVisibilityState::kHiddenButPainting);
   // Notify observers of the change.
   if (!is_initial_state) {
     for (auto& observer : observers_)

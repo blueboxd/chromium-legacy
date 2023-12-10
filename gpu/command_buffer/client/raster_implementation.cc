@@ -36,6 +36,7 @@
 #include "cc/paint/skottie_serialization_history.h"
 #include "cc/paint/transfer_cache_entry.h"
 #include "cc/paint/transfer_cache_serialize_helper.h"
+#include "components/miracle_parameter/common/public/miracle_parameter.h"
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/client/image_decode_accelerator_interface.h"
 #include "gpu/command_buffer/client/query_tracker.h"
@@ -94,15 +95,15 @@ BASE_FEATURE(kPaintCacheBudgetConfigurableFeature,
              "PaintCacheBudgetConfigurableFeature",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-constexpr base::FeatureParam<int> kNormalPaintCacheBudget(
-    &kPaintCacheBudgetConfigurableFeature,
-    "NormalPaintCacheBudgetBytes",
-    4 * 1024 * 1024);
+MIRACLE_PARAMETER_FOR_INT(GetNormalPaintCacheBudget,
+                          kPaintCacheBudgetConfigurableFeature,
+                          "NormalPaintCacheBudgetBytes",
+                          4 * 1024 * 1024)
 
-constexpr base::FeatureParam<int> kLowEndPaintCacheBudget(
-    &kPaintCacheBudgetConfigurableFeature,
-    "LowEndPaintCacheBudgetBytes",
-    256 * 1024);
+MIRACLE_PARAMETER_FOR_INT(GetLowEndPaintCacheBudget,
+                          kPaintCacheBudgetConfigurableFeature,
+                          "LowEndPaintCacheBudgetBytes",
+                          256 * 1024)
 
 const uint32_t kMaxTransferCacheEntrySizeForTransferBuffer = 1024;
 const size_t kMaxImmediateDeletedPaintCachePaths = 1024;
@@ -1405,13 +1406,14 @@ void RasterImplementation::BeginRasterCHROMIUM(
     GLboolean can_use_lcd_text,
     GLboolean visible,
     const gfx::ColorSpace& color_space,
+    float hdr_headroom,
     const GLbyte* mailbox) {
   DCHECK(!raster_properties_);
 
   helper_->BeginRasterCHROMIUMImmediate(
       sk_color_4f.fR, sk_color_4f.fG, sk_color_4f.fB, sk_color_4f.fA,
       needs_clear, msaa_sample_count, msaa_mode, can_use_lcd_text, visible,
-      mailbox);
+      hdr_headroom, mailbox);
 
   raster_properties_.emplace(sk_color_4f, can_use_lcd_text,
                              color_space.ToSkColorSpace());
@@ -1944,9 +1946,9 @@ cc::ClientPaintCache* RasterImplementation::GetOrCreatePaintCache() {
   if (!paint_cache_) {
     size_t paint_cache_budget = 0u;
     if (base::SysInfo::IsLowEndDevice()) {
-      paint_cache_budget = kLowEndPaintCacheBudget.Get();
+      paint_cache_budget = GetLowEndPaintCacheBudget();
     } else {
-      paint_cache_budget = kNormalPaintCacheBudget.Get();
+      paint_cache_budget = GetNormalPaintCacheBudget();
     }
     paint_cache_ = std::make_unique<cc::ClientPaintCache>(paint_cache_budget);
   }

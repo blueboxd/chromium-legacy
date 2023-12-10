@@ -23,11 +23,14 @@
 #include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/test/test_helpers.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
 namespace {
+
+using ::testing::ElementsAre;
 
 // Normalize schema strings to compare them reliabily. Notably, applies the
 // following transformations:
@@ -89,7 +92,7 @@ class AttributionStorageSqlMigrationsTest : public testing::Test {
   // successfully, false otherwise.
   bool GetDatabaseData(const base::FilePath& file, std::string* contents) {
     base::FilePath source_path;
-    base::PathService::Get(base::DIR_SOURCE_ROOT, &source_path);
+    base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &source_path);
     source_path = source_path.AppendASCII(
         "content/test/data/attribution_reporting/databases");
     source_path = source_path.Append(file);
@@ -360,7 +363,11 @@ TEST_F(AttributionStorageSqlMigrationsTest, MigrateVersion55ToCurrent) {
     ASSERT_TRUE(s.Step());
     proto::AttributionReadOnlySourceData msg;
     ASSERT_TRUE(msg.ParseFromString(s.ColumnString(0)));
-    ASSERT_EQ(3, msg.max_event_level_reports());
+    EXPECT_EQ(3, msg.max_event_level_reports());
+    EXPECT_FALSE(msg.has_randomized_response_rate());
+    EXPECT_EQ(0, msg.event_level_report_window_start_time());
+    EXPECT_THAT(msg.event_level_report_window_end_times(),
+                ElementsAre(base::Hours(1).InMicroseconds()));
     ASSERT_FALSE(s.Step());
   }
 

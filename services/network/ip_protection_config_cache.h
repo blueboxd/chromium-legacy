@@ -6,6 +6,8 @@
 #define SERVICES_NETWORK_IP_PROTECTION_CONFIG_CACHE_H_
 
 #include "base/component_export.h"
+#include "services/network/ip_protection_proxy_list_manager.h"
+#include "services/network/ip_protection_token_cache_manager.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -22,34 +24,52 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) IpProtectionConfigCache {
  public:
   virtual ~IpProtectionConfigCache() = default;
 
-  // Check whether tokens are available.
+  // Initializes the proxy list and token managers for the cache.
+  virtual void SetUp() = 0;
+
+  // Check whether tokens are available in all token caches.
   //
   // This function is called on every URL load, so it should complete quickly.
-  virtual bool IsAuthTokenAvailable() = 0;
-
-  // Check whether a proxy list is available.
-  virtual bool IsProxyListAvailable() = 0;
+  virtual bool AreAuthTokensAvailable() = 0;
 
   // Get a token, if one is available.
   //
   // Returns `nullopt` if no token is available, whether for a transient or
   // permanent reason. This method may return `nullopt` even if
   // `IsAuthTokenAvailable()` recently returned `true`.
-  virtual absl::optional<network::mojom::BlindSignedAuthTokenPtr>
-  GetAuthToken() = 0;
-
-  // Return the currently cached proxy list. This contains a list of proxy
-  // hostnames. This list may be empty even if `IsProxyListAvailable()` returned
-  // true.
-  virtual const std::vector<std::string>& ProxyList() = 0;
-
-  // Request a refresh of the proxy list. Call this when it's likely that the
-  // proxy list is out of date.
-  virtual void RequestRefreshProxyList() = 0;
+  virtual absl::optional<network::mojom::BlindSignedAuthTokenPtr> GetAuthToken(
+      network::mojom::IpProtectionProxyLayer proxy_layer) = 0;
 
   // Invalidate any previous instruction that token requests should not be
   // made until after a specified time.
   virtual void InvalidateTryAgainAfterTime() = 0;
+
+  // Set the token cache manager for the cache.
+  virtual void SetIpProtectionTokenCacheManagerForTesting(
+      network::mojom::IpProtectionProxyLayer proxy_layer,
+      std::unique_ptr<IpProtectionTokenCacheManager>
+          ipp_token_cache_manager) = 0;
+
+  // Fetch the token cache manager.
+  virtual IpProtectionTokenCacheManager*
+  GetIpProtectionTokenCacheManagerForTesting(
+      network::mojom::IpProtectionProxyLayer proxy_layer) = 0;
+
+  // Set the proxy list manager for the cache.
+  virtual void SetIpProtectionProxyListManagerForTesting(
+      std::unique_ptr<IpProtectionProxyListManager> ipp_proxy_list_manager) = 0;
+
+  // Check whether a proxy list is available.
+  virtual bool IsProxyListAvailable() = 0;
+
+  // Return the currently cached proxy list. This contains a list of proxy
+  // hostnames. This list may be empty even if `IsProxyListAvailable()` returned
+  // true.
+  virtual const std::vector<std::string>& GetProxyList() = 0;
+
+  // Request a refresh of the proxy list. Call this when it's likely that the
+  // proxy list is out of date.
+  virtual void RequestRefreshProxyList() = 0;
 };
 
 }  // namespace network

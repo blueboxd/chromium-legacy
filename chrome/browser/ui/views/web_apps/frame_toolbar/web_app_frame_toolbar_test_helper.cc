@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_test_helper.h"
 
+#include <string_view>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/notreached.h"
@@ -20,6 +22,7 @@
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/permissions/permission_request_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -277,4 +280,25 @@ BrowserView* WebAppFrameToolbarTestHelper::OpenPopup(
       popup_browser_view->GetActiveWebContents()->GetPrimaryMainFrame()));
 
   return popup_browser_view;
+}
+
+void WebAppFrameToolbarTestHelper::GrantWindowManagementPermission(
+    content::WebContents* web_contents) {
+  permissions::PermissionRequestManager::FromWebContents(web_contents)
+      ->set_auto_response_for_test(
+          permissions::PermissionRequestManager::ACCEPT_ALL);
+  ASSERT_TRUE(ExecJs(web_contents, "window.getScreenDetails();"));
+  content::WaitForLoadStop(web_contents);
+
+  constexpr std::string_view permission_query_script = R"(
+      navigator.permissions.query({
+        name: 'window-management'
+      }).then(res => res.state)
+    )";
+  ASSERT_EQ("granted", EvalJs(web_contents, permission_query_script));
+}
+
+void WebAppFrameToolbarTestHelper::GrantWindowManagementPermission() {
+  return GrantWindowManagementPermission(
+      browser_view()->GetActiveWebContents());
 }

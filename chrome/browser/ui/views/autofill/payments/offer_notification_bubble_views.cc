@@ -179,12 +179,7 @@ void OfferNotificationBubbleViews::InitWithFreeListingCouponOfferContent() {
             views::kMarginsKey,
             gfx::Insets::VH(ChromeLayoutProvider::Get()->GetDistanceMetric(
                                 views::DISTANCE_UNRELATED_CONTROL_VERTICAL),
-                            0))
-        .SetDefault(
-            views::kFlexBehaviorKey,
-            views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
-                                     views::MaximumFlexSizeRule::kPreferred,
-                                     /*adjust_height_for_width*/ true));
+                            0));
   }
 
   const AutofillOfferData* offer = controller_->GetOffer();

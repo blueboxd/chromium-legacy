@@ -225,7 +225,7 @@ static bool ExtractImageData(Image* image,
   size_t dst_size_bytes = dst_info.computeMinByteSize();
   {
     if (SkImageInfo::ByteSizeOverflowed(dst_size_bytes) ||
-        dst_size_bytes > v8::TypedArray::kMaxLength) {
+        dst_size_bytes > v8::TypedArray::kMaxByteLength) {
       return false;
     }
     ArrayBufferContents result(dst_size_bytes, 1,
@@ -313,8 +313,8 @@ static bool IsValidRasterShapeSize(const gfx::Size& size) {
 std::unique_ptr<Shape> Shape::CreateRasterShape(
     Image* image,
     float threshold,
-    const LayoutRect& image_r,
-    const LayoutRect& margin_r,
+    const DeprecatedLayoutRect& image_r,
+    const DeprecatedLayoutRect& margin_r,
     WritingMode writing_mode,
     float margin,
     RespectImageOrientationEnum respect_orientation) {

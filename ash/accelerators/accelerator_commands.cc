@@ -51,6 +51,7 @@
 #include "ash/system/time/calendar_model.h"
 #include "ash/system/toast/toast_manager_impl.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "ash/system/tray/tray_background_view.h"
 #include "ash/system/unified/date_tray.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
@@ -436,6 +437,18 @@ aura::Window::Windows GetTargetWindowPairForSnapGroup() {
   return window_pair;
 }
 
+void ToggleTray(TrayBackgroundView* tray) {
+  if (!tray || !tray->GetVisible()) {
+    // Do nothing when the tray is not being shown.
+    return;
+  }
+  if (tray->GetBubbleView()) {
+    tray->CloseBubble();
+  } else {
+    tray->ShowBubble();
+  }
+}
+
 }  // namespace
 
 bool CanActivateTouchHud() {
@@ -587,9 +600,6 @@ bool CanEnableOrToggleDictation() {
 }
 
 bool CanToggleFloatingWindow() {
-  if (!chromeos::wm::features::IsWindowLayoutMenuEnabled()) {
-    return false;
-  }
   return GetTargetWindow() != nullptr;
 }
 
@@ -602,9 +612,6 @@ bool CanToggleGameDashboard() {
 }
 
 bool CanToggleMultitaskMenu() {
-  if (!chromeos::wm::features::IsWindowLayoutMenuEnabled()) {
-    return false;
-  }
   aura::Window* window = GetTargetWindow();
   if (!window) {
     return false;
@@ -1127,10 +1134,6 @@ void ShowShortcutCustomizationApp() {
   NewWindowDelegate::GetInstance()->ShowShortcutCustomizationApp();
 }
 
-void ShowStylusTools() {
-  GetPaletteTray()->ShowBubble();
-}
-
 void ShowTaskManager() {
   NewWindowDelegate::GetInstance()->ShowTaskManager();
 }
@@ -1360,7 +1363,6 @@ void ToggleDockedMagnifier() {
 }
 
 void ToggleFloating() {
-  DCHECK(chromeos::wm::features::IsWindowLayoutMenuEnabled());
   aura::Window* window = GetTargetWindow();
   DCHECK(window);
   // `CanFloatWindow` check is placed here rather than
@@ -1496,16 +1498,7 @@ void ToggleImeMenuBubble() {
   StatusAreaWidget* status_area_widget =
       Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetStatusAreaWidget();
   if (status_area_widget) {
-    ImeMenuTray* ime_menu_tray = status_area_widget->ime_menu_tray();
-    if (!ime_menu_tray || !ime_menu_tray->GetVisible()) {
-      // Do nothing when Ime tray is not being shown.
-      return;
-    }
-    if (ime_menu_tray->GetBubbleView()) {
-      ime_menu_tray->CloseBubble();
-    } else {
-      ime_menu_tray->ShowBubble();
-    }
+    ToggleTray(status_area_widget->ime_menu_tray());
   }
 }
 
@@ -1603,7 +1596,6 @@ void ToggleMirrorMode() {
 }
 
 void ToggleMultitaskMenu() {
-  DCHECK(chromeos::wm::features::IsWindowLayoutMenuEnabled());
   aura::Window* window = GetTargetWindow();
   DCHECK(window);
   if (auto* tablet_mode_controller = Shell::Get()->tablet_mode_controller();
@@ -1647,6 +1639,14 @@ void ToggleProjectorMarker() {
   auto* projector_controller = ProjectorController::Get();
   if (projector_controller) {
     projector_controller->ToggleAnnotationTray();
+  }
+}
+
+void ToggleStylusTools() {
+  StatusAreaWidget* status_area_widget =
+      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetStatusAreaWidget();
+  if (status_area_widget) {
+    ToggleTray(status_area_widget->palette_tray());
   }
 }
 

@@ -24,6 +24,7 @@ import("//printing/buildflags/buildflags.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/blink/public/public_features.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
+
 if (is_mac) {
   import("//content/public/app/mac_helpers.gni")
 }
@@ -83,6 +84,7 @@ source_set("browser") {
     "//components/link_header_util",
     "//components/metrics",
     "//components/metrics:single_sample_metrics",
+    "//components/miracle_parameter/common",
     "//components/ml/mojom",
     "//components/ml/webnn:features",
     "//components/network_session_configurator/browser",
@@ -119,7 +121,7 @@ source_set("browser") {
     "//content/browser/attribution_reporting:attribution_reporting_proto",
     "//content/browser/attribution_reporting:internals_mojo_bindings",
     "//content/browser/attribution_reporting:mojo_bindings",
-    "//content/browser/attribution_reporting:store_source_result_mojom",
+    "//content/browser/attribution_reporting:registration_result_mojom",
     "//content/browser/background_fetch:background_fetch_proto",
     "//content/browser/background_sync:background_sync_proto",
     "//content/browser/cache_storage:cache_storage_proto",
@@ -1010,8 +1012,10 @@ source_set("browser") {
     "font_access/font_enumeration_data_source.cc",
     "font_access/font_enumeration_data_source.h",
     "font_list_async.cc",
-    "generic_sensor/sensor_provider_proxy_impl.cc",
-    "generic_sensor/sensor_provider_proxy_impl.h",
+    "generic_sensor/frame_sensor_provider_proxy.cc",
+    "generic_sensor/frame_sensor_provider_proxy.h",
+    "generic_sensor/web_contents_sensor_provider_proxy.cc",
+    "generic_sensor/web_contents_sensor_provider_proxy.h",
     "geolocation/geolocation_service_impl.cc",
     "geolocation/geolocation_service_impl.h",
     "gpu/browser_gpu_channel_host_factory.cc",
@@ -1177,6 +1181,8 @@ source_set("browser") {
     "interest_group/interest_group_auction.h",
     "interest_group/interest_group_auction_reporter.cc",
     "interest_group/interest_group_auction_reporter.h",
+    "interest_group/interest_group_caching_storage.cc",
+    "interest_group/interest_group_caching_storage.h",
     "interest_group/interest_group_k_anonymity_manager.cc",
     "interest_group/interest_group_k_anonymity_manager.h",
     "interest_group/interest_group_manager_impl.cc",
@@ -2029,7 +2035,6 @@ source_set("browser") {
     "service_worker/service_worker_cache_writer.h",
     "service_worker/service_worker_client_utils.cc",
     "service_worker/service_worker_client_utils.h",
-    "service_worker/service_worker_consts.cc",
     "service_worker/service_worker_consts.h",
     "service_worker/service_worker_container_host.cc",
     "service_worker/service_worker_container_host.h",
@@ -2258,6 +2263,8 @@ source_set("browser") {
     "web_contents/web_contents_view_aura.h",
     "web_contents/web_contents_view_child_frame.cc",
     "web_contents/web_contents_view_child_frame.h",
+    "web_contents/web_contents_view_drag_security_info.cc",
+    "web_contents/web_contents_view_drag_security_info.h",
     "web_database/web_database_host_impl.cc",
     "web_database/web_database_host_impl.h",
     "web_exposed_isolation_info.cc",
@@ -2304,6 +2311,8 @@ source_set("browser") {
     "webauth/client_data_json.h",
     "webauth/webauth_request_security_checker.cc",
     "webauth/webauth_request_security_checker.h",
+    "webid/digital_credentials/digital_credential_provider.cc",
+    "webid/digital_credentials/digital_credential_provider.h",
     "webid/fake_identity_request_dialog_controller.cc",
     "webid/fake_identity_request_dialog_controller.h",
     "webid/fedcm_metrics.cc",
@@ -2322,8 +2331,6 @@ source_set("browser") {
     "webid/identity_registry.h",
     "webid/idp_network_request_manager.cc",
     "webid/idp_network_request_manager.h",
-    "webid/mdocs/mdoc_provider.cc",
-    "webid/mdocs/mdoc_provider.h",
     "webid/webid_utils.cc",
     "webid/webid_utils.h",
     "webrtc/webrtc_connections_observer.cc",
@@ -2431,6 +2438,8 @@ source_set("browser") {
   if (is_linux || is_chromeos) {
     sources += [
       "child_process_launcher_helper_linux.cc",
+      "child_thread_type_switcher_linux.cc",
+      "child_thread_type_switcher_linux.h",
       "font_access/font_enumeration_data_source_linux.cc",
       "font_access/font_enumeration_data_source_linux.h",
       "font_service.cc",
@@ -2786,10 +2795,21 @@ source_set("browser") {
       frameworks += [ "CoreMedia.framework" ]
       weak_frameworks += [ "ScreenCaptureKit.framework" ]
     }
+    if (is_chromeos_ash) {
+      sources += [
+        "media/capture/desktop_capturer_ash.cc",
+        "media/capture/desktop_capturer_ash.h",
+        "media/capture/desktop_frame_skia.cc",
+        "media/capture/desktop_frame_skia.h",
+      ]
+      deps += [ "//ash" ]
+    }
     if (is_chromeos_lacros) {
       sources += [
         "media/capture/desktop_capturer_lacros.cc",
         "media/capture/desktop_capturer_lacros.h",
+        "media/capture/desktop_frame_skia.cc",
+        "media/capture/desktop_frame_skia.h",
         "media/capture/receiver_media_to_crosapi_adapter.cc",
         "media/capture/receiver_media_to_crosapi_adapter.h",
         "media/capture/video_capture_device_proxy_lacros.cc",
@@ -3214,8 +3234,8 @@ source_set("browser") {
       "web_contents/web_contents_view_android.cc",
       "web_contents/web_contents_view_android.h",
       "webauth/web_authentication_delegate_android.cc",
-      "webid/mdocs/mdoc_provider_android.cc",
-      "webid/mdocs/mdoc_provider_android.h",
+      "webid/digital_credentials/digital_credential_provider_android.cc",
+      "webid/digital_credentials/digital_credential_provider_android.h",
     ]
 
     deps += [
@@ -3231,6 +3251,7 @@ source_set("browser") {
       "//third_party/blink/public/common:font_unique_name_table_proto",
       "//third_party/blink/public/mojom:mojom_platform_blink",
       "//third_party/icu",
+      "//third_party/jni_zero:jni_helpers",
       "//ui/accessibility:ax_assistant",
       "//ui/accessibility:ax_base_android",
       "//ui/accessibility/mojom",
@@ -3238,7 +3259,7 @@ source_set("browser") {
       "//ui/android",
       "//ui/android:ui_android_jni_headers",
       "//ui/compositor",
-      "//url:gurl_android",
+      "//url",
     ]
     if (enable_vulkan) {
       deps += [ "//gpu/vulkan/init" ]
@@ -3267,8 +3288,8 @@ source_set("browser") {
       # these files. This follows the pattern of #ifdef-ing around Android
       # to restrict APK-size, but not introducing the additional complexity
       # this produces for other feature/platform pairs.
-      "media/capture/crop_id_web_contents_helper.cc",
-      "media/capture/crop_id_web_contents_helper.h",
+      "media/capture/sub_capture_target_id_web_contents_helper.cc",
+      "media/capture/sub_capture_target_id_web_contents_helper.h",
 
       # Support for restricting NetworkService disk access to a certain path.
       # Not available on Android.

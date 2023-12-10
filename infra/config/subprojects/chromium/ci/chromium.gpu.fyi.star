@@ -216,6 +216,7 @@ ci.thin_tester(
         android_config = builder_config.android_config(
             config = "main_builder_rel_mb",
         ),
+        run_tests_serially = True,
     ),
     console_view_entry = consoles.console_view_entry(
         category = "Android|S32|ARM",
@@ -242,6 +243,7 @@ ci.thin_tester(
         android_config = builder_config.android_config(
             config = "main_builder_rel_mb",
         ),
+        run_tests_serially = True,
     ),
     console_view_entry = consoles.console_view_entry(
         category = "Android|S32|QCOM",
@@ -280,81 +282,6 @@ ci.gpu.linux_builder(
     # Runs a lot of tests + VMs are slower than real hardware, so increase the
     # timeout.
     execution_timeout = 8 * time.hour,
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
-)
-
-ci.gpu.linux_builder(
-    name = "ChromeOS FYI Release (kevin)",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-                "arm",
-                "chromeos",
-            ],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "mb",
-            ],
-            build_config = builder_config.build_config.RELEASE,
-            target_arch = builder_config.target_arch.ARM,
-            target_bits = 32,
-            target_platform = builder_config.target_platform.CHROMEOS,
-            target_cros_boards = [
-                "kevin",
-            ],
-        ),
-        run_tests_serially = True,
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "ChromeOS|ARM",
-        short_name = "kvn",
-    ),
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
-)
-
-ci.gpu.linux_builder(
-    name = "ChromeOS FYI Release Skylab (kevin)",
-    # Kevin is a busy board in OS lab. As this is an FYI builder,
-    # we try to avoid peak hours and run it from 8PM TO 4AM PST.
-    # It is 3 AM to 11 AM UTC.
-    schedule = "0 3,6,9 * * *",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-                "arm",
-                "chromeos",
-            ],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "mb",
-            ],
-            build_config = builder_config.build_config.RELEASE,
-            target_arch = builder_config.target_arch.ARM,
-            target_bits = 32,
-            target_platform = builder_config.target_platform.CHROMEOS,
-            target_cros_boards = [
-                "kevin",
-            ],
-        ),
-        run_tests_serially = True,
-        skylab_upload_location = builder_config.skylab_upload_location(
-            gs_bucket = "chromium-ci-skylab",
-            gs_extra = "chromeos_gpu",
-        ),
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "ChromeOS|ARM",
-        short_name = "kvn",
-    ),
-    # Given the capacity constraints, the default 6 hour timeout is not
-    # sufficient.
-    execution_timeout = 12 * time.hour,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 

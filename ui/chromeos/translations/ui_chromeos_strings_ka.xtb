@@ -329,6 +329,7 @@
 <translation id="3619115746895587757">კაპუჩინო</translation>
 <translation id="3619593063686672873">ბოლოდროინდელი ვიდეოები არ არის</translation>
 <translation id="3634507049637220048">ქსელი <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />-დან, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, მართავს თქვენი ადმინისტრატორი, დეტალები</translation>
+<translation id="36451918667380448">მობილური ქსელის პროვაიდერი ჩაკეტილია. მხარდაჭერისთვის მიმართეთ თქვენს პროვაიდერს.</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> ერთეული გადატანილია.</translation>
 <translation id="3658269352872031728">არჩეულია <ph name="SELECTED_FILE_COUNT" /> ფაილი</translation>
 <translation id="3685122418104378273">Google Drive სინქრონიზაცია ნაგულისხმევად გამორთულია მობილური მონაცემების გამოყენების დროს.</translation>
@@ -1014,6 +1015,7 @@
 <translation id="8698877009525468705">ეს ფაილი კონფიდენციალურია და ექვემდებარე ადმინისტრატორის მიერ დადგენილი წესებით განსაზღვრულ შეზღუდვებს.</translation>
 <translation id="8712637175834984815">კარგი</translation>
 <translation id="8713112442029511308">მალტური</translation>
+<translation id="8714138378966541668">დაბლოკილი პროვაიდერის მიერ</translation>
 <translation id="8714406895390098252">ველოსიპედი</translation>
 <translation id="8719721339511222681">არჩეულია <ph name="ENTRY_NAME" />.</translation>
 <translation id="872537912056138402">ხორვატიული</translation>

@@ -41,10 +41,7 @@ void TabBrowserControlsConstraintsHelper::UpdateState(
       static_cast<cc::BrowserControlsState>(current);
 
   auto* web_contents = content::WebContents::FromJavaWebContents(jweb_contents);
-  if (web_contents == nullptr) {
-    return;
-  }
-
+  DCHECK(web_contents);
   web_contents->UpdateBrowserControlsState(constraints_state, current_state,
                                            animate);
 }

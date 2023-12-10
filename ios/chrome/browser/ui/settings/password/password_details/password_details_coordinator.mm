@@ -17,7 +17,7 @@
 #import "components/prefs/pref_service.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/credential_provider_promo/model/features.h"
-#import "ios/chrome/browser/passwords/password_tab_helper.h"
+#import "ios/chrome/browser/passwords/model/password_tab_helper.h"
 #import "ios/chrome/browser/shared/coordinator/alert/action_sheet_coordinator.h"
 #import "ios/chrome/browser/shared/coordinator/alert/alert_coordinator.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
@@ -197,6 +197,8 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
   self.mediator = nil;
   self.viewController = nil;
   [self dismissAlertCoordinator];
+  [self stopPasswordSharingCoordinator];
+  [self stopPasswordSharingFirstRunCoordinatorWithCompletion:nil];
 }
 
 #pragma mark - PasswordDetailsHandler
@@ -438,9 +440,7 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
 - (void)passwordSharingCoordinatorDidRemove:
     (PasswordSharingCoordinator*)coordinator {
   if (self.passwordSharingCoordinator == coordinator) {
-    [self.passwordSharingCoordinator stop];
-    self.passwordSharingCoordinator.delegate = nil;
-    self.passwordSharingCoordinator = nil;
+    [self stopPasswordSharingCoordinator];
   }
 }
 
@@ -516,6 +516,13 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
   [self.passwordSharingFirstRunCoordinator stopWithCompletion:completion];
   self.passwordSharingFirstRunCoordinator.delegate = nil;
   self.passwordSharingFirstRunCoordinator = nil;
+}
+
+// Stops the main coordinator for the password sharing flow.
+- (void)stopPasswordSharingCoordinator {
+  [self.passwordSharingCoordinator stop];
+  self.passwordSharingCoordinator.delegate = nil;
+  self.passwordSharingCoordinator = nil;
 }
 
 // Whether Local Authentication should be required before displaying the

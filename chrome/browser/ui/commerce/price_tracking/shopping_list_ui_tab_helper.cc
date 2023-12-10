@@ -244,7 +244,7 @@ void ShoppingListUiTabHelper::DelayUpdateForIconView() {
 void ShoppingListUiTabHelper::UpdatePriceInsightsIconView() {
   DCHECK(web_contents());
 
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  Browser* browser = chrome::FindBrowserWithTab(web_contents());
 
   if (!browser || !browser->window()) {
     return;
@@ -436,18 +436,18 @@ void ShoppingListUiTabHelper::SetPriceTrackingState(
 
   base::OnceCallback<void(bool)> wrapped_callback = base::BindOnce(
       [](base::WeakPtr<ShoppingListUiTabHelper> helper,
-         base::OnceCallback<void(bool)> callback, bool is_tracked,
-         bool success) {
+         base::OnceCallback<void(bool)> callback, bool success) {
         if (helper) {
           if (success) {
-            helper->is_cluster_id_tracked_by_user_ = is_tracked;
+            helper->is_cluster_id_tracked_by_user_ =
+                helper->pending_tracking_state_.value();
           }
           helper->pending_tracking_state_.reset();
         }
 
         std::move(callback).Run(success);
       },
-      weak_ptr_factory_.GetWeakPtr(), std::move(callback), enable);
+      weak_ptr_factory_.GetWeakPtr(), std::move(callback));
 
   pending_tracking_state_.emplace(enable);
 
@@ -540,7 +540,7 @@ bool ShoppingListUiTabHelper::IsPriceTracking() {
 void ShoppingListUiTabHelper::UpdatePriceTrackingIconView() {
   DCHECK(web_contents());
 
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  Browser* browser = chrome::FindBrowserWithTab(web_contents());
 
   if (!browser || !browser->window()) {
     return;
@@ -603,7 +603,7 @@ ShoppingListUiTabHelper::CreateShoppingInsightsWebView() {
 }
 
 SidePanelUI* ShoppingListUiTabHelper::GetSidePanelUI() const {
-  auto* browser = chrome::FindBrowserWithWebContents(web_contents());
+  auto* browser = chrome::FindBrowserWithTab(web_contents());
   return browser ? SidePanelUI::GetSidePanelUIForBrowser(browser) : nullptr;
 }
 
@@ -618,7 +618,7 @@ ShoppingListUiTabHelper::GetPriceInsightsInfo() {
 }
 
 bool ShoppingListUiTabHelper::IsShowingDiscountsIcon() {
-  auto* browser = chrome::FindBrowserWithWebContents(web_contents());
+  auto* browser = chrome::FindBrowserWithTab(web_contents());
   if (!browser) {
     return false;
   }

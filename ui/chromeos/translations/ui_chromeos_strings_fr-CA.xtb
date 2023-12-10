@@ -329,6 +329,7 @@
 <translation id="3619115746895587757">Cappuccino</translation>
 <translation id="3619593063686672873">Aucune vidéo récente</translation>
 <translation id="3634507049637220048">Réseau <ph name="NETWORK_INDEX" /> sur <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, géré par votre administrateur, détails</translation>
+<translation id="36451918667380448">Le fournisseur de réseau cellulaire est verrouillé. Communiquez avec votre fournisseur pour obtenir de l'aide.</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> éléments déplacés.</translation>
 <translation id="3658269352872031728"><ph name="SELECTED_FILE_COUNT" /> fichiers sélectionnés.</translation>
 <translation id="3685122418104378273">La synchronisation Google Disque est désactivée par défaut, lors de l'utilisation de données mobiles.</translation>
@@ -1016,6 +1017,7 @@
 <translation id="8698877009525468705">Ce fichier est confidentiel et soumis à des restrictions aux termes de la politique de l'administrateur.</translation>
 <translation id="8712637175834984815">OK</translation>
 <translation id="8713112442029511308">Maltais</translation>
+<translation id="8714138378966541668">Verrouillé par le fournisseur</translation>
 <translation id="8714406895390098252">Vélo</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> sélectionné.</translation>
 <translation id="872537912056138402">Croate</translation>

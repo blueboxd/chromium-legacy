@@ -10,6 +10,8 @@
 #include "base/types/optional_util.h"
 #include "build/blink_buildflags.h"
 #include "build/build_config.h"
+#include "components/content_settings/core/common/content_settings_types.h"
+#include "components/content_settings/core/common/features.h"
 #include "net/base/features.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_setting_override.h"
@@ -66,6 +68,21 @@ bool CookieSettingsBase::CookieSettingWithMetadata::IsPartitionedStateAllowed()
   return IsAllowed(cookie_setting_) ||
          third_party_blocking_scope_ ==
              ThirdPartyBlockingScope::kUnpartitionedOnly;
+}
+
+// static
+const CookieSettingsBase::CookieSettingsTypeSet&
+CookieSettingsBase::GetContentSettingsTypes() {
+  static constexpr auto kInstance =
+      base::MakeFixedFlatSet<ContentSettingsType>({
+          ContentSettingsType::COOKIES,
+          ContentSettingsType::LEGACY_COOKIE_ACCESS,
+          ContentSettingsType::STORAGE_ACCESS,
+          ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS,
+          ContentSettingsType::TPCD_HEURISTICS_GRANTS,
+          ContentSettingsType::TPCD_SUPPORT,
+      });
+  return kInstance;
 }
 
 // static
@@ -200,6 +217,11 @@ bool CookieSettingsBase::ShouldConsider3pcdMetadataGrantsSettings() const {
          MitigationsEnabledFor3pcd();
 }
 
+bool CookieSettingsBase::ShouldConsider3pcdHeuristicsGrantsSettings() const {
+  return features::kTpcdReadHeuristicsGrants.Get() &&
+         MitigationsEnabledFor3pcd();
+}
+
 bool CookieSettingsBase::ShouldConsiderStorageAccessGrants(
     net::CookieSettingOverrides overrides) const {
   return overrides.Has(net::CookieSettingOverride::kStorageAccessGrantEligible);
@@ -268,18 +290,30 @@ CookieSettingsBase::GetCookieSettingInternal(
     block_third = false;
     FireStorageAccessHistogram(net::cookie_util::StorageAccessResult::
                                    ACCESS_ALLOWED_3PCD_METADATA_GRANT);
+    if (info) {
+      info->source = SETTING_SOURCE_TPCD_GRANT;
+    }
   }
 
   if (block_third && ShouldConsider3pcdSupportSettings() &&
       GetContentSetting(url, first_party_url,
                         ContentSettingsType::TPCD_SUPPORT) ==
           CONTENT_SETTING_ALLOW) {
-    // TODO (crbug.com/1466156): Revisit this after a decision has been made
-    // on how an explicit 3PC setting will be differentiated from an
-    // experimental one.
     block_third = false;
     FireStorageAccessHistogram(
         net::cookie_util::StorageAccessResult::ACCESS_ALLOWED_3PCD);
+    if (info) {
+      info->source = SETTING_SOURCE_TPCD_GRANT;
+    }
+  }
+
+  if (block_third && ShouldConsider3pcdHeuristicsGrantsSettings() &&
+      GetContentSetting(url, first_party_url,
+                        ContentSettingsType::TPCD_HEURISTICS_GRANTS) ==
+          CONTENT_SETTING_ALLOW) {
+    block_third = false;
+    FireStorageAccessHistogram(net::cookie_util::StorageAccessResult::
+                                   ACCESS_ALLOWED_3PCD_HEURISTICS_GRANT);
   }
 
   if (block_third) {

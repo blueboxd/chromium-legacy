@@ -180,6 +180,8 @@ static ui::NativeTheme::ExtraParams GetNativeThemeExtraParams(
       const auto& scrollbar_button =
           absl::get<WebThemeEngine::ScrollbarButtonExtraParams>(*extra_params);
       native_scrollbar_arrow.zoom = scrollbar_button.zoom;
+      native_scrollbar_arrow.needs_rounded_corner =
+          scrollbar_button.needs_rounded_corner;
       native_scrollbar_arrow.right_to_left = scrollbar_button.right_to_left;
       native_scrollbar_arrow.thumb_color = scrollbar_button.thumb_color;
       native_scrollbar_arrow.track_color = scrollbar_button.track_color;
@@ -292,6 +294,10 @@ absl::optional<SkColor> WebThemeEngineDefault::GetSystemColor(
     WebThemeEngine::SystemThemeColor system_theme_color) const {
   return ui::NativeTheme::GetInstanceForWeb()->GetSystemThemeColor(
       NativeSystemThemeColor(system_theme_color));
+}
+
+absl::optional<SkColor> WebThemeEngineDefault::GetAccentColor() const {
+  return ui::NativeTheme::GetInstanceForWeb()->user_color();
 }
 
 #if BUILDFLAG(IS_WIN)

@@ -87,11 +87,6 @@ bool WebInputElement::IsCheckbox() const {
   return ConstUnwrap<HTMLInputElement>()->type() == input_type_names::kCheckbox;
 }
 
-int WebInputElement::MaxLength() const {
-  int max_len = ConstUnwrap<HTMLInputElement>()->maxLength();
-  return max_len == -1 ? DefaultMaxLength() : max_len;
-}
-
 void WebInputElement::SetActivatedSubmit(bool activated) {
   Unwrap<HTMLInputElement>()->SetActivatedSubmit(activated);
 }
@@ -132,16 +127,20 @@ WebString WebInputElement::LocalizeValue(
   return ConstUnwrap<HTMLInputElement>()->LocalizeValue(proposed_value);
 }
 
-int WebInputElement::DefaultMaxLength() {
-  return std::numeric_limits<int>::max();
-}
-
 void WebInputElement::SetShouldRevealPassword(bool value) {
   Unwrap<HTMLInputElement>()->SetShouldRevealPassword(value);
 }
 
 bool WebInputElement::ShouldRevealPassword() const {
   return ConstUnwrap<HTMLInputElement>()->ShouldRevealPassword();
+}
+
+void WebInputElement::SetShouldShowStrongPasswordLabel(bool value) {
+  Unwrap<HTMLInputElement>()->SetShouldShowStrongPasswordLabel(value);
+}
+
+bool WebInputElement::ShouldShowStrongPasswordLabel() const {
+  return ConstUnwrap<HTMLInputElement>()->ShouldShowStrongPasswordLabel();
 }
 
 #if BUILDFLAG(IS_ANDROID)

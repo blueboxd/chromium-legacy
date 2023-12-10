@@ -124,11 +124,6 @@ void CastDialogView::OnControllerDestroying() {
   // cause the dialog to immediately open again.
 }
 
-void CastDialogView::OnPaint(gfx::Canvas* canvas) {
-  views::BubbleDialogDelegateView::OnPaint(canvas);
-  metrics_.OnPaint(base::Time::Now());
-}
-
 bool CastDialogView::IsCommandIdChecked(int command_id) const {
   return command_id == selected_source_;
 }
@@ -170,9 +165,9 @@ void CastDialogView::Init() {
 }
 
 void CastDialogView::WindowClosing() {
-  for (Observer& observer : observers_)
+  for (Observer& observer : observers_) {
     observer.OnDialogWillClose(this);
-  metrics_.OnCloseDialog(base::Time::Now());
+  }
 }
 
 void CastDialogView::ShowAccessCodeCastDialog() {
@@ -292,8 +287,7 @@ void CastDialogView::InitializeSourcesButton() {
           l10n_util::GetStringUTF16(
               IDS_MEDIA_ROUTER_ALTERNATIVE_SOURCES_BUTTON)));
   sources_button_->SetEnabled(false);
-  // TODO(crbug.com/1467969): Set the button style to `ui::ButtonStyle::kTonal`
-  // once crbug.com/1486965 is fixed.
+  sources_button_->SetStyle(ui::ButtonStyle::kTonal);
 }
 
 void CastDialogView::ShowSourcesMenu() {
@@ -329,7 +323,6 @@ void CastDialogView::SinkPressed(size_t index) {
   // due to a model update, so make a copy here.
   const UIMediaSink sink = sink_views_.at(index)->sink();
   if (sink.route) {
-    metrics_.OnStopCasting(sink.route->is_local());
     // StopCasting() may trigger a model update and invalidate |sink|.
     controller_->StopCasting(sink.route->media_route_id());
   } else if (sink.issue) {
@@ -338,8 +331,6 @@ void CastDialogView::SinkPressed(size_t index) {
     absl::optional<MediaCastMode> cast_mode = GetCastModeToUse(sink);
     if (cast_mode) {
       controller_->StartCasting(sink.id, cast_mode.value());
-      metrics_.OnStartCasting(base::Time::Now(), index, cast_mode.value(),
-                              sink.icon_type);
     }
   }
 }
@@ -353,7 +344,6 @@ void CastDialogView::StopPressed(size_t index) {
   if (!sink.route) {
     return;
   }
-  metrics_.OnStopCasting(sink.route->is_local());
   // StopCasting() may trigger a model update and invalidate |sink|.
   controller_->StopCasting(sink.route->media_route_id());
 }

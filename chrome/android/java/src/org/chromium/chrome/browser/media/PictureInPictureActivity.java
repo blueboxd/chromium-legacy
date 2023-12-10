@@ -30,13 +30,13 @@ import android.view.ViewGroup;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 
+import org.jni_zero.CalledByNative;
+import org.jni_zero.NativeMethods;
+
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.MathUtils;
-import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -430,7 +430,7 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
     static LaunchIntoPipHelper sLaunchIntoPipHelper = new LaunchIntoPipHelper() {
         @Override
         public Bundle build(final Context activityContext, final Rect bounds) {
-            if (!BuildInfo.isAtLeastT()) return null;
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return null;
 
             Bundle optionsBundle = null;
             final Rational aspectRatio = new Rational(bounds.width(), bounds.height());

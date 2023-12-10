@@ -15,7 +15,6 @@ import {TREE_ITEM_INDENT, type TreeItemCollapsedEvent, type TreeItemExpandedEven
 
 /** Construct a single tree item. */
 async function setUpSingleTreeItem() {
-  document.body.setAttribute('theme', 'refresh23');
   document.body.innerHTML = getTrustedHTML`
     <xf-tree>
       <xf-tree-item id="item1" label="item1"></xf-tree-item>
@@ -423,6 +422,31 @@ export async function testRemoveSelectedItem(done: () => void) {
 
   // The selected item should be null now.
   assertEquals(null, item1.tree?.selectedItem);
+
+  done();
+}
+
+/** Tests removal of the focused item. */
+export async function testRemoveFocusedItem(done: () => void) {
+  await setUpNestedTreeItems();
+  const tree = getTree();
+
+  // Focus item1a.
+  const item1a = getTreeItemById('item1a');
+  tree.focusedItem = item1a;
+
+  // Select item1b.
+  const item1b = getTreeItemById('item1b');
+  item1b.selected = true;
+  await waitForElementUpdate(item1b);
+
+  // Remove item1a.
+  const item1 = getTreeItemById('item1');
+  item1.removeChild(item1a);
+  await waitForElementUpdate(item1);
+
+  // The focused item should be the selected item now.
+  assertEquals('item1b', tree.focusedItem.id);
 
   done();
 }

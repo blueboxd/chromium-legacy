@@ -8,18 +8,17 @@ import android.content.Context;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.NativeMethods;
+import org.jni_zero.CalledByNative;
+import org.jni_zero.NativeMethods;
+
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.lang.ref.WeakReference;
 
-/**
- * JNI wrapper for C++ NoPasskeysBottomSheetBridge. Delegates calls from native to Java.
- */
-class NoPasskeysBottomSheetBridge {
+/** JNI wrapper for C++ NoPasskeysBottomSheetBridge. Delegates calls from native to Java. */
+class NoPasskeysBottomSheetBridge implements NoPasskeysBottomSheetCoordinator.NativeDelegate {
     private final NoPasskeysBottomSheetCoordinator mNoPasskeysSheet;
     private long mNativeBridge;
 
@@ -34,8 +33,8 @@ class NoPasskeysBottomSheetBridge {
             WeakReference<Context> context,
             WeakReference<BottomSheetController> bottomSheetController) {
         mNativeBridge = nativeNoPasskeysBottomSheetBridge;
-        mNoPasskeysSheet = new NoPasskeysBottomSheetCoordinator(
-                context, bottomSheetController, this::onDismissed);
+        mNoPasskeysSheet =
+                new NoPasskeysBottomSheetCoordinator(context, bottomSheetController, this);
     }
 
     @CalledByNative
@@ -49,7 +48,15 @@ class NoPasskeysBottomSheetBridge {
         mNativeBridge = 0;
     }
 
-    private void onDismissed() {
+    @Override
+    public void onClickUseAnotherDevice() {
+        if (mNativeBridge == 0) return;
+
+        NoPasskeysBottomSheetBridgeJni.get().onClickUseAnotherDevice(mNativeBridge);
+    }
+
+    @Override
+    public void onDismissed() {
         if (mNativeBridge == 0) return;
 
         NoPasskeysBottomSheetBridgeJni.get().onDismissed(mNativeBridge);
@@ -58,5 +65,7 @@ class NoPasskeysBottomSheetBridge {
     @NativeMethods
     interface Natives {
         void onDismissed(long nativeNoPasskeysBottomSheetBridge);
+
+        void onClickUseAnotherDevice(long nativeNoPasskeysBottomSheetBridge);
     }
 }

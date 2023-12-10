@@ -15,7 +15,7 @@ import {Command} from '../common/command.js';
 import {TtsSpeechProperties} from '../common/tts_types.js';
 
 import {ChromeVoxRange} from './chromevox_range.js';
-import {CommandHandlerInterface} from './command_handler_interface.js';
+import {CommandHandlerInterface} from './input/command_handler_interface.js';
 
 // setTimeout and its clean-up are referencing each other. So, we need to set
 // "ignoreReadBeforeAssign" in this file. ESLint doesn't support per-line rule
@@ -213,7 +213,7 @@ export class AutoScrollHandler {
    * @param {?AutomationPredicate.Unary} pred The predicate to match.
    * @param {?CursorUnit} unit The unit to navigate by.
    * @param {?TtsSpeechProperties} speechProps The optional speech properties
-   *     given to |navigateTo| to provide feedback of the current command.
+   *     given to |navigateTo| to provide feedback for the current command.
    * @param {AutomationPredicate.Unary} rootPred The predicate that expresses
    *     the current navigation root.
    * @param {Function} retryCommandFunc The callback used to retry the command

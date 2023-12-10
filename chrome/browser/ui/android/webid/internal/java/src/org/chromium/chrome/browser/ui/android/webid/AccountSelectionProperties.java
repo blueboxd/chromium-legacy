@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ui.android.webid.data.Account;
+import org.chromium.chrome.browser.ui.android.webid.data.IdentityCredentialTokenError;
 import org.chromium.chrome.browser.ui.android.webid.data.IdentityProviderMetadata;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -111,14 +112,17 @@ class AccountSelectionProperties {
      * sheet.
      */
     static class ContinueButtonProperties {
-        static final ReadableObjectPropertyKey<Account> ACCOUNT =
-                new ReadableObjectPropertyKey<>("account");
-        static final ReadableObjectPropertyKey<IdentityProviderMetadata> IDP_METADATA =
-                new ReadableObjectPropertyKey<>("idp_metadata");
-        static final ReadableObjectPropertyKey<Callback<Account>> ON_CLICK_LISTENER =
-                new ReadableObjectPropertyKey<>("on_click_listener");
+        static class Properties {
+            public Account mAccount;
+            public IdentityProviderMetadata mIdpMetadata;
+            public Callback<Account> mOnClickListener;
+            public HeaderProperties.HeaderType mHeaderType;
+        }
 
-        static final PropertyKey[] ALL_KEYS = {ACCOUNT, IDP_METADATA, ON_CLICK_LISTENER};
+        static final ReadableObjectPropertyKey<Properties> PROPERTIES =
+                new ReadableObjectPropertyKey<>("properties");
+
+        static final PropertyKey[] ALL_KEYS = {PROPERTIES};
 
         private ContinueButtonProperties() {}
     }
@@ -156,10 +160,17 @@ class AccountSelectionProperties {
      * sheet.
      */
     static class ErrorProperties {
-        static final ReadableObjectPropertyKey<String> IDP_FOR_DISPLAY =
-                new ReadableObjectPropertyKey<>("idp_for_display");
+        static class Properties {
+            public String mIdpForDisplay;
+            public String mTopFrameForDisplay;
+            public IdentityCredentialTokenError mError;
+            public Runnable mMoreDetailsClickRunnable;
+        }
 
-        static final PropertyKey[] ALL_KEYS = {IDP_FOR_DISPLAY};
+        static final ReadableObjectPropertyKey<Properties> PROPERTIES =
+                new ReadableObjectPropertyKey<>("properties");
+
+        static final PropertyKey[] ALL_KEYS = {PROPERTIES};
 
         private ErrorProperties() {}
     }
@@ -176,17 +187,12 @@ class AccountSelectionProperties {
                 new WritableObjectPropertyKey<>("header");
         static final WritableObjectPropertyKey<PropertyModel> IDP_SIGNIN =
                 new WritableObjectPropertyKey<>("idp_signin");
-        static final WritableObjectPropertyKey<PropertyModel> ERROR_SUMMARY =
-                new WritableObjectPropertyKey<>("error_summary");
-        static final WritableObjectPropertyKey<PropertyModel> ERROR_DESCRIPTION =
-                new WritableObjectPropertyKey<>("error_description");
-        static final WritableObjectPropertyKey<PropertyModel> GOT_IT_BUTTON =
-                new WritableObjectPropertyKey<>("got_it_btn");
-        static final WritableObjectPropertyKey<PropertyModel> MORE_DETAILS_BUTTON =
-                new WritableObjectPropertyKey<>("more_details_btn");
+        static final WritableObjectPropertyKey<PropertyModel> ERROR_TEXT =
+                new WritableObjectPropertyKey<>("error_text");
 
-        static final PropertyKey[] ALL_KEYS = {CONTINUE_BUTTON, DATA_SHARING_CONSENT, HEADER,
-                IDP_SIGNIN, ERROR_SUMMARY, ERROR_DESCRIPTION, GOT_IT_BUTTON, MORE_DETAILS_BUTTON};
+        static final PropertyKey[] ALL_KEYS = {
+            CONTINUE_BUTTON, DATA_SHARING_CONSENT, HEADER, IDP_SIGNIN, ERROR_TEXT
+        };
 
         private ItemProperties() {}
     }

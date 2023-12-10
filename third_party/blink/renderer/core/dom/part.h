@@ -27,11 +27,15 @@ class CORE_EXPORT Part : public ScriptWrappable {
   ~Part() override = default;
 
   void Trace(Visitor* visitor) const override;
-  virtual bool IsValid() const { return root_ && !disconnected_; }
+  virtual bool IsValid() const {
+    DCHECK_EQ(is_valid_, root_ && connected_);
+    return is_valid_;
+  }
   virtual Node* NodeToSortBy() const = 0;
-  virtual Part* ClonePart(NodeCloningData&) const = 0;
+  virtual Part* ClonePart(NodeCloningData&, Node&) const = 0;
   virtual PartRoot* GetAsPartRoot() const { return nullptr; }
-  PartRoot* root() const { return root_; }
+  virtual bool IncludeInPartsList() const { return true; }
+  PartRoot* root() const { return root_.Get(); }
   void MoveToRoot(PartRoot* new_root);
   virtual Document& GetDocument() const = 0;
   void PartDisconnected(Node& node);
@@ -43,12 +47,17 @@ class CORE_EXPORT Part : public ScriptWrappable {
   virtual void disconnect();
 
  protected:
-  Part(PartRoot& root, const Vector<String> metadata);
-  bool disconnected_{false};
+  Part(PartRoot& root, const Vector<String> metadata)
+      : root_(root), metadata_(metadata) {}
+  bool IsConnected() { return connected_; }
 
  private:
   Member<PartRoot> root_;
   Vector<String> metadata_;
+  bool connected_{true};
+  // Checking IsValid() is very hot during cloning, so |is_valid_| is
+  // a cached version of (root_ && connected_),
+  bool is_valid_{true};
 };
 
 }  // namespace blink

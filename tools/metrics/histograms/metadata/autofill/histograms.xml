@@ -102,6 +102,9 @@ chromium-metrics-reviews@google.com.
       summary="Feature is trying to be updated from full server card checkout"/>
   <variant name="CheckoutLocalCard"
       summary="Feature is trying to be updated from local card checkout"/>
+  <variant name="CheckoutMaskedServerCard"
+      summary="Feature is trying to be updated from masked server card
+               checkout"/>
   <variant name="CheckoutVirtualCard"
       summary="Feature is trying to be updated from virtual card checkout"/>
   <variant name="SettingsPage"
@@ -426,7 +429,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.AddressesSuppressedForDisuse" units="addresses"
-    expires_after="2023-12-12">
+    expires_after="2024-03-31">
   <owner>battre@chromium.org</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -664,7 +667,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Autofill.Autocomplete.SingleEntryRemovalMethod"
     enum="AutofillAutocompleteSingleEntryRemovalMethod"
-    expires_after="2024-01-31">
+    expires_after="2024-03-31">
   <owner>jkeitel@google.com</owner>
   <owner>chrome-autofill-team@google.com</owner>
   <summary>
@@ -1392,10 +1395,6 @@ chromium-metrics-reviews@google.com.
   </token>
   <token key="SaveSituation">
     <variant name="" summary="aggregated across all situations"/>
-    <variant name=".FromDynamicChangeForm"
-        summary="shown dynamic change forms"/>
-    <variant name=".FromNonFocusableForm"
-        summary="shown from non-focusable forms"/>
     <variant name=".RequestingCardholderName"
         summary="explicitly requesting cardholder name"/>
     <variant name=".RequestingExpirationDate"
@@ -1696,6 +1695,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Autofill.ExtendedMenu.EditAddress"
+    enum="BooleanAutofillExtendedMenuEditAddress" expires_after="2024-10-01">
+  <owner>tchudakov@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    This metric measures how many users Clicked on the Edit Address option in
+    the extended Autofill menu and the next action. The metric is logged when
+    the user closes the edit address profile dialog.
+  </summary>
+</histogram>
+
 <histogram
     name="Autofill.ExtractNewForms.ShallowEqualityDiffersFromDeepEquality"
     enum="FormDataEquality" expires_after="M108">
@@ -1726,7 +1736,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Autofill.FastCheckout.CapabilitiesFetcher.CacheStateForIsTriggerFormSupported"
     enum="FastCheckoutCacheStateForIsTriggerFormSupported"
-    expires_after="2024-02-20">
+    expires_after="2024-11-15">
   <owner>bwolfgang@google.com</owner>
   <owner>jkeitel@google.com</owner>
   <owner>vizcay@google.com</owner>
@@ -1738,7 +1748,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.FastCheckout.CapabilitiesFetcher.HttpResponseAndNetErrorCode"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2024-02-20">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2024-11-15">
   <owner>vizcay@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -1747,7 +1757,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.FastCheckout.CapabilitiesFetcher.ParsingResult"
-    enum="FastCheckoutCapabilitiesParsingResult" expires_after="2024-02-20">
+    enum="FastCheckoutCapabilitiesParsingResult" expires_after="2024-11-15">
   <owner>bwolfgang@google.com</owner>
   <owner>jkeitel@google.com</owner>
   <owner>vizcay@google.com</owner>
@@ -1757,7 +1767,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.FastCheckout.CapabilitiesFetcher.ResponseTime"
-    units="ms" expires_after="2024-02-20">
+    units="ms" expires_after="2024-11-15">
   <owner>vizcay@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -1767,7 +1777,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.FastCheckout.RunOutcome"
-    enum="FastCheckoutRunOutcome" expires_after="2023-11-15">
+    enum="FastCheckoutRunOutcome" expires_after="2024-11-15">
   <owner>bwolfgang@google.com</owner>
   <owner>jkeitel@google.com</owner>
   <owner>vizcay@google.com</owner>
@@ -1779,7 +1789,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.FastCheckout.TriggerOutcome"
-    enum="FastCheckoutTriggerOutcome" expires_after="2024-02-11">
+    enum="FastCheckoutTriggerOutcome" expires_after="2024-11-15">
   <owner>bwolfgang@google.com</owner>
   <owner>jkeitel@google.com</owner>
   <owner>vizcay@google.com</owner>
@@ -2690,7 +2700,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.LabelInference.InferredLabelSource.AtSubmission2"
-    enum="InferredLabelSource" expires_after="2024-01-28">
+    enum="InferredLabelSource" expires_after="2024-03-31">
   <owner>fleimgruber@google.com</owner>
   <owner>chrome-autofill-team@google.com</owner>
   <summary>
@@ -3249,18 +3259,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram
-    name="Autofill.OfferNotificationBubbleOffer.FreeListingCouponOffer.FromHistoryCluster"
-    enum="BooleanYesNo" expires_after="2024-06-01">
-  <owner>meiliang@chromium.org</owner>
-  <owner>chrome-shopping@google.com</owner>
-  <summary>
-    Records whether the offer notification bubble is shown from the History
-    Cluster or normal navigations. It emits true for History Cluster and false
-    for normal navigation. This is recorded when the bubble is shown.
-  </summary>
-</histogram>
-
 <histogram name="Autofill.OfferNotificationBubbleOffer.{BubbleType}"
     enum="BooleanPreviouslyShown" expires_after="2024-04-01">
   <owner>siyua@chromium.org</owner>
@@ -3272,20 +3270,6 @@ chromium-metrics-reviews@google.com.
     recorded when the bubble is shown.
   </summary>
   <token key="BubbleType" variants="Autofill.OfferNotification.Type"/>
-</histogram>
-
-<histogram
-    name="Autofill.OfferNotificationBubblePromoCodeButtonClicked.FreeListingCouponOffer.FromHistoryCluster"
-    enum="BooleanYesNo" expires_after="2024-06-01">
-  <owner>meiliang@chromium.org</owner>
-  <owner>chrome-shopping@google.com</owner>
-  <summary>
-    Records whether the copy promo code button is clicked on the offer
-    notification bubble from History Cluster or normal navigations. It emits
-    true for History Cluster and false for normal navigation. This is recorded
-    when the copy promo code button on the offer notification bubble is clicked
-    by the user.
-  </summary>
 </histogram>
 
 <histogram
@@ -3463,19 +3447,6 @@ chromium-metrics-reviews@google.com.
     value.
   </summary>
   <token key="OtpAuthType" variants="Autofill.OtpAuth.Type"/>
-</histogram>
-
-<histogram
-    name="Autofill.PageLoadsWithOfferIconShowing.FreeListingCouponOffer.FromHistoryCluster"
-    enum="BooleanYesNo" expires_after="2024-06-01">
-  <owner>meiliang@chromium.org</owner>
-  <owner>chrome-shopping@google.com</owner>
-  <summary>
-    Records whether the offer notification icon is shown due to the navigation
-    from History Cluster or normal navigation. It emits true for History Cluster
-    and false for normal navigation. This is recorded when the offer
-    notification omnibox icon is shown for a FreeListing coupon.
-  </summary>
 </histogram>
 
 <histogram name="Autofill.PageLoadsWithOfferIconShowing.{OfferType}"
@@ -5664,16 +5635,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Autofill.WalletAddressConversionType"
-    enum="AutofillWalletAddressConversionType" expires_after="2023-12-12">
-  <owner>battre@chromium.org</owner>
-  <owner>chrome-autofill-alerts@google.com</owner>
-  <summary>
-    Tracks how the different wallet addresses are converted to local autofill
-    profiles.
-  </summary>
-</histogram>
-
 <histogram name="Autofill.WebOTP.OneTimeCode.FillDuration.FromInteraction"
     units="ms" expires_after="2024-02-11">
   <owner>yigu@chromium.org</owner>
@@ -5774,7 +5735,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Autofill.Webview.Events" units="Bitmask"
+<histogram name="Autofill.WebView.Events" units="Bitmask"
     expires_after="2024-08-31">
   <owner>jkeitel@google.com</owner>
   <owner>battre@chromium.org</owner>

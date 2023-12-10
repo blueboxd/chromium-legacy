@@ -59,6 +59,8 @@ class AutofillExternalDelegate : public AutofillPopupDelegate,
       const Suggestion& suggestion,
       int position,
       AutofillSuggestionTriggerSource trigger_source) override;
+  void DidPerformButtonActionForSuggestion(
+      const Suggestion& suggestion) override;
   bool GetDeletionConfirmationText(const std::u16string& value,
                                    PopupItemId popup_item_id,
                                    Suggestion::BackendId backend_id,
@@ -153,7 +155,7 @@ class AutofillExternalDelegate : public AutofillPopupDelegate,
   // Triggered when user closes the address editor dialog.
   void OnAddressEditorClosed(
       AutofillClient::SaveAddressProfileOfferUserDecision decision,
-      AutofillProfile profile);
+      base::optional_ref<const AutofillProfile> profile);
 
   void OnDeleteDialogClosed(const std::string& guid, bool user_accepted_delete);
 
@@ -165,10 +167,6 @@ class AutofillExternalDelegate : public AutofillPopupDelegate,
   // `field` parameters of `OnQuery(). Returns nullptr if called before
   // `OnQuery()` or if the `form` becomes outdated, see crbug.com/1117028.
   AutofillField* GetQueriedAutofillField() const;
-
-  // Fills the form field with the given plus address.
-  // Called when a plus address is created.
-  void OnPlusAddressCreated(const std::string& plus_address);
 
   // Fills the form with the Autofill data corresponding to `backend_id`.
   // If `is_preview` is true then this is just a preview to show the user what

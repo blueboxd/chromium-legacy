@@ -10,9 +10,9 @@
 #include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
-#include "chrome/browser/apps/app_service/app_icon/icon_effects.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_icon_cache.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/services/app_service/public/cpp/icon_effects.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
@@ -88,10 +88,6 @@ class PromiseAppService : public AppRegistryCache::Observer {
   void SetSkipApiKeyCheckForTesting(bool skip_almanac);
 
  private:
-  // Remove all details about a promise app from the PromiseAppRegistryCache and
-  // PromiseAppIconCache.
-  void RemovePromiseApp(const PackageId& package_id);
-
   // Update a promise app's fields with the info retrieved from the Almanac API.
   void OnGetPromiseAppInfoCompleted(
       const PackageId& package_id,
@@ -106,6 +102,11 @@ class PromiseAppService : public AppRegistryCache::Observer {
   // Check whether there is a registered app in AppRegistryCache with the
   // specified package ID.
   bool IsRegisteredInAppRegistryCache(const PackageId& package_id);
+
+  // Set `should_show` to true for a promise app.
+  void SetPromiseAppReadyToShow(const PackageId& package_id);
+
+  raw_ptr<Profile> profile_;
 
   // The cache that contains all the promise apps in the system.
   std::unique_ptr<apps::PromiseAppRegistryCache> promise_app_registry_cache_;

@@ -17,9 +17,12 @@
 #include "chrome/browser/ash/file_system_provider/provider_interface.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/webui/ash/cloud_upload/cloud_open_metrics.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload.mojom.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_util.h"
 #include "chrome/browser/ui/webui/ash/system_web_dialog_delegate.h"
+#include "chromeos/ash/components/drivefs/mojom/drivefs.mojom-forward.h"
+#include "components/drive/file_errors.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/size.h"
@@ -46,17 +49,6 @@ FORWARD_DECLARE_TEST(
     FailToOpenFileFromAndroidOneDriveDirectoryNotAccessibleToODFS);
 }  // namespace file_manager::file_tasks
 
-namespace {
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class OfficeFilesTransferRequired {
-  kNotRequired = 0,
-  kMove = 1,
-  kCopy = 2,
-  kMaxValue = kCopy,
-};
-}  // namespace
-
 namespace ash::cloud_upload {
 
 struct ODFSFileSystemAndPath {
@@ -79,12 +71,6 @@ constexpr char kUserActionConfirmOrUploadToGoogleDrive[] =
 constexpr char kUserActionConfirmOrUploadToOneDrive[] =
     "confirm-or-upload-onedrive";
 
-// Either OneDrive for the Office PWA or Drive for Drive Web editing.
-enum class CloudProvider {
-  kGoogleDrive,
-  kOneDrive,
-};
-
 class CloudUploadDialog;
 
 // The business logic for running setup, moving files to a cloud provider, and
@@ -106,7 +92,8 @@ class CloudOpenTask : public BrowserListObserver,
   static bool Execute(Profile* profile,
                       const std::vector<storage::FileSystemURL>& file_urls,
                       const CloudProvider cloud_provider,
-                      gfx::NativeWindow modal_parent);
+                      gfx::NativeWindow modal_parent,
+                      std::unique_ptr<CloudOpenMetrics> cloud_open_metrics);
 
   // Set the local tasks that are passed to the File Handler dialog. Normally
   // tasks are calculated internally by this class before displaying this
@@ -157,7 +144,8 @@ class CloudOpenTask : public BrowserListObserver,
   CloudOpenTask(Profile* profile,
                 std::vector<storage::FileSystemURL> file_urls,
                 const CloudProvider cloud_provider,
-                gfx::NativeWindow modal_parent);
+                gfx::NativeWindow modal_parent,
+                std::unique_ptr<CloudOpenMetrics> cloud_open_metrics);
 
   ~CloudOpenTask() override;
 
@@ -165,6 +153,10 @@ class CloudOpenTask : public BrowserListObserver,
   bool ExecuteInternal();
   void OpenOrMoveFiles();
   void OpenAlreadyHostedDriveUrls();
+  void OnGoogleDriveGetMetadata(drive::FileError error,
+                                drivefs::mojom::FileMetadataPtr metadata);
+  void OpenUploadedDriveUrl(const GURL& url,
+                            const OfficeTaskResult task_result);
   void OpenODFSUrls(const OfficeTaskResult task_result_uma);
   void OpenAndroidOneDriveUrlsIfAccountMatchedODFS(
       base::OnceCallback<void(OfficeOneDriveOpenErrors)> callback);
@@ -185,6 +177,11 @@ class CloudOpenTask : public BrowserListObserver,
   void FinishedOneDriveUpload(base::WeakPtr<Profile> profile_weak_ptr,
                               absl::optional<storage::FileSystemURL> url,
                               int64_t size);
+
+  void LogGoogleDriveOpenResultUMA(OfficeTaskResult success_task_result,
+                                   OfficeDriveOpenErrors open_result);
+  void LogOneDriveOpenResultUMA(OfficeTaskResult success_task_result,
+                                OfficeOneDriveOpenErrors open_result);
 
   bool InitAndShowDialog(mojom::DialogPage dialog_page);
   mojom::DialogArgsPtr CreateDialogArgs(mojom::DialogPage dialog_page);
@@ -220,6 +217,7 @@ class CloudOpenTask : public BrowserListObserver,
   std::vector<storage::FileSystemURL> file_urls_;
   CloudProvider cloud_provider_;
   gfx::NativeWindow modal_parent_;
+  std::unique_ptr<CloudOpenMetrics> cloud_open_metrics_;
   std::vector<::file_manager::file_tasks::TaskDescriptor> local_tasks_;
   size_t pending_uploads_ = 0;
   raw_ptr<CloudUploadDialog, ExperimentalAsh> pending_dialog_ = nullptr;

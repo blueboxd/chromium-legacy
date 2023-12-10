@@ -7,11 +7,11 @@ import {NetworkTestRunner} from 'network_test_runner';
 
 import * as Common from 'devtools/core/common/common.js';
 import * as Network from 'devtools/panels/network/network.js';
-import * as UIModule from 'devtools/ui/legacy/legacy.js';
+import * as SourceFrame from 'devtools/ui/legacy/components/source_frame/source_frame.js';
+import * as UI from 'devtools/ui/legacy/legacy.js';
 
 (async function() {
   TestRunner.addResult(`Tests that resources with JSON MIME types are previewed with the JSON viewer.\n`);
-  await TestRunner.loadLegacyModule('source_frame');
   await TestRunner.showPanel('network');
 
   async function testSearches(view, searches) {
@@ -37,7 +37,7 @@ import * as UIModule from 'devtools/ui/legacy/legacy.js';
   }
 
   async function previewViewHandled(searches, callback, view) {
-    var isSearchable = (view instanceof UIModule.SearchableView.SearchableView);
+    var isSearchable = (view instanceof UI.SearchableView.SearchableView);
     var compontentView = view;
     var typeName = 'unknown';
     var searchableView = view;
@@ -48,7 +48,7 @@ import * as UIModule from 'devtools/ui/legacy/legacy.js';
     if (isSearchable)
       compontentView = searchableView.searchProvider;
 
-    if (compontentView instanceof SourceFrame.ResourceSourceFrame) {
+    if (compontentView instanceof SourceFrame.ResourceSourceFrame.ResourceSourceFrame) {
       typeName = 'ResourceSourceFrame';
       compontentView.ensureContentLoaded();
       if (!compontentView.loaded) {
@@ -57,13 +57,13 @@ import * as UIModule from 'devtools/ui/legacy/legacy.js';
             compontentView, 'setContent', previewViewHandled.bind(this, searches, callback, view));
         return;
       }
-    } else if (compontentView instanceof SourceFrame.XMLView) {
+    } else if (compontentView instanceof SourceFrame.XMLView.XMLView) {
       typeName = 'XMLView';
-    } else if (compontentView instanceof SourceFrame.JSONView) {
+    } else if (compontentView instanceof SourceFrame.JSONView.JSONView) {
       typeName = 'JSONView';
     } else if (compontentView instanceof Network.RequestHTMLView.RequestHTMLView) {
       typeName = 'RequestHTMLView';
-    } else if (compontentView instanceof UIModule.EmptyWidget.EmptyWidget) {
+    } else if (compontentView instanceof UI.EmptyWidget.EmptyWidget) {
       typeName = 'EmptyWidget';
     } else if (compontentView instanceof Network.RequestHTMLView.RequestHTMLView) {
       typeName = 'RequestHTMLView';
@@ -80,7 +80,7 @@ import * as UIModule from 'devtools/ui/legacy/legacy.js';
 
 
   function trySearches(request, searches, callback) {
-    var networkPanel = UI.panels.network;
+    var networkPanel = Network.NetworkPanel.NetworkPanel.instance();
     TestRunner.addSniffer(Network.RequestPreviewView.RequestPreviewView.prototype, 'doShowPreview', async function() {
       previewViewHandled(searches, callback, await this.contentViewPromise);
       networkPanel.hideRequestPanel();

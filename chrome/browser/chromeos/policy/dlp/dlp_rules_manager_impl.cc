@@ -19,14 +19,15 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/dlp/data_transfer_dlp_controller.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_files_controller_lacros.h"
-#include "chrome/browser/chromeos/policy/dlp/dlp_histogram_helper.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_policy_constants.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_reporting_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_scoped_file_access_delegate.h"
+#include "chrome/browser/enterprise/data_controls/chrome_dlp_rules_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/dbus/dlp/dlp_client.h"
 #include "chromeos/dbus/dlp/dlp_service.pb.h"
+#include "components/enterprise/data_controls/dlp_histogram_helper.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -197,8 +198,9 @@ void AddAssociatedUrlConditions(
 }
 
 void OnSetDlpFilesPolicy(const ::dlp::SetDlpFilesPolicyResponse response) {
-  DlpBooleanHistogram(dlp::kErrorsFilesPolicySetup,
-                      response.has_error_message());
+  data_controls::DlpBooleanHistogram(
+      data_controls::dlp::kErrorsFilesPolicySetup,
+      response.has_error_message());
   if (response.has_error_message()) {
     DlpScopedFileAccessDelegate::DeleteInstance();
     LOG(ERROR) << "Failed to set DLP Files policy and start DLP daemon, error: "
@@ -206,7 +208,8 @@ void OnSetDlpFilesPolicy(const ::dlp::SetDlpFilesPolicyResponse response) {
     return;
   }
   DCHECK(chromeos::DlpClient::Get()->IsAlive());
-  DlpScopedFileAccessDelegate::Initialize(chromeos::DlpClient::Get());
+  DlpScopedFileAccessDelegate::Initialize(
+      base::BindRepeating(chromeos::DlpClient::Get));
 }
 
 ::dlp::DlpRuleLevel GetLevelProtoEnum(const DlpRulesManager::Level level) {
@@ -309,13 +312,13 @@ DlpRulesManagerImpl::GetAggregatedComponents(const GURL& source,
 
 DlpRulesManagerImpl::DlpRulesManagerImpl(PrefService* local_state,
                                          Profile* profile)
-    : profile_(profile) {
+    : DlpRulesManager(profile) {
   pref_change_registrar_.Init(local_state);
   pref_change_registrar_.Add(
       policy_prefs::kDlpRulesList,
-      base::BindRepeating(&DlpRulesManagerImpl::OnPolicyUpdate,
+      base::BindRepeating(&DlpRulesManagerImpl::OnDataLeakPreventionRulesUpdate,
                           base::Unretained(this)));
-  OnPolicyUpdate();
+  OnDataLeakPreventionRulesUpdate();
 
   if (IsReportingEnabled())
     reporting_manager_ = std::make_unique<DlpReportingManager>();
@@ -355,7 +358,7 @@ bool DlpRulesManagerImpl::IsFilesPolicyEnabled() const {
 
 void DlpRulesManagerImpl::DlpDaemonRestarted() {
   // This should trigger re-notification of DLP daemon if needed.
-  OnPolicyUpdate();
+  OnDataLeakPreventionRulesUpdate();
 }
 
 void DlpRulesManagerImpl::Shutdown() {
@@ -366,7 +369,7 @@ void DlpRulesManagerImpl::Shutdown() {
   files_controller_.reset();
 }
 
-void DlpRulesManagerImpl::OnPolicyUpdate() {
+void DlpRulesManagerImpl::OnDataLeakPreventionRulesUpdate() {
   components_rules_.clear();
   restrictions_map_.clear();
   src_url_rules_mapping_.clear();
@@ -389,7 +392,8 @@ void DlpRulesManagerImpl::OnPolicyUpdate() {
   const base::Value::List& rules_list =
       g_browser_process->local_state()->GetList(policy_prefs::kDlpRulesList);
 
-  DlpBooleanHistogram(dlp::kDlpPolicyPresentUMA, !rules_list.empty());
+  data_controls::DlpBooleanHistogram(data_controls::dlp::kDlpPolicyPresentUMA,
+                                     !rules_list.empty());
   if (rules_list.empty()) {
     DataTransferDlpController::DeleteInstance();
     return;
@@ -526,7 +530,8 @@ void DlpRulesManagerImpl::OnPolicyUpdate() {
           features::kDataLeakPreventionFilesRestriction)) {
     if (request_to_daemon.rules_size() > 0) {
       // Start and/or activate the daemon.
-      DlpBooleanHistogram(dlp::kFilesDaemonStartedUMA, true);
+      data_controls::DlpBooleanHistogram(
+          data_controls::dlp::kFilesDaemonStartedUMA, true);
       chromeos::DlpClient::Get()->SetDlpFilesPolicy(
           request_to_daemon, base::BindOnce(&OnSetDlpFilesPolicy));
 #if BUILDFLAG(IS_CHROMEOS_ASH)

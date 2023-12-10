@@ -4,6 +4,7 @@
 
 #include "chrome/browser/devtools/protocol/autofill_handler.h"
 
+#include "base/check_deref.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/devtools/protocol/autofill.h"
@@ -32,6 +33,8 @@ using autofill::CreditCard;
 using autofill::FieldGlobalId;
 using autofill::FormData;
 using autofill::FormFieldData;
+using autofill::HtmlFieldTypeToBestCorrespondingServerFieldType;
+using autofill::mojom::HtmlFieldType;
 using protocol::Maybe;
 using protocol::Response;
 
@@ -40,6 +43,9 @@ namespace {
 absl::optional<std::pair<FormData, FormFieldData>> FindFieldWithFormData(
     autofill::ContentAutofillDriver* driver,
     autofill::FieldGlobalId id) {
+  if (!driver) {
+    return absl::nullopt;
+  }
   for (const auto& [key, form] :
        driver->GetAutofillManager().form_structures()) {
     for (const auto& field : form->fields()) {
@@ -130,14 +136,15 @@ void AutofillHandler::FinishTrigger(
     autofill_driver =
         autofill::ContentAutofillDriver::GetForRenderFrameHost(frame_rfh);
 
-    if (!autofill_driver) {
-      continue;
+    // TODO(alexrudenko): This approach might lead to differences in behaviour
+    // between the real Autofill flow triggered manually and Autofill triggered
+    // over CDP. We should change how we find the form data and use the same
+    // logic as used by AutofillDriverRouter.
+    if (absl::optional<std::pair<FormData, FormFieldData>> rfh_field_data =
+            FindFieldWithFormData(autofill_driver, global_field_id)) {
+      field_data = std::move(rfh_field_data);
     }
 
-    field_data = FindFieldWithFormData(autofill_driver, global_field_id);
-    if (field_data.has_value()) {
-      break;
-    }
     frame_rfh = frame_rfh->GetParent();
   }
 
@@ -209,16 +216,17 @@ void AutofillHandler::SetAddresses(
 
   static_cast<autofill::BrowserAutofillManager&>(
       autofill_driver->GetAutofillManager())
-      .set_test_addresses(test_address_for_countries);
+      .client()
+      .GetPersonalDataManager()
+      ->set_test_addresses(test_address_for_countries);
   std::move(callback)->sendSuccess();
 }
 
 void AutofillHandler::OnFillOrPreviewDataModelForm(
     autofill::AutofillManager& manager,
     autofill::FormGlobalId form,
-    autofill::mojom::AutofillActionPersistence action_persistence,
-    base::span<const std::pair<const FormFieldData*, const AutofillField*>>
-        filled_fields,
+    autofill::mojom::ActionPersistence action_persistence,
+    base::span<const FormFieldData* const> filled_fields,
     absl::variant<const autofill::AutofillProfile*, const autofill::CreditCard*>
         profile_or_credit_card) {
   if (!base::FeatureList::IsEnabled(
@@ -227,41 +235,46 @@ void AutofillHandler::OnFillOrPreviewDataModelForm(
   }
 
   // We only care about address forms that were filled.
-  if (action_persistence != autofill::mojom::AutofillActionPersistence::kFill ||
+  if (action_persistence != autofill::mojom::ActionPersistence::kFill ||
       !absl::holds_alternative<const autofill::AutofillProfile*>(
           profile_or_credit_card)) {
     return;
   }
 
+  autofill::FormStructure& form_structure =
+      CHECK_DEREF(manager.FindCachedFormById(form));
   const autofill::AutofillProfile* profile_used_to_fill_form =
       absl::get<const autofill::AutofillProfile*>(profile_or_credit_card);
 
   auto filled_fields_to_be_sent_to_devtools =
       std::make_unique<protocol::Array<protocol::Autofill::FilledField>>();
   filled_fields_to_be_sent_to_devtools->reserve(filled_fields.size());
-  for (const std::pair<const FormFieldData*, const AutofillField*>& field :
-       filled_fields) {
+  for (const FormFieldData* field : filled_fields) {
+    AutofillField* autofill_field =
+        form_structure.GetFieldById(field->global_id());
+    if (!autofill_field) {
+      continue;
+    }
     // Whether the field was classified from the autocomplete attribute or
     // predictions. If no autocomplete attribute exists OR the actual ServerType
     // differs from what it would have been with only autocomplete, autofill
     // inferred the type.
     bool autofill_inferred =
-        field.second->html_type() ==
-            autofill::mojom::HtmlFieldType::kUnspecified ||
-        field.second->html_type() ==
-            autofill::mojom::HtmlFieldType::kUnrecognized ||
-        (autofill::AutofillType(field.second->html_type()).GetStorableType() !=
-         field.second->Type().GetStorableType());
+        autofill_field->html_type() == HtmlFieldType::kUnspecified ||
+        autofill_field->html_type() == HtmlFieldType::kUnrecognized ||
+        HtmlFieldTypeToBestCorrespondingServerFieldType(
+            autofill_field->html_type()) !=
+            autofill_field->Type().GetStorableType();
     filled_fields_to_be_sent_to_devtools->push_back(
         protocol::Autofill::FilledField::Create()
-            .SetId(base::UTF16ToASCII(field.second->id_attribute))
-            .SetName(base::UTF16ToASCII(field.second->name_attribute))
-            .SetValue(base::UTF16ToASCII(field.first->value))
-            .SetHtmlType(std::string(autofill::FormControlTypeToString(
-                field.second->form_control_type)))
+            .SetId(base::UTF16ToASCII(autofill_field->id_attribute))
+            .SetName(base::UTF16ToASCII(autofill_field->name_attribute))
+            .SetValue(base::UTF16ToASCII(field->value))
+            .SetHtmlType(std::string(
+                autofill::FormControlTypeToString(field->form_control_type)))
             .SetAutofillType(
                 std::string(FieldTypeToDeveloperRepresentationString(
-                    field.second->Type().GetStorableType())))
+                    autofill_field->Type().GetStorableType())))
             .SetFillingStrategy(
                 autofill_inferred
                     ? protocol::Autofill::FillingStrategyEnum::AutofillInferred

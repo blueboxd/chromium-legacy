@@ -15,8 +15,10 @@ import android.system.Os;
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
+import org.jni_zero.JNINamespace;
 import org.jni_zero.NativeLibraryLoadedStatus;
 import org.jni_zero.NativeLibraryLoadedStatus.NativeLibraryLoadedStatusProvider;
+import org.jni_zero.NativeMethods;
 
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.Callback;
@@ -28,13 +30,10 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.TimeUtils.CurrentThreadTimeMillisTimer;
 import org.chromium.base.TimeUtils.UptimeMillisTimer;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.build.BuildConfig;
 import org.chromium.build.NativeLibraries;
-import org.chromium.build.annotations.MainDex;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -55,7 +54,6 @@ import javax.annotation.concurrent.GuardedBy;
  * See also base/android/library_loader/library_loader_hooks.cc, which contains
  * the native counterpart to this class.
  */
-@MainDex
 @JNINamespace("base::android")
 public class LibraryLoader {
     private static final String TAG = "LibraryLoader";

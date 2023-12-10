@@ -22,6 +22,7 @@
 #include "ash/public/cpp/accessibility_focus_ring_info.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/webui/settings/public/constants/routes_util.h"
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_util.h"
@@ -56,6 +57,7 @@
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_requisition_manager.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/braille_display_private/stub_braille_controller.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -64,6 +66,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/accessibility_private.h"
@@ -103,6 +106,7 @@
 #include "services/accessibility/buildflags.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "ui/accessibility/accessibility_features.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/ime/ash/extension_ime_util.h"
@@ -489,11 +493,21 @@ AccessibilityManager::AccessibilityManager() {
       extension_misc::kSelectToSpeakGuestManifestFilename,
       base::BindRepeating(&AccessibilityManager::PostUnloadSelectToSpeak,
                           weak_ptr_factory_.GetWeakPtr())));
+
+  const bool enable_v3_manifest =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kEnableExperimentalAccessibilityManifestV3);
+  const base::FilePath::CharType* switchAccessManifestFilename =
+      enable_v3_manifest ? extension_misc::kSwitchAccessManifestV3Filename
+                         : extension_misc::kSwitchAccessManifestFilename;
+  const base::FilePath::CharType* switchAccessGuestManifestFilename =
+      enable_v3_manifest ? extension_misc::kSwitchAccessGuestManifestV3Filename
+                         : extension_misc::kSwitchAccessGuestManifestFilename;
+
   switch_access_loader_ = base::WrapUnique(new AccessibilityExtensionLoader(
       extension_misc::kSwitchAccessExtensionId,
       resources_path.Append(extension_misc::kSwitchAccessExtensionPath),
-      extension_misc::kSwitchAccessManifestFilename,
-      extension_misc::kSwitchAccessGuestManifestFilename,
+      switchAccessManifestFilename, switchAccessGuestManifestFilename,
       base::BindRepeating(&AccessibilityManager::PostUnloadSwitchAccess,
                           weak_ptr_factory_.GetWeakPtr())));
 
@@ -553,11 +567,7 @@ bool AccessibilityManager::ShouldShowAccessibilityMenu() {
         prefs->GetBoolean(prefs::kAccessibilityCursorHighlightEnabled) ||
         prefs->GetBoolean(prefs::kAccessibilityFocusHighlightEnabled) ||
         prefs->GetBoolean(prefs::kAccessibilityDictationEnabled) ||
-        prefs->GetBoolean(prefs::kDockedMagnifierEnabled)) {
-      return true;
-    }
-    if (::features::
-            AreExperimentalAccessibilityColorEnhancementSettingsEnabled() &&
+        prefs->GetBoolean(prefs::kDockedMagnifierEnabled) ||
         prefs->GetBoolean(prefs::kAccessibilityColorCorrectionEnabled)) {
       return true;
     }
@@ -887,7 +897,7 @@ void AccessibilityManager::OnAccessibilityCommonChanged(
 }
 
 void AccessibilityManager::RequestAutoclickScrollableBoundsForPoint(
-    gfx::Point& point_in_screen) {
+    const gfx::Point& point_in_screen) {
   if (!profile_)
     return;
 
@@ -984,6 +994,10 @@ void AccessibilityManager::OnMonoAudioChanged() {
 
 void AccessibilityManager::SetDarkenScreen(bool darken) {
   AccessibilityController::Get()->SetDarkenScreen(darken);
+
+  if (screen_darken_observer_for_test_) {
+    screen_darken_observer_for_test_.Run();
+  }
 }
 
 void AccessibilityManager::SetCaretHighlightEnabled(bool enabled) {
@@ -1708,8 +1722,6 @@ void AccessibilityManager::UpdateChromeOSAccessibilityHistograms() {
         "Accessibility.CrosCursorColor",
         prefs->GetBoolean(prefs::kAccessibilityCursorColorEnabled));
 
-    if (::features::
-            AreExperimentalAccessibilityColorEnhancementSettingsEnabled()) {
       bool color_correction_enabled = IsColorCorrectionEnabled();
       base::UmaHistogramBoolean("Accessibility.CrosColorCorrection",
                                 color_correction_enabled);
@@ -1722,7 +1734,6 @@ void AccessibilityManager::UpdateChromeOSAccessibilityHistograms() {
             "Accessibility.CrosColorCorrection.FilterAmount",
             prefs->GetInteger(
                 prefs::kAccessibilityColorVisionCorrectionAmount));
-      }
     }
   }
   base::UmaHistogramBoolean("Accessibility.CrosCaretHighlight",
@@ -2078,6 +2089,20 @@ bool AccessibilityManager::ToggleDictation() {
   return dictation_active_;
 }
 
+void AccessibilityManager::OpenSettingsSubpage(const std::string& subpage) {
+  // TODO(chrome-a11y-core): we can't open a settings page when you're on the
+  // signin profile, but maybe we should notify the user and explain why?
+  Profile* profile = AccessibilityManager::Get()->profile();
+  if (!ash::ProfileHelper::IsSigninProfile(profile) &&
+      chromeos::settings::IsOSSettingsSubPage(subpage)) {
+    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(profile,
+                                                                 subpage);
+    if (open_settings_subpage_observer_for_test_) {
+      open_settings_subpage_observer_for_test_.Run();
+    }
+  }
+}
+
 const std::string AccessibilityManager::GetFocusRingId(
     ax::mojom::AssistiveTechnologyType at_type,
     const std::string& focus_ring_name) {
@@ -2200,6 +2225,16 @@ void AccessibilityManager::SetProfileForTest(Profile* profile) {
 void AccessibilityManager::SetBrailleControllerForTest(
     BrailleController* controller) {
   g_braille_controller_for_test = controller;
+}
+
+void AccessibilityManager::SetScreenDarkenObserverForTest(
+    base::RepeatingCallback<void()> observer) {
+  screen_darken_observer_for_test_ = observer;
+}
+
+void AccessibilityManager::SetOpenSettingsSubpageObserverForTest(
+    base::RepeatingCallback<void()> observer) {
+  open_settings_subpage_observer_for_test_ = observer;
 }
 
 void AccessibilityManager::SetFocusRingObserverForTest(

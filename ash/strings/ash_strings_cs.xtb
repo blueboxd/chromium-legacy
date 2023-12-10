@@ -310,7 +310,6 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="2276987123919776440">15 min</translation>
 <translation id="2277103315734023688">Přetočit dopředu</translation>
 <translation id="2282073721614284166">Otevřít odkaz na kartě</translation>
-<translation id="2284237890386182187">Zapnuto, nejsou připojena žádná zařízení</translation>
 <translation id="2292698582925480719">Měřítko displeje</translation>
 <translation id="229397294990920565">Vypínání mobilních dat…</translation>
 <translation id="2295777434187870477">Mikrofon je zapnutý, přepnutím ho ztlumíte.</translation>
@@ -352,7 +351,6 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="243878895369688216">Otevřeno včera</translation>
 <translation id="2440978926514840421">GIF byl zaznamenán</translation>
 <translation id="2441427462554639370">Nahrávání bylo ukončeno z důvodu kriticky nízkého místa v úložišti</translation>
-<translation id="24452542372838207">Rozbalit oznámení</translation>
 <translation id="2448312741937722512">Typ</translation>
 <translation id="2449089818483227734">Slabá baterie</translation>
 <translation id="2450205753526923158">Režim snímku obrazovky</translation>
@@ -493,7 +491,6 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="3062298103034426069">Nepodporováno</translation>
 <translation id="3068622547379332530">Verze <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">Polička vlevo</translation>
-<translation id="3070639127620815135">hledat+esc</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Rozbalit nabídku</translation>
 <translation id="3087734570205094154">Až dolů</translation>
@@ -572,7 +569,6 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="3387527074123400161">ChromiumOS</translation>
 <translation id="3389599499324569679">Zapnout diktování?</translation>
 <translation id="3394432020929931914">, rozbaleno</translation>
-<translation id="3400357268283240774">Další nastavení</translation>
 <translation id="3405101454990027959">Zapněte přístup k mikrofonu</translation>
 <translation id="3408735331120433841">Momentálně svou obrazovku odesíláte.</translation>
 <translation id="3409584356742878290">Zobrazit nebo skrýt inspektor Nástrojů pro vývojáře</translation>
@@ -620,7 +616,6 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="3563775809269155755">Aktivovat hotspot</translation>
 <translation id="3566240529365775567">Právě otevřeno</translation>
 <translation id="3571734092741541777">Nastavit</translation>
-<translation id="3572988532398145777">Oznámení nelze rozbalit, když je otevřený panel. Nejdříve zavřete panel níže.</translation>
 <translation id="3573179567135747900">Změnit zpět na jazyk <ph name="FROM_LOCALE" /> (vyžaduje restart)</translation>
 <translation id="3576141592585647168">Změnit časové pásmo</translation>
 <translation id="3577473026931028326">Došlo k chybě. Zkuste to znovu.</translation>
@@ -703,7 +698,6 @@ Připojte zařízení k napájení.</translation>
 <translation id="385300504083504382">Začátek</translation>
 <translation id="3859364108019690">Nelze streamovat aplikace</translation>
 <translation id="3861651314799684201">Stisknutím klávesy Enter spustíte nahrávání celé obrazovky</translation>
-<translation id="3865912916886104060">Nejsou připojena žádná zařízení. Wi-Fi se vypne, aby bylo možné začít používat hotspot.</translation>
 <translation id="3886872229787704059">Otevřeno dnes</translation>
 <translation id="3891340733213178823">Odhlaste se dvojitým stisknutím kombinace kláves Ctrl+Shift+Q.</translation>
 <translation id="3893630138897523026">ChromeVox (hlasová odezva)</translation>
@@ -788,7 +782,6 @@ Připojte zařízení k napájení.</translation>
 <translation id="4197790712631116042">Vypnuto</translation>
 <translation id="4201033867194214117">Funkce <ph name="FEATURE_NAME" /> není dostupná.</translation>
 <translation id="4201051445878709314">Zobrazit předchozí měsíc</translation>
-<translation id="4202362334312791952">Je připojeno 1 zařízení. Wi-Fi se vypne, aby bylo možné začít používat hotspot.</translation>
 <translation id="4209973997261364186">Wi-Fi je zapnuta</translation>
 <translation id="4212472694152630271">Přepnout na PIN</translation>
 <translation id="4215497585250573029">Nastavení sítě VPN</translation>
@@ -905,7 +898,6 @@ Připojte zařízení k napájení.</translation>
 <translation id="468293128311738995">Aplikace z telefonu</translation>
 <translation id="4690510401873698237">Polička dole</translation>
 <translation id="4696813013609194136">Odemkněte zařízení rodičovským kódem</translation>
-<translation id="4698850295812410683">Zobrazit nástroje pro dotykové pero</translation>
 <translation id="4702647871202761252">Obrazovka ochrany soukromí je vypnutá</translation>
 <translation id="4706121060329443414">Soubory zkusíme stáhnout později. Prozatím se řeč bude ke zpracování odesílat do Googlu.</translation>
 <translation id="470644585772471629">Převrácení barev</translation>
@@ -1053,6 +1045,7 @@ Připojte zařízení k napájení.</translation>
 <translation id="5260676007519551770">Plocha 4</translation>
 <translation id="5268819379131021772">Seznam úkolů Google</translation>
 <translation id="5275923704957843041">Náhled plochy</translation>
+<translation id="5277869901083657836">Přepnout nástroje dotykového pera</translation>
 <translation id="5278086053818066789">Zapnout/vypnout funkci ChromeVox (hlasovou odezvu)</translation>
 <translation id="5283099933536931082">Aplikace <ph name="APP_ITEM_TITLE" /> vyžaduje vaši pozornost.</translation>
 <translation id="5283198616748585639">Přidat 1 min</translation>
@@ -1095,7 +1088,6 @@ Připojte zařízení k napájení.</translation>
 <translation id="5426063383988017631">Nabídka nastavení byla zavřena</translation>
 <translation id="5428899915242071344">Zahájit výběr</translation>
 <translation id="5429993543155113935">Anonymní okna v současné době nejsou podporována</translation>
-<translation id="5430931332414098647">Dynamický tethering</translation>
 <translation id="5431318178759467895">Barevně</translation>
 <translation id="5433020815079095860">Zvukový vstup</translation>
 <translation id="544691375626129091">Do této návštěvy již byli přidáni všichni dostupní uživatelé.</translation>
@@ -1124,6 +1116,7 @@ Připojte zařízení k napájení.</translation>
 <translation id="554893713779400387">Přepnout diktování</translation>
 <translation id="5551456515017410630">Otevřít/zavřít kalendář</translation>
 <translation id="5551974246223970793">Při vyhledávání na stránce přejít na další nalezenou shodu</translation>
+<translation id="5555639311269196631">Vypnout hotspot</translation>
 <translation id="5558091555391176027">Přepnout vysokou viditelnost pro sdílení nablízko</translation>
 <translation id="556042886152191864">Tlačítko</translation>
 <translation id="5570122939431135380">Otevřít novou kartu v novém anonymním okně</translation>
@@ -1169,7 +1162,6 @@ Připojte zařízení k napájení.</translation>
 <translation id="5707775774148071965">Vaše zařízení podporuje vyšší přenosovou rychlost než kabel. Výkon zařízení může být omezen.</translation>
 <translation id="5710450975648804523">Režim Nerušit je zapnutý</translation>
 <translation id="571295407079589142">Mobilní data jsou vypnuta</translation>
-<translation id="5716891621595980681">Je připojen tento počet zařízení: <ph name="DEVICECOUNT" />. Wi-Fi se vypne, aby bylo možné začít používat hotspot.</translation>
 <translation id="5727460725221669831">Pokud jste heslo zapomněli nebo jste nedávno změnili heslo účtu Google, zkuste tohoto uživatele obnovit.</translation>
 <translation id="573413375004481890">Toto zařízení nemohlo podporovat všechny vaše obrazovky, jedna proto byla odpojena</translation>
 <translation id="5740328398383587084">Sdílení nablízko</translation>
@@ -1219,7 +1211,6 @@ Připojte zařízení k napájení.</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="5916664084637901428">Zapnuto</translation>
 <translation id="5920710855273935292">Mikrofon je ztlumen.</translation>
-<translation id="5924855612669061715">Hotspot je zapnutý</translation>
 <translation id="5946788582095584774">Funkce <ph name="FEATURE_NAME" /> je zapnutá.</translation>
 <translation id="5947494881799873997">Vrátit zpět</translation>
 <translation id="595202126637698455">Sledování výkonu aktivováno</translation>
@@ -1235,6 +1226,7 @@ Připojte zařízení k napájení.</translation>
 <translation id="598407983968395253">Použít šablonu</translation>
 <translation id="598882571027504733">Aktualizaci nainstalujete tím, že Chromebook s připojenou klávesnicí restartujete.</translation>
 <translation id="6000279412553873020">Klávesy, tlačítka a další</translation>
+<translation id="6002122790816966947">Vaše zařízení</translation>
 <translation id="6012623610530968780">Stránka <ph name="SELECTED_PAGE" /> z <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="601304062528754300">Zvýraznit další položku na poličce</translation>
 <translation id="6015573907265691211">Označit jako dokončené</translation>
@@ -1303,7 +1295,6 @@ Připojte zařízení k napájení.</translation>
 <translation id="6231419273573514727">Výkon periferního zařízení může být omezen</translation>
 <translation id="6232891689835436217">Aplikace <ph name="APP_NAME" /> používá vaši kameru a mikrofon</translation>
 <translation id="6237231532760393653">1X</translation>
-<translation id="6244986124527896815">Aplikaci Správce úloh otevřete stisknutím kláves <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="6247728804802644171">Otevřít oznámení</translation>
 <translation id="6254629735336163724">Uzamknuto na šířku</translation>
 <translation id="6259254695169772643">K výběru použijte dotykové pero</translation>
@@ -1524,6 +1515,7 @@ Nová instalace</translation>
 <translation id="7188494361780961876">Nabídka byla přesunuta do levého horního rohu obrazovky.</translation>
 <translation id="7189412385142492784">Jak daleko je Venuše</translation>
 <translation id="7198435252016571249">Kamera byla připnuta do pravého dolního rohu. Konflikt s platformou systému.</translation>
+<translation id="7219573373513695352">Žádná připojená zařízení</translation>
 <translation id="7229029500464092426">Paměť: <ph name="AVAILABLE_MEMORY" /> | celkem <ph name="TOTAL_MEMORY" /></translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Kvůli použití aktualizace je třeba Chromebook restartovat. Může to trvat až minutu.</translation>
 <translation id="7256634071279256947">Zadní mikrofon</translation>
@@ -1948,7 +1940,6 @@ Pokud zařízení chcete vypnout, znovu podržte tlačítko napájení na zaří
 <translation id="9030665205623277906">Snímek využití procesoru: <ph name="CPU_USEAGE" /> %</translation>
 <translation id="9034924485347205037">Soubory systému Linux</translation>
 <translation id="9047624247355796468">Otevřít nastavení sítě <ph name="NETWORK_NAME" /></translation>
-<translation id="9059834730836941392">Sbalit oznámení</translation>
 <translation id="906458777597946297">Maximalizovat okno</translation>
 <translation id="9065203028668620118">Upravit</translation>
 <translation id="9070640332319875144">Nastavení Asistenta</translation>

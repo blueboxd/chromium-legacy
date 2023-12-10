@@ -43,6 +43,7 @@
 #include "third_party/blink/public/common/scheduler/task_attribution_id.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/loader/fetch_later.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider_client.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -645,9 +646,10 @@ void LocalFrameClientImpl::BeginNavigation(
         source_location->ColumnNumber();
   }
 
-  std::unique_ptr<Vector<OriginTrialFeature>> initiator_origin_trial_features =
-      OriginTrialContext::GetEnabledNavigationFeatures(
-          web_frame_->GetFrame()->DomWindow());
+  std::unique_ptr<Vector<mojom::blink::OriginTrialFeature>>
+      initiator_origin_trial_features =
+          OriginTrialContext::GetEnabledNavigationFeatures(
+              web_frame_->GetFrame()->DomWindow());
   if (initiator_origin_trial_features) {
     navigation_info->initiator_origin_trial_features.reserve(
         initiator_origin_trial_features->size());
@@ -1002,6 +1004,11 @@ LocalFrameClientImpl::GetURLLoaderFactory() {
 
 std::unique_ptr<URLLoader> LocalFrameClientImpl::CreateURLLoaderForTesting() {
   return web_frame_->Client()->CreateURLLoaderForTesting();
+}
+
+blink::ChildURLLoaderFactoryBundle*
+LocalFrameClientImpl::GetLoaderFactoryBundle() {
+  return web_frame_->Client()->GetLoaderFactoryBundle();
 }
 
 blink::BrowserInterfaceBrokerProxy&

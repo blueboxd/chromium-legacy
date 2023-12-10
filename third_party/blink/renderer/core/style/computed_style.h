@@ -43,9 +43,9 @@
 #include "third_party/blink/renderer/core/css/style_auto_color.h"
 #include "third_party/blink/renderer/core/css/style_color.h"
 #include "third_party/blink/renderer/core/layout/geometry/box_sides.h"
+#include "third_party/blink/renderer/core/layout/geometry/box_strut.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_type.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/style/border_value.h"
@@ -405,15 +405,11 @@ class ComputedStyle final : public ComputedStyleBase {
       const StyleContentAlignmentData& normal_value_behavior) const;
   ContentDistributionType ResolvedAlignContentDistribution(
       const StyleContentAlignmentData& normal_value_behavior) const;
-  StyleSelfAlignmentData ResolvedAlignItems(
-      ItemPosition normal_value_behaviour) const;
   StyleSelfAlignmentData ResolvedAlignSelf(
       ItemPosition normal_value_behaviour,
       const ComputedStyle* parent_style = nullptr) const;
   StyleContentAlignmentData ResolvedAlignContent(
       const StyleContentAlignmentData& normal_behaviour) const;
-  StyleSelfAlignmentData ResolvedJustifyItems(
-      ItemPosition normal_value_behaviour) const;
   StyleSelfAlignmentData ResolvedJustifySelf(
       ItemPosition normal_value_behaviour,
       const ComputedStyle* parent_style = nullptr) const;
@@ -649,6 +645,13 @@ class ComputedStyle final : public ComputedStyleBase {
                : NGOutlineType::kDontIncludeBlockVisualOverflow;
   }
 
+  // position-fallback
+
+  // https://drafts.csswg.org/css-anchor-position-1/#position-fallback-list
+  bool MayHavePositionFallbackList() const {
+    return HasOutOfFlowPosition() && PositionFallback();
+  }
+
   // Scroll properties.
 
   PhysicalToLogicalGetter<const Length&, ComputedStyle>
@@ -732,7 +735,7 @@ class ComputedStyle final : public ComputedStyleBase {
   bool HasMaskBoxImageOutsets() const {
     return MaskBoxImageInternal().HasImage() && MaskBoxImageOutset().NonZero();
   }
-  NGPhysicalBoxStrut MaskBoxImageOutsets() const {
+  PhysicalBoxStrut MaskBoxImageOutsets() const {
     return ImageOutsets(MaskBoxImageInternal());
   }
   const BorderImageLengthBox& MaskBoxImageOutset() const {
@@ -1266,11 +1269,11 @@ class ComputedStyle final : public ComputedStyleBase {
   }
 
   // Border utility functions
-  NGPhysicalBoxStrut ImageOutsets(const NinePieceImage&) const;
+  PhysicalBoxStrut ImageOutsets(const NinePieceImage&) const;
   bool HasBorderImageOutsets() const {
     return BorderImage().HasImage() && BorderImage().Outset().NonZero();
   }
-  NGPhysicalBoxStrut BorderImageOutsets() const {
+  PhysicalBoxStrut BorderImageOutsets() const {
     return ImageOutsets(BorderImage());
   }
   bool BorderImageSlicesFill() const { return BorderImage().Fill(); }
@@ -2353,7 +2356,7 @@ class ComputedStyle final : public ComputedStyleBase {
            HasEffectiveAppearance() || BoxShadow();
   }
 
-  NGPhysicalBoxStrut BoxDecorationOutsets() const;
+  PhysicalBoxStrut BoxDecorationOutsets() const;
 
   // Background utility functions.
   const FillLayer& BackgroundLayers() const { return BackgroundInternal(); }
@@ -2494,9 +2497,9 @@ class ComputedStyle final : public ComputedStyleBase {
             OverflowClipMargin()->GetMargin() != LayoutUnit());
   }
 
-  // Form-sizing utility function
+  // Field-sizing utility function
   bool ApplyControlFixedSize() const {
-    return FormSizing() == EFormSizing::kAuto;
+    return FieldSizing() == EFieldSizing::kFixed;
   }
 
  private:

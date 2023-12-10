@@ -24,6 +24,7 @@
 <translation id="1154390310959620237">Solo puedes personalizar 5 combinaciones de teclas. Borra una combinación de teclas para agregar una nueva.</translation>
 <translation id="1164939766849482256">Protector de pantalla Del amanecer a la noche</translation>
 <translation id="1167755866710282443">Abre el menú para personalizar las teclas. Arrastra el menú para moverlo.</translation>
+<translation id="1174073918202301297">Acceso directo agregado</translation>
 <translation id="1175697296044146566"><ph name="MANAGER" /> administra el dispositivo <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1175951029573070619">Promedio (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Quitar</translation>
@@ -118,6 +119,7 @@
 <translation id="1768959921651994223">Tipo de autenticación</translation>
 <translation id="1776228893584526149">Tono del fondo de pantalla</translation>
 <translation id="1782199038061388045">traducción</translation>
+<translation id="1788485524395674731">Tu administrador controla esta app</translation>
 <translation id="1792647875738159689">Cancelando el escaneo</translation>
 <translation id="1801418420130173017">Inhabilitar el tema oscuro</translation>
 <translation id="1807246157184219062">Claro</translation>
@@ -132,7 +134,6 @@
 <translation id="1871569928317311284">Desactivar el tema oscuro</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Desactivar el modo oscuro</translation>
-<translation id="1881188606372070653">Ve a la <ph name="BEGIN_LINK1" />página de ayuda legal<ph name="END_LINK1" /> para solicitar cambios de contenido por motivos legales. Es posible que se envíe a Google cierta información de la cuenta y el sistema. Usaremos los datos que nos proporciones para solucionar problemas técnicos y mejorar nuestros servicios, sujeto a nuestra <ph name="BEGIN_LINK2" />Política de Privacidad<ph name="END_LINK2" /> y nuestras <ph name="BEGIN_LINK3" />Condiciones del Servicio<ph name="END_LINK3" />.</translation>
 <translation id="1885577615937958993">adelantar contenido multimedia</translation>
 <translation id="1887850431809612466">Revisión de hardware</translation>
 <translation id="1897672602657312171">La combinación de teclas sin la tecla de búsqueda puede interferir con la combinación de teclas de alguna app. Vuelve a presionar esta combinación de teclas para seguir usándola o presiona una nueva con la tecla de búsqueda.</translation>
@@ -194,6 +195,7 @@
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> DPI</translation>
 <translation id="2338501278241028356">Activar Bluetooth para buscar los dispositivos cercanos</translation>
 <translation id="2346474577291266260">Excelente (<ph name="SIGNAL_STRENGTH" />)</translation>
+<translation id="2358070305000735383">Se abrió el diálogo de edición para <ph name="DESCRIPTION" />.</translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2364498172489649528">Aprobado</translation>
 <translation id="2367335866686097760">Tecla de la asignación de teclas</translation>
@@ -213,6 +215,7 @@
 <translation id="2505327257735685095">Actualiza la imagen del fondo de pantalla actual</translation>
 <translation id="2512979179176933762">mostrar ventanas</translation>
 <translation id="2513396635448525189">Imagen de acceso</translation>
+<translation id="2515109918609218604">La combinación de teclas no está disponible. Presiona una nueva combinación de teclas sin usar las teclas de función ni de búsqueda.</translation>
 <translation id="2517472476991765520">Buscar</translation>
 <translation id="2521835766824839541">pista anterior</translation>
 <translation id="2526590354069164005">Escritorio</translation>
@@ -333,7 +336,6 @@
 <translation id="3604713164406837697">Cambiar el fondo de pantalla</translation>
 <translation id="360565022852130722">la red Wi-Fi está protegida con el protocolo WEP 802.1x (poco seguro)</translation>
 <translation id="3606583719724308068">Alta latencia de los sitios web HTTPS</translation>
-<translation id="3607216139080387279">Mostrar protector de pantalla</translation>
 <translation id="361575905210396100">Gracias por tus comentarios</translation>
 <translation id="3632579075709132555">Activar o desactivar la Pantalla de privacidad</translation>
 <translation id="3651050199673793219">Selecciona una unidad de temperatura</translation>
@@ -345,7 +347,6 @@
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> opiniones)</translation>
 <translation id="3748026146096797577">Sin conexión</translation>
 <translation id="3749289110408117711">Nombre del archivo</translation>
-<translation id="3766934827878963937">por 1 hora</translation>
 <translation id="3771294271822695279">Archivos de video</translation>
 <translation id="3784455785234192852">Bloquear</translation>
 <translation id="380097101658023925">controles de rgb</translation>
@@ -481,6 +482,7 @@
 <translation id="4793756956024303490">Algoritmo de compresión</translation>
 <translation id="4794140124556169553">Ejecutar una prueba de CPU puede afectar el rendimiento de tu sistema.</translation>
 <translation id="4798078634453489142">Quita un APN para agregar un APN nuevo</translation>
+<translation id="479989351350248267">search</translation>
 <translation id="4800589996161293643">Comunidad de Chromebook</translation>
 <translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341">Se canceló el trabajo de impresión <ph name="DOCUMENT_TITLE" /></translation>
@@ -624,6 +626,7 @@
 <translation id="584953448295717128">El APN se detecta automáticamente.</translation>
 <translation id="5849570051105887917">Código del proveedor de origen</translation>
 <translation id="5859603669299126575">Álbum Galería de arte</translation>
+<translation id="5859969039821714932">La combinación de teclas no está disponible. Presiona una nueva combinación de teclas sin <ph name="KEY" />.</translation>
 <translation id="5860033963881614850">Desactivado</translation>
 <translation id="5860491529813859533">Activar</translation>
 <translation id="5876385649737594562">Activa esta opción para seleccionar opciones</translation>
@@ -686,9 +689,9 @@
 <translation id="629550705077076970">atenuación del teclado</translation>
 <translation id="6302401976930124515">Se canceló la prueba de <ph name="TEST_NAME" /></translation>
 <translation id="631063167932043783">App Explorar</translation>
-<translation id="6318437367327684789">siempre</translation>
 <translation id="6319207335391420837">Actualizar el firmware en <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Activar el protector de pantalla</translation>
+<translation id="6324916366299863871">Editar acceso directo</translation>
 <translation id="6325525973963619867">Se ha producido un error.</translation>
 <translation id="6331191339300272798">Tema oscuro automático</translation>
 <translation id="6340526405444716530">Personalización</translation>
@@ -709,7 +712,6 @@
 <translation id="6423239382391657905">VPN abierto</translation>
 <translation id="6439505561246192797">Débil (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Ir a la configuración de la cuenta</translation>
-<translation id="6461047516875166066">Más información</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{¿Deseas volver a escanear la página?}=1{¿Deseas volver a escanear la página {PAGE_NUMBER}?}other{¿Deseas volver a escanear la página {PAGE_NUMBER}?}}</translation>
 <translation id="6472207088655375767">OTP</translation>
 <translation id="6480327114083866287">Administrador: <ph name="MANAGER" /></translation>
@@ -788,6 +790,7 @@
 <translation id="7103252855940681301">El nombre del dispositivo <ph name="INDEX" /> de <ph name="COUNT" /> es <ph name="NAME" />.</translation>
 <translation id="7107255225945990211">Elegir material gráfico exclusivo de <ph name="PRODUCT_NAME" /></translation>
 <translation id="7108668606237948702">ingresar</translation>
+<translation id="7119389851461848805">encendido</translation>
 <translation id="7130438335435247835">Nombre de punto de acceso (APN)</translation>
 <translation id="7134436342991564651">{0,plural, =1{Servidor de nombres}other{Servidores de nombres}}</translation>
 <translation id="7135814714616751706">Buscar accesos directos</translation>
@@ -828,9 +831,9 @@
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7388959671917308825">Panel táctil integrado</translation>
 <translation id="7397270852490618635">Desactivar el tema claro</translation>
+<translation id="7401543881546089382">Eliminar acceso directo</translation>
 <translation id="741244894080940828">conversión</translation>
 <translation id="7415801143053185905">Latencia de HTTP muy alta</translation>
-<translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{Tu administrador configuró <ph name="APP_NAME_1" /> para se inicie automáticamente cada vez que accedas.}=2{Tu administrador configuró <ph name="APP_NAME_1" /> y <ph name="APP_NAME_2" /> para que se inicien automáticamente cada vez que accedas.}=3{Tu administrador configuró <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> y <ph name="APP_NAME_3" /> para que se inicien automáticamente cada vez que accedas.}other{Tu administrador configuró <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> y # apps más para que se inicien automáticamente cada vez que accedas.}}</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7458970041932198923">Conéctate a una red y vuelve a cargar la página para ver y configurar los avatares.</translation>
 <translation id="7469648432129124067">Se detectó un portal</translation>
@@ -866,6 +869,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7716280709122323042">WPA3</translation>
 <translation id="7718231387947923843">luz del teclado</translation>
+<translation id="7730077286107534951">Es posible que se envíe a Google cierta información de la cuenta y el sistema. Usamos esta información para resolver problemas técnicos y mejorar nuestros servicios, sujeto a nuestra <ph name="BEGIN_LINK2" />Política de Privacidad<ph name="END_LINK2" /> y las <ph name="BEGIN_LINK3" />Condiciones del Servicio<ph name="END_LINK3" />. Para solicitar cambios de contenido, ve a <ph name="BEGIN_LINK1" />Ayuda legal<ph name="END_LINK1" />.</translation>
 <translation id="773153675489693198">Conteo de ciclos</translation>
 <translation id="7747039790905080783">Clave compartida previamente</translation>
 <translation id="7752963721013053477">Del amanecer a la noche: Exclusivo</translation>
@@ -902,6 +906,7 @@
 <translation id="7978412674231730200">Clave privada</translation>
 <translation id="7994702968232966508">Método EAP</translation>
 <translation id="8004582292198964060">Navegador</translation>
+<translation id="8017679124341497925">Se editó el acceso directo</translation>
 <translation id="802154636333426148">Error en la descarga</translation>
 <translation id="8031884997696620457">HSPA+</translation>
 <translation id="80398733265834479">Habilitar el modo de color automático</translation>
@@ -942,6 +947,7 @@
 <translation id="8336739000755212683">Cambiar la imagen de cuenta del dispositivo</translation>
 <translation id="8347126826554447157"><ph name="SHORCTCUT1" /> o <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">Trabajos de impresión</translation>
+<translation id="8349826889576450703">launcher</translation>
 <translation id="8351855506390808906">Punto táctil de la asignación de teclas</translation>
 <translation id="8352772353338965963">Agrega una cuenta para el acceso múltiple. Puedes acceder a todas las cuentas abiertas sin una contraseña, por lo que esta función solo debe utilizarse con cuentas de confianza.</translation>
 <translation id="8364946094152050673">los servidores de nombres están vacíos</translation>
@@ -1015,6 +1021,7 @@
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8876270629542503161">El dispositivo es una tablet.</translation>
 <translation id="8881098542468797602">Se completó correctamente la prueba</translation>
+<translation id="8892443466059986410">Cancelar la edición de combinaciones de teclas</translation>
 <translation id="8898840733695078011">Intensidad de la señal</translation>
 <translation id="8909114361904403025">flecha hacia arriba</translation>
 <translation id="8910721771319628100">la red predeterminada supera el umbral de latencia</translation>
@@ -1034,9 +1041,9 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{Analizar}=1{Analizar {NUMBER_OF_PAGES} página}other{Analizar {NUMBER_OF_PAGES} páginas}}</translation>
 <translation id="8997710128084572139">Nivel de batería del dispositivo <ph name="BATTERY_PERCENTAGE" />%.</translation>
-<translation id="8998156756248178381">{NUM_ROOL_APPS,plural, =1{Se inició <ph name="APP_NAME_1" /> automáticamente}other{Se iniciaron # apps automáticamente}}</translation>
 <translation id="8998289560386111590">No está disponible en tu dispositivo</translation>
 <translation id="9003704114456258138">Frecuencia</translation>
+<translation id="901834265349196618">Correo electrónico</translation>
 <translation id="9024331582947483881">pantalla completa</translation>
 <translation id="9025198690966128418">Usar como dispositivo personal</translation>
 <translation id="902638246363752736">Configuración de teclado</translation>
@@ -1057,11 +1064,9 @@
 <translation id="9111102763498581341">Desbloquear</translation>
 <translation id="9122602430962285795">Para restablecer la conexión, ve a Configuración</translation>
 <translation id="9126720536733509015">Guardar varias páginas en un PDF</translation>
-<translation id="9133104754938025929">Para ahorrar batería, el protector de pantalla solo funciona mientras se carga.</translation>
 <translation id="9133772297793293778">Presiona de 1 a 4 teclas modificadoras y 1 tecla adicional en el teclado. Para salir del modo de edición, presiona Alt + Esc.</translation>
 <translation id="9137526406337347448">Servicios de Google</translation>
 <translation id="9138630967333032450">Mayúsculas izquierda</translation>
-<translation id="9143347780818904997">por <ph name="MINUTES" /> minutos</translation>
 <translation id="9149391708638971077">Ejecutar prueba de memoria</translation>
 <translation id="9161276708550942948">espacio</translation>
 <translation id="9173638680043580060">Queda menos de un minuto</translation>
@@ -1077,6 +1082,7 @@
 <translation id="945522503751344254">Enviar comentarios</translation>
 <translation id="952992212772159698">No activado</translation>
 <translation id="960719561871045870">Código del operador</translation>
+<translation id="966787709310836684">menú</translation>
 <translation id="979450713603643090">Rosa claro</translation>
 <translation id="982713511914535780">Ejecutar prueba de descarga</translation>
 <translation id="987264212798334818">General</translation>

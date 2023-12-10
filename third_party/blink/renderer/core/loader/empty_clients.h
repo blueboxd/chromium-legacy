@@ -96,6 +96,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   WebViewImpl* GetWebView() const override { return nullptr; }
   void ChromeDestroyed() override {}
   void SetWindowRect(const gfx::Rect&, LocalFrame&) override {}
+  void SetResizable(bool resizable, LocalFrame&) override {}
   gfx::Rect RootWindowRect(LocalFrame&) override { return gfx::Rect(); }
   void DidAccessInitialMainDocument() override {}
   void FocusPage() override {}
@@ -460,6 +461,10 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
 
   scoped_refptr<WebWorkerFetchContext> CreateWorkerFetchContext() override {
     return base::MakeRefCounted<EmptyWebWorkerFetchContext>();
+  }
+
+  blink::ChildURLLoaderFactoryBundle* GetLoaderFactoryBundle() override {
+    return nullptr;
   }
 
  protected:

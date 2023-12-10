@@ -220,8 +220,16 @@ IN_PROC_BROWSER_TEST_F(MetricIntegrationTest, LargestContentfulPaint) {
       lcp_timestamps[2].value());
 }
 
+// TODO(https://crbug.com/1493285): This test is flaky on ChromeOS.
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_LargestContentfulPaint_SubframeInput \
+  DISABLED_LargestContentfulPaint_SubframeInput
+#else
+#define MAYBE_LargestContentfulPaint_SubframeInput \
+  LargestContentfulPaint_SubframeInput
+#endif
 IN_PROC_BROWSER_TEST_F(MetricIntegrationTest,
-                       LargestContentfulPaint_SubframeInput) {
+                       MAYBE_LargestContentfulPaint_SubframeInput) {
   Start();
   Load("/lcp_subframe_input.html");
   auto* sub = ChildFrameAt(web_contents()->GetPrimaryMainFrame(), 0);
@@ -1200,8 +1208,9 @@ IN_PROC_BROWSER_TEST_F(LcpBreakdownTimingsTest, MAYBE_NativeLazyLoadingImage) {
   Validate();
 }
 
-// TODO(https://crbug.com/1487837): This test is failing on Linux CFI.
-#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
+// TODO(https://crbug.com/1487837): This test is failing on Linux CFI, Chrome
+// OS (Both Lacros and ASH) and Windows.
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
 #define MAYBE_ManualLazyLoadingImage DISABLED_ManualLazyLoadingImage
 #else
 #define MAYBE_ManualLazyLoadingImage ManualLazyLoadingImage

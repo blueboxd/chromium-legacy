@@ -26,8 +26,9 @@ class BoxModelObjectPainter : public BoxPainterBase {
   explicit BoxModelObjectPainter(const LayoutBoxModelObject&);
 
  protected:
-  NGPhysicalBoxStrut ComputeBorders() const override;
-  NGPhysicalBoxStrut ComputePadding() const override;
+  PhysicalBoxStrut ComputeBorders() const override;
+  PhysicalBoxStrut ComputePadding() const override;
+  PhysicalBoxStrut ComputeMargins() const override;
   BoxPainterBase::FillLayerInfo GetFillLayerInfo(
       const Color&,
       const FillLayer&,

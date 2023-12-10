@@ -110,6 +110,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="API.StorageAccess.PermissionRenewedDeltaToExpiration"
+    units="hours" expires_after="M129">
+  <owner>cfredric@chromium.org</owner>
+  <owner>johannhof@chromium.org</owner>
+  <summary>
+    Records the delta between the time at which a storage-access permission
+    grant was renewed, and permission grant's old expiration time.
+
+    Recorded once each time any storage-access permission grant is renewed.
+  </summary>
+</histogram>
+
 <histogram name="API.StorageAccess.RequestOutcome"
     enum="StorageAccessAPIRequestOutcome" expires_after="2024-02-04">
   <owner>cfredric@chromium.org</owner>
@@ -588,7 +600,7 @@ chromium-metrics-reviews@google.com.
   <owner>chrome-ads-histograms@google.com</owner>
   <summary>
     Count of database entries queued to be sent to the async iterator. Recorded
-    in `SharedStorageIterator::DidReadEntries()`.
+    in `SharedStorage::IterationSource::DidReadEntries()`.
   </summary>
 </histogram>
 
@@ -600,7 +612,7 @@ chromium-metrics-reviews@google.com.
   <summary>
     For each of a set of benchmark percentages, we record that benchmark when
     the async iterator first iterates through at least that percentage of queued
-    entries. Recorded in `SharedStorageIterator::NextHelper()`.
+    entries. Recorded in `SharedStorage::IterationSource::TryResolvePromise()`.
   </summary>
 </histogram>
 
@@ -612,7 +624,8 @@ chromium-metrics-reviews@google.com.
   <summary>
     For each of a set of benchmark percentages, we record that benchmark when
     the async iterator first receives from the database at least that percentage
-    of queued entries. Recorded in `SharedStorageIterator::DidReadEntries()`.
+    of queued entries. Recorded in
+    `SharedStorage::IterationSource::DidReadEntries()`.
   </summary>
 </histogram>
 
@@ -631,7 +644,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.SharedStorage.Database.Error" enum="SqliteErrorCode"
-    expires_after="2024-01-31">
+    expires_after="2024-03-31">
   <owner>cammie@chromium.org</owner>
   <owner>yaoxia@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
@@ -657,7 +670,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.SharedStorage.Database.FileBacked.FileSize.KB"
-    units="KB" expires_after="2024-01-31">
+    units="KB" expires_after="2024-03-31">
   <owner>cammie@chromium.org</owner>
   <owner>yaoxia@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
@@ -742,7 +755,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.SharedStorage.Database.FileBacked.NumEntries.Total"
-    units="Entries" expires_after="2024-01-31">
+    units="Entries" expires_after="2024-03-31">
   <owner>cammie@chromium.org</owner>
   <owner>yaoxia@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
@@ -755,7 +768,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.SharedStorage.Database.FileBacked.NumOrigins"
-    units="Origins" expires_after="2024-01-31">
+    units="Origins" expires_after="2024-03-31">
   <owner>cammie@chromium.org</owner>
   <owner>yaoxia@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
@@ -768,7 +781,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.SharedStorage.Database.IsFileBacked"
-    units="BooleanIsFileBacked" expires_after="2024-01-31">
+    units="BooleanIsFileBacked" expires_after="2024-03-31">
   <owner>cammie@chromium.org</owner>
   <owner>yaoxia@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
@@ -780,7 +793,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.SharedStorage.Document.Timing.AddModule" units="ms"
-    expires_after="2024-01-31">
+    expires_after="2024-03-31">
   <owner>cammie@chromium.org</owner>
   <owner>yaoxia@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
@@ -836,7 +849,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.SharedStorage.Document.Timing.Run" units="ms"
-    expires_after="2024-01-31">
+    expires_after="2024-03-31">
   <owner>cammie@chromium.org</owner>
   <owner>yaoxia@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
@@ -850,7 +863,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.SharedStorage.Document.Timing.Run.ExecutedInWorklet"
-    units="ms" expires_after="2024-01-31">
+    units="ms" expires_after="2024-03-31">
   <owner>cammie@chromium.org</owner>
   <owner>yaoxia@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
@@ -863,7 +876,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.SharedStorage.Document.Timing.SelectURL" units="ms"
-    expires_after="2024-01-31">
+    expires_after="2024-03-31">
   <owner>cammie@chromium.org</owner>
   <owner>yaoxia@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
@@ -878,7 +891,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Storage.SharedStorage.Document.Timing.SelectURL.ExecutedInWorklet"
-    units="ms" expires_after="2024-01-31">
+    units="ms" expires_after="2024-03-31">
   <owner>cammie@chromium.org</owner>
   <owner>yaoxia@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
@@ -894,7 +907,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.SharedStorage.Document.Timing.Set" units="ms"
-    expires_after="2024-01-31">
+    expires_after="2024-03-31">
   <owner>cammie@chromium.org</owner>
   <owner>yaoxia@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
@@ -908,7 +921,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.SharedStorage.OnShutdown.NumSqlErrors" units="Errors"
-    expires_after="2024-01-31">
+    expires_after="2024-03-31">
   <owner>cammie@chromium.org</owner>
   <owner>yaoxia@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
@@ -997,7 +1010,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.SharedStorage.Worklet.NumPerPage"
-    units="WorkletsCreated" expires_after="2024-01-31">
+    units="WorkletsCreated" expires_after="2024-03-31">
   <owner>cammie@chromium.org</owner>
   <owner>yaoxia@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
@@ -1062,16 +1075,16 @@ chromium-metrics-reviews@google.com.
   <owner>chrome-ads-histograms@google.com</owner>
   <summary>
     Measures the time from the start of the call to
-    `shared_storage_worklet::SharedStorageiterator::Next()` to just before the
-    promise is returned, for the iterator in `Mode::kKeyValue`. Includes only
-    calls where `has_error_` is false. Recorded in
-    `shared_storage_worklet::SharedStorageIterator::NextHelper()` via
+    `SharedStorage::IterationSource::GetNextIterationResult()` to just before
+    the promise is returned, for a key-value pair iterator. Includes only calls
+    where promises are successfully resolved. Recorded in
+    `SharedStorage::IterationSource::TryResolvePromise()` via
     `LogElapsedTime()`.
   </summary>
 </histogram>
 
 <histogram name="Storage.SharedStorage.Worklet.Timing.Get" units="ms"
-    expires_after="2024-01-31">
+    expires_after="2024-03-31">
   <owner>cammie@chromium.org</owner>
   <owner>yaoxia@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
@@ -1086,7 +1099,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Storage.SharedStorage.Worklet.Timing.KeepAliveEndedDueToOperationsFinished.KeepAliveDuration"
-    units="ms" expires_after="2024-01-31">
+    units="ms" expires_after="2024-03-31">
   <owner>cammie@chromium.org</owner>
   <owner>yaoxia@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
@@ -1105,10 +1118,10 @@ chromium-metrics-reviews@google.com.
   <owner>chrome-ads-histograms@google.com</owner>
   <summary>
     Measures the time from the start of the call to
-    `shared_storage_worklet::SharedStorageiterator::Next()` to just before the
-    promise is returned, for the iterator in `Mode::kKey`. Includes only calls
-    where `has_error_` is false. Recorded in
-    `shared_storage_worklet::SharedStorageIterator::NextHelper()` via
+    `SharedStorage::IterationSource::GetNextIterationResult()` to just before
+    the promise is returned, for a key iterator. Includes only calls where
+    promises are successfully resolved. Recorded in
+    `SharedStorage::IterationSource::TryResolvePromise()` via
     `LogElapsedTime()`.
   </summary>
 </histogram>
@@ -1143,7 +1156,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.SharedStorage.Worklet.Timing.Set" units="ms"
-    expires_after="2024-01-31">
+    expires_after="2024-03-31">
   <owner>cammie@chromium.org</owner>
   <owner>yaoxia@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>
@@ -1168,6 +1181,21 @@ chromium-metrics-reviews@google.com.
     time of its last finished operation. For worklets that are destroyed before
     completing their outstanding operations, we record 100. Recorded in the
     destructor of `SharedStorageWorkletHost`.
+  </summary>
+</histogram>
+
+<histogram name="Storage.SharedStorage.Worklet.Timing.Values.Next" units="ms"
+    expires_after="2024-01-31">
+  <owner>cammie@chromium.org</owner>
+  <owner>yaoxia@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
+  <summary>
+    Measures the time from the start of the call to
+    `SharedStorage::IterationSource::GetNextIterationResult()` to just before
+    the promise is returned, for a value iterator. Includes only calls where
+    promises are successfully resolved. Recorded in
+    `SharedStorage::IterationSource::TryResolvePromise()` via
+    `LogElapsedTime()`.
   </summary>
 </histogram>
 

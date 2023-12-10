@@ -10,6 +10,8 @@ import org.chromium.components.webapps.R;
 import org.chromium.components.webapps.pwa_restore_ui.PwaRestoreProperties.ViewState;
 import org.chromium.ui.modelutil.PropertyModel;
 
+import java.util.ArrayList;
+
 /**
  * The Mediator for the PWA Restore bottom sheet.
  */
@@ -23,8 +25,8 @@ class PwaRestoreBottomSheetMediator {
     PwaRestoreBottomSheetMediator(
             Activity activity, Runnable onReviewButtonClicked, Runnable onBackButtonClicked) {
         mActivity = activity;
-        mModel = PwaRestoreProperties.createModel(
-                onReviewButtonClicked, onBackButtonClicked, this::onRestoreButtonClicked);
+        mModel = PwaRestoreProperties.createModel(onReviewButtonClicked, onBackButtonClicked,
+                this::onDeselectButtonClicked, this::onRestoreButtonClicked);
 
         initializeState();
         setPeekingState();
@@ -42,8 +44,23 @@ class PwaRestoreBottomSheetMediator {
                 mActivity.getString(R.string.pwa_restore_title_expanded));
         mModel.set(PwaRestoreProperties.EXPANDED_DESCRIPTION,
                 mActivity.getString(R.string.pwa_restore_description_expanded));
+        mModel.set(
+                PwaRestoreProperties.RECENT_APPS_TITLE,
+                mActivity.getString(R.string.pwa_restore_recent_apps_list));
+        mModel.set(
+                PwaRestoreProperties.OLDER_APPS_TITLE,
+                mActivity.getString(R.string.pwa_restore_older_apps_list));
         mModel.set(PwaRestoreProperties.EXPANDED_BUTTON_LABEL,
                 mActivity.getString(R.string.pwa_restore_button_expanded));
+        mModel.set(PwaRestoreProperties.DESELECT_BUTTON_LABEL,
+                mActivity.getString(R.string.pwa_restore_button_deselect));
+
+        // TODO(finnur): Replace with actual apps, queried from profile.
+        ArrayList apps = new ArrayList();
+        apps.add(new PwaRestoreProperties.AppInfo("foo", "Bar"));
+        apps.add(new PwaRestoreProperties.AppInfo("bar", "Foo"));
+        apps.add(new PwaRestoreProperties.AppInfo("foobar", "Barfoo"));
+        mModel.set(PwaRestoreProperties.APPS, apps);
     }
 
     protected void setPeekingState() {
@@ -52,6 +69,10 @@ class PwaRestoreBottomSheetMediator {
 
     protected void setPreviewState() {
         mModel.set(PwaRestoreProperties.VIEW_STATE, ViewState.VIEW_PWA_LIST);
+    }
+
+    private void onDeselectButtonClicked() {
+        // TODO(finnur): Implement.
     }
 
     private void onRestoreButtonClicked() {

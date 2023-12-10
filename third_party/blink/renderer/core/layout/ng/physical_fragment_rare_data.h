@@ -16,7 +16,7 @@ namespace blink {
 class NGBoxFragmentBuilder;
 class NGTableBorders;
 struct FrameSetLayoutData;
-struct NGMathMLPaintInfo;
+struct MathMLPaintInfo;
 
 // This class manages rare data of NGPhysicalBoxFragment.
 // Only NGPhysicalBoxFragment should use this class.
@@ -36,8 +36,8 @@ class PhysicalFragmentRareData
  public:
   explicit PhysicalFragmentRareData(wtf_size_t num_fields);
   PhysicalFragmentRareData(const PhysicalRect* layout_overflow,
-                           const NGPhysicalBoxStrut* borders,
-                           const NGPhysicalBoxStrut* padding,
+                           const PhysicalBoxStrut* borders,
+                           const PhysicalBoxStrut* padding,
                            absl::optional<PhysicalRect> inflow_bounds,
                            NGBoxFragmentBuilder& builder,
                            wtf_size_t num_fields);
@@ -80,11 +80,11 @@ class PhysicalFragmentRareData
   struct RareField {
     union {
       PhysicalRect layout_overflow;
-      NGPhysicalBoxStrut borders;
-      NGPhysicalBoxStrut padding;
+      PhysicalBoxStrut borders;
+      PhysicalBoxStrut padding;
       PhysicalRect inflow_bounds;
       std::unique_ptr<const FrameSetLayoutData> frame_set_layout_data;
-      std::unique_ptr<const NGMathMLPaintInfo> mathml_paint_info;
+      std::unique_ptr<const MathMLPaintInfo> mathml_paint_info;
       LogicalRect table_grid_rect;
       scoped_refptr<const NGTableBorders> table_collapsed_borders;
       std::unique_ptr<NGTableFragmentData::CollapsedBordersGeometry>
@@ -93,7 +93,7 @@ class PhysicalFragmentRareData
       wtf_size_t table_section_start_row_index;
       Vector<LayoutUnit> table_section_row_offsets;
       AtomicString page_name;
-      NGPhysicalBoxStrut margins;
+      PhysicalBoxStrut margins;
     };
     const FieldId type;
 

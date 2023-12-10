@@ -17,7 +17,6 @@
 #include "chrome/browser/web_applications/isolated_web_apps/update_manifest/update_manifest.h"
 #include "chrome/browser/web_applications/isolated_web_apps/update_manifest/update_manifest_fetcher.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
-#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/webapps/common/web_app_id.h"
 #include "net/base/net_errors.h"
@@ -95,8 +94,7 @@ class IsolatedWebAppUpdateDiscoveryTask {
                              int32_t net_error);
 
   void OnUpdateDryRunDone(
-      base::expected<void, IsolatedWebAppUpdatePrepareAndStoreCommandError>
-          result);
+      IsolatedWebAppUpdatePrepareAndStoreCommandResult result);
 
   base::Value::Dict debug_log_;
   bool has_started_ = false;

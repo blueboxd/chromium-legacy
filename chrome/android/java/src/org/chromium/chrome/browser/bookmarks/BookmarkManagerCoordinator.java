@@ -73,6 +73,21 @@ public class BookmarkManagerCoordinator
         }
     };
 
+    private final class DragAndCancelAdapter extends DragReorderableRecyclerViewAdapter {
+        DragAndCancelAdapter(Context context, ModelList modelList) {
+            super(context, modelList);
+        }
+
+        @Override
+        public boolean onFailedToRecycleView(@NonNull ViewHolder holder) {
+            if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()
+                    && holder.itemView instanceof CancelableAnimator cancelable) {
+                cancelable.cancelAnimation();
+            }
+            return super.onFailedToRecycleView(holder);
+        }
+    }
+
     private final ObservableSupplierImpl<Boolean> mBackPressStateSupplier =
             new ObservableSupplierImpl<>();
     private final ViewGroup mMainView;
@@ -112,7 +127,7 @@ public class BookmarkManagerCoordinator
         mMainView = (ViewGroup) LayoutInflater.from(context).inflate(R.layout.bookmark_main, null);
         mBookmarkModel = BookmarkModel.getForProfile(profile);
         mBookmarkOpener = new BookmarkOpener(mBookmarkModel, context, openBookmarkComponentName);
-        if (ShoppingFeatures.isShoppingListEligible()) {
+        if (ShoppingFeatures.isShoppingListEligible(profile)) {
             ShoppingServiceFactory.getForProfile(profile).scheduleSavedProductUpdate();
         }
         mBookmarkUiPrefs = bookmarkUiPrefs;
@@ -132,7 +147,7 @@ public class BookmarkManagerCoordinator
 
         ModelList modelList = new ModelList();
         DragReorderableRecyclerViewAdapter dragReorderableRecyclerViewAdapter =
-                new DragReorderableRecyclerViewAdapter(context, modelList);
+                new DragAndCancelAdapter(context, modelList);
         mRecyclerView =
                 mSelectableListLayout.initializeRecyclerView(dragReorderableRecyclerViewAdapter);
 
@@ -163,10 +178,14 @@ public class BookmarkManagerCoordinator
         final @BookmarkRowDisplayPref int displayPref =
                 mBookmarkUiPrefs.getBookmarkRowDisplayPref();
         BookmarkImageFetcher bookmarkImageFetcher =
-                new BookmarkImageFetcher(context, mBookmarkModel, mImageFetcher, largeIconBridge,
+                new BookmarkImageFetcher(
+                        context,
+                        mBookmarkModel,
+                        mImageFetcher,
+                        largeIconBridge,
                         BookmarkUtils.getRoundedIconGenerator(context, displayPref),
                         BookmarkUtils.getImageIconSize(res, displayPref),
-                        BookmarkUtils.getFaviconDisplaySize(res, displayPref),
+                        BookmarkUtils.getFaviconDisplaySize(res),
                         SyncServiceFactory.getForProfile(profile));
 
         BookmarkUndoController bookmarkUndoController =
@@ -216,12 +235,18 @@ public class BookmarkManagerCoordinator
         dragReorderableRecyclerViewAdapter.registerType(ViewType.SHOPPING_FILTER,
                 BookmarkManagerCoordinator::buildShoppingFilterView,
                 BookmarkManagerViewBinder::bindShoppingFilterView);
-        dragReorderableRecyclerViewAdapter.registerDraggableType(ViewType.IMPROVED_BOOKMARK_VISUAL,
-                this::buildAndInitVisualImprovedBookmarkRow, ImprovedBookmarkRowViewBinder::bind,
-                (viewHolder, itemTouchHelper) -> {}, mMediator.getDraggabilityProvider());
-        dragReorderableRecyclerViewAdapter.registerDraggableType(ViewType.IMPROVED_BOOKMARK_COMPACT,
-                this::buildAndInitCompactImprovedBookmarkRow, ImprovedBookmarkRowViewBinder::bind,
-                (viewHolder, itemTouchHelper) -> {}, mMediator.getDraggabilityProvider());
+        dragReorderableRecyclerViewAdapter.registerDraggableType(
+                ViewType.IMPROVED_BOOKMARK_VISUAL,
+                this::buildVisualImprovedBookmarkRow,
+                ImprovedBookmarkRowViewBinder::bind,
+                (viewHolder, itemTouchHelper) -> {},
+                mMediator.getDraggabilityProvider());
+        dragReorderableRecyclerViewAdapter.registerDraggableType(
+                ViewType.IMPROVED_BOOKMARK_COMPACT,
+                this::buildVisualImprovedBookmarkRow,
+                ImprovedBookmarkRowViewBinder::bind,
+                (viewHolder, itemTouchHelper) -> {},
+                mMediator.getDraggabilityProvider());
         dragReorderableRecyclerViewAdapter.registerType(ViewType.SEARCH_BOX,
                 this::buildSearchBoxRow, BookmarkSearchBoxRowViewBinder.createViewBinder());
 
@@ -337,7 +362,7 @@ public class BookmarkManagerCoordinator
     }
 
     static @VisibleForTesting View buildSectionHeaderView(ViewGroup parent) {
-        return inflate(parent, org.chromium.chrome.R.layout.bookmark_section_header);
+        return inflate(parent, R.layout.bookmark_section_header);
     }
 
     private static BookmarkFolderRow buildBookmarkFolderView(ViewGroup parent) {
@@ -360,27 +385,25 @@ public class BookmarkManagerCoordinator
     }
 
     static @VisibleForTesting View buildDividerView(ViewGroup parent) {
-        return inflate(parent, org.chromium.chrome.R.layout.horizontal_divider);
+        return inflate(parent, R.layout.horizontal_divider);
     }
 
     static @VisibleForTesting View buildShoppingFilterView(ViewGroup parent) {
-        return inflate(parent, org.chromium.chrome.R.layout.shopping_filter_row);
+        return inflate(parent, R.layout.shopping_filter_row);
     }
 
-    ImprovedBookmarkRow buildAndInitCompactImprovedBookmarkRow(ViewGroup parent) {
+    ImprovedBookmarkRow buildCompactImprovedBookmarkRow(ViewGroup parent) {
         ImprovedBookmarkRow row = ImprovedBookmarkRow.buildView(parent.getContext(), false);
-        row.setSelectionDelegate(mSelectionDelegate);
         return row;
     }
 
-    ImprovedBookmarkRow buildAndInitVisualImprovedBookmarkRow(ViewGroup parent) {
+    ImprovedBookmarkRow buildVisualImprovedBookmarkRow(ViewGroup parent) {
         ImprovedBookmarkRow row = ImprovedBookmarkRow.buildView(parent.getContext(), true);
-        row.setSelectionDelegate(mSelectionDelegate);
         return row;
     }
 
     View buildSearchBoxRow(ViewGroup parent) {
-        return inflate(parent, org.chromium.chrome.R.layout.bookmark_search_box_row);
+        return inflate(parent, R.layout.bookmark_search_box_row);
     }
 
     private static View inflate(ViewGroup parent, @LayoutRes int layoutId) {

@@ -329,6 +329,7 @@
 <translation id="3619115746895587757">Kapučīno</translation>
 <translation id="3619593063686672873">Nav nesenu videoklipu</translation>
 <translation id="3634507049637220048"><ph name="NETWORK_INDEX" />. tīkls no <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, pārvalda jūsu administrators, informācija</translation>
+<translation id="36451918667380448">Mobilā tīkla nodrošinātājs ir bloķēts. Lai saņemtu atbalstu, sazinieties ar savu nodrošinātāju.</translation>
 <translation id="3645233063072417428">Pārvietoti vienumi: <ph name="NUMBER_OF_ITEMS" />.</translation>
 <translation id="3658269352872031728">Atlasīto failu skaits: <ph name="SELECTED_FILE_COUNT" /></translation>
 <translation id="3685122418104378273">Izmantojot mobilos datus, Google diska sinhronizācija pēc noklusējuma ir atspējota.</translation>
@@ -1014,6 +1015,7 @@
 <translation id="8698877009525468705">Šis fails ir konfidenciāls, un uz to attiecas administratora politikā noteikti ierobežojumi.</translation>
 <translation id="8712637175834984815">Sapratu!</translation>
 <translation id="8713112442029511308">Maltiešu</translation>
+<translation id="8714138378966541668">Pakalpojumu sniedzēja bloķēts</translation>
 <translation id="8714406895390098252">Velosipēds</translation>
 <translation id="8719721339511222681">Atlasīts vienums “<ph name="ENTRY_NAME" />”.</translation>
 <translation id="872537912056138402">Horvātu valoda</translation>

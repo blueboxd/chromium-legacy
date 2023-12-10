@@ -37,9 +37,10 @@
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/generated_children.h"
+#include "third_party/blink/renderer/core/layout/layout_counter.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_quote.h"
-#include "third_party/blink/renderer/core/layout/list_marker.h"
+#include "third_party/blink/renderer/core/layout/list/list_marker.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/content_data.h"
@@ -313,6 +314,14 @@ void PseudoElement::AttachLayoutTree(AttachContext& context) {
               tree.FindOrCreateEnclosingScopeForElement(*this);
           scope->AttachQuote(*To<LayoutQuote>(child));
           tree.UpdateOutermostQuotesDirtyScope(scope);
+        }
+        if (auto* counter = DynamicTo<LayoutCounter>(child)) {
+          StyleContainmentScopeTree& tree =
+              GetDocument().GetStyleEngine().EnsureStyleContainmentScopeTree();
+          StyleContainmentScope* scope =
+              tree.FindOrCreateEnclosingScopeForElement(*this);
+          scope->CreateCounterNodeForLayoutCounter(*counter);
+          tree.UpdateOutermostCountersDirtyScope(scope);
         }
       } else {
         child->Destroy();

@@ -42,7 +42,7 @@ import tempfile
 from collections import defaultdict
 from copy import deepcopy
 from datetime import datetime
-from typing import Optional, Set
+from typing import Optional, Set, Tuple
 
 import six
 from six.moves import zip_longest
@@ -73,6 +73,9 @@ from blinkpy.web_tests.servers import pywebsocket
 from blinkpy.web_tests.servers import wptserve
 
 _log = logging.getLogger(__name__)
+
+FuzzyRange = Tuple[int, int]
+FuzzyParameters = Tuple[Optional[FuzzyRange], Optional[FuzzyRange]]
 
 # Path relative to the build directory.
 CONTENT_SHELL_FONTS_DIR = "test_fonts"
@@ -228,7 +231,7 @@ class Port(object):
     # manifest. However, we reuse this syntax for some non-WPT tests as well.
     WPT_FUZZY_REGEX = re.compile(
         r'<(?:html:)?meta\s+name=(?:fuzzy|"fuzzy")\s+content='
-        r'"(?:(.+):)?(?:maxDifference=)?(?:(\d+)-)?(\d+);(?:totalPixels=)?(?:(\d+)-)?(\d+)"\s*/?>'
+        r'"(?:(.+):)?(?:\s*maxDifference\s*=\s*)?(?:(\d+)-)?(\d+);(?:\s*totalPixels\s*=\s*)?(?:(\d+)-)?(\d+)"\s*/?>'
     )
 
     # Because this is an abstract base class, arguments to functions may be
@@ -982,6 +985,14 @@ class Port(object):
             reftest_list.append((expectation, ref_absolute_path))
         return reftest_list
 
+    def max_allowed_failures(self, num_tests):
+        return (self._options.exit_after_n_failures
+                or max(5000, num_tests // 2))
+
+    def max_allowed_crash_or_timeouts(self, num_tests):
+        return (self._options.exit_after_n_crashes_or_timeouts
+                or max(100, num_tests // 33))
+
     def tests(self, paths=None):
         """Returns all tests or tests matching supplied paths.
 
@@ -1208,7 +1219,7 @@ class Port(object):
             "http://{}:{}".format(hosts_and_ports[0], hosts_and_ports[1]),
             urljoin(path_in_wpt, pac))
 
-    def get_wpt_fuzzy_metadata(self, test_name):
+    def get_wpt_fuzzy_metadata(self, test_name: str) -> FuzzyParameters:
         """Returns the WPT-style fuzzy metadata for the given test.
 
         The metadata is a pair of lists, (maxDifference, totalPixels), where
@@ -1653,14 +1664,6 @@ class Port(object):
         """
         return self._filesystem.join(self.web_tests_dir(), test_name)
 
-    def _should_run_with_single_threaded_compositing(self, test_name):
-        # Threaded compositing is currently only turned on for web tests
-        # on Linux machines
-        if not self.host.platform.is_linux() or self.is_wpt_test(test_name):
-            return True
-
-        return False
-
     @memoized
     def args_for_test(self, test_name):
         args = self._lookup_virtual_test_args(test_name)
@@ -1668,16 +1671,19 @@ class Port(object):
         if pac_url is not None:
             args.append("--proxy-pac-url=" + pac_url)
 
-        if ENABLE_THREADED_COMPOSITING_FLAG in args:
+        if ENABLE_THREADED_COMPOSITING_FLAG not in args:
+            # We run single-threaded by default.
+            # Note that this logic is mirrored in wptrunner:
+            # third_party/wpt_tools/wpt/tools/wptrunner/wptrunner/browsers/content_shell.py
+            args.append(DISABLE_THREADED_COMPOSITING_FLAG)
+            args.append(DISABLE_THREADED_ANIMATION_FLAG)
+        else:
             # Explicitly enabling threaded compositing takes precedence over
             # explicitly disabling it.
             if DISABLE_THREADED_COMPOSITING_FLAG in args:
                 args.remove(DISABLE_THREADED_COMPOSITING_FLAG)
             if DISABLE_THREADED_ANIMATION_FLAG in args:
                 args.remove(DISABLE_THREADED_ANIMATION_FLAG)
-        elif self._should_run_with_single_threaded_compositing(test_name):
-            args.append(DISABLE_THREADED_COMPOSITING_FLAG)
-            args.append(DISABLE_THREADED_ANIMATION_FLAG)
 
         tracing_categories = self.get_option('enable_tracing')
         if tracing_categories:

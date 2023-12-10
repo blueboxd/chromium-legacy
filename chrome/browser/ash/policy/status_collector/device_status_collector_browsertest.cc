@@ -104,7 +104,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/upload_list/upload_list.h"
@@ -3043,7 +3042,7 @@ TEST_F(DeviceStatusCollectorTest, TestGraphicsStatus) {
     em::DisplayInfo* display_info = fakeGraphicsStatus.add_displays();
     display_info->set_resolution_width(1920 * i);
     display_info->set_resolution_height(1080 * i);
-    display_info->set_refresh_rate(60 * i);
+    display_info->set_refresh_rate(60.0f * i);
     display_info->set_is_internal(i == 1);
   }
 
@@ -3803,8 +3802,8 @@ TEST_F(DeviceStatusCollectorTest, GenerateAppInfo) {
   std::vector<apps::AppPtr> apps;
   apps.push_back(std::move(app1));
   apps.push_back(std::move(app2));
-  app_proxy->AppRegistryCache().OnApps(std::move(apps), apps::AppType::kUnknown,
-                                       /*should_notify_initialized=*/false);
+  app_proxy->OnApps(std::move(apps), apps::AppType::kUnknown,
+                    /*should_notify_initialized=*/false);
 
   // Start app instance
   base::Time start_time;

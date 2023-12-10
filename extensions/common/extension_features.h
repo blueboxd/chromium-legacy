@@ -34,7 +34,6 @@ namespace extensions_features {
 // NOTE(devlin): If there are consistently enough of these in flux, it might
 // make sense to have their own file.
 
-BASE_DECLARE_FEATURE(kApiAccessibilityServicePrivate);
 BASE_DECLARE_FEATURE(kApiReadingList);
 BASE_DECLARE_FEATURE(kApiRuntimeGetContexts);
 BASE_DECLARE_FEATURE(kApiSidePanelOpen);
@@ -91,6 +90,8 @@ BASE_DECLARE_FEATURE(kStructuredCloningForMV3Messaging);
 
 BASE_DECLARE_FEATURE(kTelemetryExtensionPendingApprovalApi);
 
+BASE_DECLARE_FEATURE(kUsePerBrowserContextWebRequestEventRouter);
+
 BASE_DECLARE_FEATURE(kWebviewTagMPArchBehavior);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -104,6 +105,8 @@ BASE_DECLARE_FEATURE(kExtensionsZipFileInstalledInProfileDir);
 BASE_DECLARE_FEATURE(kExtensionsServiceWorkerOptimizedEventDispatch);
 
 BASE_DECLARE_FEATURE(kNewWebstoreURL);
+
+BASE_DECLARE_FEATURE(kDeclarativeNetRequestSafeRuleLimits);
 
 }  // namespace extensions_features
 

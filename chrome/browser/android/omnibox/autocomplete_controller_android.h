@@ -78,9 +78,7 @@ class AutocompleteControllerAndroid : public AutocompleteController::Observer {
   UpdateMatchDestinationURLWithAdditionalAssistedQueryStats(
       JNIEnv* env,
       uintptr_t match_ptr,
-      jlong elapsed_time_since_input_change,
-      const base::android::JavaParamRef<jstring>& jnew_query_text,
-      const base::android::JavaParamRef<jobjectArray>& jnew_query_params);
+      jlong elapsed_time_since_input_change);
   base::android::ScopedJavaLocalRef<jobject> GetMatchingTabForSuggestion(
       JNIEnv* env,
       uintptr_t match_ptr);
@@ -133,11 +131,6 @@ class AutocompleteControllerAndroid : public AutocompleteController::Observer {
   // C++ AutocompleteControllerAndroid and Java AutocompleteController objects.
   // Guaranteed to be non-null.
   const base::android::ScopedJavaGlobalRef<jobject> java_controller_;
-
-  // Associated AutocompleteProviderClient.
-  // Guaranteed to be non-null.
-  const raw_ptr<ChromeAutocompleteProviderClient, DanglingUntriaged>
-      provider_client_;
 
   // AutocompleteController associated with this client. As this is directly
   // associated with the |provider_client_| and indirectly with |profile_|

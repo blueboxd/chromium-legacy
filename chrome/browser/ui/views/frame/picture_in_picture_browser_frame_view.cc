@@ -78,6 +78,7 @@ namespace {
 
 constexpr int kWindowIconImageSize = 16;
 constexpr int kBackToTabImageSize = 16;
+constexpr int kContentSettingIconSize = 16;
 
 // The height of the controls bar at the top of the window.
 constexpr int kTopControlsHeight = 30;
@@ -495,6 +496,7 @@ PictureInPictureBrowserFrameView::PictureInPictureBrowserFrameView(
 
   // Creates the content setting views based on the models.
   for (auto& model : models) {
+    model->SetIconSize(kContentSettingIconSize);
     auto image_view = std::make_unique<ContentSettingImageView>(
         std::move(model), this, this, font_list);
     content_setting_views_.push_back(
@@ -780,6 +782,10 @@ void PictureInPictureBrowserFrameView::AddedToWidget() {
   show_close_button_animation_.SetContainer(animation_container);
   hide_close_button_animation_.SetContainer(animation_container);
 
+  // TODO(https://crbug.com/1475419): Don't force dark mode once we support a
+  // light mode window.
+  GetWidget()->SetColorModeOverride(ui::ColorProviderKey::ColorMode::kDark);
+
   // If the AutoPiP setting overlay is set, show the permission settings bubble.
   if (auto_pip_setting_overlay_) {
     auto_pip_setting_overlay_->ShowBubble(GetWidget()->GetNativeView());
@@ -966,7 +972,7 @@ PictureInPictureBrowserFrameView::GetContentSettingWebContents() {
 ContentSettingBubbleModelDelegate*
 PictureInPictureBrowserFrameView::GetContentSettingBubbleModelDelegate() {
   // Use the opener browser delegate to open any new tab.
-  Browser* browser = chrome::FindBrowserWithWebContents(GetWebContents());
+  Browser* browser = chrome::FindBrowserWithTab(GetWebContents());
   return browser->content_setting_bubble_model_delegate();
 }
 
@@ -978,9 +984,7 @@ void PictureInPictureBrowserFrameView::OnWidgetActivationChanged(
     bool active) {
   // The window may become inactive when a popup modal shows, so we need to
   // check if the mouse is still inside the window.
-  if (!active && mouse_inside_window_)
-    active = true;
-  UpdateTopBarView(active);
+  UpdateTopBarView(active || mouse_inside_window_ || IsOverlayViewVisible());
 }
 
 void PictureInPictureBrowserFrameView::OnWidgetDestroying(
@@ -1281,7 +1285,17 @@ views::Label* PictureInPictureBrowserFrameView::GetWindowTitleForTesting() {
 void PictureInPictureBrowserFrameView::OnMouseEnteredOrExitedWindow(
     bool entered) {
   mouse_inside_window_ = entered;
-  UpdateTopBarView(mouse_inside_window_);
+  // If the overlay view is visible, then we should keep the top bar icons
+  // visible too.  If the overlay is dismissed, we'll leave it in the same state
+  // until a mouse-out event, which is reasonable.  If the UI is dismissed via
+  // the mouse, then it's inside the window anyway.  If it's dismissed via the
+  // keyboard, keeping it that way until the next mouse in/out actually looks
+  // better than having the top bar hide immediately.
+  UpdateTopBarView(mouse_inside_window_ || IsOverlayViewVisible());
+}
+
+bool PictureInPictureBrowserFrameView::IsOverlayViewVisible() const {
+  return auto_pip_setting_overlay_ && auto_pip_setting_overlay_->GetVisible();
 }
 
 BEGIN_METADATA(PictureInPictureBrowserFrameView, BrowserNonClientFrameView)

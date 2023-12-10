@@ -92,10 +92,10 @@ HandleSharedStorageRequestSimple(std::string shared_storage_write,
     return nullptr;
   }
 
-  auto it = request.headers.find(kSecSharedStorageWritableHeader);
+  auto it = request.headers.find(kSharedStorageWritableHeader);
   if (path == MakeSharedStorageBypassPath() ||
       (it != request.headers.end() &&
-       it->second == kSecSharedStorageWritableValue)) {
+       it->second == kSharedStorageWritableValue)) {
     return std::make_unique<SharedStorageResponse>(
         std::move(shared_storage_write));
   }
@@ -112,10 +112,10 @@ HandleSharedStorageRequestMultiple(
   }
 
   absl::optional<std::string> write_header;
-  auto it = request.headers.find(kSecSharedStorageWritableHeader);
+  auto it = request.headers.find(kSharedStorageWritableHeader);
   if ((base::EndsWith(path, kSharedStorageWritePathSuffix) &&
        it != request.headers.end() &&
-       it->second == kSecSharedStorageWritableValue) &&
+       it->second == kSharedStorageWritableValue) &&
       SharedStorageRequestCount::Increment() <=
           shared_storage_write_headers.size()) {
     write_header = std::move(
@@ -126,10 +126,9 @@ HandleSharedStorageRequestMultiple(
   if (base::StartsWith(path, MakeSharedStorageRedirectPrefix()) &&
       !query.empty()) {
     url::RawCanonOutputT<char16_t> decode_output;
-    url::DecodeURLEscapeSequences(query.c_str(), query.size(),
-                                  url::DecodeURLMode::kUTF8, &decode_output);
-    location = base::UTF16ToUTF8(
-        std::u16string(decode_output.data(), decode_output.length()));
+    url::DecodeURLEscapeSequences(query, url::DecodeURLMode::kUTF8,
+                                  &decode_output);
+    location = base::UTF16ToUTF8(decode_output.view());
   }
   if (write_header.has_value()) {
     return location.has_value()

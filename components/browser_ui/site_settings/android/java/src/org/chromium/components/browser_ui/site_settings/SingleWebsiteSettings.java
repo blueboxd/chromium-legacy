@@ -368,7 +368,6 @@ public class SingleWebsiteSettings extends BaseSiteSettingsFragment
             };
             ClearWebsiteStorageDialog dialogFragment =
                     ClearWebsiteStorageDialog.newInstance(preference, onDialogClosed,
-                            getSiteSettingsDelegate().isPrivacySandboxSettings4Enabled(),
                             /*isGroup=*/false);
             dialogFragment.setTargetFragment(this, 0);
             dialogFragment.show(getFragmentManager(), ClearWebsiteStorageDialog.TAG);
@@ -843,29 +842,49 @@ public class SingleWebsiteSettings extends BaseSiteSettingsFragment
         }
     }
 
+    String getEmbeddedPermissionSummary(String embeddedHost, @ContentSettingValues int setting) {
+        int id =
+                setting == ContentSettingValues.ALLOW
+                        ? R.string.website_settings_site_allowed
+                        : R.string.website_settings_site_blocked;
+        return getContext().getResources().getString(id, embeddedHost);
+    }
+
     private void setUpEmbeddedContentSettingPreferences() {
         PreferenceScreen preferenceScreen = getPreferenceScreen();
         BrowserContextHandle handle = getSiteSettingsDelegate().getBrowserContextHandle();
 
         for (List<ContentSettingException> entries : mSite.getEmbeddedPermissions().values()) {
             for (ContentSettingException info : entries) {
+                assert arrayContains(
+                        SiteSettingsUtil.EMBEDDED_PERMISSIONS, info.getContentSettingType());
                 var preference = new ChromeSwitchPreference(getStyledContext());
                 preference.setKey(EMBEDDED_PERMISSION_PREFERENCE_KEY);
                 preference.setIcon(getContentSettingsIcon(info.getContentSettingType(), null));
                 preference.setTitle(ContentSettingsResources.getTitle(
                         info.getContentSettingType(), getSiteSettingsDelegate()));
                 var pattern = WebsiteAddress.create(info.getPrimaryPattern());
-                preference.setSummary(pattern.getHost());
+                preference.setSummary(
+                        getEmbeddedPermissionSummary(pattern.getHost(), info.getContentSetting()));
+
                 preference.setChecked(info.getContentSetting() == ContentSettingValues.ALLOW);
-                preference.setOnPreferenceChangeListener((pref, newValue) -> {
-                    info.setContentSetting(handle,
-                            (boolean) newValue ? ContentSettingValues.ALLOW
-                                               : ContentSettingValues.BLOCK);
-                    if (mWebsiteSettingsObserver != null) {
-                        mWebsiteSettingsObserver.onPermissionChanged();
-                    }
-                    return true;
-                });
+                preference.setOnPreferenceChangeListener(
+                        (pref, newValue) -> {
+                            @ContentSettingValues
+                            int contentSetting =
+                                    (boolean) newValue
+                                            ? ContentSettingValues.ALLOW
+                                            : ContentSettingValues.BLOCK;
+                            info.setContentSetting(handle, contentSetting);
+                            preference.setSummary(
+                                    getEmbeddedPermissionSummary(
+                                            pattern.getHost(), contentSetting));
+
+                            if (mWebsiteSettingsObserver != null) {
+                                mWebsiteSettingsObserver.onPermissionChanged();
+                            }
+                            return true;
+                        });
                 if (info.getContentSettingType() == mHighlightedPermission) {
                     preference.setBackgroundColor(mHighlightColor);
                 }
@@ -1262,11 +1281,6 @@ public class SingleWebsiteSettings extends BaseSiteSettingsFragment
         SiteDataCleaner.clearData(
                 getSiteSettingsDelegate().getBrowserContextHandle(), mSite, mDataClearedCallback);
 
-        int navigationSource = getArguments().getInt(
-                SettingsNavigationSource.EXTRA_KEY, SettingsNavigationSource.OTHER);
-        RecordHistogram.recordEnumeratedHistogram("SingleWebsitePreferences.NavigatedFromToReset",
-                navigationSource, SettingsNavigationSource.NUM_ENTRIES);
-
         // Deletion horizontal product metrics
         RecordHistogram.recordEnumeratedHistogram("Privacy.DeleteBrowsingData.Action",
                 DeleteBrowsingDataAction.SITES_SETTINGS_PAGE, DeleteBrowsingDataAction.MAX_VALUE);
@@ -1338,11 +1352,7 @@ public class SingleWebsiteSettings extends BaseSiteSettingsFragment
         TextView signedOutText = dialogView.findViewById(R.id.signed_out_text);
         signedOutText.setText(R.string.webstorage_clear_data_dialog_sign_out_message);
         TextView offlineText = dialogView.findViewById(R.id.offline_text);
-        offlineText.setText(R.string.webstorage_clear_data_dialog_offline_message);
-        if (getSiteSettingsDelegate().isPrivacySandboxSettings4Enabled()) {
-            TextView adPersonalizationText = dialogView.findViewById(R.id.ad_personalization_text);
-            adPersonalizationText.setVisibility(View.VISIBLE);
-        }
+        offlineText.setText(R.string.webstorage_delete_data_dialog_offline_message);
         mConfirmationDialog =
                 new AlertDialog.Builder(getContext(), R.style.ThemeOverlay_BrowserUI_AlertDialog)
                         .setView(dialogView)

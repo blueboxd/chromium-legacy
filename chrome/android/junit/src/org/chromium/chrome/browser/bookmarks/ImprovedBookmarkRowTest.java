@@ -4,14 +4,19 @@
 
 package org.chromium.chrome.browser.bookmarks;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewPropertyAnimator;
@@ -25,11 +30,18 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowLooper;
 
+import org.chromium.base.Callback;
+import org.chromium.base.supplier.LazyOneshotSupplier;
+import org.chromium.base.supplier.LazyOneshotSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.chrome.R;
@@ -39,7 +51,7 @@ import org.chromium.ui.base.TestActivity;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
-/** Unit tests for {@link BookmarkToolbarMediator}. */
+/** Unit tests for {@link ImprovedBookmarkRow}. */
 @Batch(Batch.UNIT_TESTS)
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -49,37 +61,59 @@ public class ImprovedBookmarkRowTest {
 
     @Rule
     public MockitoRule mMockitoRule = MockitoJUnit.rule();
-
     @Rule
     public ActivityScenarioRule<TestActivity> mActivityScenarioRule =
             new ActivityScenarioRule<>(TestActivity.class);
 
-    @Mock
-    View mView;
-    @Mock
-    ViewGroup mViewGroup;
-    @Mock
-    ListMenuButtonDelegate mListMenuButtonDelegate;
-    @Mock
-    Runnable mPopupListener;
-    @Mock
-    Runnable mOpenBookmarkCallback;
-    @Mock
-    ImageView mStartImageView;
-    @Mock
-    ViewPropertyAnimator mStartImageViewAnimator;
+    @Mock View mView;
+    @Mock ViewGroup mViewGroup;
+    @Mock ListMenuButtonDelegate mListMenuButtonDelegate;
+    @Mock Runnable mPopupListener;
+    @Mock Runnable mOpenBookmarkCallback;
+    @Mock LazyOneshotSupplier<Drawable> mMockDrawableSupplier;
+
+    @Spy ImageView mStartImageView;
+    @Spy ViewPropertyAnimator mStartImageViewAnimator;
+
+    @Captor ArgumentCaptor<Callback<Drawable>> mDrawableCallbackCaptor;
 
     Activity mActivity;
     ImprovedBookmarkRow mImprovedBookmarkRow;
     PropertyModel mModel;
     BitmapDrawable mDrawable;
+    LazyOneshotSupplierImpl<Drawable> mDrawableSupplier;
+    LazyOneshotSupplierImpl<Drawable> mNullDrawableSupplier;
 
     @Before
     public void setUp() {
         mActivityScenarioRule.getScenario().onActivity((activity) -> mActivity = activity);
 
         doReturn(mStartImageViewAnimator).when(mStartImageView).animate();
+        mDrawableSupplier =
+                new LazyOneshotSupplierImpl<>() {
+                    @Override
+                    public void doSet() {
+                        set(mDrawable);
+                    }
+                };
+        mNullDrawableSupplier =
+                new LazyOneshotSupplierImpl<>() {
+                    @Override
+                    public void doSet() {
+                        set(null);
+                    }
+                };
 
+        mStartImageView =
+                spy(
+                        new ImageView(mActivity) {
+                            @Override
+                            public ViewPropertyAnimator animate() {
+                                ViewPropertyAnimator animator = super.animate();
+                                mStartImageViewAnimator = spy(animator);
+                                return mStartImageViewAnimator;
+                            }
+                        });
         mDrawable = new BitmapDrawable(
                 mActivity.getResources(), Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888));
         mImprovedBookmarkRow = ImprovedBookmarkRow.buildView(mActivity, /*isVisual=*/true);
@@ -153,8 +187,8 @@ public class ImprovedBookmarkRowTest {
     @Test
     public void testSelectionActive() {
         mModel.set(ImprovedBookmarkRowProperties.SELECTION_ACTIVE, true);
-        Assert.assertFalse(mImprovedBookmarkRow.findViewById(R.id.more).isClickable());
-        Assert.assertFalse(mImprovedBookmarkRow.findViewById(R.id.more).isEnabled());
+        assertFalse(mImprovedBookmarkRow.findViewById(R.id.more).isClickable());
+        assertFalse(mImprovedBookmarkRow.findViewById(R.id.more).isEnabled());
         Assert.assertEquals(View.IMPORTANT_FOR_ACCESSIBILITY_NO,
                 mImprovedBookmarkRow.findViewById(R.id.more).getImportantForAccessibility());
     }
@@ -162,8 +196,8 @@ public class ImprovedBookmarkRowTest {
     @Test
     public void testSelectionInactive() {
         mModel.set(ImprovedBookmarkRowProperties.SELECTION_ACTIVE, false);
-        Assert.assertTrue(mImprovedBookmarkRow.findViewById(R.id.more).isClickable());
-        Assert.assertTrue(mImprovedBookmarkRow.findViewById(R.id.more).isEnabled());
+        assertTrue(mImprovedBookmarkRow.findViewById(R.id.more).isClickable());
+        assertTrue(mImprovedBookmarkRow.findViewById(R.id.more).isEnabled());
         Assert.assertEquals(View.IMPORTANT_FOR_ACCESSIBILITY_YES,
                 mImprovedBookmarkRow.findViewById(R.id.more).getImportantForAccessibility());
     }
@@ -229,8 +263,11 @@ public class ImprovedBookmarkRowTest {
         mImprovedBookmarkRow.setStartImageViewForTesting(mStartImageView);
 
         mModel.set(ImprovedBookmarkRowProperties.END_IMAGE_VISIBILITY, ImageVisibility.DRAWABLE);
-        mModel.set(ImprovedBookmarkRowProperties.START_ICON_DRAWABLE, mDrawable);
+        mModel.set(ImprovedBookmarkRowProperties.START_ICON_DRAWABLE, mDrawableSupplier);
 
+        ShadowLooper.runUiThreadTasks();
+
+        verify(mStartImageView).setImageDrawable(null);
         verify(mStartImageView).setImageDrawable(mDrawable);
         verify(mStartImageView).setAlpha(0f);
         verify(mStartImageView).animate();
@@ -241,18 +278,33 @@ public class ImprovedBookmarkRowTest {
 
     @Test
     public void testSetStartImageDrawable_nullDrawableDoesNotAnimate() {
-        mModel.set(ImprovedBookmarkRowProperties.START_ICON_DRAWABLE, mDrawable);
         mImprovedBookmarkRow.setStartImageViewForTesting(mStartImageView);
 
         mModel.set(ImprovedBookmarkRowProperties.END_IMAGE_VISIBILITY, ImageVisibility.DRAWABLE);
-        mModel.set(ImprovedBookmarkRowProperties.START_ICON_DRAWABLE, null);
+        mModel.set(ImprovedBookmarkRowProperties.START_ICON_DRAWABLE, mNullDrawableSupplier);
 
-        verify(mStartImageView).setImageDrawable(null);
+        ShadowLooper.runUiThreadTasks();
+
+        verify(mStartImageView, times(2)).setImageDrawable(null);
         verify(mStartImageView, never()).setAlpha(0f);
         verify(mStartImageView, never()).animate();
         verify(mStartImageViewAnimator, never()).alpha(1f);
         verify(mStartImageViewAnimator, never())
                 .setDuration(ImprovedBookmarkRow.BASE_ANIMATION_DURATION_MS);
         verify(mStartImageViewAnimator, never()).start();
+    }
+
+    @Test
+    public void testCancelAnimation() {
+        // This is tricky because the supplier introduces a post by default. But if we wait, we risk
+        // letting the animation finish. So use a mock/captor to make it synchronous.
+        mModel.set(ImprovedBookmarkRowProperties.START_ICON_DRAWABLE, mMockDrawableSupplier);
+        verify(mMockDrawableSupplier).onAvailable(mDrawableCallbackCaptor.capture());
+        verify(mMockDrawableSupplier).get();
+        mDrawableCallbackCaptor.getValue().onResult(mDrawable);
+        assertTrue(mImprovedBookmarkRow.hasTransientState());
+
+        mImprovedBookmarkRow.cancelAnimation();
+        assertFalse(mImprovedBookmarkRow.hasTransientState());
     }
 }

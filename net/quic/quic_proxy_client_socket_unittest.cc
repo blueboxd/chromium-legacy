@@ -257,7 +257,6 @@ class QuicProxyClientSocketTest
         /*cert_verify_flags=*/0, quic::test::DefaultQuicConfig(),
         std::make_unique<TestQuicCryptoClientConfigHandle>(&crypto_config_),
         dns_start, dns_end,
-        std::make_unique<quic::QuicClientPushPromiseIndex>(),
         base::DefaultTickClock::GetInstance(),
         base::SingleThreadTaskRunner::GetCurrentDefault().get(),
         /*socket_performance_watcher=*/nullptr, HostResolverEndpointResult(),
@@ -688,7 +687,8 @@ TEST_P(QuicProxyClientSocketTest, ProxyDelegateExtraHeaders) {
   ASSERT_TRUE(response != nullptr);
   ASSERT_EQ(200, response->headers->response_code());
   proxy_delegate_->VerifyOnTunnelHeadersReceived(
-      proxy_server, kResponseHeaderName, kResponseHeaderValue);
+      ProxyChain(proxy_server), /*chain_index=*/0, kResponseHeaderName,
+      kResponseHeaderValue);
 }
 
 TEST_P(QuicProxyClientSocketTest, ConnectWithAuthRequested) {

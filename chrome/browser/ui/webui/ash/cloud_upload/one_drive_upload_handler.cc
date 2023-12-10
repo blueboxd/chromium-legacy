@@ -46,18 +46,22 @@ void OnUploadDone(scoped_refptr<OneDriveUploadHandler> one_drive_upload_handler,
 }  // namespace
 
 // static.
-void OneDriveUploadHandler::Upload(Profile* profile,
-                                   const FileSystemURL& source_url,
-                                   UploadCallback callback) {
+void OneDriveUploadHandler::Upload(
+    Profile* profile,
+    const FileSystemURL& source_url,
+    UploadCallback callback,
+    base::SafeRef<CloudOpenMetrics> cloud_open_metrics) {
   scoped_refptr<OneDriveUploadHandler> one_drive_upload_handler =
-      new OneDriveUploadHandler(profile, source_url);
+      new OneDriveUploadHandler(profile, source_url, cloud_open_metrics);
   // Keep `one_drive_upload_handler` alive until `UploadToCloudDone` executes.
   one_drive_upload_handler->Run(base::BindOnce(
       &OnUploadDone, one_drive_upload_handler, std::move(callback)));
 }
 
-OneDriveUploadHandler::OneDriveUploadHandler(Profile* profile,
-                                             const FileSystemURL source_url)
+OneDriveUploadHandler::OneDriveUploadHandler(
+    Profile* profile,
+    const FileSystemURL source_url,
+    base::SafeRef<CloudOpenMetrics> cloud_open_metrics)
     : profile_(profile),
       file_system_context_(
           file_manager::util::GetFileManagerFileSystemContext(profile)),
@@ -70,7 +74,8 @@ OneDriveUploadHandler::OneDriveUploadHandler(Profile* profile,
               // TODO(b/242685536) Update when support for multi-files is added.
               /*num_files=*/1,
               GetUploadType(profile, source_url))),
-      source_url_(source_url) {
+      source_url_(source_url),
+      cloud_open_metrics_(cloud_open_metrics) {
   observed_task_id_ = -1;
 }
 
@@ -151,7 +156,7 @@ void OneDriveUploadHandler::Run(UploadCallback callback) {
 void OneDriveUploadHandler::OnEndUpload(
     base::expected<storage::FileSystemURL, std::string> url,
     OfficeFilesUploadResult result_metric) {
-  UMA_HISTOGRAM_ENUMERATION(kOneDriveUploadResultMetricName, result_metric);
+  cloud_open_metrics_->LogUploadResult(result_metric);
   if (url.has_value()) {
     // Resolve notifications.
     if (notification_manager_) {
@@ -257,9 +262,11 @@ void OneDriveUploadHandler::ShowIOTaskError(
   base::File::Error file_error =
       GetFirstTaskError(status).value_or(base::File::FILE_ERROR_FAILED);
 
-  base::UmaHistogramExactLinear(
-      copy ? kOneDriveCopyErrorMetricName : kOneDriveMoveErrorMetricName,
-      -file_error, -base::File::FILE_ERROR_MAX);
+  if (copy) {
+    cloud_open_metrics_->LogCopyError(file_error);
+  } else {
+    cloud_open_metrics_->LogMoveError(file_error);
+  }
 
   switch (file_error) {
     case base::File::FILE_ERROR_ACCESS_DENIED:

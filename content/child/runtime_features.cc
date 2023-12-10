@@ -218,13 +218,13 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableDevicePosture, raw_ref(features::kDevicePosture)},
     {wf::EnableDigitalGoods, raw_ref(features::kDigitalGoodsApi),
      kSetOnlyIfOverridden},
-    {wf::EnableDirectSockets, raw_ref(features::kIsolatedWebApps)},
     {wf::EnableDocumentPolicy, raw_ref(features::kDocumentPolicy)},
     {wf::EnableDocumentPolicyNegotiation,
      raw_ref(features::kDocumentPolicyNegotiation)},
     {wf::EnableFedCm, raw_ref(features::kFedCm), kSetOnlyIfOverridden},
-    {wf::EnableFedCmAccountAutoSelectedFlag,
-     raw_ref(features::kFedCmAccountAutoSelectedFlag), kSetOnlyIfOverridden},
+    {wf::EnableFedCmIdentityCredentialAutoSelectedFlag,
+     raw_ref(features::kFedCmIdentityCredentialAutoSelectedFlag),
+     kSetOnlyIfOverridden},
     {wf::EnableFedCmAuthz, raw_ref(features::kFedCmAuthz), kDefault},
     {wf::EnableFedCmError, raw_ref(features::kFedCmError), kDefault},
     {wf::EnableFedCmHostedDomain, raw_ref(features::kFedCmHostedDomain),
@@ -233,6 +233,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      kDefault},
     {wf::EnableFedCmIdpSigninStatus,
      raw_ref(features::kFedCmIdpSigninStatusEnabled), kSetOnlyIfOverridden},
+    {wf::EnableFedCmIdpSignout, raw_ref(features::kFedCmLogoutRps),
+     kSetOnlyIfOverridden},
     {wf::EnableGamepadMultitouch, raw_ref(features::kEnableGamepadMultitouch)},
     {wf::EnableSharedStorageAPI,
      raw_ref(features::kPrivacySandboxAdsAPIsOverride), kSetOnlyIfOverridden},
@@ -262,6 +264,9 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableLazyInitializeMediaControls,
      raw_ref(features::kLazyInitializeMediaControls)},
     {wf::EnableLazyFrameLoading, raw_ref(features::kLazyFrameLoading)},
+    {wf::EnableMachineLearningModelLoader,
+     raw_ref(features::kEnableMachineLearningModelLoaderWebPlatformApi),
+     kSetOnlyIfOverridden},
     {wf::EnableMediaCastOverlayButton, raw_ref(media::kMediaCastOverlayButton)},
     {wf::EnableMediaEngagementBypassAutoplayPolicies,
      raw_ref(media::kMediaEngagementBypassAutoplayPolicies)},
@@ -306,8 +311,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
 #if BUILDFLAG(IS_ANDROID)
     {wf::EnableWebNFC, raw_ref(features::kWebNfc), kSetOnlyIfOverridden},
 #endif
-    {wf::EnableWebIdentityMDocs, raw_ref(features::kWebIdentityMDocs),
-     kDefault},
+    {wf::EnableWebIdentityDigitalCredentials,
+     raw_ref(features::kWebIdentityDigitalCredentials), kDefault},
     {wf::EnableWebOTP, raw_ref(features::kWebOTP), kSetOnlyIfOverridden},
     {wf::EnableWebOTPAssertionFeaturePolicy,
      raw_ref(features::kWebOTPAssertionFeaturePolicy), kSetOnlyIfOverridden},
@@ -555,6 +560,8 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
   // They're moved here to distinguish them from actual base checks
   WebRuntimeFeatures::EnableOverlayScrollbars(ui::IsOverlayScrollbarEnabled());
   WebRuntimeFeatures::EnableFluentScrollbars(ui::IsFluentScrollbarEnabled());
+  WebRuntimeFeatures::EnableFluentOverlayScrollbars(
+      ui::IsFluentOverlayScrollbarEnabled());
 
   // TODO(rodneyding): This is a rare case for a stable feature
   // Need to investigate more to determine whether to refactor it.
@@ -595,15 +602,6 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
         WebRuntimeFeatures::EnablePrivateStateTokens(true);
         WebRuntimeFeatures::EnablePrivateStateTokensAlwaysAllowIssuance(false);
         break;
-    }
-  }
-
-  // Enables the Blink feature only when the base feature variation is enabled.
-  if (base::FeatureList::IsEnabled(features::kFedCm)) {
-    if (base::GetFieldTrialParamByFeatureAsBool(
-            features::kFedCm, features::kFedCmIdpSignoutFieldTrialParamName,
-            false)) {
-      WebRuntimeFeatures::EnableFedCmIdpSignout(true);
     }
   }
 

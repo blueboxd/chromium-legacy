@@ -715,7 +715,9 @@ TEST_P(AttributionStorageSqlTest,
               expected_verification.aggregatable_report_id());
     absl::visit(
         base::Overloaded{
-            [](const AttributionReport::EventLevelData&) { NOTREACHED(); },
+            [](const AttributionReport::EventLevelData&) {
+              NOTREACHED_NORETURN();
+            },
             [&expected_verification](
                 const AttributionReport::AggregatableAttributionData& data) {
               EXPECT_EQ(data.common_data.verification_token,
@@ -1684,7 +1686,7 @@ TEST_P(AttributionStorageSqlTest,
     // `randomized_response_rate` field will not be set in the serialized proto.
     statement.BindBlob(
         0, SerializeReadOnlySourceData(
-               *attribution_reporting::EventReportWindows::CreateWindows(
+               *attribution_reporting::EventReportWindows::Create(
                    base::Seconds(0), {base::Days(1)}),
                /*max_event_level_reports=*/3, /*randomized_response_rate=*/-1));
     ASSERT_TRUE(statement.Run());
@@ -1814,6 +1816,7 @@ TEST_P(AttributionStorageSqlTest,
         .metadata = metadata,
     });
 
+    base::HistogramTester histograms;
     OpenDatabase();
     EXPECT_THAT(
         storage()->GetAttributionReports(/*max_report_time=*/base::Time::Max()),
@@ -1822,6 +1825,18 @@ TEST_P(AttributionStorageSqlTest,
     storage()->ClearData(base::Time::Min(), base::Time::Max(),
                          base::NullCallback());
     CloseDatabase();
+
+    histograms.ExpectUniqueSample("Conversions.ValidReportsInDatabase",
+                                  test_case.valid, 1);
+
+    if (!test_case.valid) {
+      histograms.ExpectBucketCount(
+          "Conversions.CorruptReportsInDatabase2",
+          AttributionStorageSql::ReportCorruptionStatus::kAnyFieldCorrupted, 1);
+      histograms.ExpectBucketCount(
+          "Conversions.CorruptReportsInDatabase2",
+          AttributionStorageSql::ReportCorruptionStatus::kInvalidMetadata, 1);
+    }
   }
 }
 
@@ -1830,7 +1845,6 @@ TEST_P(AttributionStorageSqlTest,
   const struct {
     const char* desc;
     absl::variant<AttributionAggregatableMetadataRecord, std::string> record;
-    absl::optional<int64_t> max_budget;
     bool valid;
   } kTestCases[] = {
       {
@@ -1879,7 +1893,8 @@ TEST_P(AttributionStorageSqlTest,
                           AttributionAggregatableMetadataRecord::Contribution{
                               .high_bits = 1,
                               .low_bits = 2,
-                              .value = 3,
+                              .value =
+                                  attribution_reporting::kMaxAggregatableValue,
                           },
                       },
               },
@@ -1909,11 +1924,12 @@ TEST_P(AttributionStorageSqlTest,
                           AttributionAggregatableMetadataRecord::Contribution{
                               .high_bits = 1,
                               .low_bits = 2,
-                              .value = 11,
+                              .value =
+                                  attribution_reporting::kMaxAggregatableValue +
+                                  1,
                           },
                       },
               },
-          .max_budget = 10,
           .valid = false,
       },
       {
@@ -1982,10 +1998,8 @@ TEST_P(AttributionStorageSqlTest,
         .metadata = metadata,
     });
 
+    base::HistogramTester histograms;
     OpenDatabase();
-    if (test_case.max_budget) {
-      delegate()->set_aggregatable_budget_per_source(*test_case.max_budget);
-    }
     EXPECT_THAT(
         storage()->GetAttributionReports(/*max_report_time=*/base::Time::Max()),
         SizeIs(test_case.valid))
@@ -1993,6 +2007,17 @@ TEST_P(AttributionStorageSqlTest,
     storage()->ClearData(base::Time::Min(), base::Time::Max(),
                          base::NullCallback());
     CloseDatabase();
+
+    histograms.ExpectUniqueSample("Conversions.ValidReportsInDatabase",
+                                  test_case.valid, 1);
+    if (!test_case.valid) {
+      histograms.ExpectBucketCount(
+          "Conversions.CorruptReportsInDatabase2",
+          AttributionStorageSql::ReportCorruptionStatus::kAnyFieldCorrupted, 1);
+      histograms.ExpectBucketCount(
+          "Conversions.CorruptReportsInDatabase2",
+          AttributionStorageSql::ReportCorruptionStatus::kInvalidMetadata, 1);
+    }
   }
 }
 
@@ -2080,6 +2105,179 @@ TEST_P(AttributionStorageSqlTest,
     storage()->ClearData(base::Time::Min(), base::Time::Max(),
                          base::NullCallback());
     CloseDatabase();
+  }
+}
+
+TEST_P(AttributionStorageSqlTest, InvalidStoredFields_ReportMarkedAsCorrupted) {
+  const struct {
+    const char* desc;
+    bool source_id_mismatch = false;
+    AttributionReportRecord record;
+    AttributionStorageSql::ReportCorruptionStatus status;
+  } kTestCases[] = {
+      {
+          .desc = "invalid_failed_send_attempts",
+          .record =
+              AttributionReportRecord{
+                  .report_id = 1,
+                  .failed_send_attempts = -1,
+                  .external_report_id =
+                      DefaultExternalReportID().AsLowercaseString(),
+                  .report_type =
+                      static_cast<int>(AttributionReport::Type::kEventLevel),
+                  .metadata = SerializeReportMetadata(
+                      AttributionEventLevelMetadataRecord{
+                          .trigger_data = 1,
+                          .priority = 2,
+                      }),
+              },
+          .status = AttributionStorageSql::ReportCorruptionStatus::
+              kInvalidFailedSendAttempts,
+      },
+      {
+          .desc = "invalid_external_report_id",
+          .record =
+              AttributionReportRecord{
+                  .report_id = 1,
+                  .external_report_id = "0",
+                  .report_type =
+                      static_cast<int>(AttributionReport::Type::kEventLevel),
+                  .metadata = SerializeReportMetadata(
+                      AttributionEventLevelMetadataRecord{
+                          .trigger_data = 1,
+                          .priority = 2,
+                      }),
+              },
+          .status = AttributionStorageSql::ReportCorruptionStatus::
+              kInvalidExternalReportID,
+      },
+      {
+          .desc = "invalid_context_origin",
+          .record =
+              AttributionReportRecord{
+                  .report_id = 1,
+                  .external_report_id =
+                      DefaultExternalReportID().AsLowercaseString(),
+                  .context_origin = "-1",
+                  .report_type =
+                      static_cast<int>(AttributionReport::Type::kEventLevel),
+                  .metadata = SerializeReportMetadata(
+                      AttributionEventLevelMetadataRecord{
+                          .trigger_data = 1,
+                          .priority = 2,
+                      }),
+              },
+          .status = AttributionStorageSql::ReportCorruptionStatus::
+              kInvalidContextOrigin,
+      },
+      {
+          .desc = "invalid_reporting_origin",
+          .record =
+              AttributionReportRecord{
+                  .report_id = 1,
+                  .external_report_id =
+                      DefaultExternalReportID().AsLowercaseString(),
+                  .reporting_origin = "-1",
+                  .report_type =
+                      static_cast<int>(AttributionReport::Type::kEventLevel),
+                  .metadata = SerializeReportMetadata(
+                      AttributionEventLevelMetadataRecord{
+                          .trigger_data = 1,
+                          .priority = 2,
+                      }),
+              },
+          .status = AttributionStorageSql::ReportCorruptionStatus::
+              kInvalidReportingOrigin,
+      },
+      {
+          .desc = "reporting_origin_mismatch",
+          .record =
+              AttributionReportRecord{
+                  .report_id = 1,
+                  .external_report_id =
+                      DefaultExternalReportID().AsLowercaseString(),
+                  .reporting_origin = "https://reporter2.test/",
+                  .report_type =
+                      static_cast<int>(AttributionReport::Type::kEventLevel),
+                  .metadata = SerializeReportMetadata(
+                      AttributionEventLevelMetadataRecord{
+                          .trigger_data = 1,
+                          .priority = 2,
+                      }),
+              },
+          .status = AttributionStorageSql::ReportCorruptionStatus::
+              kReportingOriginMismatch,
+      },
+      {
+          .desc = "source_data_missing_event_level",
+          .source_id_mismatch = true,
+          .record =
+              AttributionReportRecord{
+                  .report_id = 1,
+                  .source_id = 0,
+                  .external_report_id =
+                      DefaultExternalReportID().AsLowercaseString(),
+                  .reporting_origin = "https://reporter2.test/",
+                  .report_type =
+                      static_cast<int>(AttributionReport::Type::kEventLevel),
+                  .metadata = SerializeReportMetadata(
+                      AttributionEventLevelMetadataRecord{
+                          .trigger_data = 1,
+                          .priority = 2,
+                      }),
+              },
+          .status = AttributionStorageSql::ReportCorruptionStatus::
+              kSourceDataMissingEventLevel,
+      },
+      {
+          .desc = "source_data_missing_aggregatable",
+          .source_id_mismatch = true,
+          .record =
+              AttributionReportRecord{
+                  .report_id = 1,
+                  .source_id = 0,
+                  .external_report_id =
+                      DefaultExternalReportID().AsLowercaseString(),
+                  .reporting_origin = "https://reporter2.test/",
+                  .report_type = static_cast<int>(
+                      AttributionReport::Type::kAggregatableAttribution),
+                  .metadata = SerializeReportMetadata(
+                      AttributionEventLevelMetadataRecord{
+                          .trigger_data = 1,
+                          .priority = 2,
+                      }),
+              },
+          .status = AttributionStorageSql::ReportCorruptionStatus::
+              kSourceDataMissingAggregatable,
+      },
+  };
+
+  for (auto test_case : kTestCases) {
+    OpenDatabase();
+    storage()->StoreSource(SourceBuilder()
+                               .SetReportingOrigin(*SuitableOrigin::Deserialize(
+                                   kDefaultReportOrigin))
+                               .Build());
+    auto sources = storage()->GetActiveSources();
+    if (!test_case.source_id_mismatch) {
+      test_case.record.source_id = *sources.front().source_id();
+    }
+    CloseDatabase();
+
+    StoreAttributionReport(test_case.record);
+
+    base::HistogramTester histograms;
+    OpenDatabase();
+    storage()->ClearData(base::Time::Min(), base::Time::Max(),
+                         base::NullCallback());
+    CloseDatabase();
+
+    histograms.ExpectBucketCount("Conversions.CorruptReportsInDatabase2",
+                                 test_case.status, 1);
+    histograms.ExpectBucketCount(
+        "Conversions.CorruptReportsInDatabase2",
+        AttributionStorageSql::ReportCorruptionStatus::kAnyFieldCorrupted, 1);
+    histograms.ExpectTotalCount("Conversions.CorruptReportsInDatabase2", 2);
   }
 }
 

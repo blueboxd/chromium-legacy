@@ -317,6 +317,7 @@ class IsolatedWebAppUpdateManagerUpdateTest
 
   virtual void SeedWebAppDatabase() {}
 
+#if BUILDFLAG(IS_CHROMEOS)
   void SetIwaForceInstallPolicy(
       std::vector<std::pair<IsolatedWebAppUrlInfo, base::StringPiece>>
           entries) {
@@ -329,6 +330,7 @@ class IsolatedWebAppUpdateManagerUpdateTest
     profile()->GetPrefs()->SetList(prefs::kIsolatedWebAppInstallForceList,
                                    std::move(list));
   }
+#endif
 
   NiceMock<MockCommandScheduler>& mock_command_scheduler() {
     return static_cast<NiceMock<MockCommandScheduler>&>(
@@ -387,6 +389,7 @@ class IsolatedWebAppUpdateManagerUpdateTest
   absl::optional<IwaInfo> iwa_info2_;
 };
 
+#if BUILDFLAG(IS_CHROMEOS)
 TEST_F(IsolatedWebAppUpdateManagerUpdateTest,
        DiscoversAndPreparesUpdateOfPolicyInstalledApps) {
   IsolatedWebAppUrlInfo non_installed_url_info =
@@ -429,6 +432,58 @@ TEST_F(IsolatedWebAppUpdateManagerUpdateTest,
        {dev_proxy_url_info, "https://example.com/update_manifest.json"}});
 
   task_environment()->FastForwardBy(base::Hours(5));
+  // TODO(b/304691179): Rely less on `RunUntilIdle` and more on concrete events.
+  task_environment()->RunUntilIdle();
+
+  EXPECT_THAT(
+      fake_provider().registrar_unsafe().GetAppById(
+          iwa_info1_->url_info.app_id()),
+      test::IwaIs(Eq("installed iwa 1"),
+                  test::IsolationDataIs(
+                      Eq(iwa_info1_->installed_location),
+                      Eq(iwa_info1_->installed_version),
+                      /*controlled_frame_partitions=*/_,
+                      test::PendingUpdateInfoIs(UpdateLocationMatcher(),
+                                                Eq(base::Version("2.0.0"))))));
+
+  EXPECT_THAT(
+      UpdateDiscoveryLog(),
+      UnorderedElementsAre(IsDict(DictionaryHasValue(
+          "result", base::Value("Success::kUpdateFoundAndDryRunSuccessful")))));
+  EXPECT_THAT(UpdateApplyLog(), IsEmpty());
+
+  // TODO(crbug.com/1469880): As a temporary fix to avoid race conditions with
+  // `ScopedProfileKeepAlive`s, manually shutdown `KeyedService`s holding them.
+  fake_provider().Shutdown();
+  ChromeBrowsingDataRemoverDelegateFactory::GetForProfile(profile())
+      ->Shutdown();
+}
+
+TEST_F(IsolatedWebAppUpdateManagerUpdateTest, DiscoverUpdatesNow) {
+  AddDummyIsolatedAppToRegistry(
+      profile(), iwa_info1_->url_info.origin().GetURL(), "installed iwa 1",
+      WebApp::IsolationData(iwa_info1_->installed_location,
+                            iwa_info1_->installed_version));
+
+  fake_ui_manager().SetNumWindowsForApp(iwa_info1_->url_info.app_id(), 1);
+
+  SetIwaForceInstallPolicy(
+      {{iwa_info1_->url_info, iwa_info1_->update_manifest_url.spec()}});
+
+  // After three hours, there should be two hours left until updates are being
+  // automatically discovered.
+  task_environment()->FastForwardBy(base::Hours(3));
+  EXPECT_THAT(
+      update_manager().GetUpdateDiscoveryTimerForTesting().desired_run_time(),
+      Eq(base::TimeTicks::Now() + base::Hours(2)));
+
+  // Once we manually trigger update discovery, the update discovery timer
+  // should reset to 5 hours.
+  EXPECT_THAT(update_manager().DiscoverUpdatesNow(), Eq(1ul));
+  EXPECT_THAT(
+      update_manager().GetUpdateDiscoveryTimerForTesting().desired_run_time(),
+      Eq(base::TimeTicks::Now() + base::Hours(5)));
+
   task_environment()->RunUntilIdle();
 
   EXPECT_THAT(
@@ -723,6 +778,7 @@ TEST_F(IsolatedWebAppUpdateManagerUpdateTest,
   ChromeBrowsingDataRemoverDelegateFactory::GetForProfile(profile())
       ->Shutdown();
 }
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 class IsolatedWebAppUpdateManagerUpdateApplyOnStartupTest
     : public IsolatedWebAppUpdateManagerUpdateTest {
@@ -897,7 +953,10 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         FeatureFlagParam{.feature_states = {}, .expected_result = false},
         FeatureFlagParam{.feature_states = {{features::kIsolatedWebApps, true}},
-                         .expected_result = false},
+                         .expected_result = false}
+// TODO(crbug.com/1458725): Enable automatic updates on other platforms.
+#if BUILDFLAG(IS_CHROMEOS)
+        ,
         FeatureFlagParam{
             .feature_states = {{features::kIsolatedWebAppAutomaticUpdates,
                                 true}},
@@ -906,7 +965,9 @@ INSTANTIATE_TEST_SUITE_P(
             .feature_states = {{features::kIsolatedWebApps, true},
                                {features::kIsolatedWebAppAutomaticUpdates,
                                 true}},
-            .expected_result = true}));
+            .expected_result = true}
+#endif  // BUILDFLAG(IS_CHROMEOS)
+        ));
 
 }  // namespace
 }  // namespace web_app

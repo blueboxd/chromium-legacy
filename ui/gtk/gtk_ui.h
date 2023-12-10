@@ -81,6 +81,7 @@ class GtkUi : public ui::LinuxUiAndTheme {
       ui::LinuxInputMethodContextDelegate* delegate) const override;
   bool GetTextEditCommandsForEvent(
       const ui::Event& event,
+      int text_flags,
       std::vector<ui::TextEditCommandAuraLinux>* commands) override;
   gfx::FontRenderParams GetDefaultFontRenderParams() const override;
   void GetDefaultFontDescription(
@@ -119,6 +120,8 @@ class GtkUi : public ui::LinuxUiAndTheme {
   void OnCursorThemeNameChanged(GtkSettings* settings, GtkParamSpec* param);
 
   void OnCursorThemeSizeChanged(GtkSettings* settings, GtkParamSpec* param);
+
+  void OnEnableAnimationsChanged(GtkSettings* settings, GtkParamSpec* param);
 
   void OnGtkXftDpiChanged(GtkSettings* settings, GParamSpec* param);
 

@@ -48,6 +48,7 @@ import org.chromium.base.BaseSwitches;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.shared_preferences.SharedPreferencesManager;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.HistogramWatcher;
@@ -60,7 +61,7 @@ import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
@@ -80,8 +81,8 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.embedder_support.util.UrlConstants;
-import org.chromium.components.segmentation_platform.SegmentSelectionResult;
-import org.chromium.components.segmentation_platform.proto.SegmentationProto.SegmentId;
+import org.chromium.components.segmentation_platform.ClassificationResult;
+import org.chromium.components.segmentation_platform.prediction_status.PredictionStatus;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
@@ -90,7 +91,6 @@ import org.chromium.url.JUnitTestGURLs;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE,
         shadows = {ShadowHomepageManager.class, ShadowHomepagePolicyManager.class})
-@EnableFeatures({ChromeFeatureList.START_SURFACE_WITH_ACCESSIBILITY})
 @CommandLineFlags.Add({BaseSwitches.DISABLE_LOW_END_DEVICE_MODE})
 public class ReturnToChromeUtilUnitTest {
     /** Shadow for {@link HomepageManager}. */
@@ -274,8 +274,6 @@ public class ReturnToChromeUtilUnitTest {
     @SmallTest
     @EnableFeatures({ChromeFeatureList.START_SURFACE_RETURN_TIME})
     public void testShouldShowTabSwitcherWithSegmentationReturnTime() {
-        final SegmentId showStartId =
-                SegmentId.OPTIMIZATION_TARGET_SEGMENTATION_CHROME_START_ANDROID_V2;
         Assert.assertTrue(ChromeFeatureList.sStartSurfaceReturnTime.isEnabled());
 
         // Verifies that when the preference key isn't stored, return
@@ -291,16 +289,16 @@ public class ReturnToChromeUtilUnitTest {
         // Return time from segmentation model is enabled for 1 min:
         long returnTimeSeconds = 60; // One minute
         long returnTimeMs = returnTimeSeconds * DateUtils.SECOND_IN_MILLIS; // One minute
-        SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();
-        SegmentSelectionResult result =
-                new SegmentSelectionResult(true, showStartId, (float) returnTimeSeconds);
+        SharedPreferencesManager sharedPreferencesManager = ChromeSharedPreferences.getInstance();
+        ClassificationResult result =
+                new ClassificationResult(PredictionStatus.SUCCEEDED, new String[] {String.valueOf(returnTimeSeconds)});
         ReturnToChromeUtil.cacheReturnTimeFromSegmentationImpl(result);
         Assert.assertEquals(returnTimeMs,
                 ReturnToChromeUtil.getReturnTimeFromSegmentation(
                         START_SURFACE_RETURN_TIME_SECONDS));
 
         // Returns false if it isn't immediate return but without last backgrounded time available:
-        result = new SegmentSelectionResult(true, showStartId, (float) 1);
+        result = new ClassificationResult(PredictionStatus.SUCCEEDED, new String[] {"1"});
         ReturnToChromeUtil.cacheReturnTimeFromSegmentationImpl(result);
         Assert.assertEquals(1 * DateUtils.SECOND_IN_MILLIS,
                 ReturnToChromeUtil.getReturnTimeFromSegmentation(
@@ -308,7 +306,7 @@ public class ReturnToChromeUtilUnitTest {
         Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(-1, false));
 
         // Verifies returning false if segmentation result is negative (not show).
-        result = new SegmentSelectionResult(true, SegmentId.OPTIMIZATION_TARGET_UNKNOWN, null);
+        result = new ClassificationResult(PredictionStatus.NOT_READY, null);
         ReturnToChromeUtil.cacheReturnTimeFromSegmentationImpl(result);
         Assert.assertEquals(-1,
                 ReturnToChromeUtil.getReturnTimeFromSegmentation(
@@ -316,7 +314,7 @@ public class ReturnToChromeUtilUnitTest {
         Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(1, false));
 
         // Tests regular cases with last backgrounded time set:
-        result = new SegmentSelectionResult(true, showStartId, (float) returnTimeSeconds);
+        result = new ClassificationResult(PredictionStatus.SUCCEEDED, new String[] {String.valueOf(returnTimeSeconds)});
         ReturnToChromeUtil.cacheReturnTimeFromSegmentationImpl(result);
         Assert.assertEquals(returnTimeMs,
                 ReturnToChromeUtil.getReturnTimeFromSegmentation(
@@ -433,7 +431,7 @@ public class ReturnToChromeUtilUnitTest {
                 mContext, intent, mTabModelSelector, mInactivityTracker, false /* isTablet */));
 
         // Sets background time to make the return time arrive:
-        SharedPreferencesManager.getInstance().addToStringSet(
+        ChromeSharedPreferences.getInstance().addToStringSet(
                 ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF, "0");
         START_SURFACE_RETURN_TIME_SECONDS.setForTesting(0);
         Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(0, false));
@@ -442,7 +440,7 @@ public class ReturnToChromeUtilUnitTest {
         Assert.assertTrue(ReturnToChromeUtil.shouldShowOverviewPageOnStart(
                 mContext, intent, mTabModelSelector, mInactivityTracker, false /* isTablet */));
 
-        SharedPreferencesManager.getInstance().removeKey(
+        ChromeSharedPreferences.getInstance().removeKey(
                 ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF);
     }
 
@@ -460,7 +458,7 @@ public class ReturnToChromeUtilUnitTest {
         Intent intent = createMainIntentFromLauncher();
 
         // Sets background time to make the return time arrive:
-        SharedPreferencesManager.getInstance().addToStringSet(
+        ChromeSharedPreferences.getInstance().addToStringSet(
                 ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF, "0");
         START_SURFACE_RETURN_TIME_SECONDS.setForTesting(0);
         Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(0, false));
@@ -477,7 +475,7 @@ public class ReturnToChromeUtilUnitTest {
                 mContext, intent, mTabModelSelector, mInactivityTracker, false /* isTablet */));
 
         ShadowHomepageManager.sHomepageGurl = UrlConstants.ntpGurl();
-        SharedPreferencesManager.getInstance().removeKey(
+        ChromeSharedPreferences.getInstance().removeKey(
                 ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF);
     }
 
@@ -491,7 +489,7 @@ public class ReturnToChromeUtilUnitTest {
         Intent intent = createMainIntentFromLauncher();
 
         // Sets background time to make the return time arrive:
-        SharedPreferencesManager.getInstance().addToStringSet(
+        ChromeSharedPreferences.getInstance().addToStringSet(
                 ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF, "0");
         START_SURFACE_RETURN_TIME_SECONDS.setForTesting(0);
         Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(0, false));
@@ -519,11 +517,11 @@ public class ReturnToChromeUtilUnitTest {
     @SmallTest
     @DisableFeatures({ChromeFeatureList.NEW_TAB_SEARCH_ENGINE_URL_ANDROID})
     public void testStartSurfaceIsEnabledWithNewTabSearchEngineUrlDisabled() {
-        SharedPreferencesManager.getInstance().writeBoolean(
+        ChromeSharedPreferences.getInstance().writeBoolean(
                 ChromePreferenceKeys.IS_DSE_GOOGLE, false);
 
         Assert.assertTrue(ReturnToChromeUtil.isStartSurfaceEnabled(mContext));
-        SharedPreferencesManager.getInstance().removeKey(ChromePreferenceKeys.IS_DSE_GOOGLE);
+        ChromeSharedPreferences.getInstance().removeKey(ChromePreferenceKeys.IS_DSE_GOOGLE);
     }
 
     @Test
@@ -532,11 +530,11 @@ public class ReturnToChromeUtilUnitTest {
     public void testStartSurfaceMayBeDisabledWithNewTabSearchEngineUrlEnabled() {
         Assert.assertTrue(ReturnToChromeUtil.isStartSurfaceEnabled(mContext));
 
-        SharedPreferencesManager.getInstance().writeBoolean(
+        ChromeSharedPreferences.getInstance().writeBoolean(
                 ChromePreferenceKeys.IS_DSE_GOOGLE, false);
         Assert.assertFalse(ReturnToChromeUtil.isStartSurfaceEnabled(mContext));
 
-        SharedPreferencesManager.getInstance().removeKey(ChromePreferenceKeys.IS_DSE_GOOGLE);
+        ChromeSharedPreferences.getInstance().removeKey(ChromePreferenceKeys.IS_DSE_GOOGLE);
     }
 
     @Test
@@ -551,7 +549,7 @@ public class ReturnToChromeUtilUnitTest {
         Intent intent = createMainIntentFromLauncher();
 
         // Sets background time to make the return time arrive:
-        SharedPreferencesManager.getInstance().addToStringSet(
+        ChromeSharedPreferences.getInstance().addToStringSet(
                 ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF, "0");
         START_SURFACE_RETURN_TIME_SECONDS.setForTesting(0);
         Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(0, false));
@@ -589,7 +587,7 @@ public class ReturnToChromeUtilUnitTest {
         Intent intent = createMainIntentFromLauncher();
 
         // Sets background time to make the return time arrive:
-        SharedPreferencesManager.getInstance().addToStringSet(
+        ChromeSharedPreferences.getInstance().addToStringSet(
                 ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF, "0");
         START_SURFACE_RETURN_TIME_SECONDS.setForTesting(0);
         Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(0, false));
@@ -918,62 +916,16 @@ public class ReturnToChromeUtilUnitTest {
     }
 
     @Test
-    @EnableFeatures({ChromeFeatureList.SURFACE_POLISH,
-            ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID})
-    // clang-format off
-    public void testIsScrollableMvtEnabled_SurfacePolishEnabled_ScrollableMvtEnabled() {
-        // clang-format on
-        Assert.assertTrue(ChromeFeatureList.sSurfacePolish.isEnabled());
-        Assert.assertTrue(
-                ChromeFeatureList.isEnabled(ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID));
-        Assert.assertFalse(StartSurfaceConfiguration.SURFACE_POLISH_SCROLLABLE_MVT.getValue());
-
-        // Tests on phones.
-        // Verifies if feature ChromeFeatureList.SURFACE_POLISH is enabled, feature
-        // ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID is ignored. Whether to show the
-        // scrollable MV tiles is determined by the value of
-        // StartSurfaceConfiguration.SURFACE_POLISH_SCROLLABLE_MVT
-        Assert.assertFalse(DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext));
-        Assert.assertFalse(ReturnToChromeUtil.isScrollableMvtEnabled(mContext));
-
-        StartSurfaceConfiguration.SURFACE_POLISH_SCROLLABLE_MVT.setForTesting(true);
-        Assert.assertTrue(ReturnToChromeUtil.isScrollableMvtEnabled(mContext));
-
-        // Tests on tablets.
-        setupAndVerifyTablets();
-
-        StartSurfaceConfiguration.SURFACE_POLISH_SCROLLABLE_MVT.setForTesting(false);
-        Assert.assertFalse(StartSurfaceConfiguration.SURFACE_POLISH_SCROLLABLE_MVT.getValue());
-        // Verifies if feature ChromeFeatureList.SURFACE_POLISH is enabled on tablets, always show
-        // the scrollable MV tiles.
-        Assert.assertTrue(ReturnToChromeUtil.isScrollableMvtEnabled(mContext));
-    }
-
-    @Test
     @EnableFeatures({ChromeFeatureList.SURFACE_POLISH})
     @DisableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID})
-    // clang-format off
-    public void testIsScrollableMvtEnabled_SurfacePolishEnabled_ScrollableMvtDisabled() {
-        // clang-format on
+    public void testIsScrollableMvtEnabledWhenSurfacePolishEnabled_tablets() {
         Assert.assertTrue(ChromeFeatureList.sSurfacePolish.isEnabled());
         Assert.assertFalse(
                 ChromeFeatureList.isEnabled(ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID));
         Assert.assertFalse(StartSurfaceConfiguration.SURFACE_POLISH_SCROLLABLE_MVT.getValue());
-
-        // Tests on phones.
-        // Verifies if feature ChromeFeatureList.SURFACE_POLISH is enabled, feature
-        // ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID is ignored. Whether to show the
-        // scrollable MV tiles is determined by the value of
-        // StartSurfaceConfiguration.SURFACE_POLISH_SCROLLABLE_MVT
-        Assert.assertFalse(DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext));
-        StartSurfaceConfiguration.SURFACE_POLISH_SCROLLABLE_MVT.setForTesting(true);
-        Assert.assertTrue(ReturnToChromeUtil.isScrollableMvtEnabled(mContext));
-
         // Tests on tablets.
         setupAndVerifyTablets();
 
-        StartSurfaceConfiguration.SURFACE_POLISH_SCROLLABLE_MVT.setForTesting(false);
-        Assert.assertFalse(StartSurfaceConfiguration.SURFACE_POLISH_SCROLLABLE_MVT.getValue());
         // Verifies if feature ChromeFeatureList.SURFACE_POLISH is enabled on tablets, always show
         // the scrollable MV tiles.
         Assert.assertTrue(ReturnToChromeUtil.isScrollableMvtEnabled(mContext));
@@ -981,56 +933,102 @@ public class ReturnToChromeUtilUnitTest {
 
     @Test
     @DisableFeatures({ChromeFeatureList.SURFACE_POLISH})
-    @EnableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID,
-            ChromeFeatureList.START_SURFACE_ON_TABLET})
-    // clang-format off
-    public void testIsScrollableMvtEnabled_SurfacePolishDisabled_ScrollableMvtEnabled() {
-        // clang-format on
+    @EnableFeatures({
+        ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID,
+        ChromeFeatureList.START_SURFACE_ON_TABLET
+    })
+    public void testIsScrollableMvtEnabled_SurfacePolishDisabled_ScrollableMvtEnabled_tablets() {
         Assert.assertFalse(ChromeFeatureList.sSurfacePolish.isEnabled());
         Assert.assertTrue(
                 ChromeFeatureList.isEnabled(ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID));
         Assert.assertFalse(StartSurfaceConfiguration.SURFACE_POLISH_SCROLLABLE_MVT.getValue());
 
-        // Tests on phones.
-        // Verifies if feature ChromeFeatureList.SURFACE_POLISH is disabled, whether to show the
-        // scrollable MV tiles is determined by the feature flag
-        // ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID.
-        Assert.assertFalse(DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext));
-        Assert.assertTrue(ReturnToChromeUtil.isScrollableMvtEnabled(mContext));
-
         // Tests on tablets.
         setupAndVerifyTablets();
 
         // Verifies if feature ChromeFeatureList.SURFACE_POLISH is disabled on tablets, the
-        // scrollable MV tiles is only shown when features
-        // SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID and START_SURFACE_ON_TABLET are both enabled.
+        // scrollable MV tiles is only shown when both features
+        // SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID and START_SURFACE_ON_TABLET are enabled.
         Assert.assertTrue(ReturnToChromeUtil.isScrollableMvtEnabled(mContext));
     }
 
     @Test
-    @DisableFeatures({ChromeFeatureList.SURFACE_POLISH,
-            ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID})
+    @DisableFeatures({
+        ChromeFeatureList.SURFACE_POLISH,
+        ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID
+    })
     @EnableFeatures({ChromeFeatureList.START_SURFACE_ON_TABLET})
-    // clang-format off
-    public void testIsScrollableMvtEnabled_SurfacePolishDisabled_ScrollableMvtDisabled() {
-        // clang-format on
+    public void testIsScrollableMvtEnabled_SurfacePolishDisabled_ScrollableMvtDisabled_tablets() {
         Assert.assertFalse(ChromeFeatureList.sSurfacePolish.isEnabled());
         Assert.assertFalse(
                 ChromeFeatureList.isEnabled(ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID));
         Assert.assertFalse(StartSurfaceConfiguration.SURFACE_POLISH_SCROLLABLE_MVT.getValue());
-
-        // Tests on phones.
-        // Verifies if feature ChromeFeatureList.SURFACE_POLISH is disabled, whether to show the
-        // scrollable MV tiles is determined by the feature flag
-        // ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID.
-        Assert.assertFalse(DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext));
-        Assert.assertFalse(ReturnToChromeUtil.isScrollableMvtEnabled(mContext));
 
         // Tests on tablets.
         setupAndVerifyTablets();
 
         // Verifies if feature ChromeFeatureList.SURFACE_POLISH is disabled on tablets, the
         // scrollable MV tiles is disabled if SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID is disabled.
+        Assert.assertFalse(ReturnToChromeUtil.isScrollableMvtEnabled(mContext));
+    }
+
+    @Test
+    @EnableFeatures({ChromeFeatureList.SURFACE_POLISH})
+    @DisableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_PHONE_ANDROID})
+    public void testIsScrollableMvtEnabledWhenSurfacePolishEnabled_phones() {
+        Assert.assertTrue(ChromeFeatureList.sSurfacePolish.isEnabled());
+        Assert.assertFalse(
+                ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_PHONE_ANDROID));
+        Assert.assertFalse(StartSurfaceConfiguration.SURFACE_POLISH_SCROLLABLE_MVT.getValue());
+
+        // Tests on phones.
+        // Verifies if feature ChromeFeatureList.SURFACE_POLISH is enabled, feature
+        // ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_PHONE_ANDROID is ignored. Whether to show
+        // the scrollable MV tiles is determined by the value of
+        // StartSurfaceConfiguration.SURFACE_POLISH_SCROLLABLE_MVT.
+        Assert.assertFalse(DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext));
+        Assert.assertFalse(ReturnToChromeUtil.isScrollableMvtEnabled(mContext));
+
+        StartSurfaceConfiguration.SURFACE_POLISH_SCROLLABLE_MVT.setForTesting(true);
+        Assert.assertTrue(ReturnToChromeUtil.isScrollableMvtEnabled(mContext));
+    }
+
+    @Test
+    @DisableFeatures({ChromeFeatureList.SURFACE_POLISH})
+    @EnableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_PHONE_ANDROID})
+    public void testIsScrollableMvtEnabled_SurfacePolishDisabled_ScrollableMvtEnabled_phones() {
+        Assert.assertFalse(ChromeFeatureList.sSurfacePolish.isEnabled());
+        Assert.assertTrue(
+                ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_PHONE_ANDROID));
+        Assert.assertFalse(StartSurfaceConfiguration.SURFACE_POLISH_SCROLLABLE_MVT.getValue());
+
+        // Tests on phones.
+        // Verifies if feature ChromeFeatureList.SURFACE_POLISH is disabled, whether to show the
+        // scrollable MV tiles depends on feature flag
+        // ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_PHONE_ANDROID.
+        Assert.assertFalse(DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext));
+        Assert.assertTrue(ReturnToChromeUtil.isScrollableMvtEnabled(mContext));
+    }
+
+    @Test
+    @DisableFeatures({
+        ChromeFeatureList.SURFACE_POLISH,
+        ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_PHONE_ANDROID
+    })
+    public void testIsScrollableMvtEnabled_SurfacePolishDisabled_ScrollableMvtDisabled_phones() {
+        Assert.assertFalse(ChromeFeatureList.sSurfacePolish.isEnabled());
+        Assert.assertFalse(
+                ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_PHONE_ANDROID));
+        Assert.assertFalse(StartSurfaceConfiguration.SURFACE_POLISH_SCROLLABLE_MVT.getValue());
+
+        // Tests on phones.
+        // Verifies if feature ChromeFeatureList.SURFACE_POLISH is disabled, whether to show the
+        // scrollable MV tiles is determined by the feature flag
+        // ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_PHONE_ANDROID.
+        Assert.assertFalse(DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext));
         Assert.assertFalse(ReturnToChromeUtil.isScrollableMvtEnabled(mContext));
     }
 

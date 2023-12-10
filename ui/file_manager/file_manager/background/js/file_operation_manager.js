@@ -17,12 +17,12 @@ import {fileOperationUtil} from './file_operation_util.js';
 export class FileOperationManagerImpl {
   constructor() {
     /**
-     * @private {VolumeManager}
+     * @private @type {?VolumeManager}
      */
     this.volumeManager_ = null;
 
     /**
-     * @private {number}
+     * @private @type {number}
      */
     this.taskIdCounter_ = 0;
   }
@@ -44,9 +44,12 @@ export class FileOperationManagerImpl {
     }
 
     // Check all file entries and keeps only those need sharing operation.
+    // @ts-ignore: error TS7006: Parameter 'entry' implicitly has an 'any' type.
     const processEntry = entry => {
       return new Promise(resolve => {
         entry.getParent(
+            // @ts-ignore: error TS7006: Parameter 'inParentEntry' implicitly
+            // has an 'any' type.
             inParentEntry => {
               if (!util.isSameEntry(inParentEntry, targetEntry)) {
                 resolve(entry);
@@ -54,6 +57,8 @@ export class FileOperationManagerImpl {
                 resolve(null);
               }
             },
+            // @ts-ignore: error TS7006: Parameter 'error' implicitly has an
+            // 'any' type.
             error => {
               console.warn(error.stack || error);
               resolve(null);

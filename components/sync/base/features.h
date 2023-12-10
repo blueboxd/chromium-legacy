@@ -116,10 +116,10 @@ BASE_DECLARE_FEATURE(kSyncPollImmediatelyOnEveryStartup);
 // there won't be an additional delay.
 BASE_DECLARE_FEATURE(kSyncPollWithoutDelayOnStartup);
 
-#if !BUILDFLAG(IS_ANDROID) || !BUILDFLAG(IS_IOS)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 // Enables syncing the WEBAUTHN_CREDENTIAL data type.
 BASE_DECLARE_FEATURE(kSyncWebauthnCredentials);
-#endif  // !BUILDFLAG(IS_ANDROID) || !BUILDFLAG(IS_IOS)
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
 // If enabled, ignore GetUpdates retry delay command from the server.
 BASE_DECLARE_FEATURE(kSyncIgnoreGetUpdatesRetryDelay);
@@ -177,12 +177,6 @@ inline constexpr base::FeatureParam<base::TimeDelta>
 // Flag to enable the option to batch upload local data from the new account
 // settings panel.
 BASE_DECLARE_FEATURE(kSyncEnableBatchUploadLocalData);
-BASE_DECLARE_FEATURE(kSyncEnableBatchUploadLocalDataWithDummyDataForTesting);
-inline constexpr base::FeatureParam<base::TimeDelta>
-    kSyncResponseDelayForBatchUploadLocalDataWithDummyDataForTesting{
-        &kSyncEnableBatchUploadLocalDataWithDummyDataForTesting,
-        "SyncResponseDelayForBatchUploadLocalDataWithDummyDataForTesting",
-        base::Seconds(1)};
 
 #if BUILDFLAG(IS_ANDROID)
 // Feature flag for enabling the restoration of synced placeholder tabs missing
@@ -193,6 +187,10 @@ BASE_DECLARE_FEATURE(kRestoreSyncedPlaceholderTabs);
 // If enabled, triggers a synchronisation when WebContentsObserver's
 // -OnVisibilityChanged method is called.
 BASE_DECLARE_FEATURE(kSyncSessionOnVisibilityChanged);
+
+// If enabled, the payment methods sync setting toggle is decoupled from
+// autofill. See crbug.com/1435431 for details.
+BASE_DECLARE_FEATURE(kSyncDecoupleAddressPaymentSettings);
 
 }  // namespace syncer
 

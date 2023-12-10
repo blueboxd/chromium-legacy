@@ -33,7 +33,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/allocator/partition_allocator/page_allocator.h"
+#include "base/allocator/partition_allocator/src/partition_alloc/page_allocator.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/ranges/algorithm.h"
@@ -184,6 +184,11 @@ void CreateMainThreadAndInitialize(Platform* platform,
 // Function defined in third_party/blink/public/web/blink.h.
 void SetIsCrossOriginIsolated(bool value) {
   Agent::SetIsCrossOriginIsolated(value);
+}
+
+// Function defined in third_party/blink/public/web/blink.h.
+void SetIsWebSecurityDisabled(bool value) {
+  Agent::SetIsWebSecurityDisabled(value);
 }
 
 // Function defined in third_party/blink/public/web/blink.h.

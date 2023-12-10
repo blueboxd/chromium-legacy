@@ -14,7 +14,7 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_manager_test_base.h"
 #include "chrome/browser/password_manager/password_manager_uitest_util.h"
-#include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/password_manager/profile_password_store_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tab_dialogs.h"
@@ -43,7 +43,7 @@ constexpr base::TimeDelta kWaitForSaveFallbackInterval = base::Seconds(5);
 // and test recipe replay files.
 base::FilePath GetReplayFilesRootDirectory() {
   base::FilePath src_dir;
-  if (base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir)) {
+  if (base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &src_dir)) {
     return src_dir.AppendASCII("chrome")
         .AppendASCII("test")
         .AppendASCII("data")
@@ -89,8 +89,8 @@ class CapturedSitesPasswordManagerBrowserTest
                      const std::string& username,
                      const std::string& password) override {
     scoped_refptr<password_manager::PasswordStoreInterface> password_store =
-        PasswordStoreFactory::GetForProfile(browser()->profile(),
-                                            ServiceAccessType::EXPLICIT_ACCESS);
+        ProfilePasswordStoreFactory::GetForProfile(
+            browser()->profile(), ServiceAccessType::EXPLICIT_ACCESS);
     password_manager::PasswordForm signin_form;
     signin_form.url = GURL(origin);
     signin_form.signon_realm = origin;
@@ -156,8 +156,8 @@ class CapturedSitesPasswordManagerBrowserTest
                                  const std::string& username,
                                  const std::string& password) override {
     scoped_refptr<password_manager::PasswordStoreInterface> password_store =
-        PasswordStoreFactory::GetForProfile(browser()->profile(),
-                                            ServiceAccessType::EXPLICIT_ACCESS);
+        ProfilePasswordStoreFactory::GetForProfile(
+            browser()->profile(), ServiceAccessType::EXPLICIT_ACCESS);
     FakePasswordStoreBackend* fake_backend =
         static_cast<FakePasswordStoreBackend*>(
             password_store->GetBackendForTesting());
@@ -196,7 +196,7 @@ class CapturedSitesPasswordManagerBrowserTest
                   SyncServiceFactory::GetInstance()->SetTestingFactory(
                       context, base::BindRepeating(&BuildTestSyncService));
 
-                  PasswordStoreFactory::GetInstance()->SetTestingFactory(
+                  ProfilePasswordStoreFactory::GetInstance()->SetTestingFactory(
                       context,
                       base::BindRepeating(
                           &password_manager::BuildPasswordStoreWithFakeBackend<
@@ -282,7 +282,7 @@ IN_PROC_BROWSER_TEST_P(CapturedSitesPasswordManagerBrowserTest, Recipe) {
       "password_manager_captured_sites_interactive_uitest");
 
   base::FilePath src_dir;
-  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &src_dir));
 
   bool test_completed = recipe_replayer()->ReplayTest(
       GetParam().capture_file_path, GetParam().recipe_file_path,

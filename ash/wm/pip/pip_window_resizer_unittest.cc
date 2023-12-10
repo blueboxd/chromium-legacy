@@ -21,6 +21,7 @@
 #include "ash/wm/pip/pip_test_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/test/fake_window_state.h"
+#include "ash/wm/test/test_non_client_frame_view_ash.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/work_area_insets.h"
@@ -28,6 +29,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/scoped_display_for_new_windows.h"
@@ -65,6 +67,7 @@ class PipWindowResizerTest : public AshTestBase,
   }
 
   void TearDown() override {
+    widget_.reset();
     scoped_display_.reset();
     SetVirtualKeyboardEnabled(false);
     AshTestBase::TearDown();
@@ -81,12 +84,21 @@ class PipWindowResizerTest : public AshTestBase,
     gfx::Rect screen_bounds = bounds;
     ::wm::ConvertRectToScreen(root_window, &screen_bounds);
 
+    auto* pip_container =
+        Shell::GetContainer(root_window, kShellWindowId_PipContainer);
+
     std::unique_ptr<views::Widget> widget(new views::Widget);
     views::Widget::InitParams params;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = screen_bounds;
     params.z_order = ui::ZOrderLevel::kFloatingWindow;
     params.context = root_window;
+    params.parent = pip_container;
+
+    // Add a delegate to make it possible to set the maximum and minimum
+    // size for the window with `NonClientFrameViewAsh`.
+    params.delegate = new TestWidgetDelegateAsh();
+
     widget->Init(std::move(params));
     widget->Show();
     return widget;
@@ -138,9 +150,14 @@ class PipWindowResizerTest : public AshTestBase,
   void PreparePipWindow(const gfx::Rect& bounds) {
     widget_ = CreateWidgetForTest(bounds);
     window_ = widget_->GetNativeWindow();
+
     auto test_state = std::make_unique<FakeWindowState>(WindowStateType::kPip);
     test_state_ = test_state.get();
     WindowState::Get(window_)->SetStateObject(std::move(test_state));
+
+    long root_window_index = static_cast<long>(std::get<1>(GetParam()));
+    window_->SetProperty(aura::client::kFullscreenTargetDisplayIdKey,
+                         root_window_index);
   }
 
  private:
@@ -178,6 +195,92 @@ TEST_P(PipWindowResizerTest, PipWindowCanResize) {
   resizer->Drag(CalculateDragPoint(*resizer, 0, 10), 0);
   EXPECT_EQ(gfx::Rect(200, 200, 100, 110),
             test_state()->last_requested_bounds());
+}
+
+TEST_P(PipWindowResizerTest, PipWindowCanPinchResize) {
+  gfx::RectF initial_bounds(200, 200, 120, 80);
+  gfx::PointF initial_location = initial_bounds.CenterPoint();
+  gfx::Vector2dF location_change(0.f, 0.f);
+  gfx::PointF new_location = initial_location + location_change;
+  float scale = 1.5f;
+
+  PreparePipWindow(gfx::ToRoundedRect(initial_bounds));
+
+  std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
+  ASSERT_TRUE(resizer.get());
+
+  // The Pinch-to-Resize feature requires that the maximum and
+  // minimum size are set.
+  auto* custom_frame = static_cast<TestNonClientFrameViewAsh*>(
+      NonClientFrameViewAsh::Get(window()));
+  custom_frame->SetMaximumSize(gfx::Size(300, 200));
+  custom_frame->SetMinimumSize(gfx::Size(30, 20));
+  window()->SetProperty(aura::client::kAspectRatio, gfx::SizeF(3.f, 2.f));
+
+  // Pinch zoom in.
+  resizer->Pinch(
+      CalculateDragPoint(*resizer, location_change.x(), location_change.y()),
+      scale);
+
+  // Calculate the expected new bounds.
+  float left_ratio =
+      (initial_location.x() - initial_bounds.x()) / initial_bounds.width();
+  float top_ratio =
+      (initial_location.y() - initial_bounds.y()) / initial_bounds.height();
+  gfx::SizeF new_size(gfx::ScaleSize(initial_bounds.size(), scale));
+  gfx::Rect expected_bounds(new_location.x() - new_size.width() * left_ratio,
+                            new_location.y() - new_size.height() * top_ratio,
+                            new_size.width(), new_size.height());
+
+  // Verify that the window has expected new bounds.
+  EXPECT_EQ(expected_bounds, test_state()->last_requested_bounds());
+
+  // Pinch zoom out.
+  resizer->Pinch(CalculateDragPoint(*resizer, 0, 0), 0.5f);
+
+  // Calculate the expected new bounds.
+  scale *= 0.5f;
+  left_ratio =
+      (initial_location.x() - initial_bounds.x()) / initial_bounds.width();
+  top_ratio =
+      (initial_location.y() - initial_bounds.y()) / initial_bounds.height();
+  new_size = gfx::ScaleSize(initial_bounds.size(), scale);
+  expected_bounds = gfx::Rect(new_location.x() - new_size.width() * left_ratio,
+                              new_location.y() - new_size.height() * top_ratio,
+                              new_size.width(), new_size.height());
+
+  EXPECT_EQ(expected_bounds, test_state()->last_requested_bounds());
+}
+
+TEST_P(PipWindowResizerTest, PipWindowHasResistanceEffect) {
+  PreparePipWindow(gfx::Rect(200, 200, 120, 80));
+  std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
+
+  // The Pinch-to-Resize feature requires that the maximum and
+  // minimum size are set.
+  auto* custom_frame = static_cast<TestNonClientFrameViewAsh*>(
+      NonClientFrameViewAsh::Get(window()));
+  custom_frame->SetMaximumSize(gfx::Size(300, 200));
+  custom_frame->SetMinimumSize(gfx::Size(60, 40));
+  window()->SetProperty(aura::client::kAspectRatio, gfx::SizeF(3.f, 2.f));
+
+  // Pinch zoom in beyond maximum size.
+  resizer->Pinch(CalculateDragPoint(*resizer, 0, 0), 3.f);
+
+  // Confirm that the window has scaled up with a transform.
+  EXPECT_GE(window()->transform().To2dScale().x(), 1.05);
+  EXPECT_LE(window()->transform().To2dScale().x(), 1.15);
+  EXPECT_GE(window()->transform().To2dScale().y(), 1.05);
+  EXPECT_LE(window()->transform().To2dScale().y(), 1.15);
+
+  // Pinch zoom out beyond minimum size.
+  resizer->Pinch(CalculateDragPoint(*resizer, 0, 0), 0.1f);
+
+  // Confirm that the window has scaled down with a transform.
+  EXPECT_GE(window()->transform().To2dScale().x(), 0.85);
+  EXPECT_LE(window()->transform().To2dScale().x(), 0.9);
+  EXPECT_GE(window()->transform().To2dScale().y(), 0.85);
+  EXPECT_LE(window()->transform().To2dScale().y(), 0.9);
 }
 
 TEST_P(PipWindowResizerTest, PipWindowDragIsRestrictedToWorkArea) {
@@ -342,11 +445,11 @@ TEST_P(PipWindowResizerTest,
 }
 
 TEST_P(PipWindowResizerTest, PipWindowIsFlungToEdge) {
-  PreparePipWindow(gfx::Rect(200, 200, 100, 100));
   auto landscape =
       display::Screen::GetScreen()->GetPrimaryDisplay().is_landscape();
 
   {
+    PreparePipWindow(gfx::Rect(200, 200, 100, 100));
     std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
     ASSERT_TRUE(resizer.get());
 
@@ -360,6 +463,7 @@ TEST_P(PipWindowResizerTest, PipWindowIsFlungToEdge) {
   }
 
   {
+    PreparePipWindow(gfx::Rect(200, 200, 100, 100));
     std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
     ASSERT_TRUE(resizer.get());
 
@@ -372,6 +476,7 @@ TEST_P(PipWindowResizerTest, PipWindowIsFlungToEdge) {
   }
 
   {
+    PreparePipWindow(gfx::Rect(200, 200, 100, 100));
     std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
     ASSERT_TRUE(resizer.get());
 
@@ -384,6 +489,7 @@ TEST_P(PipWindowResizerTest, PipWindowIsFlungToEdge) {
   }
 
   {
+    PreparePipWindow(gfx::Rect(200, 200, 100, 100));
     std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
     ASSERT_TRUE(resizer.get());
 
@@ -397,11 +503,11 @@ TEST_P(PipWindowResizerTest, PipWindowIsFlungToEdge) {
 }
 
 TEST_P(PipWindowResizerTest, PipWindowIsFlungDiagonally) {
-  PreparePipWindow(gfx::Rect(200, 200, 100, 100));
   auto landscape =
       display::Screen::GetScreen()->GetPrimaryDisplay().is_landscape();
 
   {
+    PreparePipWindow(gfx::Rect(200, 200, 100, 100));
     std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
     ASSERT_TRUE(resizer.get());
 
@@ -414,6 +520,7 @@ TEST_P(PipWindowResizerTest, PipWindowIsFlungDiagonally) {
   }
 
   {
+    PreparePipWindow(gfx::Rect(200, 200, 100, 100));
     std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
     ASSERT_TRUE(resizer.get());
 
@@ -425,6 +532,7 @@ TEST_P(PipWindowResizerTest, PipWindowIsFlungDiagonally) {
     EXPECT_EQ(origin, test_state()->last_requested_bounds().origin());
   }
   {
+    PreparePipWindow(gfx::Rect(200, 200, 100, 100));
     std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
     ASSERT_TRUE(resizer.get());
 
@@ -436,6 +544,7 @@ TEST_P(PipWindowResizerTest, PipWindowIsFlungDiagonally) {
   }
 
   {
+    PreparePipWindow(gfx::Rect(200, 200, 100, 100));
     std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
     ASSERT_TRUE(resizer.get());
 
@@ -448,6 +557,7 @@ TEST_P(PipWindowResizerTest, PipWindowIsFlungDiagonally) {
   }
 
   {
+    PreparePipWindow(gfx::Rect(200, 200, 100, 100));
     std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
     ASSERT_TRUE(resizer.get());
 
@@ -460,6 +570,7 @@ TEST_P(PipWindowResizerTest, PipWindowIsFlungDiagonally) {
   }
 
   {
+    PreparePipWindow(gfx::Rect(200, 200, 100, 100));
     std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
     ASSERT_TRUE(resizer.get());
 
@@ -472,6 +583,7 @@ TEST_P(PipWindowResizerTest, PipWindowIsFlungDiagonally) {
   }
 
   {
+    PreparePipWindow(gfx::Rect(200, 200, 100, 100));
     std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
     ASSERT_TRUE(resizer.get());
 
@@ -484,6 +596,7 @@ TEST_P(PipWindowResizerTest, PipWindowIsFlungDiagonally) {
   }
 
   {
+    PreparePipWindow(gfx::Rect(200, 200, 100, 100));
     std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
     ASSERT_TRUE(resizer.get());
 
@@ -496,6 +609,7 @@ TEST_P(PipWindowResizerTest, PipWindowIsFlungDiagonally) {
   }
 
   {
+    PreparePipWindow(gfx::Rect(200, 200, 100, 100));
     std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
     ASSERT_TRUE(resizer.get());
 

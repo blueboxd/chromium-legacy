@@ -6,45 +6,46 @@
 
 load("@builtin//struct.star", "module")
 
-__filegroups = {
-    "third_party/rust-toolchain:toolchain": {
-        "type": "glob",
-        "includes": [
-            "bin/rustc",
-            "lib/*.so",
-        ],
-    },
-    "build/linux/debian_bullseye_amd64-sysroot:rustlink": {
-        "type": "glob",
-        "includes": [
-            "*.so",
-            "*.so.*",
-            "*.o",
-            "*.a",
-        ],
-    },
-    "third_party/llvm-build/Release+Asserts:rustlink": {
-        "type": "glob",
-        "includes": [
-            "bin/clang",
-            "bin/clang++",
-            "bin/*lld",
-            "libclang*.a",
-        ],
-    },
-    "third_party/fuchsia-sdk/sdk/arch/x64/lib:rustlink": {
-        "type": "glob",
-        "includes": [
-            "*",
-        ],
-    },
-    "third_party/fuchsia-sdk/sdk/arch/x64/sysroot:rustlink": {
-        "type": "glob",
-        "includes": [
-            "lib/*",
-        ],
-    },
-}
+def __filegroups(ctx):
+    return {
+        "third_party/rust-toolchain:toolchain": {
+            "type": "glob",
+            "includes": [
+                "bin/rustc",
+                "lib/*.so",
+            ],
+        },
+        "build/linux/debian_bullseye_amd64-sysroot:rustlink": {
+            "type": "glob",
+            "includes": [
+                "*.so",
+                "*.so.*",
+                "*.o",
+                "*.a",
+            ],
+        },
+        "third_party/llvm-build/Release+Asserts:rustlink": {
+            "type": "glob",
+            "includes": [
+                "bin/clang",
+                "bin/clang++",
+                "bin/*lld",
+                "libclang*.a",
+            ],
+        },
+        "third_party/fuchsia-sdk/sdk/arch/x64/lib:rustlink": {
+            "type": "glob",
+            "includes": [
+                "*",
+            ],
+        },
+        "third_party/fuchsia-sdk/sdk/arch/x64/sysroot:rustlink": {
+            "type": "glob",
+            "includes": [
+                "lib/*",
+            ],
+        },
+    }
 
 def __rust_bin_handler(ctx, cmd):
     inputs = []
@@ -62,6 +63,7 @@ __handlers = {
 
 def __step_config(ctx, step_config):
     remote_run = True  # Turn this to False when you do file access trace.
+    platform_ref = "large"  # Rust actions run faster on large workers.
     clang_inputs = [
         "build/linux/debian_bullseye_amd64-sysroot:rustlink",
         "third_party/llvm-build/Release+Asserts:rustlink",
@@ -93,6 +95,7 @@ def __step_config(ctx, step_config):
             "remote": remote_run,
             # "canonicalize_dir": True,  # TODO(b/300352286)
             "timeout": "2m",
+            "platform_ref": platform_ref,
         },
         {
             "name": "rust_cdylib",
@@ -103,6 +106,7 @@ def __step_config(ctx, step_config):
             "remote": remote_run,
             "canonicalize_dir": True,
             "timeout": "2m",
+            "platform_ref": platform_ref,
         },
         {
             "name": "rust_macro",
@@ -113,6 +117,7 @@ def __step_config(ctx, step_config):
             "remote": remote_run,
             "canonicalize_dir": True,
             "timeout": "2m",
+            "platform_ref": platform_ref,
         },
         {
             "name": "rust_rlib",
@@ -123,6 +128,7 @@ def __step_config(ctx, step_config):
             "remote": remote_run,
             # "canonicalize_dir": True,  # TODO(b/300352286)
             "timeout": "2m",
+            "platform_ref": platform_ref,
         },
         {
             "name": "rust_staticlib",
@@ -133,6 +139,7 @@ def __step_config(ctx, step_config):
             "remote": remote_run,
             "canonicalize_dir": True,
             "timeout": "2m",
+            "platform_ref": platform_ref,
         },
     ])
     return step_config

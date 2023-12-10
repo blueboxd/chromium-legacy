@@ -219,7 +219,7 @@ const base::FeatureParam<int> kThumbnailCapturerMacMaxSourcesPerCycles{
 
 bool API_AVAILABLE(macos(12.3))
     IsWindowFullscreen(SCWindow* window, NSArray<SCDisplay*>* displays) {
-  for (SCDisplay* display : displays) {
+  for (SCDisplay* display in displays) {
     if (CGRectEqualToRect(window.frame, display.frame)) {
       return true;
     }
@@ -375,8 +375,7 @@ void ScreenshotManagerCapturer::OnRecurrentCaptureTimer() {
   }
 }
 
-void API_AVAILABLE(macos(14.0))
-    ScreenshotManagerCapturer::SCScreenshotCaptureWindow(SCWindow* window) {
+void ScreenshotManagerCapturer::SCScreenshotCaptureWindow(SCWindow* window) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   // Create SCStreamConfiguration.
@@ -422,7 +421,7 @@ class API_AVAILABLE(macos(13.2)) ThumbnailCapturerMac
     : public ThumbnailCapturer {
  public:
   ThumbnailCapturerMac();
-  ~ThumbnailCapturerMac() override{};
+  ~ThumbnailCapturerMac() override {}
 
   void Start(Consumer* callback) override;
 

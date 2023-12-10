@@ -90,9 +90,10 @@ GrGLenum GetSurfaceColorFormat(GrGLenum format, GrGLenum type) {
 }
 
 // Return true if all of `sk_yuv_color_space`, `sk_plane_config`,
-// `sk_subsampling`, `rgba_image, `num_yuva_images`, and `yuva_images` were
-// successfully populated. Return false on error. If this returns false, some
-// of the output arguments may be left populated.
+// `sk_subsampling`, `rgba_image` (if `populate_rgba_image` is true),
+// `num_yuva_images`, and `yuva_images` were successfully populated. Return
+// false on error. If this returns false, some of the output arguments may be
+// left populated.
 base::expected<void, GLError> ConvertYUVACommon(
     const char* function_name,
     GLenum yuv_color_space_in,
@@ -107,7 +108,8 @@ base::expected<void, GLError> ConvertYUVACommon(
     std::unique_ptr<SkiaImageRepresentation>& rgba_image,
     int& num_yuva_planes,
     std::array<std::unique_ptr<SkiaImageRepresentation>,
-               SkYUVAInfo::kMaxPlanes>& yuva_images) {
+               SkYUVAInfo::kMaxPlanes>& yuva_images,
+    bool populate_rgba_image) {
   if (yuv_color_space_in < 0 ||
       yuv_color_space_in > kLastEnum_SkYUVColorSpace) {
     return base::unexpected(
@@ -141,11 +143,13 @@ base::expected<void, GLError> ConvertYUVACommon(
         << " with plane config " << plane_config_in;
   }
   gpu::Mailbox rgba_mailbox;
-  rgba_mailbox =
-      Mailbox::FromVolatile(reinterpret_cast<const volatile Mailbox*>(
-          mailboxes_in)[SkYUVAInfo::kMaxPlanes]);
-  DLOG_IF(ERROR, !rgba_mailbox.Verify())
-      << function_name << " was passed an invalid mailbox for RGBA";
+  if (populate_rgba_image) {
+    rgba_mailbox =
+        Mailbox::FromVolatile(reinterpret_cast<const volatile Mailbox*>(
+            mailboxes_in)[SkYUVAInfo::kMaxPlanes]);
+    DLOG_IF(ERROR, !rgba_mailbox.Verify())
+        << function_name << " was passed an invalid mailbox for RGBA";
+  }
 
   for (int i = 0; i < num_yuva_planes; ++i) {
     yuva_images[i] = representation_factory->ProduceSkia(yuva_mailboxes[i],
@@ -159,12 +163,14 @@ base::expected<void, GLError> ConvertYUVACommon(
           GLError(GL_INVALID_OPERATION, function_name, msg));
     }
   }
-  rgba_image =
-      representation_factory->ProduceSkia(rgba_mailbox, shared_context_state);
-  if (!rgba_image) {
-    return base::unexpected(
-        GLError(GL_INVALID_OPERATION, "ConvertYUVAMailboxesToRGB",
-                "Attempting to operate on unknown dest mailbox."));
+  if (populate_rgba_image) {
+    rgba_image =
+        representation_factory->ProduceSkia(rgba_mailbox, shared_context_state);
+    if (!rgba_image) {
+      return base::unexpected(
+          GLError(GL_INVALID_OPERATION, "ConvertYUVAMailboxesToRGB",
+                  "Attempting to operate on unknown dest mailbox."));
+    }
   }
   return base::ok();
 }
@@ -362,7 +368,7 @@ base::expected<void, GLError> CopySharedImageHelper::ConvertRGBAToYUVAMailboxes(
       "ConvertYUVAMailboxesToRGB", yuv_color_space, plane_config, subsampling,
       mailboxes_in, representation_factory_, shared_context_state_,
       dst_color_space, dst_plane_config, dst_subsampling, rgba_image,
-      num_yuva_planes, yuva_images));
+      num_yuva_planes, yuva_images, /*populate_rgba_image=*/true));
 
   std::vector<GrBackendSemaphore> begin_semaphores;
   std::vector<GrBackendSemaphore> end_semaphores;
@@ -450,7 +456,7 @@ base::expected<void, GLError> CopySharedImageHelper::ConvertYUVAMailboxesToRGB(
       "ConvertYUVAMailboxesToRGB", planes_yuv_color_space, plane_config,
       subsampling, bytes_in, representation_factory_, shared_context_state_,
       src_yuv_color_space, src_plane_config, src_subsampling, rgba_image,
-      num_src_planes, yuva_images));
+      num_src_planes, yuva_images, /*populate_rgba_image=*/true));
 
   sk_sp<SkColorSpace> src_rgb_color_space = ReadSkColorSpace(
       bytes_in + (SkYUVAInfo::kMaxPlanes + 1) * sizeof(gpu::Mailbox));
@@ -972,6 +978,16 @@ base::expected<void, GLError> CopySharedImageHelper::ReadPixels(
                                     "Couldn't create SkImage for reading."));
   }
 
+  gfx::Size src_size = source_shared_image->size();
+  gfx::Rect src_rect(src_x, src_y, dst_info.width(), dst_info.height());
+  if (!gfx::Rect(src_size).Contains(src_rect)) {
+    source_scoped_access->ApplyBackendSurfaceEndState();
+    SubmitIfNecessary(std::move(end_semaphores), shared_context_state_,
+                      is_drdc_enabled_);
+    return base::unexpected(GLError(GL_INVALID_VALUE, "glReadbackImagePixels",
+                                    "source shared image bad dimensions."));
+  }
+
   bool success = false;
   if (gr_context) {
     success = sk_image->readPixels(gr_context, dst_info, pixel_address,
@@ -979,11 +995,10 @@ base::expected<void, GLError> CopySharedImageHelper::ReadPixels(
   } else {
     CHECK(shared_context_state_->graphite_context());
     ReadPixelsContext context;
-    const SkIRect src_rect =
-        SkIRect::MakeXYWH(src_x, src_y, dst_info.width(), dst_info.height());
     shared_context_state_->graphite_context()->asyncRescaleAndReadPixels(
-        sk_image.get(), dst_info, src_rect, SkImage::RescaleGamma::kSrc,
-        SkImage::RescaleMode::kRepeatedLinear, &OnReadPixelsDone, &context);
+        sk_image.get(), dst_info, RectToSkIRect(src_rect),
+        SkImage::RescaleGamma::kSrc, SkImage::RescaleMode::kRepeatedLinear,
+        &OnReadPixelsDone, &context);
     InsertRecordingAndSubmit(shared_context_state_, /*sync_cpu=*/true);
     CHECK(context.finished);
     if (context.async_result) {

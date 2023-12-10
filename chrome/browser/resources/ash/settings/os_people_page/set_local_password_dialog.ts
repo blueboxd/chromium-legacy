@@ -8,7 +8,7 @@ import {SetLocalPasswordInputElement} from 'chrome://resources/ash/common/auth_s
 import {fireAuthTokenInvalidEvent} from 'chrome://resources/ash/common/quick_unlock/utils.js';
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {ConfigureResult, PasswordFactorEditor} from 'chrome://resources/mojo/chromeos/ash/services/auth_factor_config/public/mojom/auth_factor_config.mojom-webui.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -23,15 +23,15 @@ export interface SettingsSetLocalPasswordDialogElement {
 }
 
 export class SettingsSetLocalPasswordDialogElement extends PolymerElement {
-  public static get is() {
+  static get is() {
     return 'settings-set-local-password-dialog' as const;
   }
 
-  public static get template() {
+  static get template() {
     return getTemplate();
   }
 
-  public static get properties() {
+  static get properties() {
     return {
       authToken: {
         type: String,
@@ -44,7 +44,7 @@ export class SettingsSetLocalPasswordDialogElement extends PolymerElement {
     };
   }
 
-  public authToken: string|null;
+  authToken: string|null;
   private showError_: boolean;
 
   override ready(): void {

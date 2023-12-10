@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "ash/shell.h"
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -18,7 +19,6 @@
 #include "base/location.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/pref_names.h"
@@ -28,7 +28,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -112,6 +111,8 @@ void BootTimesRecorder::LoginDone(bool is_user_new) {
   login_done_ = true;
   login_started_ = false;
   AddLoginTimeMarker("LoginDone", false);
+  ash::Shell::Get()->login_unlock_throughput_recorder()->AddLoginTimeMarker(
+      kUmaLogin);
   RecordCurrentStats(kChromeFirstRender);
   LoginEventRecorder::Get()->ScheduleWriteLoginTimes(
       kLoginTimes, (is_user_new ? kUmaLoginNewUser : kUmaLogin),

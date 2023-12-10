@@ -6,9 +6,10 @@
 #define CHROME_BROWSER_ASH_POLICY_DLP_DIALOGS_FILES_POLICY_DIALOG_H_
 
 #include <string>
+#include <utility>
 
+#include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ash/policy/dlp/files_policy_warn_settings.h"
 #include "chrome/browser/chromeos/policy/dlp/dialogs/policy_dialog_base.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_confidential_file.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_file_destination.h"
@@ -43,11 +44,14 @@ class FilesPolicyDialog : public PolicyDialogBase {
 
   // Reasons for which a file can be blocked either because of an Enterprise
   // Connectors or DLP policy.
+  // Please keep in sync with the `available_reasons` array below!
+  // TODO(b/302653030): consider whether unifying BlockReason and Policy.
   enum class BlockReason {
     // File was blocked because of Data Leak Prevention policies.
     kDlp,
-    // File was blocked but the reason is not known.
-    kEnterpriseConnectorsUnknown,
+    // File was blocked because added to an Enterprise Connectors scanned
+    // directory after the scan begun, and thus the file was not scanned.
+    kEnterpriseConnectorsUnknownScanResult,
     // File was blocked because it contains sensitive data (e.g., SSNs).
     kEnterpriseConnectorsSensitiveData,
     // File was blocked because it's a malware.
@@ -56,6 +60,97 @@ class FilesPolicyDialog : public PolicyDialogBase {
     kEnterpriseConnectorsEncryptedFile,
     // File was blocked because it could not be uploaded due to its size.
     kEnterpriseConnectorsLargeFile,
+    // File was blocked because of Enterprise Connectors policies. This can be
+    // used to mark files that do not require a more specific description of the
+    // reason for which they were blocked.
+    kEnterpriseConnectors,
+  };
+
+  // All the available reasons.
+  // Please keep the array in sync with the `BlockReason` enum above!
+  static constexpr std::array<BlockReason, 7> available_reasons{
+      BlockReason::kDlp,
+      BlockReason::kEnterpriseConnectorsUnknownScanResult,
+      BlockReason::kEnterpriseConnectorsSensitiveData,
+      BlockReason::kEnterpriseConnectorsMalware,
+      BlockReason::kEnterpriseConnectorsEncryptedFile,
+      BlockReason::kEnterpriseConnectorsLargeFile,
+      BlockReason::kEnterpriseConnectors};
+
+  // Returns the ID of the view that contains all details related to the given
+  // `reason` in a mixed error dialog.
+  static PolicyDialogBase::ViewIds MapBlockReasonToViewID(BlockReason reason);
+
+  // Class holding information to build a dialog such as a message to the user,
+  // a list of files involved, an optional learn more link, and for warning
+  // scenarios whether the user is required to provide a justification to bypass
+  // the warning. These info map to a section in the dialog.
+  class Info {
+   public:
+    // Creates default dialog settings for warning scenarios.
+    static Info Warn(BlockReason reason,
+                     const std::vector<base::FilePath>& paths);
+
+    // Creates default dialog settings for error scenarios.
+    static Info Error(BlockReason reason,
+                      const std::vector<base::FilePath>& paths);
+
+    ~Info();
+    Info(const Info& other);
+    Info& operator=(Info&& other);
+
+    bool operator==(const Info& other) const;
+    bool operator!=(const Info& other) const;
+
+    const std::vector<DlpConfidentialFile>& GetFiles() const;
+
+    // For warning scenarios only, returns whether bypassing the warning
+    // requires a user justification.
+    bool DoesBypassRequireJustification() const;
+
+    // Sets whether bypassing a warning requires a user justification.
+    void SetBypassRequiresJustification(bool value);
+
+    // Returns the message that should be shown in the dialog.
+    std::u16string GetMessage() const;
+
+    // Overrides the default message.
+    void SetMessage(const absl::optional<std::u16string>& message);
+
+    // Returns whether a custom message was set.
+    bool HasCustomMessage() const;
+
+    // Returns the learn more URL that should be shown in the dialog, if any.
+    absl::optional<GURL> GetLearnMoreURL() const;
+
+    // Overrides the default learn more URL.
+    void SetLearnMoreURL(const absl::optional<GURL>& url);
+
+    // Returns whether at least one of the default values (e.g., message, learn
+    // more URL, etc...) has been overridden with a custom value.
+    bool HasCustomDetails() const;
+
+   private:
+    Info();
+
+    // The files that should be displayed.
+    std::vector<DlpConfidentialFile> files_;
+
+    // Whether the user is required to write a justification to bypass the
+    // warning. This is only relevant for warning scenarios.
+    bool bypass_requires_justification_ = false;
+
+    // Default or admin defined message.
+    std::u16string message_;
+
+    // Whether `message_` is a custom message.
+    bool is_custom_message_ = false;
+
+    // Whether `learn_more_url_` is a custom url.
+    bool is_custom_learn_more_url_ = false;
+
+    // Default, admin defined learn more URL, or none of them.
+    absl::optional<GURL> learn_more_url_;
   };
 
   FilesPolicyDialog() = delete;
@@ -70,16 +165,15 @@ class FilesPolicyDialog : public PolicyDialogBase {
   // Widget.
   static views::Widget* CreateWarnDialog(
       OnDlpRestrictionCheckedWithJustificationCallback callback,
-      const std::vector<DlpConfidentialFile>& files,
       dlp::FileAction action,
       gfx::NativeWindow modal_parent,
-      absl::optional<DlpFileDestination> destination = absl::nullopt,
-      FilesPolicyWarnSettings settings = FilesPolicyWarnSettings());
+      Info dialog_info,
+      absl::optional<DlpFileDestination> destination = absl::nullopt);
 
   // Creates and shows an instance of FilesPolicyErrorDialog. Returns owning
   // Widget.
   static views::Widget* CreateErrorDialog(
-      const std::map<DlpConfidentialFile, BlockReason>& files,
+      const std::map<BlockReason, Info>& dialog_info_map,
       dlp::FileAction action,
       gfx::NativeWindow modal_parent);
 
@@ -109,15 +203,14 @@ class FilesPolicyDialogFactory {
 
   virtual views::Widget* CreateWarnDialog(
       OnDlpRestrictionCheckedWithJustificationCallback callback,
-      const std::vector<DlpConfidentialFile>& files,
       dlp::FileAction action,
       gfx::NativeWindow modal_parent,
       absl::optional<DlpFileDestination> destination,
-      FilesPolicyWarnSettings settings) = 0;
+      FilesPolicyDialog::Info settings) = 0;
 
   virtual views::Widget* CreateErrorDialog(
-      const std::map<DlpConfidentialFile, FilesPolicyDialog::BlockReason>&
-          files,
+      const std::map<FilesPolicyDialog::BlockReason, FilesPolicyDialog::Info>&
+          dialog_info_map,
       dlp::FileAction action,
       gfx::NativeWindow modal_parent) = 0;
 };

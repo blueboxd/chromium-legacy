@@ -60,6 +60,7 @@ class PasswordGenerationControllerImpl
       base::WeakPtr<password_manager::ContentPasswordManagerDriver>
           target_frame_driver,
       const autofill::password_generation::PasswordGenerationUIData& ui_data,
+      bool has_saved_credentials,
       gfx::RectF element_bounds_in_screen_space) override;
   void ShowManualGenerationDialog(
       const password_manager::ContentPasswordManagerDriver* target_frame_driver,
@@ -141,13 +142,20 @@ class PasswordGenerationControllerImpl
   // for metrics.
   void ShowDialog(autofill::password_generation::PasswordGenerationType type);
 
-  bool TryToShowGenerationTouchToFill();
+  bool TryToShowGenerationTouchToFill(bool has_saved_credentials);
+
+  bool ShowBottomSheet(
+      autofill::password_generation::PasswordGenerationType type);
 
   void OnTouchToFillForGenerationDismissed();
 
   // Resets the current active frame driver, as well as the dialog if shown
   // and the generation element data.
   void ResetFocusState();
+
+  // Sets the number of generation bottom sheet rejections in a row to 0.
+  // Expected to be called when user voluntary triggers password generation.
+  void ResetPasswordGenerationDismissBottomSheetCount();
 
   // The PasswordManagerClient associated with the current `web_contents_`.
   // Used to tell the renderer that manual generation was requested.

@@ -57,7 +57,7 @@ def _CheckForWrongMojomIncludes(input_api, output_api):
     # public C++ API. Adding to these allowed interfaces should meet the
     # following conditions:
     # - Its pros/cons is discussed and have consensus on
-    #   platform-architecture-dev@ and/or
+    #   platform-architecture-dev@ or
     # - It uses POD types that will not import STL (or base string) types into
     #   blink (such as no strings or vectors).
     #
@@ -75,12 +75,14 @@ def _CheckForWrongMojomIncludes(input_api, output_api):
         'third_party/blink/public/mojom/blob/blob',
         'third_party/blink/public/mojom/blob/serialized_blob',
         'third_party/blink/public/mojom/fetch/fetch_api_request',
+        'third_party/blink/public/mojom/loader/code_cache',
+        'third_party/blink/public/mojom/loader/fetch_later',
         'third_party/blink/public/mojom/loader/resource_load_info',
         'third_party/blink/public/mojom/loader/resource_load_info_notifier',
+        'third_party/blink/public/mojom/loader/transferrable_url_loader',
+        'third_party/blink/public/mojom/navigation/renderer_content_settings',
         'third_party/blink/public/mojom/worker/subresource_loader_updater',
         'third_party/blink/public/mojom/worker/worklet_global_scope_creation_params',
-        'third_party/blink/public/mojom/loader/transferrable_url_loader',
-        'third_party/blink/public/mojom/loader/code_cache',
         'media/mojo/mojom/interface_factory', 'media/mojo/mojom/audio_decoder',
         'media/mojo/mojom/audio_encoder', 'media/mojo/mojom/video_decoder',
         'media/mojo/mojom/media_metrics_provider')

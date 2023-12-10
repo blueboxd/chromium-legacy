@@ -79,6 +79,7 @@ os = struct(
     MAC_10_15 = os_enum(os_category.MAC, "Mac-10.15"),
     MAC_12 = os_enum(os_category.MAC, "Mac-12"),
     MAC_13 = os_enum(os_category.MAC, "Mac-13"),
+    MAC_14 = os_enum(os_category.MAC, "Mac-14"),
     MAC_DEFAULT = os_enum(os_category.MAC, "Mac-13"),
     MAC_ANY = os_enum(os_category.MAC, "Mac"),
     WINDOWS_10 = os_enum(os_category.WINDOWS, "Windows-10"),
@@ -174,9 +175,9 @@ xcode = struct(
     # A newer Xcode 14 RC  used on beta bots.
     x14betabots = xcode_enum("14e222b"),
     # Default Xcode 15 for chromium iOS
-    x15main = xcode_enum("15a240d"),
+    x15main = xcode_enum("15a507"),
     # A newer Xcode 15 version used on beta bots.
-    x15betabots = xcode_enum("15a240d"),
+    x15betabots = xcode_enum("15c5028h"),
     # in use by ios-webkit-tot
     x14wk = xcode_enum("14c18wk"),
 )

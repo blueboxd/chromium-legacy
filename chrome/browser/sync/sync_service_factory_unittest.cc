@@ -85,7 +85,7 @@ class SyncServiceFactoryTest : public testing::Test {
 
   // Returns the collection of default datatypes.
   syncer::ModelTypeSet DefaultDatatypes() {
-    static_assert(48 == syncer::GetNumModelTypes(),
+    static_assert(47 == syncer::GetNumModelTypes(),
                   "When adding a new type, you probably want to add it here as "
                   "well (assuming it is already enabled).");
 
@@ -164,14 +164,15 @@ class SyncServiceFactoryTest : public testing::Test {
     datatypes.Put(syncer::PREFERENCES);
     datatypes.Put(syncer::PRIORITY_PREFERENCES);
     datatypes.Put(syncer::SESSIONS);
-    datatypes.Put(syncer::PROXY_TABS);
     datatypes.Put(syncer::USER_EVENTS);
     datatypes.Put(syncer::USER_CONSENTS);
     datatypes.Put(syncer::SEND_TAB_TO_SELF);
     datatypes.Put(syncer::SHARING_MESSAGE);
+#if !BUILDFLAG(IS_ANDROID)
     if (base::FeatureList::IsEnabled(syncer::kSyncWebauthnCredentials)) {
       datatypes.Put(syncer::WEBAUTHN_CREDENTIAL);
     }
+#endif  // !BUILDFLAG(IS_ANDROID)
     if (base::FeatureList::IsEnabled(
             password_manager::features::
                 kPasswordManagerEnableReceiverService)) {

@@ -5,12 +5,11 @@
 import {TestRunner} from 'test_runner';
 import {ConsoleTestRunner} from 'console_test_runner';
 
-import * as SDK from 'devtools/core/sdk/sdk.js';
 import * as Common from 'devtools/core/common/common.js';
+import * as SDK from 'devtools/core/sdk/sdk.js';
 
 (async function() {
   TestRunner.addResult(`Tests the console timestamp setting.\n`);
-  await TestRunner.loadLegacyModule('console');
   await TestRunner.showPanel('console');
 
   // It is essential that we calculate timezone for this particular moment of time

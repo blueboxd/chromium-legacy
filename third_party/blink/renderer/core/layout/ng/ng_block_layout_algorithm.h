@@ -8,8 +8,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
+#include "third_party/blink/renderer/core/layout/exclusions/exclusion_space.h"
+#include "third_party/blink/renderer/core/layout/geometry/margin_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_child_layout_context.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
@@ -30,7 +30,7 @@ class NGFragment;
 // inflow child. This will be used to calculate the position of the next child.
 struct NGPreviousInflowPosition {
   LayoutUnit logical_block_offset;
-  NGMarginStrut margin_strut;
+  MarginStrut margin_strut;
   // > 0: Block-end annotation space of the previous line
   // < 0: Block-end annotation overflow of the previous line
   LayoutUnit block_end_annotation_space;
@@ -40,9 +40,9 @@ struct NGPreviousInflowPosition {
 // This struct holds information for the current inflow child. The data is not
 // useful outside of handling this single inflow child.
 struct NGInflowChildData {
-  NGInflowChildData(NGBfcOffset bfc_offset_estimate,
-                    const NGMarginStrut& margin_strut,
-                    const NGBoxStrut& margins,
+  NGInflowChildData(BfcOffset bfc_offset_estimate,
+                    const MarginStrut& margin_strut,
+                    const BoxStrut& margins,
                     bool is_pushed_by_floats = false)
       : bfc_offset_estimate(bfc_offset_estimate),
         margin_strut(margin_strut),
@@ -51,9 +51,9 @@ struct NGInflowChildData {
 
   NGInflowChildData(const NGInflowChildData&) = default;
 
-  NGBfcOffset bfc_offset_estimate;
-  NGMarginStrut margin_strut;
-  NGBoxStrut margins;
+  BfcOffset bfc_offset_estimate;
+  MarginStrut margin_strut;
+  BoxStrut margins;
   bool is_pushed_by_floats = false;
 };
 
@@ -100,7 +100,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       return *container_builder_.BfcBlockOffset();
     // Otherwise fall back to the BFC block offset assigned by the parent
     // algorithm.
-    return ConstraintSpace().BfcOffset().block_offset;
+    return ConstraintSpace().GetBfcOffset().block_offset;
   }
 
   // Return the BFC block offset of the next block-start border edge (for some
@@ -111,9 +111,9 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
            previous_inflow_position.margin_strut.Sum();
   }
 
-  NGBoxStrut CalculateMargins(NGLayoutInputNode child,
-                              bool is_new_fc,
-                              LayoutUnit* additional_line_offset);
+  BoxStrut CalculateMargins(NGLayoutInputNode child,
+                            bool is_new_fc,
+                            LayoutUnit* additional_line_offset);
 
   // Creates a new constraint space for the current child.
   NGConstraintSpace CreateConstraintSpaceForChild(
@@ -197,10 +197,10 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       NGLayoutInputNode child,
       const NGBlockBreakToken* child_break_token,
       const NGInflowChildData&,
-      NGBfcOffset origin_offset,
+      BfcOffset origin_offset,
       bool abort_if_cleared,
-      NGBfcOffset* out_child_bfc_offset,
-      NGBoxStrut* out_resolved_margins);
+      BfcOffset* out_child_bfc_offset,
+      BoxStrut* out_resolved_margins);
 
   // Handle an in-flow child.
   // Returns false if we need to abort layout, because a previously unknown BFC
@@ -256,7 +256,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   void PropagateBaselineFromLineBox(const NGPhysicalFragment& child,
                                     LayoutUnit block_offset);
   void PropagateBaselineFromBlockChild(const NGPhysicalFragment& child,
-                                       const NGBoxStrut& margins,
+                                       const BoxStrut& margins,
                                        LayoutUnit block_offset);
 
   // If still unresolved, resolve the fragment's BFC block offset.
@@ -343,7 +343,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // element, and is computed upfront for the |ClampIntrinsicBlockSize|
   // function.
   absl::optional<LayoutUnit> CalculateQuirkyBodyMarginBlockSum(
-      const NGMarginStrut& end_margin_strut);
+      const MarginStrut& end_margin_strut);
 
   // Return true if this is a list-item that may have to place a marker.
   bool ShouldPlaceUnpositionedListMarker() const {

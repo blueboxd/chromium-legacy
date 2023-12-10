@@ -310,7 +310,6 @@
 <translation id="2276987123919776440">15 րոպե</translation>
 <translation id="2277103315734023688">Առաջ գնալ</translation>
 <translation id="2282073721614284166">Բացել հղումը ներդիրում</translation>
-<translation id="2284237890386182187">Միացված է, որևէ սարք միացած չէ</translation>
 <translation id="2292698582925480719">Էկրանի մասշտաբ</translation>
 <translation id="229397294990920565">Բջջային ինտերնետն անջատվում է…</translation>
 <translation id="2295777434187870477">Խոսափողը միացված է։ Անջատելու համար սեղմեք այս կոճակը։</translation>
@@ -352,7 +351,6 @@
 <translation id="243878895369688216">Երեկ բացել եք</translation>
 <translation id="2440978926514840421">GIF ձևաչափով տեսագրումն արվել է</translation>
 <translation id="2441427462554639370">Ձայնագրումն ավարտվեց ոչ բավարար տարածքի պատճառով</translation>
-<translation id="24452542372838207">Ընդարձակել</translation>
 <translation id="2448312741937722512">Տեսակ</translation>
 <translation id="2449089818483227734">Մարտկոցի լիցքը քիչ է</translation>
 <translation id="2450205753526923158">Սքրինշոթի ռեժիմ</translation>
@@ -493,7 +491,6 @@
 <translation id="3062298103034426069">Չի աջակցվում</translation>
 <translation id="3068622547379332530">Տարբերակ <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">Դարակը ձախ կողմում է</translation>
-<translation id="3070639127620815135">Որոնում + Esc</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Ծավալել ընտրացանկը</translation>
 <translation id="3087734570205094154">Ներքև</translation>
@@ -572,7 +569,6 @@
 <translation id="3387527074123400161">ChromiumOS</translation>
 <translation id="3389599499324569679">Միացնե՞լ թելադրումը</translation>
 <translation id="3394432020929931914">, ծավալված է</translation>
-<translation id="3400357268283240774">Լրացուցիչ կարգավորումներ</translation>
 <translation id="3405101454990027959">Միացնել խոսափողի օգտագործման թույլտվությունը</translation>
 <translation id="3408735331120433841">Այս պահին դուք հեռարձակում եք ձեր էկրանը։</translation>
 <translation id="3409584356742878290">Ցուցադրել կամ թաքցնել Ծրագրավորողի գործիքների քննիչը</translation>
@@ -620,7 +616,6 @@
 <translation id="3563775809269155755">Միացնել թեժ կետը</translation>
 <translation id="3566240529365775567">Քիչ առաջ բացել եք</translation>
 <translation id="3571734092741541777">Տեղակայել</translation>
-<translation id="3572988532398145777">Դուք չեք կարող ծավալել ծանուցումը, քանի դեռ վահանակը բաց է։ Նախ փակեք ներքևի վահանակը։</translation>
 <translation id="3573179567135747900">Վերադառնալ «<ph name="FROM_LOCALE" />»-ին (հարկավոր է վերագործարկում)</translation>
 <translation id="3576141592585647168">Փոխեք ժամային գոտին</translation>
 <translation id="3577473026931028326">Սխալ առաջացավ։ Նորից փորձեք։</translation>
@@ -702,7 +697,6 @@
 <translation id="385300504083504382">Սկիզբ</translation>
 <translation id="3859364108019690">Չհաջողվեց հեռարձակել հավելվածները</translation>
 <translation id="3861651314799684201">Սեղմեք Enter՝ ամբողջ էկրանը տեսագրելու համար</translation>
-<translation id="3865912916886104060">Միացած սարքեր չկան։ Wi-Fi-ը կանջատվի, որպեսզի կարողանաք օգտվել թեժ կետից։</translation>
 <translation id="3886872229787704059">Այսօր բացել եք</translation>
 <translation id="3891340733213178823">Դուրս գրվելու համար երկու անգամ սեղմեք Ctrl+Shift+Q:</translation>
 <translation id="3893630138897523026">ChromeVox (ձայնային ուղեկցում)</translation>
@@ -787,7 +781,6 @@
 <translation id="4197790712631116042">Անջատված է</translation>
 <translation id="4201033867194214117">«<ph name="FEATURE_NAME" />» գործառույթը հասանելի չէ։</translation>
 <translation id="4201051445878709314">Ցուցադրել նախորդ ամիսը</translation>
-<translation id="4202362334312791952">Միացած է 1 սարք։ Wi-Fi-ը կանջատվի, որպեսզի կարողանաք օգտվել թեժ կետից։</translation>
 <translation id="4209973997261364186">Wi-Fi-ը միացված է</translation>
 <translation id="4212472694152630271">Անցնել PIN կոդով նույնականացմանը</translation>
 <translation id="4215497585250573029">VPN կարգավորումներ</translation>
@@ -904,7 +897,6 @@
 <translation id="468293128311738995">Հավելվածներ ձեր հեռախոսից</translation>
 <translation id="4690510401873698237">Դարակը ներքևում է</translation>
 <translation id="4696813013609194136">Մուտքագրեք ծնողի մուտքի կոդը</translation>
-<translation id="4698850295812410683">Ցուցադրել ստիլուսի գործիքները</translation>
 <translation id="4702647871202761252">Գաղտնիության էկրանն անջատված է</translation>
 <translation id="4706121060329443414">Ավելի ուշ մենք կփորձենք նորից ներբեռնել ֆայլերը։ Իսկ հիմա խոսքի ձայնագրությունը կփոխանցվի Google-ին՝ մշակման համար։</translation>
 <translation id="470644585772471629">Գունաշրջում</translation>
@@ -1052,6 +1044,7 @@
 <translation id="5260676007519551770">Աշխատասեղան 4</translation>
 <translation id="5268819379131021772">Google առաջադրանքների ցուցակ</translation>
 <translation id="5275923704957843041">Աշխատասեղանի նախադիտում</translation>
+<translation id="5277869901083657836">Միացնել/անջատել ստիլուսի գործիքները</translation>
 <translation id="5278086053818066789">Միացնել/անջատել ChromeVox-ը (տեքստի հնչեցում)</translation>
 <translation id="5283099933536931082">«<ph name="APP_ITEM_TITLE" />» հավելվածը ձեզ ծանուցում է ցուցադրում։</translation>
 <translation id="5283198616748585639">Ավելացնել 1 րոպե</translation>
@@ -1094,7 +1087,6 @@
 <translation id="5426063383988017631">Կարգավորումների ընտրացանկը փակված է</translation>
 <translation id="5428899915242071344">Սկսել տեքստի ընտրությունը</translation>
 <translation id="5429993543155113935">Ինկոգնիտո պատուհանները ներկայումս չեն աջակցվում</translation>
-<translation id="5430931332414098647">Անկթարթային մուտքի կետ</translation>
 <translation id="5431318178759467895">Գունավոր</translation>
 <translation id="5433020815079095860">Ձայնի ներածում</translation>
 <translation id="544691375626129091">Բոլոր առկա օգտատերերն արդեն հավելվել են այս աշխատաշրջանին:</translation>
@@ -1123,6 +1115,7 @@
 <translation id="554893713779400387">Միացնել/անջատել ձայնային ներածումը</translation>
 <translation id="5551456515017410630">Բացել/փակել օրացույցը</translation>
 <translation id="5551974246223970793">Անցնել էջի որոնման հաջորդ արդյունքին</translation>
+<translation id="5555639311269196631">Անջատել թեժ կետը</translation>
 <translation id="5558091555391176027">Միացնել/անջատել «Փոխանակում մոտակա սարքերի հետ» գործառույթի բարձր տեսանելիությունը</translation>
 <translation id="556042886152191864">Կոճակ</translation>
 <translation id="5570122939431135380">Բացել նոր ներդիր նոր ինկոգնիտո պատուհանում</translation>
@@ -1168,7 +1161,6 @@
 <translation id="5707775774148071965">Ձեր սարքն աջակցում է տվյալների փոխանցման ավելի բարձր արագություն, քան ձեր մալուխը։ Սարքի աշխատանքի արդյունավետությունը կարող է սահմանափակվել։</translation>
 <translation id="5710450975648804523">«Չանհանգստացնել» ռեժիմն ակտիվ է</translation>
 <translation id="571295407079589142">Բջջային ինտերնետն անջատված է</translation>
-<translation id="5716891621595980681">Միացած է <ph name="DEVICECOUNT" /> սարք։ Wi-Fi-ը կանջատվի, որպեսզի կարողանաք օգտվել թեժ կետից։</translation>
 <translation id="5727460725221669831">Եթե մոռացել եք ձեր գաղտնաբառը կամ վերջերս փոխել եք Google հաշվի գաղտնաբառը, փորձեք վերականգնել այս օգտատիրոջը։</translation>
 <translation id="573413375004481890">Այս սարքը չի կարող աջակցել բոլոր էկրանները, այդ պատճառով դրանցից մեկն անջատվել է:</translation>
 <translation id="5740328398383587084">Փոխանակում մոտակա սարքերի հետ</translation>
@@ -1218,7 +1210,6 @@
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Միացնել</translation>
 <translation id="5920710855273935292">Խոսափողի ձայնն անջատված է։</translation>
-<translation id="5924855612669061715">Թեժ կետը միացված է</translation>
 <translation id="5946788582095584774">«<ph name="FEATURE_NAME" />» գործառույթը միացված է։</translation>
 <translation id="5947494881799873997">Հետադարձել</translation>
 <translation id="595202126637698455">Կատարողականության հետագծումը միացված է</translation>
@@ -1234,6 +1225,7 @@
 <translation id="598407983968395253">Օգտագործել ձևանմուշը</translation>
 <translation id="598882571027504733">Թարմացումը տեղադրելու համար վերագործարկեք Chromebook-ը՝ առանց ստեղնաշարն անջատելու։</translation>
 <translation id="6000279412553873020">Բանալիներ, կոճակներ և ավելին</translation>
+<translation id="6002122790816966947">Ձեր սարքերը</translation>
 <translation id="6012623610530968780">Էջ <ph name="SELECTED_PAGE" />/<ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="601304062528754300">Առանձնացնել հաջորդ տարրը դարակում</translation>
 <translation id="6015573907265691211">Նշել որպես կատարված</translation>
@@ -1302,7 +1294,6 @@
 <translation id="6231419273573514727">Արտաքին սարքերի աշխատանքի արդյունավետությունը կարող է սահմանափակվել</translation>
 <translation id="6232891689835436217"><ph name="APP_NAME" /> հավելվածը ներկայումս օգտագործում է ձեր տեսախցիկն ու խոսափողը</translation>
 <translation id="6237231532760393653">1X</translation>
-<translation id="6244986124527896815">Խնդիրների կառավարիչը բացելու համար սեղմեք «<ph name="NEW_SHORTCUT" />»։</translation>
 <translation id="6247728804802644171">Բացել ծանուցումները</translation>
 <translation id="6254629735336163724">Միայն հորիզոնական</translation>
 <translation id="6259254695169772643">Ընտրելու համար օգտագործեք ստիլուսը</translation>
@@ -1524,6 +1515,7 @@
 <translation id="7188494361780961876">Ընտրացանկը տեղափոխվեց էկրանի վերևի ձախ անկյուն։</translation>
 <translation id="7189412385142492784">Որքան հեռու է Վեներան</translation>
 <translation id="7198435252016571249">Տեսախցիկի պատկերն ամրացված է ներքևի աջ անկյունում, քանի որ ծածկում էր համակարգի միջերեսի տարրերը։</translation>
+<translation id="7219573373513695352">Կապված սարքեր չկան</translation>
 <translation id="7229029500464092426">Օգտագործված հիշողության ծավալը՝ <ph name="AVAILABLE_MEMORY" /> | Ընդամենը՝ <ph name="TOTAL_MEMORY" /></translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />։ Այս Chromebook-ը պետք է վերագործարկվի՝ թարմացումը կիրառելու համար։ Դա կարող է տևել մինչև 1 րոպե։</translation>
 <translation id="7256634071279256947">Հետևի խոսափող</translation>
@@ -1948,7 +1940,6 @@
 <translation id="9030665205623277906">CPU-ի օգտագործման ամփոփագիր՝ <ph name="CPU_USEAGE" />%</translation>
 <translation id="9034924485347205037">Լինուքսի ֆայլեր</translation>
 <translation id="9047624247355796468">Բացել «<ph name="NETWORK_NAME" />» ցանցի կարգավորումները</translation>
-<translation id="9059834730836941392">Կոծկել</translation>
 <translation id="906458777597946297">Առավելացնել պատուհանը</translation>
 <translation id="9065203028668620118">Փոփոխել</translation>
 <translation id="9070640332319875144">Օգնականի կարգավորումներ</translation>

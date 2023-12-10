@@ -44,6 +44,7 @@ blink_platform_sources("scheduler") {
     "common/simple_main_thread_scheduler.h",
     "common/single_thread_idle_task_runner.cc",
     "common/single_thread_idle_task_runner.h",
+    "common/task_attribution_info.cc",
     "common/task_priority.cc",
     "common/task_priority.h",
     "common/thread.cc",
@@ -176,6 +177,7 @@ blink_platform_sources("scheduler") {
   deps = [
     "//base",
     "//cc",
+    "//components/miracle_parameter/common",
     "//device/base/synchronization",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/metrics/public/mojom",

@@ -157,6 +157,9 @@ crbug.com/1327754 [ mac amd debug ] GpuCrash_InfoForDualHardwareGpus [ Skip ]
 crbug.com/1399895 [ mac amd release asan ] GpuCrash_InfoForHardwareGpu [ Skip ]
 crbug.com/1399895 [ mac amd release asan ] GpuCrash_InfoForDualHardwareGpus [ Skip ]
 
+# Also flakes on Mac Intel ASAN as well.
+crbug.com/1489852 [ mac intel release asan ] GpuCrash_InfoForHardwareGpu [ Skip ]
+
 # Vulkan enabled on linux, the crash fallback logic is different.
 crbug.com/1334650 [ linux ] GpuCrash_InfoForHardwareGpu [ Skip ]
 
@@ -194,10 +197,11 @@ crbug.com/1418987 [ linux amd-0x7340 angle-vulkan ] GpuNormalTermination_Origina
 
 crbug.com/1419583 [ linux amd-0x7340 angle-vulkan ] ContextLost_WebGLContextRestoredInHiddenTab [ Failure ]
 
+# Flaky fails with entire window being black
+crbug.com/1490570 [ linux amd-0x7340 angle-vulkan passthrough ] ContextLost_WebGLContextLostFromSelectElement [ Failure ]
+
 crbug.com/1419558 [ angle-swiftshader clang-coverage fuchsia fuchsia-board-qemu-x64 google-0xc0de ] ContextLost_WebGLContextLostFromQuantity [ Failure ]
 
-crbug.com/1484919 [ ventura intel-0x3e9b angle-metal graphite-enabled ] ContextLost_WebGLContextLostFromQuantity [ RetryOnFailure ]
-crbug.com/1484919 [ ventura intel-0x3e9b angle-metal graphite-enabled ] ContextLost_WebGLContextRestoredInHiddenTab [ RetryOnFailure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

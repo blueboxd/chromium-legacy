@@ -19,7 +19,8 @@ namespace password_manager {
 
 namespace {
 
-using sync_util::IsPasswordSyncEnabled;
+// TODO(crbug.com/1466445): Migrate away from `ConsentLevel::kSync` on Android.
+using sync_util::IsSyncFeatureEnabledIncludingPasswords;
 
 // Time in seconds by which the passwords migration from the built-in backend to
 // the Android backend is delayed.
@@ -28,9 +29,8 @@ constexpr int kMigrationToAndroidBackendDelay = 30;
 // Check the experiment stage allows migration and that user wasn't kicked out
 // from the experiment after receiving errors from the backend.
 bool ShouldAttemptMigration(const PrefService* prefs) {
-  return features::RequiresMigrationForUnifiedPasswordManager() &&
-         !prefs->GetBoolean(
-             prefs::kUnenrolledFromGoogleMobileServicesDueToErrors);
+  return !prefs->GetBoolean(
+      prefs::kUnenrolledFromGoogleMobileServicesDueToErrors);
 }
 
 }  // namespace
@@ -59,15 +59,20 @@ PasswordStoreBackendMigrationDecorator::PasswordSyncSettingsHelper::
 void PasswordStoreBackendMigrationDecorator::PasswordSyncSettingsHelper::
     CachePasswordSyncSettingOnStartup(syncer::SyncService* sync) {
   sync_service_ = sync;
-  password_sync_configured_setting_ = sync_util::IsPasswordSyncEnabled(sync);
+  // TODO(crbug.com/1466445): Migrate away from `ConsentLevel::kSync` on
+  // Android.
+  password_sync_configured_setting_ =
+      sync_util::IsSyncFeatureEnabledIncludingPasswords(sync);
   password_sync_applied_setting_ = password_sync_configured_setting_;
 }
 
 void PasswordStoreBackendMigrationDecorator::PasswordSyncSettingsHelper::
     SyncStatusChangeApplied() {
   DCHECK(sync_service_);
+  // TODO(crbug.com/1466445): Migrate away from `ConsentLevel::kSync` on
+  // Android.
   password_sync_applied_setting_ =
-      sync_util::IsPasswordSyncEnabled(sync_service_);
+      sync_util::IsSyncFeatureEnabledIncludingPasswords(sync_service_);
 }
 
 void PasswordStoreBackendMigrationDecorator::PasswordSyncSettingsHelper::
@@ -75,11 +80,16 @@ void PasswordStoreBackendMigrationDecorator::PasswordSyncSettingsHelper::
   DCHECK(sync_service_ == sync);
 
   // Return early if the setting didn't change.
-  if (sync_util::IsPasswordSyncEnabled(sync) ==
+  // TODO(crbug.com/1466445): Migrate away from `ConsentLevel::kSync` on
+  // Android.
+  if (sync_util::IsSyncFeatureEnabledIncludingPasswords(sync) ==
       password_sync_configured_setting_) {
     return;
   }
-  password_sync_configured_setting_ = sync_util::IsPasswordSyncEnabled(sync);
+  // TODO(crbug.com/1466445): Migrate away from `ConsentLevel::kSync` on
+  // Android.
+  password_sync_configured_setting_ =
+      sync_util::IsSyncFeatureEnabledIncludingPasswords(sync);
 
   if (password_sync_configured_setting_ != password_sync_applied_setting_) {
     prefs_->SetBoolean(prefs::kRequiresMigrationAfterSyncStatusChange, true);
@@ -93,7 +103,9 @@ void PasswordStoreBackendMigrationDecorator::PasswordSyncSettingsHelper::
     OnSyncCycleCompleted(syncer::SyncService* sync) {
   // Reenrollment check is made on the first sync cycle when password sync is
   // active.
-  if (!sync_util::IsPasswordSyncActive(sync) ||
+  // TODO(crbug.com/1466445): Migrate away from `ConsentLevel::kSync` on
+  // Android.
+  if (!sync_util::IsSyncFeatureActiveIncludingPasswords(sync) ||
       !is_waiting_for_the_first_sync_cycle_) {
     return;
   }
@@ -108,7 +120,9 @@ void PasswordStoreBackendMigrationDecorator::PasswordSyncSettingsHelper::
     return;
   }
 
-  if (sync_util::IsPasswordSyncActive(sync)) {
+  // TODO(crbug.com/1466445): Migrate away from `ConsentLevel::kSync` on
+  // Android.
+  if (sync_util::IsSyncFeatureActiveIncludingPasswords(sync)) {
     int reenrollment_attempts = prefs_->GetInteger(
         prefs::kTimesAttemptedToReenrollToGoogleMobileServices);
     prefs_->SetInteger(prefs::kTimesAttemptedToReenrollToGoogleMobileServices,
@@ -150,10 +164,6 @@ void PasswordStoreBackendMigrationDecorator::InitBackend(
       affiliated_match_helper, std::move(remote_form_changes_received),
       std::move(sync_enabled_or_disabled_cb), std::move(completion));
 
-  // Create a migrator only if the current experiment stage allows it.
-  if (!features::RequiresMigrationForUnifiedPasswordManager())
-    return;
-
   migrator_ = std::make_unique<BuiltInBackendToAndroidBackendMigrator>(
       built_in_backend_.get(), android_backend_.get(), prefs_);
   sync_settings_helper_.set_migrator(migrator_.get());
@@ -194,6 +204,12 @@ void PasswordStoreBackendMigrationDecorator::Shutdown(
 void PasswordStoreBackendMigrationDecorator::GetAllLoginsAsync(
     LoginsOrErrorReply callback) {
   active_backend_->GetAllLoginsAsync(std::move(callback));
+}
+
+void PasswordStoreBackendMigrationDecorator::
+    GetAllLoginsWithAffiliationAndBrandingAsync(LoginsOrErrorReply callback) {
+  active_backend_->GetAllLoginsWithAffiliationAndBrandingAsync(
+      std::move(callback));
 }
 
 void PasswordStoreBackendMigrationDecorator::GetAutofillableLoginsAsync(
@@ -298,8 +314,10 @@ void PasswordStoreBackendMigrationDecorator::StartMigrationAfterInit() {
   if (!ShouldAttemptMigration(prefs_))
     return;
 
+  // TODO(crbug.com/1466445): Migrate away from `ConsentLevel::kSync` on
+  // Android.
   if (prefs_->GetBoolean(prefs::kRequiresMigrationAfterSyncStatusChange) &&
-      !IsPasswordSyncEnabled(sync_service_)) {
+      !IsSyncFeatureEnabledIncludingPasswords(sync_service_)) {
     // Sync was disabled at the end of the last session, but migration from
     // the android backend to the built-in backend didn't happen. It's not
     // safe to attempt to call the android backend to migrate logins. Disable

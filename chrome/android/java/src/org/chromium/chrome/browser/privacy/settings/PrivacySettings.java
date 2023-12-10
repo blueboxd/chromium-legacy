@@ -78,11 +78,7 @@ public class PrivacySettings
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         getActivity().setTitle(R.string.prefs_privacy_security);
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)) {
-            SettingsUtils.addPreferencesFromResource(this, R.xml.privacy_preferences_v2);
-        } else {
-            SettingsUtils.addPreferencesFromResource(this, R.xml.privacy_preferences);
-        }
+        SettingsUtils.addPreferencesFromResource(this, R.xml.privacy_preferences);
 
         Preference sandboxPreference = findPreference(PREF_PRIVACY_SANDBOX);
         // Overwrite the click listener to pass a correct referrer to the fragment.
@@ -122,7 +118,7 @@ public class PrivacySettings
 
         IncognitoReauthSettingSwitchPreference incognitoReauthPreference =
                 (IncognitoReauthSettingSwitchPreference) findPreference(PREF_INCOGNITO_LOCK);
-        mIncognitoLockSettings = new IncognitoLockSettings(incognitoReauthPreference);
+        mIncognitoLockSettings = new IncognitoLockSettings(incognitoReauthPreference, getProfile());
         mIncognitoLockSettings.setUpIncognitoReauthPreference(getActivity());
 
         Preference safeBrowsingPreference = findPreference(PREF_SAFE_BROWSING);
@@ -175,9 +171,11 @@ public class PrivacySettings
         syncAndServicesLink.setSummary(buildSyncAndServicesLink());
 
         Preference thirdPartyCookies = findPreference(PREF_THIRD_PARTY_COOKIES);
+        Preference doNotTrackPref = findPreference(PREF_DO_NOT_TRACK);
 
         if (showTrackingProtectionUI()) {
             if (thirdPartyCookies != null) thirdPartyCookies.setVisible(false);
+            if (doNotTrackPref != null) doNotTrackPref.setVisible(false);
             Preference trackingProtection = findPreference(PREF_TRACKING_PROTECTION);
             trackingProtection.setVisible(true);
         } else if (thirdPartyCookies != null) {
@@ -287,13 +285,6 @@ public class PrivacySettings
             } else {
                 getPreferenceScreen().removePreference(usageStatsPref);
             }
-        }
-
-        Preference privacySandboxPreference = findPreference(PREF_PRIVACY_SANDBOX);
-        if (privacySandboxPreference != null
-                && !ChromeFeatureList.isEnabled(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)) {
-            privacySandboxPreference.setSummary(
-                    PrivacySandboxSettingsBaseFragment.getStatusString(getContext()));
         }
 
         mIncognitoLockSettings.updateIncognitoReauthPreferenceIfNeeded(getActivity());

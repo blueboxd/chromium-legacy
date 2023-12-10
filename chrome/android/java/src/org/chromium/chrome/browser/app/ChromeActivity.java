@@ -49,6 +49,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.memory.MemoryPurgeManager;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.shared_preferences.SharedPreferencesManager;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplier;
@@ -137,8 +138,8 @@ import org.chromium.chrome.browser.page_info.ChromePageInfo;
 import org.chromium.chrome.browser.page_info.ChromePageInfoHighlight;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.readaloud.ReadAloudController;
@@ -410,7 +411,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // point, with the counter to be reset in the native C++ code. Thus
         // this serves as a diagnostic tool in the cases where the native C++
         // code is not reached.
-        SharedPreferencesManager prefs = SharedPreferencesManager.getInstance();
+        SharedPreferencesManager prefs = ChromeSharedPreferences.getInstance();
         int count = prefs.readInt(key, 0);
         // Note that this is written asynchronously, so there is a chance that
         // this will not succeed.
@@ -419,7 +420,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     @Override
     protected void onPreCreate() {
-        incrementCounter(ChromePreferenceKeys.UMA_ON_PRECREATE_COUNTER);
         CachedFlagsSafeMode.getInstance().onStartOrResumeCheckpoint();
         if (earlyInitializeStartupMetrics()) {
             mActivityTabStartupMetricsTracker =
@@ -437,6 +437,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     protected void onAbortCreate() {
         super.onAbortCreate();
         CachedFlagsSafeMode.getInstance().onPauseCheckpoint();
+    }
+
+    @Override
+    protected void onPostCreate() {
+        incrementCounter(ChromePreferenceKeys.UMA_ON_POSTCREATE_COUNTER);
+        super.onPostCreate();
     }
 
     @Override
@@ -531,7 +537,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // to the RootUiCoordinator, passing the activity is an easy way to get access to a
         // number of objects that will ultimately be owned by the RootUiCoordinator. This is not
         // a recommended pattern.
-        // clang-format off
         return new RootUiCoordinator(this, null, getShareDelegateSupplier(),
                 getActivityTabProvider(), mTabModelProfileSupplier, mBookmarkModelSupplier,
                 mTabBookmarkerSupplier, getContextualSearchManagerSupplier(),
@@ -549,7 +554,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 mTabReparentingControllerSupplier,
                 /*ephemeralTabCoordinatorSupplier=*/new ObservableSupplierImpl<>(),
                 false, mBackPressManager, null);
-        // clang-format on
     }
 
     private NotificationManagerProxy getNotificationManagerProxy() {
@@ -2209,12 +2213,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             return true;
         }
 
-        if (mRootUiCoordinator.getPageInsightsBottomSheetController() != null
-                && mRootUiCoordinator.getPageInsightsBottomSheetController().handleBackPress()) {
-            BackPressManager.record(BackPressHandler.Type.PAGE_INSIGHTS_BOTTOM_SHEET);
-            return true;
-        }
-
         if (mCompositorViewHolderSupplier.hasValue()) {
             LayoutManagerImpl layoutManager =
                     mCompositorViewHolderSupplier.get().getLayoutManager();
@@ -2242,9 +2240,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             return true;
         }
 
-        // This only intercepts back press when back press refactor is disabled on T+. Otherwise,
-        // back press is intercepted in FindToolbarManager internally.
-        if (BuildInfo.isAtLeastT() && mRootUiCoordinator.getFindToolbarManager() != null
+        if (mRootUiCoordinator.getFindToolbarManager() != null
                 && mRootUiCoordinator.getFindToolbarManager().isShowing()) {
             BackPressManager.record(BackPressHandler.Type.FIND_TOOLBAR);
             mRootUiCoordinator.getFindToolbarManager().hideToolbar();

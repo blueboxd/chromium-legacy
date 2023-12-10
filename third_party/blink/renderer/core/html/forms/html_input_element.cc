@@ -99,6 +99,8 @@
 
 namespace blink {
 
+using mojom::blink::FormControlType;
+
 namespace {
 
 const unsigned kMaxEmailFieldLength = 254;
@@ -418,8 +420,9 @@ void HTMLInputElement::UpdateType() {
 
   const AtomicString& new_type_name =
       InputType::NormalizeTypeName(FastGetAttribute(html_names::kTypeAttr));
-  if (input_type_->FormControlType() == new_type_name)
+  if (input_type_->FormControlTypeAsString() == new_type_name) {
     return;
+  }
 
   InputType* new_type = InputType::Create(*this, new_type_name);
   RemoveFromRadioButtonGroup();
@@ -609,8 +612,12 @@ void HTMLInputElement::SubtreeHasChanged() {
   CalculateAndAdjustAutoDirectionality(this);
 }
 
-const AtomicString& HTMLInputElement::FormControlType() const {
+FormControlType HTMLInputElement::FormControlType() const {
   return input_type_->FormControlType();
+}
+
+const AtomicString& HTMLInputElement::FormControlTypeAsString() const {
+  return input_type_->FormControlTypeAsString();
 }
 
 bool HTMLInputElement::ShouldSaveAndRestoreFormControlState() const {
@@ -660,10 +667,10 @@ void HTMLInputElement::setSelectionStartForBinding(
     absl::optional<uint32_t> start,
     ExceptionState& exception_state) {
   if (!input_type_->SupportsSelectionAPI()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "The input element's type ('" +
-                                          input_type_->FormControlType() +
-                                          "') does not support selection.");
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The input element's type ('" + input_type_->FormControlTypeAsString() +
+            "') does not support selection.");
     return;
   }
   TextControlElement::setSelectionStart(start.value_or(0));
@@ -673,10 +680,10 @@ void HTMLInputElement::setSelectionEndForBinding(
     absl::optional<uint32_t> end,
     ExceptionState& exception_state) {
   if (!input_type_->SupportsSelectionAPI()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "The input element's type ('" +
-                                          input_type_->FormControlType() +
-                                          "') does not support selection.");
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The input element's type ('" + input_type_->FormControlTypeAsString() +
+            "') does not support selection.");
     return;
   }
   TextControlElement::setSelectionEnd(end.value_or(0));
@@ -686,10 +693,10 @@ void HTMLInputElement::setSelectionDirectionForBinding(
     const String& direction,
     ExceptionState& exception_state) {
   if (!input_type_->SupportsSelectionAPI()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "The input element's type ('" +
-                                          input_type_->FormControlType() +
-                                          "') does not support selection.");
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The input element's type ('" + input_type_->FormControlTypeAsString() +
+            "') does not support selection.");
     return;
   }
   TextControlElement::setSelectionDirection(direction);
@@ -700,10 +707,10 @@ void HTMLInputElement::setSelectionRangeForBinding(
     unsigned end,
     ExceptionState& exception_state) {
   if (!input_type_->SupportsSelectionAPI()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "The input element's type ('" +
-                                          input_type_->FormControlType() +
-                                          "') does not support selection.");
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The input element's type ('" + input_type_->FormControlTypeAsString() +
+            "') does not support selection.");
     return;
   }
   TextControlElement::setSelectionRangeForBinding(start, end);
@@ -715,10 +722,10 @@ void HTMLInputElement::setSelectionRangeForBinding(
     const String& direction,
     ExceptionState& exception_state) {
   if (!input_type_->SupportsSelectionAPI()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "The input element's type ('" +
-                                          input_type_->FormControlType() +
-                                          "') does not support selection.");
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The input element's type ('" + input_type_->FormControlTypeAsString() +
+            "') does not support selection.");
     return;
   }
   TextControlElement::setSelectionRangeForBinding(start, end, direction);
@@ -731,11 +738,11 @@ void HTMLInputElement::SetSelectionRangeForTesting(
     unsigned start,
     unsigned end,
     ExceptionState& exception_state) {
-  if (FormControlType() != input_type_names::kNumber) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "The input element's type ('" +
-                                          input_type_->FormControlType() +
-                                          "') is not a number input.");
+  if (FormControlType() != FormControlType::kInputNumber) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The input element's type ('" + input_type_->FormControlTypeAsString() +
+            "') is not a number input.");
   }
   TextControlElement::setSelectionRangeForBinding(start, end);
 }
@@ -2066,10 +2073,10 @@ void ListAttributeTargetObserver::IdTargetChanged() {
 void HTMLInputElement::setRangeText(const String& replacement,
                                     ExceptionState& exception_state) {
   if (!input_type_->SupportsSelectionAPI()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "The input element's type ('" +
-                                          input_type_->FormControlType() +
-                                          "') does not support selection.");
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The input element's type ('" + input_type_->FormControlTypeAsString() +
+            "') does not support selection.");
     return;
   }
 
@@ -2082,10 +2089,10 @@ void HTMLInputElement::setRangeText(const String& replacement,
                                     const V8SelectionMode& selection_mode,
                                     ExceptionState& exception_state) {
   if (!input_type_->SupportsSelectionAPI()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "The input element's type ('" +
-                                          input_type_->FormControlType() +
-                                          "') does not support selection.");
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The input element's type ('" + input_type_->FormControlTypeAsString() +
+            "') does not support selection.");
     return;
   }
 
@@ -2098,7 +2105,7 @@ bool HTMLInputElement::SetupDateTimeChooserParameters(
   if (!GetDocument().View())
     return false;
 
-  parameters.type = type();
+  parameters.type = input_type_->type();
   parameters.minimum = Minimum();
   parameters.maximum = Maximum();
   parameters.required = IsRequired();
@@ -2193,6 +2200,15 @@ void HTMLInputElement::DispatchSimulatedEnter() {
 
 bool HTMLInputElement::IsInteractiveContent() const {
   return input_type_->IsInteractiveContent();
+}
+
+const ComputedStyle* HTMLInputElement::CustomStyleForLayoutObject(
+    const StyleRecalcContext& style_recalc_context) {
+  // TODO(crbug.com/953707): Avoid marking style dirty in
+  // HTMLImageFallbackHelper and use AdjustStyle instead.
+  const ComputedStyle* original_style =
+      OriginalStyleForLayoutObject(style_recalc_context);
+  return input_type_view_->CustomStyleForLayoutObject(original_style);
 }
 
 void HTMLInputElement::AdjustStyle(ComputedStyleBuilder& builder) {

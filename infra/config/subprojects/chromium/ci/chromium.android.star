@@ -79,43 +79,6 @@ ci.builder(
 )
 
 ci.thin_tester(
-    name = "Android WebView N (dbg)",
-    branch_selector = branches.selector.ANDROID_BRANCHES,
-    triggered_by = ["ci/Android arm64 Builder (dbg)"],
-    builder_spec = builder_config.builder_spec(
-        execution_mode = builder_config.execution_mode.TEST,
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-                "android",
-            ],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "android",
-            apply_configs = [
-                "download_xr_test_apks",
-            ],
-            build_config = builder_config.build_config.DEBUG,
-            target_bits = 64,
-            target_platform = builder_config.target_platform.ANDROID,
-        ),
-        android_config = builder_config.android_config(
-            config = "main_builder_mb",
-            apply_configs = [
-                "remove_all_system_webviews",
-            ],
-        ),
-        build_gs_bucket = "chromium-android-archive",
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "tester|webview",
-        short_name = "N",
-    ),
-    cq_mirrors_console_view = "mirrors",
-    contact_team_email = "woa-engprod@google.com",
-)
-
-ci.thin_tester(
     name = "Android WebView O (dbg)",
     branch_selector = branches.selector.ANDROID_BRANCHES,
     triggered_by = ["ci/Android arm64 Builder (dbg)"],
@@ -513,40 +476,6 @@ ci.builder(
     execution_timeout = 6 * time.hour,
     notifies = ["Deterministic Android"],
     reclient_jobs = reclient.jobs.DEFAULT,
-)
-
-ci.thin_tester(
-    name = "Nougat Phone Tester",
-    branch_selector = branches.selector.ANDROID_BRANCHES,
-    triggered_by = ["ci/Android arm64 Builder (dbg)"],
-    builder_spec = builder_config.builder_spec(
-        execution_mode = builder_config.execution_mode.TEST,
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-                "android",
-            ],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "android",
-            apply_configs = [
-                "download_xr_test_apks",
-            ],
-            build_config = builder_config.build_config.DEBUG,
-            target_bits = 64,
-            target_platform = builder_config.target_platform.ANDROID,
-        ),
-        android_config = builder_config.android_config(
-            config = "main_builder_mb",
-        ),
-        build_gs_bucket = "chromium-android-archive",
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "tester|phone",
-        short_name = "N",
-    ),
-    cq_mirrors_console_view = "mirrors",
-    contact_team_email = "clank-engprod@google.com",
 )
 
 ci.thin_tester(
@@ -1439,7 +1368,7 @@ ci.builder(
 )
 
 ci.builder(
-    name = "android-nougat-x86-rel",
+    name = "android-oreo-x86-rel",
     branch_selector = branches.selector.ANDROID_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
@@ -1460,35 +1389,6 @@ ci.builder(
     tree_closing = True,
     console_view_entry = consoles.console_view_entry(
         category = "on_cq|x86",
-        short_name = "N",
-    ),
-    contact_team_email = "clank-engprod@google.com",
-    execution_timeout = 4 * time.hour,
-)
-
-# TODO(crbug.com/1459433): Enable the branch once the builder is ready.
-ci.builder(
-    name = "android-oreo-x86-rel",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = ["android", "enable_wpr_tests"],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "android",
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 32,
-            target_platform = builder_config.target_platform.ANDROID,
-        ),
-        android_config = builder_config.android_config(
-            config = "x86_builder_mb",
-        ),
-        build_gs_bucket = "chromium-android-archive",
-    ),
-    tree_closing = True,
-    # TODO(crbug.com/1459433): Update the console view config once on CQ
-    console_view_entry = consoles.console_view_entry(
-        category = "builder_tester|x86",
         short_name = "O",
     ),
     contact_team_email = "clank-engprod@google.com",

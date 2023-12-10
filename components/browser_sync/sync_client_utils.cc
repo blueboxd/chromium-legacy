@@ -14,6 +14,7 @@
 #include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/password_manager/core/browser/password_form.h"
@@ -51,14 +52,13 @@ syncer::LocalDataDescription CreateLocalDataDescription(syncer::ModelType type,
   // Using a set to get only the distinct domains. This also ensures an
   // alphabetical ordering of the domains.
   std::set<std::string> domains;
-  std::transform(
-      items.begin(), items.end(), std::inserter(domains, domains.end()),
+  base::ranges::transform(
+      items, std::inserter(domains, domains.end()),
       [&](const auto& item) { return GetDomainFromUrl(url_extractor(item)); });
   auto it = domains.begin();
   // Add up to 3 domains as examples to be used in a string shown to the user.
-  for (int i = 0; i < 3 && it != domains.end(); ++i, ++it) {
-    desc.domains.push_back(*it);
-  }
+  base::ranges::copy_n(it, std::min(size_t{3}, domains.size()),
+                       std::back_inserter(desc.domains));
   desc.domain_count = domains.size();
   return desc;
 }
@@ -139,7 +139,7 @@ class LocalDataQueryHelper::LocalDataQueryRequest
               weak_ptr_factory_.GetWeakPtr()));
     }
     if (types_.Has(syncer::READING_LIST)) {
-      CHECK(helper_->local_reading_list_model_);
+      CHECK(helper_->dual_reading_list_model_);
       base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE,
           base::BindOnce(&LocalDataQueryHelper::LocalDataQueryRequest::
@@ -175,7 +175,8 @@ class LocalDataQueryHelper::LocalDataQueryRequest
   }
 
   void FetchLocalReadingList() {
-    base::flat_set<GURL> keys = helper_->local_reading_list_model_->GetKeys();
+    base::flat_set<GURL> keys =
+        helper_->dual_reading_list_model_->GetLocalOrSyncableModel()->GetKeys();
 
     result_.emplace(
         syncer::READING_LIST,
@@ -205,11 +206,15 @@ class LocalDataQueryHelper::LocalDataQueryRequest
 
 LocalDataQueryHelper::LocalDataQueryHelper(
     password_manager::PasswordStoreInterface* profile_password_store,
+    password_manager::PasswordStoreInterface* account_password_store,
     bookmarks::BookmarkModel* local_bookmark_model,
-    ReadingListModel* local_reading_list_model)
+    bookmarks::BookmarkModel* account_bookmark_model,
+    reading_list::DualReadingListModel* dual_reading_list_model)
     : profile_password_store_(profile_password_store),
+      account_password_store_(account_password_store),
       local_bookmark_model_(local_bookmark_model),
-      local_reading_list_model_(local_reading_list_model) {}
+      account_bookmark_model_(account_bookmark_model),
+      dual_reading_list_model_(dual_reading_list_model) {}
 
 LocalDataQueryHelper::~LocalDataQueryHelper() = default;
 

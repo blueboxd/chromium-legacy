@@ -110,7 +110,6 @@ void LogGeneralUIDismissalReason(UIDismissalReason reason) {
 
 void LogSaveUIDismissalReason(
     UIDismissalReason reason,
-    autofill::mojom::SubmissionIndicatorEvent submission_event,
     absl::optional<
         password_manager::features_util::PasswordAccountStorageUserState>
         user_state) {
@@ -124,27 +123,11 @@ void LogSaveUIDismissalReason(
         "PasswordManager.SaveUIDismissalReason." + suffix, reason,
         NUM_UI_RESPONSES);
   }
-
-  if (submission_event ==
-      autofill::mojom::SubmissionIndicatorEvent::CHANGE_PASSWORD_FORM_CLEARED) {
-    base::UmaHistogramEnumeration(
-        "PasswordManager.SaveUIOnClearedPasswordChangeFormDismissalReason",
-        reason, NUM_UI_RESPONSES);
-  }
 }
 
-void LogUpdateUIDismissalReason(
-    UIDismissalReason reason,
-    autofill::mojom::SubmissionIndicatorEvent submission_event) {
+void LogUpdateUIDismissalReason(UIDismissalReason reason) {
   base::UmaHistogramEnumeration("PasswordManager.UpdateUIDismissalReason",
                                 reason, NUM_UI_RESPONSES);
-
-  if (submission_event ==
-      autofill::mojom::SubmissionIndicatorEvent::CHANGE_PASSWORD_FORM_CLEARED) {
-    base::UmaHistogramEnumeration(
-        "PasswordManager.UpdateUIOnClearedPasswordChangeFormDismissalReason",
-        reason, NUM_UI_RESPONSES);
-  }
 }
 
 void LogMoveUIDismissalReason(
@@ -278,7 +261,7 @@ void LogDownloadedBlocklistedEntriesCountFromAccountStoreAfterUnlock(
       blocklist_entries_count);
 }
 
-void LogPasswordSettingsReauthResult(ReauthResult result) {
+void LogPasswordSettingsReauthResult(device_reauth::ReauthResult result) {
   base::UmaHistogramEnumeration(
       "PasswordManager.ReauthToAccessPasswordInSettings", result);
 }
@@ -321,6 +304,10 @@ void LogGenerationDialogChoice(GenerationDialogChoice choice,
     case PasswordGenerationType::kManual:
       base::UmaHistogramEnumeration(
           "KeyboardAccessory.GenerationDialogChoice.Manual", choice);
+      break;
+    case PasswordGenerationType::kTouchToFill:
+      base::UmaHistogramEnumeration(
+          "PasswordManager.TouchToFill.PasswordGeneration.UserChoice", choice);
       break;
   };
 }  // namespace metrics_util

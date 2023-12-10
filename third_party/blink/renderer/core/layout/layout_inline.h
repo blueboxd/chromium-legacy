@@ -33,7 +33,7 @@
 namespace blink {
 
 class LayoutBlockFlow;
-class NGInlineCursor;
+class InlineCursor;
 
 // LayoutInline is the LayoutObject associated with display: inline.
 // This is called an "inline box" in CSS 2.1.
@@ -153,7 +153,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   gfx::RectF LocalBoundingBoxRectForAccessibility() const final;
 
   PhysicalRect PhysicalLinesBoundingBox() const;
-  PhysicalRect PhysicalVisualOverflowRect() const final;
+  PhysicalRect VisualOverflowRect() const final;
 
   bool HasInlineFragments() const final;
   wtf_size_t FirstInlineFragmentItemIndex() const final;
@@ -189,8 +189,8 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   }
   void UpdateShouldCreateBoxFragment();
 
-  LayoutRect LocalCaretRect(int,
-                            LayoutUnit* extra_width_to_end_of_line) const final;
+  PhysicalRect LocalCaretRect(int, LayoutUnit* extra_width_to_end_of_line)
+      const final;
 
   // When this LayoutInline doesn't generate line boxes of its own, regenerate
   // the rects of the line boxes and hit test the rects.
@@ -199,7 +199,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   bool HitTestCulledInline(HitTestResult&,
                            const HitTestLocation&,
                            const PhysicalOffset& accumulated_offset,
-                           const NGInlineCursor& parent_cursor);
+                           const InlineCursor& parent_cursor);
 
   PhysicalOffset FirstLineBoxTopLeft() const {
     NOT_DESTROYED();
@@ -233,7 +233,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   PhysicalOffset OffsetFromContainerInternal(
       const LayoutObject*,
-      bool ignore_scroll_offset) const final;
+      MapCoordinatesFlags mode) const final;
 
  private:
   bool AbsoluteTransformDependsOnPoint(const LayoutObject& object) const;
@@ -270,21 +270,14 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   PhysicalRect CulledInlineVisualOverflowBoundingBox() const;
 
-  // For PhysicalVisualOverflowRect() only, to get bounding box of visual
-  // overflow of line boxes.
+  // For VisualOverflowRect() only, to get bounding box of visual overflow of
+  // line boxes.
   PhysicalRect LinesVisualOverflowBoundingBox() const;
 
   // PhysicalRectCollector should be like a function:
   // void (const PhysicalRect&).
   template <typename PhysicalRectCollector>
   void CollectLineBoxRects(const PhysicalRectCollector&) const;
-
-  // FlippedRectCollector should be like a function:
-  // void (const LayoutRect&);
-  template <typename FlippedRectCollector>
-  void CollectCulledLineBoxRectsInFlippedBlocksDirection(
-      const FlippedRectCollector&,
-      const LayoutInline* container) const;
 
   void AddChildIgnoringContinuation(LayoutObject* new_child,
                                     LayoutObject* before_child = nullptr) final;

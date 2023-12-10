@@ -431,6 +431,11 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
     decision_details->AddReason(DecisionFailureReason::LIVE_WEB_APP);
   }
 
+  if (web_contents()->HasPictureInPictureVideo() ||
+      web_contents()->HasPictureInPictureDocument()) {
+    decision_details->AddReason(DecisionFailureReason::LIVE_PICTURE_IN_PICTURE);
+  }
+
   if (decision_details->reasons().empty()) {
     decision_details->AddReason(
         DecisionSuccessReason::HEURISTIC_OBSERVED_TO_BE_SAFE);
@@ -577,7 +582,7 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::Discard(
   // here instead of in `CanDiscard` as not all calls to `Discard` check
   // `CanDiscard` and discarding a picture-in-picture WebContents leaves the
   // window in a bad state.
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  Browser* browser = chrome::FindBrowserWithTab(web_contents());
   if (browser && browser->is_type_picture_in_picture()) {
     return false;
   }

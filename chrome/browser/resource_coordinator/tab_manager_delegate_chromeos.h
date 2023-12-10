@@ -27,6 +27,7 @@
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
+#include "chromeos/ash/components/dbus/resourced/resourced_client.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/wm/public/activation_change_observer.h"
@@ -110,6 +111,10 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
   // Get debugd client instance. Virtual for unit testing.
   virtual ash::DebugDaemonClient* GetDebugDaemonClient();
 
+  // Report process list of tab mainframes. Virtual for unit testing.
+  virtual void ReportProcesses(
+      const std::vector<ash::ResourcedClient::Process>& processes);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, CandidatesSorted);
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest,
@@ -122,6 +127,7 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, KillMultipleProcesses);
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, SetOomScoreAdj);
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, TestDiscardedTabsAreSkipped);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, ReportProcesses);
 
   using OptionalArcProcessList = arc::ArcProcessService::OptionalArcProcessList;
 
@@ -164,6 +170,21 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
                          TabManager::TabDiscardDoneCB tab_discard_done,
                          OptionalArcProcessList arc_processes);
 
+  // Processes a specific candidate for a low memory kill.
+  int ProcessCandidate(::mojom::LifecycleUnitDiscardReason reason,
+                       base::TimeTicks kill_start_time,
+                       Candidate& candidate,
+                       int target_memory_to_free_kb);
+
+  // Processes an app candidate for a low memory kill.
+  int ProcessAppCandidate(base::TimeTicks kill_start_time,
+                          Candidate& candidate);
+
+  // Processes a lifecycle unit candidate for a low memory kill.
+  int ProcessLifecycleUnitCandidate(Candidate& candidate,
+                                    int target_memory_to_free_kb,
+                                    ::mojom::LifecycleUnitDiscardReason reason);
+
   // Sets a newly focused tab the highest priority process if it wasn't.
   void AdjustFocusedTabScore(base::ProcessHandle pid);
 
@@ -194,6 +215,15 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
     return base::Seconds(60);
   }
 
+  // The listing is throttled to avoid too frequent reporting.
+  void ListProcessesThrottled();
+
+  // Called by |delayed_report_timer_|.
+  void ListProcessesDelayed();
+
+  // List the tab processes for reporting.
+  void ListProcesses();
+
   // The OOM adjustment score for persistent ARC processes.
   static const int kPersistentArcAppOomScore;
 
@@ -221,6 +251,17 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
 
   // Util for getting system memory status.
   std::unique_ptr<TabManagerDelegate::MemoryStat> mem_stat_;
+
+  // For throttling the renderer process list reporting.
+  base::TimeTicks last_pids_report_ = base::TimeTicks::Now();
+
+  // Delay the reporting if it's less than the minimum interval since last
+  // reporting.
+  base::OneShotTimer delayed_report_timer_;
+
+  // Sequences to check if the last tab event is handled.
+  uint64_t tab_event_sequence_ = 0;
+  uint64_t tab_report_sequence_ = 0;
 
   // Weak pointer factory used for posting tasks to other threads.
   base::WeakPtrFactory<TabManagerDelegate> weak_ptr_factory_{this};

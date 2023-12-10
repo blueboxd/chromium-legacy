@@ -40,25 +40,26 @@
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/application_delegate/app_state_observer.h"
-#import "ios/chrome/browser/default_browser/utils.h"
+#import "ios/chrome/browser/default_browser/model/utils.h"
 #import "ios/chrome/browser/intents/intents_donation_helper.h"
 #import "ios/chrome/browser/ntp/features.h"
+#import "ios/chrome/browser/ntp/home/features.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/set_up_list.h"
 #import "ios/chrome/browser/ntp/set_up_list_delegate.h"
 #import "ios/chrome/browser/ntp/set_up_list_item.h"
 #import "ios/chrome/browser/ntp/set_up_list_item_type.h"
 #import "ios/chrome/browser/ntp/set_up_list_prefs.h"
-#import "ios/chrome/browser/ntp_tiles/most_visited_sites_observer_bridge.h"
-#import "ios/chrome/browser/ntp_tiles/tab_resumption/tab_resumption_prefs.h"
+#import "ios/chrome/browser/ntp_tiles/model/most_visited_sites_observer_bridge.h"
+#import "ios/chrome/browser/ntp_tiles/model/tab_resumption/tab_resumption_prefs.h"
 #import "ios/chrome/browser/parcel_tracking/parcel_tracking_prefs.h"
 #import "ios/chrome/browser/parcel_tracking/parcel_tracking_util.h"
-#import "ios/chrome/browser/passwords/password_checkup_utils.h"
+#import "ios/chrome/browser/passwords/model/password_checkup_utils.h"
 #import "ios/chrome/browser/policy/policy_util.h"
-#import "ios/chrome/browser/safety_check/ios_chrome_safety_check_manager.h"
-#import "ios/chrome/browser/safety_check/ios_chrome_safety_check_manager_constants.h"
-#import "ios/chrome/browser/safety_check/ios_chrome_safety_check_manager_factory.h"
-#import "ios/chrome/browser/safety_check/ios_chrome_safety_check_manager_observer_bridge.h"
+#import "ios/chrome/browser/safety_check/model/ios_chrome_safety_check_manager.h"
+#import "ios/chrome/browser/safety_check/model/ios_chrome_safety_check_manager_constants.h"
+#import "ios/chrome/browser/safety_check/model/ios_chrome_safety_check_manager_factory.h"
+#import "ios/chrome/browser/safety_check/model/ios_chrome_safety_check_manager_observer_bridge.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
@@ -79,7 +80,7 @@
 #import "ios/chrome/browser/sync/model/enterprise_utils.h"
 #import "ios/chrome/browser/sync/model/session_sync_service_factory.h"
 #import "ios/chrome/browser/sync/model/sync_observer_bridge.h"
-#import "ios/chrome/browser/synced_sessions/synced_sessions_bridge.h"
+#import "ios/chrome/browser/synced_sessions/model/synced_sessions_bridge.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_return_to_recent_tab_item.h"
@@ -88,8 +89,8 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/query_suggestion_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_delegate.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_favicon_mediator.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recorder.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_tile_saver.h"
@@ -103,14 +104,13 @@
 #import "ios/chrome/browser/ui/content_suggestions/tab_resumption/tab_resumption_helper.h"
 #import "ios/chrome/browser/ui/content_suggestions/tab_resumption/tab_resumption_item.h"
 #import "ios/chrome/browser/ui/credential_provider_promo/credential_provider_promo_metrics.h"
-#import "ios/chrome/browser/ui/ntp/feed_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_metrics_delegate.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_constants.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_util.h"
 #import "ios/chrome/browser/ui/whats_new/whats_new_util.h"
-#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
-#import "ios/chrome/browser/url_loading/url_loading_params.h"
+#import "ios/chrome/browser/url_loading/model/url_loading_browser_agent.h"
+#import "ios/chrome/browser/url_loading/model/url_loading_params.h"
 #import "ios/chrome/common/app_group/app_group_constants.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "third_party/abseil-cpp/absl/types/optional.h"
@@ -520,6 +520,8 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 
 - (void)disableParcelTracking {
   DisableParcelTracking(_localState);
+  _shoppingService->StopTrackingAllParcels(base::BindOnce(^(bool){
+  }));
 
   // Find all parcel tracking modules and remove them.
   for (NSUInteger i = 0; i < [_latestMagicStackOrder count]; i++) {
@@ -608,7 +610,7 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
     if ([weakSelf.setUpList allItemsComplete]) {
       [weakSelf.consumer showSetUpListDoneWithAnimations:^{
         if (!IsMagicStackEnabled()) {
-          [self.feedDelegate contentSuggestionsWasUpdated];
+          [self.delegate contentSuggestionsWasUpdated];
         }
       }];
     } else if (IsMagicStackEnabled()) {
@@ -672,7 +674,7 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 
 - (void)openMostRecentTab {
   [self.NTPMetricsDelegate recentTabTileOpened];
-  [self.contentSuggestionsMetricsRecorder recordMostRecentTabOpened];
+  [self.contentSuggestionsMetricsRecorder recordTabResumptionTabOpened];
   [IntentDonationHelper donateIntent:IntentType::kOpenLatestTab];
   [self hideRecentTabTile];
   WebStateList* web_state_list = self.browser->GetWebStateList();
@@ -689,16 +691,17 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 - (void)openTabResumptionItem {
   switch (_tabResumptionItem.itemType) {
     case TabResumptionItemType::kLastSyncedTab:
-      // TODO(crbug.com/1478156): Add metrics.
+      [self.NTPMetricsDelegate distantTabResumptionOpened];
       // TODO(crbug.com/1478156): Derank or hide the tile.
       break;
     case TabResumptionItemType::kMostRecentTab: {
       [self.NTPMetricsDelegate recentTabTileOpened];
-      [self.contentSuggestionsMetricsRecorder recordMostRecentTabOpened];
       break;
     }
   }
-
+  [self.contentSuggestionsMetricsRecorder recordTabResumptionTabOpened];
+  tab_resumption_prefs::SetTabResumptionLastOpenedTabURL(
+      _tabResumptionItem.tabURL, _localState);
   web::NavigationManager::WebLoadParams webLoadParams =
       web::NavigationManager::WebLoadParams(_tabResumptionItem.tabURL);
   UrlLoadParams params = UrlLoadParams::SwitchToTab(webLoadParams);
@@ -794,10 +797,6 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 
 - (void)onMostVisitedURLsAvailable:
     (const ntp_tiles::NTPTilesVector&)mostVisited {
-  if (ShouldHideMVT()) {
-    return;
-  }
-
   // This is used by the content widget.
   content_suggestions_tile_saver::SaveMostVisitedToDisk(
       mostVisited, self.faviconMediator.mostVisitedAttributesProvider,
@@ -988,7 +987,7 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
     [self.consumer
         showReturnToRecentTabTileWithConfig:self.returnToRecentTabItem];
   }
-  if ([self.mostVisitedItems count] && !ShouldHideMVT()) {
+  if ([self.mostVisitedItems count]) {
     [self.consumer setMostVisitedTilesWithConfigs:self.mostVisitedItems];
   }
   if ([self shouldShowSetUpList]) {
@@ -1012,8 +1011,7 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
   // 1) Magic Stack is enabled (always show shortcuts in Magic Stack).
   // 2) The Set Up List and Magic Stack are not enabled (Set Up List replaced
   // Shortcuts).
-  if (!ShouldHideShortcuts() &&
-      (IsMagicStackEnabled() || ![self shouldShowSetUpList])) {
+  if ((IsMagicStackEnabled() || ![self shouldShowSetUpList])) {
     [self.consumer setShortcutTilesWithConfigs:self.actionButtonItems];
   }
 
@@ -1022,7 +1020,8 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
       _safetyCheckState.runningState == RunningSafetyCheckState::kDefault) {
     [self.consumer showSafetyCheck:_safetyCheckState];
   }
-  if (IsIOSParcelTrackingEnabled()) {
+  if (IsIOSParcelTrackingEnabled() &&
+      !IsParcelTrackingDisabled(GetApplicationContext()->GetLocalState())) {
     __weak ContentSuggestionsMediator* weakSelf = self;
     _shoppingService->GetAllParcelStatuses(base::BindOnce(^(
         bool success,
@@ -1050,10 +1049,6 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 
 // Replaces the Most Visited items currently displayed by the most recent ones.
 - (void)useFreshMostVisited {
-  if (ShouldHideMVT()) {
-    return;
-  }
-
   if (IsMagicStackEnabled()) {
     const base::Value::List& oldMostVisitedSites =
         _localState->GetList(prefs::kIosLatestMostVisitedSites);
@@ -1076,7 +1071,7 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 
   self.mostVisitedItems = self.freshMostVisitedItems;
   [self.consumer setMostVisitedTilesWithConfigs:self.mostVisitedItems];
-  [self.feedDelegate contentSuggestionsWasUpdated];
+  [self.delegate contentSuggestionsWasUpdated];
 }
 
 // Logs a User Action if `freshMostVisitedSites` has at least one site that
@@ -1196,7 +1191,8 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
     [self addSafetyCheckToMagicStackOrder:magicStackModules];
   }
 
-  if (IsIOSParcelTrackingEnabled()) {
+  if (IsIOSParcelTrackingEnabled() &&
+      !IsParcelTrackingDisabled(GetApplicationContext()->GetLocalState())) {
     if ([_parcelTrackingItems count] > 2) {
       [magicStackModules
           addObject:@(int(
@@ -1234,11 +1230,17 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
         }
         break;
       case ContentSuggestionsModuleType::kTabResumption:
-        if (IsTabResumptionEnabled() &&
-            !tab_resumption_prefs::IsTabResumptionDisabled(_localState) &&
-            _tabResumptionItem) {
-          [magicStackOrder addObject:moduleNumber];
+        if (!IsTabResumptionEnabled() ||
+            tab_resumption_prefs::IsTabResumptionDisabled(_localState) ||
+            !_tabResumptionItem) {
+          break;
         }
+        // If ShouldHideIrrelevantModules() is enabled and it is not ranked as
+        // the first two modules, do not add it to the Magic Stack.
+        if (ShouldHideIrrelevantModules() && [magicStackOrder count] > 1) {
+          break;
+        }
+        [magicStackOrder addObject:moduleNumber];
         break;
       case ContentSuggestionsModuleType::kSafetyCheck:
       case ContentSuggestionsModuleType::kSafetyCheckMultiRow:
@@ -1258,7 +1260,9 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
         [magicStackOrder addObject:moduleNumber];
         break;
       case ContentSuggestionsModuleType::kParcelTracking:
-        if (IsIOSParcelTrackingEnabled()) {
+        if (IsIOSParcelTrackingEnabled() &&
+            !IsParcelTrackingDisabled(
+                GetApplicationContext()->GetLocalState())) {
           if ([_parcelTrackingItems count] > 2) {
             [magicStackOrder addObject:@(int(ContentSuggestionsModuleType::
                                                  kParcelTrackingSeeMore))];
@@ -1472,19 +1476,22 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 // Hides the Set Up List with an animation.
 - (void)hideSetUpList {
   [self.consumer hideSetUpListWithAnimations:^{
-    [self.feedDelegate contentSuggestionsWasUpdated];
+    [self.delegate contentSuggestionsWasUpdated];
   }];
 }
 
 // Shows the tab resumption tile if there is a `_tabResumptionItem` to present.
 - (void)showTabResumptionTile {
+  if (!self.webState) {
+    return;
+  }
+
   CHECK(IsTabResumptionEnabled());
   if (!self.consumer ||
       tab_resumption_prefs::IsTabResumptionDisabled(_localState)) {
     return;
   }
 
-  // TODO(crbug.com/1478156): Add restrictions.
   if (_tabResumptionItem) {
     [self.consumer showTabResumptionWithItem:_tabResumptionItem];
     return;
@@ -1502,6 +1509,10 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 
 // Shows the tab resumption tile with the given `item` configuration.
 - (void)showTabResumptionWithItem:(TabResumptionItem*)item {
+  if (tab_resumption_prefs::IsLastOpenedURL(item.tabURL, _localState)) {
+    return;
+  }
+
   _tabResumptionItem = item;
   _latestMagicStackOrder =
       base::FeatureList::IsEnabled(

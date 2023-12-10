@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/ui/views/web_apps/web_app_detailed_install_dialog.h"
 #include "chrome/browser/ui/views/web_apps/web_app_info_image_source.h"
+#include "chrome/browser/ui/web_applications/web_app_dialogs.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_prefs_utils.h"
 #include "chrome/grit/generated_resources.h"
@@ -38,6 +39,8 @@
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/dialog_model.h"
 #include "ui/base/models/dialog_model_field.h"
 #include "ui/base/models/image_model.h"
@@ -97,6 +100,7 @@ class ImageCarouselLayoutManager : public views::LayoutManagerBase {
 enum class ButtonType { LEADING, TRAILING };
 class ScrollButton : public views::ImageButton {
  public:
+  METADATA_HEADER(ScrollButton);
   ScrollButton(ButtonType button_type, PressedCallback callback)
       : views::ImageButton(std::move(callback)) {
     ConfigureVectorImageButton(this);
@@ -147,8 +151,12 @@ class ScrollButton : public views::ImageButton {
   raw_ptr<views::InkDropContainerView> ink_drop_container_ = nullptr;
 };
 
+BEGIN_METADATA(ScrollButton, views::ImageButton)
+END_METADATA
+
 class ImageCarouselView : public views::View {
  public:
+  METADATA_HEADER(ImageCarouselView);
   explicit ImageCarouselView(
       const std::vector<webapps::Screenshot>& screenshots)
       : screenshots_(screenshots) {
@@ -311,17 +319,20 @@ class ImageCarouselView : public views::View {
   bool trailing_button_visibility_set_up_ = false;
 };
 
+BEGIN_METADATA(ImageCarouselView, views::View)
+END_METADATA
+
 }  // namespace
 
-namespace chrome {
+namespace web_app {
 
 void ShowWebAppDetailedInstallDialog(
     content::WebContents* web_contents,
     std::unique_ptr<web_app::WebAppInstallInfo> install_info,
     std::unique_ptr<webapps::MlInstallOperationTracker> install_tracker,
-    chrome::AppInstallationAcceptanceCallback callback,
+    AppInstallationAcceptanceCallback callback,
     const std::vector<webapps::Screenshot>& screenshots,
-    chrome::PwaInProductHelpState iph_state) {
+    PwaInProductHelpState iph_state) {
   content::BrowserContext* browser_context = web_contents->GetBrowserContext();
   PrefService* const prefs =
       Profile::FromBrowserContext(browser_context)->GetPrefs();
@@ -383,16 +394,12 @@ void ShowWebAppDetailedInstallDialog(
   base::RecordAction(base::UserMetricsAction("WebAppDetailedInstallShown"));
 }
 
-}  // namespace chrome
-
-namespace web_app {
-
 WebAppDetailedInstallDialogDelegate::WebAppDetailedInstallDialogDelegate(
     content::WebContents* web_contents,
     std::unique_ptr<web_app::WebAppInstallInfo> web_app_info,
     std::unique_ptr<webapps::MlInstallOperationTracker> install_tracker,
-    chrome::AppInstallationAcceptanceCallback callback,
-    chrome::PwaInProductHelpState iph_state,
+    AppInstallationAcceptanceCallback callback,
+    PwaInProductHelpState iph_state,
     PrefService* prefs,
     feature_engagement::Tracker* tracker)
     : WebContentsObserver(web_contents),
@@ -411,7 +418,7 @@ WebAppDetailedInstallDialogDelegate::WebAppDetailedInstallDialogDelegate(
 
 WebAppDetailedInstallDialogDelegate::~WebAppDetailedInstallDialogDelegate() {
   // TODO(crbug.com/1327363): move this to dialog->SetHighlightedButton.
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
+  Browser* browser = chrome::FindBrowserWithTab(web_contents_);
   if (!browser) {
     return;
   }
@@ -433,7 +440,7 @@ WebAppDetailedInstallDialogDelegate::~WebAppDetailedInstallDialogDelegate() {
 
 void WebAppDetailedInstallDialogDelegate::OnAccept() {
   base::RecordAction(base::UserMetricsAction("WebAppDetailedInstallAccepted"));
-  if (iph_state_ == chrome::PwaInProductHelpState::kShown) {
+  if (iph_state_ == PwaInProductHelpState::kShown) {
     webapps::AppId app_id =
         web_app::GenerateAppIdFromManifestId(install_info_->manifest_id);
     web_app::RecordInstallIphInstalled(prefs_, app_id);
@@ -499,7 +506,7 @@ void WebAppDetailedInstallDialogDelegate::MeasureIphOnDialogClose() {
 
   base::RecordAction(base::UserMetricsAction("WebAppDetailedInstallCancelled"));
 
-  if (iph_state_ == chrome::PwaInProductHelpState::kShown && install_info_) {
+  if (iph_state_ == PwaInProductHelpState::kShown && install_info_) {
     webapps::AppId app_id =
         web_app::GenerateAppIdFromManifestId(install_info_->manifest_id);
     web_app::RecordInstallIphIgnored(prefs_, app_id, base::Time::Now());

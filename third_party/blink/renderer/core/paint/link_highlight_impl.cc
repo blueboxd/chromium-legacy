@@ -307,7 +307,7 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
   for (AccompaniedFragmentIterator iterator(*object); !iterator.IsDone();
        index++) {
     const auto* fragment = iterator.GetFragmentData();
-    ScopedDisplayItemFragment scoped_fragment(context, fragment->FragmentID());
+    ScopedDisplayItemFragment scoped_fragment(context, index);
     Vector<PhysicalRect> rects = object->CollectOutlineRectsAndAdvance(
         NGOutlineType::kIncludeBlockVisualOverflow, iterator);
     if (rects.size() > 1)
@@ -319,7 +319,7 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
     // See gesture-tapHighlight-simple-nested.html
     if (use_rounded_rects && object->IsLayoutInline() &&
         object->IsInLayoutNGInlineFormattingContext()) {
-      NGInlineCursor cursor;
+      InlineCursor cursor;
       cursor.MoveTo(*object);
       // When |LayoutInline| has more than one children, we render square
       // rectangle as |NGPaintFragment|.

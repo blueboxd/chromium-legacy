@@ -13,6 +13,13 @@
 
 namespace chromeos::features {
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Enables triggering app installs from a specific URI.
+BASE_FEATURE(kAppInstallServiceUri,
+             "AppInstallServiceUri",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 // Enables or disables more filtering out of phones from the Bluetooth UI.
 BASE_FEATURE(kBluetoothPhoneFilter,
              "BluetoothPhoneFilter",
@@ -46,6 +53,14 @@ BASE_FEATURE(kBlinkExtensionDiagnostics,
 BASE_FEATURE(kCrosComponents,
              "CrosComponents",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the more detailed, OS-level dialog for web app installs.
+BASE_FEATURE(kCrosWebAppInstallDialog,
+             "CrosWebAppInstallDialog",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the desk profiles feature.
+BASE_FEATURE(kDeskProfiles, "DeskProfiles", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Disable idle sockets closing on memory pressure for NetworkContexts that
 // belong to Profiles. It only applies to Profiles because the goal is to
@@ -81,7 +96,7 @@ BASE_FEATURE(kExperimentalWebAppStoragePartitionIsolation,
 // Enable IWA support for Telemetry Extension API.
 BASE_FEATURE(kIWAForTelemetryExtensionAPI,
              "IWAForTelemetryExtensionAPI",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables Jelly features. go/jelly-flags
 BASE_FEATURE(kJelly, "Jelly", base::FEATURE_ENABLED_BY_DEFAULT);
@@ -117,6 +132,20 @@ BASE_FEATURE(kUploadOfficeToCloudForEnterprise,
              "UploadOfficeToCloudForEnterprise",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kRoundedWindows,
+             "RoundedWindows",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const char kRoundedWindowsRadius[] = "window_radius";
+
+bool IsAppInstallServiceUriEnabled() {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  return chromeos::BrowserParamsProxy::Get()->IsAppInstallServiceUriEnabled();
+#else
+  return base::FeatureList::IsEnabled(kAppInstallServiceUri);
+#endif
+}
+
 bool IsClipboardHistoryRefreshEnabled() {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   return chromeos::BrowserParamsProxy::Get()->EnableClipboardHistoryRefresh();
@@ -125,12 +154,6 @@ bool IsClipboardHistoryRefreshEnabled() {
          IsJellyEnabled();
 #endif
 }
-
-BASE_FEATURE(kRoundedWindows,
-             "RoundedWindows",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-const char kRoundedWindowsRadius[] = "window_radius";
 
 bool IsCloudGamingDeviceEnabled() {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -151,6 +174,14 @@ bool IsBlinkExtensionDiagnosticsEnabled() {
 
 bool IsCrosComponentsEnabled() {
   return base::FeatureList::IsEnabled(kCrosComponents) && IsJellyEnabled();
+}
+
+bool IsDeskProfilesEnabled() {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  return chromeos::BrowserParamsProxy::Get()->IsDeskProfilesEnabled();
+#else
+  return base::FeatureList::IsEnabled(kDeskProfiles);
+#endif
 }
 
 bool IsIWAForTelemetryExtensionAPIEnabled() {

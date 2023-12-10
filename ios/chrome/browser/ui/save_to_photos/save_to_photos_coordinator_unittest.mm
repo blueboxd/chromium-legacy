@@ -28,7 +28,7 @@
 #import "ios/chrome/browser/signin/fake_system_identity_manager.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/signin/identity_test_environment_browser_state_adaptor.h"
-#import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
+#import "ios/chrome/browser/store_kit/model/store_kit_coordinator.h"
 #import "ios/chrome/browser/ui/account_picker/account_picker_configuration.h"
 #import "ios/chrome/browser/ui/account_picker/account_picker_coordinator.h"
 #import "ios/chrome/browser/ui/account_picker/account_picker_coordinator_delegate.h"
@@ -250,7 +250,6 @@ TEST_F(SaveToPhotosCoordinatorTest, ShowsAndHidesStoreKit) {
       [coordinator conformsToProtocol:@protocol(SaveToPhotosMediatorDelegate)]);
 
   NSString* productIdentifier = @"product_identifier";
-  NSString* campaignToken = @"campaign_token";
 
   id mock_store_kit_coordinator = OCMClassMock([StoreKitCoordinator class]);
   OCMExpect([mock_store_kit_coordinator alloc])
@@ -261,18 +260,14 @@ TEST_F(SaveToPhotosCoordinatorTest, ShowsAndHidesStoreKit) {
       .andReturn(mock_store_kit_coordinator);
   OCMExpect([mock_store_kit_coordinator
       setDelegate:static_cast<id<SaveToPhotosMediatorDelegate>>(coordinator)]);
-  NSDictionary* expectedITunesProductParameters = @{
-    SKStoreProductParameterITunesItemIdentifier : productIdentifier,
-    SKStoreProductParameterCampaignToken : campaignToken
-  };
-  OCMExpect([mock_store_kit_coordinator
-      setITunesProductParameters:expectedITunesProductParameters]);
+  OCMExpect([mock_store_kit_coordinator setITunesProductParameters:@{
+    SKStoreProductParameterITunesItemIdentifier : productIdentifier
+  }]);
   OCMExpect([base::apple::ObjCCast<StoreKitCoordinator>(
       mock_store_kit_coordinator) start]);
 
   [static_cast<id<SaveToPhotosMediatorDelegate>>(coordinator)
-      showStoreKitWithProductIdentifier:productIdentifier
-                          campaignToken:campaignToken];
+      showStoreKitWithProductIdentifier:productIdentifier];
   EXPECT_OCMOCK_VERIFY(mock_store_kit_coordinator);
 
   OCMExpect([base::apple::ObjCCast<StoreKitCoordinator>(

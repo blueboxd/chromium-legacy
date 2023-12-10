@@ -258,6 +258,11 @@ String ComputeBaseComputedStyleDiff(const ComputedStyle* base_computed_style,
     exclusions.insert(DebugField::background_);
   }
   if (!CSSPropertyEquality::PropertiesEqual(
+          PropertyHandle(CSSProperty::Get(CSSPropertyID::kMaskImage)),
+          *base_computed_style, computed_style)) {
+    exclusions.insert(DebugField::mask_);
+  }
+  if (!CSSPropertyEquality::PropertiesEqual(
           PropertyHandle(CSSProperty::Get(CSSPropertyID::kWebkitMaskImage)),
           *base_computed_style, computed_style)) {
     exclusions.insert(DebugField::mask_);
@@ -1201,14 +1206,15 @@ void StyleResolver::InitStyle(Element& element,
   state.StyleBuilder().SetStyleType(style_request.pseudo_id);
   state.StyleBuilder().SetPseudoArgument(style_request.pseudo_argument);
 
-  // For highlight inheritance, propagate link visitedness and forced-colors
-  // status.
+  // For highlight inheritance, propagate link visitedness, forced-colors
+  // status, the font and the line height from the originating element. The
+  // font and line height are necessary to correctly resolve font relative
+  // units.
   if (state.UsesHighlightPseudoInheritance()) {
     state.StyleBuilder().SetInForcedColorsMode(
         style_request.originating_element_style->InForcedColorsMode());
     state.StyleBuilder().SetForcedColorAdjust(
         style_request.originating_element_style->ForcedColorAdjust());
-    // TODO(schenney): Remove these when a better solution is found
     state.StyleBuilder().SetFont(
         style_request.originating_element_style->GetFont());
     state.StyleBuilder().SetLineHeight(
@@ -2823,6 +2829,19 @@ void StyleResolver::PropagateStyleToViewport() {
     PROPAGATE_VALUE(overflow_anchor, OverflowAnchor, SetOverflowAnchor);
   }
 
+  // Color
+  {
+    Color color = StyleColor(CSSValueID::kCanvastext).GetColor();
+    if (document_element_style) {
+      color =
+          document_element_style->VisitedDependentColor(GetCSSPropertyColor());
+    }
+    if (viewport_style.VisitedDependentColor(GetCSSPropertyColor()) != color) {
+      changed = true;
+      new_viewport_style_builder.SetColor(StyleColor(color));
+    }
+  }
+
   // Misc
   {
     PROPAGATE_FROM(document_element_style, EffectiveTouchAction,
@@ -2835,6 +2854,10 @@ void StyleResolver::PropagateStyleToViewport() {
                    SetColorSchemeForced, false);
     PROPAGATE_FROM(document_element_style, ScrollbarGutter, SetScrollbarGutter,
                    kScrollbarGutterAuto);
+    PROPAGATE_FROM(document_element_style, ScrollbarWidth, SetScrollbarWidth,
+                   EScrollbarWidth::kAuto);
+    PROPAGATE_FROM(document_element_style, ScrollbarColor, SetScrollbarColor,
+                   absl::nullopt);
     PROPAGATE_FROM(document_element_style, ForcedColorAdjust,
                    SetForcedColorAdjust, EForcedColorAdjust::kAuto);
   }

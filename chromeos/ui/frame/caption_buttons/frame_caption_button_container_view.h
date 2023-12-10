@@ -14,7 +14,6 @@
 #include "chromeos/ui/frame/caption_buttons/frame_size_button_delegate.h"
 #include "chromeos/ui/frame/caption_buttons/snap_controller.h"
 #include "chromeos/ui/frame/multitask_menu/multitask_menu_nudge_controller.h"
-#include "chromeos/ui/wm/features.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/layout/box_layout_view.h"
@@ -52,6 +51,7 @@ class COMPONENT_EXPORT(CHROMEOS_UI_FRAME) FrameCaptionButtonContainerView
   // left-most caption button (in LTR mode).
   FrameCaptionButtonContainerView(
       views::Widget* frame,
+      bool is_close_button_enabled = true,
       std::unique_ptr<views::FrameCaptionButton> custom_button = nullptr);
   FrameCaptionButtonContainerView(const FrameCaptionButtonContainerView&) =
       delete;
@@ -90,7 +90,6 @@ class COMPONENT_EXPORT(CHROMEOS_UI_FRAME) FrameCaptionButtonContainerView
     }
 
     views::FrameCaptionButton* float_button() const {
-      CHECK(chromeos::wm::features::IsWindowLayoutMenuEnabled());
       return container_view_->float_button_;
     }
 
@@ -193,6 +192,9 @@ class COMPONENT_EXPORT(CHROMEOS_UI_FRAME) FrameCaptionButtonContainerView
   void CloseButtonPressed();
   void MenuButtonPressed();
   void FloatButtonPressed();
+
+  bool SizeButtonShouldBeVisible() const;
+  void LayoutButtonsFromAnimation(int x_slide, int alpha);
 
   // FrameSizeButtonDelegate:
   bool IsMinimizeButtonVisible() const override;

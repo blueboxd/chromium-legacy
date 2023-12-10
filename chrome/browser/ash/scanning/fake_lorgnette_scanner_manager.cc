@@ -74,6 +74,12 @@ void FakeLorgnetteScannerManager::GetScannerNames(
       FROM_HERE, base::BindOnce(std::move(callback), scanner_names_));
 }
 
+void FakeLorgnetteScannerManager::GetScannerInfoList(
+    GetScannerInfoListCallback callback) {
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), list_scanners_response_));
+}
+
 void FakeLorgnetteScannerManager::GetScannerCapabilities(
     const std::string& scanner_name,
     GetScannerCapabilitiesCallback callback) {
@@ -93,6 +99,21 @@ void FakeLorgnetteScannerManager::CloseScanner(
     CloseScannerCallback callback) {
   base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), close_scanner_response_));
+}
+
+void FakeLorgnetteScannerManager::StartPreparedScan(
+    const lorgnette::StartPreparedScanRequest& request,
+    StartPreparedScanCallback callback) {
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), start_prepared_scan_response_));
+}
+
+void FakeLorgnetteScannerManager::ReadScanData(
+    const lorgnette::ReadScanDataRequest& request,
+    ReadScanDataCallback callback) {
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), read_scan_data_response_));
 }
 
 bool FakeLorgnetteScannerManager::IsRotateAlternate(
@@ -148,9 +169,21 @@ void FakeLorgnetteScannerManager::CancelScan(CancelCallback cancel_callback) {
       FROM_HERE, base::BindOnce(std::move(cancel_callback), true));
 }
 
+void FakeLorgnetteScannerManager::CancelScan(
+    const lorgnette::CancelScanRequest& request,
+    CancelScanCallback callback) {
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), cancel_scan_response_));
+}
+
 void FakeLorgnetteScannerManager::SetGetScannerNamesResponse(
     const std::vector<std::string>& scanner_names) {
   scanner_names_ = scanner_names;
+}
+
+void FakeLorgnetteScannerManager::SetGetScannerInfoListResponse(
+    const absl::optional<lorgnette::ListScannersResponse>& response) {
+  list_scanners_response_ = response;
 }
 
 void FakeLorgnetteScannerManager::SetGetScannerCapabilitiesResponse(
@@ -169,9 +202,24 @@ void FakeLorgnetteScannerManager::SetCloseScannerResponse(
   close_scanner_response_ = response;
 }
 
+void FakeLorgnetteScannerManager::SetStartPreparedScanResponse(
+    const absl::optional<lorgnette::StartPreparedScanResponse>& response) {
+  start_prepared_scan_response_ = response;
+}
+
+void FakeLorgnetteScannerManager::SetReadScanDataResponse(
+    const absl::optional<lorgnette::ReadScanDataResponse>& response) {
+  read_scan_data_response_ = response;
+}
+
 void FakeLorgnetteScannerManager::SetScanResponse(
     const absl::optional<std::vector<std::string>>& scan_data) {
   scan_data_ = scan_data;
+}
+
+void FakeLorgnetteScannerManager::SetCancelScanResponse(
+    const absl::optional<lorgnette::CancelScanResponse>& response) {
+  cancel_scan_response_ = response;
 }
 
 }  // namespace ash

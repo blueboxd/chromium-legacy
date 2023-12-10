@@ -9,7 +9,7 @@ import {FakeEntryImpl, GuestOsPlaceholder, VolumeEntry} from '../../common/js/fi
 import {waitUntil} from '../../common/js/test_error_reporting.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {FileData, State} from '../../externs/ts/state.js';
-import {VolumeInfo} from '../../externs/volume_info.js';
+import type {VolumeInfo} from '../../externs/volume_info.js';
 import {convertEntryToFileData} from '../ducks/all_entries.js';
 import {createFakeVolumeMetadata, setUpFileManagerOnWindow, setupStore, waitDeepEquals} from '../for_tests.js';
 import {getEmptyState} from '../store.js';
@@ -270,8 +270,7 @@ export async function testRemoveNonExistedUiEntry(done: () => void) {
 }
 
 /**
- * Tests removing UI entry from MyFiles will reset the children field of
- * MyFiles entry.
+ * Tests removing UI entry from MyFiles will also update MyFiles entry.
  */
 export async function testRemoveUiEntryFromMyFiles(done: () => void) {
   const initialState = getEmptyState();
@@ -291,7 +290,7 @@ export async function testRemoveUiEntryFromMyFiles(done: () => void) {
 
   const store = setupStore(initialState);
 
-  // Dispatch an action to
+  // Dispatch an action to remove ui entry.
   store.dispatch(removeUiEntry({key: uiEntry.toURL()}));
 
   // Expect the entry has been removed from MyFiles.

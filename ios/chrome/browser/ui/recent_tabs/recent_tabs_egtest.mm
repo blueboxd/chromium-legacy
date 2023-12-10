@@ -336,13 +336,13 @@ GURL TestPageURL() {
       selectElementWithMatcher:grey_allOf(grey_text(disclaimerText),
                                           grey_sufficientlyVisible(), nil)]
          usingSearchAction:chrome_test_util::HistoryOptInScrollDown()
-      onElementWithMatcher:chrome_test_util::HistoryOptInScrollViewMatcher()]
+      onElementWithMatcher:chrome_test_util::HistoryOptInPromoMatcher()]
       assertWithMatcher:grey_notNil()];
   // Accept History Sync.
   [[[EarlGrey selectElementWithMatcher:chrome_test_util::
                                            HistoryOptInPrimaryButtonMatcher()]
          usingSearchAction:chrome_test_util::HistoryOptInScrollDown()
-      onElementWithMatcher:chrome_test_util::HistoryOptInScrollViewMatcher()]
+      onElementWithMatcher:chrome_test_util::HistoryOptInPromoMatcher()]
       performAction:grey_tap()];
   [ChromeEarlGrey
       waitForUIElementToDisappearWithMatcher:
@@ -394,10 +394,10 @@ GURL TestPageURL() {
                                    kHistorySyncViewAccessibilityIdentifier)]
       assertWithMatcher:grey_sufficientlyVisible()];
   // Decline History Sync.
-  [[[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                           HistoryOptInSecondaryButtonMatcher()]
+  [[[EarlGrey selectElementWithMatcher:
+                  chrome_test_util::SigninScreenPromoSecondaryButtonMatcher()]
          usingSearchAction:chrome_test_util::HistoryOptInScrollDown()
-      onElementWithMatcher:chrome_test_util::HistoryOptInScrollViewMatcher()]
+      onElementWithMatcher:chrome_test_util::HistoryOptInPromoMatcher()]
       performAction:grey_tap()];
   [ChromeEarlGrey
       waitForUIElementToDisappearWithMatcher:
@@ -451,9 +451,9 @@ GURL TestPageURL() {
         assertWithMatcher:grey_sufficientlyVisible()];
     // Decline History Sync.
     [[[EarlGrey selectElementWithMatcher:
-                    chrome_test_util::HistoryOptInSecondaryButtonMatcher()]
+                    chrome_test_util::SigninScreenPromoSecondaryButtonMatcher()]
            usingSearchAction:chrome_test_util::HistoryOptInScrollDown()
-        onElementWithMatcher:chrome_test_util::HistoryOptInScrollViewMatcher()]
+        onElementWithMatcher:chrome_test_util::HistoryOptInPromoMatcher()]
         performAction:grey_tap()];
     [ChromeEarlGrey
         waitForUIElementToDisappearWithMatcher:
@@ -569,13 +569,13 @@ GURL TestPageURL() {
       selectElementWithMatcher:grey_allOf(grey_text(disclaimerText),
                                           grey_sufficientlyVisible(), nil)]
          usingSearchAction:chrome_test_util::HistoryOptInScrollDown()
-      onElementWithMatcher:chrome_test_util::HistoryOptInScrollViewMatcher()]
+      onElementWithMatcher:chrome_test_util::HistoryOptInPromoMatcher()]
       assertWithMatcher:grey_notNil()];
   // Accept History Sync.
   [[[EarlGrey selectElementWithMatcher:chrome_test_util::
                                            HistoryOptInPrimaryButtonMatcher()]
          usingSearchAction:chrome_test_util::HistoryOptInScrollDown()
-      onElementWithMatcher:chrome_test_util::HistoryOptInScrollViewMatcher()]
+      onElementWithMatcher:chrome_test_util::HistoryOptInPromoMatcher()]
       performAction:grey_tap()];
   [ChromeEarlGrey
       waitForUIElementToDisappearWithMatcher:
@@ -626,10 +626,10 @@ GURL TestPageURL() {
                                    kHistorySyncViewAccessibilityIdentifier)]
       assertWithMatcher:grey_sufficientlyVisible()];
   // Decline History Sync.
-  [[[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                           HistoryOptInSecondaryButtonMatcher()]
+  [[[EarlGrey selectElementWithMatcher:
+                  chrome_test_util::SigninScreenPromoSecondaryButtonMatcher()]
          usingSearchAction:chrome_test_util::HistoryOptInScrollDown()
-      onElementWithMatcher:chrome_test_util::HistoryOptInScrollViewMatcher()]
+      onElementWithMatcher:chrome_test_util::HistoryOptInPromoMatcher()]
       performAction:grey_tap()];
   [ChromeEarlGrey
       waitForUIElementToDisappearWithMatcher:
@@ -933,7 +933,11 @@ GURL TestPageURL() {
   for (NSUInteger i = 0; i < numberOfTabs; ++i) {
     // Check that the session header is displayed.
     NSString* tabName = [NSString stringWithFormat:@"Tab %ld", i];
-    [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(tabName)]
+    [[EarlGrey
+        selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(tabName),
+                                            grey_ancestor(grey_kindOfClassName(
+                                                @"TableViewURLCell")),
+                                            nil)]
         assertWithMatcher:grey_sufficientlyVisible()];
   }
 

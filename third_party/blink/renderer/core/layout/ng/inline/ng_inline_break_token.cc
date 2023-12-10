@@ -24,7 +24,7 @@ ASSERT_SIZE(NGInlineBreakToken, SameSizeAsNGInlineBreakToken);
 const NGBlockBreakToken* NGInlineBreakToken::BlockBreakToken() const {
   if (!(flags_ & kHasSubBreakToken))
     return nullptr;
-  return sub_break_token_[0];
+  return sub_break_token_[0].Get();
 }
 
 // static
@@ -78,8 +78,17 @@ String NGInlineBreakToken::ToString() const {
   StringBuilder string_builder;
   string_builder.Append(String::Format("NGInlineBreakToken index:%u offset:%u",
                                        StartItemIndex(), StartTextOffset()));
+  if (UseFirstLineStyle()) {
+    string_builder.Append(" first-line");
+  }
   if (IsForcedBreak())
     string_builder.Append(" forced");
+  if (HasClonedBoxDecorations()) {
+    string_builder.Append(" cloned-box-decorations");
+  }
+  if (IsInParallelBlockFlow()) {
+    string_builder.Append(" parallel-flow");
+  }
   return string_builder.ToString();
 }
 

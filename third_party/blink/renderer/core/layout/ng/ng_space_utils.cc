@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 
+#include "third_party/blink/renderer/core/layout/geometry/bfc_offset.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
@@ -14,7 +14,7 @@
 
 namespace blink {
 
-bool AdjustToClearance(LayoutUnit clearance_offset, NGBfcOffset* offset) {
+bool AdjustToClearance(LayoutUnit clearance_offset, BfcOffset* offset) {
   DCHECK(offset);
   if (clearance_offset > offset->block_offset) {
     offset->block_offset = clearance_offset;

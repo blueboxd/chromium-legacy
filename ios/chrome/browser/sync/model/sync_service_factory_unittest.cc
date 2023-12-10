@@ -49,7 +49,7 @@ class SyncServiceFactoryTest : public PlatformTest {
  protected:
   // Returns the collection of default datatypes.
   syncer::ModelTypeSet DefaultDatatypes() {
-    static_assert(48 == syncer::GetNumModelTypes(),
+    static_assert(47 == syncer::GetNumModelTypes(),
                   "When adding a new type, you probably want to add it here as "
                   "well (assuming it is already enabled).");
 
@@ -84,7 +84,6 @@ class SyncServiceFactoryTest : public PlatformTest {
     datatypes.Put(syncer::SUPERVISED_USER_SETTINGS);
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
-    datatypes.Put(syncer::PROXY_TABS);
     datatypes.Put(syncer::USER_EVENTS);
     datatypes.Put(syncer::USER_CONSENTS);
     datatypes.Put(syncer::SEND_TAB_TO_SELF);

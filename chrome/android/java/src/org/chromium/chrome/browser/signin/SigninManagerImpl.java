@@ -11,14 +11,15 @@ import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.jni_zero.CalledByNative;
+import org.jni_zero.NativeMethods;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
@@ -29,7 +30,7 @@ import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.signin.services.SigninPreferencesManager;
@@ -186,9 +187,10 @@ class SigninManagerImpl implements IdentityManager.Observer, SigninManager {
     /** Returns true if sign out can be started now. */
     @Override
     public boolean isSignOutAllowed() {
-        return mSignOutState == null && mSignInState == null
+        return mSignOutState == null
+                && mSignInState == null
                 && mIdentityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN) != null
-                && !Profile.getLastUsedRegularProfile().isChild();
+                && mIdentityManager.isClearPrimaryAccountAllowed();
     }
 
     /**
@@ -263,9 +265,29 @@ class SigninManagerImpl implements IdentityManager.Observer, SigninManager {
     }
 
     @Override
+    public void signin(
+            CoreAccountInfo coreAccountInfo,
+            @SigninAccessPoint int accessPoint,
+            @Nullable SignInCallback callback) {
+        // TODO(crbug.com/1462264): Replace Account with CoreAccountInfo.
+        Account account = CoreAccountInfo.getAndroidAccountFrom(coreAccountInfo);
+        signin(account, accessPoint, callback);
+    }
+
+    @Override
     public void signinAndEnableSync(Account account, @SigninAccessPoint int accessPoint,
             @Nullable SignInCallback callback) {
         signinInternal(SignInState.createForSigninAndEnableSync(accessPoint, account, callback));
+    }
+
+    @Override
+    public void signinAndEnableSync(
+            CoreAccountInfo coreAccountInfo,
+            @SigninAccessPoint int accessPoint,
+            @Nullable SignInCallback callback) {
+        // TODO(crbug.com/1462264): Replace Account with CoreAccountInfo.
+        Account account = CoreAccountInfo.getAndroidAccountFrom(coreAccountInfo);
+        signinAndEnableSync(account, accessPoint, callback);
     }
 
     private void signinInternal(SignInState signInState) {
@@ -509,7 +531,7 @@ class SigninManagerImpl implements IdentityManager.Observer, SigninManager {
                     ChromeFeatureList.SYNC_ANDROID_LIMIT_NTP_PROMO_IMPRESSIONS)) {
             // After sign-out, reset the Sync promo show count, so the user will see Sync promos
             // again.
-            SharedPreferencesManager.getInstance().writeInt(
+            ChromeSharedPreferences.getInstance().writeInt(
                     ChromePreferenceKeys.SYNC_PROMO_SHOW_COUNT.createKey(
                             SigninPreferencesManager.SyncPromoAccessPointId.NTP),
                     0);

@@ -18,7 +18,7 @@
  * See README.md for more information.
  */
 
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 import {InsetsF, RectF} from 'chrome://resources/mojo/ui/gfx/geometry/mojom/geometry.mojom-webui.js';
 import {dedupingMixin, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -131,6 +131,7 @@ export const HelpBubbleMixin = dedupingMixin(
           assert(this.helpBubbleFixedAnchorObserver_);
           this.helpBubbleFixedAnchorObserver_.disconnect();
           this.helpBubbleFixedAnchorObserver_ = null;
+          this.helpBubbleDismissedEventTracker_.removeAll();
           this.helpBubbleControllerById_.clear();
           if (this.debouncedAnchorMayHaveChangedCallback_) {
             document.removeEventListener(

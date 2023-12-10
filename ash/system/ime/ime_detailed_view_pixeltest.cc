@@ -24,8 +24,7 @@ namespace {
 class IMEDetailedViewPixelTest : public AshTestBase {
  public:
   IMEDetailedViewPixelTest() {
-    feature_list_.InitWithFeatures(
-        {features::kQsRevamp, chromeos::features::kJelly}, {});
+    feature_list_.InitWithFeatures({chromeos::features::kJelly}, {});
   }
 
   // AshTestBase:
@@ -77,7 +76,7 @@ TEST_F(IMEDetailedViewPixelTest, Basics) {
   ASSERT_TRUE(detailed_view);
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "check_view",
-      /*revision_number=*/10, detailed_view));
+      /*revision_number=*/7, detailed_view));
 }
 
 }  // namespace

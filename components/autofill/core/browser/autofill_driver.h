@@ -95,6 +95,9 @@ class AutofillDriver {
   // necessary when a form is seen in a child frame and it is not known which
   // form is its parent.
   //
+  // Unlike other events, this is *not* be routed or broadcast to other frames;
+  // it refers to the frame associated with the driver.
+  //
   // Generally, this may happen because AutofillAgent is only notified about
   // newly created form control elements, but not about newly created or loaded
   // child frames.
@@ -106,7 +109,7 @@ class AutofillDriver {
   // form's FormData::child_frames may be outdated. When a form is now seen in
   // the child frame, it is not known *which form* in the parent frame is its
   // parent form. In this scenario, a form extraction should be triggered.
-  virtual void TriggerFormExtraction() = 0;
+  virtual void TriggerFormExtractionInDriverFrame() = 0;
 
   // Triggers a form_extraction on all frames of the same frame tree. Calls
   // `form_extraction_finished_callback` when all frames reported back
@@ -115,6 +118,11 @@ class AutofillDriver {
   virtual void TriggerFormExtractionInAllFrames(
       base::OnceCallback<void(bool success)>
           form_extraction_finished_callback) = 0;
+
+  virtual void ExtractForm(
+      FormGlobalId form,
+      base::OnceCallback<void(const std::optional<FormData>&)>
+          response_callback) = 0;
 
   // Returns true iff the renderer is available for communication.
   virtual bool RendererIsAvailable() = 0;
@@ -132,12 +140,17 @@ class AutofillDriver {
   // operation currently being filled or undone.
   //
   // This method is a no-op if the renderer is not currently available.
-  virtual std::vector<FieldGlobalId> ApplyAutofillAction(
-      mojom::AutofillActionType action_type,
-      mojom::AutofillActionPersistence action_persistence,
+  virtual std::vector<FieldGlobalId> ApplyFormAction(
+      mojom::ActionType action_type,
+      mojom::ActionPersistence action_persistence,
       const FormData& form,
       const url::Origin& triggered_origin,
       const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map) = 0;
+
+  // Tells the renderer to set the node text.
+  virtual void ApplyFieldAction(mojom::ActionPersistence action_persistence,
+                                const FieldGlobalId& field_id,
+                                const std::u16string& value) = 0;
 
   // Forwards parsed |forms| to the embedder.
   virtual void HandleParsedForms(const std::vector<FormData>& forms) = 0;
@@ -162,16 +175,6 @@ class AutofillDriver {
   virtual void RendererShouldTriggerSuggestions(
       const FieldGlobalId& field_id,
       AutofillSuggestionTriggerSource trigger_source) = 0;
-
-  // Tells the renderer to set the node text.
-  virtual void RendererShouldFillFieldWithValue(
-      const FieldGlobalId& field_id,
-      const std::u16string& value) = 0;
-
-  // Tells the renderer to preview the node with suggested text.
-  virtual void RendererShouldPreviewFieldWithValue(
-      const FieldGlobalId& field_id,
-      const std::u16string& value) = 0;
 
   // Tells the renderer to set the currently focused node's corresponding
   // accessibility node's autofill state to |state|.

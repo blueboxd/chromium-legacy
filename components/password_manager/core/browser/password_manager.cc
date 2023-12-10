@@ -331,6 +331,8 @@ void PasswordManager::RegisterProfilePrefs(
       prefs::kLocalPasswordMigrationWarningShownAtStartup, false);
   registry->RegisterIntegerPref(
       prefs::kLocalPasswordMigrationWarningPrefsVersion, 0);
+  registry->RegisterIntegerPref(
+      prefs::kPasswordGenerationBottomSheetDismissCount, 0);
 #endif  // BUILDFLAG(IS_ANDROID)
   // Preferences for |PasswordChangeSuccessTracker|.
   registry->RegisterIntegerPref(prefs::kPasswordChangeSuccessTrackerVersion, 0);
@@ -352,6 +354,7 @@ void PasswordManager::RegisterProfilePrefs(
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
   registry->RegisterListPref(prefs::kPasswordManagerPromoCardsList);
 #endif  // BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+  registry->RegisterBooleanPref(prefs::kPasswordSharingEnabled, true);
 }
 
 // static
@@ -1071,6 +1074,12 @@ void PasswordManager::OnLoginSuccessful() {
   CHECK(submitted_manager);
   const PasswordForm* submitted_form = submitted_manager->GetSubmittedForm();
   CHECK(submitted_form);
+
+  // User might fill several login flows during their user journey. For example,
+  // Forgot Password Flow followed by sign-in flow. To not suggest usernames
+  // from the old flow, clear after successful login.
+  possible_usernames_.Clear();
+
   client_->MaybeReportEnterpriseLoginEvent(
       submitted_form->url, submitted_form->IsFederatedCredential(),
       submitted_form->federation_origin,
@@ -1151,8 +1160,9 @@ void PasswordManager::OnLoginSuccessful() {
           submitted_manager->Clone());
     }
 
-    if (submitted_manager->HasGeneratedPassword())
+    if (submitted_manager->HasGeneratedPassword()) {
       client_->AutomaticPasswordSave(MoveOwnedSubmittedManager());
+    }
   }
   ResetSubmittedManager();
 }

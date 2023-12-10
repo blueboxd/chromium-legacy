@@ -286,7 +286,10 @@ bool UseDefaultHighlightColors(const ComputedStyle* pseudo_style,
 }  // anonymous namespace
 
 // Returns the used value of the given <color>-valued |property|, taking into
-// account forced colors, default highlight colors, and ‘currentColor’ fallback.
+// account forced colors, default highlight colors, and ‘currentColor’ fallback
+// by means of the previous_layer_color parameter.
+// If the current layer's color already accounts for the currentColor fallback,
+// then the current layer's color can be supplied for the previous_layer_color.
 Color HighlightStyleUtils::ResolveColor(
     const Document& document,
     const ComputedStyle& originating_style,
@@ -350,7 +353,7 @@ Color HighlightStyleUtils::HighlightBackgroundColor(
     const Document& document,
     const ComputedStyle& style,
     Node* node,
-    absl::optional<Color> previous_layer_color,
+    absl::optional<Color> current_layer_color,
     PseudoId pseudo,
     const AtomicString& pseudo_argument) {
   if (pseudo == kPseudoIdSelection) {
@@ -363,11 +366,27 @@ Color HighlightStyleUtils::HighlightBackgroundColor(
       HighlightPseudoStyle(node, style, pseudo, pseudo_argument);
   Color result =
       ResolveColor(document, style, pseudo_style, pseudo,
-                   GetCSSPropertyBackgroundColor(), previous_layer_color);
-  if (pseudo == kPseudoIdSelection && NodeIsReplaced(node)) {
-    // Avoid that ::selection full obscures selected replaced elements like
-    // images.
-    return result.BlendWithWhite();
+                   GetCSSPropertyBackgroundColor(), current_layer_color);
+
+  if (pseudo == kPseudoIdSelection) {
+    if (NodeIsReplaced(node)) {
+      // Avoid that ::selection full obscures selected replaced elements like
+      // images.
+      return result.BlendWithWhite();
+    }
+    if (result.IsFullyTransparent()) {
+      return Color::kTransparent;
+    }
+    // If the text color ends up being the same as the selection background,
+    // invert the selection background.
+    if (current_layer_color && *current_layer_color == result) {
+      if (node) {
+        UseCounter::Count(node->GetDocument(),
+                          WebFeature::kSelectionBackgroundColorInversion);
+      }
+      return Color(0xff - result.Red(), 0xff - result.Green(),
+                   0xff - result.Blue());
+    }
   }
   return result;
 }
@@ -486,6 +505,11 @@ absl::optional<Color> HighlightStyleUtils::HighlightTextDecorationColor(
 bool HighlightStyleUtils::ShouldInvalidateVisualOverflow(
     const Node& node,
     DocumentMarker::MarkerType type) {
+  if ((type == DocumentMarker::kSpelling || type == DocumentMarker::kGrammar) &&
+      RuntimeEnabledFeatures::CSSPaintingForSpellingGrammarErrorsEnabled()) {
+    return true;
+  }
+
   // Custom highlights are handled separately. Here we just need to handle
   // spelling, grammar and target-text. Note that we assume
   // RuntimeEnabledFeatures::HighlightInheritanceEnabled() is true to avoid
@@ -503,17 +527,13 @@ bool HighlightStyleUtils::ShouldInvalidateVisualOverflow(
       break;
 
     case DocumentMarker::kSpelling:
-      if (RuntimeEnabledFeatures::CSSSpellingGrammarErrorsEnabled() ||
-          RuntimeEnabledFeatures::
-              CSSPaintingForSpellingGrammarErrorsEnabled()) {
+      if (RuntimeEnabledFeatures::CSSSpellingGrammarErrorsEnabled()) {
         pseudo_style = style->HighlightData().SpellingError();
       }
       break;
 
     case DocumentMarker::kGrammar:
-      if (RuntimeEnabledFeatures::CSSSpellingGrammarErrorsEnabled() ||
-          RuntimeEnabledFeatures::
-              CSSPaintingForSpellingGrammarErrorsEnabled()) {
+      if (RuntimeEnabledFeatures::CSSSpellingGrammarErrorsEnabled()) {
         pseudo_style = style->HighlightData().GrammarError();
       }
       break;
@@ -529,9 +549,9 @@ bool HighlightStyleUtils::ShouldInvalidateVisualOverflow(
 }
 
 bool HighlightStyleUtils::CustomHighlightHasVisualOverflow(
-    const Node* node,
+    const Node& node,
     const AtomicString& pseudo_argument) {
-  const ComputedStyle* style = node->GetComputedStyle();
+  const ComputedStyle* style = node.GetComputedStyle();
   if (!style) {
     return false;
   }

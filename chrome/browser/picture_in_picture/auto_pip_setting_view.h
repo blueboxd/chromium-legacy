@@ -24,10 +24,6 @@ class AutoPipSettingView : public views::BubbleDialogDelegate {
 
     // User selected 'Don't allow'.
     kBlock,
-
-    // UI was dismissed without the user selecting anything.
-    // TODO(crbug.com/1465527): Call back with `kDismissed` sometimes.
-    kDismissed,
   };
   using ResultCb = base::OnceCallback<void(UiResult result)>;
   // This callback is responsible for hiding the AutoPiP overlay view, after
@@ -70,6 +66,29 @@ class AutoPipSettingView : public views::BubbleDialogDelegate {
   const std::u16string& get_origin_text_for_testing() const {
     return origin_text_;
   }
+
+  // Return the center point in screen coordinates of our buttons.
+  gfx::Point get_allow_once_button_center_in_screen_for_testing() const {
+    return views::View::ConvertPointToScreen(
+        allow_once_button_, allow_once_button_->GetLocalBounds().CenterPoint());
+  }
+
+  gfx::Point get_allow_always_button_center_in_screen_for_testing() const {
+    return views::View::ConvertPointToScreen(
+        allow_on_every_visit_button_,
+        allow_on_every_visit_button_->GetLocalBounds().CenterPoint());
+  }
+
+  gfx::Point get_block_button_center_in_screen_for_testing() const {
+    return views::View::ConvertPointToScreen(
+        block_button_, block_button_->GetLocalBounds().CenterPoint());
+  }
+
+  // Returns true if `point_in_screen` overlaps a button.  We do this outside of
+  // the normal event targetter because it seems to go very wrong with child
+  // widgets.  The right long-term solution might be to stop being a widget, and
+  // just be a regular view.  That would fix several event / focus issues.
+  bool WantsEvent(const gfx::Point& point_in_screen);
 
  private:
   // AnchorViewObserver observes the anchor widget view. When the anchor view is

@@ -145,11 +145,6 @@ BASE_FEATURE(kWebAuthnWindowsUIv6,
              "WebAuthenticationWindowsUIv6",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Not yet enabled by default.
-BASE_FEATURE(kWebAuthnListSyncedPasskeys,
-             "WebAuthenticationListSyncedPasskeys",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enabled in M117. Remove in or after M120.
 BASE_FEATURE(kWebAuthConditionalUIExperimentation,
              "WebAuthenticationConditionalUIExperimentation",
@@ -187,15 +182,10 @@ BASE_FEATURE(kWebAuthnDontPrelinkInProfiles,
              "WebAuthenticationDontPrelinkInProfiles",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enabled in M118 for macOS only.
+// Enabled in M120. Remove in or after M123.
 BASE_FEATURE(kWebAuthnNewPasskeyUI,
              "WebAuthenticationNewPasskeyUI",
-#if BUILDFLAG(IS_MAC)
-             base::FEATURE_ENABLED_BY_DEFAULT
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enabled in M118. Remove in or after M121.
 BASE_FEATURE(kWebAuthnSortRecognizedCredentials,
@@ -226,5 +216,17 @@ BASE_FEATURE(kWebAuthnPINProtocolInHMACSecret,
 BASE_FEATURE(kWebAuthnAndroidIncognitoConfirmation,
              "WebAuthenticationAndroidIncognitoConfirmation",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enabled in M120. Remove in or after M123.
+BASE_FEATURE(kWebAuthnPRFEvalDuringCreate,
+             "WebAuthenticationPRFEvalDuringCreate",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_CHROMEOS)
+// Not yet enabled by default.
+BASE_FEATURE(kChromeOsPasskeys,
+             "WebAuthenticationCrosPasskeys",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 }  // namespace device

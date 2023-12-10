@@ -43,7 +43,7 @@ BASE_FEATURE(kIOSPasswordUISplit,
 // the Password Manager.
 BASE_FEATURE(kIOSPasswordCheckup,
              "IOSPasswordCheckup",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables password bottom sheet to be displayed (on iOS) when a user is
 // signed-in and taps on a username or password field on a website that has at
@@ -85,14 +85,6 @@ BASE_FEATURE(kPasswordReuseDetectionEnabled,
              "PasswordReuseDetectionEnabled",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables different experiments that modify content and behavior of the
-// existing generated password suggestion dropdown.
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
-BASE_FEATURE(kPasswordGenerationExperiment,
-             "PasswordGenerationExperiment",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
-
 // Enables showing UI which allows users to easily revert their choice to
 // never save passwords on a certain website.
 BASE_FEATURE(kRecoverFromNeverSaveAndroid,
@@ -124,26 +116,6 @@ BASE_FEATURE(kPasswordSuggestionBottomSheetV2,
              "PasswordSuggestionBottomSheetV2",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables use of Google Mobile Services for password storage. Chrome's local
-// database will be unused but kept in sync for local passwords.
-BASE_FEATURE(kUnifiedPasswordManagerAndroid,
-             "UnifiedPasswordManagerAndroid_LAUNCHED",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables use of Google Mobile services for non-synced password storage.
-BASE_FEATURE(kUnifiedPasswordManagerLocalPasswordsAndroidWithMigration,
-             "kUnifiedPasswordManagerLocalPasswordsAndroidWithMigration",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables use of Google Mobile services for non-synced password storage that
-// contains no passwords, so no migration will be necessary.
-// UnifiedPasswordManagerLocalPasswordsAndroidWithMigration will replace this
-// feature once UPM starts to be rolled out to local users who have saved
-// passwords.
-BASE_FEATURE(kUnifiedPasswordManagerLocalPasswordsAndroidWithoutMigration,
-             "kUnifiedPasswordManagerLocalPasswordsAndroidWithoutMigration",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables showing the warning about UPM migrating local passwords.
 // The feature is limited to Canary/Dev/Beta by a check in
 // local_passwords_migration_warning_util::ShouldShowWarning.
@@ -161,40 +133,6 @@ BASE_FEATURE(kUnifiedPasswordManagerSyncUsingAndroidBackendOnly,
 
 BASE_FEATURE(kPasswordsInCredMan,
              "PasswordsInCredMan",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
-
-// Enables support of sending additional votes on username first flow. The votes
-// are sent on single password forms and contain information about preceding
-// single username forms.
-// TODO(crbug.com/959776): Clean up if the main crowdsourcing is good enough and
-// we don't need additional signals.
-BASE_FEATURE(kUsernameFirstFlowFallbackCrowdsourcing,
-             "UsernameFirstFlowFallbackCrowdsourcing",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables suggesting username in the save/update prompt in the case of
-// autocomplete="username".
-BASE_FEATURE(kUsernameFirstFlowHonorAutocomplete,
-             "UsernameFirstFlowHonorAutocomplete",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables storing more possible username values in the LRU cache. Part of the
-// `kUsernameFirstFlowWithIntermediateValues` feature.
-BASE_FEATURE(kUsernameFirstFlowStoreSeveralValues,
-             "UsernameFirstFlowStoreSeveralValues",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables tolerating intermediate fields like OTP or CAPTCHA
-// between username and password fields in Username First Flow.
-BASE_FEATURE(kUsernameFirstFlowWithIntermediateValues,
-             "UsernameFirstFlowWithIntermediateValues",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
-// Show, update, and delete GPM passkeys on the Chrome Password Manager.
-BASE_FEATURE(kPasswordManagerPasskeys,
-             "PasswordManagerPasskeys",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
@@ -230,43 +168,6 @@ const char kGenerationRequirementsPrefixLength[] = "prefix_length";
 // high values is not strong.
 // Default to 5000 ms.
 const char kGenerationRequirementsTimeout[] = "timeout";
-
-#if BUILDFLAG(IS_ANDROID)
-bool UsesUnifiedPasswordManagerUi() {
-  if (!base::FeatureList::IsEnabled(kUnifiedPasswordManagerAndroid)) {
-    return false;
-  }
-  UpmExperimentVariation variation = kUpmExperimentVariationParam.Get();
-  switch (variation) {
-    case UpmExperimentVariation::kEnableForSyncingUsers:
-    case UpmExperimentVariation::kEnableForAllUsers:
-      return true;
-    case UpmExperimentVariation::kShadowSyncingUsers:
-    case UpmExperimentVariation::kEnableOnlyBackendForSyncingUsers:
-      return false;
-  }
-  NOTREACHED() << "Define explicitly whether UI is required!";
-  return false;
-}
-
-bool RequiresMigrationForUnifiedPasswordManager() {
-  if (!base::FeatureList::IsEnabled(kUnifiedPasswordManagerAndroid)) {
-    return false;
-  }
-  UpmExperimentVariation variation = kUpmExperimentVariationParam.Get();
-  switch (variation) {
-    case UpmExperimentVariation::kEnableForSyncingUsers:
-    case UpmExperimentVariation::kEnableOnlyBackendForSyncingUsers:
-    case UpmExperimentVariation::kEnableForAllUsers:
-      return true;
-    case UpmExperimentVariation::kShadowSyncingUsers:
-      return false;
-  }
-  NOTREACHED() << "Define explicitly whether migration is required!";
-  return false;
-}
-
-#endif  // IS_ANDROID
 
 #if BUILDFLAG(IS_IOS)
 bool IsPasswordCheckupEnabled() {

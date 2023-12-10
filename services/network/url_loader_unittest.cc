@@ -3986,12 +3986,14 @@ class MockCookieObserver : public network::mojom::CookieAccessObserver {
   void OnCookiesAccessed(std::vector<network::mojom::CookieAccessDetailsPtr>
                              details_vector) override {
     for (auto& details : details_vector) {
-      if (access_type_ && access_type_ != details->type) {
-        continue;
-      }
+      for (size_t i = 0; i < details->count; ++i) {
+        if (access_type_ && access_type_ != details->type) {
+          continue;
+        }
 
-      for (const auto& cookie_with_status : details->cookie_list) {
-        observed_cookies_.emplace_back(details, cookie_with_status);
+        for (const auto& cookie_with_status : details->cookie_list) {
+          observed_cookies_.emplace_back(details, cookie_with_status);
+        }
       }
     }
     if (wait_for_cookie_count_ &&
@@ -7567,8 +7569,8 @@ TEST_F(SharedStorageRequestHelperURLLoaderTest, RedirectNoLongerEligible) {
   // Simulate having permission revoked by the client, the effect of which is
   // the request header is removed.
   std::vector<std::string> removed_headers(
-      {std::string(kSecSharedStorageWritableHeader.data(),
-                   kSecSharedStorageWritableHeader.size())});
+      {std::string(kSharedStorageWritableHeader.data(),
+                   kSharedStorageWritableHeader.size())});
   url_loader_->FollowRedirect(removed_headers,
                               /*modified_headers=*/{},
                               /*modified_cors_exempt_headers=*/{},

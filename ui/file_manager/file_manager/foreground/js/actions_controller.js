@@ -30,39 +30,39 @@ export class ActionsController {
   constructor(
       volumeManager, metadataModel, directoryModel, shortcutsModel,
       selectionHandler, ui) {
-    /** @private @const {!VolumeManager} */
+    /** @private @const @type {!VolumeManager} */
     this.volumeManager_ = volumeManager;
 
-    /** @private @const {!MetadataModel} */
+    /** @private @const @type {!MetadataModel} */
     this.metadataModel_ = metadataModel;
 
-    /** @private @const {!DirectoryModel} */
+    /** @private @const @type {!DirectoryModel} */
     this.directoryModel_ = directoryModel;
 
-    /** @private @const {!FolderShortcutsDataModel} */
+    /** @private @const @type {!FolderShortcutsDataModel} */
     this.shortcutsModel_ = shortcutsModel;
 
-    /** @private @const {!FileSelectionHandler} */
+    /** @private @const @type {!FileSelectionHandler} */
     this.selectionHandler_ = selectionHandler;
 
-    /** @private @const {!FileManagerUI} */
+    /** @private @const @type {!FileManagerUI} */
     this.ui_ = ui;
 
-    /** @private @const {Map<string, ActionsModel>} */
+    /** @private @const @type {Map<string, ActionsModel>} */
     this.readyModels_ = new Map();
 
-    /** @private @const {Map<string, Promise<ActionsModel>>} */
+    /** @private @const @type {Map<string, Promise<ActionsModel>>} */
     this.initializingdModels_ = new Map();
 
     /**
      * Key for in-memory state for current directory.
-     * @private {?string}
+     * @private @type {?string}
      */
     this.currentDirKey_ = null;
 
     /**
      * Key for in-memory state for current selection in the file list.
-     * @private {?string}
+     * @private @type {?string}
      */
     this.currentSelectionKey_ = null;
 
@@ -70,17 +70,19 @@ export class ActionsController {
      * Id for an UI update, when an async update happens we only send the state
      * to the DOM if the sequence hasn't changed since its start.
      *
-     * @private {number}
+     * @private @type {number}
      */
     this.updateUiSequence_ = 0;
 
     // Attach listeners to non-user events which will only update the in-memory
     // ActionsModel.
-    if (util.isFilesAppExperimental()) {
+    if (util.isNewDirectoryTreeEnabled()) {
+      // @ts-ignore: error TS2531: Object is possibly 'null'.
       this.ui_.directoryTree.addEventListener(
           XfTree.events.TREE_SELECTION_CHANGED,
           this.onNavigationListSelectionChanged_.bind(this), true);
     } else {
+      // @ts-ignore: error TS2531: Object is possibly 'null'.
       this.ui_.directoryTree.addEventListener(
           'change', this.onNavigationListSelectionChanged_.bind(this), true);
     }
@@ -118,16 +120,29 @@ export class ActionsController {
         document.body === element) {
       return this.selectionHandler_.selection.entries;
     }
+    // @ts-ignore: error TS2531: Object is possibly 'null'.
     if (this.ui_.directoryTree.contains(element) ||
+        // @ts-ignore: error TS2339: Property 'contextMenuForRootItems' does not
+        // exist on type 'XfTree | DirectoryTree'.
         this.ui_.directoryTree.contextMenuForRootItems.contains(element) ||
+        // @ts-ignore: error TS2339: Property 'contextMenuForSubitems' does not
+        // exist on type 'XfTree | DirectoryTree'.
         this.ui_.directoryTree.contextMenuForSubitems.contains(element)) {
+      // @ts-ignore: error TS2339: Property 'entry' does not exist on type
+      // 'Element'.
       if (element.entry) {
         // DirectoryItem has "entry" attribute.
+        // @ts-ignore: error TS2339: Property 'entry' does not exist on type
+        // 'Element'.
         return [element.entry];
       }
       // DirectoryTree has the focused item.
       const focusedItem = getFocusedTreeItem(element);
+      // @ts-ignore: error TS2339: Property 'entry' does not exist on type
+      // 'XfTreeItem | DirectoryItem'.
       if (focusedItem?.entry) {
+        // @ts-ignore: error TS2339: Property 'entry' does not exist on type
+        // 'XfTreeItem | DirectoryItem'.
         return [focusedItem.entry];
       }
     }
@@ -184,6 +199,8 @@ export class ActionsController {
    * @private
    */
   onContextMenuShow_(event) {
+    // @ts-ignore: error TS2339: Property 'element' does not exist on type
+    // 'Event'.
     this.updateUI_(event.element);
   }
 
@@ -217,6 +234,8 @@ export class ActionsController {
    */
   onNavigationListSelectionChanged_() {
     const focusedItem = getFocusedTreeItem(this.ui_.directoryTree);
+    // @ts-ignore: error TS2339: Property 'entry' does not exist on type
+    // 'XfTreeItem | DirectoryItem'.
     const entry = focusedItem?.entry;
 
     if (!entry) {
@@ -237,16 +256,22 @@ export class ActionsController {
    * @private
    */
   onMetadataUpdated_(event) {
+    // @ts-ignore: error TS2339: Property 'names' does not exist on type
+    // 'Event'.
     if (!event || !event.names.has('pinned')) {
       return;
     }
 
     for (const key of this.readyModels_.keys()) {
+      // @ts-ignore: error TS2339: Property 'entriesMap' does not exist on type
+      // 'Event'.
       if (key.split(';').some(url => event.entriesMap.has(url))) {
         this.readyModels_.delete(key);
       }
     }
     for (const key of this.initializingdModels_.keys()) {
+      // @ts-ignore: error TS2339: Property 'entriesMap' does not exist on type
+      // 'Event'.
       if (key.split(';').some(url => event.entriesMap.has(url))) {
         this.initializingdModels_.delete(key);
       }
@@ -259,6 +284,8 @@ export class ActionsController {
    */
   getInitializedActionsForEntries(entries) {
     const key = this.getEntriesKey_(entries);
+    // @ts-ignore: error TS2322: Type 'ActionsModel | undefined' is not
+    // assignable to type 'ActionsModel | null'.
     return this.readyModels_.get(key);
   }
 
@@ -269,6 +296,8 @@ export class ActionsController {
   getActionsForEntries(entries) {
     const key = this.getEntriesKey_(entries);
     if (!key) {
+      // @ts-ignore: error TS2322: Type 'Promise<void>' is not assignable to
+      // type 'Promise<ActionsModel>'.
       return Promise.resolve();
     }
 
@@ -297,12 +326,19 @@ export class ActionsController {
     // and initialized again.
     const init = actionsModel.initialize().then(() => {
       this.initializingdModels_.delete(key);
+      // @ts-ignore: error TS2345: Argument of type 'ActionsModel | undefined'
+      // is not assignable to parameter of type 'ActionsModel'.
       this.readyModels_.set(key, actionsModel);
       return actionsModel;
     });
 
     // Cache in the waiting initialization map.
+    // @ts-ignore: error TS2345: Argument of type 'Promise<ActionsModel |
+    // undefined>' is not assignable to parameter of type
+    // 'Promise<ActionsModel>'.
     this.initializingdModels_.set(key, init);
+    // @ts-ignore: error TS2322: Type 'Promise<ActionsModel | undefined>' is not
+    // assignable to type 'Promise<ActionsModel>'.
     return init;
   }
 

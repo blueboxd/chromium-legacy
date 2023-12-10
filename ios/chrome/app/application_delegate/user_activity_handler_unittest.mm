@@ -13,10 +13,15 @@
 #import "base/test/scoped_command_line.h"
 #import "base/test/task_environment.h"
 #import "base/test/with_feature_override.h"
+#import "base/values.h"
 #import "components/handoff/handoff_utility.h"
+#import "components/policy/core/common/policy_pref_names.h"
+#import "components/prefs/pref_registry_simple.h"
+#import "components/prefs/testing_pref_service.h"
 #import "ios/chrome/app/app_startup_parameters.h"
 #import "ios/chrome/app/application_delegate/app_state_observer.h"
 #import "ios/chrome/app/application_delegate/fake_startup_information.h"
+#import "ios/chrome/app/application_delegate/intents_constants.h"
 #import "ios/chrome/app/application_delegate/mock_tab_opener.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
 #import "ios/chrome/app/application_delegate/tab_opening.h"
@@ -25,6 +30,7 @@
 #import "ios/chrome/app/spotlight/actions_spotlight_manager.h"
 #import "ios/chrome/app/spotlight/spotlight_util.h"
 #import "ios/chrome/browser/flags/chrome_switches.h"
+#import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/shared/coordinator/scene/connection_information.h"
 #import "ios/chrome/browser/shared/coordinator/scene/test/fake_connection_information.h"
 #import "ios/chrome/browser/shared/coordinator/scene/test/stub_browser_provider_interface.h"
@@ -36,7 +42,7 @@
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
-#import "ios/chrome/browser/url_loading/url_loading_params.h"
+#import "ios/chrome/browser/url_loading/model/url_loading_params.h"
 #import "ios/chrome/common/intents/ClearBrowsingDataIntent.h"
 #import "ios/chrome/common/intents/ManagePasswordsIntent.h"
 #import "ios/chrome/common/intents/ManagePaymentMethodsIntent.h"
@@ -140,6 +146,29 @@ class UserActivityHandlerTest : public PlatformTest {
     return browserProviderInterface_;
   }
 
+  // Set pref kIncognitoModeAvailability to kForced and make it a managed pref.
+  void ForceIncognitoMode() {
+    test_pref_service_.SetManagedPref(
+        policy::policy_prefs::kIncognitoModeAvailability,
+        std::make_unique<base::Value>(true));
+    test_pref_service_.registry()->RegisterIntegerPref(
+        policy::policy_prefs::kIncognitoModeAvailability,
+        static_cast<int>(IncognitoModePrefs::kForced));
+  }
+
+  // Set pref kIncognitoModeAvailability to kDisabled and make it a managed
+  // pref.
+  void DisableIncognitoMode() {
+    test_pref_service_.SetManagedPref(
+        policy::policy_prefs::kIncognitoModeAvailability,
+        std::make_unique<base::Value>(true));
+    test_pref_service_.registry()->RegisterIntegerPref(
+        policy::policy_prefs::kIncognitoModeAvailability,
+        static_cast<int>(IncognitoModePrefs::kDisabled));
+  }
+
+  TestingPrefServiceSimple test_pref_service_;
+
  private:
   __block BOOL block_executed_;
   __block BOOL block_argument_;
@@ -152,31 +181,95 @@ class UserActivityHandlerTest : public PlatformTest {
 
 #pragma mark - Tests.
 
-// Tests that Chrome notifies the user if we are passing a correct
-// userActivityType.
-TEST_F(UserActivityHandlerTest, WillContinueUserActivityCorrectActivity) {
-  EXPECT_TRUE([UserActivityHandler
-      willContinueUserActivityWithType:handoff::kChromeHandoffActivityType]);
+// Tests that method canProceedWithUserActivity returns true when incognito mode
+// is forced and when userActivity supports incognito browser.
+TEST_F(UserActivityHandlerTest,
+       CanProceedWithUserActivityWithIncognitoBrowser) {
+  // UserActivityTypes to test.
+  NSArray* userActivityTypes = @[
+    kShortcutNewIncognitoSearch, kSiriShortcutOpenInIncognito,
+    kShortcutLensFromSpotlight
+  ];
 
-  if (spotlight::IsSpotlightAvailable()) {
+  ForceIncognitoMode();
+  EXPECT_TRUE(IsIncognitoModeForced(&test_pref_service_));
+
+  for (NSString* userActivityType in userActivityTypes) {
+    NSUserActivity* userActivity =
+        [[NSUserActivity alloc] initWithActivityType:userActivityType];
+
     EXPECT_TRUE([UserActivityHandler
-        willContinueUserActivityWithType:CSSearchableItemActionType]);
+        canProceedWithUserActivity:userActivity
+                       prefService:&test_pref_service_]);
   }
 }
 
-// Tests that Chrome does not notifies the user if we are passing an incorrect
-// userActivityType.
-TEST_F(UserActivityHandlerTest, WillContinueUserActivityIncorrectActivity) {
+// Tests that method canProceedWithUserActivity returns false when incognito
+// mode is forced and when userActivity does not support incognito browser.
+TEST_F(UserActivityHandlerTest,
+       CanProceedWithWrongUserActivityWithIncognitoBrowser) {
+  ForceIncognitoMode();
+  EXPECT_TRUE(IsIncognitoModeForced(&test_pref_service_));
+
+  NSUserActivity* userActivity =
+      [[NSUserActivity alloc] initWithActivityType:kSiriShortcutOpenInChrome];
   EXPECT_FALSE([UserActivityHandler
-      willContinueUserActivityWithType:[handoff::kChromeHandoffActivityType
-                                           stringByAppendingString:@"test"]]);
+      canProceedWithUserActivity:userActivity
+                     prefService:&test_pref_service_]);
+}
 
+// Tests that method canProceedWithUserActivity returns true when incognito mode
+// is disabled and when userActivity supports regular browser.
+TEST_F(UserActivityHandlerTest, CanProceedWithUserActivityWithRegularBrowser) {
+  // UserActivityTypes to test.
+  NSArray* userActivityTypes = @[
+    kShortcutNewSearch, kShortcutVoiceSearch, kSiriShortcutSearchInChrome,
+    kSiriShortcutOpenInChrome
+  ];
+
+  DisableIncognitoMode();
+  EXPECT_TRUE(IsIncognitoModeDisabled(&test_pref_service_));
+
+  for (NSString* userActivityType in userActivityTypes) {
+    NSUserActivity* userActivity =
+        [[NSUserActivity alloc] initWithActivityType:userActivityType];
+
+    EXPECT_TRUE([UserActivityHandler
+        canProceedWithUserActivity:userActivity
+                       prefService:&test_pref_service_]);
+  }
+}
+
+// Tests that method canProceedWithUserActivity returns false when incognito
+// mode is disabled and when userActivity does not support regular browser.
+TEST_F(UserActivityHandlerTest,
+       CanProceedWithWrongUserActivityWithRegularBrowser) {
+  // UserActivityTypes to test.
+  NSArray* userActivityTypes =
+      @[ kShortcutNewIncognitoSearch, kSiriShortcutOpenInIncognito ];
+
+  DisableIncognitoMode();
+  EXPECT_TRUE(IsIncognitoModeDisabled(&test_pref_service_));
+
+  for (NSString* userActivityType in userActivityTypes) {
+    NSUserActivity* userActivity =
+        [[NSUserActivity alloc] initWithActivityType:userActivityType];
+
+    EXPECT_FALSE([UserActivityHandler
+        canProceedWithUserActivity:userActivity
+                       prefService:&test_pref_service_]);
+  }
+}
+
+// Tests that method canProceedWithUserActivity returns false if the activity
+// type is unknown.
+TEST_F(UserActivityHandlerTest,
+       CanProceedWithUserActivityWithWrongActivityType) {
+  NSUserActivity* userActivity =
+      [[NSUserActivity alloc] initWithActivityType:@"not_an_activity_type"];
   EXPECT_FALSE([UserActivityHandler
-      willContinueUserActivityWithType:@"it.does.not.work"]);
-
-  EXPECT_FALSE([UserActivityHandler willContinueUserActivityWithType:@""]);
-
-  EXPECT_FALSE([UserActivityHandler willContinueUserActivityWithType:nil]);
+      canProceedWithUserActivity:userActivity
+                     prefService:&test_pref_service_]);
 }
 
 // Tests that Chrome does not continue the activity is the activity type is
@@ -469,7 +562,7 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityShortcutActions) {
   }
 }
 
-// Tests that Chrome responds to open in incognito intent in the background
+// Tests that Chrome responds to open in incognito intent in the background.
 TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentIncognitoBackground) {
   NSURL* url1 = [[NSURL alloc] initWithString:@"http://www.google.com"];
   NSURL* url2 = [[NSURL alloc] initWithString:@"http://www.apple.com"];
@@ -477,7 +570,7 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentIncognitoBackground) {
   NSArray<NSURL*>* urls = [NSArray arrayWithObjects:url1, url2, url3, nil];
 
   NSUserActivity* userActivity = [[NSUserActivity alloc]
-      initWithActivityType:@"OpenInChromeIncognitoIntent"];
+      initWithActivityType:kSiriShortcutOpenInIncognito];
 
   OpenInChromeIncognitoIntent* intent =
       [[OpenInChromeIncognitoIntent alloc] init];
@@ -530,7 +623,7 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentIncognitoBackground) {
 // Tests that Chrome responds to open intents in the background.
 TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentBackground) {
   NSUserActivity* userActivity =
-      [[NSUserActivity alloc] initWithActivityType:@"OpenInChromeIntent"];
+      [[NSUserActivity alloc] initWithActivityType:kSiriShortcutOpenInChrome];
   OpenInChromeIntent* intent = [[OpenInChromeIntent alloc] init];
 
   NSURL* url1 = [[NSURL alloc] initWithString:@"http://www.google.com"];
@@ -592,7 +685,7 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentIncognitoForeground) {
   NSArray<NSURL*>* urls = [NSArray arrayWithObjects:url1, url2, url3, nil];
 
   NSUserActivity* userActivity = [[NSUserActivity alloc]
-      initWithActivityType:@"OpenInChromeIncognitoIntent"];
+      initWithActivityType:kSiriShortcutOpenInIncognito];
 
   OpenInChromeIncognitoIntent* intent =
       [[OpenInChromeIncognitoIntent alloc] init];
@@ -659,7 +752,7 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentIncognitoForeground) {
 // Tests that Chrome responds to open intents in the foreground.
 TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentForeground) {
   NSUserActivity* userActivity =
-      [[NSUserActivity alloc] initWithActivityType:@"OpenInChromeIntent"];
+      [[NSUserActivity alloc] initWithActivityType:kSiriShortcutOpenInChrome];
   OpenInChromeIntent* intent = [[OpenInChromeIntent alloc] init];
   NSURL* url1 = [[NSURL alloc] initWithString:@"http://www.google.com"];
   NSURL* url2 = [[NSURL alloc] initWithString:@"http://www.apple.com"];
@@ -794,15 +887,15 @@ TEST_F(UserActivityHandlerTest,
   // name, whether or not it should open a new tab, whether or not to use
   // incognito, and the post open action enum value.
   NSArray* parametersToTest = @[
-    @[ @"OpenNewSearch", @YES, @NO, @(FOCUS_OMNIBOX) ],
-    @[ @"OpenIncognitoSearch", @YES, @YES, @(FOCUS_OMNIBOX) ],
-    @[ @"OpenVoiceSearch", @YES, @NO, @(START_VOICE_SEARCH) ],
-    @[ @"OpenQRScanner", @YES, @NO, @(START_QR_CODE_SCANNER) ],
+    @[ kShortcutNewSearch, @YES, @NO, @(FOCUS_OMNIBOX) ],
+    @[ kShortcutNewIncognitoSearch, @YES, @YES, @(FOCUS_OMNIBOX) ],
+    @[ kShortcutVoiceSearch, @YES, @NO, @(START_VOICE_SEARCH) ],
+    @[ kShortcutQRScanner, @YES, @NO, @(START_QR_CODE_SCANNER) ],
     @[
-      @"OpenLensFromAppIconLongPress", @NO, @NO,
+      kShortcutLensFromAppIconLongPress, @NO, @NO,
       @(START_LENS_FROM_APP_ICON_LONG_PRESS)
     ],
-    @[ @"OpenLensFromSpotlight", @NO, @NO, @(START_LENS_FROM_SPOTLIGHT) ]
+    @[ kShortcutLensFromSpotlight, @NO, @NO, @(START_LENS_FROM_SPOTLIGHT) ]
   ];
 
   swizzleHandleStartupParameters();
@@ -858,7 +951,7 @@ TEST_F(UserActivityHandlerTest, PerformActionForShortcutItemWithFirstRunUI) {
       [OCMockObject mockForProtocol:@protocol(ConnectionInformation)];
 
   UIApplicationShortcutItem* shortcut =
-      [[UIApplicationShortcutItem alloc] initWithType:@"OpenNewSearch"
+      [[UIApplicationShortcutItem alloc] initWithType:kShortcutNewSearch
                                        localizedTitle:@""];
 
   swizzleHandleStartupParameters();
@@ -885,7 +978,7 @@ TEST_F(UserActivityHandlerTest, PerformActionForShortcutItemWithFirstRunUI) {
 // Test that Chrome respond to open reading list intent.
 TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentOpenReadingList) {
   NSUserActivity* userActivity =
-      [[NSUserActivity alloc] initWithActivityType:@"OpenReadingListIntent"];
+      [[NSUserActivity alloc] initWithActivityType:kSiriOpenReadingList];
 
   OpenReadingListIntent* intent = [[OpenReadingListIntent alloc] init];
 
@@ -915,7 +1008,7 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentOpenReadingList) {
 // Test that Chrome respond to open bookmarks intent.
 TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentOpenBookmarks) {
   NSUserActivity* userActivity =
-      [[NSUserActivity alloc] initWithActivityType:@"OpenBookmarksIntent"];
+      [[NSUserActivity alloc] initWithActivityType:kSiriOpenBookmarks];
 
   OpenBookmarksIntent* intent = [[OpenBookmarksIntent alloc] init];
 
@@ -945,7 +1038,7 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentOpenBookmarks) {
 // Test that Chrome respond to open recent tabs intent.
 TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentOpenRecentTabs) {
   NSUserActivity* userActivity =
-      [[NSUserActivity alloc] initWithActivityType:@"OpenRecentTabsIntent"];
+      [[NSUserActivity alloc] initWithActivityType:kSiriOpenRecentTabs];
 
   OpenRecentTabsIntent* intent = [[OpenRecentTabsIntent alloc] init];
 
@@ -975,7 +1068,7 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentOpenRecentTabs) {
 // Tests that Chrome respond to open tab grid intent.
 TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentOpenTabGrid) {
   NSUserActivity* userActivity =
-      [[NSUserActivity alloc] initWithActivityType:@"OpenTabGridIntent"];
+      [[NSUserActivity alloc] initWithActivityType:kSiriOpenTabGrid];
 
   OpenTabGridIntent* intent = [[OpenTabGridIntent alloc] init];
 
@@ -1005,7 +1098,7 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentOpenTabGrid) {
 // Tests that Chrome respond to search with voice intent.
 TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentSearchWithVoice) {
   NSUserActivity* userActivity =
-      [[NSUserActivity alloc] initWithActivityType:@"SearchWithVoiceIntent"];
+      [[NSUserActivity alloc] initWithActivityType:kSiriVoiceSearch];
 
   SearchWithVoiceIntent* intent = [[SearchWithVoiceIntent alloc] init];
 
@@ -1035,7 +1128,7 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentSearchWithVoice) {
 // Tests that Chrome respond to open new tab intent.
 TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentOpenNewTab) {
   NSUserActivity* userActivity =
-      [[NSUserActivity alloc] initWithActivityType:@"OpenNewTabIntent"];
+      [[NSUserActivity alloc] initWithActivityType:kSiriOpenNewTab];
 
   OpenNewTabIntent* intent = [[OpenNewTabIntent alloc] init];
 
@@ -1066,7 +1159,7 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentOpenNewTab) {
 TEST_F(UserActivityHandlerTest,
        ContinueUserActivityIntentSetChromeDefaultBrowser) {
   NSUserActivity* userActivity = [[NSUserActivity alloc]
-      initWithActivityType:@"SetChromeDefaultBrowserIntent"];
+      initWithActivityType:kSiriSetChromeDefaultBrowser];
 
   SetChromeDefaultBrowserIntent* intent =
       [[SetChromeDefaultBrowserIntent alloc] init];
@@ -1097,7 +1190,7 @@ TEST_F(UserActivityHandlerTest,
 // Tests that Chrome respond to view chrome history intent.
 TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentViewChromeHistory) {
   NSUserActivity* userActivity =
-      [[NSUserActivity alloc] initWithActivityType:@"ViewHistoryIntent"];
+      [[NSUserActivity alloc] initWithActivityType:kSiriViewHistory];
 
   ViewHistoryIntent* intent = [[ViewHistoryIntent alloc] init];
 
@@ -1127,8 +1220,8 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentViewChromeHistory) {
 // Tests that Chrome respond to manage payment methods intent.
 TEST_F(UserActivityHandlerTest,
        ContinueUserActivityIntentManagePaymentMethods) {
-  NSUserActivity* userActivity = [[NSUserActivity alloc]
-      initWithActivityType:@"ManagePaymentMethodsIntent"];
+  NSUserActivity* userActivity =
+      [[NSUserActivity alloc] initWithActivityType:kSiriManagePaymentMethods];
 
   ManagePaymentMethodsIntent* intent =
       [[ManagePaymentMethodsIntent alloc] init];
@@ -1159,7 +1252,7 @@ TEST_F(UserActivityHandlerTest,
 // Tests that Chrome respond to run safety check intent.
 TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentRunSafetyCheck) {
   NSUserActivity* userActivity =
-      [[NSUserActivity alloc] initWithActivityType:@"RunSafetyCheckIntent"];
+      [[NSUserActivity alloc] initWithActivityType:kSiriRunSafetyCheck];
 
   RunSafetyCheckIntent* intent = [[RunSafetyCheckIntent alloc] init];
 
@@ -1189,7 +1282,7 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentRunSafetyCheck) {
 // Tests that Chrome respond to run manage passwords intent.
 TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentManagePasswords) {
   NSUserActivity* userActivity =
-      [[NSUserActivity alloc] initWithActivityType:@"ManagePasswordsIntent"];
+      [[NSUserActivity alloc] initWithActivityType:kSiriManagePasswords];
 
   ManagePasswordsIntent* intent = [[ManagePasswordsIntent alloc] init];
 
@@ -1219,7 +1312,7 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentManagePasswords) {
 // Tests that Chrome respond to manage settings intent.
 TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentManageSettings) {
   NSUserActivity* userActivity =
-      [[NSUserActivity alloc] initWithActivityType:@"ManageSettingsIntent"];
+      [[NSUserActivity alloc] initWithActivityType:kSiriManageSettings];
 
   ManageSettingsIntent* intent = [[ManageSettingsIntent alloc] init];
 
@@ -1249,7 +1342,7 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentManageSettings) {
 // Tests that Chrome respond to Open Latest Tab intent.
 TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentOpenLatestTab) {
   NSUserActivity* userActivity =
-      [[NSUserActivity alloc] initWithActivityType:@"OpenLatestTabIntent"];
+      [[NSUserActivity alloc] initWithActivityType:kSiriOpenLatestTab];
 
   OpenLatestTabIntent* intent = [[OpenLatestTabIntent alloc] init];
 
@@ -1279,7 +1372,7 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentOpenLatestTab) {
 // Tests that Chrome respond to Open Lens intent.
 TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentOpenLensFromIntents) {
   NSUserActivity* userActivity =
-      [[NSUserActivity alloc] initWithActivityType:@"OpenLensIntent"];
+      [[NSUserActivity alloc] initWithActivityType:kSiriOpenLensFromIntents];
 
   OpenLensIntent* intent = [[OpenLensIntent alloc] init];
 
@@ -1309,7 +1402,7 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentOpenLensFromIntents) {
 // Tests that Chrome respond to Clear Browsing Data intent.
 TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentClearBrowsingData) {
   NSUserActivity* userActivity =
-      [[NSUserActivity alloc] initWithActivityType:@"ClearBrowsingDataIntent"];
+      [[NSUserActivity alloc] initWithActivityType:kSiriClearBrowsingData];
 
   ClearBrowsingDataIntent* intent = [[ClearBrowsingDataIntent alloc] init];
 

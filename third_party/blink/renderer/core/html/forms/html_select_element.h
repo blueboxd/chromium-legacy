@@ -200,7 +200,8 @@ class CORE_EXPORT HTMLSelectElement final
   bool IsRichlyEditableForAccessibility() const override { return false; }
 
  private:
-  const AtomicString& FormControlType() const override;
+  mojom::blink::FormControlType FormControlType() const override;
+  const AtomicString& FormControlTypeAsString() const override;
 
   bool MayTriggerVirtualKeyboard() const override;
 
@@ -231,7 +232,7 @@ class CORE_EXPORT HTMLSelectElement final
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
   void DidRecalcStyle(const StyleRecalcChange) override;
   void AttachLayoutTree(AttachContext&) override;
-  void DetachLayoutTree(bool performing_reattach = false) override;
+  void DetachLayoutTree(bool performing_reattach) override;
   void AppendToFormData(FormData&) override;
   void DidAddUserAgentShadowRoot(ShadowRoot&) override;
   void ManuallyAssignSlots() override;

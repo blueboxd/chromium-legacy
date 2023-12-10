@@ -21,6 +21,11 @@ class PwaRestoreBottomSheetViewBinder {
             @ViewState
             int viewState = model.get(PwaRestoreProperties.VIEW_STATE);
             view.setDisplayedView(viewState);
+        } else if (propertyKey.equals(PwaRestoreProperties.APPS)) {
+            view.setAppList(
+                    model.get(PwaRestoreProperties.APPS),
+                    model.get(PwaRestoreProperties.RECENT_APPS_TITLE),
+                    model.get(PwaRestoreProperties.OLDER_APPS_TITLE));
         } else if (propertyKey.equals(PwaRestoreProperties.PEEK_DESCRIPTION)) {
             ((TextView) view.getPreviewView().findViewById(R.id.description))
                     .setText(model.get(PwaRestoreProperties.PEEK_DESCRIPTION));
@@ -36,6 +41,9 @@ class PwaRestoreBottomSheetViewBinder {
         } else if (propertyKey.equals(PwaRestoreProperties.EXPANDED_TITLE)) {
             ((TextView) view.getContentView().findViewById(R.id.title))
                     .setText(model.get(PwaRestoreProperties.EXPANDED_TITLE));
+        } else if (propertyKey.equals(PwaRestoreProperties.DESELECT_BUTTON_LABEL)) {
+            ((Button) view.getContentView().findViewById(R.id.deselect_button))
+                    .setText(model.get(PwaRestoreProperties.DESELECT_BUTTON_LABEL));
         } else if (propertyKey.equals(PwaRestoreProperties.EXPANDED_BUTTON_LABEL)) {
             ((Button) view.getContentView().findViewById(R.id.restore_button))
                     .setText(model.get(PwaRestoreProperties.EXPANDED_BUTTON_LABEL));
@@ -47,6 +55,11 @@ class PwaRestoreBottomSheetViewBinder {
                     .setOnClickListener(
                             model.get(PwaRestoreProperties.REVIEW_BUTTON_ON_CLICK_CALLBACK));
             ((Button) view.getPreviewView().findViewById(R.id.review_button)).setEnabled(true);
+        } else if (propertyKey.equals(PwaRestoreProperties.DESELECT_BUTTON_ON_CLICK_CALLBACK)) {
+            ((Button) view.getContentView().findViewById(R.id.deselect_button))
+                    .setOnClickListener(
+                            model.get(PwaRestoreProperties.DESELECT_BUTTON_ON_CLICK_CALLBACK));
+            ((Button) view.getContentView().findViewById(R.id.deselect_button)).setEnabled(true);
         } else if (propertyKey.equals(PwaRestoreProperties.RESTORE_BUTTON_ON_CLICK_CALLBACK)) {
             ((Button) view.getContentView().findViewById(R.id.restore_button))
                     .setOnClickListener(

@@ -110,7 +110,7 @@ class CORE_EXPORT RuleData {
            AddRuleFlags);
 
   unsigned GetPosition() const { return position_; }
-  StyleRule* Rule() const { return rule_; }
+  StyleRule* Rule() const { return rule_.Get(); }
   const CSSSelector& Selector() const {
     return rule_->SelectorAt(selector_index_);
   }
@@ -453,7 +453,7 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
     return slotted_pseudo_element_rules_;
   }
 
-  bool HasCascadeLayers() const { return implicit_outer_layer_; }
+  bool HasCascadeLayers() const { return implicit_outer_layer_ != nullptr; }
   const CascadeLayer& CascadeLayers() const {
     DCHECK(implicit_outer_layer_);
     return *implicit_outer_layer_;
@@ -593,7 +593,7 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
     if (!implicit_outer_layer_) {
       implicit_outer_layer_ = MakeGarbageCollected<CascadeLayer>();
     }
-    return implicit_outer_layer_;
+    return implicit_outer_layer_.Get();
   }
 
   CascadeLayer* GetOrAddSubLayer(CascadeLayer*,

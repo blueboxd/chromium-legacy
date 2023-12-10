@@ -16,7 +16,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/simple_test_clock.h"
-#include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/password_manager/profile_password_store_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/test_signin_client_builder.h"
 #include "chrome/browser/sync/sync_service_factory.h"
@@ -102,7 +102,7 @@ class SaveUpdateBubbleControllerTest : public ::testing::Test {
         .WillByDefault(Return(&password_feature_manager_));
     ON_CALL(*mock_delegate_, GetPasswordFormMetricsRecorder())
         .WillByDefault(Return(nullptr));
-    PasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
+    ProfilePasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
         profile(), base::BindRepeating(
                        &password_manager::BuildPasswordStoreInterface<
                            content::BrowserContext,
@@ -133,7 +133,7 @@ class SaveUpdateBubbleControllerTest : public ::testing::Test {
 
   password_manager::MockPasswordStoreInterface* GetStore() {
     return static_cast<password_manager::MockPasswordStoreInterface*>(
-        PasswordStoreFactory::GetInstance()
+        ProfilePasswordStoreFactory::GetInstance()
             ->GetForProfile(profile(), ServiceAccessType::EXPLICIT_ACCESS)
             .get());
   }

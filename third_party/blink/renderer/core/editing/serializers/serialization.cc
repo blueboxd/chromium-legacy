@@ -655,7 +655,6 @@ DocumentFragment* CreateFragmentForInnerOuterHTML(
     const String& markup,
     Element* context_element,
     ParserContentPolicy parser_content_policy,
-    const char* method,
     bool include_shadow_roots,
     ExceptionState& exception_state) {
   DCHECK(context_element);
@@ -780,7 +779,7 @@ DocumentFragment* CreateContextualFragment(
   DCHECK(element);
 
   DocumentFragment* fragment = CreateFragmentForInnerOuterHTML(
-      markup, element, parser_content_policy, "createContextualFragment",
+      markup, element, parser_content_policy,
       /*include_shadow_roots=*/false, exception_state);
   if (!fragment)
     return nullptr;
@@ -916,18 +915,22 @@ static bool ContainsStyleElements(const DocumentFragment& fragment) {
 }
 
 // Returns true if any svg <use> element is removed.
-static bool StripSVGUseDataURLs(Node& node) {
+static bool StripSVGUseNonLocalHrefs(Node& node) {
   if (auto* use = DynamicTo<SVGUseElement>(node)) {
     SVGURLReferenceResolver resolver(use->HrefString(), use->GetDocument());
-    if (resolver.AbsoluteUrl().ProtocolIsData())
+    if ((RuntimeEnabledFeatures::PastingBlocksSVGUseNonLocalHrefsEnabled() &&
+         !resolver.IsLocal()) ||
+        resolver.AbsoluteUrl().ProtocolIsData()) {
       node.remove();
+    }
     return true;
   }
   bool stripped = false;
   for (Node* child = node.firstChild(); child;) {
     Node* next = child->nextSibling();
-    if (StripSVGUseDataURLs(*child))
+    if (StripSVGUseNonLocalHrefs(*child)) {
       stripped = true;
+    }
     child = next;
   }
   return stripped;
@@ -974,8 +977,9 @@ String CreateSanitizedMarkupWithContext(Document& document,
     bool needs_sanitization = false;
     if (ContainsStyleElements(*fragment))
       needs_sanitization = true;
-    if (StripSVGUseDataURLs(*fragment))
+    if (StripSVGUseNonLocalHrefs(*fragment)) {
       needs_sanitization = true;
+    }
 
     if (!needs_sanitization) {
       markup = CreateMarkup(fragment);

@@ -23,6 +23,7 @@ source_set("autofill") {
     "//components/password_manager/core/browser",
     "//components/password_manager/core/common",
     "//components/password_manager/ios",
+    "//components/plus_addresses",
     "//components/prefs",
     "//components/security_state/ios",
     "//components/strings",
@@ -35,7 +36,8 @@ source_set("autofill") {
     "//ios/chrome/browser/autofill/manual_fill",
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/metrics",
-    "//ios/chrome/browser/passwords",
+    "//ios/chrome/browser/passwords/model",
+    "//ios/chrome/browser/plus_addresses/model",
     "//ios/chrome/browser/shared/model/application_context",
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/shared/model/web_state_list:web_state_list",
@@ -43,7 +45,7 @@ source_set("autofill") {
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/ssl",
     "//ios/chrome/browser/sync/model",
-    "//ios/chrome/browser/translate:translate",
+    "//ios/chrome/browser/translate/model:model",
     "//ios/chrome/browser/ui/autofill/cells",
     "//ios/chrome/browser/ui/autofill/manual_fill:manual_fill",
     "//ios/chrome/browser/ui/autofill/manual_fill:manual_fill_ui",
@@ -211,7 +213,7 @@ source_set("eg_app_support+eg2") {
     "//components/keyed_service/core",
     "//components/password_manager/core/browser",
     "//ios/chrome/browser/autofill",
-    "//ios/chrome/browser/passwords",
+    "//ios/chrome/browser/passwords/model",
     "//ios/chrome/browser/shared/model/application_context",
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/test/app:test_support",
@@ -232,17 +234,6 @@ source_set("eg_test_support+eg2") {
   deps = [
     "//base",
     "//ios/testing/earl_grey:eg_test_support+eg2",
-  ]
-}
-
-source_set("features") {
-  sources = [
-    "features.cc",
-    "features.h",
-  ]
-  public_deps = [
-    "//base",
-    "//ui/base",
   ]
 }
 

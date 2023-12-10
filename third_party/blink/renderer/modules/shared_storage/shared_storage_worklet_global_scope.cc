@@ -320,23 +320,6 @@ void SharedStorageWorkletGlobalScope::NotifyContextDestroyed() {
   WorkletGlobalScope::NotifyContextDestroyed();
 }
 
-bool SharedStorageWorkletGlobalScope::FeatureEnabled(
-    OriginTrialFeature feature) const {
-  // The shared storage worklet infrastructure doesn't yet support checking the
-  // origin trial features. We'll go over each feature that can potentially be
-  // checked (e.g. IDL attribute/interface exposures conditioned on
-  // RuntimeEnabled=XXX), and replicate their status manually.
-
-  // The worklet must have been created from a context eligible for shared
-  // storage. It's okay to treat `kSharedStorageAPI` as enabled.
-  if (feature == OriginTrialFeature::kSharedStorageAPI) {
-    return true;
-  }
-
-  // For unknown features, return false to be on the safe side.
-  return false;
-}
-
 void SharedStorageWorkletGlobalScope::Trace(Visitor* visitor) const {
   visitor->Trace(receiver_);
   visitor->Trace(shared_storage_);

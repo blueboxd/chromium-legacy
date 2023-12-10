@@ -15,7 +15,10 @@
 #include "base/logging.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/process/memory.h"
+#include "base/process/process_handle.h"
 #include "base/ranges/algorithm.h"
+#include "base/strings/stringprintf.h"
+#include "base/system/sys_info.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/platform_thread.h"
@@ -47,6 +50,7 @@
 #if BUILDFLAG(IS_WIN)
 #include "base/win/process_startup_helper.h"
 #include "base/win/scoped_com_initializer.h"
+#include "base/win/windows_version.h"
 #include "chrome/updater/app/server/win/service_main.h"
 #include "chrome/updater/util/win_util.h"
 #endif
@@ -113,6 +117,20 @@ int HandleUpdaterCommands(UpdaterScope updater_scope,
   base::EnableTerminationOnHeapCorruption();
   base::EnableTerminationOnOutOfMemory();
 
+  InitializeThreadPool("updater");
+  const base::ScopedClosureRunner shutdown_thread_pool(base::BindOnce([] {
+    // For the updater, it is important to join all threads before `UpdaterMain`
+    // exits, otherwise the behavior of the program is undefined. The threads
+    // in the pool can still run after shutdown to handle CONTINUE_ON_SHUTDOWN
+    // tasks, for example. In Chrome, the thread pool is leaked for this reason
+    // and there is no way to join its threads in production code. The updater
+    // has no such requirements (crbug.com/1484776).
+    base::ThreadPoolInstance* thread_pool = base::ThreadPoolInstance::Get();
+    thread_pool->Shutdown();
+    thread_pool->JoinForTesting();  // IN-TEST
+    base::ThreadPoolInstance::Set(nullptr);
+  }));
+
 #if BUILDFLAG(IS_WIN)
   base::win::ScopedCOMInitializer com_initializer(
       base::win::ScopedCOMInitializer::kMTA);
@@ -127,20 +145,6 @@ int HandleUpdaterCommands(UpdaterScope updater_scope,
   base::win::RegisterInvalidParamHandler();
   VLOG(1) << GetUACState();
 #endif
-
-  InitializeThreadPool("updater");
-  const base::ScopedClosureRunner shutdown_thread_pool(base::BindOnce([] {
-    // For the updater, it is important to join all threads before `UpdaterMain`
-    // exits, otherwise the behavior of the program is undefined. The threads
-    // in the pool can still run after shutdown to handle CONTINUE_ON_SHUTDOWN
-    // tasks, for example. In Chrome, the thread pool is leaked for this reason
-    // and there is no way to join its threads in production code. The updater
-    // has no such requirements (crbug.com/1484776).
-    base::ThreadPoolInstance* thread_pool = base::ThreadPoolInstance::Get();
-    thread_pool->Shutdown();
-    thread_pool->JoinForTesting();  // IN-TEST
-    base::ThreadPoolInstance::Set(nullptr);
-  }));
 
   // Records a backtrace in the log, crashes the program, saves a crash dump,
   // and reports the crash.
@@ -251,6 +255,16 @@ constexpr const char* BuildArch() {
 #endif
 }
 
+std::string OperatingSystemVersion() {
+#if BUILDFLAG(IS_WIN)
+  const base::win::OSInfo::VersionNumber v =
+      base::win::OSInfo::GetInstance()->version_number();
+  return base::StringPrintf("%u.%u.%u.%u", v.major, v.minor, v.build, v.patch);
+#else
+  return base::SysInfo().OperatingSystemVersion();
+#endif
+}
+
 base::CommandLine::StringType GetCommandLineString() {
 #if BUILDFLAG(IS_WIN)
   // Gets the raw command line on Windows, because
@@ -281,9 +295,12 @@ int UpdaterMain(int argc, const char* const* argv) {
 
   const UpdaterScope updater_scope = GetUpdaterScope();
   InitLogging(updater_scope);
-
-  VLOG(1) << "Version " << kUpdaterVersion << ", " << BuildFlavor() << ", "
+  VLOG(1) << "Version: " << kUpdaterVersion << ", " << BuildFlavor() << ", "
           << BuildArch() << ", command line: " << GetCommandLineString();
+  VLOG(1) << "OS version: " << OperatingSystemVersion()
+          << ", System uptime (seconds): "
+          << base::SysInfo::Uptime().InSeconds() << ", parent pid: "
+          << base::GetParentProcessId(base::GetCurrentProcessHandle());
   const int retval = HandleUpdaterCommands(updater_scope, command_line);
   VLOG(1) << __func__ << " (--" << GetUpdaterCommand(command_line) << ")"
           << " returned " << retval << ".";

@@ -30,6 +30,7 @@ namespace web {
 class FakeWebState : public WebState {
  public:
   FakeWebState();
+  FakeWebState(WebStateID unique_identifier, NSString* stable_identifier);
   ~FakeWebState() override;
 
   // WebState implementation.
@@ -116,6 +117,7 @@ class FakeWebState : public WebState {
   id<CRWFindInteraction> GetFindInteraction() final API_AVAILABLE(ios(16));
   id GetActivityItem() API_AVAILABLE(ios(16.4)) final;
   UIColor* GetThemeColor() final;
+  UIColor* GetUnderPageBackgroundColor() final;
 
   void AddPolicyDecider(WebStatePolicyDecider* decider) override;
   void RemovePolicyDecider(WebStatePolicyDecider* decider) override;

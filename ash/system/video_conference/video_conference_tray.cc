@@ -352,7 +352,7 @@ void VideoConferenceTray::OnAnimationEnded() {
 
   auto* controller = VideoConferenceTrayController::Get();
   controller->MaybeRunNudgeRequest();
-  controller->MaybeShowSpeakOnMuteOptInNudge();
+  controller->MaybeShowSpeakOnMuteOptInNudge(this);
 }
 
 bool VideoConferenceTray::ShouldEnterPushedState(const ui::Event& event) {

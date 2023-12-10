@@ -8,13 +8,14 @@
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
+#import "base/strings/sys_string_conversions.h"
 #import "components/content_settings/core/browser/host_content_settings_map.h"
 #import "components/feature_engagement/public/event_constants.h"
 #import "components/feature_engagement/public/feature_constants.h"
 #import "components/feature_engagement/public/tracker.h"
 #import "components/omnibox/browser/omnibox_event_global_tracker.h"
 #import "components/segmentation_platform/embedder/default_model/device_switcher_result_dispatcher.h"
-#import "ios/chrome/browser/feature_engagement/tracker_factory.h"
+#import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
 #import "ios/chrome/browser/iph_for_new_chrome_user/utils.h"
 #import "ios/chrome/browser/segmentation_platform/segmentation_platform_service_factory.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
@@ -36,8 +37,8 @@
 #import "ios/chrome/browser/ui/bubble/bubble_presenter_delegate.h"
 #import "ios/chrome/browser/ui/bubble/bubble_util.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_controller_presenter.h"
-#import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
-#import "ios/chrome/browser/url_loading/url_loading_observer_bridge.h"
+#import "ios/chrome/browser/url_loading/model/url_loading_notifier_browser_agent.h"
+#import "ios/chrome/browser/url_loading/model/url_loading_observer_bridge.h"
 #import "ios/chrome/common/ui/util/ui_util.h"
 #import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -73,6 +74,8 @@
     BubbleViewControllerPresenter* whatsNewBubblePresenter;
 @property(nonatomic, strong) BubbleViewControllerPresenter*
     priceNotificationsWhileBrowsingBubbleTipPresenter;
+@property(nonatomic, strong)
+    BubbleViewControllerPresenter* lensKeyboardPresenter;
 @property(nonatomic, assign) WebStateList* webStateList;
 @property(nonatomic, assign) feature_engagement::Tracker* engagementTracker;
 @property(nonatomic, assign) HostContentSettingsMap* settingsMap;
@@ -146,6 +149,7 @@
   [self.followWhileBrowsingBubbleTipPresenter dismissAnimated:NO];
   [self.priceNotificationsWhileBrowsingBubbleTipPresenter dismissAnimated:NO];
   [self.whatsNewBubblePresenter dismissAnimated:NO];
+  [self.lensKeyboardPresenter dismissAnimated:NO];
   [self.defaultPageModeTipBubblePresenter dismissAnimated:NO];
 }
 
@@ -298,6 +302,32 @@
   self.priceNotificationsWhileBrowsingBubbleTipPresenter = presenter;
 }
 
+- (void)presentLensKeyboardTipBubble {
+  if (![self canPresentBubbleWithCheckTabScrolledToTop:NO]) {
+    return;
+  }
+
+  BubbleArrowDirection arrowDirection = BubbleArrowDirectionDown;
+  NSString* text = l10n_util::GetNSString(IDS_IOS_LENS_KEYBOARD_IPH_TEXT);
+  CGPoint lensButtonAnchor = [self anchorPointToGuide:kLensKeyboardButtonGuide
+                                            direction:arrowDirection];
+
+  BubbleViewControllerPresenter* presenter = [self
+      presentBubbleForFeature:feature_engagement::kIPHiOSLensKeyboardFeature
+                    direction:arrowDirection
+                    alignment:BubbleAlignmentTopOrLeading
+                         text:text
+        voiceOverAnnouncement:text
+                  anchorPoint:lensButtonAnchor
+                presentAction:nil
+                dismissAction:nil];
+  if (!presenter) {
+    return;
+  }
+
+  self.lensKeyboardPresenter = presenter;
+}
+
 #pragma mark - Private
 
 // Convenience method that calls -presentBubbleForFeature with default param
@@ -388,6 +418,10 @@
                                                   : BubbleArrowDirectionUp;
   NSString* text =
       l10n_util::GetNSStringWithFixup(IDS_IOS_OPEN_NEW_TAB_IPH_TEXT);
+  std::u16string newTabButtonA11yLabel = base::SysNSStringToUTF16(
+      l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_NEW_TAB));
+  NSString* announcement = l10n_util::GetNSStringF(
+      IDS_IOS_OPEN_NEW_TAB_IPH_ANNOUNCEMENT, newTabButtonA11yLabel);
   CGPoint newTabButtonAnchor = [self anchorPointToGuide:kNewTabButtonGuide
                                               direction:arrowDirection];
 
@@ -414,7 +448,7 @@
                           direction:arrowDirection
                           alignment:BubbleAlignmentBottomOrTrailing
                                text:text
-              voiceOverAnnouncement:text
+              voiceOverAnnouncement:announcement
                         anchorPoint:newTabButtonAnchor
                       presentAction:presentAction
                       dismissAction:dismissAction];
@@ -457,6 +491,8 @@
                                                   : BubbleArrowDirectionUp;
   NSString* text =
       l10n_util::GetNSStringWithFixup(IDS_IOS_SEE_ALL_OPEN_TABS_IPH_TEXT);
+  NSString* announcement =
+      l10n_util::GetNSString(IDS_IOS_SEE_ALL_OPEN_TABS_IPH_ANNOUNCEMENT);
   CGPoint tabGridButtonAnchor = [self anchorPointToGuide:kTabSwitcherGuide
                                                direction:arrowDirection];
 
@@ -478,7 +514,7 @@
                           direction:arrowDirection
                           alignment:BubbleAlignmentBottomOrTrailing
                                text:text
-              voiceOverAnnouncement:text
+              voiceOverAnnouncement:announcement
                         anchorPoint:tabGridButtonAnchor
                       presentAction:presentAction
                       dismissAction:dismissAction];

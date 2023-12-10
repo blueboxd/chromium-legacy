@@ -72,7 +72,7 @@ struct ChromeSyncUrlArgs {
   // autofilled by Gaia.
   const std::string email;
   // If empty, after login, Gaia may redirect to myaccount.
-  const std::string continue_url;
+  const GURL continue_url;
   // If true, the dark mode version of the page will be requested.
   bool request_dark_scheme = false;
   // Sets the "flow" parameter in the gaia sign in url.
@@ -84,7 +84,8 @@ struct ChromeSyncUrlArgs {
 GURL GetChromeSyncURLForDice(ChromeSyncUrlArgs args);
 
 // Returns the URL to be used to reauth.
-// The `email` is used to be able to preview the URL with the appropriate email:
+// As part of `args` only `email` and `continue_url` are used:
+// `email` is used to be able to preview the URL with the appropriate email:
 // - if the value is empty: the regular sign in page is opened with no prefill.
 // - if the value is set and correspond to an existing account used within the
 // profile previously: the "Verify it's you" page is opened with the preselected
@@ -94,14 +95,16 @@ GURL GetChromeSyncURLForDice(ChromeSyncUrlArgs args);
 // - if the value is set but the email does not correspond to an account
 // previously used within the profile: the regular sign in gaia page is
 // displayed with the prefilled email.
-GURL GetChromeReauthURL(const std::string& email = std::string());
+// `continue_url` is used to redirect to the given url in case of successful
+// reauth.
+GURL GetChromeReauthURL(ChromeSyncUrlArgs args);
 
 // Returns the URL to be used to add (secondary) account when DICE is enabled.
 // If email is not empty, then it will pass email as hint to the page so that it
 // will be autofilled by Gaia.
 // If |continue_url| is empty, this may redirect to myaccount.
 GURL GetAddAccountURLForDice(const std::string& email,
-                             const std::string& continue_url);
+                             const GURL& continue_url);
 
 // Gets the partition for the embedded sign in frame/webview.
 content::StoragePartition* GetSigninPartition(

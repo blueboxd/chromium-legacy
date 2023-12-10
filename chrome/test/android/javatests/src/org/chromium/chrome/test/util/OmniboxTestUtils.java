@@ -19,6 +19,7 @@ import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 
+import androidx.activity.ComponentActivity;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.test.espresso.UiController;
@@ -72,13 +73,13 @@ public class OmniboxTestUtils {
      * Invokes a specific ViewAction on an {@link
      * org.chromium.chrome.browser.omnibox.suggestions.action.OmniboxAction} at specific position.
      *
-     * This class can be chained with {@link
+     * <p>This class can be chained with {@link
      * androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition}.
      */
-    private static class ActionOnOmniobxActionAtPosition implements ViewAction {
+    private static class ActionOnOmniboxActionAtPosition implements ViewAction {
         private final ViewAction mAction;
 
-        public ActionOnOmniobxActionAtPosition(int position, ViewAction action) {
+        public ActionOnOmniboxActionAtPosition(int position, ViewAction action) {
             mAction = actionOnItemAtPosition(position, action);
         }
 
@@ -106,7 +107,7 @@ public class OmniboxTestUtils {
      * @param action the action to perform.
      */
     public static ViewAction actionOnOmniboxActionAtPosition(int position, ViewAction action) {
-        return new ActionOnOmniobxActionAtPosition(position, action);
+        return new ActionOnOmniboxActionAtPosition(position, action);
     }
 
     /**
@@ -215,11 +216,18 @@ public class OmniboxTestUtils {
     }
 
     /**
-     * Clear the Omnibox focus and wait until keyboard is dismissed.
-     * Expects the Omnibox to be focused before the call.
+     * Clear the Omnibox focus and wait until keyboard is dismissed. Performs no action if the
+     * Omnibox is already unfocused.
      */
     public void clearFocus() {
-        sendKey(KeyEvent.KEYCODE_BACK);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    if (mUrlBar.hasFocus()) {
+                        ((ComponentActivity) mActivity)
+                                .getOnBackPressedDispatcher()
+                                .onBackPressed();
+                    }
+                });
         checkFocus(false);
     }
 

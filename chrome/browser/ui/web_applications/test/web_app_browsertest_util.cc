@@ -56,7 +56,6 @@
 #include "components/webapps/browser/test/service_worker_registration_waiter.h"
 #include "components/webapps/browser/uninstall_result_code.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -179,7 +178,7 @@ Browser* LaunchWebAppBrowser(Profile* profile,
               app_id, apps::LaunchContainer::kLaunchContainerWindow,
               disposition, apps::LaunchSource::kFromTest));
   EXPECT_TRUE(web_contents);
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  Browser* browser = chrome::FindBrowserWithTab(web_contents);
   EXPECT_TRUE(AppBrowserController::IsForWebApp(browser, app_id));
   return browser;
 }
@@ -211,7 +210,7 @@ Browser* LaunchBrowserForWebAppInTab(Profile* profile,
 
   EXPECT_EQ(app_id, *WebAppTabHelper::GetAppId(web_contents));
 
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  Browser* browser = chrome::FindBrowserWithTab(web_contents);
   EXPECT_EQ(browser, chrome::FindLastActive());
   EXPECT_EQ(web_contents, browser->tab_strip_model()->GetActiveWebContents());
   return browser;
@@ -230,7 +229,7 @@ Browser* LaunchWebAppToURL(Profile* profile,
           ->LaunchAppWithParamsForTesting(std::move(params));
   EXPECT_TRUE(web_contents);
 
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  Browser* browser = chrome::FindBrowserWithTab(web_contents);
   EXPECT_TRUE(AppBrowserController::IsForWebApp(browser, app_id));
   return browser;
 }

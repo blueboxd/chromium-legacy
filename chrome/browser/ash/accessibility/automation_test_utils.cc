@@ -25,32 +25,12 @@
 namespace ash {
 
 namespace {
+
 constexpr char kTestSupportPath[] =
     "chrome/browser/resources/chromeos/accessibility/common/"
     "automation_test_support.js";
 
-}
-AutomationTestUtils::AutomationTestUtils(const std::string& extension_id)
-    : extension_id_(extension_id) {}
-
-AutomationTestUtils::~AutomationTestUtils() {}
-
-void AutomationTestUtils::SetUpTestSupport() {
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  base::FilePath source_dir;
-  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_dir));
-  auto test_support_path = source_dir.AppendASCII(kTestSupportPath);
-  std::string script;
-  ASSERT_TRUE(base::ReadFileToString(test_support_path, &script))
-      << test_support_path;
-  ExecuteScriptInExtensionPage(script);
-}
-
-gfx::Rect AutomationTestUtils::GetNodeBoundsInRoot(const std::string& name,
-                                                   const std::string& role) {
-  std::string script_result = ExecuteScriptInExtensionPage(base::StringPrintf(
-      R"JS(globalThis.automationTestSupport.getBoundsForNode("%s", "%s"))JS",
-      name.c_str(), role.c_str()));
+gfx::Rect StringToRect(const std::string& script_result) {
   std::vector<std::string> tokens = base::SplitString(
       script_result, ",;", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
   CHECK_EQ(tokens.size(), 4u);
@@ -60,6 +40,76 @@ gfx::Rect AutomationTestUtils::GetNodeBoundsInRoot(const std::string& name,
   base::StringToInt(tokens[2], &width);
   base::StringToInt(tokens[3], &height);
   return gfx::Rect(x, y, width, height);
+}
+
+}  // namespace
+
+AutomationTestUtils::AutomationTestUtils(const std::string& extension_id)
+    : extension_id_(extension_id) {}
+
+AutomationTestUtils::~AutomationTestUtils() {}
+
+void AutomationTestUtils::SetUpTestSupport() {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::FilePath source_dir;
+  CHECK(base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &source_dir));
+  auto test_support_path = source_dir.AppendASCII(kTestSupportPath);
+  std::string script;
+  ASSERT_TRUE(base::ReadFileToString(test_support_path, &script))
+      << test_support_path;
+  ExecuteScriptInExtensionPage(script);
+}
+
+void AutomationTestUtils::WaitForPageLoad(const std::string& url) {
+  ExecuteScriptInExtensionPage(base::StringPrintf(
+      R"JS(globalThis.automationTestSupport.waitForPageLoad(`%s`))JS",
+      url.c_str()));
+}
+
+gfx::Rect AutomationTestUtils::GetNodeBoundsInRoot(const std::string& name,
+                                                   const std::string& role) {
+  std::string script_result = ExecuteScriptInExtensionPage(base::StringPrintf(
+      R"JS(globalThis.automationTestSupport.getBoundsForNode(`%s`, `%s`))JS",
+      name.c_str(), role.c_str()));
+  return StringToRect(script_result);
+}
+
+gfx::Rect AutomationTestUtils::GetBoundsForNodeInRootByClassName(
+    const std::string& class_name) {
+  std::string script_result = ExecuteScriptInExtensionPage(base::StringPrintf(
+      R"JS(globalThis.automationTestSupport.getBoundsForNodeByClassName(`%s`))JS",
+      class_name.c_str()));
+  return StringToRect(script_result);
+}
+
+void AutomationTestUtils::SetFocusOnNode(const std::string& name,
+                                         const std::string& role) {
+  ExecuteScriptInExtensionPage(base::StringPrintf(
+      R"JS(globalThis.automationTestSupport.setFocusOnNode(`%s`, `%s`))JS",
+      name.c_str(), role.c_str()));
+}
+
+void AutomationTestUtils::WaitForTextSelectionChangedEvent() {
+  std::string script = R"(
+    globalThis.automationTestSupport.waitForTextSelectionChangedEvent();
+  )";
+  ExecuteScriptInExtensionPage(script);
+}
+
+void AutomationTestUtils::WaitForValueChangedEvent() {
+  std::string script = R"(
+    globalThis.automationTestSupport.waitForValueChangedEvent();
+  )";
+  ExecuteScriptInExtensionPage(script);
+}
+
+std::string AutomationTestUtils::GetValueForNodeWithClassName(
+    const std::string& class_name) {
+  std::string script = base::StringPrintf(R"(
+    globalThis.automationTestSupport.getValueForNodeWithClassName(`%s`);
+  )",
+                                          class_name.c_str());
+  return ExecuteScriptInExtensionPage(script);
 }
 
 std::string AutomationTestUtils::ExecuteScriptInExtensionPage(

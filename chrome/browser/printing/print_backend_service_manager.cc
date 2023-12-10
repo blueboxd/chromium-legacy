@@ -163,7 +163,7 @@ PrintBackendServiceManager::RegisterPrintDocumentClientReusingClientRemote(
 void PrintBackendServiceManager::UnregisterClient(ClientId id) {
   // Determine which client type has this ID, and remove it once found.
   absl::optional<ClientType> client_type;
-  RemoteId remote_id = GetRemoteIdForPrinterName(kEmptyPrinterName);
+  absl::optional<RemoteId> remote_id;
   if (query_clients_.erase(id) != 0) {
     client_type = ClientType::kQuery;
   } else if (query_with_ui_clients_.erase(id) != 0) {
@@ -189,11 +189,14 @@ void PrintBackendServiceManager::UnregisterClient(ClientId id) {
           << ClientTypeToString(client_type.value())
           << ") from print backend service.";
 
+  if (!remote_id.has_value()) {
+    remote_id = GetRemoteIdForPrinterName(kEmptyPrinterName);
+  }
   absl::optional<base::TimeDelta> new_timeout =
       DetermineIdleTimeoutUpdateOnUnregisteredClient(client_type.value(),
-                                                     remote_id);
+                                                     remote_id.value());
   if (new_timeout.has_value())
-    UpdateServiceIdleTimeoutByRemoteId(remote_id, new_timeout.value());
+    UpdateServiceIdleTimeoutByRemoteId(remote_id.value(), new_timeout.value());
 
 #if BUILDFLAG(IS_WIN)
   if (base::FeatureList::IsEnabled(features::kReadPrinterCapabilitiesWithXps) &&
@@ -639,11 +642,9 @@ PrintBackendServiceManager::GetRemoteIdForPrinterName(
       return iter->second;
     }
 
-    // No remote yet for this printer so make one.  RemoteId is only used within
-    // browse process management code, so a simple incrementing sequence is
-    // sufficient.
-    static uint32_t id_sequence = 0;
-    return remote_id_map_.insert({printer_name, RemoteId(++id_sequence)})
+    // No remote yet for this printer so make one.
+    return remote_id_map_
+        .insert({printer_name, RemoteId(++remote_id_sequence_)})
         .first->second;
   }
 #endif
@@ -807,16 +808,13 @@ PrintBackendServiceManager::GetService(const RemoteId& remote_id,
     // On the first print that will try to use sandboxed service, make note that
     // so far no drivers have been discovered to require fallback beyond any
     // predetermined known cases.
-    static bool first_sandboxed_print = true;
-    if (first_sandboxed_print) {
-      first_sandboxed_print = false;
+    if (first_sandboxed_print_) {
+      first_sandboxed_print_ = false;
       base::UmaHistogramBoolean(
           kPrintBackendRequiresElevatedPrivilegeHistogramName,
           /*sample=*/false);
     }
-  }
 
-  if (sandboxed) {
     return GetServiceFromBundle(remote_id, client_type, /*sandboxed=*/true,
                                 sandboxed_remotes_bundles_);
   }

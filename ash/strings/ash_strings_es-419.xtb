@@ -310,7 +310,6 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="2276987123919776440">15 min</translation>
 <translation id="2277103315734023688">Buscar más adelante</translation>
 <translation id="2282073721614284166">Abrir el vínculo en una pestaña</translation>
-<translation id="2284237890386182187">Activado; no hay dispositivos conectados</translation>
 <translation id="2292698582925480719">Escala de visualización</translation>
 <translation id="229397294990920565">Desactivando los datos móviles…</translation>
 <translation id="2295777434187870477">El micrófono está activado. Si lo seleccionas, se silenciará.</translation>
@@ -352,7 +351,6 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="243878895369688216">Se abrió ayer</translation>
 <translation id="2440978926514840421">Se grabó un GIF</translation>
 <translation id="2441427462554639370">Finalizó la grabación porque hay muy poco espacio de almacenamiento disponible</translation>
-<translation id="24452542372838207">Expandir notificación</translation>
 <translation id="2448312741937722512">Tipo</translation>
 <translation id="2449089818483227734">Batería baja</translation>
 <translation id="2450205753526923158">Modo de captura de pantalla</translation>
@@ -493,7 +491,6 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="3062298103034426069">No compatible</translation>
 <translation id="3068622547379332530">Versión <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">Biblioteca a la izquierda</translation>
-<translation id="3070639127620815135">búsqueda + esc</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Expandir menú</translation>
 <translation id="3087734570205094154">Inferior</translation>
@@ -572,7 +569,6 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="3387527074123400161">Chromium OS</translation>
 <translation id="3389599499324569679">¿Quieres activar el dictado?</translation>
 <translation id="3394432020929931914">, expandido</translation>
-<translation id="3400357268283240774">Configuración adicional</translation>
 <translation id="3405101454990027959">Activar el acceso al micrófono</translation>
 <translation id="3408735331120433841">Estás transmitiendo la pantalla.</translation>
 <translation id="3409584356742878290">Ocultar o mostrar el inspector de Herramientas para desarrolladores</translation>
@@ -620,7 +616,6 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="3563775809269155755">Habilitar el hotspot</translation>
 <translation id="3566240529365775567">Se abrió justo ahora</translation>
 <translation id="3571734092741541777">Configurar</translation>
-<translation id="3572988532398145777">No puedes expandir la notificación cuando hay un panel abierto. Primero, cierra el panel que se encuentra a continuación.</translation>
 <translation id="3573179567135747900">Volver a "<ph name="FROM_LOCALE" />" (debes reiniciar).</translation>
 <translation id="3576141592585647168">Cambiar zona horaria</translation>
 <translation id="3577473026931028326">Se produjo un error. Vuelve a intentarlo.</translation>
@@ -704,7 +699,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="385300504083504382">Inicio</translation>
 <translation id="3859364108019690">No se pueden transmitir apps</translation>
 <translation id="3861651314799684201">Presiona intro para grabar la pantalla completa</translation>
-<translation id="3865912916886104060">No hay dispositivos conectados. Se desactivará la conexión Wi-Fi para comenzar a usar el hotspot.</translation>
 <translation id="3886872229787704059">Se abrió hoy</translation>
 <translation id="3891340733213178823">Presiona Ctrl + Mayús + Q dos veces para salir.</translation>
 <translation id="3893630138897523026">ChromeVox (comentarios por voz)</translation>
@@ -789,7 +783,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4197790712631116042">No</translation>
 <translation id="4201033867194214117"><ph name="FEATURE_NAME" /> no está disponible.</translation>
 <translation id="4201051445878709314">Mostrar el mes anterior</translation>
-<translation id="4202362334312791952">Se conectó un dispositivo. Se desactivará la conexión Wi-Fi para comenzar a usar el hotspot.</translation>
 <translation id="4209973997261364186">La conexión Wi-Fi está activada.</translation>
 <translation id="4212472694152630271">Cambiar a PIN</translation>
 <translation id="4215497585250573029">Configuración de la VPN</translation>
@@ -906,7 +899,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="468293128311738995">Apps de tu teléfono</translation>
 <translation id="4690510401873698237">Biblioteca en la parte inferior</translation>
 <translation id="4696813013609194136">Desbloquea el dispositivo con el código parental</translation>
-<translation id="4698850295812410683">Mostrar herramientas de pluma stylus</translation>
 <translation id="4702647871202761252">La pantalla de privacidad está desactivada</translation>
 <translation id="4706121060329443414">Se intentará completar la descarga más tarde. Por ahora, se enviará la voz a Google para su procesamiento.</translation>
 <translation id="470644585772471629">Inversión de colores</translation>
@@ -1054,6 +1046,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5260676007519551770">Escritorio 4</translation>
 <translation id="5268819379131021772">Lista de Google Tasks</translation>
 <translation id="5275923704957843041">Vista previa del escritorio</translation>
+<translation id="5277869901083657836">Activar o desactivar las herramientas de la pluma stylus</translation>
 <translation id="5278086053818066789">Activar o desactivar ChromeVox (comentarios por voz)</translation>
 <translation id="5283099933536931082"><ph name="APP_ITEM_TITLE" /> requiere tu atención.</translation>
 <translation id="5283198616748585639">Agregar 1 min</translation>
@@ -1096,7 +1089,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5426063383988017631">Se cerró el menú de configuración</translation>
 <translation id="5428899915242071344">Comenzar a seleccionar</translation>
 <translation id="5429993543155113935">Por el momento, las ventanas de incógnito no son compatibles</translation>
-<translation id="5430931332414098647">Conexión instantánea mediante dispositivo móvil</translation>
 <translation id="5431318178759467895">Color</translation>
 <translation id="5433020815079095860">Entrada de audio</translation>
 <translation id="544691375626129091">Todos los usuarios disponibles ya se agregaron a esta sesión.</translation>
@@ -1125,6 +1117,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="554893713779400387">Activar o desactivar el dictado</translation>
 <translation id="5551456515017410630">Abrir o cerrar el calendario</translation>
 <translation id="5551974246223970793">Ir a la siguiente coincidencia de búsqueda al buscar en una página</translation>
+<translation id="5555639311269196631">Desactiva el hotspot</translation>
 <translation id="5558091555391176027">Activar o desactivar la alta visibilidad de Compartir con Nearby</translation>
 <translation id="556042886152191864">Botón</translation>
 <translation id="5570122939431135380">Abrir una nueva pestaña en una nueva ventana de incógnito</translation>
@@ -1170,7 +1163,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5707775774148071965">El dispositivo admite una mayor velocidad de datos que el cable. El rendimiento del dispositivo puede verse limitado.</translation>
 <translation id="5710450975648804523">"No interrumpir" activado</translation>
 <translation id="571295407079589142">Los datos móviles están desactivados.</translation>
-<translation id="5716891621595980681">Se conectaron <ph name="DEVICECOUNT" /> dispositivos. Se desactivará la conexión Wi-Fi para comenzar a usar el hotspot.</translation>
 <translation id="5727460725221669831">Si olvidaste tu contraseña o cambiaste la de tu Cuenta de Google recientemente, intenta recuperar este usuario.</translation>
 <translation id="573413375004481890">Este dispositivo no admite tantas pantallas, por lo que se desconectó una de ellas</translation>
 <translation id="5740328398383587084">Compartir con Nearby</translation>
@@ -1220,7 +1212,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Activado</translation>
 <translation id="5920710855273935292">El micrófono está silenciado.</translation>
-<translation id="5924855612669061715">El hotspot está activado</translation>
 <translation id="5946788582095584774">La función <ph name="FEATURE_NAME" /> está activada.</translation>
 <translation id="5947494881799873997">Revertir</translation>
 <translation id="595202126637698455">Seguimiento de rendimiento habilitado</translation>
@@ -1236,6 +1227,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="598407983968395253">Utilizar plantilla</translation>
 <translation id="598882571027504733">Para obtener la actualización, reinicia tu Chromebook con el teclado conectado.</translation>
 <translation id="6000279412553873020">Teclas, botones y más</translation>
+<translation id="6002122790816966947">Tus dispositivos</translation>
 <translation id="6012623610530968780">Página <ph name="SELECTED_PAGE" /> de <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="601304062528754300">Destacar el elemento siguiente en la barra</translation>
 <translation id="6015573907265691211">Marcar como completada</translation>
@@ -1304,7 +1296,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="6231419273573514727">Es posible que se limite el rendimiento de los dispositivos periféricos</translation>
 <translation id="6232891689835436217"><ph name="APP_NAME" /> está utilizando tu cámara y micrófono</translation>
 <translation id="6237231532760393653">1X</translation>
-<translation id="6244986124527896815">Abre la app del Administrador de tareas con “<ph name="NEW_SHORTCUT" />”.</translation>
 <translation id="6247728804802644171">Abrir notificaciones</translation>
 <translation id="6254629735336163724">Se bloqueó en posición horizontal</translation>
 <translation id="6259254695169772643">Usa tu pluma stylus para realizar una selección</translation>
@@ -1526,6 +1517,7 @@ Nueva instalación</translation>
 <translation id="7188494361780961876">El menú se movió a la esquina superior izquierda de la pantalla.</translation>
 <translation id="7189412385142492784">A qué distancia está Venus</translation>
 <translation id="7198435252016571249">Se ajustó la cámara a la esquina inferior derecha. Entra en conflicto con la superficie del sistema.</translation>
+<translation id="7219573373513695352">No hay dispositivos conectados</translation>
 <translation id="7229029500464092426"><ph name="AVAILABLE_MEMORY" /> de memoria | <ph name="TOTAL_MEMORY" /> en total</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Debes reiniciar esta Chromebook para aplicar una actualización. Este proceso puede tardar 1 minuto.</translation>
 <translation id="7256634071279256947">Micrófono posterior</translation>
@@ -1951,7 +1943,6 @@ Para apagarlo, vuelve a mantener presionado el botón de encendido.</translation
 <translation id="9030665205623277906">Resumen de uso de la CPU: <ph name="CPU_USEAGE" />%</translation>
 <translation id="9034924485347205037">Archivos de Linux</translation>
 <translation id="9047624247355796468">Abrir la configuración para <ph name="NETWORK_NAME" /></translation>
-<translation id="9059834730836941392">Contraer notificación</translation>
 <translation id="906458777597946297">Maximizar ventana</translation>
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9070640332319875144">Configuración de Asistente</translation>

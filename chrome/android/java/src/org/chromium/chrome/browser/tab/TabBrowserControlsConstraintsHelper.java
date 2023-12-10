@@ -6,9 +6,10 @@ package org.chromium.chrome.browser.tab;
 
 import androidx.annotation.Nullable;
 
+import org.jni_zero.NativeMethods;
+
 import org.chromium.base.Callback;
 import org.chromium.base.UserData;
-import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.cc.input.BrowserControlsState;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
@@ -176,8 +177,6 @@ public class TabBrowserControlsConstraintsHelper implements UserData {
      *                should jump immediately.
      */
     public void update(int current, boolean animate) {
-        assert mTab.getWebContents() != null : "Shouldn't update a Tab with a null WebContents.";
-
         int constraints = getConstraints();
 
         // Do nothing if current and constraints conflict to avoid error in renderer.

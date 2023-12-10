@@ -7,6 +7,9 @@
 #include <string>
 
 #include "chrome/browser/ui/tabs/organization/tab_data.h"
+#include "chrome/browser/ui/tabs/tab_group.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
@@ -23,8 +26,8 @@ TabOrganization::TabOrganization(
       names_(names),
       current_name_(current_name),
       choice_(choice) {}
-TabOrganization::TabOrganization(const TabOrganization&) {}
-TabOrganization::~TabOrganization() {}
+TabOrganization::TabOrganization(TabOrganization&& organization) = default;
+TabOrganization::~TabOrganization() = default;
 
 const std::u16string TabOrganization::GetDisplayName() const {
   if (absl::holds_alternative<size_t>(current_name())) {
@@ -75,7 +78,31 @@ void TabOrganization::SetCurrentName(
 // TODO(1469128) Add UKM/UMA Logging on user accept.
 void TabOrganization::Accept() {
   CHECK(!choice_.has_value());
+  CHECK(IsValidForOrganizing());
   choice_ = UserChoice::ACCEPTED;
+
+  CHECK(tab_datas_.size() > 0);
+  TabStripModel* tab_strip_model = tab_datas_[0]->original_tab_strip_model();
+  CHECK(tab_strip_model);
+  std::vector<int> valid_indices;
+  for (const std::unique_ptr<TabData>& tab_data : tab_datas_) {
+    // Individual tabs may become invalid. in those cases, where the tab is
+    // invalid but the organization is not, do not include the tab in the
+    // organization, but still create the organization.
+    if (tab_data->IsValidForOrganizing()) {
+      valid_indices.emplace_back(
+          tab_strip_model->GetIndexOfWebContents(tab_data->web_contents()));
+    }
+  }
+
+  tab_groups::TabGroupId group_id =
+      tab_strip_model->AddToNewGroup(valid_indices);
+  TabGroup* const tab_group =
+      tab_strip_model->group_model()->GetTabGroup(group_id);
+  tab_groups::TabGroupVisualData new_visual_data(
+      GetDisplayName(), tab_group->visual_data()->color());
+  tab_group->SetVisualData(std::move(new_visual_data),
+                           tab_group->IsCustomized());
 }
 
 // TODO(1469128) Add UKM/UMA Logging on user reject.

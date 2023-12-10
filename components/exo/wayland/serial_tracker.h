@@ -31,6 +31,8 @@ class SerialTracker {
     OTHER_EVENT,
   };
 
+  static std::string ToString(EventType type);
+
   explicit SerialTracker(struct wl_display* display);
   SerialTracker(const SerialTracker&) = delete;
   SerialTracker& operator=(const SerialTracker&) = delete;
@@ -61,6 +63,8 @@ class SerialTracker {
   // Get the EventType for a serial number, or nullopt if the serial number was
   // never sent or is too old.
   absl::optional<EventType> GetEventType(uint32_t serial) const;
+
+  std::string ToString() const;
 
  private:
   raw_ptr<struct wl_display, DanglingUntriaged | ExperimentalAsh> display_;

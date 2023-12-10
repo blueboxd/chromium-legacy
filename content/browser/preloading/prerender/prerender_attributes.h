@@ -26,6 +26,7 @@ struct CONTENT_EXPORT PrerenderAttributes {
       const GURL& prerendering_url,
       PrerenderTriggerType trigger_type,
       const std::string& embedder_histogram_suffix,
+      absl::optional<blink::mojom::SpeculationTargetHint> target_hint,
       Referrer referrer,
       absl::optional<blink::mojom::SpeculationEagerness> eagerness,
       absl::optional<url::Origin> initiator_origin,
@@ -37,6 +38,8 @@ struct CONTENT_EXPORT PrerenderAttributes {
       ui::PageTransition transition_type,
       absl::optional<base::RepeatingCallback<bool(const GURL&)>>
           url_match_predicate,
+      absl::optional<base::RepeatingCallback<void(NavigationHandle&)>>
+          prerender_navigation_handle_callback,
       // TODO(crbug/1384419): use pattern other than default parameter.
       const absl::optional<base::UnguessableToken>&
           initiator_devtools_navigation_token = absl::nullopt);
@@ -56,6 +59,10 @@ struct CONTENT_EXPORT PrerenderAttributes {
   // Used for kEmbedder trigger type to avoid exposing information of embedders
   // to content/. Only used for metrics.
   std::string embedder_histogram_suffix;
+
+  // Records the target hint of the corresponding speculation rule.
+  // This is absl::nullopt when prerendering is initiated by browser.
+  absl::optional<blink::mojom::SpeculationTargetHint> target_hint;
 
   Referrer referrer;
 
@@ -98,6 +105,9 @@ struct CONTENT_EXPORT PrerenderAttributes {
   // same-origin.
   absl::optional<base::RepeatingCallback<bool(const GURL&)>>
       url_match_predicate;
+
+  absl::optional<base::RepeatingCallback<void(NavigationHandle&)>>
+      prerender_navigation_handle_callback;
 
   // This is absl::nullopt when prerendering is initiated by the browser.
   absl::optional<base::UnguessableToken> initiator_devtools_navigation_token;

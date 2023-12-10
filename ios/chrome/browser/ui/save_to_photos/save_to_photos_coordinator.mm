@@ -20,8 +20,8 @@
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
-#import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
-#import "ios/chrome/browser/store_kit/store_kit_coordinator_delegate.h"
+#import "ios/chrome/browser/store_kit/model/store_kit_coordinator.h"
+#import "ios/chrome/browser/store_kit/model/store_kit_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/account_picker/account_picker_coordinator.h"
 #import "ios/chrome/browser/ui/account_picker/account_picker_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_completion_info.h"
@@ -154,8 +154,7 @@
   _alertCoordinator = nil;
 }
 
-- (void)showStoreKitWithProductIdentifier:(NSString*)productIdentifer
-                            campaignToken:(NSString*)campaignToken {
+- (void)showStoreKitWithProductIdentifier:(NSString*)productIdentifer {
   if (_storeKitCoordinator) {
     [_storeKitCoordinator stop];
     _storeKitCoordinator = nil;
@@ -165,10 +164,8 @@
       initWithBaseViewController:self.baseViewController
                          browser:self.browser];
   _storeKitCoordinator.delegate = self;
-  _storeKitCoordinator.iTunesProductParameters = @{
-    SKStoreProductParameterITunesItemIdentifier : productIdentifer,
-    SKStoreProductParameterCampaignToken : campaignToken
-  };
+  _storeKitCoordinator.iTunesProductParameters =
+      @{SKStoreProductParameterITunesItemIdentifier : productIdentifer};
   [_storeKitCoordinator start];
 }
 

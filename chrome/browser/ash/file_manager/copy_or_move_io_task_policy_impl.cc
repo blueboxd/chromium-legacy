@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ash/file_manager/copy_or_move_io_task_policy_impl.h"
 
-#include <cmath>
 #include <memory>
 #include <string>
 #include <vector>
@@ -25,11 +24,9 @@
 #include "chrome/browser/ash/policy/dlp/dlp_files_controller_ash.h"
 #include "chrome/browser/ash/policy/dlp/files_policy_notification_manager.h"
 #include "chrome/browser/ash/policy/dlp/files_policy_notification_manager_factory.h"
-#include "chrome/browser/ash/policy/dlp/files_policy_warn_settings.h"
 #include "chrome/browser/enterprise/connectors/analysis/file_transfer_analysis_delegate.h"
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/common/chrome_features.h"
-#include "components/enterprise/data_controls/component.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/common/task_util.h"
 #include "storage/browser/file_system/copy_or_move_hook_delegate_composite.h"
@@ -114,6 +111,43 @@ void StartReportOnlyScanning(
   DoReportOnlyScanning(nullptr, 0, std::move(settings), std::move(sources),
                        std::move(outputs), profile, file_system_context);
 }
+
+// Notify FilesPolicyNotificationManager of files that were blocked by
+// enterprise connectors to show proper blocked dialog.
+// This is not done if the new UI for enterprise connectors is disabled.
+void MaybeSendConnectorsBlockedFilesNotification(
+    Profile* profile,
+    std::map<policy::FilesPolicyDialog::BlockReason,
+             policy::FilesPolicyDialog::Info> dialog_info_map,
+    IOTaskId task_id,
+    OperationType type) {
+  if (dialog_info_map.empty()) {
+    return;
+  }
+
+  // Blocked files are only added if kFileTransferEnterpriseConnectorUI is
+  // enabled.
+  CHECK(base::FeatureList::IsEnabled(
+      features::kFileTransferEnterpriseConnectorUI));
+
+  auto* files_policy_manager =
+      policy::FilesPolicyNotificationManagerFactory::GetForBrowserContext(
+          profile);
+  if (!files_policy_manager) {
+    LOG(ERROR) << "Couldn't find FilesPolicyNotificationManager";
+    return;
+  }
+
+  for (const auto& [block_reason, dialog_info] : dialog_info_map) {
+    files_policy_manager->SetConnectorsBlockedFiles(
+        task_id,
+        type == file_manager::io_task::OperationType::kMove
+            ? policy::dlp::FileAction::kMove
+            : policy::dlp::FileAction::kCopy,
+        block_reason, std::move(dialog_info));
+  }
+}
+
 }  // namespace
 
 CopyOrMoveIOTaskPolicyImpl::CopyOrMoveIOTaskPolicyImpl(
@@ -189,34 +223,6 @@ void CopyOrMoveIOTaskPolicyImpl::Resume(ResumeParams params) {
   }
 }
 
-void CopyOrMoveIOTaskPolicyImpl::MaybeSendConnectorsBlockedFilesNotification() {
-  if (connectors_blocked_files_.empty()) {
-    return;
-  }
-
-  // Blocked files are only added if kFileTransferEnterpriseConnectorUI is
-  // enabled.
-  CHECK(base::FeatureList::IsEnabled(
-      features::kFileTransferEnterpriseConnectorUI));
-
-  auto* files_policy_manager =
-      policy::FilesPolicyNotificationManagerFactory::GetForBrowserContext(
-          profile_);
-  if (!files_policy_manager) {
-    LOG(ERROR) << "Couldn't find FilesPolicyNotificationManager";
-    return;
-  }
-
-  for (const auto& [block_reason, paths] : connectors_blocked_files_) {
-    files_policy_manager->AddConnectorsBlockedFiles(
-        progress_->task_id, std::move(paths),
-        progress_->type == file_manager::io_task::OperationType::kMove
-            ? policy::dlp::FileAction::kMove
-            : policy::dlp::FileAction::kCopy,
-        block_reason);
-  }
-}
-
 void CopyOrMoveIOTaskPolicyImpl::Complete(State state) {
   bool has_dlp_errors = !dlp_blocked_files_.empty();
   bool has_connector_errors = !connectors_blocked_files_.empty();
@@ -236,14 +242,30 @@ void CopyOrMoveIOTaskPolicyImpl::Complete(State state) {
             .value_or(base::FilePath())
             .BaseName()
             .value();
+    bool always_show_review = false;
+
+    std::map<policy::FilesPolicyDialog::BlockReason,
+             policy::FilesPolicyDialog::Info>
+        dialog_info_map;
+    for (const auto& [reason, paths] : connectors_blocked_files_) {
+      if (paths.empty()) {
+        continue;
+      }
+      auto dialog_info = policy::files_dialog_utils::
+          GetDialogInfoForEnterpriseConnectorsBlockReason(
+              reason, paths, file_transfer_analysis_delegates_);
+      always_show_review |= dialog_info.HasCustomDetails();
+      dialog_info_map.insert({reason, std::move(dialog_info)});
+    }
 
     progress_->policy_error.emplace(
         error_type,
         (dlp_blocked_files_.size() + GetConnectorsBlockedFilesNum()),
-        blocked_file_name);
+        blocked_file_name, always_show_review);
     state = State::kError;
 
-    MaybeSendConnectorsBlockedFilesNotification();
+    MaybeSendConnectorsBlockedFilesNotification(
+        profile_, dialog_info_map, progress_->task_id, progress_->type);
   }
 
   CopyOrMoveIOTaskImpl::Complete(state);
@@ -409,28 +431,31 @@ bool CopyOrMoveIOTaskPolicyImpl::MaybeShowConnectorsWarning() {
         return delegate != nullptr;
       });
 
-  policy::FilesPolicyWarnSettings warn_settings;
+  // Warning mode is only available for the "dlp" tag (sensitive data), since
+  // "malware" results are always blocked.
+  auto dialog_info = policy::FilesPolicyDialog::Info::Warn(
+      policy::FilesPolicyDialog::BlockReason::
+          kEnterpriseConnectorsSensitiveData,
+      warning_files_paths);
   if (delegate_it != file_transfer_analysis_delegates_.end()) {
     auto* valid_delegate = delegate_it->get();
-    // Warning mode is only available for the "dlp" tag, since "malware" results
-    // are always blocked.
-    warn_settings.bypass_requires_justification =
+    dialog_info.SetBypassRequiresJustification(
         valid_delegate->BypassRequiresJustification(
-            enterprise_connectors::kDlpTag);
-    warn_settings.warning_message =
-        valid_delegate->GetCustomMessage(enterprise_connectors::kDlpTag);
-    warn_settings.learn_more_url =
-        valid_delegate->GetCustomLearnMoreUrl(enterprise_connectors::kDlpTag);
+            enterprise_connectors::kDlpTag));
+    dialog_info.SetMessage(
+        valid_delegate->GetCustomMessage(enterprise_connectors::kDlpTag));
+    dialog_info.SetLearnMoreURL(
+        valid_delegate->GetCustomLearnMoreUrl(enterprise_connectors::kDlpTag));
   }
 
   fpnm->ShowConnectorsWarning(
       base::BindOnce(&CopyOrMoveIOTaskPolicyImpl::OnConnectorsWarnDialogResult,
                      weak_ptr_factory_.GetWeakPtr()),
-      std::move(progress_->task_id), std::move(warning_files_paths),
+      std::move(progress_->task_id),
       progress_->type == file_manager::io_task::OperationType::kMove
           ? policy::dlp::FileAction::kMove
           : policy::dlp::FileAction::kCopy,
-      std::move(warn_settings));
+      std::move(dialog_info));
   return true;
 }
 
@@ -477,8 +502,8 @@ void CopyOrMoveIOTaskPolicyImpl::IsTransferAllowed(
 
   if (base::FeatureList::IsEnabled(
           features::kFileTransferEnterpriseConnectorUI)) {
-    auto& paths =
-        connectors_blocked_files_[policy::GetEnterpriseConnectorsBlockReason(
+    auto& paths = connectors_blocked_files_
+        [policy::files_dialog_utils::GetEnterpriseConnectorsBlockReason(
             result)];
     paths.push_back(source_url.path());
   }
@@ -488,8 +513,10 @@ void CopyOrMoveIOTaskPolicyImpl::IsTransferAllowed(
 
 void CopyOrMoveIOTaskPolicyImpl::OnCheckIfTransferAllowed(
     std::vector<storage::FileSystemURL> blocked_entries) {
-  // This function won't be reached if the user cancelled the DLP warning or the
-  // DLP warning timed out.
+  // Check if the task was cancelled by the user.
+  if (progress_->state == State::kCancelled) {
+    return;
+  }
 
   for (const auto& entry : blocked_entries) {
     dlp_blocked_files_.insert(entry.path());

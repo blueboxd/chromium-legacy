@@ -335,6 +335,11 @@ bool PrerenderHost::StartPrerendering() {
   if (!created_navigation_handle)
     return false;
 
+  if (attributes_.prerender_navigation_handle_callback) {
+    attributes_.prerender_navigation_handle_callback.value().Run(
+        *created_navigation_handle);
+  }
+
   // Even when LoadURLWithParams() returns a valid navigation handle, navigation
   // can fail during navigation start, for example, due to prerendering a
   // non-supported URL scheme that is filtered out in
@@ -507,39 +512,7 @@ std::unique_ptr<StoredPage> PrerenderHost::Activate(
   // RenderFrameHost.
   CHECK(!page->render_frame_host()->GetParentOrOuterDocumentOrEmbedder());
 
-  // TODO(crbug.com/1470312): Remove the following block (retaining the call to
-  // SetFrameTreeNode) once the issue is resolved.
-  {
-    UrlInfo url_info = navigation_request.GetUrlInfo();
-    std::string url_info_str =
-        "urlOrigin=[" +
-        url_info.url.DeprecatedGetOriginAsURL().possibly_invalid_spec() + "]";
-    if (url_info.is_sandboxed) {
-      url_info_str += " sandboxed";
-    }
-    if (url_info.is_coop_isolation_requested) {
-      url_info_str += " coop";
-    }
-    if (url_info.origin_isolation_request !=
-        UrlInfo::OriginIsolationRequest::kDefault) {
-      url_info_str += " oir=[" +
-                      base::NumberToString(url_info.origin_isolation_request) +
-                      "]";
-    }
-    if (url_info.origin) {
-      url_info_str += " origin=[" +
-                      url_info.origin.value().GetURL().possibly_invalid_spec() +
-                      "]";
-    }
-    SCOPED_CRASH_KEY_STRING256("Bug1470312", "url_info", url_info_str);
-    SCOPED_CRASH_KEY_BOOL(
-        "Bug1470312", "page_has_opener",
-        page->render_frame_host()->frame_tree_node()->opener() != nullptr);
-    SCOPED_CRASH_KEY_BOOL("Bug1470312", "target_has_opener",
-                          target_frame_tree.root()->opener() != nullptr);
-    page->render_frame_host()->SetFrameTreeNode(*(target_frame_tree.root()));
-  }
-
+  page->render_frame_host()->SetFrameTreeNode(*(target_frame_tree.root()));
   page->render_frame_host()->SetRenderFrameHostOwner(target_frame_tree.root());
 
   // Copy frame name into the replication state of the primary main frame to
@@ -958,6 +931,8 @@ PrerenderHost::LoadingOutcome PrerenderHost::WaitForLoadStopForTesting() {
       },
       loop.QuitClosure(), &status);
   loop.Run();
+  // Reset callback to null in case if loop is quit by timeout.
+  on_wait_loading_finished_.Reset();
   return status;
 }
 
@@ -1070,7 +1045,6 @@ void PrerenderHost::SetFailureReason(
     case PrerenderFinalStatus::kMemoryPressureOnTrigger:
     case PrerenderFinalStatus::kMemoryPressureAfterTriggered:
     case PrerenderFinalStatus::kPrerenderingDisabledByDevTools:
-    case PrerenderFinalStatus::kResourceLoadBlockedByClient:
     case PrerenderFinalStatus::kActivatedWithAuxiliaryBrowsingContexts:
     case PrerenderFinalStatus::kMaxNumOfRunningEagerPrerendersExceeded:
     case PrerenderFinalStatus::kMaxNumOfRunningNonEagerPrerendersExceeded:

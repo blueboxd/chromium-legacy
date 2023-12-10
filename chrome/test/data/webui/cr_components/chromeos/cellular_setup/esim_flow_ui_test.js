@@ -158,36 +158,25 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
   }
 
   /**
-   * Simulates navigating forward to trigger a profile install.
-   * Asserts that the button_bar and page state is enabled and not busy before
-   * navigating forward. Asserts that the button_bar and page state is
-   * disabled and busy during the install.
+   * Simulates navigating forward to trigger a profile install. Asserts that the
+   * button_bar and page state is enabled before navigating forward. Asserts
+   * that the button_bar and page state is disabled during the install.
    * @param {HTMLElement} page
-   * @param {ButtonState} previousBackButtonState
    */
-  async function navigateForwardForInstall(page, previousBackButtonState) {
-    const checkShowBusyState =
-        (page !== profileDiscoveryPage && page !== finalPage);
+  async function navigateForwardForInstall(page) {
     assertEquals(eSimPage.buttonState.forward, ButtonState.ENABLED);
-    assertEquals(eSimPage.buttonState.backward, previousBackButtonState);
-    if (checkShowBusyState) {
-      assertFalse(page.showBusy);
-    }
+    assertEquals(eSimPage.buttonState.backward, ButtonState.HIDDEN);
 
-    // If back button is hidden before installation began, the new back button
-    // state should also be hidden, if it was enabled new back button state
-    // should be disabled while installation is taking place.
-    let newBackButtonState = ButtonState.HIDDEN;
-    if (previousBackButtonState === ButtonState.ENABLED) {
-      newBackButtonState = ButtonState.DISABLED;
-    }
     eSimPage.navigateForward();
 
     assertEquals(eSimPage.buttonState.forward, ButtonState.DISABLED);
+    assertEquals(eSimPage.buttonState.backward, ButtonState.HIDDEN);
     assertEquals(eSimPage.buttonState.cancel, ButtonState.DISABLED);
-    assertEquals(eSimPage.buttonState.backward, newBackButtonState);
-    if (checkShowBusyState) {
-      assertTrue(page.showBusy);
+
+    if (page !== profileLoadingPage && page !== profileDiscoveryConsentPage &&
+        page !== finalPage) {
+      assertEquals(
+          ESimPageName.PROFILE_INSTALLING, eSimPage.selectedESimPageName_);
     }
 
     await flushAsync();
@@ -229,9 +218,9 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
    * @param {boolean} forwardButtonShouldBeEnabled
    * @param {ButtonState} backButtonState
    */
-  function assertButtonState(forwardButtonShouldBeEnabled, backButtonState) {
+  function assertButtonState(forwardButtonShouldBeEnabled) {
     const buttonState = eSimPage.buttonState;
-    assertEquals(buttonState.backward, backButtonState);
+    assertEquals(buttonState.backward, ButtonState.HIDDEN);
     assertEquals(buttonState.cancel, ButtonState.ENABLED);
     assertEquals(
         buttonState.forward,
@@ -261,8 +250,7 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
     assertSelectedPage(
         ESimPageName.PROFILE_DISCOVERY_CONSENT, profileDiscoveryConsentPage);
     assertButtonState(
-        /*forwardButtonShouldBeEnabled=*/ true,
-        /*backButtonState=*/ ButtonState.HIDDEN);
+        /*forwardButtonShouldBeEnabled=*/ true);
 
     // When the user clicks the "manually" link, they opt out of profile
     // discovery.
@@ -275,16 +263,19 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
   async function assertProfileLoadingPageAndContinue() {
     assertSelectedPage(ESimPageName.PROFILE_LOADING, profileLoadingPage);
     assertButtonState(
-        /*forwardButtonShouldBeEnabled=*/ false,
-        /*backButtonState=*/ ButtonState.HIDDEN);
+        /*forwardButtonShouldBeEnabled=*/ false);
+    assertEquals(eSimPage.header, eSimPage.i18n('profileLoadingPageTitle'));
+    assertEquals(
+        profileLoadingPage.loadingMessage,
+        eSimPage.i18n('profileLoadingPageMessage'));
     await flushAsync();
   }
 
   function assertProfileDiscoveryPage() {
     assertSelectedPage(ESimPageName.PROFILE_DISCOVERY, profileDiscoveryPage);
     assertButtonState(
-        /*forwardButtonShouldBeEnabled*/ true,
-        /*backButtonState*/ ButtonState.HIDDEN);
+        /*forwardButtonShouldBeEnabled*/ true);
+    assertEquals(eSimPage.header, eSimPage.i18n('profileDiscoveryPageTitle'));
   }
 
   function assertActivationCodePage(
@@ -294,7 +285,7 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
       assertEquals(activationCodePage.$$('#activationCode').value, '');
     }
     assertSelectedPage(ESimPageName.ACTIVATION_CODE, activationCodePage);
-    assertButtonState(forwardButtonShouldBeEnabled, backButtonState);
+    assertButtonState(forwardButtonShouldBeEnabled);
   }
 
   function assertConfirmationCodePage(
@@ -304,7 +295,8 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
       assertEquals(confirmationCodePage.$$('#confirmationCode').value, '');
     }
     assertSelectedPage(ESimPageName.CONFIRMATION_CODE, confirmationCodePage);
-    assertButtonState(forwardButtonShouldBeEnabled, backButtonState);
+    assertButtonState(forwardButtonShouldBeEnabled);
+    assertEquals(eSimPage.header, eSimPage.i18n('confimationCodePageTitle'));
   }
 
   test('Error fetching profiles', async function() {
@@ -524,6 +516,28 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
           /*backButtonState*/ ButtonState.ENABLED);
     }
 
+    function skipProfileList() {
+      profileDiscoveryPage.$$('#profileListMessage')
+          .shadowRoot.querySelector('a')
+          .click();
+
+      flushAsync();
+
+      // Should now be at the activation code page.
+      assertActivationCodePage(
+          /*forwardButtonShouldBeEnabled*/ false,
+          /*backButtonState*/ ButtonState.ENABLED);
+      assertFocusDefaultButtonEventFired();
+
+      // Insert an activation code.
+      activationCodePage.$$('#activationCode').value = ACTIVATION_CODE_VALID;
+      assertFalse(focusDefaultButtonEventFired);
+
+      assertActivationCodePage(
+          /*forwardButtonShouldBeEnabled*/ true,
+          /*backButtonState*/ ButtonState.ENABLED);
+    }
+
     [1, 2].forEach(profileCount => {
       test(`Skip discovery flow (${profileCount} profiles)`, async function() {
         await setupWithProfiles(profileCount);
@@ -540,6 +554,48 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
         endFlowAndVerifyResult(ESimSetupFlowResult.SUCCESS);
       });
     });
+
+    test('Skip profile list manually', async function() {
+      await setupWithProfiles(1);
+      skipProfileList();
+      await navigateForwardForInstall(
+          activationCodePage,
+          /*backButtonState*/ ButtonState.ENABLED);
+
+      // Should now be at the final page.
+      await assertFinalPageAndPressDoneButton(false);
+      endFlowAndVerifyResult(ESimSetupFlowResult.SUCCESS);
+    });
+
+    test(
+        'Skip profile list manually, after profile selection',
+        async function() {
+          await setupWithProfiles(1);
+
+          const getProfilesList = () =>
+              profileDiscoveryPage.shadowRoot.querySelector('iron-list');
+
+          assertTrue(!!getProfilesList());
+          assertEquals(getProfilesList().items.length, 1);
+          assertFalse(!!getProfilesList().selectedItem);
+
+          // Select a profile.
+          getProfilesList()
+              .querySelector('profile-discovery-list-item')
+              .click();
+
+          await flushAsync();
+          assertTrue(!!getProfilesList().selectedItem);
+
+          skipProfileList();
+          await navigateForwardForInstall(
+              activationCodePage,
+              /*backButtonState*/ ButtonState.ENABLED);
+
+          // Should now be at the final page.
+          await assertFinalPageAndPressDoneButton(false);
+          endFlowAndVerifyResult(ESimSetupFlowResult.SUCCESS);
+        });
 
     [1, 2].forEach(profileCount => {
       test(
@@ -718,36 +774,6 @@ suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
       });
     });
   });
-
-  test(
-      'Show cellular disconnect warning if connected to pSIM network',
-      async function() {
-        assertEquals(
-            profileLoadingPage.loadingMessage,
-            eSimPage.i18n('eSimProfileDetectMessage'));
-
-        const pSimNetwork =
-            OncMojo.getDefaultNetworkState(NetworkType.kCellular, 'cellular');
-        pSimNetwork.connectionState = ConnectionStateType.kConnected;
-        networkConfigRemote.addNetworksForTest([pSimNetwork]);
-        MojoInterfaceProviderImpl.getInstance().remote_ = networkConfigRemote;
-        await flushAsync();
-
-        assertEquals(
-            profileLoadingPage.loadingMessage,
-            eSimPage.i18n(
-                'eSimProfileDetectDuringActiveCellularConnectionMessage'));
-
-        // Disconnect from the network.
-        networkConfigRemote.removeNetworkForTest(pSimNetwork);
-        await flushAsync();
-
-        // The warning should still be showing.
-        assertEquals(
-            profileLoadingPage.loadingMessage,
-            eSimPage.i18n(
-                'eSimProfileDetectDuringActiveCellularConnectionMessage'));
-      });
 
   test('Show final page with error if no EUICC', async function() {
     eSimPage.initSubflow();

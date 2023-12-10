@@ -14,6 +14,7 @@
 #include "content/browser/preloading/prefetch/no_vary_search_helper.h"
 #include "content/browser/preloading/prefetch/prefetch_cookie_listener.h"
 #include "content/browser/preloading/prefetch/prefetch_document_manager.h"
+#include "content/browser/preloading/prefetch/prefetch_features.h"
 #include "content/browser/preloading/prefetch/prefetch_network_context.h"
 #include "content/browser/preloading/prefetch/prefetch_params.h"
 #include "content/browser/preloading/prefetch/prefetch_probe_result.h"
@@ -361,6 +362,7 @@ class PrefetchContainer::SinglePrefetch {
 
 PrefetchContainer::PrefetchContainer(
     const GlobalRenderFrameHostId& referring_render_frame_host_id,
+    const blink::DocumentToken& referring_document_token,
     const GURL& url,
     const PrefetchType& prefetch_type,
     const blink::mojom::Referrer& referrer,
@@ -368,6 +370,7 @@ PrefetchContainer::PrefetchContainer(
     blink::mojom::SpeculationInjectionWorld world,
     base::WeakPtr<PrefetchDocumentManager> prefetch_document_manager)
     : referring_render_frame_host_id_(referring_render_frame_host_id),
+      referring_document_token_(referring_document_token),
       prefetch_url_(url),
       prefetch_type_(prefetch_type),
       referrer_(referrer),
@@ -591,6 +594,7 @@ bool PrefetchContainer::IsInitialPrefetchEligible() const {
 
 void PrefetchContainer::AddRedirectHop(const net::RedirectInfo& redirect_info) {
   CHECK(resource_request_);
+  CHECK(base::FeatureList::IsEnabled(features::kPrefetchRedirects));
 
   // There are sometimes other headers that are modified during navigation
   // redirects; see |NavigationRequest::OnRedirectChecksComplete| (including
@@ -886,6 +890,18 @@ void PrefetchContainer::ResetBlockUntilHeadTimer() {
   block_until_head_timer_.reset();
 }
 
+bool PrefetchContainer::HasPrefetchBeenConsideredToServe() const {
+  // If `kPrefetchReusable` is enabled, we allow multiple navigations
+  // to use a PrefetchContainer, and thus skip the `navigated_to_` check.
+  if (base::FeatureList::IsEnabled(features::kPrefetchReusable)) {
+    return false;
+  }
+
+  // Otherwise, if this prefetch has been considered to serve for a navigation
+  // in the past, then it shouldn't be used for any future navigations.
+  return navigated_to_;
+}
+
 PrefetchContainer::ServableState PrefetchContainer::GetServableState(
     base::TimeDelta cacheable_duration) const {
   // Servable if the non-redirect response (either fully or partially
@@ -1070,13 +1086,6 @@ PrefetchStatus PrefetchContainer::Reader::GetPrefetchStatus() const {
   return GetPrefetchContainer()->GetPrefetchStatus();
 }
 
-net::SchemefulSite PrefetchContainer::GetSiteForPreviousRedirectHop(
-    const GURL& url) const {
-  const SinglePrefetch& previous_prefetch =
-      GetPreviousSinglePrefetchToPrefetch();
-  return net::SchemefulSite(previous_prefetch.url_);
-}
-
 bool PrefetchContainer::IsProxyRequiredForURL(const GURL& url) const {
   return !referring_origin_.IsSameOriginWith(url) &&
          prefetch_type_.IsProxyRequiredWhenCrossOrigin();
@@ -1173,7 +1182,14 @@ void PrefetchContainer::UpdateReferrer(
 std::ostream& operator<<(std::ostream& ostream,
                          const PrefetchContainer& prefetch_container) {
   return ostream << "PrefetchContainer[" << &prefetch_container
-                 << ", URL=" << prefetch_container.GetURL() << "]";
+                 << ", Key=" << prefetch_container.GetPrefetchContainerKey()
+                 << "]";
+}
+
+std::ostream& operator<<(std::ostream& ostream,
+                         const PrefetchContainer::Key& prefetch_key) {
+  return ostream << "(" << prefetch_key.first << ", " << prefetch_key.second
+                 << ")";
 }
 
 CONTENT_EXPORT std::ostream& operator<<(

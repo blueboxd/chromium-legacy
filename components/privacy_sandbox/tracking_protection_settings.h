@@ -25,7 +25,8 @@ class TrackingProtectionSettings
  public:
   explicit TrackingProtectionSettings(
       PrefService* pref_service,
-      TrackingProtectionOnboarding* onboarding_service);
+      TrackingProtectionOnboarding* onboarding_service,
+      bool is_incognito);
   ~TrackingProtectionSettings() override;
 
   virtual void AddObserver(TrackingProtectionSettingsObserver* observer);
@@ -41,7 +42,9 @@ class TrackingProtectionSettings
   bool AreAllThirdPartyCookiesBlocked() const;
 
   // From TrackingProtectionOnboarding::Observer
-  void OnTrackingProtectionOnboarded() override;
+  void OnTrackingProtectionOnboardingUpdated(
+      TrackingProtectionOnboarding::OnboardingStatus onboarding_status)
+      override;
 
  private:
   void OnEnterpriseControlForPrefsChanged();
@@ -55,6 +58,7 @@ class TrackingProtectionSettings
   PrefChangeRegistrar pref_change_registrar_;
   raw_ptr<PrefService> pref_service_;
   raw_ptr<TrackingProtectionOnboarding> onboarding_service_;
+  bool is_incognito_;
 
   base::ScopedObservation<TrackingProtectionOnboarding,
                           TrackingProtectionOnboarding::Observer>

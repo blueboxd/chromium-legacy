@@ -22,6 +22,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/format_macros.h"
 #include "base/functional/callback_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -569,8 +570,9 @@ void RunOfflineInstallWithManifest(UpdaterScope scope,
                                    const std::string& manifest_format,
                                    int string_resource_id_to_find,
                                    bool expect_success) {
-  constexpr wchar_t kTestAppID[] = L"{CDABE316-39CD-43BA-8440-6D1E0547AEE6}";
-  constexpr char kAppInstallerName[] = "TestAppSetup.exe";
+  static constexpr wchar_t kTestAppID[] =
+      L"{CDABE316-39CD-43BA-8440-6D1E0547AEE6}";
+  static constexpr char kAppInstallerName[] = "TestAppSetup.exe";
   const base::Version kTestPV("1.2.3.4");
   const std::wstring manifest_filename(L"OfflineManifest.gup");
   const std::wstring offline_dir_guid(
@@ -1350,8 +1352,9 @@ void ExpectLegacyProcessLauncherSucceeds(UpdaterScope scope) {
   ASSERT_HRESULT_SUCCEEDED(
       CreateLocalServer(__uuidof(ProcessLauncherClass), process_launcher));
 
-  constexpr wchar_t kAppId1[] = L"{831EF4D0-B729-4F61-AA34-91526481799D}";
-  constexpr wchar_t kCommandId[] = L"cmd";
+  static constexpr wchar_t kAppId1[] =
+      L"{831EF4D0-B729-4F61-AA34-91526481799D}";
+  static constexpr wchar_t kCommandId[] = L"cmd";
 
   // Succeeds when the command is present in the registry.
   base::ScopedTempDir temp_dir;
@@ -1636,7 +1639,10 @@ void SetupFakeLegacyUpdater(UpdaterScope scope) {
   const HKEY root = UpdaterScopeToHKeyRoot(scope);
 
   base::win::RegKey key;
-  ASSERT_EQ(key.Create(root, GetAppClientsKey(kLegacyGoogleUpdateAppID).c_str(),
+  ASSERT_EQ(key.Create(root,
+                       base::StrCat(
+                           {UPDATER_KEY L"Clients\\", kLegacyGoogleUpdateAppID})
+                           .c_str(),
                        Wow6432(KEY_WRITE)),
             ERROR_SUCCESS);
   ASSERT_EQ(key.WriteValue(kRegValuePV, L"1.1.1.1"), ERROR_SUCCESS);
@@ -1647,17 +1653,17 @@ void SetupFakeLegacyUpdater(UpdaterScope scope) {
   ASSERT_EQ(
       key.Create(
           root,
-          GetAppClientsKey(L"{8A69D345-D564-463C-AFF1-A69D9E530F96}").c_str(),
+          UPDATER_KEY L"\\Clients\\{8A69D345-D564-463C-AFF1-A69D9E530F96}",
           Wow6432(KEY_WRITE)),
       ERROR_SUCCESS);
   ASSERT_EQ(key.WriteValue(kRegValuePV, L"99.0.0.1"), ERROR_SUCCESS);
   key.Close();
 
   ASSERT_EQ(
-      key.Create(root,
-                 GetAppClientStateKey(L"{8A69D345-D564-463C-AFF1-A69D9E530F96}")
-                     .c_str(),
-                 Wow6432(KEY_WRITE)),
+      key.Create(
+          root,
+          UPDATER_KEY L"\\ClientState\\{8A69D345-D564-463C-AFF1-A69D9E530F96}",
+          Wow6432(KEY_WRITE)),
       ERROR_SUCCESS);
   ASSERT_EQ(key.WriteValue(kRegValueBrandCode, L"GGLS"), ERROR_SUCCESS);
   ASSERT_EQ(key.WriteValue(kRegValueAP, L"TestAP"), ERROR_SUCCESS);
@@ -1666,12 +1672,12 @@ void SetupFakeLegacyUpdater(UpdaterScope scope) {
   ASSERT_EQ(key.WriteValue(kRegValueDateOfLastRollcall, 5929), ERROR_SUCCESS);
   key.Close();
 
-  ASSERT_EQ(
-      key.Create(
-          root,
-          GetAppCohortKey(L"{8A69D345-D564-463C-AFF1-A69D9E530F96}").c_str(),
-          Wow6432(KEY_WRITE)),
-      ERROR_SUCCESS);
+  ASSERT_EQ(key.Create(
+                root,
+                UPDATER_KEY L"\\ClientState"
+                            L"\\{8A69D345-D564-463C-AFF1-A69D9E530F96}\\cohort",
+                Wow6432(KEY_WRITE)),
+            ERROR_SUCCESS);
   ASSERT_EQ(key.WriteValue(nullptr, L"TestCohort"), ERROR_SUCCESS);
   ASSERT_EQ(key.WriteValue(kRegValueCohortName, L"TestCohortName"),
             ERROR_SUCCESS);
@@ -1682,7 +1688,7 @@ void SetupFakeLegacyUpdater(UpdaterScope scope) {
   ASSERT_EQ(
       key.Create(
           root,
-          GetAppClientsKey(L"{fc54d8f9-b6fd-4274-92eb-c4335cd8761e}").c_str(),
+          UPDATER_KEY L"\\Clients\\{fc54d8f9-b6fd-4274-92eb-c4335cd8761e}",
           Wow6432(KEY_WRITE)),
       ERROR_SUCCESS);
   ASSERT_EQ(key.WriteValue(kRegValueBrandCode, L"GGLS"), ERROR_SUCCESS);
@@ -1894,28 +1900,28 @@ void UninstallApp(UpdaterScope scope, const std::string& app_id) {
 void RunOfflineInstall(UpdaterScope scope,
                        bool is_legacy_install,
                        bool is_silent_install) {
-  constexpr char kManifestFormat[] =
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-      "<response protocol=\"3.0\">\n"
-      "  <systemrequirements platform=\"win\"/>\n"
-      "  <app appid=\"%ls\" status=\"ok\">\n"
-      "    <updatecheck status=\"ok\">\n"
-      "      <manifest version=\"%s\">\n"
-      "        <packages>\n"
-      "          <package hash_sha256=\"sha256hash_foobar\"\n"
-      "            name=\"%s\" required=\"true\" size=\"%lld\"/>\n"
-      "        </packages>\n"
-      "        <actions>\n"
-      "          <action event=\"install\"\n"
-      "            run=\"%s\"/>\n"
-      "        </actions>\n"
-      "      </manifest>\n"
-      "    </updatecheck>\n"
-      "    <data index=\"verboselogging\" name=\"install\" status=\"ok\">\n"
-      "      {\"distribution\": { \"verbose_logging\": true}}\n"
-      "    </data>\n"
-      "  </app>\n"
-      "</response>\n";
+  static constexpr char kManifestFormat[] =
+      R"(<?xml version="1.0" encoding="UTF-8"?>
+<response protocol="3.0">
+  <systemrequirements platform="win"/>
+  <app appid="%ls" status="ok">
+    <updatecheck status="ok">
+      <manifest version="%s">
+        <packages>
+          <package hash_sha256="sha256hash_foobar"
+            name="%s" required="true" size="%)" PRId64 R"("/>
+        </packages>
+        <actions>
+          <action event="install"
+            run="%s"/>
+        </actions>
+      </manifest>
+    </updatecheck>
+    <data index="verboselogging" name="install" status="ok">
+      {"distribution": { "verbose_logging": true}}
+    </data>
+  </app>
+</response>)";
   RunOfflineInstallWithManifest(scope, is_legacy_install, is_silent_install,
                                 kManifestFormat,
                                 IDS_BUNDLE_INSTALLED_SUCCESSFULLY_BASE, true);
@@ -1924,28 +1930,28 @@ void RunOfflineInstall(UpdaterScope scope,
 void RunOfflineInstallOsNotSupported(UpdaterScope scope,
                                      bool is_legacy_install,
                                      bool is_silent_install) {
-  constexpr char kManifestFormat[] =
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-      "<response protocol=\"3.0\">\n"
-      "  <systemrequirements platform=\"minix\"/>\n"
-      "  <app appid=\"%ls\" status=\"ok\">\n"
-      "    <updatecheck status=\"ok\">\n"
-      "      <manifest version=\"%s\">\n"
-      "        <packages>\n"
-      "          <package hash_sha256=\"sha256hash_foobar\"\n"
-      "            name=\"%s\" required=\"true\" size=\"%lld\"/>\n"
-      "        </packages>\n"
-      "        <actions>\n"
-      "          <action event=\"install\"\n"
-      "            run=\"%s\"/>\n"
-      "        </actions>\n"
-      "      </manifest>\n"
-      "    </updatecheck>\n"
-      "    <data index=\"verboselogging\" name=\"install\" status=\"ok\">\n"
-      "      {\"distribution\": { \"verbose_logging\": true}}\n"
-      "    </data>\n"
-      "  </app>\n"
-      "</response>\n";
+  static constexpr char kManifestFormat[] =
+      R"(<?xml version="1.0" encoding="UTF-8"?>
+<response protocol="3.0">
+  <systemrequirements platform="minix"/>
+  <app appid="%ls" status="ok">
+    <updatecheck status="ok">
+      <manifest version="%s">
+        <packages>
+          <package hash_sha256="sha256hash_foobar"
+            name="%s" required="true" size="%)" PRId64 R"("/>
+        </packages>
+        <actions>
+          <action event="install"
+            run="%s"/>
+        </actions>
+      </manifest>
+    </updatecheck>
+    <data index="verboselogging" name="install" status="ok">
+      {"distribution": { "verbose_logging": true}}
+    </data>
+  </app>
+</response>)";
   RunOfflineInstallWithManifest(scope, is_legacy_install, is_silent_install,
                                 kManifestFormat,
                                 IDS_INSTALL_OS_NOT_SUPPORTED_BASE, false);

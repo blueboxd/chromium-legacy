@@ -157,7 +157,6 @@ public class TabSwitcherLayout extends Layout {
 
     private Handler mHandler;
     private Runnable mFinishedShowingRunnable;
-    private Runnable mFinishedHidingRunnable;
     private boolean mBackToStartSurface;
 
     private static class HideTabCallback {
@@ -312,7 +311,6 @@ public class TabSwitcherLayout extends Layout {
                 if (!ChromeFeatureList.sGridTabSwitcherAndroidAnimations.isEnabled()) {
                     expandTab(getThumbnailLocationOfCurrentTab());
                 }
-                runFinishedHidingRunnable();
             }
 
             private void resetLayoutTabs() {
@@ -392,7 +390,6 @@ public class TabSwitcherLayout extends Layout {
             // quickly.
             clearFinishedShowingRunnable();
             forceAnimationToFinish();
-            runFinishedHidingRunnable();
 
             // Keep the current tab in mLayoutTabs even if we are not going to show the shrinking
             // animation so that thumbnail taking is not blocked.
@@ -539,7 +536,6 @@ public class TabSwitcherLayout extends Layout {
             }
 
             clearFinishedShowingRunnable();
-            runFinishedHidingRunnable();
 
             if (!ChromeFeatureList.sGridTabSwitcherAndroidAnimations.isEnabled()) {
                 LayoutTab sourceLayoutTab =
@@ -652,15 +648,15 @@ public class TabSwitcherLayout extends Layout {
             boolean background, float originX, float originY) {
         super.onTabCreated(time, id, index, sourceId, newIsIncognito, background, originX, originY);
 
-        // Skip the new tab animation on tablets.
-        if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())
+        // Skip the new tab animation for background tabs and on tablet.
+        if (background
+                || DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())
                 || !ChromeFeatureList.sGridTabSwitcherAndroidAnimations.isEnabled()) {
             return;
         }
 
         clearFinishedShowingRunnable();
         forceAnimationToFinish();
-        runFinishedHidingRunnable();
 
         // If the dialog is visible or this isn't the active layout we shouldn't show the tab
         // creation animation.
@@ -693,23 +689,27 @@ public class TabSwitcherLayout extends Layout {
 
         mNewTabAnimation = new AnimatorSet();
         mNewTabAnimation.play(animator);
-        mNewTabAnimation.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                resetTabJavaView(fullscreenRect);
-                mTabJavaView.setVisibility(View.GONE);
-                postHiding();
-            }
-        });
+        mNewTabAnimation.addListener(
+                new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        mNewTabAnimation = null;
+                        postHiding();
+                        resetTabJavaView(fullscreenRect);
+                    }
+                });
 
         mRunningNewTabAnimation = true;
         mShowEmptyLayer = true;
         mTabJavaView.invalidate();
-        mTabJavaView.setOnNextLayoutRunnable(() -> {
-            mTabJavaView.setVisibility(View.VISIBLE);
-            mNewTabAnimation.start();
-            mController.hideTabSwitcherView(true);
-        });
+        mTabJavaView.setOnNextLayoutRunnable(
+                () -> {
+                    mTabJavaView.setVisibility(View.VISIBLE);
+                    if (mNewTabAnimation != null) {
+                        mNewTabAnimation.start();
+                    }
+                    mController.hideTabSwitcherView(true);
+                });
     }
 
     @Override
@@ -726,15 +726,18 @@ public class TabSwitcherLayout extends Layout {
         }
         mTabJavaView.runOnNextLayoutRunnable();
         if (mNewTabAnimation != null) {
-            if (mNewTabAnimation.isRunning()) {
+            if (mNewTabAnimation.isStarted()) {
                 mNewTabAnimation.end();
             }
+            mNewTabAnimation = null;
         }
         if (mTabToSwitcherAnimation != null) {
-            if (mTabToSwitcherAnimation.isRunning()) {
+            if (mTabToSwitcherAnimation.isStarted()) {
                 mTabToSwitcherAnimation.end();
             }
+            mTabToSwitcherAnimation = null;
         }
+        mTabJavaView.setVisibility(View.GONE);
     }
 
     /**
@@ -924,11 +927,14 @@ public class TabSwitcherLayout extends Layout {
         // animation starts otherwise it might jank.
         mAnimationTransitionType = TransitionType.SHRINK;
         mTabJavaView.invalidate();
-        mTabJavaView.setOnNextLayoutRunnable(() -> {
-            mTabJavaView.setVisibility(View.VISIBLE);
-            mAnimationTracker.onStart();
-            mTabToSwitcherAnimation.start();
-        });
+        mTabJavaView.setOnNextLayoutRunnable(
+                () -> {
+                    mTabJavaView.setVisibility(View.VISIBLE);
+                    mAnimationTracker.onStart();
+                    if (mTabToSwitcherAnimation != null) {
+                        mTabToSwitcherAnimation.start();
+                    }
+                });
     }
 
     /**
@@ -960,42 +966,43 @@ public class TabSwitcherLayout extends Layout {
 
         mTabToSwitcherAnimation = new AnimatorSet();
         mTabToSwitcherAnimation.play(animator);
-        mTabToSwitcherAnimation.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                mTabToSwitcherAnimation = null;
-                postHiding();
-                mAnimationTracker.onEnd();
-                mAnimationTransitionType = TransitionType.NONE;
-            }
-        });
+        mTabToSwitcherAnimation.addListener(
+                new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        mTabToSwitcherAnimation = null;
+                        postHiding();
+                        resetTabJavaView(fullscreenRect);
+                        mAnimationTracker.onEnd();
+                        mAnimationTransitionType = TransitionType.NONE;
+                    }
+                });
 
         final ConditionalAnimationRunner conditionalAnimationRunner =
-                new ConditionalAnimationRunner((bitmap, tabListCanShowQuickly) -> {
-                    mFinishedHidingRunnable = () -> {
-                        resetTabJavaView(fullscreenRect);
-                        mTabJavaView.setVisibility(View.GONE);
-                    };
+                new ConditionalAnimationRunner(
+                        (bitmap, tabListCanShowQuickly) -> {
+                            if (bitmap == null) {
+                                mTabToSwitcherAnimation = null;
+                                postHiding();
+                                resetTabJavaView(fullscreenRect);
+                                return;
+                            }
 
-                    if (bitmap == null) {
-                        postHiding();
-                        mTabToSwitcherAnimation = null;
-                        runFinishedHidingRunnable();
-                        return;
-                    }
+                            updateBackgroundColor(isIncognito());
+                            mTabJavaView.setImageBitmap(bitmap);
+                            mRectAnimator.setRect(source);
+                            mTabJavaView.setVisibility(View.VISIBLE);
 
-                    updateBackgroundColor(isIncognito());
-                    mTabJavaView.setImageBitmap(bitmap);
-                    mRectAnimator.setRect(source);
-                    mTabJavaView.setVisibility(View.VISIBLE);
-
-                    mAnimationTransitionType = TransitionType.EXPAND;
-                    mTabJavaView.invalidate();
-                    mTabJavaView.setOnNextLayoutRunnable(() -> {
-                        mAnimationTracker.onStart();
-                        mTabToSwitcherAnimation.start();
-                    });
-                });
+                            mAnimationTransitionType = TransitionType.EXPAND;
+                            mTabJavaView.invalidate();
+                            mTabJavaView.setOnNextLayoutRunnable(
+                                    () -> {
+                                        mAnimationTracker.onStart();
+                                        if (mTabToSwitcherAnimation != null) {
+                                            mTabToSwitcherAnimation.start();
+                                        }
+                                    });
+                        });
         // Quick and layout completed don't matter for expand, but set them so the animation will
         // trigger.
         conditionalAnimationRunner.setTabListCanShowQuickly(true);
@@ -1159,6 +1166,7 @@ public class TabSwitcherLayout extends Layout {
         mShowEmptyLayer = true;
         mIsAnimatingHide = false;
         mRunningNewTabAnimation = false;
+        mTabJavaView.setVisibility(View.GONE);
         doneHiding();
     }
 
@@ -1300,13 +1308,6 @@ public class TabSwitcherLayout extends Layout {
         if (mHideTabCallback != null) {
             mHideTabCallback.cancel();
             mHideTabCallback = null;
-        }
-    }
-
-    private void runFinishedHidingRunnable() {
-        if (mFinishedHidingRunnable != null) {
-            mFinishedHidingRunnable.run();
-            mFinishedHidingRunnable = null;
         }
     }
 

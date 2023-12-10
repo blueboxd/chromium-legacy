@@ -38,11 +38,11 @@ bool IsFedCmIdPRegistrationEnabled();
 // Whether the well-known enforcement is bypassed.
 bool IsFedCmWithoutWellKnownEnforcementEnabled();
 
-// Whether the Web Identity MDocs API is enabled.
-bool IsWebIdentityMDocsEnabled();
+// Whether the Web Identity Digital Credentials API is enabled.
+bool IsWebIdentityDigitalCredentialsEnabled();
 
-// Whether the AccountAutoSelected feature is enabled.
-bool IsFedCmAccountAutoSelectedFlagEnabled();
+// Whether the IdentityCredentialAutoSelected feature is enabled.
+bool IsFedCmIdentityCredentialAutoSelectedFlagEnabled();
 
 // Whether the HostedDomain feature is enabled.
 bool IsFedCmHostedDomainEnabled();

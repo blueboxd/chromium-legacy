@@ -83,6 +83,7 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_interactions_flow.h"
 #include "components/autofill/core/common/unique_ids.h"
+#include "components/compose/buildflags.h"
 #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -122,6 +123,7 @@
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/touch_to_fill/payments/android/touch_to_fill_credit_card_view_impl.h"
 #include "chrome/browser/ui/android/autofill/autofill_accessibility_utils.h"
+#include "chrome/browser/ui/android/autofill/autofill_cvc_save_message_delegate.h"
 #include "chrome/browser/ui/android/autofill/autofill_logger_android.h"
 #include "chrome/browser/ui/android/autofill/autofill_save_card_bottom_sheet_bridge.h"
 #include "chrome/browser/ui/android/autofill/autofill_save_card_delegate_android.h"
@@ -160,8 +162,9 @@
 #include "components/zoom/zoom_controller.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(ENABLE_COMPOSE)
 #include "chrome/browser/compose/chrome_compose_client.h"
+#include "components/compose/core/browser/compose_manager.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
@@ -262,10 +265,10 @@ IbanManager* ChromeAutofillClient::GetIbanManager() {
   return IbanManagerFactory::GetForProfile(profile);
 }
 
-compose::ComposeManager* ChromeAutofillClient::GetComposeManager() {
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS)
+AutofillComposeDelegate* ChromeAutofillClient::GetComposeDelegate() {
+#if BUILDFLAG(ENABLE_COMPOSE)
   auto* client = ChromeComposeClient::FromWebContents(web_contents());
-  return client ? &client->manager() : nullptr;
+  return client ? &client->GetManager() : nullptr;
 #else
   return nullptr;
 #endif
@@ -489,7 +492,7 @@ void ChromeAutofillClient::ShowAutofillSettings(PopupType popup_type) {
       NOTREACHED();
   }
 #else
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  Browser* browser = chrome::FindBrowserWithTab(web_contents());
   if (browser) {
     switch (popup_type) {
       case PopupType::kCreditCards:
@@ -657,24 +660,6 @@ void ChromeAutofillClient::HideVirtualCardEnrollBubbleAndIconIfVisible() {
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
-std::vector<std::string>
-ChromeAutofillClient::GetAllowedMerchantsForVirtualCards() {
-  if (!prefs::IsAutofillCreditCardEnabled(GetPrefs()))
-    return std::vector<std::string>();
-
-  return AutofillGstaticReader::GetInstance()
-      ->GetTokenizationMerchantAllowlist();
-}
-
-std::vector<std::string>
-ChromeAutofillClient::GetAllowedBinRangesForVirtualCards() {
-  if (!prefs::IsAutofillCreditCardEnabled(GetPrefs()))
-    return std::vector<std::string>();
-
-  return AutofillGstaticReader::GetInstance()
-      ->GetTokenizationBinRangesAllowlist();
-}
-
 void ChromeAutofillClient::ShowLocalCardMigrationDialog(
     base::OnceClosure show_migration_dialog_closure) {
   ManageMigrationUiController::CreateForWebContents(web_contents());
@@ -712,11 +697,23 @@ void ChromeAutofillClient::ShowLocalCardMigrationResults(
 void ChromeAutofillClient::ConfirmSaveIbanLocally(
     const Iban& iban,
     bool should_show_prompt,
-    LocalSaveIbanPromptCallback callback) {
+    SaveIbanPromptCallback callback) {
   // Do lazy initialization of IbanBubbleControllerImpl.
   IbanBubbleControllerImpl::CreateForWebContents(web_contents());
   IbanBubbleControllerImpl::FromWebContents(web_contents())
       ->OfferLocalSave(iban, should_show_prompt, std::move(callback));
+}
+
+void ChromeAutofillClient::ConfirmUploadIbanToCloud(
+    const Iban& iban,
+    const LegalMessageLines& legal_message_lines,
+    bool should_show_prompt,
+    SaveIbanPromptCallback callback) {
+  // Do lazy initialization of IbanBubbleControllerImpl.
+  IbanBubbleControllerImpl::CreateForWebContents(web_contents());
+  IbanBubbleControllerImpl::FromWebContents(web_contents())
+      ->OfferUploadSave(iban, legal_message_lines, should_show_prompt,
+                        std::move(callback));
 }
 
 void ChromeAutofillClient::ShowWebauthnOfferDialog(
@@ -795,6 +792,19 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
       AutofillSaveCardUiInfo::CreateForLocalSave(options, card);
   auto save_card_delegate = std::make_unique<AutofillSaveCardDelegateAndroid>(
       std::move(callback), options, web_contents());
+
+  // If a CVC is detected for an existing local card in the checkout form, the
+  // CVC save prompt is shown in a message.
+  if (options.card_save_type ==
+      ChromeAutofillClient::CardSaveType::kCvcSaveOnly) {
+    autofill_cvc_save_message_delegate_ =
+        std::make_unique<AutofillCvcSaveMessageDelegate>(web_contents());
+    autofill_cvc_save_message_delegate_->ShowMessage(
+        ui_info, std::move(save_card_delegate));
+    return;
+  }
+
+  // Saving a new local card (may include CVC) via a bottom sheet.
   if (base::FeatureList::IsEnabled(
           features::kAutofillEnablePaymentsAndroidBottomSheet)) {
     if (auto* bridge = GetOrCreateAutofillSaveCardBottomSheetBridge()) {
@@ -802,6 +812,9 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
     }
     return;
   }
+
+  // Saving a new local card (may include CVC) via an infobar when the bottom
+  // sheet feature is disabled.
   infobars::ContentInfoBarManager::FromWebContents(web_contents())
       ->AddInfoBar(CreateSaveCardInfoBarMobile(
           std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
@@ -822,12 +835,6 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
     UploadSaveCardPromptCallback callback) {
 #if BUILDFLAG(IS_ANDROID)
   DCHECK(options.show_prompt);
-  if (options.card_save_type == AutofillClient::CardSaveType::kCvcSaveOnly) {
-    // TODO (crbug.com/1485194): Create a Message UI for saving CVC to an
-    // existing server card.
-    NOTIMPLEMENTED();
-    return;
-  }
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(GetProfile());
   AccountInfo account_info = identity_manager->FindExtendedAccountInfo(
@@ -836,6 +843,19 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
       options, card, legal_message_lines, account_info);
   auto save_card_delegate = std::make_unique<AutofillSaveCardDelegateAndroid>(
       std::move(callback), options, web_contents());
+
+  // If a CVC is detected for an existing server card in the checkout form, the
+  // CVC save prompt is shown in a message.
+  if (options.card_save_type == AutofillClient::CardSaveType::kCvcSaveOnly) {
+      autofill_cvc_save_message_delegate_ =
+          std::make_unique<AutofillCvcSaveMessageDelegate>(web_contents());
+      autofill_cvc_save_message_delegate_->ShowMessage(
+          ui_info, std::move(save_card_delegate));
+      return;
+  }
+
+  // For new cards, the save card prompt is shown either in a bottom sheet or in
+  // an infobar.
   if (base::FeatureList::IsEnabled(
           features::kAutofillEnablePaymentsAndroidBottomSheet)) {
     if (auto* bridge = GetOrCreateAutofillSaveCardBottomSheetBridge()) {
@@ -1057,6 +1077,13 @@ ChromeAutofillClient::GetReopenPopupArgs(
       controller->GetSuggestions(), trigger_source);
 }
 
+std::optional<AutofillClient::PopupScreenLocation>
+ChromeAutofillClient::GetPopupScreenLocation() const {
+  return popup_controller_
+             ? popup_controller_->GetPopupScreenLocation()
+             : std::make_optional<AutofillClient::PopupScreenLocation>();
+}
+
 void ChromeAutofillClient::UpdatePopup(
     const std::vector<Suggestion>& suggestions,
     PopupType popup_type,
@@ -1194,11 +1221,11 @@ bool ChromeAutofillClient::IsPasswordManagerEnabled() {
 }
 
 void ChromeAutofillClient::DidFillOrPreviewForm(
-    mojom::AutofillActionPersistence action_persistence,
+    mojom::ActionPersistence action_persistence,
     AutofillTriggerSource trigger_source,
     bool is_refill) {
 #if BUILDFLAG(IS_ANDROID)
-  if (action_persistence == mojom::AutofillActionPersistence::kFill &&
+  if (action_persistence == mojom::ActionPersistence::kFill &&
       trigger_source == AutofillTriggerSource::kTouchToFillCreditCard &&
       !is_refill) {
     // TODO(crbug.com/1428492): Test that the message was announced.

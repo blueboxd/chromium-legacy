@@ -447,11 +447,11 @@ void GPUDevice::OnCreateComputePipelineAsyncCallback(
 }
 
 GPUAdapter* GPUDevice::adapter() const {
-  return adapter_;
+  return adapter_.Get();
 }
 
 GPUSupportedFeatures* GPUDevice::features() const {
-  return features_;
+  return features_.Get();
 }
 
 ScriptPromise GPUDevice::lost(ScriptState* script_state) {
@@ -459,7 +459,7 @@ ScriptPromise GPUDevice::lost(ScriptState* script_state) {
 }
 
 GPUQueue* GPUDevice::queue() {
-  return queue_;
+  return queue_.Get();
 }
 
 bool GPUDevice::destroyed() const {
@@ -608,14 +608,19 @@ GPURenderBundleEncoder* GPUDevice::createRenderBundleEncoder(
 
 GPUQuerySet* GPUDevice::createQuerySet(const GPUQuerySetDescriptor* descriptor,
                                        ExceptionState& exception_state) {
+  const V8GPUFeatureName::Enum kTimestampQuery =
+      V8GPUFeatureName::Enum::kTimestampQuery;
+  const V8GPUFeatureName::Enum kTimestampQueryInsidePasses =
+      V8GPUFeatureName::Enum::kChromiumExperimentalTimestampQueryInsidePasses;
   if (descriptor->type() == V8GPUQueryType::Enum::kTimestamp &&
-      !features_->has(V8GPUFeatureName::Enum::kTimestampQuery) &&
-      !features_->has(V8GPUFeatureName::Enum::kTimestampQueryInsidePasses)) {
-    exception_state.ThrowTypeError(String::Format(
-        "Use of 'timestamp' queries requires the 'timestamp-query' or "
-        "'timestamp-query-inside-passes' feature to "
-        "be enabled on %s.",
-        formattedLabel().c_str()));
+      !features_->has(kTimestampQuery) &&
+      !features_->has(kTimestampQueryInsidePasses)) {
+    exception_state.ThrowTypeError(
+        String::Format("Use of timestamp queries requires the '%s' or '%s' "
+                       "feature to be enabled on %s.",
+                       V8GPUFeatureName(kTimestampQuery).AsCStr(),
+                       V8GPUFeatureName(kTimestampQueryInsidePasses).AsCStr(),
+                       formattedLabel().c_str()));
     return nullptr;
   }
   return GPUQuerySet::Create(this, descriptor);

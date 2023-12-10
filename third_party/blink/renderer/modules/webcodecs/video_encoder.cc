@@ -13,7 +13,7 @@
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/numerics/clamped_math.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/common/trace_event_common.h"
@@ -68,7 +68,7 @@
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
-#include "third_party/blink/renderer/modules/webcodecs/allow_shared_buffer_source_util.h"
+#include "third_party/blink/renderer/modules/webcodecs/array_buffer_util.h"
 #include "third_party/blink/renderer/modules/webcodecs/background_readback.h"
 #include "third_party/blink/renderer/modules/webcodecs/codec_state_helper.h"
 #include "third_party/blink/renderer/modules/webcodecs/encoded_video_chunk.h"
@@ -249,6 +249,14 @@ VideoEncoderTraits::ParsedConfig* ParseConfigStatic(
       (config->latencyMode() == "quality")
           ? media::VideoEncoder::LatencyMode::Quality
           : media::VideoEncoder::LatencyMode::Realtime;
+
+  if (config->hasContentHint()) {
+    if (config->contentHint() == "detail" || config->contentHint() == "text") {
+      result->options.content_hint = media::VideoEncoder::ContentHint::Screen;
+    } else if (config->contentHint() == "motion") {
+      result->options.content_hint = media::VideoEncoder::ContentHint::Camera;
+    }
+  }
 
   if (config->hasBitrateMode() && config->bitrateMode() == "quantizer") {
     result->options.bitrate = media::Bitrate::ExternalRateControl();
@@ -497,6 +505,10 @@ VideoEncoderConfig* CopyConfig(
 
   if (config.hasLatencyMode())
     result->setLatencyMode(config.latencyMode());
+
+  if (config.hasContentHint()) {
+    result->setContentHint(config.contentHint());
+  }
 
   if (config.hasAvc() && config.avc()->hasFormat()) {
     auto* avc = AvcEncoderConfig::Create();
@@ -756,8 +768,8 @@ void VideoEncoder::ContinueConfigureWithGpuFactories(
 
       self->ReportError(error_message.c_str(), std::move(status));
     } else {
-      UMA_HISTOGRAM_ENUMERATION("Blink.WebCodecs.VideoEncoder.Codec", codec,
-                                media::VideoCodec::kMaxValue);
+      base::UmaHistogramEnumeration("Blink.WebCodecs.VideoEncoder.Codec",
+                                    codec);
     }
     req->EndTracing();
 

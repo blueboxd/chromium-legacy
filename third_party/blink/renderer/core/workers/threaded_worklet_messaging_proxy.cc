@@ -69,6 +69,15 @@ void ThreadedWorkletMessagingProxy::Initialize(
   // GlobalScopeCreationParams is reasonably filled in.
   if (!GetExecutionContext()) {
     CHECK(client_provided_global_scope_creation_params);
+
+    Vector<mojom::blink::OriginTrialFeature> inherited_trial_features =
+        std::move(client_provided_global_scope_creation_params
+                      ->origin_trial_features);
+
+    // Worklets can only be created in secure contexts.
+    // https://html.spec.whatwg.org/multipage/webappapis.html#secure-context
+    bool starter_secure_context = true;
+
     auto creation_params = std::make_unique<GlobalScopeCreationParams>(
         client_provided_global_scope_creation_params->script_url,
         /*script_type=*/mojom::blink::ScriptType::kModule, global_scope_name,
@@ -80,12 +89,11 @@ void ThreadedWorkletMessagingProxy::Initialize(
         /*response_content_security_policies=*/
         Vector<network::mojom::blink::ContentSecurityPolicyPtr>(),
         /*referrer_policy=*/network::mojom::ReferrerPolicy::kDefault,
-        /*starter_origin=*/nullptr,
-        /*starter_secure_context=*/false,
+        client_provided_global_scope_creation_params->starter_origin.get(),
+        starter_secure_context,
         /*starter_https_state=*/HttpsState::kNone,
         /*worker_clients=*/nullptr,
-        /*content_settings_client=*/nullptr,
-        /*inherited_trial_features=*/nullptr,
+        /*content_settings_client=*/nullptr, &inherited_trial_features,
         /*parent_devtools_token=*/
         client_provided_global_scope_creation_params->devtools_token,
         /*worker_settings=*/nullptr,

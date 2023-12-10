@@ -9,6 +9,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/functional/callback_forward.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
@@ -24,11 +25,14 @@
 #include "chrome/browser/web_applications/commands/uninstall_all_user_installed_web_apps_command.h"
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
+#include "chrome/browser/web_applications/isolated_web_apps/check_isolated_web_app_bundle_installability_command.h"
 #include "chrome/browser/web_applications/isolated_web_apps/install_isolated_web_app_command.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_prepare_and_store_update_command.h"
 #include "chrome/browser/web_applications/jobs/uninstall/uninstall_job.h"
 #include "chrome/browser/web_applications/web_app_install_params.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
+#include "components/webapps/common/web_app_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
@@ -49,8 +53,8 @@ class ScopedProfileKeepAlive;
 namespace web_app {
 
 struct IsolatedWebAppApplyUpdateCommandError;
-struct IsolatedWebAppUpdatePrepareAndStoreCommandError;
 class IsolatedWebAppUrlInfo;
+class SignedWebBundleMetadata;
 class WebApp;
 struct WebAppInstallInfo;
 class WebAppProvider;
@@ -93,6 +97,7 @@ class WebAppCommandScheduler {
   void FetchInstallInfoFromInstallUrl(
       webapps::ManifestId manifest_id,
       GURL install_url,
+      webapps::ManifestId parent_manifest_id,
       base::OnceCallback<void(std::unique_ptr<WebAppInstallInfo>)> callback);
 
   // Install with provided `WebAppInstallInfo` instead of fetching data from
@@ -191,13 +196,11 @@ class WebAppCommandScheduler {
   // the update succeeds, then the `update_info` is persisted in the
   // `IsolationData::pending_update_info()` of the IWA in the Web App database.
   virtual void PrepareAndStoreIsolatedWebAppUpdate(
-      const WebApp::IsolationData::PendingUpdateInfo& update_info,
+      const IsolatedWebAppUpdatePrepareAndStoreCommand::UpdateInfo& update_info,
       const IsolatedWebAppUrlInfo& url_info,
       std::unique_ptr<ScopedKeepAlive> optional_keep_alive,
       std::unique_ptr<ScopedProfileKeepAlive> optional_profile_keep_alive,
-      base::OnceCallback<
-          void(base::expected<void,
-                              IsolatedWebAppUpdatePrepareAndStoreCommandError>)>
+      base::OnceCallback<void(IsolatedWebAppUpdatePrepareAndStoreCommandResult)>
           callback,
       const base::Location& call_location = FROM_HERE);
 
@@ -213,6 +216,15 @@ class WebAppCommandScheduler {
       base::OnceCallback<
           void(base::expected<void, IsolatedWebAppApplyUpdateCommandError>)>
           callback,
+      const base::Location& call_location = FROM_HERE);
+
+  // Given the |bundle_metadata| of a Signed Web Bundle, schedules a command to
+  // check the installability of the bundle.
+  virtual void CheckIsolatedWebAppBundleInstallability(
+      const SignedWebBundleMetadata& bundle_metadata,
+      base::OnceCallback<void(CheckIsolatedWebAppBundleInstallabilityCommand::
+                                  InstallabilityCheckResult,
+                              absl::optional<base::Version>)> callback,
       const base::Location& call_location = FROM_HERE);
 
   // Computes the browsing data size of all installed Isolated Web Apps.
@@ -328,15 +340,23 @@ class WebAppCommandScheduler {
       std::unique_ptr<DescriptionType> lock_description,
       base::OnceCallback<void(LockType& lock)> callback,
       const base::Location& location = FROM_HERE);
-  // Same as above, but the callback can return a debug value to also be used in
-  // WebAppCommandManager logs, viewable from chrome://web-app-internals.
+  // Same as above, with the following diffences:
+  // - The callback now returns a debug value that is included in
+  //   WebAppCommandManager logs, viewable from chrome://web-app-internals.
+  // - An `on_complete` callback argument allows callers to specify a callback
+  //   to be called after the command has completed. This is because it can no
+  //   longer be simply chained on the command callback with `.Then`, as the
+  //   command callback now returns a value.
+  // Note: The `on_complete` callback will be called if the system has already
+  // been shut down.
   template <typename LockType,
             typename DescriptionType = typename LockType::LockDescription>
   void ScheduleCallbackWithLock(
       const std::string& operation_name,
       std::unique_ptr<DescriptionType> lock_description,
       base::OnceCallback<base::Value(LockType& lock)> callback,
-      const base::Location& location = FROM_HERE);
+      const base::Location& location = FROM_HERE,
+      base::OnceClosure on_complete = base::DoNothing());
 
   // Schedules to clear the browsing data for web app, given the inclusive time
   // range.
@@ -392,6 +412,17 @@ class WebAppCommandScheduler {
   // state some web apps have gotten into, see https://crbug.com/1427340.
   void ScheduleDedupeInstallUrls(base::OnceClosure callback,
                                  const base::Location& location = FROM_HERE);
+
+  // Sets the user preference for link capturing for the given app. If
+  // `set_to_preferred` is true, then links in the browser can be launched in
+  // the app corresponding to app_id, respecting the app's launch handler
+  // preferences. Additionally, if there are multiple apps within the same
+  // scope, this will reset the preference on those apps to false.
+  void SetAppCapturesSupportedLinksDisableOverlapping(
+      const webapps::AppId app_id,
+      bool set_to_preferred,
+      base::OnceClosure done,
+      const base::Location& location = FROM_HERE);
 
   // TODO(https://crbug.com/1298130): expose all commands for web app
   // operations.

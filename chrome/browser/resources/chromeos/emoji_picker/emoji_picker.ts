@@ -283,6 +283,7 @@ export class EmojiPicker extends PolymerElement {
 
     if (this.jellySupport) {
       await this.loadJellyColorStylesheet();
+      await this.loadJellyTypographyStylesheet();
     }
 
     // After initial data is loaded, if the GIF nudge is not shown before, show
@@ -303,6 +304,17 @@ export class EmojiPicker extends PolymerElement {
         '--emoji-spacing': constants.V2_5_EMOJI_SPACING_PX,
         '--emoji-group-spacing': constants.V2_5_EMOJI_GROUP_SPACING_PX,
         '--visual-content-width': constants.V2_5_VISUAL_CONTENT_WIDTH_PX,
+      });
+    }
+
+    if (this.jellySupport) {
+      this.updateStyles({
+        '--emoji-picker-top-padding':
+            constants.JELLY_EMOJI_PICKER_TOP_PADDING_PX,
+        '--emoji-picker-search-side-padding':
+            constants.JELLY_EMOJI_PICKER_SEARCH_SIDE_PADDING_PX,
+        // The keyline should expand all the way with jelly flag on.
+        '--emoji-picker-divider-inline-margin': 0,
       });
     }
 
@@ -361,6 +373,21 @@ export class EmojiPicker extends PolymerElement {
       const linkElement = document.createElement('link');
       linkElement.rel = 'stylesheet';
       linkElement.href = 'chrome://theme/colors.css?sets=sys';
+      linkElement.addEventListener('load', () => {
+        ColorChangeUpdater.forDocument().start();
+        resolve();
+      });
+      document.head.appendChild(linkElement);
+    });
+  }
+
+  // TODO(b/263055563): Move this stylesheet to `index.html` and drop the legacy
+  // stylesheet once Jelly is fully launched in Emoji Picker.
+  private loadJellyTypographyStylesheet(): Promise<void> {
+    return new Promise((resolve) => {
+      const linkElement = document.createElement('link');
+      linkElement.rel = 'stylesheet';
+      linkElement.href = 'chrome://theme/typography.css';
       linkElement.addEventListener('load', () => {
         ColorChangeUpdater.forDocument().start();
         resolve();

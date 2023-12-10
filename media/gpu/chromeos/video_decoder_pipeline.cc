@@ -365,13 +365,6 @@ VideoDecoderPipeline::GetSupportedConfigs(
     });
   }
 
-  if (workarounds.disable_accelerated_hevc_decode) {
-    base::EraseIf(configs.value(), [](const auto& config) {
-      return config.profile_min >= HEVCPROFILE_MIN &&
-             config.profile_max <= HEVCPROFILE_MAX;
-    });
-  }
-
   return configs;
 }
 
@@ -386,7 +379,8 @@ VideoDecoderPipeline::VideoDecoderPipeline(
     bool uses_oop_video_decoder)
     : gpu_workarounds_(gpu_workarounds),
       client_task_runner_(std::move(client_task_runner)),
-      decoder_task_runner_(GetDecoderTaskRunner()),
+      decoder_task_runner_(uses_oop_video_decoder ? client_task_runner_
+                                                  : GetDecoderTaskRunner()),
       main_frame_pool_(std::move(frame_pool)),
       frame_converter_(std::move(frame_converter)),
       renderable_fourccs_(std::move(renderable_fourccs)),
@@ -1032,6 +1026,20 @@ VideoDecoderPipeline::PickDecoderOutputFormat(
         break;
     }
   }
+
+  // TODO(jkardatzke): Remove this when we have protected content rendering on
+  // ARM working. This is temporary so that video will actually decode on HWDRM
+  // ARM devices during development (even though it won't be visible).
+#if BUILDFLAG(USE_V4L2_CODEC) && BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
+  if (use_protected) {
+    for (const auto& candidate : candidates) {
+      if (candidate.fourcc == Fourcc(Fourcc::MM21)) {
+        LOG(WARNING) << "Forcing MM21 format for V4L2 protected content";
+        viable_candidate = candidate;
+      }
+    }
+  }
+#endif
 
 #if BUILDFLAG(IS_LINUX) && BUILDFLAG(USE_VAAPI)
   // Linux should always use a custom allocator (to allocate buffers using

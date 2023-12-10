@@ -160,7 +160,7 @@ int GetFieldTypeGroupPredictionQualityMetric(
   DCHECK_LT(metric, AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
 
   FieldTypeGroupForMetrics group = GROUP_AMBIGUOUS;
-  switch (AutofillType(field_type).group()) {
+  switch (GroupTypeOfServerFieldType(field_type)) {
     case FieldTypeGroup::kNoGroup:
       group = GROUP_AMBIGUOUS;
       break;
@@ -178,7 +178,7 @@ int GetFieldTypeGroupPredictionQualityMetric(
       break;
 
     case FieldTypeGroup::kAddress:
-      switch (AutofillType(field_type).GetStorableType()) {
+      switch (field_type) {
         case ADDRESS_HOME_LINE1:
           group = GROUP_ADDRESS_LINE_1;
           break;
@@ -830,18 +830,6 @@ void AutofillMetrics::LogCreditCardInfoBarMetric(
     base::UmaHistogramEnumeration("Autofill.CreditCardInfoBar" + destination +
                                       ".RequestingExpirationDate",
                                   metric, NUM_INFO_BAR_METRICS);
-  }
-
-  if (options.from_dynamic_change_form) {
-    base::UmaHistogramEnumeration(
-        "Autofill.CreditCardInfoBar" + destination + ".FromDynamicChangeForm",
-        metric, NUM_INFO_BAR_METRICS);
-  }
-
-  if (options.has_non_focusable_field) {
-    base::UmaHistogramEnumeration(
-        "Autofill.CreditCardInfoBar" + destination + ".FromNonFocusableForm",
-        metric, NUM_INFO_BAR_METRICS);
   }
 
   if (options.has_multiple_legal_lines) {
@@ -2061,14 +2049,6 @@ void AutofillMetrics::LogNumberOfProfilesRemovedDuringDedupe(
 // static
 void AutofillMetrics::LogIsQueriedCreditCardFormSecure(bool is_secure) {
   UMA_HISTOGRAM_BOOLEAN("Autofill.QueriedCreditCardFormIsSecure", is_secure);
-}
-
-// static
-void AutofillMetrics::LogWalletAddressConversionType(
-    WalletAddressConversionType type) {
-  DCHECK_LT(type, NUM_CONVERTED_ADDRESS_CONVERSION_TYPES);
-  UMA_HISTOGRAM_ENUMERATION("Autofill.WalletAddressConversionType", type,
-                            NUM_CONVERTED_ADDRESS_CONVERSION_TYPES);
 }
 
 // static

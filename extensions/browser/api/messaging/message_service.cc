@@ -15,8 +15,6 @@
 #include "base/functional/callback.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
-#include "base/metrics/field_trial_params.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/back_forward_cache/back_forward_cache_disable.h"
@@ -31,7 +29,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/messaging/channel_endpoint.h"
 #include "extensions/browser/api/messaging/extension_message_port.h"
@@ -48,7 +45,6 @@
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/browser/process_manager.h"
-#include "extensions/common/api/messaging/channel_type.h"
 #include "extensions/common/api/messaging/messaging_endpoint.h"
 #include "extensions/common/api/messaging/port_context.h"
 #include "extensions/common/extension.h"
@@ -56,6 +52,7 @@
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/externally_connectable.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
+#include "extensions/common/mojom/message_port.mojom-shared.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "url/gurl.h"
 
@@ -118,21 +115,12 @@ const Extension* GetExtensionForNativeAppChannel(
       source_render_frame_host, true);
 }
 
-bool IsExtensionMessageSupportedInBackForwardCache() {
-  if (!content::BackForwardCache::IsBackForwardCacheFeatureEnabled())
-    return false;
-  static const bool is_extension_message_supported =
-      base::FeatureParam<bool>(&features::kBackForwardCache,
-                               "extension_message_supported", true)
-          .Get();
-  return is_extension_message_supported;
-}
-
 // Disables the back forward for `host` if the current configuration does not
 // support extension messaging APIs.
 void MaybeDisableBackForwardCacheForMessaging(content::RenderFrameHost* host) {
-  if (!host || IsExtensionMessageSupportedInBackForwardCache())
+  if (!host || content::BackForwardCache::IsBackForwardCacheFeatureEnabled()) {
     return;
+  }
   content::BackForwardCache::DisableForRenderFrameHost(
       host, back_forward_cache::DisabledReason(
                 back_forward_cache::DisabledReasonId::kExtensionMessaging));
@@ -209,7 +197,7 @@ struct MessageService::OpenChannelParams {
   std::string target_extension_id;
   GURL source_url;
   absl::optional<url::Origin> source_origin;
-  ChannelType channel_type;
+  mojom::ChannelType channel_type;
   std::string channel_name;
   bool include_guest_process_info;
 
@@ -224,7 +212,7 @@ struct MessageService::OpenChannelParams {
                     const std::string& target_extension_id,
                     const GURL& source_url,
                     absl::optional<url::Origin> source_origin,
-                    ChannelType channel_type,
+                    mojom::ChannelType channel_type,
                     const std::string& channel_name,
                     bool include_guest_process_info)
       : source(source),
@@ -245,8 +233,8 @@ struct MessageService::OpenChannelParams {
   OpenChannelParams& operator=(const OpenChannelParams&) = delete;
 
   bool is_onetime_channel() const {
-    return channel_type == ChannelType::kSendMessage ||
-           channel_type == ChannelType::kSendRequest;
+    return channel_type == mojom::ChannelType::kSendMessage ||
+           channel_type == mojom::ChannelType::kSendRequest;
   }
 };
 
@@ -285,7 +273,7 @@ void MessageService::OpenChannelToExtension(
     std::unique_ptr<MessagePort> opener_port,
     const std::string& target_extension_id,
     const GURL& source_url,
-    ChannelType channel_type,
+    mojom::ChannelType channel_type,
     const std::string& channel_name) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(source_port_id.is_opener);
@@ -465,7 +453,7 @@ void MessageService::OpenChannelToExtension(
   OnOpenChannelAllowed(std::move(params), true);
 }
 
-void MessageService::OpenChannelToNativeApp(
+void MessageService::OpenChannelToNativeAppImpl(
     const ChannelEndpoint& source,
     const PortId& source_port_id,
     const std::string& native_app_name) {
@@ -549,14 +537,14 @@ void MessageService::OpenChannelToNativeApp(
         // BUILDFLAG(IS_CHROMEOS))
 }
 
-void MessageService::OpenChannelToTab(const ChannelEndpoint& source,
-                                      const PortId& source_port_id,
-                                      int tab_id,
-                                      int frame_id,
-                                      const std::string& document_id,
-                                      const std::string& extension_id,
-                                      ChannelType channel_type,
-                                      const std::string& channel_name) {
+void MessageService::OpenChannelToTabImpl(const ChannelEndpoint& source,
+                                          const PortId& source_port_id,
+                                          int tab_id,
+                                          int frame_id,
+                                          const std::string& document_id,
+                                          const std::string& extension_id,
+                                          mojom::ChannelType channel_type,
+                                          const std::string& channel_name) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_GE(frame_id, -1);
   DCHECK(source_port_id.is_opener);
@@ -777,9 +765,9 @@ void MessageService::AddChannel(std::unique_ptr<MessageChannel> channel,
   pending_lazy_context_channels_.erase(channel_id);
 }
 
-void MessageService::OpenPort(const PortId& port_id,
-                              int process_id,
-                              const PortContext& port_context) {
+void MessageService::OpenPortImpl(const PortId& port_id,
+                                  int process_id,
+                                  const PortContext& port_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!port_id.is_opener);
 
@@ -790,19 +778,6 @@ void MessageService::OpenPort(const PortId& port_id,
 
   it->second->receiver->OpenPort(process_id, port_context);
 }
-
-void MessageService::ClosePort(const PortId& port_id,
-                               int process_id,
-                               const PortContext& context,
-                               bool force_close) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  int routing_id = context.frame ? context.frame->routing_id : MSG_ROUTING_NONE;
-  int worker_thread_id =
-      context.worker ? context.worker->thread_id : kMainThreadId;
-  ClosePortImpl(port_id, process_id, routing_id, worker_thread_id, force_close,
-                std::string());
-}
-
 void MessageService::CloseChannel(const PortId& port_id,
                                   const std::string& error_message) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -947,9 +922,7 @@ void MessageService::DispatchMessage(const PortId& source_port_id,
   dest_port->DispatchOnMessage(message);
 }
 
-void MessageService::NotifyResponsePending(const PortId& port_id,
-                                           int process_id,
-                                           const PortContext& port_context) {
+void MessageService::NotifyResponsePending(const PortId& port_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!port_id.is_opener);
 

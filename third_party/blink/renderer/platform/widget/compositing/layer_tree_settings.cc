@@ -27,6 +27,7 @@
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/native_theme/native_theme_features.h"
@@ -95,8 +96,17 @@ bool IsSmallScreen(const gfx::Size& size) {
 #endif
 
 std::pair<int, int> GetTilingInterestAreaSizes() {
-  int interest_area_size_in_pixels =
-      ::features::kInterestAreaSizeInPixels.Get();
+  int interest_area_size_in_pixels;
+
+  if (base::FeatureList::IsEnabled(::features::kSmallerInterestArea) &&
+      ::features::kInterestAreaSizeInPixels.Get() ==
+          ::features::kInterestAreaSizeInPixels.default_value) {
+    interest_area_size_in_pixels =
+        ::features::kDefaultInterestAreaSizeInPixelsWhenEnabled;
+  } else {
+    interest_area_size_in_pixels = ::features::kInterestAreaSizeInPixels.Get();
+  }
+
   if (interest_area_size_in_pixels ==
       ::features::kInterestAreaSizeInPixels.default_value) {
     return {
@@ -318,9 +328,6 @@ cc::LayerTreeSettings GenerateLayerTreeSettings(
   settings.percent_based_scrolling =
       ::features::IsPercentBasedScrollingEnabled();
 
-  settings.resource_settings.use_r16_texture =
-      base::FeatureList::IsEnabled(media::kUseR16Texture);
-
   settings.commit_to_active_tree = !is_threaded;
   settings.is_for_embedded_frame = is_for_embedded_frame;
   settings.is_for_scalable_page = is_for_scalable_page;
@@ -449,7 +456,7 @@ cc::LayerTreeSettings GenerateLayerTreeSettings(
   // Partial raster is not supported with RawDraw
   settings.use_partial_raster &= !::features::IsUsingRawDraw();
   settings.enable_elastic_overscroll = platform->IsElasticOverscrollEnabled();
-  settings.resource_settings.use_gpu_memory_buffer_resources =
+  settings.use_gpu_memory_buffer_resources =
       cmd.HasSwitch(switches::kEnableGpuMemoryBufferCompositorResources);
   settings.use_painted_device_scale_factor = true;
 
@@ -601,6 +608,13 @@ cc::LayerTreeSettings GenerateLayerTreeSettings(
         ui::kOverlayScrollbarThinningDuration;
     settings.scrollbar_flash_after_any_scroll_update =
         !settings.enable_fluent_overlay_scrollbar;
+    // Avoid animating in web tests to improve reliability.
+    if (settings.enable_fluent_overlay_scrollbar &&
+        WebTestSupport::IsRunningWebTest()) {
+      settings.scrollbar_thinning_duration = base::Milliseconds(0);
+      settings.scrollbar_fade_delay = base::Milliseconds(0);
+      settings.scrollbar_fade_duration = base::Milliseconds(0);
+    }
   }
 #endif  // BUILDFLAG(IS_ANDROID)
 

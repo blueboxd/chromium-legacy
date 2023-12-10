@@ -5,17 +5,17 @@
 #ifndef CONTENT_BROWSER_LOADER_KEEP_ALIVE_URL_LOADER_SERVICE_H_
 #define CONTENT_BROWSER_LOADER_KEEP_ALIVE_URL_LOADER_SERVICE_H_
 
-#include <map>
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
 #include "content/browser/loader/keep_alive_url_loader.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
+#include "third_party/blink/public/mojom/loader/fetch_later.mojom.h"
 
 namespace content {
 
@@ -74,6 +74,16 @@ class CONTENT_EXPORT KeepAliveURLLoaderService {
           subresource_proxying_factory_bundle,
       scoped_refptr<PolicyContainerHost> policy_container_host);
 
+  // Binds the pending FetchLaterLoaderFactory `receiver` with this service,
+  // which uses `factory` to load FetchLater URL requests.
+  // See also `BindFactory()` for other parameters.
+  void BindFetchLaterLoaderFactory(
+      mojo::PendingAssociatedReceiver<blink::mojom::FetchLaterLoaderFactory>
+          receiver,
+      scoped_refptr<network::SharedURLLoaderFactory>
+          subresource_proxying_factory_bundle,
+      scoped_refptr<PolicyContainerHost> policy_container_host);
+
   // For testing only:
   size_t NumLoadersForTesting() const;
   size_t NumDisconnectedLoadersForTesting() const;
@@ -84,7 +94,14 @@ class CONTENT_EXPORT KeepAliveURLLoaderService {
           url_loader_throttles_getter_for_testing);
 
  private:
-  class KeepAliveURLLoaderFactory;
+  template <typename Interface,
+            template <typename>
+            class PendingReceiverType,
+            template <typename, typename>
+            class ReceiverSetType>
+  class KeepAliveURLLoaderFactoriesBase;
+  class KeepAliveURLLoaderFactories;
+  class FetchLaterLoaderFactories;
 
   // Handles every disconnection notification for `loader_receivers_`.
   void OnLoaderDisconnected();
@@ -96,22 +113,12 @@ class CONTENT_EXPORT KeepAliveURLLoaderService {
   // The browsing session that owns this instance of the service.
   const raw_ptr<BrowserContext> browser_context_;
 
-  // Many-to-one mojo receiver of URLLoaderFactory.
-  std::unique_ptr<KeepAliveURLLoaderFactory> factory_;
+  // Many-to-one mojo receiver of URLLoaderFactory for Fetch keepalive requests.
+  std::unique_ptr<KeepAliveURLLoaderFactories> url_loader_factories_;
 
-  // Holds all the KeepAliveURLLoader connected with remotes in renderers.
-  // Each of them corresponds to the handling of one pending keepalive request.
-  // Once a receiver is disconnected, its context should be moved to
-  // `disconnected_loaders_`.
-  mojo::ReceiverSet<network::mojom::URLLoader,
-                    std::unique_ptr<KeepAliveURLLoader>>
-      loader_receivers_;
-
-  // Holds all the KeepAliveURLLoader that has been disconnected from renderers.
-  // They should be kept alive until the request completes or fails.
-  // The key is the mojo::ReceiverId assigned by `loader_receivers_`.
-  std::map<mojo::ReceiverId, std::unique_ptr<KeepAliveURLLoader>>
-      disconnected_loaders_;
+  // Many-to-one mojo receiver of FetchLaterLoaderFactory for FetchLater
+  // keepalive requests.
+  std::unique_ptr<FetchLaterLoaderFactories> fetch_later_loader_factories_;
 
   // For testing only:
   // Not owned.

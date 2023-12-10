@@ -100,6 +100,11 @@ class FormSubmission final : public GarbageCollected<FormSubmission> {
     String accept_charset_;
   };
 
+  // Create FormSubmission
+  //
+  // This returns nullptr if form submission is not allowed for the given
+  // arguments. For example, if navigation policy for the event is
+  // `kNavigationPolicyLinkPreview`.
   static FormSubmission* Create(HTMLFormElement*,
                                 const Attributes&,
                                 const Event*,
@@ -139,7 +144,7 @@ class FormSubmission final : public GarbageCollected<FormSubmission> {
 
   const String& Result() const { return result_; }
 
-  Frame* TargetFrame() const { return target_frame_; }
+  Frame* TargetFrame() const { return target_frame_.Get(); }
 
  private:
   // FIXME: Hold an instance of Attributes instead of individual members.

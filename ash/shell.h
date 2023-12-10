@@ -12,7 +12,6 @@
 #include "ash/accessibility/accessibility_event_handler_manager.h"
 #include "ash/ash_export.h"
 #include "ash/constants/ash_features.h"
-#include "ash/game_dashboard/game_dashboard_controller.h"
 #include "ash/in_session_auth/in_session_auth_dialog_controller_impl.h"
 #include "ash/metrics/login_unlock_throughput_recorder.h"
 #include "ash/public/cpp/session/session_observer.h"
@@ -155,6 +154,7 @@ class FocusCycler;
 class FocusModeController;
 class FrameThrottlingController;
 class FullscreenMagnifierController;
+class GameDashboardController;
 class GeolocationController;
 class GlanceablesController;
 class ColorEnhancementController;
@@ -211,7 +211,6 @@ class ProjectingObserver;
 class ProjectorControllerImpl;
 class RasterScaleController;
 class RgbKeyboardManager;
-class RefreshRateThrottleController;
 class ResizeShadowController;
 class ResolutionNotificationController;
 class RootWindowController;
@@ -267,10 +266,6 @@ class DiagnosticsLogController;
 namespace federated {
 class FederatedServiceControllerImpl;
 }  // namespace federated
-
-namespace game_dashboard {
-class GameDashboardController;
-}  // namespace game_dashboard
 
 namespace quick_pair {
 class Mediator;
@@ -482,10 +477,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   DisplayPrefs* display_prefs() { return display_prefs_.get(); }
   DisplayConfigurationController* display_configuration_controller() {
     return display_configuration_controller_.get();
-  }
-
-  RefreshRateThrottleController* refresh_rate_throttle_controller() {
-    return refresh_rate_throttle_controller_.get();
   }
 
   DisplayAlignmentController* display_alignment_controller() {
@@ -761,6 +752,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   WindowCycleController* window_cycle_controller() {
     return window_cycle_controller_.get();
+  }
+  WindowRestoreController* window_restore_controller() {
+    return window_restore_controller_.get();
   }
   OverviewController* overview_controller() {
     return overview_controller_.get();
@@ -1102,8 +1096,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<DisplayConfigurationController>
       display_configuration_controller_;
   std::unique_ptr<DisplayConfigurationObserver> display_configuration_observer_;
-  std::unique_ptr<RefreshRateThrottleController>
-      refresh_rate_throttle_controller_;
 
   std::unique_ptr<ScreenPinningController> screen_pinning_controller_;
 

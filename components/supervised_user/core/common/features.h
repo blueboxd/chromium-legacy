@@ -13,10 +13,9 @@ namespace supervised_user {
 
 // Experiment to enable kid-friendly content feed.
 BASE_DECLARE_FEATURE(kKidFriendlyContentFeed);
+extern const base::FeatureParam<std::string> kKidFriendlyContentFeedEndpoint;
 
 BASE_DECLARE_FEATURE(kLocalWebApprovals);
-extern const char kLocalWebApprovalsPreferredButtonLocal[];
-extern const char kLocalWebApprovalsPreferredButtonRemote[];
 
 // Flags related to supervision features on Desktop and iOS platforms.
 BASE_DECLARE_FEATURE(kFilterWebsitesForSupervisedUsersOnDesktopAndIOS);
@@ -29,8 +28,6 @@ BASE_DECLARE_FEATURE(kClearingCookiesKeepsSupervisedUsersSignedIn);
 // Returns whether banner can be displayed to the user after website filtering
 // is enabled
 bool CanDisplayFirstTimeInterstitialBanner();
-
-BASE_DECLARE_FEATURE(kLocalExtensionApprovalsV2);
 
 // Experiments to enable proto fetchers
 BASE_DECLARE_FEATURE(kEnableProtoApiForClassifyUrl);
@@ -54,20 +51,12 @@ BASE_DECLARE_FEATURE(kCustomWebSignInInterceptForSupervisedUsers);
 // filter interstitial is enabled.
 bool IsLocalWebApprovalsEnabled();
 
-// Returns whether the local parent approval should be displayed as the
-// preferred option.
-// This should only be called if IsLocalWebApprovalsEnabled() returns true.
-bool IsLocalWebApprovalThePreferredButton();
-
 // Returns whether the ClassifyUrl call uses proto apis.
 bool IsProtoApiForClassifyUrlEnabled();
 
 // Decides whether to use built-in configurable mechanism, instead of manually
 // programmed.
 bool IsRetryMechanismForListFamilyMembersEnabled();
-
-// Returns whether the new local extension approval experience is enabled.
-bool IsLocalExtensionApprovalsV2Enabled();
 
 // Returns true if child account supervision features should be enabled for this
 // client.

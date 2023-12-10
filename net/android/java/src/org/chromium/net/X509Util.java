@@ -13,11 +13,11 @@ import android.os.Build;
 import android.security.KeyChain;
 import android.util.Pair;
 
+import org.jni_zero.JNINamespace;
+import org.jni_zero.NativeMethods;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeMethods;
-import org.chromium.build.annotations.MainDex;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -50,7 +50,6 @@ import javax.security.auth.x500.X500Principal;
  * Utility functions for interacting with Android's X.509 certificates.
  */
 @JNINamespace("net")
-@MainDex
 public class X509Util {
     private static final String TAG = "X509Util";
 

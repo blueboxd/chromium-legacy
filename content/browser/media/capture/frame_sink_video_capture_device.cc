@@ -398,12 +398,13 @@ void FrameSinkVideoCaptureDevice::Resume() {
 void FrameSinkVideoCaptureDevice::Crop(
     const base::Token& crop_id,
     uint32_t crop_version,
-    base::OnceCallback<void(media::mojom::CropRequestResult)> callback) {
+    base::OnceCallback<void(media::mojom::ApplySubCaptureTargetResult)>
+        callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(callback);
 
   std::move(callback).Run(
-      media::mojom::CropRequestResult::kUnsupportedCaptureDevice);
+      media::mojom::ApplySubCaptureTargetResult::kUnsupportedCaptureDevice);
 }
 
 void FrameSinkVideoCaptureDevice::StopAndDeAllocate() {
@@ -499,14 +500,12 @@ void FrameSinkVideoCaptureDevice::OnFrameCaptured(
   // passing the shared memory buffer handle and then notifying it that a new
   // frame is ready to be read from the buffer.
   receiver_->OnNewBuffer(buffer_id, std::move(data));
-  receiver_->OnFrameReadyInBuffer(
-      media::ReadyFrameInBuffer(
-          buffer_id, buffer_id,
-          std::make_unique<media::ScopedFrameDoneHelper>(base::BindOnce(
-              &FrameSinkVideoCaptureDevice::OnFramePropagationComplete,
-              weak_factory_.GetWeakPtr(), buffer_id)),
-          std::move(info)),
-      {});
+  receiver_->OnFrameReadyInBuffer(media::ReadyFrameInBuffer(
+      buffer_id, buffer_id,
+      std::make_unique<media::ScopedFrameDoneHelper>(base::BindOnce(
+          &FrameSinkVideoCaptureDevice::OnFramePropagationComplete,
+          weak_factory_.GetWeakPtr(), buffer_id)),
+      std::move(info)));
 }
 
 void FrameSinkVideoCaptureDevice::OnNewCropVersion(uint32_t crop_version) {

@@ -22,6 +22,7 @@
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
+#include "base/containers/map_util.h"
 #include "base/debug/alias.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
@@ -227,7 +228,9 @@
 #include "content/browser/font_service.h"  // nogncheck
 #include "third_party/blink/public/mojom/memory_usage_monitor_linux.mojom.h"  // nogncheck
 
+#include "content/browser/child_thread_type_switcher_linux.h"
 #include "content/browser/media/video_encode_accelerator_provider_launcher.h"
+#include "content/common/thread_type_switcher.mojom.h"
 #include "media/mojo/mojom/video_encode_accelerator.mojom.h"
 #endif
 
@@ -378,10 +381,7 @@ class SiteProcessMap : public base::SupportsUserData::Data {
   }
 
   RenderProcessHost* FindProcess(const SiteInfo& site_info) {
-    auto i = map_.find(site_info);
-    if (i != map_.end())
-      return i->second;
-    return nullptr;
+    return base::FindPtrOrNull(map_, site_info);
   }
 
   void RemoveProcess(RenderProcessHost* host) {
@@ -1061,6 +1061,53 @@ enum class BlockedURLReason {
   kMaxValue = kFailedCanRequestURLCheck
 };
 
+// Helper to evaluate whether `host` is an unused RenderProcessHost, and whether
+// it's allowed to be reused by a WebUI navigation in a BrowsingContextGroup
+// represented by `isolation_context`.
+bool IsUnusedAndTiedToBrowsingInstance(
+    RenderProcessHost* host,
+    const IsolationContext& isolation_context) {
+  if (!base::FeatureList::IsEnabled(
+          features::kReuseInitialRenderFrameHostForWebUI)) {
+    return false;
+  }
+
+  if (!host->IsUnused()) {
+    return false;
+  }
+
+  // Ideally, we want an unused RenderProcessHost created for one frame to be
+  // reused only for subsequent navigations in the same frame.  A navigation in
+  // one unrelated window shouldn't be able to grab a second window's unused
+  // process, since that would likely lead to a process swap for a navigation in
+  // that second window.
+  //
+  // There is not enough context to make this decision per-WebContents, but we
+  // approximate it by comparing the target BrowsingInstance to
+  // BrowsingInstances for `host`'s RenderFrameHosts.  For cases where the
+  // initial RenderFrameHost is reused for a subsequent navigation, there will
+  // be a match, since that navigation will stay in the same (unassigned)
+  // SiteInstance.  For cases where a navigation is looking for processes to
+  // reuse from unrelated windows (such as when over the process limit), this
+  // will disqualify any initial processes in unrelated windows.
+  //
+  // This check is important for certain chrome://*.top-chrome/ WebUI cases (see
+  // `IsWebUIAndUsesTLDForProcessLockURL()`), which need to only reuse available
+  // existing top-chrome WebUI processes, but should not attempt to reuse an
+  // unused process from an unrelated blank tab.
+  bool stays_in_existing_browsing_instance = false;
+  host->ForEachRenderFrameHost(base::BindRepeating(
+      [](bool* stays_in_existing_browsing_instance,
+         const IsolationContext& isolation_context, RenderFrameHost* rfh) {
+        if (isolation_context.browsing_instance_id() ==
+            rfh->GetSiteInstance()->GetBrowsingInstanceId()) {
+          *stays_in_existing_browsing_instance = true;
+        }
+      },
+      &stays_in_existing_browsing_instance, isolation_context));
+  return stays_in_existing_browsing_instance;
+}
+
 }  // namespace
 
 // A RenderProcessHostImpl's IO thread implementation of the
@@ -1081,6 +1128,12 @@ class RenderProcessHostImpl::IOThreadHostImpl : public mojom::ChildProcessHost {
 
   IOThreadHostImpl(const IOThreadHostImpl& other) = delete;
   IOThreadHostImpl& operator=(const IOThreadHostImpl& other) = delete;
+
+  void SetPid(base::ProcessId child_pid) {
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+    child_thread_type_switcher_.SetPid(child_pid);
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+  }
 
  private:
   // mojom::ChildProcessHost implementation:
@@ -1117,6 +1170,11 @@ class RenderProcessHostImpl::IOThreadHostImpl : public mojom::ChildProcessHost {
             ->CreateVideoEncodeAcceleratorProvider(std::move(r));
         return;
       }
+    }
+
+    if (auto r = receiver.As<mojom::ThreadTypeSwitcher>()) {
+      child_thread_type_switcher_.Bind(std::move(r));
+      return;
     }
 #endif  // (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS))
 
@@ -1186,6 +1244,7 @@ class RenderProcessHostImpl::IOThreadHostImpl : public mojom::ChildProcessHost {
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   mojo::Remote<media::mojom::VideoEncodeAcceleratorProviderFactory>
       video_encode_accelerator_factory_remote_;
+  ChildThreadTypeSwitcher child_thread_type_switcher_;
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 };
 
@@ -1800,9 +1859,8 @@ void RenderProcessHostImpl::BindIndexedDB(
   }
 
   storage_partition_impl_->GetIndexedDBControl().BindIndexedDB(
-      storage_key,
-      IndexedDBClientStateCheckerFactory::InitializePendingAssociatedRemote(
-          rfh_id),
+      storage::BucketLocator::ForDefaultBucket(storage_key),
+      IndexedDBClientStateCheckerFactory::InitializePendingRemote(rfh_id),
       std::move(receiver));
 }
 
@@ -2673,6 +2731,9 @@ int RenderProcessHostImpl::GetRenderFrameHostCount() const {
 
 void RenderProcessHostImpl::ForEachRenderFrameHost(
     base::RepeatingCallback<void(RenderFrameHost*)> on_render_frame_host) {
+  // TODO(crbug.com/652474): This is also implemented in MockRenderProcessHost.
+  // When changing something here, don't forget to consider whether that change
+  // is also needed in MockRenderProcessHost::ForEachRenderFrameHost().
   for (auto rfh_id : render_frame_host_id_set_) {
     RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(rfh_id);
     // Note that some RenderFrameHosts in the set may not be found by FromID if
@@ -3123,6 +3184,10 @@ void RenderProcessHostImpl::NotifyRendererOfLockedStateUpdate() {
   GetRendererInterface()->SetIsCrossOriginIsolated(
       process_lock.GetWebExposedIsolationLevel() >=
       WebExposedIsolationLevel::kMaybeIsolated);
+
+  GetRendererInterface()->SetIsWebSecurityDisabled(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableWebSecurity));
 
   bool is_isolated_context_allowed_by_embedder =
       GetContentClient()->browser()->IsIsolatedContextAllowedForUrl(
@@ -4336,8 +4401,15 @@ bool RenderProcessHostImpl::IsSuitableHost(
     // chrome://process-internals target URL.
     // TODO(crbug.com/1158277): Don't return false for suitable WebUI hosts
     // and WebUI target URLs.
-    if (!host_has_web_ui_bindings && url_is_for_web_ui)
+    //
+    // Note that an initial RenderFrameHost's unused process won't have
+    // bindings, but it is ok to reuse it for a WebUI navigation in that same
+    // frame.  This is accounted for by `IsUnusedAndTiedToBrowsingInstance()`;
+    // see its implementation for more details.
+    if (!host_has_web_ui_bindings && url_is_for_web_ui &&
+        !IsUnusedAndTiedToBrowsingInstance(host, isolation_context)) {
       return false;
+    }
 
     if (process_lock.is_locked_to_site()) {
       // If this process is locked to a site, it cannot be reused for a
@@ -5157,9 +5229,12 @@ void RenderProcessHostImpl::OnProcessLaunched() {
     if (coordinator_connector_receiver_.is_bound())
       coordinator_connector_receiver_.Resume();
 
-      // Not all platforms launch processes in the same backgrounded state. Make
-      // sure |priority_.visible| reflects this platform's initial process
-      // state.
+    io_thread_host_impl_->AsyncCall(&IOThreadHostImpl::SetPid)
+        .WithArgs(GetProcess().Pid());
+
+    // Not all platforms launch processes in the same backgrounded state. Make
+    // sure |priority_.visible| reflects this platform's initial process
+    // state.
 #if BUILDFLAG(IS_APPLE)
     priority_.visible = child_process_launcher_->GetProcess().GetPriority(
                             ChildProcessTaskPortProvider::GetInstance()) ==

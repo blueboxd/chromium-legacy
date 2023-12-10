@@ -29,15 +29,26 @@ const char kTimeoutMessage[] =
 
 }  // namespace
 
+DOMViewTransition::DOMViewTransition(ExecutionContext& execution_context,
+                                     ViewTransition& view_transition)
+    : DOMViewTransition(execution_context,
+                        view_transition,
+                        /*update_dom_callback=*/nullptr) {
+  CHECK(view_transition.IsForNavigationOnNewDocument());
+  // In a cross-document view transition, the DOM is "updated" by the
+  // navigation so by the time we create this object (in the pagereveal
+  // event), the update is complete.
+  dom_updated_promise_property_->ResolveWithUndefined();
+  dom_callback_result_ = DOMCallbackResult::kSucceeded;
+}
+
 DOMViewTransition::DOMViewTransition(
     ExecutionContext& execution_context,
     ViewTransition& view_transition,
-    ScriptState& script_state,
     V8ViewTransitionCallback* update_dom_callback)
-    : ActiveScriptWrappable<DOMViewTransition>({}),
+    : ExecutionContextLifecycleObserver(&execution_context),
       execution_context_(&execution_context),
       view_transition_{&view_transition},
-      script_state_(&script_state),
       update_dom_callback_(update_dom_callback),
       finished_promise_property_(
           MakeGarbageCollected<PromiseProperty>(execution_context_)),
@@ -50,25 +61,34 @@ DOMViewTransition::DOMViewTransition(
 
 DOMViewTransition::~DOMViewTransition() = default;
 
+void DOMViewTransition::ContextDestroyed() {
+  execution_context_.Clear();
+}
+
 void DOMViewTransition::skipTransition() {
   view_transition_->SkipTransition();
 }
 
-ScriptPromise DOMViewTransition::finished() const {
-  return finished_promise_property_->Promise(script_state_->World());
+ScriptPromise DOMViewTransition::finished(ScriptState* script_state) const {
+  return finished_promise_property_->Promise(script_state->World());
 }
 
-ScriptPromise DOMViewTransition::ready() const {
-  return ready_promise_property_->Promise(script_state_->World());
+ScriptPromise DOMViewTransition::ready(ScriptState* script_state) const {
+  return ready_promise_property_->Promise(script_state->World());
 }
 
-ScriptPromise DOMViewTransition::updateCallbackDone() const {
-  return dom_updated_promise_property_->Promise(script_state_->World());
+ScriptPromise DOMViewTransition::updateCallbackDone(
+    ScriptState* script_state) const {
+  return dom_updated_promise_property_->Promise(script_state->World());
 }
 
 void DOMViewTransition::DidSkipTransition(
     ViewTransition::PromiseResponse response) {
   CHECK_NE(response, ViewTransition::PromiseResponse::kResolve);
+
+  if (!execution_context_) {
+    return;
+  }
 
   // If the ready promise has not yet been resolved, reject it.
   if (ready_promise_property_->GetState() == PromiseProperty::State::kPending) {
@@ -140,6 +160,11 @@ void DOMViewTransition::DidFinishAnimating() {
 void DOMViewTransition::InvokeDOMChangeCallback() {
   CHECK_EQ(dom_callback_result_, DOMCallbackResult::kNotInvoked)
       << "UpdateDOM callback invoked multiple times.";
+
+  if (!execution_context_) {
+    return;
+  }
+
   dom_callback_result_ = DOMCallbackResult::kRunning;
 
   v8::Maybe<ScriptPromise> result = v8::Nothing<ScriptPromise>();
@@ -163,6 +188,7 @@ void DOMViewTransition::InvokeDOMChangeCallback() {
     // any script.
     script_state =
         ToScriptState(execution_context_, DOMWrapperWorld::MainWorld());
+
     ScriptState::Scope scope(script_state);
 
     // If there's no callback provided, treat the same as an empty promise
@@ -174,31 +200,30 @@ void DOMViewTransition::InvokeDOMChangeCallback() {
   ScriptState::Scope scope(script_state);
   result.ToChecked().Then(
       MakeGarbageCollected<ScriptFunction>(
-          script_state_,
+          script_state,
           MakeGarbageCollected<DOMChangeFinishedCallback>(*this, true)),
       MakeGarbageCollected<ScriptFunction>(
-          script_state_,
+          script_state,
           MakeGarbageCollected<DOMChangeFinishedCallback>(*this, false)));
-}
-
-bool DOMViewTransition::HasPendingActivity() const {
-  return !view_transition_->IsDone();
 }
 
 void DOMViewTransition::Trace(Visitor* visitor) const {
   visitor->Trace(execution_context_);
   visitor->Trace(view_transition_);
-  visitor->Trace(script_state_);
   visitor->Trace(update_dom_callback_);
   visitor->Trace(finished_promise_property_);
   visitor->Trace(ready_promise_property_);
   visitor->Trace(dom_updated_promise_property_);
 
+  ExecutionContextLifecycleObserver::Trace(visitor);
   ScriptWrappable::Trace(visitor);
 }
 
 void DOMViewTransition::AtMicrotask(ViewTransition::PromiseResponse response,
                                     PromiseProperty* property) {
+  if (!execution_context_) {
+    return;
+  }
   execution_context_->GetAgent()->event_loop()->EnqueueMicrotask(
       WTF::BindOnce(&DOMViewTransition::HandlePromise, WrapPersistent(this),
                     response, WrapPersistent(property)));
@@ -206,8 +231,25 @@ void DOMViewTransition::AtMicrotask(ViewTransition::PromiseResponse response,
 
 void DOMViewTransition::HandlePromise(ViewTransition::PromiseResponse response,
                                       PromiseProperty* property) {
-  DCHECK_EQ(property->GetState(), PromiseProperty::State::kPending);
-  if (!script_state_->ContextIsValid()) {
+  if (!execution_context_) {
+    return;
+  }
+
+  // It's possible for multiple fulfillment microtasks to be queued so
+  // early-out if that's happened.
+  if (property->GetState() != PromiseProperty::State::kPending) {
+    return;
+  }
+
+  // The main world is used here only to create a ScriptValue. While the
+  // promises may be accessed from other worlds (in the cross-document case, an
+  // extension can add a `pagereveal` event listener) the promises are
+  // fulfilled using ScriptPromiseProperty which tracks requests from each
+  // world and clones the passed value if needed.
+  ScriptState* main_world_script_state =
+      ToScriptState(execution_context_, DOMWrapperWorld::MainWorld());
+
+  if (!main_world_script_state) {
     return;
   }
 
@@ -216,27 +258,29 @@ void DOMViewTransition::HandlePromise(ViewTransition::PromiseResponse response,
       property->ResolveWithUndefined();
       break;
     case ViewTransition::PromiseResponse::kRejectAbort: {
-      ScriptState::Scope scope(script_state_);
+      ScriptState::Scope scope(main_world_script_state);
       auto value = ScriptValue::From(
-          script_state_, MakeGarbageCollected<DOMException>(
-                             DOMExceptionCode::kAbortError, kAbortedMessage));
+          main_world_script_state,
+          MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError,
+                                             kAbortedMessage));
       property->Reject(value);
       break;
     }
     case ViewTransition::PromiseResponse::kRejectInvalidState: {
-      ScriptState::Scope scope(script_state_);
+      ScriptState::Scope scope(main_world_script_state);
       auto value = ScriptValue::From(
-          script_state_,
+          main_world_script_state,
           MakeGarbageCollected<DOMException>(
               DOMExceptionCode::kInvalidStateError, kInvalidStateMessage));
       property->Reject(value);
       break;
     }
     case ViewTransition::PromiseResponse::kRejectTimeout: {
-      ScriptState::Scope scope(script_state_);
+      ScriptState::Scope scope(main_world_script_state);
       auto value = ScriptValue::From(
-          script_state_, MakeGarbageCollected<DOMException>(
-                             DOMExceptionCode::kTimeoutError, kTimeoutMessage));
+          main_world_script_state,
+          MakeGarbageCollected<DOMException>(DOMExceptionCode::kTimeoutError,
+                                             kTimeoutMessage));
       property->Reject(value);
       break;
     }
@@ -253,7 +297,7 @@ DOMViewTransition::DOMChangeFinishedCallback::~DOMChangeFinishedCallback() =
     default;
 
 ScriptValue DOMViewTransition::DOMChangeFinishedCallback::Call(
-    ScriptState* script_state,
+    ScriptState*,
     ScriptValue value) {
   dom_view_transition_->NotifyDOMCallbackFinished(success_, std::move(value));
   return ScriptValue();

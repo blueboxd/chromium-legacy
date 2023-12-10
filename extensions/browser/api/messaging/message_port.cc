@@ -6,7 +6,10 @@
 
 namespace extensions {
 
-MessagePort::MessagePort() = default;
+MessagePort::MessagePort(base::WeakPtr<ChannelDelegate> channel_delegate,
+                         const PortId& port_id)
+    : weak_channel_delegate_(channel_delegate), port_id_(port_id) {}
+
 MessagePort::~MessagePort() = default;
 
 void MessagePort::RemoveCommonFrames(const MessagePort& port) {}
@@ -18,7 +21,7 @@ bool MessagePort::HasFrame(content::RenderFrameHost* render_frame_host) const {
 void MessagePort::RevalidatePort() {}
 
 void MessagePort::DispatchOnConnect(
-    ChannelType channel_type,
+    mojom::ChannelType channel_type,
     const std::string& channel_name,
     absl::optional<base::Value::Dict> source_tab,
     const ExtensionApiFrameIdMap::FrameData& source_frame,

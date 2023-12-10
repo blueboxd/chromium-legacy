@@ -196,6 +196,7 @@ class CircleCroppedImageSkiaSource : public gfx::CanvasImageSource {
 //   contrasts sufficiently with `brand_background_color`.
 class ContinueButton : public views::MdTextButton {
  public:
+  METADATA_HEADER(ContinueButton);
   ContinueButton(views::MdTextButton::PressedCallback callback,
                  const std::u16string& text,
                  AccountSelectionBubbleView* bubble_view,
@@ -247,8 +248,12 @@ class ContinueButton : public views::MdTextButton {
   absl::optional<SkColor> brand_text_color_;
 };
 
+BEGIN_METADATA(ContinueButton, views::MdTextButton)
+END_METADATA
+
 class AccountImageView : public views::ImageView {
  public:
+  METADATA_HEADER(AccountImageView);
   AccountImageView() = default;
 
   AccountImageView(const AccountImageView&) = delete;
@@ -293,10 +298,14 @@ class AccountImageView : public views::ImageView {
   base::WeakPtrFactory<AccountImageView> weak_ptr_factory_{this};
 };
 
+BEGIN_METADATA(AccountImageView, views::ImageView)
+END_METADATA
+
 // Wrapper around ImageViews for IDP icons. Used to ensure that the fetch
 // callback is not run when the ImageView has been deleted.
 class IdpImageView : public views::ImageView {
  public:
+  METADATA_HEADER(IdpImageView);
   explicit IdpImageView(AccountSelectionBubbleView* bubble_view)
       : bubble_view_(bubble_view) {}
 
@@ -340,6 +349,9 @@ class IdpImageView : public views::ImageView {
 
   base::WeakPtrFactory<IdpImageView> weak_ptr_factory_{this};
 };
+
+BEGIN_METADATA(IdpImageView, views::ImageView)
+END_METADATA
 
 void SendAccessibilityEvent(views::Widget* widget,
                             std::u16string announcement) {
@@ -470,35 +482,33 @@ std::pair<std::u16string, std::u16string> GetErrorDialogText(
     summary = l10n_util::GetStringUTF16(IDS_SIGNIN_SERVER_ERROR_DIALOG_SUMMARY);
     description = l10n_util::GetStringFUTF16(
         IDS_SIGNIN_SERVER_ERROR_DIALOG_DESCRIPTION, top_frame_for_display);
+    // Extra description is not needed for kServerError.
+    return {summary, description};
   } else {
     summary = l10n_util::GetStringFUTF16(
         IDS_SIGNIN_GENERIC_ERROR_DIALOG_SUMMARY, idp_for_display);
     description =
         l10n_util::GetStringUTF16(IDS_SIGNIN_GENERIC_ERROR_DIALOG_DESCRIPTION);
-  }
-
-  // List of error codes where extra description should be shown if an error
-  // url is available. kServerError is excluded because it is an enum that
-  // shouldn't be returned by the IDP but instead returned by the browser as a
-  // result of not receiving a response from the IDP. Hence, there shouldn't be
-  // an error url.
-  const std::set<std::string> codes_need_extra_description{
-      kInvalidRequest, kUnauthorizedClient, kAccessDenied,
-      kTemporarilyUnavailable};
-  if (!codes_need_extra_description.contains(code)) {
+    // Extra description is not needed for the generic error dialog.
     return {summary, description};
   }
 
   if (url.is_empty()) {
-    description += u" " + l10n_util::GetStringFUTF16(
-                              IDS_SIGNIN_ERROR_DIALOG_TRY_OTHER_WAYS_PROMPT,
-                              top_frame_for_display);
-  } else {
-    description += u" " + l10n_util::GetStringFUTF16(
-                              IDS_SIGNIN_ERROR_DIALOG_MORE_DETAILS_PROMPT,
-                              idp_for_display);
+    description +=
+        u" " + l10n_util::GetStringFUTF16(
+                   code == kTemporarilyUnavailable
+                       ? IDS_SIGNIN_ERROR_DIALOG_TRY_OTHER_WAYS_RETRY_PROMPT
+                       : IDS_SIGNIN_ERROR_DIALOG_TRY_OTHER_WAYS_PROMPT,
+                   top_frame_for_display);
+    return {summary, description};
   }
 
+  description +=
+      u" " + l10n_util::GetStringFUTF16(
+                 code == kTemporarilyUnavailable
+                     ? IDS_SIGNIN_ERROR_DIALOG_MORE_DETAILS_RETRY_PROMPT
+                     : IDS_SIGNIN_ERROR_DIALOG_MORE_DETAILS_PROMPT,
+                 idp_for_display);
   return {summary, description};
 }
 
@@ -709,7 +719,7 @@ void AccountSelectionBubbleView::ShowErrorDialog(
   auto row = std::make_unique<views::View>();
   row->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
-      gfx::Insets::VH(kVerticalSpacing, kLeftRightPadding)));
+      gfx::Insets::VH(kTopBottomPadding, kLeftRightPadding)));
 
   std::u16string summary_text;
   std::u16string description_text;
@@ -723,7 +733,7 @@ void AccountSelectionBubbleView::ShowErrorDialog(
           views::style::STYLE_PRIMARY));
   summary->SetMultiLine(true);
   summary->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-  constexpr int kSummaryLineHeight = 20;
+  constexpr int kSummaryLineHeight = 22;
   summary->SetLineHeight(kSummaryLineHeight);
 
   // Add error description.
@@ -736,18 +746,15 @@ void AccountSelectionBubbleView::ShowErrorDialog(
   constexpr int kDescriptionLineHeight = 20;
   description->SetLineHeight(kDescriptionLineHeight);
 
-  // Add space between the summary and the description.
-  summary->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets::TLBR(0, 0, kVerticalSpacing, 0)));
-
   AddChildView(std::move(row));
 
   // Add row for buttons.
   auto button_row = std::make_unique<views::BoxLayoutView>();
   button_row->SetMainAxisAlignment(views::BoxLayout::MainAxisAlignment::kEnd);
+  constexpr int kButtonRowTopPadding = 6;
   button_row->SetInsideBorderInsets(
-      gfx::Insets::TLBR(0, 0, 0, kLeftRightPadding));
-  constexpr int kButtonRowChildSpacing = 7;
+      gfx::Insets::TLBR(kButtonRowTopPadding, 0, 0, kLeftRightPadding));
+  constexpr int kButtonRowChildSpacing = 8;
   button_row->SetBetweenChildSpacing(kButtonRowChildSpacing);
 
   // Add more details button.

@@ -377,7 +377,7 @@ TestPasswordsPrivateDelegate::GetInsecureCredentialsManager() {
   return nullptr;
 }
 
-void TestPasswordsPrivateDelegate::ExtendAuthValidity() {
+void TestPasswordsPrivateDelegate::RestartAuthTimer() {
   authenticator_interacted_ = true;
 }
 
@@ -433,6 +433,11 @@ void TestPasswordsPrivateDelegate::ShowExportedFileInShell(
     content::WebContents* web_contents,
     std::string file_path) {
   exported_file_shown_in_shell_ = true;
+}
+
+base::WeakPtr<PasswordsPrivateDelegate>
+TestPasswordsPrivateDelegate::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 }  // namespace extensions

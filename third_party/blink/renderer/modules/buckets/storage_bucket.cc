@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/modules/file_system_access/storage_manager_file_system_access.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_factory.h"
 #include "third_party/blink/renderer/modules/locks/lock_manager.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
 
@@ -155,7 +156,7 @@ IDBFactory* StorageBucket::indexedDB() {
     remote_->GetIdbFactory(remote_factory.InitWithNewPipeAndPassReceiver());
     idb_factory_->SetRemote(std::move(remote_factory));
   }
-  return idb_factory_;
+  return idb_factory_.Get();
 }
 
 LockManager* StorageBucket::locks() {
@@ -165,7 +166,7 @@ LockManager* StorageBucket::locks() {
     lock_manager_ = MakeGarbageCollected<LockManager>(*navigator_base_);
     lock_manager_->SetManager(std::move(lock_manager), GetExecutionContext());
   }
-  return lock_manager_;
+  return lock_manager_.Get();
 }
 
 CacheStorage* StorageBucket::caches(ExceptionState& exception_state) {
@@ -179,7 +180,7 @@ CacheStorage* StorageBucket::caches(ExceptionState& exception_state) {
         std::move(cache_storage));
   }
 
-  return caches_;
+  return caches_.Get();
 }
 
 ScriptPromise StorageBucket::getDirectory(ScriptState* script_state,
@@ -188,6 +189,16 @@ ScriptPromise StorageBucket::getDirectory(ScriptState* script_state,
       script_state, exception_state,
       WTF::BindOnce(&StorageBucket::GetSandboxedFileSystem,
                     WrapWeakPersistent(this)));
+}
+
+void StorageBucket::GetDirectoryForDevTools(
+    ExecutionContext* context,
+    base::OnceCallback<void(mojom::blink::FileSystemAccessErrorPtr,
+                            FileSystemDirectoryHandle*)> callback) {
+  StorageManagerFileSystemAccess::CheckGetDirectoryIsAllowed(
+      context, WTF::BindOnce(&StorageBucket::GetSandboxedFileSystemForDevtools,
+                             WrapWeakPersistent(this),
+                             WrapWeakPersistent(context), std::move(callback)));
 }
 
 void StorageBucket::Trace(Visitor* visitor) const {
@@ -329,5 +340,28 @@ void StorageBucket::GetSandboxedFileSystem(ScriptPromiseResolver* resolver) {
   remote_->GetDirectory(
       WTF::BindOnce(&StorageManagerFileSystemAccess::DidGetSandboxedFileSystem,
                     WrapPersistent(resolver)));
+}
+
+void StorageBucket::GetSandboxedFileSystemForDevtools(
+    ExecutionContext* context,
+    base::OnceCallback<void(mojom::blink::FileSystemAccessErrorPtr,
+                            FileSystemDirectoryHandle*)> callback,
+    mojom::blink::FileSystemAccessErrorPtr result) {
+  if (result->status != mojom::blink::FileSystemAccessStatus::kOk) {
+    std::move(callback).Run(std::move(result), nullptr);
+    return;
+  }
+
+  if (!remote_.is_bound()) {
+    std::move(callback).Run(
+        mojom::blink::FileSystemAccessError::New(
+            mojom::blink::FileSystemAccessStatus::kInvalidState,
+            base::File::Error::FILE_ERROR_FAILED, "Invalid state Error."), nullptr);
+    return;
+  }
+
+  remote_->GetDirectory(WTF::BindOnce(
+      &StorageManagerFileSystemAccess::DidGetSandboxedFileSystemForDevtools,
+      WrapWeakPersistent(context), std::move(callback)));
 }
 }  // namespace blink

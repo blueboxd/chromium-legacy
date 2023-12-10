@@ -133,7 +133,6 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
       layer_(&layer),
       in_resize_mode_(false),
       scrolls_overflow_(false),
-      needs_composited_scrolling_(false),
       needs_scroll_offset_clamp_(false),
       needs_relayout_(false),
       had_horizontal_scrollbar_before_relayout_(false),
@@ -148,8 +147,7 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
       has_last_committed_scroll_offset_(false),
       scroll_corner_(nullptr),
       resizer_(nullptr),
-      scroll_anchor_(this),
-      non_composited_main_thread_scrolling_reasons_(0) {
+      scroll_anchor_(this) {
   if (auto* element = DynamicTo<Element>(GetLayoutBox()->GetNode())) {
     // We save and restore only the scrollOffset as the other scroll values are
     // recalculated.
@@ -204,8 +202,6 @@ void PaintLayerScrollableArea::DisposeImpl() {
       }
     }
   }
-
-  non_composited_main_thread_scrolling_reasons_ = 0;
 
   if (!GetLayoutBox()->DocumentBeingDestroyed()) {
     if (auto* element = DynamicTo<Element>(GetLayoutBox()->GetNode()))
@@ -663,7 +659,7 @@ PhysicalRect PaintLayerScrollableArea::LayoutContentRect(
   PhysicalSize layer_size = Size();
   LayoutUnit border_width = GetLayoutBox()->BorderWidth();
   LayoutUnit border_height = GetLayoutBox()->BorderHeight();
-  NGPhysicalBoxStrut scrollbars;
+  PhysicalBoxStrut scrollbars;
   if (scrollbar_inclusion == kExcludeScrollbars)
     scrollbars = GetLayoutBox()->ComputeScrollbars();
 
@@ -688,15 +684,14 @@ PhysicalRect PaintLayerScrollableArea::VisibleScrollSnapportRect(
   const ComputedStyle* style = GetLayoutBox()->Style();
   PhysicalRect layout_content_rect(LayoutContentRect(scrollbar_inclusion));
   layout_content_rect.Move(PhysicalOffset(-ScrollOrigin().OffsetFromOrigin()));
-  NGPhysicalBoxStrut padding(
-      MinimumValueForLength(style->ScrollPaddingTop(),
-                            layout_content_rect.Height()),
-      MinimumValueForLength(style->ScrollPaddingRight(),
-                            layout_content_rect.Width()),
-      MinimumValueForLength(style->ScrollPaddingBottom(),
-                            layout_content_rect.Height()),
-      MinimumValueForLength(style->ScrollPaddingLeft(),
-                            layout_content_rect.Width()));
+  PhysicalBoxStrut padding(MinimumValueForLength(style->ScrollPaddingTop(),
+                                                 layout_content_rect.Height()),
+                           MinimumValueForLength(style->ScrollPaddingRight(),
+                                                 layout_content_rect.Width()),
+                           MinimumValueForLength(style->ScrollPaddingBottom(),
+                                                 layout_content_rect.Height()),
+                           MinimumValueForLength(style->ScrollPaddingLeft(),
+                                                 layout_content_rect.Width()));
   layout_content_rect.Contract(padding);
   return layout_content_rect;
 }
@@ -1369,8 +1364,6 @@ void PaintLayerScrollableArea::UpdateAfterStyleChange(
 
   if (!old_style ||
       old_style->UsedColorScheme() != UsedColorSchemeScrollbars() ||
-      old_style->ScrollbarWidth() !=
-          GetLayoutBox()->StyleRef().ScrollbarWidth() ||
       old_style->ScrollbarThumbColorResolved() !=
           GetLayoutBox()->StyleRef().ScrollbarThumbColorResolved() ||
       old_style->ScrollbarTrackColorResolved() !=
@@ -1479,19 +1472,16 @@ static inline const LayoutObject& ScrollbarStyleSource(
   if (IsA<LayoutView>(layout_box)) {
     Document& doc = layout_box.GetDocument();
 
-    // If scrollbar properties have been set on the root element, they will be
-    // propagated to the viewport.
-    Element* doc_element = doc.documentElement();
-    if (doc_element && doc_element->GetLayoutObject() &&
-        (doc_element->GetLayoutObject()->StyleRef().ScrollbarWidth() !=
-             EScrollbarWidth::kAuto ||
-         doc_element->GetLayoutObject()
-             ->StyleRef()
-             .ScrollbarColor()
-             .has_value())) {
-      return *doc_element->GetLayoutObject();
+    // If the layout box uses standard scrollbar styles use it as the style
+    // source.
+    if (layout_box.StyleRef().UsesStandardScrollbarStyle()) {
+      return layout_box;
     }
 
+    // Legacy custom scrollbar styles on the document element or the <body> may
+    // apply to the viewport scrollbars. We don't propagate these styles to
+    // LayoutView in StyleResolver like we do for the standard CSS scrollbar
+    // styles because some conditions can only be checked here.
     if (Settings* settings = doc.GetSettings()) {
       LocalFrame* frame = layout_box.GetFrame();
       DCHECK(frame);
@@ -1512,9 +1502,12 @@ static inline const LayoutObject& ScrollbarStyleSource(
       return *body->GetLayoutObject();
 
     // If the <body> didn't have a custom style, then the root element might.
+    Element* doc_element = doc.documentElement();
     if (doc_element && doc_element->GetLayoutObject() &&
-        doc_element->GetLayoutObject()->StyleRef().HasCustomScrollbarStyle())
+        doc_element->GetLayoutObject()->StyleRef().HasCustomScrollbarStyle() &&
+        !layout_box.StyleRef().UsesStandardScrollbarStyle()) {
       return *doc_element->GetLayoutObject();
+    }
   } else if (!layout_box.GetNode() && layout_box.Parent()) {
     return *layout_box.Parent();
   }
@@ -1559,8 +1552,8 @@ int PaintLayerScrollableArea::ComputeHypotheticalScrollbarThickness(
 
   const LayoutObject& style_source = ScrollbarStyleSource(*GetLayoutBox());
   if (style_source.StyleRef().HasCustomScrollbarStyle()) {
-    return CustomScrollbar::HypotheticalScrollbarThickness(
-        this, orientation, To<Element>(style_source.GetNode()));
+    return CustomScrollbar::HypotheticalScrollbarThickness(this, orientation,
+                                                           &style_source);
   }
 
   ScrollbarTheme& theme = GetPageScrollbarTheme();
@@ -1589,8 +1582,7 @@ bool PaintLayerScrollableArea::NeedsScrollbarReconstruction() const {
       return true;
 
     // We have a scrollbar with a stale style source.
-    if (scrollbar->StyleSource() &&
-        scrollbar->StyleSource()->GetLayoutObject() != style_source) {
+    if (scrollbar->StyleSource() != style_source) {
       return true;
     }
 
@@ -1606,6 +1598,11 @@ bool PaintLayerScrollableArea::NeedsScrollbarReconstruction() const {
 
     if (current_theme != &scrollbar->GetTheme())
       return true;
+
+    EScrollbarWidth current_width = scrollbar->CSSScrollbarWidth();
+    if (current_width != style_source.StyleRef().ScrollbarWidth()) {
+      return true;
+    }
   }
   return false;
 }
@@ -2532,18 +2529,14 @@ ScrollingCoordinator* PaintLayerScrollableArea::GetScrollingCoordinator()
 
 bool PaintLayerScrollableArea::ShouldScrollOnMainThread() const {
   DCHECK_GE(GetDocument()->Lifecycle().GetState(),
-            RuntimeEnabledFeatures::CompositeScrollAfterPaintEnabled()
-                ? DocumentLifecycle::kPaintClean
-                : DocumentLifecycle::kInPrePaint);
+            DocumentLifecycle::kPaintClean);
   return HasBeenDisposed() || should_scroll_on_main_thread_;
 }
 
 void PaintLayerScrollableArea::SetShouldScrollOnMainThread(
     bool scroll_on_main_thread) {
   DCHECK_EQ(GetDocument()->Lifecycle().GetState(),
-            RuntimeEnabledFeatures::CompositeScrollAfterPaintEnabled()
-                ? DocumentLifecycle::kPaintClean
-                : DocumentLifecycle::kInPrePaint);
+            DocumentLifecycle::kPaintClean);
   if (scroll_on_main_thread != should_scroll_on_main_thread_) {
     should_scroll_on_main_thread_ = scroll_on_main_thread;
     MainThreadScrollingDidChange();
@@ -2567,88 +2560,8 @@ bool PaintLayerScrollableArea::PrefersNonCompositedScrolling() const {
   return false;
 }
 
-bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
-    bool force_prefer_compositing_to_lcd_text) {
-  const auto* box = GetLayoutBox();
-  auto new_background_paint_location =
-      box->ComputeBackgroundPaintLocationIfComposited();
-  bool needs_composited_scrolling = false;
-  if (!RuntimeEnabledFeatures::CompositeScrollAfterPaintEnabled()) {
-    needs_composited_scrolling = ComputeNeedsCompositedScrollingInternal(
-        new_background_paint_location, force_prefer_compositing_to_lcd_text);
-    if (!needs_composited_scrolling) {
-      new_background_paint_location = kBackgroundPaintInBorderBoxSpace;
-    }
-    DCHECK(!(non_composited_main_thread_scrolling_reasons_ &
-             ~cc::MainThreadScrollingReason::kNonCompositedReasons));
-  }
-  box->GetMutableForPainting().SetBackgroundPaintLocation(
-      new_background_paint_location);
-
-  return needs_composited_scrolling;
-}
-
-bool PaintLayerScrollableArea::ComputeNeedsCompositedScrollingInternal(
-    BackgroundPaintLocation background_paint_location_if_composited,
-    bool force_prefer_compositing_to_lcd_text) {
-  DCHECK(!RuntimeEnabledFeatures::CompositeScrollAfterPaintEnabled());
-  DCHECK_EQ(background_paint_location_if_composited,
-            GetLayoutBox()->ComputeBackgroundPaintLocationIfComposited());
-
-  non_composited_main_thread_scrolling_reasons_ = 0;
-
-  const auto* box = GetLayoutBox();
-  if (CompositingReasonFinder::RequiresCompositingForRootScroller(*box)) {
-    return true;
-  }
-  if (!ScrollsOverflow()) {
-    return false;
-  }
-  if (force_prefer_compositing_to_lcd_text) {
-    return true;
-  }
-  if (PrefersNonCompositedScrolling()) {
-    non_composited_main_thread_scrolling_reasons_ =
-        cc::MainThreadScrollingReason::kPreferNonCompositedScrolling;
-    return false;
-  }
-
-  bool needs_composited_scrolling = true;
-  if (box->GetDocument().GetSettings()->GetLCDTextPreference() ==
-      LCDTextPreference::kStronglyPreferred) {
-    if (!box->TextIsKnownToBeOnOpaqueBackground()) {
-      non_composited_main_thread_scrolling_reasons_ |=
-          cc::MainThreadScrollingReason::kNotOpaqueForTextAndLCDText;
-      needs_composited_scrolling = false;
-    }
-    if (!(background_paint_location_if_composited &
-          kBackgroundPaintInContentsSpace) &&
-        box->StyleRef().HasBackground()) {
-      non_composited_main_thread_scrolling_reasons_ |= cc::
-          MainThreadScrollingReason::kCantPaintScrollingBackgroundAndLCDText;
-      needs_composited_scrolling = false;
-    }
-  }
-
-  return needs_composited_scrolling;
-}
-
 bool PaintLayerScrollableArea::UsesCompositedScrolling() const {
   return GetLayoutBox()->UsesCompositedScrolling();
-}
-
-void PaintLayerScrollableArea::UpdateNeedsCompositedScrolling(
-    bool force_prefer_compositing_to_lcd_text) {
-  DCHECK_EQ(DocumentLifecycle::kInPrePaint,
-            GetDocument()->Lifecycle().GetState());
-
-  bool new_needs_composited_scrolling =
-      ComputeNeedsCompositedScrolling(force_prefer_compositing_to_lcd_text);
-  if (new_needs_composited_scrolling == needs_composited_scrolling_)
-    return;
-
-  needs_composited_scrolling_ = new_needs_composited_scrolling;
-  SetShouldCheckForPaintInvalidation();
 }
 
 bool PaintLayerScrollableArea::VisualViewportSuppliesScrollbars() const {
@@ -2745,12 +2658,10 @@ Scrollbar* PaintLayerScrollableArea::ScrollbarManager::CreateScrollbar(
   if (style_source.StyleRef().HasCustomScrollbarStyle()) {
     DCHECK(style_source.GetNode() && style_source.GetNode()->IsElementNode());
     scrollbar = MakeGarbageCollected<CustomScrollbar>(
-        ScrollableArea(), orientation, To<Element>(style_source.GetNode()));
+        ScrollableArea(), orientation, &style_source);
   } else {
-    Element* style_source_element = nullptr;
-    style_source_element = DynamicTo<Element>(style_source.GetNode());
     scrollbar = MakeGarbageCollected<Scrollbar>(ScrollableArea(), orientation,
-                                                style_source_element);
+                                                &style_source);
   }
   ScrollableArea()->GetLayoutBox()->GetDocument().View()->AddScrollbar(
       scrollbar);
@@ -2927,14 +2838,10 @@ bool PaintLayerScrollableArea::ShouldDirectlyCompositeScrollbar(
   if (scrollbar.IsCustomScrollbar()) {
     return false;
   }
-  if (RuntimeEnabledFeatures::CompositeScrollAfterPaintEnabled()) {
-    // In CompositeScrollAfterPaint, compositing of scrollbar is decided
-    // in PaintArtifactCompositor. We assume compositing here so that paint
-    // invalidation will be skipped here. We'll invalidate raster if needed
-    // after paint, without paint invalidation.
-    return true;
-  }
-  return NeedsCompositedScrolling();
+  // Compositing of scrollbar is decided in PaintArtifactCompositor. We assume
+  // compositing here so that paint invalidation will be skipped here. We'll
+  // invalidate raster if needed after paint, without paint invalidation.
+  return true;
 }
 
 void PaintLayerScrollableArea::EstablishScrollbarRoot(bool freeze_horizontal,

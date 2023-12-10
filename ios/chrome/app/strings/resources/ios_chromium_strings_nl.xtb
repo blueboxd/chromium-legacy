@@ -17,6 +17,7 @@
 <translation id="1591119736686995611">Opent het Chromium-tabbladraster.</translation>
 <translation id="1617663976202781617">Gegevens van Chromium-synchronisatie</translation>
 <translation id="1647558790457890304">Chromium-instellingen</translation>
+<translation id="164952285225495380">Dit pakket wordt al gevolgd in Chromium.</translation>
 <translation id="1722370509450468186">Je wachtwoord wordt opgeslagen in je account (<ph name="EMAIL" />).</translation>
 <translation id="1736662517232558588">Chromium-gegevens gewist</translation>
 <translation id="1791845338122684020">Opent de pagina met je Chromium-geschiedenis.</translation>
@@ -95,7 +96,6 @@ Als je deze instelling wilt wijzigen, <ph name="BEGIN_LINK" />wis je de Chromium
 <translation id="4736424910885271643">Je account wordt beheerd door <ph name="HOSTED_DOMAIN" />, dus je Chromium-gegevens worden verwijderd van dit apparaat</translation>
 <translation id="4790638144988730920">Blijf de Chromium-gegevens in je Google-account gebruiken.</translation>
 <translation id="4828317641996116749">Chromium kan niet alle wachtwoorden checken. Probeer het later opnieuw.</translation>
-<translation id="4935539884203837577">Chromium kan de trackingcodes die je invoert, vinden en je pakketten volgen op de pagina Nieuw tabblad en kan ook helpen bij andere winkelfunctionaliteit van Chromium.</translation>
 <translation id="4985291216379576555">Offline. Chromium kan niet checken op updates</translation>
 <translation id="4996471330284142407">Krijg meer gedaan met Chromium. Nu nog makkelijker, veiliger en sneller dan ooit.</translation>
 <translation id="4999538639245140991">Omdat je uitlogt van een account dat wordt beheerd door <ph name="SIGNOUT_MANAGED_DOMAIN" />, worden je Chromium-gegevens van dit apparaat verwijderd. Je gegevens blijven echter wel in je Google-account staan.</translation>
@@ -120,7 +120,6 @@ Als je deze instelling wilt wijzigen, <ph name="BEGIN_LINK" />wis je de Chromium
 <translation id="5688047395118852662">Op deze kaart zie je suggesties voor hoe je het maximale uit Chromium kunt halen.</translation>
 <translation id="5700709190537129682">Chromium kan je wachtwoorden niet checken</translation>
 <translation id="5777187867430702742">Chromium-pagina</translation>
-<translation id="584303319228224680">Je pakketten automatisch volgen in Chromium</translation>
 <translation id="5889847953983052353">Als dit aanstaat:
 <ph name="BEGIN_INDENT" />  • Help Chromium beter te maken voor mensen die de functie gebruiken zoals jij dat doet.<ph name="END_INDENT" />
 
@@ -160,6 +159,7 @@ Alleen iemand met je wachtwoordzin kan je versleutelde gegevens lezen. De wachtw
 <translation id="6911341667534646387">Blijf de Chromium-gegevens in je Google-account gebruiken</translation>
 <translation id="7006920032187763988">Je kunt de wachtwoorden die je in Wachtwoordmanager hebt opgeslagen, gebruiken in andere apps op je iPad.</translation>
 <translation id="7018284295775193585">Chromium kan niet updaten</translation>
+<translation id="7025471822960602362">Gedetecteerde pakketten volgen in Chromium</translation>
 <translation id="7045244423563602563">Chromium personaliseren</translation>
 <translation id="7055269218854630176">Je organisatie, <ph name="DOMAIN" />, beheert het account waarop je inlogt en hoe Chromium kan worden gebruikt. Je beheerder kan bepaalde functies instellen of beperken.</translation>
 <translation id="7099326575020694068">Chromium kan je camera niet gebruiken in de modus 'Gesplitste weergave'</translation>
@@ -188,6 +188,7 @@ Alleen iemand met je wachtwoordzin kan je versleutelde gegevens lezen. De wachtw
 <translation id="7931842119211730154">Incognitotabbladen vergrendelen als je Chromium sluit</translation>
 <translation id="7934404985878918282">Chromium-leeslijst bekijken</translation>
 <translation id="7980860476903281594">Chromium deelt je locatie met sites die je toestaat.</translation>
+<translation id="7995166854192397899">Suggesties zijn gebaseerd op je browse-activiteit op je andere apparaten. Log op al je apparaten in bij Chromium om suggesties te krijgen.</translation>
 <translation id="8013573822802650211">Log in op al je apparaten om je tabbladen te bekijken vanaf elk apparaat waarop je Chromium gebruikt</translation>
 <translation id="8071041515667087705">Ga naar de Chromium-instellingen.</translation>
 <translation id="8073677936375100957">Je Chromium-gegevens van dit apparaat wissen?</translation>

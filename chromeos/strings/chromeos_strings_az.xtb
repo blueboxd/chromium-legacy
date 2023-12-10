@@ -24,6 +24,7 @@
 <translation id="1154390310959620237">Yalnız 5 qısayol fərdiləşdirmək olar. Yeni qısayol əlavə etmək üçün birini silin.</translation>
 <translation id="1164939766849482256">"Sübhdən axşama" ekran qoruyucusu</translation>
 <translation id="1167755866710282443">Düymələri fərdiləşdirmək üçün menyunu açın. Hərəkət etdirmək üçün menyunu sürüşdürün.</translation>
+<translation id="1174073918202301297">Qısayol əlavə edildi</translation>
 <translation id="1175697296044146566">Bu <ph name="DEVICE_TYPE" /> <ph name="MANAGER" /> tərəfindən idarə olunur.</translation>
 <translation id="1175951029573070619">Orta (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Silin</translation>
@@ -74,6 +75,7 @@
 <translation id="1499900233129743732"><ph name="MANAGER" /> bu istifadəçini idarə edir və ayarları məsafədən idarə edə və istifadəçinin fəaliyyətini izləyə bilər.</translation>
 <translation id="150962533380566081">Yanlış PUK.</translation>
 <translation id="1510238584712386396">Başladıcı</translation>
+<translation id="1515129336378114413">brauzerin əsas səhifəsi</translation>
 <translation id="1526389707933164996">Ekran qoruyucu animasiyası</translation>
 <translation id="152892567002884378">Səsi artırın</translation>
 <translation id="1555130319947370107">Mavi</translation>
@@ -118,6 +120,7 @@
 <translation id="1768959921651994223">Doğrulama növü</translation>
 <translation id="1776228893584526149">Divar kağızı çaları</translation>
 <translation id="1782199038061388045">tərcümə</translation>
+<translation id="1788485524395674731">Bu tətbiqi administrator idarə edir</translation>
 <translation id="1792647875738159689">Skanlama ləğv edilir</translation>
 <translation id="1801418420130173017">Qaranlıq temanı deaktiv edin</translation>
 <translation id="1807246157184219062">Yüngül</translation>
@@ -132,7 +135,6 @@
 <translation id="1871569928317311284">Qaranlıq temanı deaktiv edin</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Qaranlıq rejimi deaktiv edin</translation>
-<translation id="1881188606372070653">Hüquqi səbəbdən məzmun dəyişikliyini tələb etmək üçün <ph name="BEGIN_LINK1" />Hüquqi Yardım səhifəsinə<ph name="END_LINK1" /> keçin. Bəzi hesab və sistem məlumatları Google'a göndərilə bilər. Verdiyiniz məlumatı <ph name="BEGIN_LINK2" />Məxfilik Siyasəti<ph name="END_LINK2" /> və <ph name="BEGIN_LINK3" />Xidmət Şərtləri<ph name="END_LINK3" /> subyekti olan xidmətlərimizin daha da qabaqcıl edilməsi üçün istifadə ediləcək.</translation>
 <translation id="1885577615937958993">medianı cəld irəli ötürün</translation>
 <translation id="1887850431809612466">Avadanlıq versiyası</translation>
 <translation id="1897672602657312171">Axtarış düyməsi olmayan qısayol bəzi tətbiq qısayolları ilə ziddiyyətli ola bilər. Bu qısayoldan istifadəyə davam etmək üçün ona yenidən basın, yaxud axtarış düyməsindən istifadə edərək yeni qısayola basın.</translation>
@@ -167,7 +169,9 @@
 <translation id="2152882202543497059"><ph name="NUMBER" /> foto</translation>
 <translation id="2157660087437850958">emoji seçicisi</translation>
 <translation id="2157959690810728433">NÖVBƏDƏDİR</translation>
+<translation id="2158450850127366833">{NUM_ROOL_APPS,plural,offset:2 =1{Administrator <ph name="APP_NAME_1" /> tətbiqini hər girişdə avtomatik başlamağa ayarlayıb.}=2{Administrator <ph name="APP_NAME_1" /> və <ph name="APP_NAME_2" /> tətbiqini hər girişdə avtomatik başlamağa ayarlayıb.}=3{Administrator <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> və <ph name="APP_NAME_3" /> tətbiqini hər girişdə avtomatik başlamağa ayarlayıb.}other{Administrator <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> və digər # tətbiqi hər girişdə avtomatik başlamağa ayarlayıb.}}</translation>
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: Yenidən cəhd edin</translation>
+<translation id="215916044711630446">"APN əlavə edin" düyməsi deaktivdir</translation>
 <translation id="2161394479394250669">Çap işini ləğv edin</translation>
 <translation id="2161656808144014275">Mətn</translation>
 <translation id="2163937499206714165">Qaranlıq rejimi aktiv edin</translation>
@@ -194,6 +198,7 @@
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2338501278241028356">Yaxınlıqdakı cihazları tapmaq üçün Bluetooth'u aktiv edin</translation>
 <translation id="2346474577291266260">Əla (<ph name="SIGNAL_STRENGTH" />)</translation>
+<translation id="2358070305000735383"><ph name="DESCRIPTION" /> üçün redaktə dialoqu açıqdır.</translation>
 <translation id="2359808026110333948">Davam edin</translation>
 <translation id="2364498172489649528">Keçdi</translation>
 <translation id="2367335866686097760">Düymə uyğunlaşdırması - düymə</translation>
@@ -213,6 +218,7 @@
 <translation id="2505327257735685095">Cari divar kağızı şəklini yeniləyin</translation>
 <translation id="2512979179176933762">pəncərələri göstərin</translation>
 <translation id="2513396635448525189">Giriş şəkli</translation>
+<translation id="2515109918609218604">Qısayol əlçatan deyil. Funksiya və axtarış düymələrindən istifadə etmədən yeni qısayola basın.</translation>
 <translation id="2517472476991765520">Skan edin</translation>
 <translation id="2521835766824839541">əvvəlki trek</translation>
 <translation id="2526590354069164005">Masaüstü</translation>
@@ -333,7 +339,6 @@
 <translation id="3604713164406837697">Divar kağızını dəyişin</translation>
 <translation id="360565022852130722">WiFi şəbəkəsi zəif protokol WEP 802.1x ilə qorunur</translation>
 <translation id="3606583719724308068">HTTPS veb saytlarında yüksək gecikmə</translation>
-<translation id="3607216139080387279">Ekran qoruyucusu göstərilsin</translation>
 <translation id="361575905210396100">Rəyinizə görə çox sağolun</translation>
 <translation id="3632579075709132555">Məxfilik ekranı keçiricisi</translation>
 <translation id="3651050199673793219">Temperatur vahidi seçin</translation>
@@ -345,7 +350,6 @@
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> rəy)</translation>
 <translation id="3748026146096797577">Qoşulmayıb</translation>
 <translation id="3749289110408117711">Fayl adı</translation>
-<translation id="3766934827878963937">1 saat</translation>
 <translation id="3771294271822695279">Video Fayllar</translation>
 <translation id="3784455785234192852">Kilidləyin</translation>
 <translation id="380097101658023925">rgb nizamlayıcıları</translation>
@@ -396,6 +400,7 @@
 <translation id="4117637339509843559">Qaranlıq rejim</translation>
 <translation id="4130035430755296270">Digər düzən seçimləri üçün mausla tuşlamağa davam edin</translation>
 <translation id="4131410914670010031">Ağ və qara</translation>
+<translation id="4143820682073026914">{NUM_ROOL_APPS,plural, =1{<ph name="APP_NAME_1" /> avtomatik başladıldı}other{# tətbiq avtomatik başladıldı}}</translation>
 <translation id="4145784616224233563">HTTP Qoruyucu divarı</translation>
 <translation id="4147897805161313378">Google Foto</translation>
 <translation id="4150201353443180367">Ekran</translation>
@@ -441,6 +446,7 @@
 <translation id="445059817448385655">Köhnə parol</translation>
 <translation id="4453205916657964690">Alt şəbəkə maskası</translation>
 <translation id="4454245904991689773">Skanı burada saxlayın</translation>
+<translation id="4456812688969919973">"APN-i yadda saxlayın" düyməsi deaktivdir</translation>
 <translation id="4469288414739283461">"Torpaq axını" ekran qoruyucusu</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Qeyri-defolt şəbəkə girişini yoxlamaq alınmadı</translation>
@@ -481,6 +487,7 @@
 <translation id="4793756956024303490">Sıxılma alqoritmi</translation>
 <translation id="4794140124556169553">CPU testi etmək sistem performansınıza təsir göstərə bilər</translation>
 <translation id="4798078634453489142">Yeni APN əlavə etmək üçün APN-i silin</translation>
+<translation id="479989351350248267">axtarın</translation>
 <translation id="4800589996161293643">Chromebook icması</translation>
 <translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341"><ph name="DOCUMENT_TITLE" /> çap işi ləğv edilib</translation>
@@ -624,6 +631,7 @@
 <translation id="584953448295717128">APN avtomatik aşkarlanıb.</translation>
 <translation id="5849570051105887917">Əsas səhifə provayder kodu</translation>
 <translation id="5859603669299126575">İncəsənət qalereyası albomu</translation>
+<translation id="5859969039821714932">Qısayol əlçatan deyil. <ph name="KEY" /> olmadan yeni qısayol üzərinə basın.</translation>
 <translation id="5860033963881614850">Deaktiv</translation>
 <translation id="5860491529813859533">Aktiv edin</translation>
 <translation id="5876385649737594562">Seçim etmək üçün aktiv edin</translation>
@@ -686,9 +694,9 @@
 <translation id="629550705077076970">klaviaturanın qaraldılması</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" /> testi ləğv edilib</translation>
 <translation id="631063167932043783">Tətbiqi araşdırın</translation>
-<translation id="6318437367327684789">həmişə</translation>
 <translation id="6319207335391420837"><ph name="DEVICE_NAME" /> cihazında proqramı güncəlləyin</translation>
 <translation id="6321407676395378991">Ekran qoruyucusunu aktiv edin</translation>
+<translation id="6324916366299863871">Qısayola düzəliş edin</translation>
 <translation id="6325525973963619867">Alınmadı</translation>
 <translation id="6331191339300272798">Avtomatik qaranlıq tema</translation>
 <translation id="6340526405444716530">Fərdiləşdirmə</translation>
@@ -709,7 +717,7 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Zəif (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Hesab ayarlarına keçin</translation>
-<translation id="6461047516875166066">Ətraflı məlumat</translation>
+<translation id="6462978824459367242">"APN əlavə edin" düyməsi aktivləşdirilib</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Səhifə yenidən skanlansın?}=1{{PAGE_NUMBER} saylı səhifə yenidən skanlansın?}other{{PAGE_NUMBER} saylı səhifə yenidən skanlansın?}}</translation>
 <translation id="6472207088655375767">Birdəfəlik parol (OTP)</translation>
 <translation id="6480327114083866287"><ph name="MANAGER" /> tərəfindən idarə edilir</translation>
@@ -744,6 +752,7 @@
 <translation id="6659594942844771486">Səkmə</translation>
 <translation id="6673898378497337661">klaviatura parlaqlığını artırın</translation>
 <translation id="6692996468359469499">Seçiminizlə bağlı məlumat əldə edin</translation>
+<translation id="6694534975463174713">kilid</translation>
 <translation id="6704062477274546131">DNS Həlli</translation>
 <translation id="6723839937902243910">Enerji</translation>
 <translation id="6723847290197874913">Klaviaturanın arxa işığı</translation>
@@ -788,6 +797,7 @@
 <translation id="7103252855940681301"><ph name="NAME" /> adlı cihaz <ph name="INDEX" />/<ph name="COUNT" />.</translation>
 <translation id="7107255225945990211"><ph name="PRODUCT_NAME" /> üçün eksklüziv illüstrasiya seçin</translation>
 <translation id="7108668606237948702">enter</translation>
+<translation id="7119389851461848805">qidalanma</translation>
 <translation id="7130438335435247835">Giriş nöqtəsi adı (APN)</translation>
 <translation id="7134436342991564651">{0,plural, =1{Ad serveri}other{Ad serverləri}}</translation>
 <translation id="7135814714616751706">Qısayol axtarın</translation>
@@ -828,9 +838,9 @@
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7388959671917308825">Quraşdırılmış taçped</translation>
 <translation id="7397270852490618635">İşıqlı temanı deaktiv edin</translation>
+<translation id="7401543881546089382">Qısayolu silin</translation>
 <translation id="741244894080940828">çevirmə</translation>
 <translation id="7415801143053185905">Çox yüksək HTTP gecikməsi</translation>
-<translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{Administrator <ph name="APP_NAME_1" /> tətbiqini hər girişdə avtomatik başlamağa ayarlayıb.}=2{Administrator <ph name="APP_NAME_1" /> və <ph name="APP_NAME_2" /> tətbiqini hər girişdə avtomatik başlamağa ayarlayıb.}=3{Administrator <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> və <ph name="APP_NAME_3" /> tətbiqini hər girişdə avtomatik başlamağa ayarlayıb.}other{Administrator <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> və digər # tətbiqi hər girişdə avtomatik başlamağa ayarlayıb.}}</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7458970041932198923">Səhifəni görmək və avatarlar ayarlamaq üçün şəbəkəyə qoşulun və səhifəni yenidən yükləyin.</translation>
 <translation id="7469648432129124067">Portal aşkarlanıb</translation>
@@ -866,6 +876,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7716280709122323042">WPA3</translation>
 <translation id="7718231387947923843">işıqlı klaviatura</translation>
+<translation id="7730077286107534951">Bəzi hesab və sistem məlumatları Google-a göndərilə bilər. <ph name="BEGIN_LINK2" />Məxfilik Siyasətinə<ph name="END_LINK2" /> və <ph name="BEGIN_LINK3" />Xidmət Şərtlərinə<ph name="END_LINK3" /> əsasən texniki problemləri həll etmək və xidmətləri təkmilləşdirmək üçün bu məlumatdan istifadə edirik. Kontent dəyişikliyi tələb etmək üçün <ph name="BEGIN_LINK1" />Hüquqi Kömək<ph name="END_LINK1" /> bölməsinə keçin.</translation>
 <translation id="773153675489693198">Dövrə sayı</translation>
 <translation id="7747039790905080783">Öncədən paylaşılan açar</translation>
 <translation id="7752963721013053477">Sübhdən axşama - eksklüziv</translation>
@@ -902,6 +913,7 @@
 <translation id="7978412674231730200">Şəxsi açar</translation>
 <translation id="7994702968232966508">EAP üsulu</translation>
 <translation id="8004582292198964060">Brauzer</translation>
+<translation id="8017679124341497925">Qısayol redaktə edildi</translation>
 <translation id="802154636333426148">Endirmə alınmadı</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">Avtomatik rəng rejimini aktiv edin</translation>
@@ -942,6 +954,7 @@
 <translation id="8336739000755212683">Cihazın hesab şəklini dəyişin</translation>
 <translation id="8347126826554447157"><ph name="SHORCTCUT1" /> və ya <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">Çap işləri</translation>
+<translation id="8349826889576450703">başladıcı</translation>
 <translation id="8351855506390808906">Düymə uyğunlaşdırması - toxunuş nöqtəsi</translation>
 <translation id="8352772353338965963">Çoxsaylı giriş üçün hesab əlavə edin. Bu hesablara parolsuz daxil olmaq olar, ona görə də bu funksiya yalnız güvənilən hesablar ilə işlədilməlidir.</translation>
 <translation id="8364946094152050673">Boş ad serverləri</translation>
@@ -1015,6 +1028,7 @@
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8876270629542503161">Cihaz planşetdir.</translation>
 <translation id="8881098542468797602">Test uğurlu oldu</translation>
+<translation id="8892443466059986410">Qısayol redaktəsini ləğv edin</translation>
 <translation id="8898840733695078011">Siqnal gücü</translation>
 <translation id="8909114361904403025">yuxarı ox</translation>
 <translation id="8910721771319628100">Defolt şəbəkə gecikmə həddindən yuxarıdır</translation>
@@ -1034,14 +1048,15 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{Skan edin}=1{Bu səhifəni skan edin: {NUMBER_OF_PAGES}}other{Bu səhifəni skan edin: {NUMBER_OF_PAGES}}}</translation>
 <translation id="8997710128084572139">Cihazın batareya səviyyəsi: <ph name="BATTERY_PERCENTAGE" />%.</translation>
-<translation id="8998156756248178381">{NUM_ROOL_APPS,plural, =1{<ph name="APP_NAME_1" /> avtomatik başladıldı}other{# tətbiq avtomatik başladıldı}}</translation>
 <translation id="8998289560386111590">Cihazınızda əlçatan deyil</translation>
 <translation id="9003704114456258138">Tezlik</translation>
+<translation id="901834265349196618">e-poçt</translation>
 <translation id="9024331582947483881">Tam ekran</translation>
 <translation id="9025198690966128418">Şəxsi cihaz kimi istifadə edin</translation>
 <translation id="902638246363752736">Klaviatura ayarları</translation>
 <translation id="9028832514430399253">Ekran qoruyucu seçimlərini etmək üçün keçiricini aktiv edin</translation>
 <translation id="9039663905644212491">PEAP</translation>
+<translation id="9049868303458988905">"APN-i yadda saxlayın" düyməsi aktivləşdirilib</translation>
 <translation id="9058932992221914855">IPv6</translation>
 <translation id="9062831201344759865">DNS ayırdetmə dəqiqliyində yüksək gecikmə var</translation>
 <translation id="9065203028668620118">Düzəliş edin</translation>
@@ -1057,11 +1072,9 @@
 <translation id="9111102763498581341">Kiliddən çıxarın</translation>
 <translation id="9122602430962285795">Yenidən qoşulmaq üçün Ayarlara keçin</translation>
 <translation id="9126720536733509015">Birdən çox səhifəni bir PDF-də saxlayın</translation>
-<translation id="9133104754938025929">Batareya qənaəti üçün ekran qoruyucusu yalnız şarj zamanı işləyir.</translation>
 <translation id="9133772297793293778">Klaviaturada 1-4 dəyişdiricilərini və 1 digər düyməni basın. Redaktə rejimindən çıxmaq üçün alt + esc üzərinə basın.</translation>
 <translation id="9137526406337347448">Google Xidmətləri</translation>
 <translation id="9138630967333032450">Sol shift</translation>
-<translation id="9143347780818904997"><ph name="MINUTES" /> dəqiqə</translation>
 <translation id="9149391708638971077">Yaddaş Testi icra edin</translation>
 <translation id="9161276708550942948">boşluq</translation>
 <translation id="9173638680043580060">Bir dəqiqədən az qalıb</translation>
@@ -1077,6 +1090,7 @@
 <translation id="945522503751344254">Geri əlaqə göndərin</translation>
 <translation id="952992212772159698">Aktiv edilməyib</translation>
 <translation id="960719561871045870">Operator kodu</translation>
+<translation id="966787709310836684">menyu</translation>
 <translation id="979450713603643090">Açıq-çəhrayı</translation>
 <translation id="982713511914535780">Deşarj testi icra edin</translation>
 <translation id="987264212798334818">Ümumi</translation>

@@ -1165,7 +1165,13 @@ policies:
   1164: ProfileReauthPrompt
   1165: RelatedWebsiteSetsEnabled
   1166: DeviceExtendedFkeysModifier
-  1167: ZstdContentEncodingEnabled
+  1167: UnaffiliatedDeviceArcAllowed
+  1168: RelatedWebsiteSetsOverrides
+  1169: ShowHumanPresenceSensorScreenEnabled
+  1170: PasswordSharingEnabled
+  1171: ZstdContentEncodingEnabled
+  1172: IPv6ReachabilityOverrideEnabled
+  1173: UserFeedbackWithLowLevelDebugDataAllowed
 atomic_groups:
   1: Homepage
   2: RemoteAccess

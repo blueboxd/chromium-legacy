@@ -25,11 +25,11 @@
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
-#include "components/autofill/core/browser/webdata/autofill_webdata_backend_util.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service_observer.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/sync/base/model_type.h"
 #include "components/webdata/common/web_database_backend.h"
 
 using base::Time;
@@ -126,18 +126,14 @@ AutofillWebDataBackendImpl::AutofillWebDataBackendImpl(
     scoped_refptr<WebDatabaseBackend> web_database_backend,
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
     scoped_refptr<base::SequencedTaskRunner> db_task_runner,
-    const base::RepeatingClosure& on_changed_callback,
-    const base::RepeatingClosure& on_address_conversion_completed_callback,
     const base::RepeatingCallback<void(syncer::ModelType)>&
-        on_sync_started_callback)
+        on_autofill_changed_by_sync_callback)
     : base::RefCountedDeleteOnSequence<AutofillWebDataBackendImpl>(
           std::move(db_task_runner)),
       ui_task_runner_(ui_task_runner),
       web_database_backend_(web_database_backend),
-      on_changed_callback_(on_changed_callback),
-      on_address_conversion_completed_callback_(
-          on_address_conversion_completed_callback),
-      on_sync_started_callback_(on_sync_started_callback) {}
+      on_autofill_changed_by_sync_callback_(
+          on_autofill_changed_by_sync_callback) {}
 
 void AutofillWebDataBackendImpl::AddObserver(
     AutofillWebDataServiceObserverOnDBSequence* observer) {
@@ -209,31 +205,14 @@ void AutofillWebDataBackendImpl::NotifyOfCreditCardChanged(
     db_observer.CreditCardChanged(change);
 }
 
-void AutofillWebDataBackendImpl::NotifyOfMultipleAutofillChanges() {
-  DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
-
-  // UI sequence notification.
-  ui_task_runner_->PostTask(FROM_HERE, on_changed_callback_);
-}
-
-void AutofillWebDataBackendImpl::NotifyOfAddressConversionCompleted() {
-  DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
-
-  // UI sequence notification.
-  ui_task_runner_->PostTask(FROM_HERE,
-                            on_address_conversion_completed_callback_);
-}
-
-void AutofillWebDataBackendImpl::NotifyThatSyncHasStarted(
+void AutofillWebDataBackendImpl::NotifyOnAutofillChangedBySync(
     syncer::ModelType model_type) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
 
-  if (on_sync_started_callback_.is_null())
-    return;
-
   // UI sequence notification.
   ui_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(on_sync_started_callback_, model_type));
+      FROM_HERE,
+      base::BindOnce(on_autofill_changed_by_sync_callback_, model_type));
 }
 
 base::SupportsUserData* AutofillWebDataBackendImpl::GetDBUserData() {
@@ -447,16 +426,6 @@ std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetServerProfiles(
           AUTOFILL_PROFILES_RESULT, std::move(profiles)));
 }
 
-WebDatabase::State
-AutofillWebDataBackendImpl::ConvertWalletAddressesAndUpdateWalletCards(
-    const std::string& app_locale,
-    const std::string& primary_account_email,
-    WebDatabase* db) {
-  DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
-  return util::ConvertWalletAddressesAndUpdateWalletCards(
-      app_locale, primary_account_email, this, db);
-}
-
 std::unique_ptr<WDTypedResult>
 AutofillWebDataBackendImpl::GetCountOfValuesContainedBetween(
     const base::Time& begin,
@@ -647,11 +616,11 @@ WebDatabase::State AutofillWebDataBackendImpl::UpdateServerCardMetadata(
   return WebDatabase::COMMIT_NEEDED;
 }
 
-std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetIbans(
+std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetLocalIbans(
     WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
   std::vector<std::unique_ptr<Iban>> ibans;
-  AutofillTable::FromWebDatabase(db)->GetIbans(&ibans);
+  AutofillTable::FromWebDatabase(db)->GetLocalIbans(&ibans);
 
   return std::make_unique<WDResult<std::vector<std::unique_ptr<Iban>>>>(
       AUTOFILL_IBANS_RESULT, std::move(ibans));
@@ -666,10 +635,10 @@ std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetServerIbans(
       AUTOFILL_IBANS_RESULT, std::move(ibans));
 }
 
-WebDatabase::State AutofillWebDataBackendImpl::AddIban(const Iban& iban,
-                                                       WebDatabase* db) {
+WebDatabase::State AutofillWebDataBackendImpl::AddLocalIban(const Iban& iban,
+                                                            WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
-  if (!AutofillTable::FromWebDatabase(db)->AddIban(iban)) {
+  if (!AutofillTable::FromWebDatabase(db)->AddLocalIban(iban)) {
     ReportResult(Result::kAddIban_Failure);
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
@@ -681,19 +650,20 @@ WebDatabase::State AutofillWebDataBackendImpl::AddIban(const Iban& iban,
   return WebDatabase::COMMIT_NEEDED;
 }
 
-WebDatabase::State AutofillWebDataBackendImpl::UpdateIban(const Iban& iban,
-                                                          WebDatabase* db) {
+WebDatabase::State AutofillWebDataBackendImpl::UpdateLocalIban(
+    const Iban& iban,
+    WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
   // It is currently valid to try to update a missing IBAN. We simply drop
   // the write and the caller will detect this on the next refresh.
   std::unique_ptr<Iban> original_iban =
-      AutofillTable::FromWebDatabase(db)->GetIban(iban.guid());
+      AutofillTable::FromWebDatabase(db)->GetLocalIban(iban.guid());
   if (!original_iban) {
     ReportResult(Result::kUpdateIban_ReadFailure);
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
 
-  if (!AutofillTable::FromWebDatabase(db)->UpdateIban(iban)) {
+  if (!AutofillTable::FromWebDatabase(db)->UpdateLocalIban(iban)) {
     ReportResult(Result::kUpdateIban_WriteFailure);
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
@@ -705,18 +675,18 @@ WebDatabase::State AutofillWebDataBackendImpl::UpdateIban(const Iban& iban,
   return WebDatabase::COMMIT_NEEDED;
 }
 
-WebDatabase::State AutofillWebDataBackendImpl::RemoveIban(
+WebDatabase::State AutofillWebDataBackendImpl::RemoveLocalIban(
     const std::string& guid,
     WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
   std::unique_ptr<Iban> iban =
-      AutofillTable::FromWebDatabase(db)->GetIban(guid);
+      AutofillTable::FromWebDatabase(db)->GetLocalIban(guid);
   if (!iban) {
     ReportResult(Result::kRemoveIban_ReadFailure);
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
 
-  if (!AutofillTable::FromWebDatabase(db)->RemoveIban(guid)) {
+  if (!AutofillTable::FromWebDatabase(db)->RemoveLocalIban(guid)) {
     ReportResult(Result::kRemoveIban_WriteFailure);
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
@@ -881,7 +851,6 @@ WebDatabase::State AutofillWebDataBackendImpl::ClearAllServerData(
     WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
   if (AutofillTable::FromWebDatabase(db)->ClearAllServerData()) {
-    NotifyOfMultipleAutofillChanges();
     ReportResult(Result::kClearAllServerData_Success);
     return WebDatabase::COMMIT_NEEDED;
   }
@@ -893,7 +862,6 @@ WebDatabase::State AutofillWebDataBackendImpl::ClearAllLocalData(
     WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
   if (AutofillTable::FromWebDatabase(db)->ClearAllLocalData()) {
-    NotifyOfMultipleAutofillChanges();
     ReportResult(Result::kClearAllLocalData_Success);
     return WebDatabase::COMMIT_NEEDED;
   }

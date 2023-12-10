@@ -382,6 +382,14 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromDrawQuadResource(
     return status;
   }
 
+  // TODO(b/1471182): Render passes with transforms are complicated because
+  // clipping combined with filters that expand their bounds mean we don't know
+  // their exact size yet. Disabling them temporarily until we fix all the bugs.
+  bool is_rpdq = !!quad->DynamicCast<AggregatedRenderPassDrawQuad>();
+  if (absl::holds_alternative<gfx::Transform>(candidate.transform) && is_rpdq) {
+    return CandidateStatus::kFailRpdqWithTransform;
+  }
+
   candidate.is_opaque =
       !quad->ShouldDrawWithBlendingForReasonOtherThanMaskFilter();
 
@@ -788,19 +796,6 @@ gfx::RectF OverlayCandidateFactory::GetDamageRect(
   // Invalid index.
   if (overlay_damage_index >= surface_damage_rect_list_->size()) {
     DCHECK(false);
-    return gfx::RectF();
-  }
-
-  // Assigned damage assumes that |candidate.display_rect| is already in target
-  // space, but that isn't true for transformation matrices.
-  if (absl::holds_alternative<gfx::Transform>(candidate.transform)) {
-    return gfx::RectF();
-  }
-
-  // Ash can't overlay candidates that aren't pixel-aligned so don't bother
-  // assigning damage to them. This would also be a challenge because
-  // |OverlayCandidate.damage_rect| is only a gfx::Rect.
-  if (!candidate.display_rect.IsExpressibleAsRect()) {
     return gfx::RectF();
   }
 

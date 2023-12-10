@@ -17,6 +17,7 @@
 #include "components/content_settings/core/common/cookie_settings_base.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/privacy_sandbox/tracking_protection_settings.h"
 #include "components/privacy_sandbox/tracking_protection_settings_observer.h"
 
 class GURL;
@@ -65,10 +66,12 @@ class CookieSettings
   // the whole lifetime of this instance.
   // |is_incognito| indicates whether this is an incognito profile. It is not
   // true for other types of off-the-record profiles like guest mode.
-  CookieSettings(HostContentSettingsMap* host_content_settings_map,
-                 PrefService* prefs,
-                 bool is_incognito,
-                 const char* extension_scheme = kDummyExtensionScheme);
+  CookieSettings(
+      HostContentSettingsMap* host_content_settings_map,
+      PrefService* prefs,
+      privacy_sandbox::TrackingProtectionSettings* tracking_protection_settings,
+      bool is_incognito,
+      const char* extension_scheme = kDummyExtensionScheme);
 
   CookieSettings(const CookieSettings&) = delete;
   CookieSettings& operator=(const CookieSettings&) = delete;
@@ -99,6 +102,21 @@ class CookieSettings
   // This should only be called on the UI thread.
   void SetCookieSetting(const GURL& primary_url, ContentSetting setting);
 
+  // Returns whether a cookie access is allowed for the `TPCD_METADATA_GRANTS`
+  // content settings type, scoped on the provided `url` and `first_party_url`.
+  //
+  // This may be called on any thread.
+  bool IsAllowedByTpcdMetadataGrant(const GURL& url,
+                                    const GURL& first_party_url) const;
+
+  // Sets the `TPCD_HEURISTICS_GRANTS` setting for the given (`url`,
+  // `first_party_url`) pair, for the provided `ttl`.
+  //
+  // This should only be called on the UI thread.
+  void SetTemporaryCookieGrantForHeuristic(const GURL& url,
+                                           const GURL& first_party_url,
+                                           const base::TimeDelta& ttl);
+
   // Represents the TTL of each User Bypass entries.
   static constexpr base::TimeDelta kUserBypassEntriesTTL = base::Days(90);
 
@@ -123,18 +141,12 @@ class CookieSettings
   // to be held and accessed from memory by the cookie settings object.
   void SetContentSettingsFor3pcdMetadataGrants(
       const ContentSettingsForOneType settings) {
+    base::AutoLock lock(tpcd_lock_);
     settings_for_3pcd_metadata_grants_ = settings;
   }
 
-  ContentSetting GetContentSettingForTesting(
-      const GURL& primary_url,
-      const GURL& secondary_url,
-      ContentSettingsType content_type,
-      content_settings::SettingInfo* info = nullptr) {
-    return GetContentSetting(primary_url, secondary_url, content_type);
-  }
-
   ContentSettingsForOneType GetTpcdMetadataGrantsForTesting() {
+    base::AutoLock lock(tpcd_lock_);
     return settings_for_3pcd_metadata_grants_;
   }
 
@@ -196,9 +208,6 @@ class CookieSettings
   // called.
   void ShutdownOnUIThread() override;
 
-  // TrackingProtectionSettingsObserver:
-  void OnTrackingProtection3pcdChanged() override;
-
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   void AddObserver(Observer* obs) { observers_.AddObserver(obs); }
@@ -209,9 +218,6 @@ class CookieSettings
   ~CookieSettings() override;
 
  private:
-  // TrackingProtectionSettingsObserver:
-  void OnBlockAllThirdPartyCookiesChanged() override;
-
   // Evaluates if third-party cookies are blocked. Should only be called
   // when the preference changes to update the internal state.
   bool ShouldBlockThirdPartyCookiesInternal();
@@ -234,20 +240,23 @@ class CookieSettings
       const std::string& scheme) const override;
   bool IsStorageAccessApiEnabled() const override;
 
+  // TrackingProtectionSettingsObserver:
+  void OnTrackingProtection3pcdChanged() override;
+  void OnBlockAllThirdPartyCookiesChanged() override;
+
   // content_settings::Observer:
   void OnContentSettingChanged(
       const ContentSettingsPattern& primary_pattern,
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsTypeSet content_type_set) override;
 
-  // Indicates whether the current user profile has been onboarded to 3PCD.
-  //
-  // TODO(http://b/302524567): Remove this function in the future and just use
-  // `TrackingProtectionSettings::IsTrackingProtection3pcdEnabled()`.
-  bool IsTrackingProtection3pcdEnabled();
-
   base::ThreadChecker thread_checker_;
   base::ObserverList<Observer> observers_;
+  raw_ptr<privacy_sandbox::TrackingProtectionSettings>
+      tracking_protection_settings_;
+  base::ScopedObservation<privacy_sandbox::TrackingProtectionSettings,
+                          privacy_sandbox::TrackingProtectionSettingsObserver>
+      tracking_protection_settings_observation_{this};
   const scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   base::ScopedObservation<HostContentSettingsMap, content_settings::Observer>
       content_settings_observation_{this};
@@ -262,7 +271,10 @@ class CookieSettings
   // TODO(http://b/290039145): There's a chance for the list to get considerably
   // big. Look into optimizing memory by querying straight from a global
   // service.
-  ContentSettingsForOneType settings_for_3pcd_metadata_grants_;
+
+  mutable base::Lock tpcd_lock_;
+  ContentSettingsForOneType settings_for_3pcd_metadata_grants_
+      GUARDED_BY(tpcd_lock_);
 
   mutable base::Lock lock_;
   bool block_third_party_cookies_ GUARDED_BY(lock_);

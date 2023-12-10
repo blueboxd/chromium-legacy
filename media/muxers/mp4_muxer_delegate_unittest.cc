@@ -68,7 +68,8 @@ class Mp4MuxerDelegateTest : public testing::Test {
   }
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  void PopulateAVCDecoderConfiguration(std::vector<uint8_t>& code_description) {
+  void PopulateAVCDecoderConfiguration(
+      std::vector<uint8_t>& video_codec_description) {
     // copied from box_reader_unittest.cc.
     std::vector<uint8_t> test_data{
         0x1,        // configurationVersion = 1
@@ -94,13 +95,13 @@ class Mp4MuxerDelegateTest : public testing::Test {
     };
     mp4::AVCDecoderConfigurationRecord avc_config;
     ASSERT_TRUE(avc_config.Parse(test_data.data(), test_data.size()));
-    ASSERT_TRUE(avc_config.Serialize(code_description));
+    ASSERT_TRUE(avc_config.Serialize(video_codec_description));
   }
 
-  void PopulateAacAdts(std::vector<uint8_t>& code_description) {
+  void PopulateAacAdts(std::vector<uint8_t>& audio_video_codec_description) {
     // copied from aac_unittest.cc.
     std::vector<uint8_t> test_data = {0x12, 0x10};
-    code_description = test_data;
+    audio_video_codec_description = test_data;
   }
 #endif
 
@@ -174,18 +175,20 @@ TEST_F(Mp4MuxerDelegateTest, AddVideoFrame) {
       run_loop.QuitClosure(), &total_written_data, &moov_written_data,
       &first_moof_written_data, &second_moof_written_data, &callback_count));
 
-  std::vector<uint8_t> code_description;
-  PopulateAVCDecoderConfiguration(code_description);
+  std::vector<uint8_t> video_codec_description;
+  PopulateAVCDecoderConfiguration(video_codec_description);
 
   base::TimeTicks base_time_ticks = base::TimeTicks::Now();
 
-  constexpr uint32_t kSampleDurations[] = {1020, 960, 900, 950};
+  constexpr uint32_t kSampleDurations[] = {29, 32, 31, 30};
+  constexpr uint32_t kSampleDurationsAfterTimescale[] = {870, 960, 930, 900};
+
   base::TimeDelta delta;
 
   media::Muxer::VideoParameters params(gfx::Size(kWidth, kHeight), 30,
                                        media::VideoCodec::kH264,
                                        gfx::ColorSpace());
-  delegate.AddVideoFrame(params, video_stream_1, code_description,
+  delegate.AddVideoFrame(params, video_stream_1, video_codec_description,
                          base_time_ticks, true);
   for (int i = 0; i < 3; ++i) {
     delta += base::Milliseconds(kSampleDurations[i]);
@@ -194,7 +197,7 @@ TEST_F(Mp4MuxerDelegateTest, AddVideoFrame) {
   }
 
   delta += base::Milliseconds(kSampleDurations[3]);
-  delegate.AddVideoFrame(params, video_stream_1, code_description,
+  delegate.AddVideoFrame(params, video_stream_1, video_codec_description,
                          base_time_ticks + delta, true);
   for (int i = 0; i < 2; ++i) {
     delta += base::Milliseconds(kSampleDurations[i]);
@@ -339,12 +342,13 @@ TEST_F(Mp4MuxerDelegateTest, AddVideoFrame) {
 
     ASSERT_EQ(1u, traf_boxes[0].runs.size());
     EXPECT_EQ(4u, traf_boxes[0].runs[0].sample_count);
-    EXPECT_EQ(132u, traf_boxes[0].runs[0].data_offset);
+    EXPECT_EQ(136u, traf_boxes[0].runs[0].data_offset);
     mdat_video_data_offset = traf_boxes[0].runs[0].data_offset;
 
     ASSERT_EQ(4u, traf_boxes[0].runs[0].sample_durations.size());
-    EXPECT_EQ(std::vector<uint32_t>(std::begin(kSampleDurations),
-                                    std::end(kSampleDurations)),
+
+    EXPECT_EQ(std::vector<uint32_t>(std::begin(kSampleDurationsAfterTimescale),
+                                    std::end(kSampleDurationsAfterTimescale)),
               traf_boxes[0].runs[0].sample_durations);
 
     ASSERT_EQ(4u, traf_boxes[0].runs[0].sample_sizes.size());
@@ -407,14 +411,16 @@ TEST_F(Mp4MuxerDelegateTest, AddVideoFrame) {
 
     ASSERT_EQ(1u, traf_boxes[0].runs.size());
     EXPECT_EQ(3u, traf_boxes[0].runs[0].sample_count);
-    EXPECT_EQ(124u, traf_boxes[0].runs[0].data_offset);
+    EXPECT_EQ(128u, traf_boxes[0].runs[0].data_offset);
     mdat_video_data_offset = traf_boxes[0].runs[0].data_offset;
 
     ASSERT_EQ(3u, traf_boxes[0].runs[0].sample_durations.size());
-    EXPECT_EQ(kSampleDurations[0], traf_boxes[0].runs[0].sample_durations[0]);
-    EXPECT_EQ(kSampleDurations[1], traf_boxes[0].runs[0].sample_durations[1]);
+    EXPECT_EQ(kSampleDurationsAfterTimescale[0],
+              traf_boxes[0].runs[0].sample_durations[0]);
+    EXPECT_EQ(kSampleDurationsAfterTimescale[1],
+              traf_boxes[0].runs[0].sample_durations[1]);
     // The last sample duration of the last fragment will 1/frame_rate.
-    EXPECT_EQ(33u, traf_boxes[0].runs[0].sample_durations[2]);
+    EXPECT_EQ(999u, traf_boxes[0].runs[0].sample_durations[2]);
 
     ASSERT_EQ(3u, traf_boxes[0].runs[0].sample_sizes.size());
     // kFirstSampleFlagsPresent enabled and no sample_flags entry,
@@ -485,13 +491,13 @@ TEST_F(Mp4MuxerDelegateTest, AddAudioFrame) {
       run_loop.QuitClosure(), &total_written_data, &moov_written_data,
       &first_moof_written_data, &callback_count));
 
-  std::vector<uint8_t> code_description;
-  PopulateAacAdts(code_description);
+  std::vector<uint8_t> audio_codec_description;
+  PopulateAacAdts(audio_codec_description);
 
   base::TimeTicks base_time_ticks = base::TimeTicks::Now();
   base::TimeDelta delta;
 
-  delegate.AddAudioFrame(params, audio_stream, code_description,
+  delegate.AddAudioFrame(params, audio_stream, audio_codec_description,
                          base_time_ticks);
   int incremental_delta = 30;
 
@@ -643,14 +649,14 @@ TEST_F(Mp4MuxerDelegateTest, AddAudioFrame) {
 
     ASSERT_EQ(1u, traf_boxes[0].runs.size());
     EXPECT_EQ(30u, traf_boxes[0].runs[0].sample_count);
-    EXPECT_EQ(336u, traf_boxes[0].runs[0].data_offset);
+    EXPECT_EQ(340u, traf_boxes[0].runs[0].data_offset);
     mdat_audio_data_offset = traf_boxes[0].runs[0].data_offset;
 
     ASSERT_EQ(30u, traf_boxes[0].runs[0].sample_durations.size());
-    EXPECT_EQ(30u, traf_boxes[0].runs[0].sample_durations[0]);
-    EXPECT_EQ(31u, traf_boxes[0].runs[0].sample_durations[1]);
-    EXPECT_EQ(58u, traf_boxes[0].runs[0].sample_durations[28]);
-    EXPECT_EQ(23u, traf_boxes[0].runs[0].sample_durations[29]);
+    EXPECT_EQ(1323u, traf_boxes[0].runs[0].sample_durations[0]);
+    EXPECT_EQ(1367u, traf_boxes[0].runs[0].sample_durations[1]);
+    EXPECT_EQ(2557u, traf_boxes[0].runs[0].sample_durations[28]);
+    EXPECT_EQ(1014u, traf_boxes[0].runs[0].sample_durations[29]);
 
     ASSERT_EQ(30u, traf_boxes[0].runs[0].sample_sizes.size());
     // kFirstSampleFlagsPresent is not enabled.
@@ -720,13 +726,13 @@ TEST_F(Mp4MuxerDelegateTest, AudioOnlyNewFragmentCreation) {
           &callback_count),
       base::Milliseconds(300));
 
-  std::vector<uint8_t> code_description;
-  PopulateAacAdts(code_description);
+  std::vector<uint8_t> audio_codec_description;
+  PopulateAacAdts(audio_codec_description);
 
   base::TimeTicks base_time_ticks = base::TimeTicks::Now();
   base::TimeDelta delta;
 
-  delegate.AddAudioFrame(params, audio_stream, code_description,
+  delegate.AddAudioFrame(params, audio_stream, audio_codec_description,
                          base_time_ticks);
   // Total count is 24, which will have 3 fragments and the last fragment
   // has 4 samples.
@@ -775,12 +781,12 @@ TEST_F(Mp4MuxerDelegateTest, AudioOnlyNewFragmentCreation) {
 
     ASSERT_EQ(1u, traf_boxes[0].runs.size());
     EXPECT_EQ(4u, traf_boxes[0].runs[0].sample_count);
-    EXPECT_EQ(128u, traf_boxes[0].runs[0].data_offset);
+    EXPECT_EQ(132u, traf_boxes[0].runs[0].data_offset);
     mdat_audio_data_offset = traf_boxes[0].runs[0].data_offset;
 
     ASSERT_EQ(4u, traf_boxes[0].runs[0].sample_durations.size());
-    EXPECT_EQ(30u, traf_boxes[0].runs[0].sample_durations[0]);
-    EXPECT_EQ(30u, traf_boxes[0].runs[0].sample_durations[1]);
+    EXPECT_EQ(1323u, traf_boxes[0].runs[0].sample_durations[0]);
+    EXPECT_EQ(1323u, traf_boxes[0].runs[0].sample_durations[1]);
 
     ASSERT_EQ(4u, traf_boxes[0].runs[0].sample_sizes.size());
 
@@ -938,12 +944,12 @@ TEST_F(Mp4MuxerDelegateTest, AudioAndVideoAddition) {
     // `trun` test of audio.
     ASSERT_EQ(1u, traf_boxes[0].runs.size());
     EXPECT_EQ(27u, traf_boxes[0].runs[0].sample_count);
-    EXPECT_EQ(388u, traf_boxes[0].runs[0].data_offset);
+    EXPECT_EQ(396u, traf_boxes[0].runs[0].data_offset);
     ASSERT_EQ(27u, traf_boxes[0].runs[0].sample_durations.size());
-    EXPECT_EQ(30u, traf_boxes[0].runs[0].sample_durations[0]);
-    EXPECT_EQ(30u, traf_boxes[0].runs[0].sample_durations[1]);
-    EXPECT_EQ(30u, traf_boxes[0].runs[0].sample_durations[2]);
-    EXPECT_EQ(30u, traf_boxes[0].runs[0].sample_durations[3]);
+    EXPECT_EQ(1323u, traf_boxes[0].runs[0].sample_durations[0]);
+    EXPECT_EQ(1323u, traf_boxes[0].runs[0].sample_durations[1]);
+    EXPECT_EQ(1323u, traf_boxes[0].runs[0].sample_durations[2]);
+    EXPECT_EQ(1323u, traf_boxes[0].runs[0].sample_durations[3]);
 
     ASSERT_EQ(27u, traf_boxes[0].runs[0].sample_sizes.size());
 
@@ -955,12 +961,12 @@ TEST_F(Mp4MuxerDelegateTest, AudioAndVideoAddition) {
     // `trun` test of video.
     ASSERT_EQ(1u, traf_boxes[1].runs.size());
     EXPECT_EQ(1u, traf_boxes[1].runs[0].sample_count);
-    EXPECT_EQ(10405u, traf_boxes[1].runs[0].data_offset);
+    EXPECT_EQ(10413u, traf_boxes[1].runs[0].data_offset);
 
     ASSERT_EQ(1u, traf_boxes[1].runs[0].sample_durations.size());
 
     // The first and last item.
-    EXPECT_EQ(50u, traf_boxes[1].runs[0].sample_durations[0]);
+    EXPECT_EQ(1500u, traf_boxes[1].runs[0].sample_durations[0]);
   }
 
   {
@@ -989,22 +995,23 @@ TEST_F(Mp4MuxerDelegateTest, AudioAndVideoAddition) {
 
     // `trun` test of audio.
     EXPECT_EQ(1u, traf_boxes[0].runs[0].sample_count);
-    EXPECT_EQ(184u, traf_boxes[0].runs[0].data_offset);
+    EXPECT_EQ(188u, traf_boxes[0].runs[0].data_offset);
     ASSERT_EQ(1u, traf_boxes[0].runs[0].sample_durations.size());
 
     // video track.
     // `tfdt` test of video.
-    EXPECT_EQ(50u, traf_boxes[1].decode_time.decode_time);
+    EXPECT_EQ(ConvertToTimescale(base::Milliseconds(50), 30000),
+              traf_boxes[1].decode_time.decode_time);
 
     // `trun` test of video.
     ASSERT_EQ(1u, traf_boxes[1].runs.size());
     EXPECT_EQ(1u, traf_boxes[1].runs[0].sample_count);
-    EXPECT_EQ(555u, traf_boxes[1].runs[0].data_offset);
+    EXPECT_EQ(559u, traf_boxes[1].runs[0].data_offset);
 
     ASSERT_EQ(1u, traf_boxes[1].runs[0].sample_durations.size());
 
     // The first and last item.
-    EXPECT_EQ(33u, traf_boxes[1].runs[0].sample_durations[0]);
+    EXPECT_EQ(999u, traf_boxes[1].runs[0].sample_durations[0]);
   }
 }
 
@@ -1072,13 +1079,13 @@ TEST_F(Mp4MuxerDelegateTest, MfraBoxOnAudioAndVideoAddition) {
           &fourth_moof_written_data, &mfra_written_data, &callback_count),
       base::Milliseconds(300));
 
-  std::vector<uint8_t> code_description;
-  PopulateAacAdts(code_description);
+  std::vector<uint8_t> audio_codec_description;
+  PopulateAacAdts(audio_codec_description);
 
   base::TimeTicks base_time_ticks = base::TimeTicks::Now();
   base::TimeDelta delta;
 
-  delegate.AddAudioFrame(params, audio_stream, code_description,
+  delegate.AddAudioFrame(params, audio_stream, audio_codec_description,
                          base_time_ticks);
   // Total count is 24, which will have 3 fragments and the last fragment
   // has 4 samples.
@@ -1091,13 +1098,13 @@ TEST_F(Mp4MuxerDelegateTest, MfraBoxOnAudioAndVideoAddition) {
   }
 
   // video stream, third fragment.
-  std::vector<uint8_t> video_code_description;
-  PopulateAVCDecoderConfiguration(video_code_description);
+  std::vector<uint8_t> video_codec_description;
+  PopulateAVCDecoderConfiguration(video_codec_description);
 
   media::Muxer::VideoParameters video_params(gfx::Size(kWidth, kHeight), 30,
                                              media::VideoCodec::kH264,
                                              gfx::ColorSpace());
-  delegate.AddVideoFrame(video_params, video_stream, video_code_description,
+  delegate.AddVideoFrame(video_params, video_stream, video_codec_description,
                          base_time_ticks, true);
   for (int i = 0; i < kMaxAudioSampleFragment; ++i) {
     delta += base::Milliseconds(30);
@@ -1106,7 +1113,7 @@ TEST_F(Mp4MuxerDelegateTest, MfraBoxOnAudioAndVideoAddition) {
   }
 
   // video stream, fourth fragment.
-  delegate.AddVideoFrame(video_params, video_stream, video_code_description,
+  delegate.AddVideoFrame(video_params, video_stream, video_codec_description,
                          base_time_ticks + base::Milliseconds(50), true);
   delegate.AddAudioFrame(params, audio_stream, absl::nullopt,
                          base_time_ticks + delta + base::Milliseconds(30));
@@ -1243,24 +1250,24 @@ TEST_F(Mp4MuxerDelegateTest, VideoAndAudioAddition) {
           &callback_count),
       base::Milliseconds(300));
 
-  std::vector<uint8_t> code_description;
-  PopulateAacAdts(code_description);
+  std::vector<uint8_t> audio_codec_description;
+  PopulateAacAdts(audio_codec_description);
 
   base::TimeTicks base_time_ticks = base::TimeTicks::Now();
   base::TimeDelta delta;
 
   // video stream.
-  std::vector<uint8_t> video_code_description;
-  PopulateAVCDecoderConfiguration(video_code_description);
+  std::vector<uint8_t> video_codec_description;
+  PopulateAVCDecoderConfiguration(video_codec_description);
 
   media::Muxer::VideoParameters video_params(gfx::Size(kWidth, kHeight), 30,
                                              media::VideoCodec::kH264,
                                              gfx::ColorSpace());
-  delegate.AddVideoFrame(video_params, video_stream, video_code_description,
+  delegate.AddVideoFrame(video_params, video_stream, video_codec_description,
                          base_time_ticks, true);
 
   // audio stream.
-  delegate.AddAudioFrame(params, audio_stream, code_description,
+  delegate.AddAudioFrame(params, audio_stream, audio_codec_description,
                          base_time_ticks);
   // Total count is 24, which will have 3 fragments and the last fragment
   // has 4 samples.
@@ -1313,9 +1320,9 @@ TEST_F(Mp4MuxerDelegateTest, VideoAndAudioAddition) {
     // `trun` test of audio.
     ASSERT_EQ(1u, traf_boxes[0].runs.size());
     EXPECT_EQ(1u, traf_boxes[0].runs[0].sample_count);
-    EXPECT_EQ(364u, traf_boxes[0].runs[0].data_offset);
+    EXPECT_EQ(372u, traf_boxes[0].runs[0].data_offset);
     ASSERT_EQ(1u, traf_boxes[0].runs[0].sample_durations.size());
-    EXPECT_EQ(33u, traf_boxes[0].runs[0].sample_durations[0]);
+    EXPECT_EQ(999u, traf_boxes[0].runs[0].sample_durations[0]);
 
     ASSERT_EQ(1u, traf_boxes[0].runs[0].sample_sizes.size());
     // kFirstSampleFlagsPresent enabled and no sample_flags entry,
@@ -1333,13 +1340,150 @@ TEST_F(Mp4MuxerDelegateTest, VideoAndAudioAddition) {
     // `trun` test of video.
     ASSERT_EQ(1u, traf_boxes[1].runs.size());
     EXPECT_EQ(24u, traf_boxes[1].runs[0].sample_count);
-    EXPECT_EQ(735u, traf_boxes[1].runs[0].data_offset);
+    EXPECT_EQ(743u, traf_boxes[1].runs[0].data_offset);
 
     ASSERT_EQ(24u, traf_boxes[1].runs[0].sample_durations.size());
 
     // The first and last item.
-    EXPECT_EQ(30u, traf_boxes[1].runs[0].sample_durations[0]);
-    EXPECT_EQ(23u, traf_boxes[1].runs[0].sample_durations[23]);
+    EXPECT_EQ(1323u, traf_boxes[1].runs[0].sample_durations[0]);
+    EXPECT_EQ(1014u, traf_boxes[1].runs[0].sample_durations[23]);
+  }
+}
+
+TEST_F(Mp4MuxerDelegateTest, AudioVideoAndAudioVideoFragment) {
+  // Add audio and video the first fragment, but video and audio
+  // on the second segment.
+  media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                media::ChannelLayoutConfig::Stereo(),
+                                kAudioSampleRate, 1000);
+
+  base::MemoryMappedFile mapped_file_1;
+  LoadEncodedFile("aac-44100-packet-0", mapped_file_1);
+  base::StringPiece audio_stream(
+      reinterpret_cast<const char*>(mapped_file_1.data()),
+      mapped_file_1.length());
+
+  base::MemoryMappedFile mapped_file_2;
+  LoadEncodedFile("avc-bitstream-format-0.h264", mapped_file_2);
+  base::StringPiece video_stream(
+      reinterpret_cast<const char*>(mapped_file_1.data()),
+      mapped_file_1.length());
+
+  base::RunLoop run_loop;
+
+  std::vector<uint8_t> total_written_data;
+  std::vector<uint8_t> first_moof_written_data;
+  std::vector<uint8_t> second_moof_written_data;
+
+  int callback_count = 0;
+  Mp4MuxerDelegate delegate(
+      base::BindRepeating(
+          [](base::OnceClosure run_loop_quit,
+             std::vector<uint8_t>* total_written_data,
+             std::vector<uint8_t>* first_moof_written_data,
+             std::vector<uint8_t>* second_moof_written_data,
+             int* callback_count, base::StringPiece mp4_data_string) {
+            std::copy(mp4_data_string.begin(), mp4_data_string.end(),
+                      std::back_inserter(*total_written_data));
+
+            ++(*callback_count);
+            switch (*callback_count) {
+              case 1:
+              case 2:
+                // DO Nothing.
+                break;
+              case 3:
+                std::copy(mp4_data_string.begin(), mp4_data_string.end(),
+                          std::back_inserter(*first_moof_written_data));
+                break;
+              case 4:
+                std::copy(mp4_data_string.begin(), mp4_data_string.end(),
+                          std::back_inserter(*second_moof_written_data));
+                // Quit.
+                std::move(run_loop_quit).Run();
+                break;
+            }
+          },
+          run_loop.QuitClosure(), &total_written_data, &first_moof_written_data,
+          &second_moof_written_data, &callback_count),
+      base::Milliseconds(300));
+
+  std::vector<uint8_t> audio_codec_description;
+  PopulateAacAdts(audio_codec_description);
+
+  // video stream.
+  std::vector<uint8_t> video_codec_description;
+  PopulateAVCDecoderConfiguration(video_codec_description);
+
+  base::TimeTicks base_time_ticks = base::TimeTicks::Now();
+  constexpr base::TimeDelta kDelta = base::Milliseconds(30);
+  media::Muxer::VideoParameters video_params(gfx::Size(kWidth, kHeight), 30,
+                                             media::VideoCodec::kH264,
+                                             gfx::ColorSpace());
+
+  // The first fragment; audio (1 sample) -> video (2 samples) track.
+  delegate.AddAudioFrame(params, audio_stream, audio_codec_description,
+                         base_time_ticks);
+  delegate.AddVideoFrame(video_params, video_stream, video_codec_description,
+                         base_time_ticks, true);
+  delegate.AddVideoFrame(video_params, video_stream, absl::nullopt,
+                         base_time_ticks + kDelta, false);
+
+  // The second fragment; video (1 sample) -> audio (2 samples) track.
+  delegate.AddVideoFrame(video_params, video_stream, video_codec_description,
+                         base_time_ticks + kDelta * 2, true);
+  delegate.AddAudioFrame(params, audio_stream, absl::nullopt,
+                         base_time_ticks + kDelta);
+  delegate.AddAudioFrame(params, audio_stream, absl::nullopt,
+                         base_time_ticks + kDelta * 2);
+  // Write box data to the callback.
+  delegate.Flush();
+
+  run_loop.Run();
+
+  {
+    // The first `moof`validation.
+    std::unique_ptr<mp4::BoxReader> moof_reader;
+    mp4::ParseResult result = mp4::BoxReader::ReadTopLevelBox(
+        first_moof_written_data.data(), first_moof_written_data.size(), nullptr,
+        &moof_reader);
+    EXPECT_EQ(result, mp4::ParseResult::kOk);
+    // `moof` test.
+    EXPECT_EQ(mp4::FOURCC_MOOF, moof_reader->type());
+    EXPECT_TRUE(moof_reader->ScanChildren());
+
+    // `traf` test.
+    std::vector<mp4::TrackFragment> traf_boxes;
+    EXPECT_TRUE(moof_reader->ReadChildren(&traf_boxes));
+    ASSERT_EQ(traf_boxes.size(), 2u);
+
+    // The first framgment: `trun`.
+    // The first track is audio, the second is video.
+    EXPECT_EQ(1u, traf_boxes[0].runs[0].sample_count);
+    EXPECT_EQ(2u, traf_boxes[1].runs[0].sample_count);
+  }
+  {
+    // The second `moof` validation.
+    std::unique_ptr<mp4::BoxReader> moof_reader;
+    mp4::ParseResult result = mp4::BoxReader::ReadTopLevelBox(
+        second_moof_written_data.data(), second_moof_written_data.size(),
+        nullptr, &moof_reader);
+    EXPECT_EQ(result, mp4::ParseResult::kOk);
+    // `moof` test.
+    EXPECT_EQ(mp4::FOURCC_MOOF, moof_reader->type());
+    EXPECT_TRUE(moof_reader->ScanChildren());
+
+    // `traf` test.
+    std::vector<mp4::TrackFragment> traf_boxes;
+    EXPECT_TRUE(moof_reader->ReadChildren(&traf_boxes));
+    ASSERT_EQ(traf_boxes.size(), 2u);
+
+    // The first framgment: `trun`.
+
+    // The track order should be same:
+    // first track is audio, the second is video.
+    EXPECT_EQ(2u, traf_boxes[0].runs[0].sample_count);
+    EXPECT_EQ(1u, traf_boxes[1].runs[0].sample_count);
   }
 }
 

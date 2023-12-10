@@ -22,7 +22,7 @@
 #include "chrome/browser/password_manager/account_password_store_factory.h"
 #include "chrome/browser/password_manager/password_receiver_service_factory.h"
 #include "chrome/browser/password_manager/password_sender_service_factory.h"
-#include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/password_manager/profile_password_store_factory.h"
 #include "chrome/browser/power_bookmarks/power_bookmark_service_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -233,7 +233,7 @@ ChromeSyncClient::ChromeSyncClient(Profile* profile)
   DCHECK(!account_web_data_service_ ||
          web_data_service_thread_ ==
              account_web_data_service_->GetDBTaskRunner());
-  profile_password_store_ = PasswordStoreFactory::GetForProfile(
+  profile_password_store_ = ProfilePasswordStoreFactory::GetForProfile(
       profile_, ServiceAccessType::IMPLICIT_ACCESS);
   account_password_store_ = AccountPasswordStoreFactory::GetForProfile(
       profile_, ServiceAccessType::IMPLICIT_ACCESS);

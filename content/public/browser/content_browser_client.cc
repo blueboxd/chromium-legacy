@@ -19,7 +19,7 @@
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
-#include "content/browser/webid/mdocs/mdoc_provider.h"
+#include "content/browser/webid/digital_credentials/digital_credential_provider.h"
 #include "content/public/browser/anchor_element_preconnect_delegate.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/browser_accessibility_state.h"
@@ -416,6 +416,18 @@ AllowServiceWorkerResult ContentBrowserClient::AllowServiceWorker(
     const GURL& script_url,
     BrowserContext* context) {
   return AllowServiceWorkerResult::Yes();
+}
+
+void ContentBrowserClient::SetCanResizeFromWebAPI(
+    content::Page* page,
+    absl::optional<bool> can_resize) {}
+
+bool ContentBrowserClient::GetCanResize(content::Page* page) {
+#if BUILDFLAG(IS_ANDROID)
+  return false;
+#else
+  return true;
+#endif
 }
 
 bool ContentBrowserClient::MayDeleteServiceWorkerRegistration(
@@ -1249,8 +1261,18 @@ bool ContentBrowserClient::ShouldSandboxNetworkService() {
 }
 
 bool ContentBrowserClient::ShouldRunOutOfProcessSystemDnsResolution() {
-  return base::FeatureList::IsEnabled(
-      network::features::kOutOfProcessSystemDnsResolution);
+// This is only useful on Linux desktop and Android where system DNS
+// resolution cannot always run in a sandboxed network process. The Mac and
+// Windows sandboxing systems allow us to specify system DNS resolution as an
+// allowed action, and ChromeOS uses a simple, known system DNS configuration
+// that can be adequately sandboxed.
+// Currently Android's network service will not run out of process or sandboxed,
+// so OutOfProcessSystemDnsResolution is not currently enabled on Android.
+#if BUILDFLAG(IS_LINUX)
+  return true;
+#else
+  return false;
+#endif
 }
 
 std::string ContentBrowserClient::GetProduct() {
@@ -1463,7 +1485,8 @@ ContentBrowserClient::CreateIdentityRequestDialogController(
   return std::make_unique<IdentityRequestDialogController>();
 }
 
-std::unique_ptr<MDocProvider> ContentBrowserClient::CreateMDocProvider() {
+std::unique_ptr<DigitalCredentialProvider>
+ContentBrowserClient::CreateDigitalCredentialProvider() {
   return nullptr;
 }
 

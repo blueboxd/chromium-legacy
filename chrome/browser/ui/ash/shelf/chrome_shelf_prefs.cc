@@ -139,12 +139,22 @@ bool IsSafeToApplyDefaultPinLayout(Profile* profile) {
   const syncer::SyncService* sync_service =
       SyncServiceFactory::GetForProfile(profile);
   // No |sync_service| in incognito mode.
-  if (!sync_service)
+  if (!sync_service) {
     return true;
+  }
 
   // Tablet form-factor devices do not have position sync.
-  if (ash::switches::IsTabletFormFactor())
+  if (ash::switches::IsTabletFormFactor()) {
     return true;
+  }
+
+  // Some browser tests don't start sync fully as there is no server to download
+  // the initial data from. This prevents applying the default pin layout,
+  // required in some tests. To support this, the behavior can be overridden via
+  // command-line flags.
+  if (ash::switches::ShouldAllowDefaultShelfPinLayoutIgnoringSync()) {
+    return true;
+  }
 
   const syncer::SyncUserSettings* settings = sync_service->GetUserSettings();
 
@@ -416,21 +426,21 @@ std::vector<ash::ShelfID> ChromeShelfPrefs::GetPinnedAppsFromSync(
     }
 
     std::string app_id = GetShelfId(item_id);
-    std::string promise_package_id = sync_item->promise_package_id;
 
     // All sync items must be valid app service apps to be added to the shelf
     // with the exception of ash-chrome, which for legacy reasons does not use
     // the app service.
     bool is_ash_chrome = app_id == app_constants::kChromeAppId;
     if (!is_ash_chrome && !helper->IsValidIDForCurrentUser(app_id) &&
-        !helper->IsValidPromisePackageIdFromAppService(promise_package_id)) {
+        !ShelfControllerHelper::IsPromiseApp(profile_, app_id)) {
       continue;
     }
 
     // Prune apps that used to be policy-pinned (`is_user_pinned = false`), but
     // are not a part of the policy anymore.
     if (!is_ash_chrome && IsOnlyPolicyPinned(sync_item.get()) &&
-        !base::Contains(policy_pinned_apps, item_id)) {
+        !base::Contains(policy_pinned_apps, item_id) &&
+        !ShelfControllerHelper::IsPromiseApp(profile_, app_id)) {
       policy_delta_remove_from_shelf.push_back(item_id);
       continue;
     }
@@ -620,8 +630,10 @@ bool ChromeShelfPrefs::ShouldAddDefaultApps() const {
 void ChromeShelfPrefs::AddDefaultApps() {
   VLOG(1) << "Roll default shelf pin layout " << kDefaultPinnedAppsKey;
   std::vector<std::string> default_app_ids;
-  for (const char* default_app_id : GetDefaultPinnedAppsForFormFactor())
+  for (const char* default_app_id :
+       GetDefaultPinnedAppsForFormFactor(profile_)) {
     default_app_ids.push_back(default_app_id);
+  }
   InsertPinsAfterChromeAndBeforeFirstPinnedApp(
       app_list::AppListSyncableServiceFactory::GetForProfile(profile_),
       default_app_ids, /*is_policy_initiated=*/false);

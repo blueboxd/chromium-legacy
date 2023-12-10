@@ -144,6 +144,8 @@ String NavigationPolicyToProtocol(NavigationPolicy policy) {
       return DispositionEnum::NewWindow;
     case kNavigationPolicyPictureInPicture:
       return DispositionEnum::NewWindow;
+    case kNavigationPolicyLinkPreview:
+      NOTREACHED_NORETURN();
   }
   return DispositionEnum::CurrentTab;
 }
@@ -496,10 +498,12 @@ InspectorPageAgent::InspectorPageAgent(
       screencast_enabled_(&agent_state_, /*default_value=*/false),
       lifecycle_events_enabled_(&agent_state_, /*default_value=*/false),
       bypass_csp_enabled_(&agent_state_, /*default_value=*/false),
+      pending_script_to_evaluate_on_load_once_(&agent_state_,
+                                               /*default_value=*/String()),
       scripts_to_evaluate_on_load_(&agent_state_,
-                                   /*default_value=*/WTF::String()),
+                                   /*default_value=*/String()),
       worlds_to_evaluate_on_load_(&agent_state_,
-                                  /*default_value=*/WTF::String()),
+                                  /*default_value=*/String()),
       include_command_line_api_for_scripts_to_evaluate_on_load_(
           &agent_state_,
           /*default_value=*/false),
@@ -545,7 +549,7 @@ protocol::Response InspectorPageAgent::disable() {
   agent_state_.ClearAllFields();
   pending_isolated_worlds_.clear();
   script_to_evaluate_on_load_once_ = String();
-  pending_script_to_evaluate_on_load_once_ = String();
+  pending_script_to_evaluate_on_load_once_.Set(String());
   instrumenting_agents_->RemoveInspectorPageAgent(this);
   inspector_resource_content_loader_->Cancel(
       resource_content_loader_client_id_);
@@ -671,9 +675,10 @@ protocol::Response InspectorPageAgent::setAdBlockingEnabled(bool enable) {
 protocol::Response InspectorPageAgent::reload(
     Maybe<bool> optional_bypass_cache,
     Maybe<String> optional_script_to_evaluate_on_load) {
-  pending_script_to_evaluate_on_load_once_ =
-      optional_script_to_evaluate_on_load.value_or("");
+  pending_script_to_evaluate_on_load_once_.Set(
+      optional_script_to_evaluate_on_load.value_or(""));
   v8_session_->setSkipAllPauses(true);
+  v8_session_->resume(true /* terminate on resume */);
   return protocol::Response::Success();
 }
 
@@ -1053,8 +1058,9 @@ void InspectorPageAgent::LoadEventFired(LocalFrame* frame) {
 
 void InspectorPageAgent::WillCommitLoad(LocalFrame*, DocumentLoader* loader) {
   if (loader->GetFrame() == inspected_frames_->Root()) {
-    script_to_evaluate_on_load_once_ = pending_script_to_evaluate_on_load_once_;
-    pending_script_to_evaluate_on_load_once_ = String();
+    script_to_evaluate_on_load_once_ =
+        pending_script_to_evaluate_on_load_once_.Get();
+    pending_script_to_evaluate_on_load_once_.Set(String());
   }
   GetFrontend()->frameNavigated(BuildObjectForFrame(loader->GetFrame()),
                                 protocol::Page::NavigationTypeEnum::Navigation);
@@ -1120,6 +1126,11 @@ void InspectorPageAgent::FrameRequestedNavigation(Frame* target_frame,
                                                   const KURL& url,
                                                   ClientNavigationReason reason,
                                                   NavigationPolicy policy) {
+  // TODO(b:303396822): Support Link Preview
+  if (policy == kNavigationPolicyLinkPreview) {
+    return;
+  }
+
   GetFrontend()->frameRequestedNavigation(
       IdentifiersFactory::FrameId(target_frame),
       ClientNavigationReasonToProtocol(reason), url.GetString(),

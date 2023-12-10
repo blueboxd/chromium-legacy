@@ -253,8 +253,7 @@ struct NGStitchedAnchorQueries {
 
     // Add inline children if any.
     if (const NGFragmentItems* items = fragment.Items()) {
-      for (NGInlineCursor cursor(fragment, *items); cursor;
-           cursor.MoveToNext()) {
+      for (InlineCursor cursor(fragment, *items); cursor; cursor.MoveToNext()) {
         if (cursor.Current().IsInlineBox()) {
           DCHECK(cursor.Current().BoxFragment());
           AddBoxChild(*cursor.Current().BoxFragment(),
@@ -351,7 +350,7 @@ struct NGStitchedAnchorQueries {
     return *result.stored_value->value;
   }
 
-  HeapHashMap<const LayoutObject*, Member<NGStitchedAnchorQuery>>
+  HeapHashMap<Member<const LayoutObject>, Member<NGStitchedAnchorQuery>>
       anchor_queries_;
   // The set of |LayoutObject| to traverse. When adding children, children not
   // in this set are skipped.

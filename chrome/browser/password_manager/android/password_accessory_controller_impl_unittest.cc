@@ -44,11 +44,11 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/webauthn/android/cred_man_support.h"
 #include "components/webauthn/android/webauthn_cred_man_delegate.h"
 #include "components/webauthn/android/webauthn_cred_man_delegate_factory.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/web_contents_tester.h"
-#include "device/fido/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -81,6 +81,8 @@ using testing::Return;
 using testing::ReturnRef;
 using testing::SaveArg;
 using testing::StrictMock;
+using webauthn::CredManSupport;
+using webauthn::WebAuthnCredManDelegate;
 using FillingSource = ManualFillingController::FillingSource;
 using IsFillingSourceAvailable = AccessoryController::IsFillingSourceAvailable;
 using IsExactMatch = autofill::UserInfo::IsExactMatch;
@@ -205,6 +207,11 @@ std::u16string generate_password_str() {
 std::u16string cross_device_passkeys_str() {
   return l10n_util::GetStringUTF16(
       IDS_PASSWORD_MANAGER_ACCESSORY_USE_DEVICE_PASSKEY);
+}
+
+std::u16string select_passkey_str() {
+  return l10n_util::GetStringUTF16(
+      IDS_PASSWORD_MANAGER_ACCESSORY_SELECT_PASSKEY);
 }
 
 // Creates a AccessorySheetDataBuilder object with a "Manage passwords..."
@@ -1075,8 +1082,8 @@ TEST_F(PasswordAccessoryControllerTest, CancelsOngoingAuthIfDestroyed) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, ShowCredManReentry) {
-  webauthn::WebAuthnCredManDelegate::override_android_version_for_testing(true);
-  base::test::ScopedFeatureList enable_feature(device::kWebAuthnAndroidCredMan);
+  WebAuthnCredManDelegate::override_cred_man_support_for_testing(
+      CredManSupport::FULL_UNLESS_INAPPLICABLE);
   CreateSheetController();
   cred_man_delegate()->OnCredManConditionalRequestPending(
       /*has_results=*/true, base::RepeatingCallback<void(bool)>());
@@ -1091,8 +1098,8 @@ TEST_F(PasswordAccessoryControllerTest, ShowCredManReentry) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, HideCredManReentryWithoutResult) {
-  webauthn::WebAuthnCredManDelegate::override_android_version_for_testing(true);
-  base::test::ScopedFeatureList enable_feature(device::kWebAuthnAndroidCredMan);
+  WebAuthnCredManDelegate::override_cred_man_support_for_testing(
+      CredManSupport::FULL_UNLESS_INAPPLICABLE);
   CreateSheetController();
   cred_man_delegate()->OnCredManConditionalRequestPending(
       /*has_results=*/false, base::RepeatingCallback<void(bool)>());
@@ -1107,8 +1114,8 @@ TEST_F(PasswordAccessoryControllerTest, HideCredManReentryWithoutResult) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, HideCredManReentryOnNonSignInField) {
-  webauthn::WebAuthnCredManDelegate::override_android_version_for_testing(true);
-  base::test::ScopedFeatureList enable_feature(device::kWebAuthnAndroidCredMan);
+  WebAuthnCredManDelegate::override_cred_man_support_for_testing(
+      CredManSupport::FULL_UNLESS_INAPPLICABLE);
   CreateSheetController();
   cred_man_delegate()->OnCredManConditionalRequestPending(
       /*has_results=*/true, base::RepeatingCallback<void(bool)>());
@@ -1123,9 +1130,8 @@ TEST_F(PasswordAccessoryControllerTest, HideCredManReentryOnNonSignInField) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, SuppressCredManReentryWithoutFeature) {
-  webauthn::WebAuthnCredManDelegate::override_android_version_for_testing(true);
-  base::test::ScopedFeatureList features;
-  features.InitAndDisableFeature(device::kWebAuthnAndroidCredMan);
+  WebAuthnCredManDelegate::override_cred_man_support_for_testing(
+      CredManSupport::DISABLED);
   CreateSheetController();
 
   EXPECT_CALL(mock_manual_filling_controller_,
@@ -1137,8 +1143,8 @@ TEST_F(PasswordAccessoryControllerTest, SuppressCredManReentryWithoutFeature) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, OnCredManConditionalUiRequested) {
-  webauthn::WebAuthnCredManDelegate::override_android_version_for_testing(true);
-  base::test::ScopedFeatureList enable_feature(device::kWebAuthnAndroidCredMan);
+  WebAuthnCredManDelegate::override_cred_man_support_for_testing(
+      CredManSupport::FULL_UNLESS_INAPPLICABLE);
   CreateSheetController();
   base::MockCallback<base::RepeatingCallback<void(bool)>> cred_man_callback;
   cred_man_delegate()->OnCredManConditionalRequestPending(
@@ -1146,6 +1152,36 @@ TEST_F(PasswordAccessoryControllerTest, OnCredManConditionalUiRequested) {
 
   EXPECT_CALL(cred_man_callback, Run);
 
+  controller()->OnOptionSelected(
+      autofill::AccessoryAction::CREDMAN_CONDITIONAL_UI_REENTRY);
+}
+
+TEST_F(PasswordAccessoryControllerTest, ShowAndSelectCredManReentryOption) {
+  base::MockCallback<base::RepeatingCallback<void(bool)>> cred_man_callback;
+  WebAuthnCredManDelegate::override_cred_man_support_for_testing(
+      CredManSupport::FULL_UNLESS_INAPPLICABLE);
+  CreateSheetController();
+  cred_man_delegate()->OnCredManConditionalRequestPending(
+      /*has_results=*/true, cred_man_callback.Get());
+  cache()->SaveCredentialsAndBlocklistedForOrigin(
+      {}, CredentialCache::IsOriginBlocklisted(false),
+      url::Origin::Create(GURL(kExampleSite)));
+
+  controller()->RefreshSuggestionsForField(
+      FocusedFieldType::kFillableUsernameField,
+      /*is_manual_generation_available=*/false);
+  EXPECT_EQ(
+      controller()->GetSheetData(),
+      AccessorySheetData::Builder(AccessoryTabType::PASSWORDS,
+                                  passwords_empty_str(kExampleDomain))
+          .AppendFooterCommand(
+              select_passkey_str(),
+              autofill::AccessoryAction::CREDMAN_CONDITIONAL_UI_REENTRY)
+          .AppendFooterCommand(manage_passwords_str(),
+                               autofill::AccessoryAction::MANAGE_PASSWORDS)
+          .Build());
+
+  EXPECT_CALL(cred_man_callback, Run);
   controller()->OnOptionSelected(
       autofill::AccessoryAction::CREDMAN_CONDITIONAL_UI_REENTRY);
 }

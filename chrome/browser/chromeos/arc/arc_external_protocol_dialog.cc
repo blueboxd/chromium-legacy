@@ -37,7 +37,7 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/apps/intent_helper/metrics/intent_handling_metrics.h"
+#include "chrome/browser/apps/link_capturing/metrics/intent_handling_metrics.h"
 #endif
 
 using content::WebContents;
@@ -109,7 +109,7 @@ bool MaybeAddDevicesAndShowPicker(
     bool show_remember_selection,
     IntentPickerResponseWithDevices callback) {
   Browser* browser =
-      web_contents ? chrome::FindBrowserWithWebContents(web_contents) : nullptr;
+      web_contents ? chrome::FindBrowserWithTab(web_contents) : nullptr;
   if (!browser) {
     return false;
   }
@@ -615,8 +615,7 @@ void OnAppIconsReceived(
   }
 
   Browser* browser =
-      web_contents ? chrome::FindBrowserWithWebContents(web_contents.get())
-                   : nullptr;
+      web_contents ? chrome::FindBrowserWithTab(web_contents.get()) : nullptr;
 
   if (!browser) {
     return std::move(handled_cb).Run(false);

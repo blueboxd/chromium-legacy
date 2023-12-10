@@ -560,11 +560,6 @@ targets.script(
     ],
 )
 
-targets.compile_target(
-    name = "chromedriver_webview_shell_apk",
-    label = "//chrome/test/chromedriver/test/webview_shell:chromedriver_webview_shell_apk",
-)
-
 targets.windowed_test_launcher(
     name = "chromeos_integration_tests",
     label = "//chrome/test:chromeos_integration_tests",
@@ -641,11 +636,6 @@ targets.script(
 targets.windowed_test_launcher(
     name = "chromedriver_unittests",
     label = "//chrome/test/chromedriver:chromedriver_unittests",
-)
-
-targets.generated_script(
-    name = "chrome_finch_smoke_tests",
-    label = "//clank/java:chrome_finch_smoke_tests",
 )
 
 targets.console_test_launcher(
@@ -1264,11 +1254,6 @@ targets.generated_script(
 targets.windowed_test_launcher(
     name = "lacros_chrome_browsertests",
     label = "//chrome/test:lacros_chrome_browsertests",
-)
-
-targets.windowed_test_launcher(
-    name = "lacros_chrome_browsertests_run_in_series",
-    label = "//chrome/test:lacros_chrome_browsertests_run_in_series",
     args = [
         "--test-launcher-jobs=1",
     ],
@@ -1414,11 +1399,6 @@ targets.generated_script(
 targets.generated_script(
     name = "module_installer_junit_tests",
     label = "//components/module_installer/android:module_installer_junit_tests",
-)
-
-targets.generated_script(
-    name = "monochrome_finch_smoke_tests",
-    label = "//clank/android_webview/components:monochrome_finch_smoke_tests",
 )
 
 targets.console_test_launcher(
@@ -1820,11 +1800,6 @@ targets.console_test_launcher(
 targets.generated_script(
     name = "services_junit_tests",
     label = "//services:services_junit_tests",
-)
-
-targets.console_test_launcher(
-    name = "service_manager_unittests",
-    label = "//services/service_manager/tests:service_manager_unittests",
 )
 
 targets.windowed_test_launcher(

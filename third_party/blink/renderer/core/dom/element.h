@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/region_capture_crop_id.h"
+#include "third_party/blink/renderer/platform/restriction_target_id.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -398,12 +399,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   gfx::RectF GetBoundingClientRectNoLifecycleUpdate() const;
   DOMRect* getBoundingClientRect();
 
-  // Call the NoLifecycleUpdate variants if you are sure that the lifcycle is
-  // already updated to at least pre-paint clean.
   const AtomicString& computedRole();
-  const AtomicString& ComputedRoleNoLifecycleUpdate();
   String computedName();
-  String ComputedNameNoLifecycleUpdate();
 
   AccessibleNode* ExistingAccessibleNode() const;
   AccessibleNode* accessibleNode();
@@ -602,8 +599,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // The definition is in node_computed_style.h.
   inline const ComputedStyle* GetComputedStyle() const;
 
+  using Node::DetachLayoutTree;
   void AttachLayoutTree(AttachContext&) override;
-  void DetachLayoutTree(bool performing_reattach = false) override;
+  void DetachLayoutTree(bool performing_reattach) override;
 
   virtual LayoutObject* CreateLayoutObject(const ComputedStyle&);
   virtual bool LayoutObjectIsNeeded(const DisplayStyle&) const;
@@ -664,17 +662,25 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   void SetNeedsCompositingUpdate();
 
-  // Assigns a crop-ID to the element. It's an error to try to call this
-  // if the element already has a crop-ID attached (even if attempting to
-  // set the same crop-ID again).
-  //
-  // Not all element types have a region capture crop-ID, however using it here
-  // allows access to the element rare data struct. Currently, once an element
-  // is marked for region capture it cannot be unmarked.
-  void SetRegionCaptureCropId(std::unique_ptr<RegionCaptureCropId> crop_id);
+  // Associates the element with a RegionCaptureCropId, which is the object
+  // internally backing a CropTarget.
+  // This method may be called at most once. The ID must be non-null.
+  void SetRegionCaptureCropId(std::unique_ptr<RegionCaptureCropId> id);
 
-  // Returns a pointer to the crop-ID if one was set; nullptr otherwise.
+  // If SetRegionCaptureCropId(id) was previously called on `this`,
+  // returns the non-empty `id` which it previously provided.
+  // Otherwise, returns a nullptr.
   const RegionCaptureCropId* GetRegionCaptureCropId() const;
+
+  // Associates the element with a RestrictionTargetId, which is the object
+  // internally backing a RestrictionTarget.
+  // This method may be called at most once. The ID must be non-null.
+  void SetRestrictionTargetId(std::unique_ptr<RestrictionTargetId> id);
+
+  // If SetRestrictionTargetId(id) was previously called on `this`,
+  // returns the non-empty `id` which it previously provided.
+  // Otherwise, returns a nullptr.
+  const RestrictionTargetId* GetRestrictionTargetId() const;
 
   ShadowRoot* attachShadow(const ShadowRootInit*, ExceptionState&);
 
@@ -861,6 +867,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void setInnerHTMLWithDeclarativeShadowDOMForTesting(const String& html);
   String getInnerHTML(const GetInnerHTMLOptions* options) const;
   void setOuterHTML(const String&, ExceptionState& = ASSERT_NO_EXCEPTION);
+  // https://github.com/whatwg/html/pull/9538
+  void setHTMLUnsafe(const String& html, ExceptionState&);
 
   void setPointerCapture(PointerId poinetr_id, ExceptionState&);
   void releasePointerCapture(PointerId pointer_id, ExceptionState&);
@@ -1232,8 +1240,16 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // https://drafts.csswg.org/css-anchor-1/#implicit-anchor-element
   Element* ImplicitAnchorElement();
 
+  void UpdateDirectionalityAndDescendant(TextDirection direction);
+  void UpdateDescendantHasDirAutoAttribute(bool has_dir_auto);
+  enum class UpdateAncestorTraversal {
+    IncludeSelf,  // self and ancestors
+    ExcludeSelf,  // ancestors, but not self
+  };
+  void UpdateAncestorWithDirAuto(UpdateAncestorTraversal traversal);
+
  protected:
-  bool HasElementData() const { return element_data_; }
+  bool HasElementData() const { return static_cast<bool>(element_data_); }
   const ElementData* GetElementData() const { return element_data_.Get(); }
   UniqueElementData& EnsureUniqueElementData();
 
@@ -1296,8 +1312,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // This method cannot be moved to LayoutObject because some focusable nodes
   // don't have layoutObjects. e.g., HTMLOptionElement.
   virtual bool IsFocusableStyle() const;
-  // Contains the base logic for IsFocusableStyle.
-  bool IsBaseElementFocusableStyle() const;
   // Similar to IsFocusableStyle, except that it will ensure that any deferred
   // work to create layout objects is completed (e.g. in display-locked trees).
   bool IsFocusableStyleAfterUpdate() const;
@@ -1339,6 +1353,13 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void LangAttributeChanged();
 
   TextDirection ParentDirectionality() const;
+  void AdjustDirectionalityIfNeededAfterChildrenChanged(
+      const ChildrenChange& change);
+  bool RecalcSelfOrAncestorHasDirAuto();
+  template <typename Traversal>
+  absl::optional<TextDirection> ResolveAutoDirectionality(
+      bool& is_deferred,
+      Node* stay_within) const;
 
  private:
   friend class AXObject;
@@ -1400,8 +1421,10 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   // Determine whether pseudo highlight style must be recalculated,
   // either because full recalc is required or the parent has font relative
-  // units.
-  bool ShouldRecalcHighlightPseudoStyle(HighlightRecalc, const ComputedStyle*);
+  // units and the parent's font size differs from the originating element.
+  bool ShouldRecalcHighlightPseudoStyle(HighlightRecalc,
+                                        const ComputedStyle*,
+                                        const ComputedStyle&);
 
   // Recalc those custom highlights that require it.
   void RecalcCustomHighlightPseudoStyle(const StyleRecalcContext&,

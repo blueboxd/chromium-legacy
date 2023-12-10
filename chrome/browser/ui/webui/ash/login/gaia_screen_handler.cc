@@ -57,12 +57,12 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/profiles/signin_profile_handler.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
+#include "chrome/browser/auth_notification_types.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/certificate_provider/certificate_provider_service.h"
 #include "chrome/browser/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/certificate_provider/pin_dialog_manager.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/net/nss_temp_certs_cache_chromeos.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -867,8 +867,16 @@ void GaiaScreenHandler::CompleteAuthentication(
   signin_artifacts.cookies->TransferCookiesToUserContext(*user_context);
 
   // Finish the authentication
+  bool confirm_saml_password = signin_artifacts.using_saml &&
+                               !signin_artifacts.password.has_value() &&
+                               !IsSamlUserPasswordless();
+  bool need_password_gaia =
+      !signin_artifacts.using_saml &&
+      signin_artifacts.password.value_or(std::string()).empty() &&
+      !ash::features::AreLocalPasswordsEnabledForConsumers();
   const bool needs_saml_confirm_password =
-      !signin_artifacts.password.has_value() && !IsSamlUserPasswordless();
+      confirm_saml_password || need_password_gaia;
+
   if (needs_saml_confirm_password) {
     auto scraped_saml_passwords =
         signin_artifacts.scraped_saml_passwords.value_or(::login::StringList{});

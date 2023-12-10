@@ -19,8 +19,9 @@
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_text_combine.h"
-#include "third_party/blink/renderer/core/layout/list_marker.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
+#include "third_party/blink/renderer/core/layout/list/layout_inline_list_item.h"
+#include "third_party/blink/renderer/core/layout/list/layout_list_item.h"
+#include "third_party/blink/renderer/core/layout/list/list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_initial_letter_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
@@ -31,8 +32,6 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_auto_space.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_inline_list_item.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
@@ -53,6 +52,7 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/clear_collection_scope.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/text/bidi_paragraph.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 
@@ -259,7 +259,7 @@ void CollectInlinesInternal(ItemsBuilder* builder,
   LayoutObject* node = GetLayoutObjectForFirstChildNode(block);
 
   const LayoutObject* symbol =
-      LayoutNGListItem::FindSymbolMarkerLayoutText(block);
+      LayoutListItem::FindSymbolMarkerLayoutText(block);
   const LayoutObject* inline_list_item_marker = nullptr;
   while (node) {
     if (auto* counter = DynamicTo<LayoutCounter>(node)) {
@@ -317,7 +317,7 @@ void CollectInlinesInternal(ItemsBuilder* builder,
       builder->ClearInlineFragment(node);
     } else if (node->IsAtomicInlineLevel()) {
       if (node->IsBoxListMarkerIncludingNG()) {
-        // LayoutNGListItem produces the 'outside' list marker as an inline
+        // LayoutListItem produces the 'outside' list marker as an inline
         // block. This is an out-of-flow item whose position is computed
         // automatically.
         builder->AppendOpaque(NGInlineItem::kListMarker, node);
@@ -333,10 +333,10 @@ void CollectInlinesInternal(ItemsBuilder* builder,
       }
       builder->ClearInlineFragment(node);
     } else if (auto* layout_inline = DynamicTo<LayoutInline>(node)) {
-      if (auto* inline_list_item = DynamicTo<LayoutNGInlineListItem>(node)) {
+      if (auto* inline_list_item = DynamicTo<LayoutInlineListItem>(node)) {
         inline_list_item->UpdateMarkerTextIfNeeded();
         inline_list_item_marker =
-            LayoutNGListItem::FindSymbolMarkerLayoutText(inline_list_item);
+            LayoutListItem::FindSymbolMarkerLayoutText(inline_list_item);
       }
       builder->UpdateShouldCreateBoxFragment(layout_inline);
 
@@ -477,6 +477,15 @@ void TruncateOrPadText(String* text, unsigned length) {
       builder.Append(kSpaceCharacter);
     *text = builder.ToString();
   }
+}
+
+bool SetParagraphTo(const String& text,
+                    const ComputedStyle& block_style,
+                    BidiParagraph& bidi) {
+  if (UNLIKELY(block_style.GetUnicodeBidi() == UnicodeBidi::kPlaintext)) {
+    return bidi.SetParagraph(text, absl::nullopt);
+  }
+  return bidi.SetParagraph(text, block_style.Direction());
 }
 
 }  // namespace
@@ -958,7 +967,7 @@ const NGOffsetMapping* NGInlineNode::ComputeOffsetMappingIfNeeded() const {
     DCHECK(data->offset_mapping);
   }
 
-  return data->offset_mapping;
+  return data->offset_mapping.Get();
 }
 
 void NGInlineNode::ComputeOffsetMapping(LayoutBlockFlow* layout_block_flow,
@@ -1203,9 +1212,9 @@ void NGInlineNode::SegmentBidiRuns(NGInlineNodeData* data) const {
     return;
   }
 
-  NGBidiParagraph bidi;
+  BidiParagraph bidi;
   data->text_content.Ensure16Bit();
-  if (!bidi.SetParagraph(data->text_content, Style())) {
+  if (!SetParagraphTo(data->text_content, Style(), bidi)) {
     // On failure, give up bidi resolving and reordering.
     data->is_bidi_enabled_ = false;
     data->SetBaseDirection(TextDirection::kLtr);
@@ -1654,9 +1663,9 @@ static LayoutUnit ComputeContentSize(
   LayoutUnit available_inline_size =
       mode == NGLineBreakerMode::kMaxContent ? LayoutUnit::Max() : LayoutUnit();
 
-  NGExclusionSpace empty_exclusion_space;
+  ExclusionSpace empty_exclusion_space;
   NGLeadingFloats empty_leading_floats;
-  NGLineLayoutOpportunity line_opportunity(available_inline_size);
+  LineLayoutOpportunity line_opportunity(available_inline_size);
   LayoutUnit result;
   NGLineBreaker line_breaker(
       node, mode, space, line_opportunity, empty_leading_floats,

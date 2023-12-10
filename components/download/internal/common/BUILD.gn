@@ -85,6 +85,8 @@ source_set("internal") {
     "//services/service_manager/public/cpp:cpp",
   ]
 
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   # TODO(crbug/1056278): Enable this on Fuchsia
   if (safe_browsing_mode > 0 && !is_fuchsia) {
     deps += [ "//components/safe_browsing/content/common:file_type_policies" ]
@@ -118,10 +120,10 @@ if (is_android) {
 
     deps = [
       "//base:base_java",
-      "//base:jni_java",
       "//build/android:build_java",
       "//third_party/android_provider:android_provider_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
+      "//third_party/jni_zero:jni_zero_java",
     ]
   }
 

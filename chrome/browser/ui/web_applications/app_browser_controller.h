@@ -13,7 +13,6 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#include "chrome/browser/web_applications/web_app_id.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "components/webapps/common/web_app_id.h"
@@ -213,6 +212,9 @@ class AppBrowserController : public ui::ColorProviderKey::InitializerSupplier,
 
   // Whether the browser should show the reload button in the toolbar.
   virtual bool HasReloadButton() const;
+
+  // Returns whether prevent close is enabled.
+  bool IsPreventCloseEnabled() const;
 
 #if !BUILDFLAG(IS_CHROMEOS)
   // Whether the browser should show the profile menu button in the toolbar.

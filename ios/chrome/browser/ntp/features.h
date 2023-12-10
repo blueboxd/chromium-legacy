@@ -62,6 +62,10 @@ BASE_DECLARE_FEATURE(kContentPushNotifications);
 // Feature flag to enable the Large Fakebox design changes.
 BASE_DECLARE_FEATURE(kIOSLargeFakebox);
 
+// Feature flag to enable hiding the feed and feed header depending on Search
+// Engine choice.
+BASE_DECLARE_FEATURE(kIOSHideFeedWithSearchChoice);
+
 // Feature param under `kEnableFeedBackgroundRefresh` to also enable background
 // refresh for the Following feed.
 extern const char kEnableFollowingFeedBackgroundRefresh[];
@@ -247,7 +251,13 @@ bool IsFeedHotStartRefreshDisabled();
 // YES when Follow UI Update is enabled.
 bool IsFollowUIUpdateEnabled();
 
+// YES when the Content Push Notifications are enabled.
+bool IsContentPushNotificationsEnabled();
+
 // Returns true when the IOSLargeFakebox feature is enabled.
 bool IsIOSLargeFakeboxEnabled();
+
+// Returns true when the IOSHideFeedWithSearchChoice feature is enabled.
+bool IsIOSHideFeedWithSearchChoiceEnabled();
 
 #endif  // IOS_CHROME_BROWSER_NTP_FEATURES_H_

@@ -11,6 +11,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/gmock_expected_support.h"
 #include "base/test/test_future.h"
 #include "base/types/expected.h"
 #include "chrome/browser/ui/web_applications/test/isolated_web_app_builder.h"
@@ -41,7 +42,10 @@
 namespace web_app {
 namespace {
 
+using base::test::ErrorIs;
+using base::test::ValueIs;
 using ::testing::Eq;
+using ::testing::Field;
 using ::testing::HasSubstr;
 using ::testing::IsFalse;
 using ::testing::IsNull;
@@ -68,6 +72,14 @@ blink::mojom::ManifestPtr CreateDefaultManifest(const GURL& application_url,
   manifest->icons.push_back(icon);
 
   return manifest;
+}
+
+MATCHER_P(IsErrorWithMessage, message_matcher, "") {
+  return ExplainMatchResult(
+      ErrorIs(Field("message",
+                    &IsolatedWebAppUpdatePrepareAndStoreCommandError::message,
+                    message_matcher)),
+      arg, result_listener);
 }
 
 class IsolatedWebAppUpdatePrepareAndStoreCommandTest : public WebAppTest {
@@ -105,13 +117,14 @@ class IsolatedWebAppUpdatePrepareAndStoreCommandTest : public WebAppTest {
     update->CreateApp(std::move(isolated_web_app));
   }
 
-  base::expected<void, IsolatedWebAppUpdatePrepareAndStoreCommandError>
-  PrepareAndStoreUpdateInfo() {
-    base::test::TestFuture<
-        base::expected<void, IsolatedWebAppUpdatePrepareAndStoreCommandError>>
+  IsolatedWebAppUpdatePrepareAndStoreCommandResult PrepareAndStoreUpdateInfo(
+      const absl::optional<base::Version>& expected_version) {
+    base::test::TestFuture<IsolatedWebAppUpdatePrepareAndStoreCommandResult>
         future;
     provider()->scheduler().PrepareAndStoreIsolatedWebAppUpdate(
-        pending_update_info(), url_info_, /*optional_keep_alive=*/nullptr,
+        IsolatedWebAppUpdatePrepareAndStoreCommand::UpdateInfo(
+            InstalledBundle({.path = update_bundle_path_}), expected_version),
+        url_info_, /*optional_keep_alive=*/nullptr,
         /*optional_profile_keep_alive=*/nullptr, future.GetCallback());
 
     return future.Take();
@@ -144,11 +157,6 @@ class IsolatedWebAppUpdatePrepareAndStoreCommandTest : public WebAppTest {
     return page_state;
   }
 
-  WebApp::IsolationData::PendingUpdateInfo pending_update_info() {
-    return WebApp::IsolationData::PendingUpdateInfo(
-        InstalledBundle({.path = update_bundle_path_}), update_version_);
-  }
-
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   base::ScopedTempDir scoped_temp_dir_;
 
@@ -176,24 +184,63 @@ TEST_F(IsolatedWebAppUpdatePrepareAndStoreCommandTest, Succeeds) {
       url_info_.origin().GetURL().Resolve(kIconPath));
   icon_state.bitmaps = {web_app::CreateSquareIcon(32, SK_ColorWHITE)};
 
-  auto result = PrepareAndStoreUpdateInfo();
-  EXPECT_THAT(result.has_value(), IsTrue()) << result.error();
+  auto result = PrepareAndStoreUpdateInfo(update_version_);
+  EXPECT_THAT(
+      result,
+      ValueIs(Field(
+          "update_version",
+          &IsolatedWebAppUpdatePrepareAndStoreCommandSuccess::update_version,
+          Eq(update_version_))));
 
   const WebApp* web_app =
       provider()->registrar_unsafe().GetAppById(url_info_.app_id());
-  EXPECT_THAT(web_app, test::IwaIs(Eq("installed app"),
-                                   Eq(WebApp::IsolationData(
-                                       installed_location_, installed_version_,
-                                       /*controlled_frame_partitions=*/{},
-                                       pending_update_info()))));
+  EXPECT_THAT(
+      web_app,
+      test::IwaIs(Eq("installed app"),
+                  Eq(WebApp::IsolationData(
+                      installed_location_, installed_version_,
+                      /*controlled_frame_partitions=*/{},
+                      WebApp::IsolationData::PendingUpdateInfo(
+                          InstalledBundle({.path = update_bundle_path_}),
+                          update_version_)))));
+}
+
+TEST_F(IsolatedWebAppUpdatePrepareAndStoreCommandTest,
+       SucceedsIfVersionIsNotSpecified) {
+  InstallIwa();
+  WriteUpdateBundleToDisk();
+  CreateDefaultPageState();
+
+  auto& icon_state = fake_web_contents_manager().GetOrCreateIconState(
+      url_info_.origin().GetURL().Resolve(kIconPath));
+  icon_state.bitmaps = {web_app::CreateSquareIcon(32, SK_ColorWHITE)};
+
+  auto result = PrepareAndStoreUpdateInfo(/*expected_version=*/absl::nullopt);
+  EXPECT_THAT(
+      result,
+      ValueIs(Field(
+          "update_version",
+          &IsolatedWebAppUpdatePrepareAndStoreCommandSuccess::update_version,
+          Eq(update_version_))));
+
+  const WebApp* web_app =
+      provider()->registrar_unsafe().GetAppById(url_info_.app_id());
+  EXPECT_THAT(
+      web_app,
+      test::IwaIs(Eq("installed app"),
+                  Eq(WebApp::IsolationData(
+                      installed_location_, installed_version_,
+                      /*controlled_frame_partitions=*/{},
+                      WebApp::IsolationData::PendingUpdateInfo(
+                          InstalledBundle({.path = update_bundle_path_}),
+                          update_version_)))));
 }
 
 TEST_F(IsolatedWebAppUpdatePrepareAndStoreCommandTest, FailsWhenShuttingDown) {
   provider()->Shutdown();
 
-  auto result = PrepareAndStoreUpdateInfo();
-  ASSERT_THAT(result.has_value(), IsFalse());
-  EXPECT_THAT(result.error().message, HasSubstr("shutting down"));
+  auto result = PrepareAndStoreUpdateInfo(update_version_);
+  EXPECT_THAT(result, IsErrorWithMessage(HasSubstr("shutting down")));
 }
 
 TEST_F(IsolatedWebAppUpdatePrepareAndStoreCommandTest,
@@ -201,9 +248,9 @@ TEST_F(IsolatedWebAppUpdatePrepareAndStoreCommandTest,
   WriteUpdateBundleToDisk();
   CreateDefaultPageState();
 
-  auto result = PrepareAndStoreUpdateInfo();
-  ASSERT_THAT(result.has_value(), IsFalse());
-  EXPECT_THAT(result.error().message, HasSubstr("App is no longer installed"));
+  auto result = PrepareAndStoreUpdateInfo(update_version_);
+  EXPECT_THAT(result,
+              IsErrorWithMessage(HasSubstr("App is no longer installed")));
 
   const WebApp* web_app =
       provider()->registrar_unsafe().GetAppById(url_info_.app_id());
@@ -218,9 +265,8 @@ TEST_F(IsolatedWebAppUpdatePrepareAndStoreCommandTest,
   WriteUpdateBundleToDisk();
   CreateDefaultPageState();
 
-  auto result = PrepareAndStoreUpdateInfo();
-  ASSERT_THAT(result.has_value(), IsFalse());
-  EXPECT_THAT(result.error().message, HasSubstr("not an Isolated Web App"));
+  auto result = PrepareAndStoreUpdateInfo(update_version_);
+  EXPECT_THAT(result, IsErrorWithMessage(HasSubstr("not an Isolated Web App")));
 
   const WebApp* web_app =
       provider()->registrar_unsafe().GetAppById(url_info_.app_id());
@@ -231,14 +277,36 @@ TEST_F(IsolatedWebAppUpdatePrepareAndStoreCommandTest,
 TEST_F(IsolatedWebAppUpdatePrepareAndStoreCommandTest,
        FailsIfInstalledAppIsOnHigherVersion) {
   installed_version_ = base::Version("3.0.0");
+  EXPECT_THAT(update_version_, Eq(base::Version("2.0.0")));
   InstallIwa();
   WriteUpdateBundleToDisk();
   CreateDefaultPageState();
 
-  auto result = PrepareAndStoreUpdateInfo();
-  ASSERT_THAT(result.has_value(), IsFalse());
-  EXPECT_THAT(result.error().message,
-              HasSubstr("Installed app is already on version"));
+  auto result = PrepareAndStoreUpdateInfo(update_version_);
+  EXPECT_THAT(result, IsErrorWithMessage(
+                          HasSubstr("Installed app is already on version")));
+
+  const WebApp* web_app =
+      provider()->registrar_unsafe().GetAppById(url_info_.app_id());
+  EXPECT_THAT(web_app,
+              test::IwaIs(Eq("installed app"),
+                          Eq(WebApp::IsolationData(
+                              installed_location_, installed_version_,
+                              /*controlled_frame_partitions=*/{},
+                              /*pending_update_info=*/absl::nullopt))));
+}
+
+TEST_F(IsolatedWebAppUpdatePrepareAndStoreCommandTest,
+       FailsIfInstalledAppIsOnHigherVersionAndNoExpectedVersionIsSpecified) {
+  installed_version_ = base::Version("3.0.0");
+  EXPECT_THAT(update_version_, Eq(base::Version("2.0.0")));
+  InstallIwa();
+  WriteUpdateBundleToDisk();
+  CreateDefaultPageState();
+
+  auto result = PrepareAndStoreUpdateInfo(/*expected_version=*/absl::nullopt);
+  EXPECT_THAT(result, IsErrorWithMessage(
+                          HasSubstr("Installed app is already on version")));
 
   const WebApp* web_app =
       provider()->registrar_unsafe().GetAppById(url_info_.app_id());
@@ -258,12 +326,10 @@ TEST_F(IsolatedWebAppUpdatePrepareAndStoreCommandTest,
   WriteUpdateBundleToDisk();
   CreateDefaultPageState();
 
-  auto result = PrepareAndStoreUpdateInfo();
-  ASSERT_THAT(result.has_value(), IsFalse());
-  EXPECT_THAT(
-      result.error().message,
-      HasSubstr(
-          "Unable to update between different IsolatedWebAppLocation types"));
+  auto result = PrepareAndStoreUpdateInfo(update_version_);
+  EXPECT_THAT(result,
+              IsErrorWithMessage(HasSubstr("Unable to update between different "
+                                           "IsolatedWebAppLocation types")));
 
   const WebApp* web_app =
       provider()->registrar_unsafe().GetAppById(url_info_.app_id());
@@ -281,10 +347,9 @@ TEST_F(IsolatedWebAppUpdatePrepareAndStoreCommandTest, FailsIfAppNotTrusted) {
   CreateDefaultPageState();
   SetTrustedWebBundleIdsForTesting({});
 
-  auto result = PrepareAndStoreUpdateInfo();
-  ASSERT_THAT(result.has_value(), IsFalse());
-  EXPECT_THAT(result.error().message,
-              HasSubstr("The public key(s) are not trusted"));
+  auto result = PrepareAndStoreUpdateInfo(update_version_);
+  EXPECT_THAT(result, IsErrorWithMessage(
+                          HasSubstr("The public key(s) are not trusted")));
 
   const WebApp* web_app =
       provider()->registrar_unsafe().GetAppById(url_info_.app_id());
@@ -302,9 +367,8 @@ TEST_F(IsolatedWebAppUpdatePrepareAndStoreCommandTest, FailsIfUrlLoadingFails) {
   auto& page_state = CreateDefaultPageState();
   page_state.url_load_result = WebAppUrlLoader::Result::kFailedErrorPageLoaded;
 
-  auto result = PrepareAndStoreUpdateInfo();
-  ASSERT_THAT(result.has_value(), IsFalse());
-  EXPECT_THAT(result.error().message, HasSubstr("FailedErrorPageLoaded"));
+  auto result = PrepareAndStoreUpdateInfo(update_version_);
+  EXPECT_THAT(result, IsErrorWithMessage(HasSubstr("FailedErrorPageLoaded")));
 
   const WebApp* web_app =
       provider()->registrar_unsafe().GetAppById(url_info_.app_id());
@@ -325,11 +389,10 @@ TEST_F(IsolatedWebAppUpdatePrepareAndStoreCommandTest,
   page_state.error_code =
       webapps::InstallableStatusCode::MANIFEST_MISSING_NAME_OR_SHORT_NAME;
 
-  auto result = PrepareAndStoreUpdateInfo();
-  ASSERT_THAT(result.has_value(), IsFalse());
-  EXPECT_THAT(
-      result.error().message,
-      HasSubstr(" Manifest does not contain a 'name' or 'short_name' field"));
+  auto result = PrepareAndStoreUpdateInfo(update_version_);
+  EXPECT_THAT(result,
+              IsErrorWithMessage(HasSubstr(
+                  "Manifest does not contain a 'name' or 'short_name' field")));
 
   const WebApp* web_app =
       provider()->registrar_unsafe().GetAppById(url_info_.app_id());
@@ -348,10 +411,9 @@ TEST_F(IsolatedWebAppUpdatePrepareAndStoreCommandTest,
   auto& page_state = CreateDefaultPageState();
   page_state.opt_manifest->scope = GURL("https://example.com/foo");
 
-  auto result = PrepareAndStoreUpdateInfo();
-  ASSERT_THAT(result.has_value(), IsFalse());
-  EXPECT_THAT(result.error().message,
-              HasSubstr("Scope should resolve to the origin"));
+  auto result = PrepareAndStoreUpdateInfo(update_version_);
+  EXPECT_THAT(result, IsErrorWithMessage(
+                          HasSubstr("Scope should resolve to the origin")));
 
   const WebApp* web_app =
       provider()->registrar_unsafe().GetAppById(url_info_.app_id());
@@ -369,10 +431,9 @@ TEST_F(IsolatedWebAppUpdatePrepareAndStoreCommandTest,
   WriteUpdateBundleToDisk();
   CreateDefaultPageState();
 
-  auto result = PrepareAndStoreUpdateInfo();
-  ASSERT_THAT(result.has_value(), IsFalse());
-  EXPECT_THAT(result.error().message,
-              HasSubstr("Error during icon downloading"));
+  auto result = PrepareAndStoreUpdateInfo(update_version_);
+  EXPECT_THAT(result,
+              IsErrorWithMessage(HasSubstr("Error during icon downloading")));
 
   const WebApp* web_app =
       provider()->registrar_unsafe().GetAppById(url_info_.app_id());

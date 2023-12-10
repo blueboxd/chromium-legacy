@@ -19,7 +19,6 @@ namespace autofill {
 class ContentAutofillDriver;
 class AutofillProfile;
 class CreditCard;
-class AutofillField;
 }
 
 class AutofillHandler : public protocol::Autofill::Backend,
@@ -59,9 +58,8 @@ class AutofillHandler : public protocol::Autofill::Backend,
   void OnFillOrPreviewDataModelForm(
       autofill::AutofillManager& manager,
       autofill::FormGlobalId form,
-      autofill::mojom::AutofillActionPersistence action_persistence,
-      base::span<const std::pair<const autofill::FormFieldData*,
-                                 const autofill::AutofillField*>> filled_fields,
+      autofill::mojom::ActionPersistence action_persistence,
+      base::span<const autofill::FormFieldData* const> filled_fields,
       absl::variant<const autofill::AutofillProfile*,
                     const autofill::CreditCard*> profile_or_credit_card)
       override;

@@ -16,7 +16,7 @@
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/favicon/ios_chrome_large_icon_cache_factory.h"
 #import "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
-#import "ios/chrome/browser/feature_engagement/tracker_factory.h"
+#import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
 #import "ios/chrome/browser/history/top_sites_factory.h"
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/policy/policy_util.h"
@@ -163,7 +163,9 @@
                  popupViewController:self.popupViewController
                    layoutGuideCenter:LayoutGuideCenterForBrowser(self.browser)
                            incognito:isIncognito];
-  self.mediator.prefService = self.browser->GetBrowserState()->GetPrefs();
+  self.mediator.originalPrefService = self.browser->GetBrowserState()
+                                          ->GetOriginalChromeBrowserState()
+                                          ->GetPrefs();
 
   _popupView->SetMediator(self.mediator);
 

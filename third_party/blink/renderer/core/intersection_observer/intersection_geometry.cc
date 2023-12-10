@@ -50,10 +50,10 @@ void ApplyMargin(
   // TODO(szager): Make sure the spec is clear that left/right margins are
   // resolved against width and not height.
   const PhysicalRect& rect = resolution_rect.value_or(expand_rect);
-  NGPhysicalBoxStrut outsets(ComputeMargin(margin[0], rect.Height(), zoom),
-                             ComputeMargin(margin[1], rect.Width(), zoom),
-                             ComputeMargin(margin[2], rect.Height(), zoom),
-                             ComputeMargin(margin[3], rect.Width(), zoom));
+  PhysicalBoxStrut outsets(ComputeMargin(margin[0], rect.Height(), zoom),
+                           ComputeMargin(margin[1], rect.Width(), zoom),
+                           ComputeMargin(margin[2], rect.Height(), zoom),
+                           ComputeMargin(margin[3], rect.Width(), zoom));
   expand_rect.Expand(outsets);
 }
 
@@ -675,7 +675,7 @@ bool IntersectionGeometry::ClipToRoot(const LayoutObject* root,
         intersection_rect.Move(scroll_offset);
         unclipped_intersection_rect.Move(scroll_offset);
       }
-      LayoutRect root_clip_rect = root_rect.ToLayoutRect();
+      DeprecatedLayoutRect root_clip_rect = root_rect.ToLayoutRect();
       // TODO(szager): This flipping seems incorrect because root_rect is
       // already physical.
       local_ancestor->DeprecatedFlipForWritingMode(root_clip_rect);

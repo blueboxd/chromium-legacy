@@ -73,7 +73,7 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final : public NGPhysicalFragment {
   PhysicalRect ScrollableOverflowForLine(const NGPhysicalBoxFragment& container,
                                          const ComputedStyle& container_style,
                                          const NGFragmentItem& line,
-                                         const NGInlineCursor& cursor,
+                                         const InlineCursor& cursor,
                                          TextHeightType height_type) const;
 
   // Whether the content soft-wraps to the next line.
@@ -81,7 +81,9 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final : public NGPhysicalFragment {
 
   // Returns the |LayoutObject| of the container. |GetLayoutObject()| returns
   // |nullptr| because line boxes do not have corresponding |LayoutObject|.
-  const LayoutObject* ContainerLayoutObject() const { return layout_object_; }
+  const LayoutObject* ContainerLayoutObject() const {
+    return layout_object_.Get();
+  }
 
  protected:
   friend class NGPhysicalFragment;

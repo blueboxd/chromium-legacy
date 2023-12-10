@@ -1198,6 +1198,11 @@ inline constexpr char kTouchscreenEnabled[] = "events.touch_screen.enabled";
 inline constexpr char kShowTouchpadScrollScreenEnabled[] =
     "ash.touchpad_scroll_screen_oobe_enabled";
 
+// Boolean value indicating that the human presence sesnsor screen should be
+// shown to the user during oobe.
+inline constexpr char kShowHumanPresenceSensorScreenEnabled[] =
+    "ash.human_presence_sensor_scren_oobe_enabled";
+
 // Boolean value indicating that the Display size screen should be
 // shown to the user during the first sign-in.
 inline constexpr char kShowDisplaySizeScreenEnabled[] =
@@ -1370,6 +1375,11 @@ inline constexpr char kSendFunctionKeys[] =
 // launcher/search key to change the behavior of function keys".
 inline constexpr char kDeviceSwitchFunctionKeysBehaviorEnabled[] =
     "ash.settings.switch_function_keys_behavior_enabled";
+
+// A string-enum-list pref that controls if the WiFi firmware dump is allowed to
+// be included in user feedback report.
+inline constexpr char kUserFeedbackWithLowLevelDebugDataAllowed[] =
+    "ash.user_feedback_with_low_level_debug_data_allowed";
 
 // A boolean pref which is true if touchpad reverse scroll is enabled.
 inline constexpr char kNaturalScroll[] = "settings.touchpad.natural_scroll";

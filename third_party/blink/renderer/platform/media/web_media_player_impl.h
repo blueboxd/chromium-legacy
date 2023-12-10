@@ -435,6 +435,8 @@ class PLATFORM_EXPORT WebMediaPlayerImpl
 #endif  // BUILDFLAG(ENABLE_FFMPEG)
 
 #if BUILDFLAG(ENABLE_HLS_DEMUXER)
+  void GetUrlData(const GURL& gurl,
+                  base::OnceCallback<void(scoped_refptr<UrlData>)> cb);
   base::SequenceBound<media::HlsDataSourceProvider> GetHlsDataSourceProvider()
       override;
 #endif  // BUILDFLAG(ENABLE_HLS_DEMUXER)
@@ -806,6 +808,10 @@ class PLATFORM_EXPORT WebMediaPlayerImpl
   bool should_notify_time_changed_ = false;
 
   bool overlay_enabled_ = false;
+
+  // Cors and Caching flags set during `Load` and used while creating demuxers.
+  CorsMode cors_mode_ = kCorsModeUnspecified;
+  bool is_cache_disabled_ = false;
 
   // Whether the current decoder requires a restart on overlay transitions.
   bool decoder_requires_restart_for_overlay_ = false;

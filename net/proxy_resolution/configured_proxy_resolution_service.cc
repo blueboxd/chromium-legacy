@@ -1137,10 +1137,13 @@ void ConfiguredProxyResolutionService::ReportSuccess(const ProxyInfo& result) {
     if (existing == proxy_retry_info_.end()) {
       proxy_retry_info_[iter.first] = iter.second;
       if (proxy_delegate_) {
+        // TODO(crbug.com/1491092): Provide the full chain when that is
+        // available from retry info, and never provide a direct chain.
         const ProxyServer& bad_proxy =
             ProxyUriToProxyServer(iter.first, ProxyServer::SCHEME_HTTP);
         const ProxyRetryInfo& proxy_retry_info = iter.second;
-        proxy_delegate_->OnFallback(bad_proxy, proxy_retry_info.net_error);
+        proxy_delegate_->OnFallbackServerOnly(bad_proxy,
+                                              proxy_retry_info.net_error);
       }
     } else if (existing->second.bad_until < iter.second.bad_until) {
       existing->second.bad_until = iter.second.bad_until;
@@ -1188,7 +1191,7 @@ int ConfiguredProxyResolutionService::DidFinishResolvingProxy(
     // This check is done to only log the NetLog event when necessary, it's
     // not a performance optimization.
     if (!proxy_retry_info_.empty()) {
-      result->DeprioritizeBadProxies(proxy_retry_info_);
+      result->DeprioritizeBadProxyChains(proxy_retry_info_);
       net_log.AddEvent(
           NetLogEventType::PROXY_RESOLUTION_SERVICE_DEPRIORITIZED_BAD_PROXIES,
           [&] { return NetLogFinishedResolvingProxyParams(result); });

@@ -52,6 +52,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.jni_zero.CalledByNative;
+import org.jni_zero.CalledByNativeUnchecked;
+import org.jni_zero.JNINamespace;
+import org.jni_zero.NativeMethods;
+
 import org.chromium.android_webview.autofill.AndroidAutofillSafeModeAction;
 import org.chromium.android_webview.common.AwFeatures;
 import org.chromium.android_webview.common.AwSwitches;
@@ -76,10 +81,6 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TimeUtils;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.CalledByNativeUnchecked;
-import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.jank_tracker.FrameMetricsListener;
 import org.chromium.base.jank_tracker.FrameMetricsStore;
 import org.chromium.base.jank_tracker.JankReportingScheduler;
@@ -3773,7 +3774,7 @@ public class AwContents implements SmartClipProvider {
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (mAutofillProvider != null) {
-                mAutofillProvider.hidePopup();
+                mAutofillProvider.hideDatalistPopup();
             }
         }
     }
@@ -4577,6 +4578,14 @@ public class AwContents implements SmartClipProvider {
                 float touchMajor = Math.max(event.getTouchMajor(), event.getTouchMinor());
                 AwContentsJni.get().requestNewHitTestDataAt(
                         mNativeAwContents, eventX, eventY, touchMajor);
+                // If the stylus is above an editable element, prevent the parent element from
+                // intercepting the scroll event.
+                if (event.getPointerCount() == 1
+                        && event.getToolType(0) == MotionEvent.TOOL_TYPE_STYLUS
+                        && getLastHitTestResult().hitTestResultType
+                                == 9 /* HitTestDataType::kEditText */) {
+                    mContainerView.getParent().requestDisallowInterceptTouchEvent(true);
+                }
             }
 
             if (mOverScrollGlow != null) {

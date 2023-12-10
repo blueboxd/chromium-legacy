@@ -713,8 +713,7 @@ void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
       AddCounterStyleRule(counter_style_rule);
     } else if (auto* view_transitions_rule =
                    DynamicTo<StyleRuleViewTransitions>(rule)) {
-      // TODO(https://crbug.com/1463966): Handle cascade layers for
-      // @view-transitions.
+      view_transitions_rule->SetCascadeLayer(cascade_layer);
       AddViewTransitionsRule(view_transitions_rule);
     } else if (auto* position_fallback_rule =
                    DynamicTo<StyleRulePositionFallback>(rule)) {
@@ -1290,14 +1289,14 @@ bool RuleSet::DidMediaQueryResultsChange(
 const CascadeLayer* RuleSet::GetLayerForTest(const RuleData& rule) const {
   if (!layer_intervals_.size() ||
       layer_intervals_[0].start_position > rule.GetPosition()) {
-    return implicit_outer_layer_;
+    return implicit_outer_layer_.Get();
   }
   for (unsigned i = 1; i < layer_intervals_.size(); ++i) {
     if (layer_intervals_[i].start_position > rule.GetPosition()) {
-      return layer_intervals_[i - 1].value;
+      return layer_intervals_[i - 1].value.Get();
     }
   }
-  return layer_intervals_.back().value;
+  return layer_intervals_.back().value.Get();
 }
 
 void RuleData::Trace(Visitor* visitor) const {

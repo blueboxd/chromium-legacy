@@ -44,6 +44,8 @@ PaintFlags::PaintFlags() {
   bitfields_.style_ = SkPaint::kFill_Style;
   bitfields_.filter_quality_ =
       static_cast<int>(PaintFlags::FilterQuality::kNone);
+  bitfields_.dynamic_range_limit_ =
+      static_cast<int>(PaintFlags::DynamicRangeLimit::kHigh);
 
   static_assert(sizeof(bitfields_) <= sizeof(bitfields_uint_),
                 "Too many bitfields");
@@ -96,7 +98,7 @@ bool PaintFlags::nothingToDraw() const {
     case SkBlendMode::kDstOut:
     case SkBlendMode::kDstOver:
     case SkBlendMode::kPlus:
-      if (getAlpha() == 0) {
+      if (isFullyTransparent()) {
         return !color_filter_ && !image_filter_;
       }
       break;
@@ -187,6 +189,7 @@ bool PaintFlags::EqualsForTesting(const PaintFlags& other) const {
          getStrokeJoin() == other.getStrokeJoin() &&
          getStyle() == other.getStyle() &&
          getFilterQuality() == other.getFilterQuality() &&
+         getDynamicRangeLimit() == other.getDynamicRangeLimit() &&
          AreSkFlattenablesEqualForTesting(path_effect_,  // IN-TEST
                                           other.path_effect_) &&
          AreSkFlattenablesEqualForTesting(mask_filter_,  // IN-TEST

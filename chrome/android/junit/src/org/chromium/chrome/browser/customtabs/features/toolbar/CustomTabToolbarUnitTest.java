@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.customtabs.features.toolbar;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -31,7 +32,10 @@ import android.view.View.MeasureSpec;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.browser.customtabs.CustomTabsIntent;
 
 import org.junit.After;
 import org.junit.Before;
@@ -54,10 +58,10 @@ import org.chromium.base.Callback;
 import org.chromium.base.UserDataHost;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.base.task.test.ShadowPostTask;
-import org.chromium.base.task.test.ShadowPostTask.TestImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browser_controls.BrowserStateBrowserControlsVisibilityDelegate;
+import org.chromium.chrome.browser.customtabs.features.minimizedcustomtab.MinimizedFeatureUtils;
 import org.chromium.chrome.browser.customtabs.features.partialcustomtab.SimpleHandleStrategy;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar.CustomTabLocationBar;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -139,11 +143,8 @@ public class CustomTabToolbarUnitTest {
 
     @Before
     public void setup() {
-        ShadowPostTask.setTestImpl(new TestImpl() {
-            @Override
-            public void postDelayedTask(@TaskTraits int taskTraits, Runnable task, long delay) {
-                new Handler(Looper.getMainLooper()).postDelayed(task, delay);
-            }
+        ShadowPostTask.setTestImpl((@TaskTraits int taskTraits, Runnable task, long delay) -> {
+            new Handler(Looper.getMainLooper()).postDelayed(task, delay);
         });
         Mockito.doReturn(R.string.accessibility_security_btn_secure)
                 .when(mLocationBarModel)
@@ -171,7 +172,6 @@ public class CustomTabToolbarUnitTest {
     @After
     public void tearDown() {
         mActivity.finish();
-        ShadowPostTask.reset();
     }
 
     @Test
@@ -266,7 +266,7 @@ public class CustomTabToolbarUnitTest {
         when(mToolbarDataProvider.getTab()).thenReturn(mTab);
         when(mTab.getUserDataHost()).thenReturn(new UserDataHost());
         when(mTab.getUrl()).thenReturn(JUnitTestGURLs.RED_1);
-        UrlBarData urlBarData = UrlBarData.forUrl(JUnitTestGURLs.RED_1.getSpec());
+        UrlBarData urlBarData = UrlBarData.forUrl(JUnitTestGURLs.RED_1);
         when(mLocationBarModel.getUrlBarData()).thenReturn(urlBarData);
         mLocationBar.onUrlChanged();
         result = mToolbar.isReadyForTextureCapture();
@@ -357,8 +357,6 @@ public class CustomTabToolbarUnitTest {
                 .thenReturn(new FrameLayout.LayoutParams(
                         LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         mToolbar.onMeasure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED);
-        assertEquals(
-                "Maximize button should be visible", View.VISIBLE, maximizeButton.getVisibility());
 
         when(titleUrlContainer.getWidth()).thenReturn(threshold - 10);
         mToolbar.onMeasure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED);
@@ -369,6 +367,86 @@ public class CustomTabToolbarUnitTest {
 
         mToolbar.removeSideSheetMaximizeButton();
         assertFalse(mToolbar.isMaximizeButtonEnabledForTesting());
+    }
+
+    @Test
+    @EnableFeatures({ChromeFeatureList.CCT_MINIMIZED})
+    public void testMinimizeButtonEnabled() {
+        MinimizedFeatureUtils.setMinimizeCustomTabAvailableForTesting(true);
+        mToolbar =
+                (CustomTabToolbar)
+                        LayoutInflater.from(mActivity)
+                                .inflate(R.layout.custom_tabs_toolbar, null, false);
+        mToolbar.initialize(
+                mToolbarDataProvider,
+                mTabController,
+                mMenuButtonCoordinator,
+                mHistoryDelegate,
+                mPartnerHomepageEnabledSupplier,
+                mOfflineDownloader);
+        mLocationBar =
+                (CustomTabLocationBar)
+                        mToolbar.createLocationBar(
+                                mLocationBarModel,
+                                mActionModeCallback,
+                                () -> null,
+                                () -> null,
+                                mControlsVisibleDelegate,
+                                null);
+        LinearLayout closeMinimizeLayout = mToolbar.findViewById(R.id.close_minimize_layout);
+        var minimizeButton = (ImageButton) mToolbar.findViewById(R.id.custom_tabs_minimize_button);
+        View titleUrlContainer = Mockito.mock(View.class);
+        when(titleUrlContainer.getLayoutParams())
+                .thenReturn(
+                        new FrameLayout.LayoutParams(
+                                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        mLocationBar.setTitleUrlContainerForTesting(titleUrlContainer);
+        // Button on left side
+        assertEquals(
+                "Minimize button should be visible", View.VISIBLE, minimizeButton.getVisibility());
+        assertEquals(
+                "Minimize button should be to the inside of close button",
+                closeMinimizeLayout.getChildAt(1),
+                minimizeButton);
+
+        // Button on right side
+        mToolbar.setCloseButtonPosition(CustomTabsIntent.CLOSE_BUTTON_POSITION_END);
+        mToolbar.onMeasure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED);
+        assertEquals(
+                "Minimize button should be visible", View.VISIBLE, minimizeButton.getVisibility());
+        assertEquals(
+                "Minimize button should be to the inside of close button",
+                closeMinimizeLayout.getChildAt(0),
+                minimizeButton);
+
+        // No space for minimize button
+        when(titleUrlContainer.getWidth()).thenReturn(60);
+        mToolbar.onMeasure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED);
+        assertEquals("Minimize button should be hidden", View.GONE, minimizeButton.getVisibility());
+    }
+
+    @Test
+    @DisableFeatures({ChromeFeatureList.CCT_MINIMIZED})
+    public void testMinimizeButtonDisabled() {
+        LinearLayout closeMinimizeLayout = mToolbar.findViewById(R.id.close_minimize_layout);
+        var minimizeButton = (ImageButton) mToolbar.findViewById(R.id.custom_tabs_minimize_button);
+        var closeButton = (ImageButton) mToolbar.findViewById(R.id.close_button);
+
+        // Button on left side
+        assertNull("Minimize button should never be initialized", minimizeButton);
+        assertEquals(
+                "Close button should still be present",
+                closeMinimizeLayout.getChildAt(0),
+                closeButton);
+
+        // Button on right side
+        mToolbar.setCloseButtonPosition(CustomTabsIntent.CLOSE_BUTTON_POSITION_END);
+        mToolbar.onMeasure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED);
+        assertNull("Minimize button should never be initialized", minimizeButton);
+        assertEquals(
+                "Close button should still be present",
+                closeMinimizeLayout.getChildAt(1),
+                closeButton);
     }
 
     @Test
@@ -458,13 +536,13 @@ public class CustomTabToolbarUnitTest {
     }
 
     private void setUpForAboutBlank() {
-        UrlBarData urlBarData = UrlBarData.forUrl(JUnitTestGURLs.ABOUT_BLANK.getSpec());
+        UrlBarData urlBarData = UrlBarData.forUrl(JUnitTestGURLs.ABOUT_BLANK);
         when(mLocationBarModel.getUrlBarData()).thenReturn(urlBarData);
         when(mTab.getUrl()).thenReturn(JUnitTestGURLs.ABOUT_BLANK);
     }
 
     private void setUpForUrl(GURL url) {
         Mockito.doReturn(url).when(mTab).getUrl();
-        Mockito.doReturn(UrlBarData.forUrl(url.getSpec())).when(mLocationBarModel).getUrlBarData();
+        Mockito.doReturn(UrlBarData.forUrl(url)).when(mLocationBarModel).getUrlBarData();
     }
 }

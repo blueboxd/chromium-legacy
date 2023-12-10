@@ -14,7 +14,9 @@ import("//build/config/python.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/zip.gni")
 import("//build/toolchain/toolchain.gni")
-assert(is_android || is_robolectric)
+assert(
+    is_android || is_robolectric,
+    "current_toolchain=$current_toolchain default_toolchain=$default_toolchain")
 
 if (target_cpu == "arm") {
   _sanitizer_arch = "arm"
@@ -2805,7 +2807,10 @@ if (enable_java_templates && is_android) {
               (!defined(testonly) || !testonly) &&
               # Injected JaCoCo code causes -checkdiscards to fail.
               !use_jacoco_coverage) {
-            proguard_configs = [ "//build/android/dcheck_is_off.flags" ]
+            proguard_configs = [
+              "//build/android/dcheck_is_off.flags",
+              "//third_party/jni_zero/checkdiscard_proguard.flags",
+            ]
           }
         } else {
           if (_min_sdk_version >= default_min_sdk_version) {
@@ -3100,6 +3105,7 @@ if (enable_java_templates && is_android) {
         forward_variables_from(invoker,
                                [
                                  "lint_baseline_file",
+                                 "lint_gen_dir",
                                  "lint_suppressions_file",
                                  "min_sdk_version",
                                ])
@@ -3119,6 +3125,7 @@ if (enable_java_templates && is_android) {
       not_needed(invoker,
                  [
                    "lint_baseline_file",
+                   "lint_gen_dir",
                    "lint_jar_path",
                    "lint_min_sdk_version",
                    "lint_suppressions_dep",
@@ -3236,6 +3243,7 @@ if (enable_java_templates && is_android) {
             "keystore_password",
             "keystore_path",
             "lint_baseline_file",
+            "lint_gen_dir",
             "lint_min_sdk_version",
             "lint_suppressions_dep",
             "lint_suppressions_file",
@@ -3647,7 +3655,10 @@ if (enable_java_templates && is_android) {
         # optimizations that we ship with, but not have them break tests. The
         # apk under test will still have the same resources, assets, and
         # manifest, all of which are the ones used in the tests.
-        proguard_configs = [ "//testing/android/proguard_for_test.flags" ]
+        proguard_configs = [
+          "//testing/android/proguard_for_test.flags",
+          "//third_party/jni_zero/proguard_for_test.flags",
+        ]
         if (defined(invoker.proguard_configs)) {
           proguard_configs += invoker.proguard_configs
         }
@@ -4732,7 +4743,10 @@ if (enable_java_templates && is_android) {
             (!defined(testonly) || !testonly) &&
             # Injected JaCoCo code causes -checkdiscards to fail.
             !use_jacoco_coverage) {
-          proguard_configs = [ "//build/android/dcheck_is_off.flags" ]
+          proguard_configs = [
+            "//build/android/dcheck_is_off.flags",
+            "//third_party/jni_zero/checkdiscard_proguard.flags",
+          ]
         }
       }
     }
@@ -5110,6 +5124,7 @@ if (enable_java_templates && is_android) {
         forward_variables_from(invoker,
                                [
                                  "lint_baseline_file",
+                                 "lint_gen_dir",
                                  "lint_jar_path",
                                  "lint_suppressions_file",
                                ])
@@ -5129,6 +5144,7 @@ if (enable_java_templates && is_android) {
       not_needed(invoker,
                  [
                    "lint_baseline_file",
+                   "lint_gen_dir",
                    "lint_jar_path",
                    "lint_min_sdk_version",
                    "lint_suppressions_dep",
@@ -5237,6 +5253,20 @@ if (enable_java_templates && is_android) {
         android_keystore_password,
         "--minimal",
       ]
+    }
+  }
+
+  template("alias_with_wrapper_script") {
+    copy(target_name) {
+      _aliased_wrapper_script_name =
+          get_label_info(invoker.alias_target, "name")
+      _aliased_wrapper_script =
+          "$root_build_dir/bin/$_aliased_wrapper_script_name"
+      sources = [ _aliased_wrapper_script ]
+      deps = [ invoker.alias_target ]
+
+      _output_path = "$root_build_dir/bin/$target_name"
+      outputs = [ _output_path ]
     }
   }
 }

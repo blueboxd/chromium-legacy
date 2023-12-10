@@ -24,11 +24,18 @@
 
 @end
 
-@implementation OmniboxFocusOrchestrator
+@implementation OmniboxFocusOrchestrator {
+  ProceduralBlock _completion;
+  OmniboxFocusTrigger _trigger;
+}
 
 - (void)transitionToStateOmniboxFocused:(BOOL)omniboxFocused
                         toolbarExpanded:(BOOL)toolbarExpanded
-                               animated:(BOOL)animated {
+                                trigger:(OmniboxFocusTrigger)trigger
+                               animated:(BOOL)animated
+                             completion:(ProceduralBlock)completion {
+  _completion = completion;
+  _trigger = trigger;
   // If a new transition is requested while one is ongoing, we don't want
   // to start the new one immediately. However, we do want the omnibox to end
   // up in whatever state was requested last. Therefore, we cache the last
@@ -89,7 +96,7 @@
     [self.locationBarAnimatee resetTransforms];
     [self.locationBarAnimatee setSteadyViewFaded:NO];
     [self.locationBarAnimatee setEditViewFaded:NO];
-    [self.editViewAnimatee setLeadingIconFaded:NO];
+    [self.editViewAnimatee setLeadingIconScale:1];
     [self.editViewAnimatee setClearButtonFaded:NO];
   };
 
@@ -103,61 +110,56 @@
     // Make edit view transparent, but not hidden.
     [self.locationBarAnimatee setEditViewHidden:NO];
     [self.locationBarAnimatee setEditViewFaded:YES];
-    [self.editViewAnimatee setLeadingIconFaded:YES];
+    [self.editViewAnimatee setLeadingIconScale:0];
     [self.editViewAnimatee setClearButtonFaded:YES];
 
-    CGFloat duration = kMaterialDuration1;
-
     self.inProgressAnimationCount += 1;
-    [UIView animateWithDuration:duration
+    [UIView animateKeyframesWithDuration:kMaterialDuration1
         delay:0
         options:UIViewAnimationCurveEaseInOut
         animations:^{
           [self.locationBarAnimatee
                   resetEditViewOffsetAndOffsetSteadyViewToMatch];
+
+          // Fading the views happens with a different timing for a better
+          // visual effect. The steady view looks like an ordinary label, and it
+          // fades before the animation is complete. The edit view will be in
+          // pre-edit state, so it looks like selected text. Since the selection
+          // is blue, it looks overwhelming if faded in at the same time as the
+          // steady view. So it fades in faster and later into the animation to
+          // look better.
+          [UIView addKeyframeWithRelativeStartTime:0.1
+                                  relativeDuration:0.8
+                                        animations:^{
+                                          [self.locationBarAnimatee
+                                              setSteadyViewFaded:YES];
+                                        }];
+
+          [UIView addKeyframeWithRelativeStartTime:0.4
+                                  relativeDuration:0.6
+                                        animations:^{
+                                          [self.locationBarAnimatee
+                                              setEditViewFaded:NO];
+                                        }];
+
+          // Scale the leading icon in with a slight bounce / spring.
+          [UIView addKeyframeWithRelativeStartTime:0.2
+                                  relativeDuration:0.55
+                                        animations:^{
+                                          [self.editViewAnimatee
+                                              setLeadingIconScale:1.3];
+                                        }];
+          [UIView addKeyframeWithRelativeStartTime:0.75
+                                  relativeDuration:0.25
+                                        animations:^{
+                                          [self.editViewAnimatee
+                                              setLeadingIconScale:1];
+                                          [self.editViewAnimatee
+                                              setClearButtonFaded:NO];
+                                        }];
         }
-        completion:^(BOOL complete) {
+        completion:^(BOOL finished) {
           cleanup();
-          [self animationFinished];
-        }];
-
-    // Fading the views happens with a different timing for a better visual
-    // effect. The steady view looks like an ordinary label, and it fades before
-    // the animation is complete. The edit view will be in pre-edit state, so it
-    // looks like selected text. Since the selection is blue, it looks
-    // overwhelming if faded in at the same time as the steady view. So it fades
-    // in faster and later into the animation to look better.
-    self.inProgressAnimationCount += 1;
-    [UIView animateWithDuration:duration * 0.8
-        delay:duration * 0.1
-        options:UIViewAnimationCurveEaseInOut
-        animations:^{
-          [self.locationBarAnimatee setSteadyViewFaded:YES];
-        }
-        completion:^(BOOL complete) {
-          [self animationFinished];
-        }];
-
-    self.inProgressAnimationCount += 1;
-    [UIView animateWithDuration:duration * 0.6
-        delay:duration * 0.4
-        options:UIViewAnimationCurveEaseInOut
-        animations:^{
-          [self.locationBarAnimatee setEditViewFaded:NO];
-        }
-        completion:^(BOOL _) {
-          [self animationFinished];
-        }];
-
-    self.inProgressAnimationCount += 1;
-    [UIView animateWithDuration:duration * 0.2
-        delay:duration * 0.8
-        options:UIViewAnimationCurveLinear
-        animations:^{
-          [self.editViewAnimatee setLeadingIconFaded:NO];
-          [self.editViewAnimatee setClearButtonFaded:NO];
-        }
-        completion:^(BOOL _) {
           [self animationFinished];
         }];
   } else {
@@ -173,7 +175,7 @@
     [self.locationBarAnimatee showSteadyViewBadgeView];
     [self.locationBarAnimatee resetTransforms];
     [self.locationBarAnimatee setSteadyViewFaded:NO];
-    [self.editViewAnimatee setLeadingIconFaded:NO];
+    [self.editViewAnimatee setLeadingIconScale:1];
     [self.editViewAnimatee setClearButtonFaded:NO];
   };
 
@@ -183,7 +185,7 @@
     // Make steady view transparent, but not hidden.
     [self.locationBarAnimatee setSteadyViewHidden:NO];
     [self.locationBarAnimatee setSteadyViewFaded:YES];
-    [self.editViewAnimatee setLeadingIconFaded:NO];
+    [self.editViewAnimatee setLeadingIconScale:1];
     [self.editViewAnimatee setClearButtonFaded:NO];
     CGFloat duration = kMaterialDuration1;
 
@@ -195,7 +197,7 @@
           [self.locationBarAnimatee
                   resetSteadyViewOffsetAndOffsetEditViewToMatch];
         }
-        completion:^(BOOL _) {
+        completion:^(BOOL finished) {
           cleanup();
           [self animationFinished];
         }];
@@ -205,10 +207,10 @@
     self.inProgressAnimationCount += 1;
     [UIView animateWithDuration:0.2 * duration
         animations:^{
-          [self.editViewAnimatee setLeadingIconFaded:YES];
+          [self.editViewAnimatee setLeadingIconScale:0];
           [self.editViewAnimatee setClearButtonFaded:YES];
         }
-        completion:^(BOOL _) {
+        completion:^(BOOL finished) {
           [self animationFinished];
         }];
 
@@ -219,7 +221,7 @@
         animations:^{
           [self.locationBarAnimatee setEditViewFaded:YES];
         }
-        completion:^(BOOL _) {
+        completion:^(BOOL finished) {
           [self animationFinished];
         }];
 
@@ -230,7 +232,7 @@
         animations:^{
           [self.locationBarAnimatee setSteadyViewFaded:NO];
         }
-        completion:^(BOOL _) {
+        completion:^(BOOL finished) {
           [self animationFinished];
         }];
 
@@ -242,56 +244,51 @@
 // Updates the UI elements reflect the toolbar expanded state, `animated` or
 // not.
 - (void)updateUIToExpandedState:(BOOL)animated {
-  void (^expansion)() = ^{
-    [self.toolbarAnimatee expandLocationBar];
-    [self.toolbarAnimatee showCancelButton];
-  };
-
-  void (^hideControls)() = ^{
-    [self.toolbarAnimatee hideControlButtons];
-  };
-
   if (animated) {
     // Use UIView animateWithDuration instead of UIViewPropertyAnimator to
     // avoid UIKit bug. See https://crbug.com/856155.
     self.inProgressAnimationCount += 1;
-    [UIView animateWithDuration:kMaterialDuration1
-                          delay:0
-                        options:UIViewAnimationCurveEaseInOut
-                     animations:expansion
-                     completion:^(BOOL _) {
-                       [self animationFinished];
-                     }];
+    [self.toolbarAnimatee setToolbarFaded:NO];
+    switch (_trigger) {
+      case OmniboxFocusTrigger::kPinnedLargeFakebox:
+        [self.toolbarAnimatee setLocationBarHeightToMatchFakeOmnibox];
+        break;
+      case OmniboxFocusTrigger::kUnpinnedLargeFakebox:
+        [self.toolbarAnimatee setToolbarFaded:YES];
+        break;
+      default:
+        break;
+    }
+    [UIView animateKeyframesWithDuration:kMaterialDuration1
+        delay:0
+        options:UIViewAnimationCurveEaseInOut
+        animations:^{
+          [UIView addKeyframeWithRelativeStartTime:0
+                                  relativeDuration:1
+                                        animations:^{
+                                          [self expansion];
+                                        }];
+          [UIView
+              addKeyframeWithRelativeStartTime:0
+                              relativeDuration:kMaterialDuration2 /
+                                               kMaterialDuration1
+                                    animations:^{
+                                      [self.toolbarAnimatee hideControlButtons];
+                                    }];
+        }
+        completion:^(BOOL finished) {
+          [self animationFinished];
+        }];
 
-    self.inProgressAnimationCount += 1;
-    [UIView animateWithDuration:kMaterialDuration2
-                          delay:0
-                        options:UIViewAnimationCurveEaseInOut
-                     animations:hideControls
-                     completion:^(BOOL _) {
-                       [self animationFinished];
-                     }];
   } else {
-    expansion();
-    hideControls();
+    [self expansion];
+    [self.toolbarAnimatee hideControlButtons];
   }
 }
 
 // Updates the UI elements reflect the toolbar contracted state, `animated` or
 // not.
 - (void)updateUIToContractedState:(BOOL)animated {
-  void (^contraction)() = ^{
-    [self.toolbarAnimatee contractLocationBar];
-  };
-
-  void (^hideCancel)() = ^{
-    [self.toolbarAnimatee hideCancelButton];
-  };
-
-  void (^showControls)() = ^{
-    [self.toolbarAnimatee showControlButtons];
-  };
-
   if (animated) {
     // Use UIView animateWithDuration instead of UIViewPropertyAnimator to
     // avoid UIKit bug. See https://crbug.com/856155.
@@ -305,23 +302,23 @@
           [UIView addKeyframeWithRelativeStartTime:0
                                   relativeDuration:relativeDurationAnimation1
                                         animations:^{
-                                          contraction();
+                                          [self contraction];
                                         }];
           [UIView
               addKeyframeWithRelativeStartTime:relativeDurationAnimation1
                               relativeDuration:1 - relativeDurationAnimation1
                                     animations:^{
-                                      showControls();
+                                      [self.toolbarAnimatee showControlButtons];
                                     }];
         }
-        completion:^(BOOL _) {
-          hideCancel();
+        completion:^(BOOL finished) {
+          [self.toolbarAnimatee hideCancelButton];
           [self animationFinished];
         }];
   } else {
-    contraction();
-    showControls();
-    hideCancel();
+    [self contraction];
+    [self.toolbarAnimatee showControlButtons];
+    [self.toolbarAnimatee hideCancelButton];
   }
 }
 
@@ -345,9 +342,46 @@
   if (self.stateChangedDuringAnimation) {
     [self transitionToStateOmniboxFocused:self.finalOmniboxFocusedState
                           toolbarExpanded:self.finalToolbarExpandedState
-                                 animated:NO];
+                                  trigger:_trigger
+                                 animated:NO
+                               completion:_completion];
+  } else {
+    if (_completion) {
+      _completion();
+      _completion = nil;
+      if (_trigger == OmniboxFocusTrigger::kPinnedLargeFakebox) {
+        // Reset the location bar height back to the default.
+        [self.toolbarAnimatee setLocationBarHeightExpanded];
+      }
+    }
   }
   self.stateChangedDuringAnimation = NO;
+}
+
+#pragma mark - Private animation helpers
+
+// Visually expands the location bar for focus.
+- (void)expansion {
+  [self.toolbarAnimatee expandLocationBar];
+  [self.toolbarAnimatee showCancelButton];
+  switch (_trigger) {
+    case OmniboxFocusTrigger::kPinnedLargeFakebox:
+      [self.toolbarAnimatee setLocationBarHeightExpanded];
+      break;
+    case OmniboxFocusTrigger::kUnpinnedLargeFakebox:
+      [self.toolbarAnimatee setToolbarFaded:NO];
+      break;
+    default:
+      break;
+  }
+}
+
+// Visually contracts the location bar for defocus.
+- (void)contraction {
+  [self.toolbarAnimatee contractLocationBar];
+  if (_trigger == OmniboxFocusTrigger::kPinnedLargeFakebox) {
+    [self.toolbarAnimatee setLocationBarHeightToMatchFakeOmnibox];
+  }
 }
 
 @end

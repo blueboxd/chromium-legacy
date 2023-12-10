@@ -55,6 +55,8 @@ source_set("browser") {
     "aw_contents_statics.cc",
     "aw_cookie_access_policy.cc",
     "aw_cookie_access_policy.h",
+    "aw_crash_keys.cc",
+    "aw_crash_keys.h",
     "aw_dark_mode.cc",
     "aw_dark_mode.h",
     "aw_devtools_manager_delegate.cc",
@@ -97,8 +99,6 @@ source_set("browser") {
     "aw_render_process.h",
     "aw_render_process_gone_delegate.h",
     "aw_renderer_priority.h",
-    "aw_resource_context.cc",
-    "aw_resource_context.h",
     "aw_settings.cc",
     "aw_settings.h",
     "aw_speech_recognition_manager_delegate.cc",
@@ -113,8 +113,6 @@ source_set("browser") {
     "aw_web_contents_view_delegate.h",
     "aw_web_ui_controller_factory.cc",
     "aw_web_ui_controller_factory.h",
-    "component_updater/loader_policies/aw_apps_package_names_allowlist_component_loader_policy.cc",
-    "component_updater/loader_policies/aw_apps_package_names_allowlist_component_loader_policy.h",
     "component_updater/loader_policies/empty_component_loader_policy.cc",
     "component_updater/loader_policies/empty_component_loader_policy.h",
     "component_updater/loader_policies/origin_trials_component_loader_policy.cc",
@@ -310,7 +308,7 @@ source_set("browser") {
     "//ui/gl",
     "//ui/resources",
     "//ui/touch_selection",
-    "//url:gurl_android",
+    "//url",
   ]
 
   if (enable_printing) {

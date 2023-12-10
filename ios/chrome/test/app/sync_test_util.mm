@@ -45,8 +45,8 @@
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/sync/model/device_info_sync_service_factory.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
-#import "ios/chrome/browser/synced_sessions/distant_session.h"
-#import "ios/chrome/browser/synced_sessions/distant_tab.h"
+#import "ios/chrome/browser/synced_sessions/model/distant_session.h"
+#import "ios/chrome/browser/synced_sessions/model/distant_tab.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "testing/gtest/include/gtest/gtest.h"
 
@@ -180,6 +180,9 @@ void AddSessionToFakeSyncServer(
     sync_pb::SessionSpecifics tab = helper.BuildTabSpecifics(
         session.tag, base::UTF16ToUTF8(distant_tab->title),
         distant_tab->virtual_url.spec(), window_id, distant_tab->tab_id);
+    tab.mutable_tab()->set_last_active_time_unix_epoch_millis(
+        (distant_tab->last_active_time - base::Time::UnixEpoch())
+            .InMilliseconds());
     specifics_list.push_back(tab);
     tab_list.push_back(distant_tab->tab_id);
   }

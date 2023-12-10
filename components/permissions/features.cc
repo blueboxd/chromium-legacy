@@ -60,30 +60,6 @@ BASE_FEATURE(kOneTimePermission,
              "OneTimePermission",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-#if BUILDFLAG(IS_ANDROID)
-// Not supported on Android.
-BASE_FEATURE(kPermissionChip,
-             "PermissionChip",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kPermissionQuietChip,
-             "PermissionQuietChip",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#else
-
-// Enables an experimental permission prompt that uses a chip in the location
-// bar.
-BASE_FEATURE(kPermissionChip,
-             "PermissionChip",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables a less prominent permission prompt that uses a chip in the location
-// bar. Requires chrome://flags/#quiet-notification-prompts to be enabled.
-BASE_FEATURE(kPermissionQuietChip,
-             "PermissionQuietChip",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif  // BUILDFLAG(IS_ANDROID)
-
 // Enables a faster permission request finalization if it is displayed as a
 // quiet chip.
 BASE_FEATURE(kFailFastQuietChip,
@@ -157,13 +133,25 @@ BASE_FEATURE(kMitigateUnpartitionedWebviewPermissions,
 // omnibox integration.
 BASE_FEATURE(kPermissionStorageAccessAPI,
              "PermissionStorageAccessAPI",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_ANDROID)
+             base::FEATURE_DISABLED_BY_DEFAULT
+#else
+             base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+);
 
 // When enabled "window-placement" may be used as an alias for
 // "window-management". Additionally, reverse mappings (i.e. enum to string)
 // will default to the legacy strings ("window-placement").
 BASE_FEATURE(kWindowPlacementPermissionAlias,
              "WindowPlacementPermissionAlias",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// When enabled, blocks condition to exclude auto granted permissions for
+// storage access exceptions. This will allow RWS permission grants to be
+// visible in the Embedded content settings page.
+BASE_FEATURE(kShowRelatedWebsiteSetsPermissionGrants,
+             "ShowRelatedWebsiteSetsPermissionGrants",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables disallowing MIDI permission by default.

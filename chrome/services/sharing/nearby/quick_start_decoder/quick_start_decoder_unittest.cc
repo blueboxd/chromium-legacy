@@ -28,9 +28,10 @@ namespace {
 
 constexpr char kCredentialIdKey[] = "id";
 constexpr char kEntitiyIdMapKey[] = "id";
+constexpr char kBootstrapConfigurationsKey[] = "bootstrapConfigurations";
 constexpr char kDeviceDetailsKey[] = "deviceDetails";
-constexpr char kCryptauthDeviceIdKey[] = "cryptauthDeviceId";
-constexpr char kExampleCryptauthDeviceId[] = "helloworld";
+constexpr char kInstanceIdKey[] = "instanceId";
+constexpr char kExampleInstanceId[] = "helloworld";
 constexpr char kFidoMessageKey[] = "fidoMessage";
 constexpr uint8_t kSuccess = 0x00;
 
@@ -353,23 +354,6 @@ TEST_F(QuickStartDecoderTest, DecodeBootstrapConfigurations_NullPayload) {
 }
 
 TEST_F(QuickStartDecoderTest,
-       DecodeBootstrapConfigurations_EmptyMessagePayload) {
-  QuickStartMessage message(QuickStartMessageType::kBootstrapConfigurations);
-
-  base::test::TestFuture<
-      ::ash::quick_start::mojom::BootstrapConfigurationsPtr,
-      absl::optional<::ash::quick_start::mojom::QuickStartDecoderError>>
-      future;
-
-  DoDecodeBootstrapConfigurations(ConvertMessageToBytes(&message),
-                                  future.GetCallback());
-
-  EXPECT_TRUE(future.Get<0>().is_null());
-  EXPECT_EQ(future.Get<1>(),
-            mojom::QuickStartDecoderError::kMessageDoesNotMatchSchema);
-}
-
-TEST_F(QuickStartDecoderTest,
        DecodeBootstrapConfigurations_UnexpectedMessageType) {
   // Build a valid SecondDeviceAuthPayload
   std::string expected_credential_id(kValidCredentialId.begin(),
@@ -396,6 +380,7 @@ TEST_F(QuickStartDecoderTest,
 TEST_F(QuickStartDecoderTest,
        DecodeBootstrapConfigurations_EmptyBootstrapConfigurations) {
   QuickStartMessage message(QuickStartMessageType::kBootstrapConfigurations);
+  message.GetPayload()->Set(kBootstrapConfigurationsKey, base::Value::Dict());
 
   base::test::TestFuture<
       ::ash::quick_start::mojom::BootstrapConfigurationsPtr,
@@ -404,38 +389,19 @@ TEST_F(QuickStartDecoderTest,
 
   DoDecodeBootstrapConfigurations(ConvertMessageToBytes(&message),
                                   future.GetCallback());
-  EXPECT_TRUE(future.Get<0>().is_null());
-  EXPECT_EQ(future.Get<1>(),
-            mojom::QuickStartDecoderError::kMessageDoesNotMatchSchema);
-}
-
-TEST_F(QuickStartDecoderTest,
-       DecodeBootstrapConfigurations_EmptyDeviceDetails) {
-  base::Value::Dict device_details;
-
-  QuickStartMessage message(QuickStartMessageType::kBootstrapConfigurations);
-  message.GetPayload()->Set(kDeviceDetailsKey, std::move(device_details));
-
-  base::test::TestFuture<
-      ::ash::quick_start::mojom::BootstrapConfigurationsPtr,
-      absl::optional<::ash::quick_start::mojom::QuickStartDecoderError>>
-      future;
-
-  DoDecodeBootstrapConfigurations(ConvertMessageToBytes(&message),
-                                  future.GetCallback());
-
   EXPECT_FALSE(future.Get<0>().is_null());
-  EXPECT_EQ(future.Get<0>()->cryptauth_device_id, "");
+  EXPECT_EQ(future.Get<0>()->instance_id, "");
   EXPECT_EQ(future.Get<1>(), absl::nullopt);
 }
 
 TEST_F(QuickStartDecoderTest,
-       DecodeBootstrapConfigurations_EmptyCryptauthDeviceId) {
-  base::Value::Dict device_details;
-  device_details.Set(kCryptauthDeviceIdKey, "");
+       DecodeBootstrapConfigurations_EmptyDeviceDetails) {
+  base::Value::Dict bootstrap_configurations;
+  bootstrap_configurations.Set(kDeviceDetailsKey, base::Value::Dict());
 
   QuickStartMessage message(QuickStartMessageType::kBootstrapConfigurations);
-  message.GetPayload()->Set(kDeviceDetailsKey, std::move(device_details));
+  message.GetPayload()->Set(kBootstrapConfigurationsKey,
+                            std::move(bootstrap_configurations));
 
   base::test::TestFuture<
       ::ash::quick_start::mojom::BootstrapConfigurationsPtr,
@@ -446,17 +412,43 @@ TEST_F(QuickStartDecoderTest,
                                   future.GetCallback());
 
   EXPECT_FALSE(future.Get<0>().is_null());
-  EXPECT_EQ(future.Get<0>()->cryptauth_device_id, "");
+  EXPECT_EQ(future.Get<0>()->instance_id, "");
+  EXPECT_EQ(future.Get<1>(), absl::nullopt);
+}
+
+TEST_F(QuickStartDecoderTest, DecodeBootstrapConfigurations_EmptyInstanceId) {
+  base::Value::Dict device_details;
+  device_details.Set(kInstanceIdKey, "");
+  base::Value::Dict bootstrap_configurations;
+  bootstrap_configurations.Set(kDeviceDetailsKey, std::move(device_details));
+
+  QuickStartMessage message(QuickStartMessageType::kBootstrapConfigurations);
+  message.GetPayload()->Set(kBootstrapConfigurationsKey,
+                            std::move(bootstrap_configurations));
+
+  base::test::TestFuture<
+      ::ash::quick_start::mojom::BootstrapConfigurationsPtr,
+      absl::optional<::ash::quick_start::mojom::QuickStartDecoderError>>
+      future;
+
+  DoDecodeBootstrapConfigurations(ConvertMessageToBytes(&message),
+                                  future.GetCallback());
+
+  EXPECT_FALSE(future.Get<0>().is_null());
+  EXPECT_EQ(future.Get<0>()->instance_id, "");
   EXPECT_EQ(future.Get<1>(), absl::nullopt);
 }
 
 TEST_F(QuickStartDecoderTest,
        DecodeBootstrapConfigurations_ValidBootstrapConfigurations) {
   base::Value::Dict device_details;
-  device_details.Set(kCryptauthDeviceIdKey, kExampleCryptauthDeviceId);
+  device_details.Set(kInstanceIdKey, kExampleInstanceId);
+  base::Value::Dict bootstrap_configurations;
+  bootstrap_configurations.Set(kDeviceDetailsKey, std::move(device_details));
 
   QuickStartMessage message(QuickStartMessageType::kBootstrapConfigurations);
-  message.GetPayload()->Set(kDeviceDetailsKey, std::move(device_details));
+  message.GetPayload()->Set(kBootstrapConfigurationsKey,
+                            std::move(bootstrap_configurations));
 
   base::test::TestFuture<
       ::ash::quick_start::mojom::BootstrapConfigurationsPtr,
@@ -466,7 +458,7 @@ TEST_F(QuickStartDecoderTest,
   DoDecodeBootstrapConfigurations(ConvertMessageToBytes(&message),
                                   future.GetCallback());
   EXPECT_FALSE(future.Get<0>().is_null());
-  EXPECT_EQ(future.Get<0>()->cryptauth_device_id, kExampleCryptauthDeviceId);
+  EXPECT_EQ(future.Get<0>()->instance_id, kExampleInstanceId);
   EXPECT_EQ(future.Get<1>(), absl::nullopt);
 }
 

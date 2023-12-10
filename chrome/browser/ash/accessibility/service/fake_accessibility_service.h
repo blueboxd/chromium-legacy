@@ -138,9 +138,17 @@ class FakeAccessibilityService
   // Methods to pretend a UserInterface request came from the service.
   //
 
+  void RequestDarkenScreen(bool darken);
+
+  void RequestOpenSettingsSubpage(const std::string& subpage);
+
   void RequestSetFocusRings(
       std::vector<ax::mojom::FocusRingInfoPtr> focus_rings,
       ax::mojom::AssistiveTechnologyType at_type);
+
+  void RequestSetHighlights(const std::vector<gfx::Rect>& rects, SkColor color);
+
+  void RequestSetVirtualKeyboardVisible(bool is_visible);
 
   // Getters for automation events.
   std::vector<ui::AXTreeID> tree_destroyed_events() const {

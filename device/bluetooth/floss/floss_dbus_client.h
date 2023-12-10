@@ -27,6 +27,7 @@
 #include "dbus/object_proxy.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_export.h"
+#include "device/bluetooth/floss/floss_version.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace floss {
@@ -133,6 +134,7 @@ extern DEVICE_BLUETOOTH_EXPORT const char kGetState[];
 extern DEVICE_BLUETOOTH_EXPORT const char kGetAvailableAdapters[];
 extern DEVICE_BLUETOOTH_EXPORT const char kGetDefaultAdapter[];
 extern DEVICE_BLUETOOTH_EXPORT const char kSetDesiredDefaultAdapter[];
+extern DEVICE_BLUETOOTH_EXPORT const char kGetFlossApiVersion[];
 extern DEVICE_BLUETOOTH_EXPORT const char kRegisterCallback[];
 extern DEVICE_BLUETOOTH_EXPORT const char kCallbackInterface[];
 
@@ -231,7 +233,7 @@ extern DEVICE_BLUETOOTH_EXPORT const char kOnServerNotificationSent[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnServerMtuChanged[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnServerSubrateChange[];
 }  // namespace gatt
-   //
+
 namespace advertiser {
 extern DEVICE_BLUETOOTH_EXPORT const char kRegisterCallback[];
 extern DEVICE_BLUETOOTH_EXPORT const char kUnregisterCallback[];
@@ -413,9 +415,9 @@ template <typename T>
 const DBusTypeInfo& GetDBusTypeInfo(const std::vector<T>*) {
   static const base::NoDestructor<DBusTypeInfo> elem_info(
       GetDBusTypeInfo(static_cast<T*>(nullptr)));
-  static const base::NoDestructor<DBusTypeInfo> info(
+  static const base::NoDestructor<DBusTypeInfo> info{
       {base::StrCat({"a", elem_info->dbus_signature}),
-       base::StrCat({"vector<", elem_info->type_name, ">"})});
+       base::StrCat({"vector<", elem_info->type_name, ">"})}};
   return *info;
 }
 
@@ -425,11 +427,11 @@ const DBusTypeInfo& GetDBusTypeInfo(const std::map<T, U>*) {
       GetDBusTypeInfo(static_cast<T*>(nullptr)));
   static const base::NoDestructor<DBusTypeInfo> val_info(
       GetDBusTypeInfo(static_cast<U*>(nullptr)));
-  static const base::NoDestructor<DBusTypeInfo> info(
+  static const base::NoDestructor<DBusTypeInfo> info{
       {base::StrCat(
            {"a{", key_info->dbus_signature, val_info->dbus_signature, "}"}),
        base::StrCat(
-           {"map<", key_info->type_name, ", ", val_info->type_name, ">"})});
+           {"map<", key_info->type_name, ", ", val_info->type_name, ">"})}};
   return *info;
 }
 
@@ -437,8 +439,8 @@ template <typename T>
 const DBusTypeInfo& GetDBusTypeInfo(const absl::optional<T>*) {
   static const base::NoDestructor<DBusTypeInfo> elem_info(
       GetDBusTypeInfo(static_cast<T*>(nullptr)));
-  static const base::NoDestructor<DBusTypeInfo> info(
-      {"a{sv}", base::StrCat({"optional<", elem_info->type_name, ">"})});
+  static const base::NoDestructor<DBusTypeInfo> info{
+      {"a{sv}", base::StrCat({"optional<", elem_info->type_name, ">"})}};
   return *info;
 }
 
@@ -832,6 +834,7 @@ class DEVICE_BLUETOOTH_EXPORT FlossDBusClient {
   virtual void Init(dbus::Bus* bus,
                     const std::string& bluetooth_service_name,
                     const int adapter_index,
+                    base::Version version,
                     base::OnceClosure on_ready) = 0;
 
  protected:
@@ -877,6 +880,9 @@ class DEVICE_BLUETOOTH_EXPORT FlossDBusClient {
   void DefaultResponse(const std::string& caller,
                        dbus::Response* response,
                        dbus::ErrorResponse* error_response);
+
+  // API version.
+  base::Version version_;
 
  private:
   base::WeakPtrFactory<FlossDBusClient> weak_ptr_factory_{this};

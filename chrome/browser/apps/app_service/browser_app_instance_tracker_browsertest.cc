@@ -264,8 +264,7 @@ class BrowserAppInstanceTrackerTest : public InProcessBrowserTest {
     params.disposition = disposition;
     Navigate(&params);
     auto* contents = params.navigated_or_inserted_contents;
-    DCHECK_EQ(chrome::FindBrowserWithWebContents(
-                  params.navigated_or_inserted_contents),
+    DCHECK_EQ(chrome::FindBrowserWithTab(params.navigated_or_inserted_contents),
               browser);
     content::TestNavigationObserver observer(contents);
     observer.Wait();
@@ -505,8 +504,13 @@ IN_PROC_BROWSER_TEST_F(BrowserAppInstanceTrackerTest, PopupBrowserWindow) {
     });
   }
 }
-
-IN_PROC_BROWSER_TEST_F(BrowserAppInstanceTrackerTest, DevtoolsWindow) {
+// Broken on ChromeOS <https://crbug.com/1493240>
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_DevtoolsWindow DISABLED_DevtoolsWindow
+#else
+#define MAYBE_DevtoolsWindow DevtoolsWindow
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserAppInstanceTrackerTest, MAYBE_DevtoolsWindow) {
   Browser* browser = CreateBrowser();
   InsertForegroundTab(browser, "https://c.example.org");
   aura::Window* window1 = browser->window()->GetNativeWindow();

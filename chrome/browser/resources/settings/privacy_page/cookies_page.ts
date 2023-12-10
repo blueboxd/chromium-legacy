@@ -21,11 +21,12 @@ import './do_not_track_toggle.js';
 import '/shared/settings/controls/settings_radio_group.js';
 
 import {SettingsRadioGroupElement} from '/shared/settings/controls/settings_radio_group.js';
+import {SettingsToggleButtonElement} from '/shared/settings/controls/settings_toggle_button.js';
 import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {focusWithoutInk} from 'chrome://resources/js/focus_without_ink.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -138,6 +139,12 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
         type: Boolean,
         value: () =>
             loadTimeData.getBoolean('is3pcdCookieSettingsRedesignEnabled'),
+      },
+
+      showTrackingProtectionRollbackNotice_: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean(
+            'showTrackingProtectionSettingsRollbackNotice'),
       },
     };
   }
@@ -268,6 +275,16 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
           controlledBy: sessionOnlyPref.controlledBy,
           controlledByName: sessionOnlyPref.controlledByName,
         }));
+  }
+
+  private onBlockAll3pcToggleChanged_(event: Event) {
+    this.metricsBrowserProxy_.recordSettingsPageHistogram(
+        PrivacyElementInteractions.BLOCK_ALL_THIRD_PARTY_COOKIES);
+    const target = event.target as SettingsToggleButtonElement;
+    if (target.checked) {
+      this.metricsBrowserProxy_.recordAction(
+          'Settings.PrivacySandbox.Block3PCookies');
+    }
   }
 
   private onCookieControlsModeChanged_() {

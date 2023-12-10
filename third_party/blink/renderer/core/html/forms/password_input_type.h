@@ -44,7 +44,6 @@ class PasswordInputType final : public BaseTextInputType {
 
  private:
   void CountUsage() override;
-  const AtomicString& FormControlType() const override;
   bool ShouldSaveAndRestoreFormControlState() const override;
   FormControlState SaveFormControlState() const override;
   void RestoreFormControlState(const FormControlState&) override;
@@ -57,6 +56,7 @@ class PasswordInputType final : public BaseTextInputType {
   void CapsLockStateMayHaveChanged() override;
   bool ShouldDrawCapsLockIndicator() const override;
   void UpdatePasswordRevealButton();
+  void UpdateStrongPasswordLabel();
   void DidSetValueByUserEdit() override;
   void DidSetValue(const String&, bool value_changed) override;
 

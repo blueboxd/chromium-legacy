@@ -310,22 +310,36 @@ class BookmarkManagerMediator
         }
     };
 
-    private final BookmarkUiPrefs.Observer mBookmarkUiPrefsObserver = new Observer() {
-        @Override
-        public void onBookmarkRowDisplayPrefChanged(@BookmarkRowDisplayPref int displayPref) {
-            Resources res = mContext.getResources();
-            mBookmarkImageFetcher.setupFetchProperties(
-                    BookmarkUtils.getRoundedIconGenerator(mContext, displayPref),
-                    BookmarkUtils.getImageIconSize(res, displayPref),
-                    BookmarkUtils.getFaviconDisplaySize(res, displayPref));
-            refresh();
-        }
+    private final BookmarkUiPrefs.Observer mBookmarkUiPrefsObserver =
+            new Observer() {
+                @Override
+                public void onBookmarkRowDisplayPrefChanged(
+                        @BookmarkRowDisplayPref int displayPref) {
+                    Resources res = mContext.getResources();
+                    mBookmarkImageFetcher.setupFetchProperties(
+                            BookmarkUtils.getRoundedIconGenerator(mContext, displayPref),
+                            BookmarkUtils.getImageIconSize(res, displayPref),
+                            BookmarkUtils.getFaviconDisplaySize(res));
+                    refresh();
 
-        @Override
-        public void onBookmarkRowSortOrderChanged(@BookmarkRowSortOrder int sortOrder) {
-            refresh();
-        }
-    };
+                    if (AccessibilityState.isTouchExplorationEnabled()) {
+                        mRecyclerView.announceForAccessibility(
+                                mBookmarkUiPrefs.getViewOptionsAccessibilityAnnouncementText(
+                                        mContext, displayPref));
+                    }
+                }
+
+                @Override
+                public void onBookmarkRowSortOrderChanged(@BookmarkRowSortOrder int sortOrder) {
+                    refresh();
+
+                    if (AccessibilityState.isTouchExplorationEnabled()) {
+                        mRecyclerView.announceForAccessibility(
+                                mBookmarkUiPrefs.getSortOrderAccessibilityAnnouncementText(
+                                        mContext, sortOrder));
+                    }
+                }
+            };
 
     private final ObserverList<BookmarkUiObserver> mUiObservers = new ObserverList<>();
     private final BookmarkDragStateDelegate mDragStateDelegate = new BookmarkDragStateDelegate();
@@ -1224,7 +1238,9 @@ class BookmarkManagerMediator
         propertyModel.set(ImprovedBookmarkRowProperties.LIST_MENU_BUTTON_DELEGATE,
                 () -> createListMenuForBookmark(propertyModel));
         propertyModel.set(ImprovedBookmarkRowProperties.SELECTION_ACTIVE, mIsSelectionEnabled);
-        propertyModel.set(ImprovedBookmarkRowProperties.SELECTED, false);
+        propertyModel.set(
+                ImprovedBookmarkRowProperties.SELECTED,
+                mSelectionDelegate.isItemSelected(bookmarkId));
 
         propertyModel.set(ImprovedBookmarkRowProperties.ROW_CLICK_LISTENER,
                 (v) -> { bookmarkRowClicked(bookmarkId); });
@@ -1412,7 +1428,7 @@ class BookmarkManagerMediator
     }
 
     private void onClearSearchTextRunnable() {
-        setSearchTextAndUpdateButtonVisibility("");
+        onSearchTextChangeCallback("");
     }
 
     private void setSearchTextAndUpdateButtonVisibility(String searchText) {
@@ -1482,6 +1498,10 @@ class BookmarkManagerMediator
             // TODO(crbug.com/1473108): Consider using RecyclerView decorations for section headers.
             if (mModelList.get(i).type == ViewType.SECTION_HEADER) continue;
             PropertyModel model = mModelList.get(i).model;
+
+            BookmarkId id = model.get(BookmarkManagerProperties.BOOKMARK_ID);
+            model.set(
+                    ImprovedBookmarkRowProperties.SELECTED, mSelectionDelegate.isItemSelected(id));
             model.set(ImprovedBookmarkRowProperties.SELECTION_ACTIVE, mIsSelectionEnabled);
         }
     }
@@ -1496,7 +1516,7 @@ class BookmarkManagerMediator
     // properly.
     @VisibleForTesting
     void updateShoppingFilterVisible() {
-        boolean eligible = ShoppingFeatures.isShoppingListEligible();
+        boolean eligible = ShoppingFeatures.isShoppingListEligible(mProfile);
         if (!eligible) {
             updateFilterAvailability(false);
             return;

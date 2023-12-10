@@ -75,6 +75,8 @@
 
 namespace blink {
 
+using mojom::blink::FormControlType;
+
 namespace {
 
 bool CanAssignToSelectSlot(const Node& node) {
@@ -112,7 +114,12 @@ HTMLSelectElement::HTMLSelectElement(Document& document)
 
 HTMLSelectElement::~HTMLSelectElement() = default;
 
-const AtomicString& HTMLSelectElement::FormControlType() const {
+FormControlType HTMLSelectElement::FormControlType() const {
+  return is_multiple_ ? FormControlType::kSelectMultiple
+                      : FormControlType::kSelectOne;
+}
+
+const AtomicString& HTMLSelectElement::FormControlTypeAsString() const {
   DEFINE_STATIC_LOCAL(const AtomicString, select_multiple, ("select-multiple"));
   DEFINE_STATIC_LOCAL(const AtomicString, select_one, ("select-one"));
   return is_multiple_ ? select_multiple : select_one;

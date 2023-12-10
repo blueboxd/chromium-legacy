@@ -9,10 +9,10 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/box_sides.h"
+#include "third_party/blink/renderer/core/layout/geometry/box_strut.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
+#include "third_party/blink/renderer/core/layout/mathml/mathml_paint_info.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items.h"
-#include "third_party/blink/renderer/core/layout/ng/mathml/ng_mathml_paint_info.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/physical_fragment_rare_data.h"
@@ -42,9 +42,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
   // Creates a shallow copy of |other| but uses the "post-layout" fragments to
   // ensure fragment-tree consistency.
   static const NGPhysicalBoxFragment* CloneWithPostLayoutFragments(
-      const NGPhysicalBoxFragment& other,
-      const absl::optional<PhysicalRect> updated_layout_overflow =
-          absl::nullopt);
+      const NGPhysicalBoxFragment& other);
 
   using PassKey = base::PassKey<NGPhysicalBoxFragment>;
   NGPhysicalBoxFragment(PassKey,
@@ -52,9 +50,9 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
                         bool has_layout_overflow,
                         const PhysicalRect& layout_overflow,
                         bool has_borders,
-                        const NGPhysicalBoxStrut& borders,
+                        const PhysicalBoxStrut& borders,
                         bool has_padding,
-                        const NGPhysicalBoxStrut& padding,
+                        const PhysicalBoxStrut& padding,
                         const absl::optional<PhysicalRect>& inflow_bounds,
                         bool has_fragment_items,
                         WritingMode block_or_line_writing_mode);
@@ -168,7 +166,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
   }
 
   const NGTableFragmentData::ColumnGeometries* TableColumnGeometries() const {
-    return rare_data_->table_column_geometries_;
+    return rare_data_->table_column_geometries_.Get();
   }
 
   const NGTableBorders* TableCollapsedBorders() const {
@@ -217,53 +215,35 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
 
   // Returns the layout-overflow for this fragment.
   const PhysicalRect LayoutOverflow() const {
-    if (RuntimeEnabledFeatures::LayoutOverflowNoCloneEnabled()) {
-      if (const auto* field = GetRareField(FieldId::kLayoutOverflow)) {
-        return field->layout_overflow;
-      }
-      return {{}, Size()};
+    if (const auto* field = GetRareField(FieldId::kLayoutOverflow)) {
+      return field->layout_overflow;
     }
-    if (!HasLayoutOverflow())
-      return {{}, Size()};
-    return *ComputeLayoutOverflowAddress();
+    return {{}, Size()};
   }
 
   bool HasLayoutOverflow() const {
-    if (RuntimeEnabledFeatures::LayoutOverflowNoCloneEnabled()) {
-      return GetRareField(FieldId::kLayoutOverflow);
-    }
-    return bit_field_.get<HasLayoutOverflowFlag>();
+    return GetRareField(FieldId::kLayoutOverflow);
   }
 
-  const NGPhysicalBoxStrut Borders() const {
-    if (RuntimeEnabledFeatures::RareBorderPaddingInflowEnabled()) {
-      if (const auto* field = GetRareField(FieldId::kBorders)) {
-        return field->borders;
-      }
-      return NGPhysicalBoxStrut();
+  const PhysicalBoxStrut Borders() const {
+    if (const auto* field = GetRareField(FieldId::kBorders)) {
+      return field->borders;
     }
-    if (!HasBorders())
-      return NGPhysicalBoxStrut();
-    return *ComputeBordersAddress();
+    return PhysicalBoxStrut();
   }
 
-  const NGPhysicalBoxStrut Padding() const {
-    if (RuntimeEnabledFeatures::RareBorderPaddingInflowEnabled()) {
-      if (const auto* field = GetRareField(FieldId::kPadding)) {
-        return field->padding;
-      }
-      return NGPhysicalBoxStrut();
+  const PhysicalBoxStrut Padding() const {
+    if (const auto* field = GetRareField(FieldId::kPadding)) {
+      return field->padding;
     }
-    if (!HasPadding())
-      return NGPhysicalBoxStrut();
-    return *ComputePaddingAddress();
+    return PhysicalBoxStrut();
   }
 
-  const NGPhysicalBoxStrut Margins() const {
+  const PhysicalBoxStrut Margins() const {
     if (const auto* field = GetRareField(FieldId::kMargins)) {
       return field->margins;
     }
-    return NGPhysicalBoxStrut();
+    return PhysicalBoxStrut();
   }
 
   const PhysicalOffset ContentOffset() const {
@@ -286,15 +266,10 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
   // size and position of the grid instead.
   // This is used for scrollable overflow calculations.
   const absl::optional<PhysicalRect> InflowBounds() const {
-    if (RuntimeEnabledFeatures::RareBorderPaddingInflowEnabled()) {
-      if (const auto* field = GetRareField(FieldId::kInflowBounds)) {
-        return field->inflow_bounds;
-      }
-      return absl::nullopt;
+    if (const auto* field = GetRareField(FieldId::kInflowBounds)) {
+      return field->inflow_bounds;
     }
-    if (!HasInflowBounds())
-      return absl::nullopt;
-    return *ComputeInflowBoundsAddress();
+    return absl::nullopt;
   }
 
   // Return true if this is either a container that establishes an inline
@@ -408,7 +383,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
 
   // The outsets to apply to the border-box of this fragment for
   // |overflow-clip-margin|.
-  NGPhysicalBoxStrut OverflowClipMarginOutsets() const;
+  PhysicalBoxStrut OverflowClipMarginOutsets() const;
 
   PhysicalBoxSides SidesToInclude() const {
     return PhysicalBoxSides(IncludeBorderTop(), IncludeBorderRight(),
@@ -453,7 +428,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
 
     return GetRareField(FieldId::kMathMLPaintInfo);
   }
-  const NGMathMLPaintInfo& GetMathMLPaintInfo() const {
+  const MathMLPaintInfo& GetMathMLPaintInfo() const {
     return *rare_data_->GetField(FieldId::kMathMLPaintInfo)
                 ->mathml_paint_info.get();
   }
@@ -477,7 +452,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
    public:
     MutableForContainerLayout(base::PassKey<NGPhysicalBoxFragment>,
                               NGPhysicalBoxFragment& fragment);
-    void SetMargins(const NGPhysicalBoxStrut& margins);
+    void SetMargins(const PhysicalBoxStrut& margins);
 
    private:
     NGPhysicalBoxFragment& fragment_;
@@ -571,13 +546,9 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
       IncludeBorderRightFlag::DefineNextValue<bool, 1>;
   using IncludeBorderLeftFlag =
       IncludeBorderBottomFlag::DefineNextValue<bool, 1>;
-  using HasLayoutOverflowFlag = IncludeBorderLeftFlag::DefineNextValue<bool, 1>;
   using InkOverflowTypeValue =
-      HasLayoutOverflowFlag::DefineNextValue<uint8_t, NGInkOverflow::kTypeBits>;
-  using HasBordersFlag = InkOverflowTypeValue::DefineNextValue<bool, 1>;
-  using HasPaddingFlag = HasBordersFlag::DefineNextValue<bool, 1>;
-  using HasInflowBoundsFlag = HasPaddingFlag::DefineNextValue<bool, 1>;
-  using IsFirstForNodeFlag = HasInflowBoundsFlag::DefineNextValue<bool, 1>;
+      IncludeBorderLeftFlag::DefineNextValue<uint8_t, NGInkOverflow::kTypeBits>;
+  using IsFirstForNodeFlag = InkOverflowTypeValue::DefineNextValue<bool, 1>;
   using HasDescendantsForTablePartFlag =
       IsFirstForNodeFlag::DefineNextValue<bool, 1>;
   using IsFragmentationContextRootFlag =
@@ -597,27 +568,13 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
   bool IncludeBorderLeft() const {
     return bit_field_.get<IncludeBorderLeftFlag>();
   }
-  bool HasBorders() const {
-    return RuntimeEnabledFeatures::RareBorderPaddingInflowEnabled()
-               ? !!GetRareField(FieldId::kBorders)
-               : bit_field_.get<HasBordersFlag>();
-  }
-  bool HasPadding() const {
-    return RuntimeEnabledFeatures::RareBorderPaddingInflowEnabled()
-               ? !!GetRareField(FieldId::kPadding)
-               : bit_field_.get<HasPaddingFlag>();
-  }
+  bool HasBorders() const { return !!GetRareField(FieldId::kBorders); }
+  bool HasPadding() const { return !!GetRareField(FieldId::kPadding); }
   bool HasInflowBounds() const {
-    return RuntimeEnabledFeatures::RareBorderPaddingInflowEnabled()
-               ? !!GetRareField(FieldId::kInflowBounds)
-               : bit_field_.get<HasInflowBoundsFlag>();
+    return !!GetRareField(FieldId::kInflowBounds);
   }
 
-  static size_t AdditionalByteSize(bool has_fragment_items,
-                                   bool has_layout_overflow,
-                                   bool has_borders,
-                                   bool has_padding,
-                                   bool has_inflow_bounds);
+  static size_t AdditionalByteSize(bool has_fragment_items);
 
   using FieldId = PhysicalFragmentRareData::FieldId;
   ALWAYS_INLINE const PhysicalFragmentRareData::RareField* GetRareField(
@@ -630,70 +587,9 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
   PhysicalFragmentRareData::RareField& EnsureRareField(FieldId id);
 
   const NGFragmentItems* ComputeItemsAddress() const {
-#if DCHECK_IS_ON()
-    if (RuntimeEnabledFeatures::LayoutOverflowNoCloneEnabled()) {
-      DCHECK(HasItems() || HasBorders() || HasPadding() || HasInflowBounds());
-    } else {
-      DCHECK(HasItems() || HasLayoutOverflow() || HasBorders() ||
-             HasPadding() || HasInflowBounds());
-    }
-#endif
+    DCHECK(HasItems());
     return reinterpret_cast<const NGFragmentItems*>(base::bits::AlignUp(
         reinterpret_cast<const uint8_t*>(this + 1), alignof(NGFragmentItems)));
-  }
-
-  const PhysicalRect* ComputeLayoutOverflowAddress() const {
-    DCHECK(!RuntimeEnabledFeatures::LayoutOverflowNoCloneEnabled());
-    DCHECK(HasLayoutOverflow() || HasBorders() || HasPadding() ||
-           HasInflowBounds());
-    const NGFragmentItems* items = ComputeItemsAddress();
-    const uint8_t* unaligned_layout_overflow =
-        HasItems() ? reinterpret_cast<const uint8_t*>(items + 1)
-                   : reinterpret_cast<const uint8_t*>(items);
-    return reinterpret_cast<const PhysicalRect*>(
-        base::bits::AlignUp(unaligned_layout_overflow, alignof(PhysicalRect)));
-  }
-
-  const NGPhysicalBoxStrut* ComputeBordersAddress() const {
-    DCHECK(!RuntimeEnabledFeatures::RareBorderPaddingInflowEnabled());
-    DCHECK(HasBorders() || HasPadding() || HasInflowBounds());
-    if (RuntimeEnabledFeatures::LayoutOverflowNoCloneEnabled()) {
-      const NGFragmentItems* address = ComputeItemsAddress();
-      const uint8_t* unaligned_border_address =
-          HasItems() ? reinterpret_cast<const uint8_t*>(address + 1)
-                     : reinterpret_cast<const uint8_t*>(address);
-      return reinterpret_cast<const NGPhysicalBoxStrut*>(base::bits::AlignUp(
-          unaligned_border_address, alignof(NGPhysicalBoxStrut)));
-    }
-    const PhysicalRect* address = ComputeLayoutOverflowAddress();
-    const uint8_t* unaligned_border_address =
-        HasLayoutOverflow() ? reinterpret_cast<const uint8_t*>(address + 1)
-                            : reinterpret_cast<const uint8_t*>(address);
-    return reinterpret_cast<const NGPhysicalBoxStrut*>(base::bits::AlignUp(
-        unaligned_border_address, alignof(NGPhysicalBoxStrut)));
-  }
-
-  const NGPhysicalBoxStrut* ComputePaddingAddress() const {
-    DCHECK(!RuntimeEnabledFeatures::RareBorderPaddingInflowEnabled());
-    DCHECK(HasPadding() || HasInflowBounds());
-    const NGPhysicalBoxStrut* address = ComputeBordersAddress();
-    const uint8_t* unaligned_address =
-        HasBorders() ? reinterpret_cast<const uint8_t*>(address + 1)
-                     : reinterpret_cast<const uint8_t*>(address);
-    return reinterpret_cast<const NGPhysicalBoxStrut*>(
-        base::bits::AlignUp(unaligned_address, alignof(NGPhysicalBoxStrut)));
-  }
-
-  const PhysicalRect* ComputeInflowBoundsAddress() const {
-    DCHECK(!RuntimeEnabledFeatures::RareBorderPaddingInflowEnabled());
-    DCHECK(HasInflowBounds());
-    NGPhysicalBoxStrut* address =
-        const_cast<NGPhysicalBoxStrut*>(ComputePaddingAddress());
-    const uint8_t* unaligned_address =
-        HasPadding() ? reinterpret_cast<const uint8_t*>(address + 1)
-                     : reinterpret_cast<const uint8_t*>(address);
-    return reinterpret_cast<const PhysicalRect*>(
-        base::bits::AlignUp(unaligned_address, alignof(PhysicalRect)));
   }
 
   void SetInkOverflow(const PhysicalRect& self, const PhysicalRect& contents);

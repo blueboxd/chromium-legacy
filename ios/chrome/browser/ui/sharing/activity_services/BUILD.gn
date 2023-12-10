@@ -23,7 +23,7 @@ source_set("activity_services") {
     "//components/prefs",
     "//components/ui_metrics",
     "//ios/chrome/browser/bookmarks/model",
-    "//ios/chrome/browser/reading_list",
+    "//ios/chrome/browser/reading_list/model",
     "//ios/chrome/browser/shared/coordinator/chrome_coordinator",
     "//ios/chrome/browser/shared/coordinator/default_browser_promo",
     "//ios/chrome/browser/shared/coordinator/scene:scene_state_browser_agent",
@@ -75,8 +75,8 @@ source_set("unit_tests") {
     "//ios/chrome/browser/shared/public/commands",
     "//ios/chrome/browser/shared/public/features",
     "//ios/chrome/browser/shared/ui/util",
-    "//ios/chrome/browser/snapshots",
-    "//ios/chrome/browser/snapshots:test_utils",
+    "//ios/chrome/browser/snapshots/model",
+    "//ios/chrome/browser/snapshots/model:test_utils",
     "//ios/chrome/browser/sync/model",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui/sharing",
@@ -102,6 +102,7 @@ source_set("eg2_tests") {
   sources = [ "activity_service_controller_egtest.mm" ]
 
   deps = [
+    "//base/test:test_support",
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/popup_menu:constants",

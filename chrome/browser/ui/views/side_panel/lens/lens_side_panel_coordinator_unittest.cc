@@ -206,8 +206,7 @@ class LensSidePanelCoordinatorWithCompanionEnabledTest
         {{lens::features::kLensStandalone,
           {{lens::features::kHomepageURLForLens.name, kLensHomepageURL}}},
          {companion::features::internal::kSidePanelCompanion,
-          {{"open-companion-for-image-search", "false"},
-           {"open-contextual-lens-panel", "true"}}},
+          {{"open-companion-for-image-search", "false"}}},
          {lens::features::kEnableImageSearchSidePanelFor3PDse, {{}}}},
         {});
     TestWithBrowserView::SetUp();

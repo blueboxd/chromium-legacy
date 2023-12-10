@@ -67,6 +67,7 @@
 #include "cc/paint/skottie_wrapper.h"
 #include "chromeos/ash/components/assistant/buildflags.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_service.h"
+#include "chromeos/components/kiosk/kiosk_utils.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
@@ -167,7 +168,7 @@ bool IsAmbientModeManagedScreensaverEnabled() {
   PrefService* pref_service = GetActivePrefService();
 
   return ash::features::IsAmbientModeManagedScreensaverEnabled() &&
-         pref_service &&
+         !chromeos::IsKioskSession() && pref_service &&
          pref_service->GetBoolean(
              ambient::prefs::kAmbientModeManagedScreensaverEnabled);
 }
@@ -1167,7 +1168,7 @@ AmbientWeatherModel* AmbientController::GetAmbientWeatherModel() {
 
 std::unique_ptr<views::Widget> AmbientController::CreateWidget(
     aura::Window* container) {
-  if (ui_launcher_state_ != AmbientUiLauncherState::kRendering) {
+  if (!ShouldShowAmbientUi()) {
     return nullptr;
   }
 
@@ -1224,7 +1225,6 @@ void AmbientController::OnUiLauncherInitialized(bool success) {
     SetUiVisibilityClosed();
     return;
   }
-  ui_launcher_state_ = AmbientUiLauncherState::kRendering;
   CreateAndShowWidgets();
 }
 
@@ -1244,7 +1244,6 @@ void AmbientController::StopScreensaver() {
   CloseAllWidgets(close_widgets_immediately_);
   session_metrics_recorder_.reset();
   ui_launcher_init_callback_.Cancel();
-  ui_launcher_state_ = AmbientUiLauncherState::kInactive;
   ambient_ui_launcher_->Finalize();
 }
 
@@ -1268,7 +1267,6 @@ void AmbientController::MaybeStartScreenSaver() {
   ui_launcher_init_callback_.Reset(
       base::BindOnce(&AmbientController::OnUiLauncherInitialized,
                      weak_ptr_factory_.GetWeakPtr()));
-  ui_launcher_state_ = AmbientUiLauncherState::kInitializing;
   ambient_ui_launcher_->Initialize(ui_launcher_init_callback_.callback());
 }
 
@@ -1336,12 +1334,11 @@ void AmbientController::CreateUiLauncher() {
 }
 
 void AmbientController::DestroyUiLauncher() {
-  ui_launcher_state_ = AmbientUiLauncherState::kInactive;
   ambient_ui_launcher_.reset();
 }
 
 bool AmbientController::IsUiLauncherActive() const {
-  return ui_launcher_state_ != AmbientUiLauncherState::kInactive;
+  return ambient_ui_launcher_ && ambient_ui_launcher_->IsActive();
 }
 
 void AmbientController::OnReadyStateChanged(bool is_ready) {

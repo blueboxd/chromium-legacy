@@ -8,7 +8,7 @@
 #include "base/check_op.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/ng/exclusions/ng_line_layout_opportunity.h"
+#include "third_party/blink/renderer/core/layout/exclusions/line_layout_opportunity.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_text_index.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
@@ -44,11 +44,11 @@ class CORE_EXPORT NGLineBreaker {
   NGLineBreaker(NGInlineNode,
                 NGLineBreakerMode,
                 const NGConstraintSpace&,
-                const NGLineLayoutOpportunity&,
+                const LineLayoutOpportunity&,
                 const NGLeadingFloats& leading_floats,
                 const NGInlineBreakToken*,
                 const NGColumnSpannerPath*,
-                NGExclusionSpace*);
+                ExclusionSpace*);
   ~NGLineBreaker();
 
   const NGInlineItemsData& ItemsData() const { return items_data_; }
@@ -69,7 +69,7 @@ class CORE_EXPORT NGLineBreaker {
   // withoiut `CollectInlines`. They are determined by this.
   bool ShouldDisableScoreLineBreak() const { return disable_score_line_break_; }
 
-  void SetLineOpportunity(const NGLineLayoutOpportunity& line_opportunity);
+  void SetLineOpportunity(const LineLayoutOpportunity& line_opportunity);
   // Override the available width to compute line breaks. This is reset after
   // each `NextLine`.
   void OverrideAvailableWidth(LayoutUnit available_width);
@@ -173,7 +173,6 @@ class CORE_EXPORT NGLineBreaker {
   bool BreakTextAt(NGInlineItemResult*,
                    const NGInlineItem&,
                    ShapingLineBreaker& breaker,
-                   unsigned options,
                    NGLineInfo*);
   bool BreakTextAtPreviousBreakOpportunity(NGInlineItemResult* item_result);
   bool HandleTextForFastMinContent(NGInlineItemResult*,
@@ -189,7 +188,8 @@ class CORE_EXPORT NGLineBreaker {
   void UpdateShapeResult(const NGLineInfo&, NGInlineItemResult*);
   scoped_refptr<ShapeResult> ShapeText(const NGInlineItem&,
                                        unsigned start,
-                                       unsigned end);
+                                       unsigned end,
+                                       ShapeOptions = ShapeOptions());
 
   void HandleTrailingSpaces(const NGInlineItem&, NGLineInfo*);
   void HandleTrailingSpaces(const NGInlineItem&,
@@ -289,7 +289,7 @@ class CORE_EXPORT NGLineBreaker {
   // that computes position in visual order, this position in logical order.
   LayoutUnit position_;
   LayoutUnit available_width_;
-  NGLineLayoutOpportunity line_opportunity_;
+  LineLayoutOpportunity line_opportunity_;
 
   NGInlineNode node_;
 
@@ -355,7 +355,7 @@ class CORE_EXPORT NGLineBreaker {
   String text_content_;
 
   const NGConstraintSpace& constraint_space_;
-  NGExclusionSpace* exclusion_space_;
+  ExclusionSpace* exclusion_space_;
   const NGInlineBreakToken* break_token_;
   const NGColumnSpannerPath* column_spanner_path_;
   const ComputedStyle* current_style_ = nullptr;

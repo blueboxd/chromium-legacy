@@ -175,10 +175,10 @@ std::string GetSyncErrorAction(SyncStatusActionType action_type) {
 // accounts list.
 base::Value::Dict GetAccountValue(const AccountInfo& account) {
   DCHECK(!account.IsEmpty());
-  base::Value::Dict dict;
-  dict.Set("email", account.email);
-  dict.Set("fullName", account.full_name);
-  dict.Set("givenName", account.given_name);
+  auto dict = base::Value::Dict()
+                  .Set("email", account.email)
+                  .Set("fullName", account.full_name)
+                  .Set("givenName", account.given_name);
   if (!account.account_image.IsEmpty()) {
     dict.Set("avatarImage",
              webui::GetBitmapDataUrl(account.account_image.AsBitmap()));
@@ -439,6 +439,9 @@ void PeopleHandler::OnExtendedAccountInfoRemoved(const AccountInfo& info) {
 base::Value::List PeopleHandler::GetStoredAccountsList() {
   base::Value::List accounts;
   bool populate_accounts_list = false;
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile_);
+
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   populate_accounts_list =
       AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_);
@@ -449,7 +452,8 @@ base::Value::List PeopleHandler::GetStoredAccountsList() {
   if (populate_accounts_list) {
     // If dice is enabled, show all the accounts.
     for (const auto& account : signin_ui_util::GetOrderedAccountsForDisplay(
-             profile_, /*restrict_to_accounts_eligible_for_sync=*/true)) {
+             identity_manager,
+             /*restrict_to_accounts_eligible_for_sync=*/true)) {
       accounts.Append(GetAccountValue(account));
     }
     return accounts;
@@ -462,7 +466,6 @@ base::Value::List PeopleHandler::GetStoredAccountsList() {
   // Chrome OS) or Lacros main profile (sync with a different account than the
   // device account is not allowed), then show only the primary account,
   // whether or not that account has consented to sync.
-  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
   AccountInfo primary_account_info = identity_manager->FindExtendedAccountInfo(
       identity_manager->GetPrimaryAccountInfo(ConsentLevel::kSignin));
   if (!primary_account_info.IsEmpty())
@@ -674,26 +677,26 @@ void PeopleHandler::HandleSignout(const base::Value::List& args) {
         signin_metrics::ProfileSignout::kUserClickedSignoutSettings,
         delete_metric);
 #else
-  Browser* browser =
-      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
-  if (browser) {
-    browser->signin_view_controller()->ShowGaiaLogoutTab(
-        signin_metrics::SourceForRefreshTokenOperation::kSettings_Signout);
-  }
+    Browser* browser = chrome::FindBrowserWithTab(web_ui()->GetWebContents());
+    if (browser) {
+      browser->signin_view_controller()->ShowGaiaLogoutTab(
+          signin_metrics::SourceForRefreshTokenOperation::kSettings_Signout);
+    }
 
-  if (identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
-    // Only revoke the sync consent.
-    // * If the primary account is still valid, then it will be removed by
-    // the Gaia logout tab (see http://crbug.com/1068978).
-    // * If the account is already invalid, drop the token now because it's
-    // already invalid on the web, so the Gaia logout tab won't affect it
-    // (see http://crbug.com/1114646).
-    //
-    // This operation may delete the current browser that owns |this| if force
-    // signin is enabled (see https://crbug.com/1153120).
-    identity_manager->GetPrimaryAccountMutator()->RevokeSyncConsent(
-        signin_metrics::ProfileSignout::kRevokeSyncFromSettings, delete_metric);
-  }
+    if (identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
+      // Only revoke the sync consent.
+      // * If the primary account is still valid, then it will be removed by
+      // the Gaia logout tab (see http://crbug.com/1068978).
+      // * If the account is already invalid, drop the token now because it's
+      // already invalid on the web, so the Gaia logout tab won't affect it
+      // (see http://crbug.com/1114646).
+      //
+      // This operation may delete the current browser that owns |this| if force
+      // signin is enabled (see https://crbug.com/1153120).
+      identity_manager->GetPrimaryAccountMutator()->RevokeSyncConsent(
+          signin_metrics::ProfileSignout::kRevokeSyncFromSettings,
+          delete_metric);
+    }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   }
 
@@ -718,8 +721,7 @@ void PeopleHandler::HandlePauseSync(const base::Value::List& args) {
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 void PeopleHandler::HandleStartKeyRetrieval(const base::Value::List& args) {
-  Browser* browser =
-      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
+  Browser* browser = chrome::FindBrowserWithTab(web_ui()->GetWebContents());
   if (!browser)
     return;
 
@@ -760,36 +762,30 @@ void PeopleHandler::CloseSyncSetup() {
 
     // Don't log a cancel event if the sync setup dialog is being
     // automatically closed due to an auth error.
-    if ((service->current_login_ui() == this) &&
-        (!sync_service || (!sync_service->GetUserSettings()
-                                ->IsInitialSyncFeatureSetupComplete() &&
-                           sync_service->GetAuthError().state() ==
-                               GoogleServiceAuthError::NONE))) {
-      if (configuring_sync_) {
-        // If the user clicked "Cancel" while setting up sync, disable sync
-        // because we don't want the sync engine to remain in the
-        // first-setup-incomplete state.
-        // Note: In order to disable sync across restarts on Chrome OS,
-        // we must call StopAndClear(), which suppresses sync startup in
-        // addition to disabling it.
-        if (sync_service) {
-          DVLOG(1) << "Sync setup aborted by user action";
-          sync_service->StopAndClear();
-// ChromeOS ash doesn't support signing out.
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-          // Revoke sync consent on desktop Chrome if they click cancel during
-          // initial setup or close sync setup without confirming sync.
-          if (!sync_service->GetUserSettings()
-                   ->IsInitialSyncFeatureSetupComplete()) {
-            IdentityManagerFactory::GetForProfile(profile_)
-                ->GetPrimaryAccountMutator()
-                ->RevokeSyncConsent(
-                    signin_metrics::ProfileSignout::kAbortSignin,
-                    signin_metrics::SignoutDelete::kIgnoreMetric);
-          }
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
-        }
-      }
+    if (service->current_login_ui() == this && sync_service &&
+        configuring_sync_ &&
+        !sync_service->GetUserSettings()->IsInitialSyncFeatureSetupComplete() &&
+        sync_service->GetAuthError().state() == GoogleServiceAuthError::NONE) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      // ChromeOS Ash doesn't support signing out and hence the code below
+      // cannot build (RevokeSyncConsent() doesn't exist). However, this code is
+      // unreachable on Ash because IsInitialSyncFeatureSetupComplete() always
+      // returns true.
+      NOTREACHED_NORETURN();
+#else   // BUILDFLAG(IS_CHROMEOS_ASH)
+      // If the user clicked "Cancel" while setting up sync, disable sync
+      // because we don't want the sync engine to remain in the
+      // first-setup-incomplete state.
+      DVLOG(1) << "Sync setup aborted by user action";
+      sync_service->StopAndClear();
+
+      // Revoke sync consent on desktop Chrome if they click cancel during
+      // initial setup or close sync setup without confirming sync.
+      IdentityManagerFactory::GetForProfile(profile_)
+          ->GetPrimaryAccountMutator()
+          ->RevokeSyncConsent(signin_metrics::ProfileSignout::kAbortSignin,
+                              signin_metrics::SignoutDelete::kIgnoreMetric);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     }
 
     service->LoginUIClosed(this);

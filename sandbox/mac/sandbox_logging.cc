@@ -16,6 +16,7 @@
 #include <string>
 
 #include "build/build_config.h"
+#include "sandbox/mac/sandbox_crash_message.h"
 
 #include <AvailabilityMacros.h>
 #if !defined(MAC_OS_X_VERSION_10_12) || \
@@ -155,6 +156,10 @@ void SendOsLog(Level level, const char* message) {
   }(level);
 
   os_log_with_type(log.get(), os_log_type, "%{public}s", message);
+
+  if (level == Level::ERR) {
+    sandbox::crash_message::SetCrashMessage(message);
+  }
 
   if (level == Level::FATAL) {
     abort_report_np(message);

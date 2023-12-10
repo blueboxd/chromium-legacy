@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
+#include "chrome/browser/ui/download/download_bubble_info.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -417,7 +418,7 @@ bool DownloadToolbarButtonView::OpenMostSpecificDialog(
   DownloadBubbleRowView* row = ShowPrimaryDialogRow(content_id);
 
   // Open the more specific security subpage if it has one.
-  if (row && row->ui_info().HasSubpage()) {
+  if (row && row->info().has_subpage()) {
     // TODO(b:279794441): Add warning action event for this warning being shown
     // from a notification.
     OpenSecurityDialog(content_id);
@@ -619,7 +620,9 @@ void DownloadToolbarButtonView::CreateBubbleDialogDelegate() {
       &DownloadToolbarButtonView::OnBubbleClosing, weak_factory_.GetWeakPtr()));
   auto bubble_contents = std::make_unique<DownloadBubbleContentsView>(
       browser_->AsWeakPtr(), bubble_controller_->GetWeakPtr(), GetWeakPtr(),
-      is_primary_partial_view_, std::move(primary_view_models),
+      is_primary_partial_view_,
+      std::make_unique<DownloadBubbleContentsViewInfo>(
+          std::move(primary_view_models)),
       bubble_delegate.get());
   bubble_contents_ = bubble_contents.get();
   bubble_delegate->SetContentsView(std::move(bubble_contents));
@@ -788,6 +791,14 @@ SkColor DownloadToolbarButtonView::GetProgressColor(bool is_disabled,
   return GetColorProvider()->GetColor(
       is_active ? kColorDownloadToolbarButtonActive
                 : kColorDownloadToolbarButtonInactive);
+}
+
+void DownloadToolbarButtonView::OnAnyRowRemoved() {
+  if (bubble_contents_->info().row_list_view_info().rows().empty()) {
+    CloseDialog(views::Widget::ClosedReason::kUnspecified);
+  } else {
+    ResizeDialog();
+  }
 }
 
 void DownloadToolbarButtonView::DisableAutoCloseTimerForTesting() {

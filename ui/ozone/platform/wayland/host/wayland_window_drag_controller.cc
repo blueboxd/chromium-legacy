@@ -130,12 +130,16 @@ bool WaylandWindowDragController::StartDragSession(
     return false;
   }
 
-  VLOG(1) << "Starting DND session.";
+  VLOG(1) << "Starting DND session. serial=" << serial->value
+          << ", data_source="
+          << (drag_source == DragEventSource::kMouse ? "mouse" : "touch")
+          << ", serial tracker=" << connection_->serial_tracker().ToString();
+
   state_ = State::kAttached;
   origin_window_ = origin;
   drag_source_ = drag_source;
 
-  DCHECK(!data_source_);
+  CHECK(!data_source_);
   data_source_ = data_device_manager_->CreateSource(this);
   data_source_->Offer({kMimeTypeChromiumWindow});
   data_source_->SetDndActions(kDndActionWindowDrag);
@@ -199,7 +203,7 @@ void WaylandWindowDragController::StopDragging() {
 }
 
 bool WaylandWindowDragController::IsDragSource() const {
-  DCHECK(data_source_);
+  CHECK(data_source_);
   return true;
 }
 
@@ -225,10 +229,10 @@ void WaylandWindowDragController::OnDragEnter(WaylandWindow* window,
     return;
   }
 
-  DCHECK_GE(state_, State::kAttached);
-  DCHECK(window);
-  DCHECK(data_source_);
-  DCHECK(data_offer_);
+  CHECK_GE(state_, State::kAttached);
+  CHECK(window);
+  CHECK(data_source_);
+  CHECK(data_offer_);
 
   drag_target_window_ = window;
 
@@ -278,9 +282,7 @@ void WaylandWindowDragController::OnDragMotion(const gfx::PointF& location) {
 
   // Forward cursor location update info to the input handling delegate.
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  should_process_drag_motion_events_ =
-      !(static_cast<WaylandToplevelWindow*>(drag_target_window_)
-            ->IsScreenCoordinatesEnabled());
+  should_process_drag_motion_events_ = false;
 #else
   // non-lacros platforms never use global coordinates so they always process
   // drag events.
@@ -394,9 +396,10 @@ const WaylandWindow* WaylandWindowDragController::GetDragTarget() const {
 // events is received during a window dragging session. It is used to detect
 // when drop happens, since it is the only event sent by the server regardless
 // where it happens, inside or outside toplevel surfaces.
-void WaylandWindowDragController::OnDataSourceFinish(bool completed) {
-  DCHECK_GE(state_, State::kAttached);
-  DCHECK(data_source_);
+void WaylandWindowDragController::OnDataSourceFinish(WaylandDataSource* source,
+                                                     bool completed) {
+  CHECK_GE(state_, State::kAttached);
+  CHECK_EQ(data_source_.get(), source);
 
   VLOG(1) << "DataSourceFinish received. completed=" << completed
           << ", state=" << state_;
@@ -443,7 +446,8 @@ void WaylandWindowDragController::OnDataSourceFinish(bool completed) {
   window_manager_->RemoveObserver(this);
 }
 
-void WaylandWindowDragController::OnDataSourceSend(const std::string& mime_type,
+void WaylandWindowDragController::OnDataSourceSend(WaylandDataSource* source,
+                                                   const std::string& mime_type,
                                                    std::string* contents) {
   // There is no actual data exchange in DnD window dragging sessions. Window
   // snapping, for example, is supposed to be handled at higher level UI layers.
@@ -461,7 +465,14 @@ uint32_t WaylandWindowDragController::DispatchEvent(
   if (event->type() == ET_MOUSE_MOVED || event->type() == ET_MOUSE_DRAGGED ||
       event->type() == ET_TOUCH_MOVED) {
     HandleMotionEvent(event->AsLocatedEvent());
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    if (event->type() != ET_TOUCH_MOVED) {
+      // Pass through touch so that touch position will be updated.
+      return POST_DISPATCH_STOP_PROPAGATION;
+    }
+#else
     return POST_DISPATCH_STOP_PROPAGATION;
+#endif
   }
   return POST_DISPATCH_PERFORM_DEFAULT;
 }
@@ -515,7 +526,7 @@ void WaylandWindowDragController::OnWindowRemoved(WaylandWindow* window) {
 
   if (should_cancel_drag) {
     LOG(ERROR) << "OnDataSourceFinish";
-    OnDataSourceFinish(/*completed=*/false);
+    OnDataSourceFinish(data_source_.get(), /*completed=*/false);
   }
 }
 

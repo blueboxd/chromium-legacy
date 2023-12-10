@@ -93,6 +93,11 @@ TestCase& TestCase::EnableSinglePartitionFormat() {
   return *this;
 }
 
+TestCase& TestCase::NewDirectoryTree() {
+  options.enable_new_directory_tree = true;
+  return *this;
+}
+
 // Show the startup browser. Some tests invoke the file picker dialog during
 // the test. Requesting a file picker from a background page is forbidden by
 // the apps platform, and it's a bug that these tests do so.
@@ -160,8 +165,18 @@ TestCase& TestCase::FileTransferConnectorReportOnlyMode() {
   return *this;
 }
 
+TestCase& TestCase::BypassRequiresJustification() {
+  options.bypass_requires_justification = true;
+  return *this;
+}
+
 TestCase& TestCase::EnableSearchV2() {
   options.enable_search_v2 = true;
+  return *this;
+}
+
+TestCase& TestCase::EnableLocalImageSearch() {
+  options.enable_local_image_search = true;
   return *this;
 }
 
@@ -202,12 +217,6 @@ TestCase& TestCase::SetTestAccountType(TestAccountType test_account_type) {
 
 TestCase& TestCase::EnableCrosComponents() {
   options.enable_cros_components = true;
-  options.enable_jellybean = true;
-  return *this;
-}
-
-TestCase& TestCase::EnableImageContentSearch() {
-  options.enable_image_content_search = true;
   return *this;
 }
 
@@ -274,6 +283,10 @@ std::string TestCase::GetFullName() const {
     full_name += "_SearchV2";
   }
 
+  if (options.enable_local_image_search) {
+    full_name += "_LocalImageSearch";
+  }
+
   if (options.enable_fsps_in_recents) {
     full_name += "_FSPsInRecents";
   }
@@ -292,6 +305,10 @@ std::string TestCase::GetFullName() const {
 
   if (options.enable_cros_components) {
     full_name += "_CrosComponents";
+  }
+
+  if (options.enable_new_directory_tree) {
+    full_name += "_NewDirectoryTree";
   }
 
   switch (options.device_mode) {

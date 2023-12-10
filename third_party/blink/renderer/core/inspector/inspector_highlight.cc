@@ -391,10 +391,8 @@ std::unique_ptr<protocol::DictionaryValue> BuildElementInfo(Element* element) {
 
   element_info->setBoolean("isKeyboardFocusable",
                            element->IsKeyboardFocusable());
-  element_info->setString("accessibleName",
-                          element->ComputedNameNoLifecycleUpdate());
-  element_info->setString("accessibleRole",
-                          element->ComputedRoleNoLifecycleUpdate());
+  element_info->setString("accessibleName", element->computedName());
+  element_info->setString("accessibleRole", element->computedRole());
 
   element_info->setString("layoutObjectName", layout_object->GetName());
 
@@ -409,7 +407,7 @@ std::unique_ptr<protocol::DictionaryValue> BuildTextNodeInfo(Text* text_node) {
   if (!layout_object || !layout_object->IsText())
     return text_info;
   PhysicalRect bounding_box =
-      To<LayoutText>(layout_object)->PhysicalVisualOverflowRect();
+      To<LayoutText>(layout_object)->VisualOverflowRect();
   text_info->setString("nodeWidth", bounding_box.Width().ToString());
   text_info->setString("nodeHeight", bounding_box.Height().ToString());
   text_info->setString("tagName", "#text");
@@ -1594,7 +1592,7 @@ bool InspectorHighlightBase::BuildNodeQuads(Node* node,
 
   if (layout_object->IsText()) {
     auto* layout_text = To<LayoutText>(layout_object);
-    PhysicalRect text_rect = layout_text->PhysicalVisualOverflowRect();
+    PhysicalRect text_rect = layout_text->VisualOverflowRect();
     content_box = text_rect;
     padding_box = text_rect;
     border_box = text_rect;
@@ -1605,7 +1603,7 @@ bool InspectorHighlightBase::BuildNodeQuads(Node* node,
 
     // Include scrollbars and gutters in the padding highlight.
     padding_box = layout_box->PhysicalPaddingBoxRect();
-    NGPhysicalBoxStrut scrollbars = layout_box->ComputeScrollbars();
+    PhysicalBoxStrut scrollbars = layout_box->ComputeScrollbars();
     padding_box.SetX(padding_box.X() - scrollbars.left);
     padding_box.SetY(padding_box.Y() - scrollbars.top);
     padding_box.SetWidth(padding_box.Width() + scrollbars.HorizontalSum());

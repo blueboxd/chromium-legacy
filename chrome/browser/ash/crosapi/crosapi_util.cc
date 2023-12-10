@@ -81,6 +81,7 @@
 #include "chromeos/crosapi/mojom/embedded_accessibility_helper.mojom.h"
 #include "chromeos/crosapi/mojom/emoji_picker.mojom.h"
 #include "chromeos/crosapi/mojom/extension_info_private.mojom.h"
+#include "chromeos/crosapi/mojom/eye_dropper.mojom.h"
 #include "chromeos/crosapi/mojom/feedback.mojom.h"
 #include "chromeos/crosapi/mojom/file_manager.mojom.h"
 #include "chromeos/crosapi/mojom/file_system_access_cloud_identifier.mojom.h"
@@ -147,7 +148,6 @@
 #include "chromeos/services/machine_learning/public/cpp/ml_switches.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/startup/startup.h"
-#include "chromeos/ui/wm/features.h"
 #include "chromeos/version/version_loader.h"
 #include "components/account_manager_core/account_manager_util.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -296,7 +296,7 @@ constexpr InterfaceVersionEntry MakeInterfaceVersionEntry() {
   return {T::Uuid_, T::Version_};
 }
 
-static_assert(crosapi::mojom::Crosapi::Version_ == 119,
+static_assert(crosapi::mojom::Crosapi::Version_ == 120,
               "If you add a new crosapi, please add it to "
               "kInterfaceVersionEntries below.");
 
@@ -344,6 +344,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::EditorPanelManager>(),
     MakeInterfaceVersionEntry<crosapi::mojom::EmojiPicker>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ExtensionInfoPrivate>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::EyeDropper>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Feedback>(),
     MakeInterfaceVersionEntry<crosapi::mojom::FieldTrialService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::FileManager>(),
@@ -424,6 +425,8 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<media_session::mojom::AudioFocusManager>(),
     MakeInterfaceVersionEntry<media_session::mojom::AudioFocusManagerDebug>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ParentAccess>(),
+    MakeInterfaceVersionEntry<
+        crosapi::mojom::EmbeddedAccessibilityHelperClient>(),
     MakeInterfaceVersionEntry<
         crosapi::mojom::EmbeddedAccessibilityHelperClientFactory>(),
 };
@@ -624,8 +627,8 @@ void InjectBrowserInitParams(
   params->is_floss_availability_check_needed =
       floss::features::IsFlossAvailabilityCheckNeeded();
 
-  params->enable_window_layout_menu =
-      base::FeatureList::IsEnabled(chromeos::wm::features::kWindowLayoutMenu);
+  // TODO(b/299957114): Remove this parameter.
+  params->enable_window_layout_menu = true;
   // TODO(b/267528378): Remove this after M114.
   params->enable_partial_split_deprecated = true;
 
@@ -671,6 +674,12 @@ void InjectBrowserInitParams(
 
   params->is_cros_battery_saver_available =
       ash::features::IsBatterySaverAvailable();
+
+  params->is_app_install_service_uri_enabled =
+      chromeos::features::IsAppInstallServiceUriEnabled();
+
+  params->is_desk_profiles_enabled =
+      chromeos::features::IsDeskProfilesEnabled();
 }
 
 template <typename BrowserParams>

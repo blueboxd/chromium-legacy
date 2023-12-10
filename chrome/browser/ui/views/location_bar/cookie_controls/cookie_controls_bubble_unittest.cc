@@ -7,6 +7,7 @@
 #include <memory>
 #include "base/feature_list.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time_override.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/ui/views/location_bar/cookie_controls/cookie_controls_content_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/content_settings/core/common/cookie_blocking_3pcd_status.h"
 #include "components/content_settings/core/common/features.h"
 #include "content/public/browser/web_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -73,7 +75,8 @@ class CookieControlsBubbleCoordinatorTest : public TestWithBrowserView {
 
     controller_ = std::make_unique<content_settings::CookieControlsController>(
         CookieSettingsFactory::GetForProfile(browser()->profile()), nullptr,
-        HostContentSettingsMapFactory::GetForProfile(browser()->profile()));
+        HostContentSettingsMapFactory::GetForProfile(browser()->profile()),
+        /*tracking_protection_settings*/ nullptr);
 
     coordinator_ = std::make_unique<CookieControlsBubbleCoordinator>();
 
@@ -139,7 +142,8 @@ class CookieControlsBubbleViewControllerTest
 
     controller_ = std::make_unique<content_settings::CookieControlsController>(
         CookieSettingsFactory::GetForProfile(browser()->profile()), nullptr,
-        HostContentSettingsMapFactory::GetForProfile(browser()->profile()));
+        HostContentSettingsMapFactory::GetForProfile(browser()->profile()),
+        /*tracking_protection_settings=*/nullptr);
 
     ON_CALL(*mock_bubble_view(), GetContentView())
         .WillByDefault(testing::Return(mock_content_view()));
@@ -176,7 +180,19 @@ class CookieControlsBubbleViewControllerTest
 
   views::View* empty_reloading_view() { return empty_reloading_view_.get(); }
 
+  static base::Time GetReferenceTime() {
+    base::Time time;
+    EXPECT_TRUE(base::Time::FromString("Sat, 1 Sep 2023 11:00:00", &time));
+    return time;
+  }
+
  private:
+  // Overriding `base::Time::Now()` to obtain a consistent X days until
+  // exception expiration calculation regardless of the time the test runs.
+  base::subtle::ScopedTimeClockOverrides time_override_{
+      &CookieControlsBubbleViewControllerTest::GetReferenceTime,
+      /*time_ticks_override=*/nullptr,
+      /*thread_ticks_override=*/nullptr};
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<content_settings::CookieControlsController> controller_;
   std::unique_ptr<MockCookieControlsContentView> mock_content_view_;
@@ -212,9 +228,9 @@ TEST_P(CookieControlsBubbleViewControllerTest, ThirdPartyCookiesBlocked) {
                                             ? views::kEyeCrossedRefreshIcon.name
                                             : views::kEyeCrossedIcon.name)));
 
-  view_controller()->OnStatusChanged(CookieControlsStatus::kEnabled,
-                                     CookieControlsEnforcement::kNoEnforcement,
-                                     base::Time());
+  view_controller()->OnStatusChanged(
+      CookieControlsStatus::kEnabled, CookieControlsEnforcement::kNoEnforcement,
+      CookieBlocking3pcdStatus::kNotIn3pcd, base::Time());
   view_controller()->OnSitesCountChanged(kAllowedSitesCount,
                                          kBlockedSitesCount);
 }
@@ -247,6 +263,7 @@ TEST_P(CookieControlsBubbleViewControllerTest,
 
   view_controller()->OnStatusChanged(CookieControlsStatus::kDisabledForSite,
                                      CookieControlsEnforcement::kNoEnforcement,
+                                     CookieBlocking3pcdStatus::kNotIn3pcd,
                                      base::Time());
   view_controller()->OnSitesCountChanged(kAllowedSitesCount,
                                          kBlockedSitesCount);
@@ -283,6 +300,7 @@ TEST_P(CookieControlsBubbleViewControllerTest,
   view_controller()->OnStatusChanged(
       CookieControlsStatus::kDisabledForSite,
       CookieControlsEnforcement::kNoEnforcement,
+      CookieBlocking3pcdStatus::kNotIn3pcd,
       base::Time::Now() + base::Days(kDaysToExpiration));
   view_controller()->OnSitesCountChanged(kAllowedSitesCount,
                                          kBlockedSitesCount);
@@ -301,7 +319,8 @@ class CookieControlsBubbleViewImplTest : public TestWithBrowserView {
 
     controller_ = std::make_unique<content_settings::CookieControlsController>(
         CookieSettingsFactory::GetForProfile(browser()->profile()), nullptr,
-        HostContentSettingsMapFactory::GetForProfile(browser()->profile()));
+        HostContentSettingsMapFactory::GetForProfile(browser()->profile()),
+        /*tracking_protection_settings=*/nullptr);
 
     coordinator_ = std::make_unique<CookieControlsBubbleCoordinator>();
     coordinator_->ShowBubble(web_contents, controller_.get());

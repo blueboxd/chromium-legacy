@@ -60,9 +60,6 @@ class MockSyncService : public SyncService {
   MOCK_METHOD(GoogleServiceAuthError, GetAuthError, (), (const override));
   MOCK_METHOD(base::Time, GetAuthErrorTime, (), (const override));
   MOCK_METHOD(bool, RequiresClientUpgrade, (), (const override));
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  MOCK_METHOD(bool, IsSyncFeatureDisabledViaDashboard, (), (const override));
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   MOCK_METHOD(std::unique_ptr<SyncSetupInProgressHandle>,
               GetSetupInProgressHandle,
               (),
@@ -143,6 +140,10 @@ class MockSyncService : public SyncService {
   MOCK_METHOD(ModelTypeDownloadStatus,
               GetDownloadStatusFor,
               (ModelType type),
+              (const override));
+  MOCK_METHOD(void,
+              RecordReasonIfWaitingForUpdates,
+              (ModelType, const std::string&),
               (const override));
   MOCK_METHOD(void,
               GetTypesWithUnsyncedData,

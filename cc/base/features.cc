@@ -135,16 +135,24 @@ BASE_FEATURE(kReclaimPrepaintTilesWhenIdle,
              "ReclaimPrepaintTilesWhenIdle",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// This saves memory on all platforms, but while on Android savings are
+// significant (~10MiB or more of foreground memory), on desktop they were
+// small, so only enable on Android.
 BASE_FEATURE(kSmallerInterestArea,
              "SmallerInterestArea",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_ANDROID)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 
 const base::FeatureParam<int> kInterestAreaSizeInPixels{
     &kSmallerInterestArea, "size_in_pixels", kDefaultInterestAreaSizeInPixels};
 
 BASE_FEATURE(kImageCacheNoCache,
              "ImageCacheNoCache",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kReclaimOldPrepaintTiles,
              "ReclaimOldPrepaintTiles",

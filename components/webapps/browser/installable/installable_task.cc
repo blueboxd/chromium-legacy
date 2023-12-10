@@ -25,8 +25,7 @@ InstallableTask::InstallableTask(
   fetcher_ = std::make_unique<InstallableDataFetcher>(
       web_contents, service_worker_context, page_data);
   evaluator_ = std::make_unique<InstallableEvaluator>(
-      web_contents, page_data, params_.installable_criteria,
-      params_.check_webapp_manifest_display);
+      web_contents, page_data, params_.installable_criteria);
 }
 
 InstallableTask::InstallableTask(const InstallableParams params,
@@ -43,14 +42,14 @@ void InstallableTask::RunCallback() {
   if (callback_) {
     InstallableData data = {
         std::move(errors_),
-        page_data_->manifest->url,
+        page_data_->manifest_url(),
         page_data_->GetManifest(),
         page_data_->WebPageMetadata(),
-        page_data_->primary_icon->url,
-        page_data_->primary_icon->icon.get(),
-        page_data_->primary_icon->purpose ==
+        page_data_->primary_icon_url(),
+        page_data_->primary_icon(),
+        page_data_->primary_icon_purpose() ==
             blink::mojom::ManifestImageResource_Purpose::MASKABLE,
-        page_data_->screenshots,
+        page_data_->screenshots(),
         valid_manifest_,
     };
     std::move(callback_).Run(data);

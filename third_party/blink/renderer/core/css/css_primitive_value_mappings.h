@@ -310,63 +310,14 @@ inline CSSIdentifierValue::CSSIdentifierValue(ControlPart e)
 
 template <>
 inline ControlPart CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueID::kNone:
-      return kNoControlPart;
-    case CSSValueID::kAuto:
-      return kAutoPart;
-    case CSSValueID::kCheckbox:
-      return kCheckboxPart;
-    case CSSValueID::kRadio:
-      return kRadioPart;
-    case CSSValueID::kPushButton:
-      return kPushButtonPart;
-    case CSSValueID::kSquareButton:
-      return kSquareButtonPart;
-    case CSSValueID::kButton:
-      return kButtonPart;
-    case CSSValueID::kInnerSpinButton:
-      return kInnerSpinButtonPart;
-    case CSSValueID::kListbox:
-      return kListboxPart;
-    case CSSValueID::kMediaSlider:
-      return kMediaSliderPart;
-    case CSSValueID::kMediaSliderthumb:
-      return kMediaSliderThumbPart;
-    case CSSValueID::kMediaVolumeSlider:
-      return kMediaVolumeSliderPart;
-    case CSSValueID::kMediaVolumeSliderthumb:
-      return kMediaVolumeSliderThumbPart;
-    case CSSValueID::kInternalMediaControl:
-      return kMediaControlPart;
-    case CSSValueID::kMenulist:
-      return kMenulistPart;
-    case CSSValueID::kMenulistButton:
-      return kMenulistButtonPart;
-    case CSSValueID::kMeter:
-      return kMeterPart;
-    case CSSValueID::kProgressBar:
-      return kProgressBarPart;
-    case CSSValueID::kSliderHorizontal:
-      return kSliderHorizontalPart;
-    case CSSValueID::kSliderVertical:
-      return kSliderVerticalPart;
-    case CSSValueID::kSliderthumbHorizontal:
-      return kSliderThumbHorizontalPart;
-    case CSSValueID::kSliderthumbVertical:
-      return kSliderThumbVerticalPart;
-    case CSSValueID::kSearchfield:
-      return kSearchFieldPart;
-    case CSSValueID::kSearchfieldCancelButton:
-      return kSearchFieldCancelButtonPart;
-    case CSSValueID::kTextfield:
-      return kTextFieldPart;
-    case CSSValueID::kTextarea:
-      return kTextAreaPart;
-    default:
-      NOTREACHED();
-      return kNoControlPart;
+  if (value_id_ == CSSValueID::kNone) {
+    return kNoControlPart;
   }
+  if (value_id_ == CSSValueID::kAuto) {
+    return kAutoPart;
+  }
+  return ControlPart(static_cast<int>(value_id_) -
+                     static_cast<int>(CSSValueID::kCheckbox) + kCheckboxPart);
 }
 
 template <>
@@ -418,6 +369,18 @@ inline CSSIdentifierValue::CSSIdentifierValue(EFillBox e)
     case EFillBox::kText:
       value_id_ = CSSValueID::kText;
       break;
+    case EFillBox::kFillBox:
+      value_id_ = CSSValueID::kFillBox;
+      break;
+    case EFillBox::kStrokeBox:
+      value_id_ = CSSValueID::kStrokeBox;
+      break;
+    case EFillBox::kViewBox:
+      value_id_ = CSSValueID::kViewBox;
+      break;
+    case EFillBox::kNoClip:
+      value_id_ = CSSValueID::kNoClip;
+      break;
   }
 }
 
@@ -435,6 +398,14 @@ inline EFillBox CSSIdentifierValue::ConvertTo() const {
       return EFillBox::kContent;
     case CSSValueID::kText:
       return EFillBox::kText;
+    case CSSValueID::kFillBox:
+      return EFillBox::kFillBox;
+    case CSSValueID::kStrokeBox:
+      return EFillBox::kStrokeBox;
+    case CSSValueID::kViewBox:
+      return EFillBox::kViewBox;
+    case CSSValueID::kNoClip:
+      return EFillBox::kNoClip;
     default:
       break;
   }
@@ -1266,6 +1237,9 @@ inline CSSIdentifierValue::CSSIdentifierValue(ItemPosition item_position)
     case ItemPosition::kLastBaseline:
       value_id_ = CSSValueID::kLastBaseline;
       break;
+    case ItemPosition::kAnchorCenter:
+      value_id_ = CSSValueID::kAnchorCenter;
+      break;
     case ItemPosition::kCenter:
       value_id_ = CSSValueID::kCenter;
       break;
@@ -1313,6 +1287,8 @@ inline ItemPosition CSSIdentifierValue::ConvertTo() const {
       return ItemPosition::kBaseline;
     case CSSValueID::kLastBaseline:
       return ItemPosition::kLastBaseline;
+    case CSSValueID::kAnchorCenter:
+      return ItemPosition::kAnchorCenter;
     case CSSValueID::kCenter:
       return ItemPosition::kCenter;
     case CSSValueID::kStart:

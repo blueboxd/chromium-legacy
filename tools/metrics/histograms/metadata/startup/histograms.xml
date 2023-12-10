@@ -151,9 +151,8 @@ chromium-metrics-reviews@google.com.
   <owner>pasko@chromium.org</owner>
   <owner>agrieve@chromium.org</owner>
   <summary>
-    Experimental. Same as
-    Startup.Android.Cold.TimeToFirstNavigationCommit.Tabbed with two
-    modifications.
+    Same as Startup.Android.Cold.TimeToFirstNavigationCommit.Tabbed with two
+    modifications. Aims to replace the original metric.
 
     The first difference is to record navigation commits happening before
     post-native initialization. The second modifications is not to record
@@ -170,8 +169,8 @@ chromium-metrics-reviews@google.com.
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
   <summary>
-    The time from Chrome tabbed activity creation to the moment the Chrome first
-    appears ready.
+    The time from the first Chrome tabbed activity creation to the moment Chrome
+    first appears ready to the user.
 
     This metric captures when the omnibox is painted and either a navigation has
     committed or a Paint Preview is shown. The intent is to reflect Clank's
@@ -215,11 +214,14 @@ chromium-metrics-reviews@google.com.
 
     - For WebApps, PWAs or WebApks.
 
+    - For NTP.
+
     Bugs:
 
     - This metric does not get recorded when the first navigation commit happens
     before post-native initialization. This behaviour is not intentional, see
-    crbug.com/1273097. TimeToFirstVisibleContent2 addresses this issue.
+    crbug.com/1273097. TimeToFirstVisibleContent2 addresses this issue and aims
+    to become the replacement.
 
     This histogram is of special interest to the chrome-analysis-team@. Do not
     change its semantics or retire it without talking to them first.
@@ -227,16 +229,22 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.Android.Cold.TimeToFirstVisibleContent2" units="ms"
-    expires_after="2024-02-04">
+    expires_after="never">
+<!-- expires-never: guiding metric (internal: go/chrome-browser-guiding-metrics) -->
+
   <owner>yfriedman@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <summary>
-    The time from Chrome tabbed activity creation to the moment the Chrome first
-    appears ready.
+    The time from the first Chrome tabbed activity creation to the moment Chrome
+    first appears ready to the user.
 
-    Currently experimental. Has the same semantics as
+    This metrics has the same semantics as
     Startup.Android.Cold.TimeToFirstVisibleContent, without the known bug.
+
+    This histogram is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </summary>
 </histogram>
 
@@ -276,6 +284,55 @@ chromium-metrics-reviews@google.com.
     till it becomes foreground again. The histogram is recorded when
     onResumeWithNative() is called.
   </summary>
+</histogram>
+
+<histogram name="Startup.Android.Experimental.{name}.Tabbed.{suffix}"
+    units="ms" expires_after="2024-08-25">
+  <owner>pasko@chromium.org</owner>
+  <owner>mthiesse@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    The time from activity creation on a cold start to the {name} happening in
+    this activity. Cold start is determined by whether the {suffix}.
+
+    Recorded only for tabbed activity and on cold starts. Therefore it cannot be
+    recorded more than once in the application lifetime.
+
+    Similarly to Startup.Android.Cold.TimeToFirstVisibleContent2 omits recording
+    a sample:
+
+    1. when the first Activity is a CCT/WebAPK/TWA,
+
+    2. when an error page is committed,
+
+    3. for non-http(s) pages,
+
+    4. for downloads,
+
+    5. when another activity was shown and hidden before the first navigation
+    committed,
+
+    6. when the first navigation was preceded by showing a NTP (New Tab Page).
+
+    For cold start detection based on process creation reason (suffix
+    .ColdStartTracker) it is recommended to limit analysis of data on the UMA
+    dashboard to Android P+ because on prior versions the cold start detection
+    is time-based and therefore less robust.
+
+    TODO(pasko): Rename the suffix when graduating these histograms out of
+    experimental. The preference is to avoid Java class names in metric names.
+  </summary>
+  <token key="name">
+    <variant name="FirstContentfulPaint"
+        summary="first contentful paint (FCP)"/>
+    <variant name="FirstNavigationCommit" summary="first navigation commit"/>
+  </token>
+  <token key="suffix">
+    <variant name="ActivityCreatedWhileInit"
+        summary="activity was created before post-inflation"/>
+    <variant name="ColdStartTracker"
+        summary="process creation reason is Activity"/>
+  </token>
 </histogram>
 
 <histogram base="true" name="Startup.Android.FeedContentFirstLoadedTime"

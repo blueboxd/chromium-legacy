@@ -354,8 +354,10 @@ TEST_F(SearchEngineTableViewControllerTest,
   // There are twelve required prepopulated search egines plus the previously
   // added default one.
   ASSERT_EQ(13, NumberOfItemsInSection(0));
-  // TODO(b/303006727): Once we figure out how to keep a constant seed for each
-  // profile, check the actual list of prepopulated items.
+  CheckRealItem(default_search_engine, true, 0, 0);
+  for (size_t i = 1; i < prepopulated_engines.size(); i++) {
+    CheckRealItem(prepopulated_engines[i].get(), false, 0, i);
+  }
   ASSERT_EQ(2, NumberOfItemsInSection(1));
   CheckCustomItem(kEngineC1Name, kEngineC1Url, false, 1, 0);
   CheckCustomItem(kEngineC2Name, kEngineC2Url, false, 1, 1);
@@ -435,8 +437,9 @@ TEST_F(SearchEngineTableViewControllerTest,
   // custom one, which should be the first in the list.
   ASSERT_EQ(13, NumberOfItemsInSection(0));
   CheckCustomItem(kEngineC1Name, kEngineC1Url, true, 0, 0);
-  // TODO(b/303006727): Once we figure out how to keep a constant seed for each
-  // profile, check the actual list of prepopulated items.
+  for (size_t i = 1; i < prepopulated_engines.size(); i++) {
+    CheckRealItem(prepopulated_engines[i].get(), false, 0, i);
+  }
   ASSERT_EQ(1, NumberOfItemsInSection(1));
   CheckCustomItem(kEngineC2Name, kEngineC2Url, false, 1, 0);
 }
@@ -752,6 +755,73 @@ TEST_F(SearchEngineTableViewControllerTest, DeleteItems) {
   CheckPrepopulatedItem(kEngineP3Name, kEngineP3Url, true, 0, 0);
   CheckPrepopulatedItem(kEngineP1Name, kEngineP1Url, false, 0, 1);
   CheckPrepopulatedItem(kEngineP2Name, kEngineP2Url, false, 0, 2);
+}
+
+// Tests that custom search engines can be deleted, and if default engine is
+// deleted it will be reset to the first prepopulated engine.
+TEST_F(SearchEngineTableViewControllerTest,
+       DeleteItemsForChoiceScreenSettings) {
+  SetupForChoiceScreenDisplay();
+
+  const std::string kEngineC1Name = "custom-1";
+  const GURL kEngineC1Url = GURL("https://c1.com?q={searchTerms}");
+  const std::string kEngineC2Name = "custom-2";
+  const GURL kEngineC2Url = GURL("https://c2.com?q={searchTerms}");
+  const std::string kEngineC3Name = "custom-3";
+  const GURL kEngineC3Url = GURL("https://c3.com?q={searchTerms}");
+  const std::string kEngineC4Name = "custom-4";
+  const GURL kEngineC4Url = GURL("https://c4.com?q={searchTerms}");
+  AddCustomSearchEngine(kEngineC1Name, kEngineC1Url,
+                        base::Time::Now() - base::Seconds(10), false);
+  AddCustomSearchEngine(kEngineC2Name, kEngineC2Url,
+                        base::Time::Now() - base::Minutes(10), false);
+  AddCustomSearchEngine(kEngineC3Name, kEngineC3Url,
+                        base::Time::Now() - base::Hours(10), true);
+  AddCustomSearchEngine(kEngineC4Name, kEngineC4Url,
+                        base::Time::Now() - base::Days(1), false);
+
+  CreateController();
+  CheckController();
+
+  // This method returns the list of prepopulated items and the custom search
+  // engine that was set as default.
+  int number_of_prepopulated_items =
+      static_cast<int>(
+          template_url_service_->GetTemplateURLsForChoiceScreen().size()) -
+      1;
+  ASSERT_EQ(2, NumberOfSections());
+  ASSERT_EQ(number_of_prepopulated_items + 1, NumberOfItemsInSection(0));
+  ASSERT_EQ(3, NumberOfItemsInSection(1));
+
+  // Remove C3 from first list and C1 from second list.
+  ASSERT_TRUE(DeleteItemsAndWait(
+      @[
+        [NSIndexPath indexPathForRow:0 inSection:0],
+        [NSIndexPath indexPathForRow:0 inSection:1]
+      ],
+      ^{
+        return NumberOfItemsInSection(0) == number_of_prepopulated_items;
+      }));
+  ASSERT_TRUE(NumberOfItemsInSection(1) == 2);
+
+  // Select C4 as default engine by user interaction.
+  [controller() tableView:controller().tableView
+      didSelectRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:1]];
+
+  ASSERT_EQ(number_of_prepopulated_items + 1, NumberOfItemsInSection(0));
+  ASSERT_EQ(2, NumberOfItemsInSection(1));
+
+  // Remove all custom search engines.
+  ASSERT_TRUE(DeleteItemsAndWait(
+      @[
+        [NSIndexPath indexPathForRow:0 inSection:0],
+        [NSIndexPath indexPathForRow:0 inSection:1],
+        [NSIndexPath indexPathForRow:1 inSection:1]
+      ],
+      ^{
+        return NumberOfSections() == 1;
+      }));
+  ASSERT_TRUE(NumberOfItemsInSection(0) == number_of_prepopulated_items);
 }
 
 }  // namespace

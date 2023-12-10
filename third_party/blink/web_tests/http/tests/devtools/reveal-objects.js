@@ -10,10 +10,11 @@ import * as Common from 'devtools/core/common/common.js';
 import * as Network from 'devtools/panels/network/network.js';
 import * as ElementsModule from 'devtools/panels/elements/elements.js';
 import * as SourcesModule from 'devtools/panels/sources/sources.js';
+import * as Application from 'devtools/panels/application/application.js';
+import * as Workspace from 'devtools/models/workspace/workspace.js';
 
 (async function() {
   TestRunner.addResult(`Tests object revelation in the UI.\n`);
-  await TestRunner.loadLegacyModule('resources');
   await TestRunner.showPanel('elements');
   await TestRunner.showPanel('sources');
   await TestRunner.showPanel('resources');
@@ -55,7 +56,7 @@ import * as SourcesModule from 'devtools/panels/sources/sources.js';
           return true;
         }
       });
-      uiLocation = Workspace.workspace.uiSourceCodeForURL(resource.url).uiLocation(2, 1);
+      uiLocation = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(resource.url).uiLocation(2, 1);
 
       divNode = await ElementsTestRunner.nodeWithIdPromise('targetnode');
       spanNode = await ElementsTestRunner.nodeWithIdPromise('toremove');
@@ -130,7 +131,7 @@ import * as SourcesModule from 'devtools/panels/sources/sources.js';
   function installHooks() {
     TestRunner.addSniffer(ElementsModule.ElementsPanel.ElementsPanel.prototype, 'revealAndSelectNode', nodeRevealed, true);
     TestRunner.addSniffer(SourcesModule.SourcesPanel.SourcesPanel.prototype, 'showUILocation', uiLocationRevealed, true);
-    TestRunner.addSniffer(Resources.ApplicationPanelSidebar.prototype, 'showResource', resourceRevealed, true);
+    TestRunner.addSniffer(Application.ApplicationPanelSidebar.ApplicationPanelSidebar.prototype, 'showResource', resourceRevealed, true);
     TestRunner.addSniffer(Network.NetworkPanel.NetworkPanel.prototype, 'revealAndHighlightRequest', revealed, true);
   }
 

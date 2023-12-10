@@ -8,6 +8,8 @@
 #include "base/functional/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/strcat.h"
+#include "net/base/proxy_chain.h"
+#include "net/base/proxy_server.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
@@ -26,11 +28,12 @@ bool ApplyProxyConfigToProxyInfo(const net::ProxyConfig::ProxyRules& rules,
                                  const GURL& top_frame_url,
                                  net::ProxyInfo* proxy_info) {
   DCHECK(proxy_info);
-  if (rules.empty())
+  if (rules.empty()) {
     return false;
+  }
 
   rules.Apply(url, proxy_info);
-  proxy_info->DeprioritizeBadProxies(proxy_retry_info);
+  proxy_info->DeprioritizeBadProxyChains(proxy_retry_info);
   return !proxy_info->is_empty() && !proxy_info->proxy_server().is_direct();
 }
 
@@ -152,7 +155,7 @@ void NetworkServiceProxyDelegate::OnResolveProxy(
       vlog("proxy allow list did not match");
       return;
     }
-    if (!ipp_config_cache_->IsAuthTokenAvailable()) {
+    if (!ipp_config_cache_->AreAuthTokensAvailable()) {
       vlog("no auth token available from cache");
       return;
     }
@@ -167,7 +170,7 @@ void NetworkServiceProxyDelegate::OnResolveProxy(
 
     net::ProxyList proxy_list;
     if (!net::features::kIpPrivacyDirectOnly.Get()) {
-      for (auto& proxy_hostname : ipp_config_cache_->ProxyList()) {
+      for (auto& proxy_hostname : ipp_config_cache_->GetProxyList()) {
         proxy_list.AddProxyServer(net::ProxyServer::FromSchemeHostAndPort(
             net::ProxyServer::SCHEME_HTTPS, proxy_hostname, absl::nullopt));
       }
@@ -182,7 +185,7 @@ void NetworkServiceProxyDelegate::OnResolveProxy(
     result->set_is_for_ip_protection(true);
     result->OverrideProxyList(
         MergeProxyRules(result->proxy_list(), proxy_list));
-    result->DeprioritizeBadProxies(proxy_retry_info);
+    result->DeprioritizeBadProxyChains(proxy_retry_info);
     return;
   }
 
@@ -206,8 +209,11 @@ void NetworkServiceProxyDelegate::OnResolveProxy(
   }
 }
 
-void NetworkServiceProxyDelegate::OnFallback(const net::ProxyServer& bad_proxy,
+void NetworkServiceProxyDelegate::OnFallback(const net::ProxyChain& bad_chain,
                                              int net_error) {
+  // TODO(crbug.com/1491092): Handle proxy chains.
+  const net::ProxyServer& bad_proxy = bad_chain.proxy_server();
+
   // If the bad proxy was an IP Protection proxy, refresh the list of IP
   // protection proxies immediately.
   if (IsProxyForIpProtection(bad_proxy) && ipp_config_cache_) {
@@ -220,8 +226,13 @@ void NetworkServiceProxyDelegate::OnFallback(const net::ProxyServer& bad_proxy,
 }
 
 void NetworkServiceProxyDelegate::OnBeforeTunnelRequest(
-    const net::ProxyServer& proxy_server,
+    const net::ProxyChain& proxy_chain,
+    size_t chain_index,
     net::HttpRequestHeaders* extra_headers) {
+  // TODO(crbug.com/1491092): Handle proxy chains.
+  CHECK(chain_index == 0);
+  const net::ProxyServer& proxy_server = proxy_chain.proxy_server();
+
   auto vlog = [](std::string message) {
     VLOG(2) << "NSPD::OnBeforeTunnelRequest() - " << message;
   };
@@ -230,7 +241,8 @@ void NetworkServiceProxyDelegate::OnBeforeTunnelRequest(
   }
   if (IsForIpProtection() && IsProxyForIpProtection(proxy_server)) {
     if (ipp_config_cache_) {
-      auto token = ipp_config_cache_->GetAuthToken();
+      auto token = ipp_config_cache_->GetAuthToken(
+          network::mojom::IpProtectionProxyLayer::kProxyA);
       if (token) {
         vlog("adding auth token");
         std::string encoded_token;
@@ -250,8 +262,13 @@ void NetworkServiceProxyDelegate::OnBeforeTunnelRequest(
 }
 
 net::Error NetworkServiceProxyDelegate::OnTunnelHeadersReceived(
-    const net::ProxyServer& proxy_server,
+    const net::ProxyChain& proxy_chain,
+    size_t chain_index,
     const net::HttpResponseHeaders& response_headers) {
+  // TODO(crbug.com/1491092): Handle proxy chains.
+  CHECK_EQ(chain_index, 0u);
+  const net::ProxyServer& proxy_server = proxy_chain.proxy_server();
+
   if (observer_) {
     // Copy the response headers since mojo expects a ref counted object.
     observer_->OnTunnelHeadersReceived(
@@ -280,8 +297,9 @@ void NetworkServiceProxyDelegate::MarkProxiesAsBad(
   //
   // TODO(eroman): Support this more directly on ProxyResolutionService.
   net::ProxyList proxy_list;
-  for (const auto& bad_proxy : bad_proxies)
+  for (const auto& bad_proxy : bad_proxies) {
     proxy_list.AddProxyServer(bad_proxy);
+  }
   proxy_list.AddProxyServer(net::ProxyServer::Direct());
 
   net::ProxyInfo proxy_info;
@@ -299,11 +317,13 @@ void NetworkServiceProxyDelegate::ClearBadProxiesCache() {
 
 bool NetworkServiceProxyDelegate::IsInProxyConfig(
     const net::ProxyServer& proxy_server) const {
-  if (!proxy_server.is_valid() || proxy_server.is_direct())
+  if (!proxy_server.is_valid() || proxy_server.is_direct()) {
     return false;
+  }
 
-  if (RulesContainsProxy(proxy_config_->rules, proxy_server))
+  if (RulesContainsProxy(proxy_config_->rules, proxy_server)) {
     return true;
+  }
 
   return false;
 }
@@ -327,7 +347,7 @@ bool NetworkServiceProxyDelegate::IsProxyForIpProtection(
   // This list will typically be quite short (2-3), so linear search is
   // adequate.
   std::string proxy_server_host = proxy_server.GetHost();
-  return base::Contains(ipp_config_cache_->ProxyList(), proxy_server_host);
+  return base::Contains(ipp_config_cache_->GetProxyList(), proxy_server_host);
 }
 
 bool NetworkServiceProxyDelegate::EligibleForProxy(

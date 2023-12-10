@@ -51,7 +51,6 @@
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
-#include "third_party/blink/public/platform/web_url_request_extra_data.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/loader/fetch/back_forward_cache_loader_helper.h"
@@ -100,13 +99,14 @@ class URLLoader::Context : public ResourceRequestClient {
   void DidChangePriority(WebURLRequest::Priority new_priority,
                          int intra_priority_value);
   void Start(std::unique_ptr<network::ResourceRequest> request,
-             scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
+             scoped_refptr<const SecurityOrigin> top_frame_origin,
              bool pass_response_pipe_to_client,
              bool no_mime_sniffing,
              base::TimeDelta timeout_interval,
              SyncLoadResponse* sync_load_response,
              std::unique_ptr<ResourceLoadInfoNotifierWrapper>
-                 resource_load_info_notifier_wrapper);
+                 resource_load_info_notifier_wrapper,
+             CodeCacheHost* code_cache_host);
 
   // ResourceRequestClient overrides:
   void OnUploadProgress(uint64_t position, uint64_t size) override;
@@ -116,11 +116,11 @@ class URLLoader::Context : public ResourceRequestClient {
       FollowRedirectCallback follow_redirect_callback) override;
   void OnReceivedResponse(
       network::mojom::URLResponseHeadPtr head,
-      base::TimeTicks response_arrival_at_renderer) override;
+      base::TimeTicks response_arrival_at_renderer,
+      absl::optional<mojo_base::BigBuffer> cached_metadata) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnTransferSizeUpdated(int transfer_size_diff) override;
-  void OnReceivedCachedMetadata(mojo_base::BigBuffer data) override;
   void OnCompletedRequest(
       const network::URLLoaderCompletionStatus& status) override;
 
@@ -234,39 +234,28 @@ void URLLoader::Context::DidChangePriority(WebURLRequest::Priority new_priority,
 
 void URLLoader::Context::Start(
     std::unique_ptr<network::ResourceRequest> request,
-    scoped_refptr<WebURLRequestExtraData> passed_url_request_extra_data,
+    scoped_refptr<const SecurityOrigin> top_frame_origin,
     bool pass_response_pipe_to_client,
     bool no_mime_sniffing,
     base::TimeDelta timeout_interval,
     SyncLoadResponse* sync_load_response,
     std::unique_ptr<ResourceLoadInfoNotifierWrapper>
-        resource_load_info_notifier_wrapper) {
+        resource_load_info_notifier_wrapper,
+    CodeCacheHost* code_cache_host) {
   DCHECK_EQ(request_id_, -1);
 
   url_ = KURL(request->url);
   has_devtools_request_id_ = request->devtools_request_id.has_value();
-
-  scoped_refptr<WebURLRequestExtraData> empty_url_request_extra_data;
-  WebURLRequestExtraData* url_request_extra_data;
-  if (passed_url_request_extra_data) {
-    url_request_extra_data = static_cast<WebURLRequestExtraData*>(
-        passed_url_request_extra_data.get());
-  } else {
-    empty_url_request_extra_data =
-        base::MakeRefCounted<WebURLRequestExtraData>();
-    url_request_extra_data = empty_url_request_extra_data.get();
-  }
 
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles;
   for (auto& throttle : throttles_) {
     throttles.push_back(std::move(throttle));
   }
 
-  // TODO(falken): URLLoader should be able to get the top frame origin via some
-  // plumbing such as through ResourceLoader -> FetchContext -> LocalFrame
-  // -> RenderHostImpl instead of needing WebURLRequestExtraData.
+  // The top frame origin of shared and service workers is null.
   Platform::Current()->AppendVariationsThrottles(
-      url_request_extra_data->top_frame_origin(), &throttles);
+      top_frame_origin ? top_frame_origin->ToUrlOrigin() : url::Origin(),
+      &throttles);
 
   uint32_t loader_options = network::mojom::kURLLoadOptionNone;
   if (!no_mime_sniffing) {
@@ -277,6 +266,7 @@ void URLLoader::Context::Start(
 
   if (sync_load_response) {
     DCHECK_EQ(freeze_mode_, LoaderFreezeMode::kNone);
+    CHECK(!code_cache_host);
 
     loader_options |= network::mojom::kURLLoadOptionSynchronous;
     request->load_flags |= net::LOAD_IGNORE_LIMITS;
@@ -305,6 +295,7 @@ void URLLoader::Context::Start(
       std::move(request), GetMaybeUnfreezableTaskRunner(), tag, loader_options,
       cors_exempt_header_list_, base::WrapRefCounted(this), url_loader_factory_,
       std::move(throttles), std::move(resource_load_info_notifier_wrapper),
+      code_cache_host,
       base::BindOnce(&BackForwardCacheLoaderHelper::EvictFromBackForwardCache,
                      back_forward_cache_loader_helper_),
       base::BindRepeating(
@@ -353,7 +344,8 @@ void URLLoader::Context::OnReceivedRedirect(
 
 void URLLoader::Context::OnReceivedResponse(
     network::mojom::URLResponseHeadPtr head,
-    base::TimeTicks response_arrival_at_renderer) {
+    base::TimeTicks response_arrival_at_renderer,
+    absl::optional<mojo_base::BigBuffer> cached_metadata) {
   if (!client_) {
     return;
   }
@@ -372,7 +364,7 @@ void URLLoader::Context::OnReceivedResponse(
       url_, *head, has_devtools_request_id_, request_id_);
   response.SetArrivalTimeAtRenderer(response_arrival_at_renderer);
 
-  client_->DidReceiveResponse(response);
+  client_->DidReceiveResponse(response, std::move(cached_metadata));
 
   // DidReceiveResponse() may have triggered a cancel, causing the |client_| to
   // go away.
@@ -394,17 +386,6 @@ void URLLoader::Context::OnStartLoadingResponseBody(
 
 void URLLoader::Context::OnTransferSizeUpdated(int transfer_size_diff) {
   client_->DidReceiveTransferSizeUpdate(transfer_size_diff);
-}
-
-void URLLoader::Context::OnReceivedCachedMetadata(mojo_base::BigBuffer data) {
-  if (!client_) {
-    return;
-  }
-  TRACE_EVENT_WITH_FLOW1("loading",
-                         "URLLoader::Context::OnReceivedCachedMetadata", this,
-                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
-                         "length", data.size());
-  client_->DidReceiveCachedMetadata(std::move(data));
 }
 
 void URLLoader::Context::OnCompletedRequest(
@@ -462,7 +443,7 @@ URLLoader::~URLLoader() {
 
 void URLLoader::LoadSynchronously(
     std::unique_ptr<network::ResourceRequest> request,
-    scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
+    scoped_refptr<const SecurityOrigin> top_frame_origin,
     bool pass_response_pipe_to_client,
     bool no_mime_sniffing,
     base::TimeDelta timeout_interval,
@@ -486,10 +467,11 @@ void URLLoader::LoadSynchronously(
   context_->set_client(client);
 
   const bool has_devtools_request_id = request->devtools_request_id.has_value();
-  context_->Start(std::move(request), std::move(url_request_extra_data),
+  context_->Start(std::move(request), std::move(top_frame_origin),
                   pass_response_pipe_to_client, no_mime_sniffing,
                   timeout_interval, &sync_load_response,
-                  std::move(resource_load_info_notifier_wrapper));
+                  std::move(resource_load_info_notifier_wrapper),
+                  /*code_cache_host=*/nullptr);
 
   const KURL final_url(sync_load_response.url);
 
@@ -540,10 +522,11 @@ void URLLoader::LoadSynchronously(
 
 void URLLoader::LoadAsynchronously(
     std::unique_ptr<network::ResourceRequest> request,
-    scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
+    scoped_refptr<const SecurityOrigin> top_frame_origin,
     bool no_mime_sniffing,
     std::unique_ptr<ResourceLoadInfoNotifierWrapper>
         resource_load_info_notifier_wrapper,
+    CodeCacheHost* code_cache_host,
     URLLoaderClient* client) {
   if (!context_) {
     return;
@@ -554,10 +537,11 @@ void URLLoader::LoadAsynchronously(
   DCHECK(!context_->client());
 
   context_->set_client(client);
-  context_->Start(std::move(request), std::move(url_request_extra_data),
+  context_->Start(std::move(request), std::move(top_frame_origin),
                   /*pass_response_pipe_to_client=*/false, no_mime_sniffing,
-                  base::TimeDelta(), nullptr,
-                  std::move(resource_load_info_notifier_wrapper));
+                  base::TimeDelta(), /*sync_load_response=*/nullptr,
+                  std::move(resource_load_info_notifier_wrapper),
+                  code_cache_host);
 }
 
 void URLLoader::Cancel() {

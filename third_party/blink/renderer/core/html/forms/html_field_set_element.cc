@@ -39,6 +39,8 @@
 
 namespace blink {
 
+using mojom::blink::FormControlType;
+
 namespace {
 
 bool WillReattachChildLayoutObject(const Node& parent) {
@@ -116,15 +118,11 @@ void HTMLFieldSetElement::DisabledAttributeChanged() {
 }
 
 void HTMLFieldSetElement::AncestorDisabledStateWasChanged() {
-  if (RuntimeEnabledFeatures::NonReentrantFieldSetDisableEnabled()) {
-    ancestor_disabled_state_ = AncestorDisabledState::kUnknown;
-    // Do not re-enter HTMLFieldSetElement::DisabledAttributeChanged(), so that
-    // we only invalidate this element's own disabled state and do not traverse
-    // the descendants.
-    HTMLFormControlElement::DisabledAttributeChanged();
-  } else {
-    HTMLFormControlElement::AncestorDisabledStateWasChanged();
-  }
+  ancestor_disabled_state_ = AncestorDisabledState::kUnknown;
+  // Do not re-enter HTMLFieldSetElement::DisabledAttributeChanged(), so that
+  // we only invalidate this element's own disabled state and do not traverse
+  // the descendants.
+  HTMLFormControlElement::DisabledAttributeChanged();
 }
 
 void HTMLFieldSetElement::ChildrenChanged(const ChildrenChange& change) {
@@ -147,7 +145,11 @@ bool HTMLFieldSetElement::SupportsFocus() const {
   return HTMLElement::SupportsFocus() && !IsDisabledFormControl();
 }
 
-const AtomicString& HTMLFieldSetElement::FormControlType() const {
+FormControlType HTMLFieldSetElement::FormControlType() const {
+  return FormControlType::kFieldset;
+}
+
+const AtomicString& HTMLFieldSetElement::FormControlTypeAsString() const {
   DEFINE_STATIC_LOCAL(const AtomicString, fieldset, ("fieldset"));
   return fieldset;
 }

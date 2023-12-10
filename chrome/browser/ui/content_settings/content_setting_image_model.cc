@@ -1262,15 +1262,11 @@ bool ContentSettingNotificationsImageModel::UpdateAndGetVisibility(
   auto* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
-  // If `kPermissionQuietUIChip` is enabled, we shouldn't show the icon unless
-  // we're a PWA.
+  // We shouldn't show the icon unless we're a PWA.
   // TODO(crbug.com/1221189): Allow PermissionRequestManager to identify the
   // correct UI style of a permission prompt.
-  const bool quiet_icon_allowed =
-      web_app::AppBrowserController::IsWebApp(
-          chrome::FindBrowserWithWebContents(web_contents)) ||
-      !base::FeatureList::IsEnabled(
-          permissions::features::kPermissionQuietChip);
+  const bool quiet_icon_allowed = web_app::AppBrowserController::IsWebApp(
+      chrome::FindBrowserWithTab(web_contents));
 
   if (!quiet_icon_allowed || !manager ||
       !manager->ShouldCurrentRequestUseQuietUI()) {
@@ -1311,9 +1307,14 @@ ContentSettingNotificationsImageModel::CreateBubbleModelImpl(
 // Base class ------------------------------------------------------------------
 
 gfx::Image ContentSettingImageModel::GetIcon(SkColor icon_color) const {
-  int icon_size = GetLayoutConstant(LOCATION_BAR_TRAILING_ICON_SIZE);
+  int icon_size =
+      icon_size_.value_or(GetLayoutConstant(LOCATION_BAR_TRAILING_ICON_SIZE));
   return gfx::Image(gfx::CreateVectorIconWithBadge(*icon_, icon_size,
                                                    icon_color, *icon_badge_));
+}
+
+void ContentSettingImageModel::SetIconSize(int icon_size) {
+  icon_size_ = icon_size;
 }
 
 int ContentSettingImageModel::AccessibilityAnnouncementStringId() const {

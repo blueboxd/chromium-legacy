@@ -212,12 +212,15 @@ void OmniboxMatchCellView::ComputeMatchMaxWidths(
 
     // Give the description the remaining space, unless this makes it too small
     // to display anything meaningful, in which case just hide the description
-    // and let the contents take up the whole width.
+    // and let the contents take up the whole width. However, when action chips
+    // are inlined, we don't hide the description view (in order to match the
+    // behavior of the realbox).
     *description_max_width =
         std::min(description_width, available_width - *contents_max_width);
     const int kMinimumDescriptionWidth = 75;
     if (*description_max_width <
-        std::min(description_width, kMinimumDescriptionWidth)) {
+            std::min(description_width, kMinimumDescriptionWidth) &&
+        !OmniboxFieldTrial::IsActionsUISimplificationEnabled()) {
       *description_max_width = 0;
       // Since we're not going to display the description, the contents can have
       // the space we reserved for the separator.
@@ -448,7 +451,7 @@ gfx::Insets OmniboxMatchCellView::GetInsets() const {
         DISTANCE_OMNIBOX_TWO_LINE_CELL_VERTICAL_PADDING);
   }
   const int right_margin = OmniboxFieldTrial::IsActionsUISimplificationEnabled()
-                               ? 3
+                               ? 7
                                : OmniboxMatchCellView::kMarginRight;
   return gfx::Insets::TLBR(vertical_margin, OmniboxMatchCellView::kMarginLeft,
                            vertical_margin, right_margin);

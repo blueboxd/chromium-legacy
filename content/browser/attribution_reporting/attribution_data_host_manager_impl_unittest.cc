@@ -29,6 +29,7 @@
 #include "components/attribution_reporting/aggregatable_values.h"
 #include "components/attribution_reporting/aggregation_keys.h"
 #include "components/attribution_reporting/destination_set.h"
+#include "components/attribution_reporting/event_report_windows.h"
 #include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/registration_eligibility.mojom.h"
@@ -83,11 +84,10 @@ using FilterConfig = ::attribution_reporting::FilterConfig;
 
 using ::testing::_;
 using ::testing::AllOf;
-using ::testing::ElementsAre;
-using ::testing::Eq;
+using ::testing::Field;
 using ::testing::InSequence;
 using ::testing::Mock;
-using ::testing::Optional;
+using ::testing::Property;
 
 using Checkpoint = ::testing::MockFunction<void(int step)>;
 
@@ -136,20 +136,20 @@ TEST_F(AttributionDataHostManagerImplTest, SourceDataHost_SourceRegistered) {
   auto aggregation_keys = *attribution_reporting::AggregationKeys::FromKeys(
       {{"key", absl::MakeUint128(/*high=*/5, /*low=*/345)}});
 
-  EXPECT_CALL(
-      mock_manager_,
-      HandleSource(AllOf(SourceRegistrationIs(SourceRegistrationMatches(
-                             SourceRegistrationMatcherConfig(
-                                 /*source_event_id=*/10,
-                                 *DestinationSet::Create({destination_site}),
-                                 /*priority=*/20,
-                                 /*debug_key=*/Optional(789), aggregation_keys,
-                                 /*debug_reporting=*/true))),
-                         SourceTypeIs(SourceType::kEvent),
-                         ImpressionOriginIs(page_origin),
-                         ReportingOriginIs(reporting_origin),
-                         SourceIsWithinFencedFrameIs(false)),
-                   kFrameId));
+  SourceRegistration source_data(*DestinationSet::Create({destination_site}));
+  source_data.source_event_id = 10;
+  source_data.priority = 20;
+  source_data.debug_key = 789;
+  source_data.aggregation_keys = aggregation_keys;
+  source_data.debug_reporting = true;
+
+  EXPECT_CALL(mock_manager_,
+              HandleSource(AllOf(SourceRegistrationIs(source_data),
+                                 SourceTypeIs(SourceType::kEvent),
+                                 ImpressionOriginIs(page_origin),
+                                 ReportingOriginIs(reporting_origin),
+                                 SourceIsWithinFencedFrameIs(false)),
+                           kFrameId));
 
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   data_host_manager_.RegisterDataHost(
@@ -160,14 +160,7 @@ TEST_F(AttributionDataHostManagerImplTest, SourceDataHost_SourceRegistered) {
 
   task_environment_.FastForwardBy(base::Milliseconds(1));
 
-  SourceRegistration source_data(*DestinationSet::Create({destination_site}));
-  source_data.source_event_id = 10;
-  source_data.priority = 20;
-  source_data.debug_key = 789;
-  source_data.aggregation_keys = aggregation_keys;
-  source_data.debug_reporting = true;
-  data_host_remote->SourceDataAvailable(reporting_origin,
-                                        std::move(source_data));
+  data_host_remote->SourceDataAvailable(reporting_origin, source_data);
   data_host_remote.FlushForTesting();
 }
 
@@ -236,39 +229,6 @@ TEST_F(AttributionDataHostManagerImplTest, TriggerDataHost_TriggerRegistered) {
       aggregatable_dedup_keys = {attribution_reporting::AggregatableDedupKey(
           /*dedup_key=*/123, FilterPair())};
 
-  auto aggregation_coordinator_origin =
-      SuitableOrigin::Deserialize("https://coordinator.test");
-
-  EXPECT_CALL(
-      mock_manager_,
-      HandleTrigger(
-          AttributionTriggerMatches(AttributionTriggerMatcherConfig(
-              reporting_origin,
-              TriggerRegistrationMatches(TriggerRegistrationMatcherConfig(
-                  FilterPair(/*positive=*/filters, /*negative=*/{}),
-                  Optional(789),
-                  ElementsAre(
-                      EventTriggerDataMatches(EventTriggerDataMatcherConfig(
-                          1, 2, Optional(3), event_trigger_data_filters)),
-                      EventTriggerDataMatches(EventTriggerDataMatcherConfig(
-                          4, 5, Eq(absl::nullopt), FilterPair()))),
-                  aggregatable_dedup_keys,
-                  /*debug_reporting=*/true,
-                  std::vector<attribution_reporting::AggregatableTriggerData>(),
-                  attribution_reporting::AggregatableValues(),
-                  aggregation_coordinator_origin,
-                  attribution_reporting::mojom::SourceRegistrationTimeConfig::
-                      kExclude)),
-              destination_origin)),
-          kFrameId));
-
-  mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
-  data_host_manager_.RegisterDataHost(
-      data_host_remote.BindNewPipeAndPassReceiver(), destination_origin,
-      /*is_within_fenced_frame=*/false,
-      RegistrationEligibility::kSourceOrTrigger, kFrameId,
-      /*last_navigation_id=*/kNavigationId);
-
   TriggerRegistration trigger_data;
   trigger_data.debug_key = 789;
   trigger_data.filters.positive = filters;
@@ -282,10 +242,25 @@ TEST_F(AttributionDataHostManagerImplTest, TriggerDataHost_TriggerRegistered) {
 
   trigger_data.aggregatable_dedup_keys = aggregatable_dedup_keys;
   trigger_data.debug_reporting = true;
-  trigger_data.aggregation_coordinator_origin = aggregation_coordinator_origin;
+  trigger_data.aggregation_coordinator_origin =
+      SuitableOrigin::Deserialize("https://coordinator.test");
 
-  data_host_remote->TriggerDataAvailable(reporting_origin,
-                                         std::move(trigger_data),
+  EXPECT_CALL(
+      mock_manager_,
+      HandleTrigger(
+          AttributionTrigger(reporting_origin, trigger_data, destination_origin,
+                             /*verifications=*/{},
+                             /*is_within_fenced_frame=*/false),
+          kFrameId));
+
+  mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
+  data_host_manager_.RegisterDataHost(
+      data_host_remote.BindNewPipeAndPassReceiver(), destination_origin,
+      /*is_within_fenced_frame=*/false,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/kNavigationId);
+
+  data_host_remote->TriggerDataAvailable(reporting_origin, trigger_data,
                                          /*verifications=*/{});
   data_host_remote.FlushForTesting();
 }
@@ -485,6 +460,9 @@ TEST_F(AttributionDataHostManagerImplTest,
   // Non-whole-day expiry is invalid for `SourceType::kEvent`.
   source_data.expiry = base::Days(1) + base::Microseconds(1);
   source_data.aggregatable_report_window = source_data.expiry;
+  source_data.event_report_windows =
+      *attribution_reporting::EventReportWindows::FromDefaults(
+          source_data.expiry, SourceType::kEvent);
 
   {
     mojo::test::BadMessageObserver bad_message_observer;
@@ -512,24 +490,24 @@ TEST_F(AttributionDataHostManagerImplTest,
       *attribution_reporting::AggregationKeys::FromKeys(
           {{"key", absl::MakeUint128(/*high=*/5, /*low=*/345)}});
 
+  SourceRegistration source_data(*DestinationSet::Create({destination_site}));
+  source_data.source_event_id = 10;
+  source_data.priority = 20;
+  source_data.debug_key = 789;
+  source_data.aggregation_keys = aggregation_keys;
+  source_data.debug_reporting = true;
+
   Checkpoint checkpoint;
   {
     InSequence seq;
 
-    EXPECT_CALL(
-        mock_manager_,
-        HandleSource(AllOf(SourceRegistrationIs(SourceRegistrationMatches(
-                               SourceRegistrationMatcherConfig(
-                                   /*source_event_id=*/10,
-                                   *DestinationSet::Create({destination_site}),
-                                   /*priority=*/20, /*debug_key=*/Optional(789),
-                                   aggregation_keys,
-                                   /*debug_reporting=*/true))),
-                           SourceTypeIs(SourceType::kNavigation),
-                           ImpressionOriginIs(page_origin),
-                           ReportingOriginIs(reporting_origin),
-                           SourceIsWithinFencedFrameIs(false)),
-                     kFrameId));
+    EXPECT_CALL(mock_manager_,
+                HandleSource(AllOf(SourceRegistrationIs(source_data),
+                                   SourceTypeIs(SourceType::kNavigation),
+                                   ImpressionOriginIs(page_origin),
+                                   ReportingOriginIs(reporting_origin),
+                                   SourceIsWithinFencedFrameIs(false)),
+                             kFrameId));
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(mock_manager_, HandleSource);
   }
@@ -547,12 +525,6 @@ TEST_F(AttributionDataHostManagerImplTest,
       /*is_within_fenced_frame=*/false, kFrameId,
       /*navigation_id=*/kNavigationId, kDevtoolsRequestId);
 
-  SourceRegistration source_data(*DestinationSet::Create({destination_site}));
-  source_data.source_event_id = 10;
-  source_data.priority = 20;
-  source_data.debug_key = 789;
-  source_data.aggregation_keys = aggregation_keys;
-  source_data.debug_reporting = true;
   data_host_remote->SourceDataAvailable(reporting_origin, source_data);
   data_host_remote.FlushForTesting();
 
@@ -562,8 +534,7 @@ TEST_F(AttributionDataHostManagerImplTest,
   // final navigation site.
   source_data.destination_set = *DestinationSet::Create(
       {net::SchemefulSite::Deserialize("https://trigger2.example")});
-  data_host_remote->SourceDataAvailable(reporting_origin,
-                                        std::move(source_data));
+  data_host_remote->SourceDataAvailable(reporting_origin, source_data);
   data_host_remote.FlushForTesting();
 
   // kRegistered = 0, kProcessed = 3.
@@ -1309,14 +1280,12 @@ TEST_F(AttributionDataHostManagerImplTest, NavigationRedirectSource_InOrder) {
     InSequence seq;
 
     EXPECT_CALL(mock_manager_,
-                HandleSource(SourceRegistrationIs(SourceRegistrationMatches(
-                                 SourceRegistrationMatcherConfig(
-                                     /*source_event_id=*/2))),
+                HandleSource(SourceRegistrationIs(Field(
+                                 &SourceRegistration::source_event_id, 2)),
                              kFrameId));
     EXPECT_CALL(mock_manager_,
-                HandleSource(SourceRegistrationIs(SourceRegistrationMatches(
-                                 SourceRegistrationMatcherConfig(
-                                     /*source_event_id=*/1))),
+                HandleSource(SourceRegistrationIs(Field(
+                                 &SourceRegistration::source_event_id, 1)),
                              kFrameId));
   }
 
@@ -1630,16 +1599,14 @@ TEST_F(AttributionDataHostManagerImplTest,
 
     EXPECT_CALL(mock_manager_, HandleTrigger).Times(0);
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(
-        mock_manager_,
-        HandleTrigger(AttributionTriggerMatches(
-                          AttributionTriggerMatcherConfig(reporting_origin1)),
-                      kFrameId));
-    EXPECT_CALL(
-        mock_manager_,
-        HandleTrigger(AttributionTriggerMatches(
-                          AttributionTriggerMatcherConfig(reporting_origin2)),
-                      kFrameId));
+    EXPECT_CALL(mock_manager_,
+                HandleTrigger(Property(&AttributionTrigger::reporting_origin,
+                                       reporting_origin1),
+                              kFrameId));
+    EXPECT_CALL(mock_manager_,
+                HandleTrigger(Property(&AttributionTrigger::reporting_origin,
+                                       reporting_origin2),
+                              kFrameId));
   }
 
   const blink::AttributionSrcToken attribution_src_token;
@@ -1758,11 +1725,10 @@ TEST_F(AttributionDataHostManagerImplTest,
 
 TEST_F(AttributionDataHostManagerImplTest,
        DuplicateAttributionSrcToken_NotRegistered) {
-  EXPECT_CALL(
-      mock_manager_,
-      HandleSource(SourceRegistrationIs(SourceRegistrationMatches(
-                       SourceRegistrationMatcherConfig(/*source_event_id=*/1))),
-                   kFrameId));
+  EXPECT_CALL(mock_manager_,
+              HandleSource(SourceRegistrationIs(
+                               Field(&SourceRegistration::source_event_id, 1)),
+                           kFrameId));
 
   const blink::AttributionSrcToken attribution_src_token;
 
@@ -1815,17 +1781,12 @@ TEST_F(AttributionDataHostManagerImplTest,
   auto reporting_origin =
       *SuitableOrigin::Deserialize("https://reporter.example");
 
-  EXPECT_CALL(
-      mock_manager_,
-      HandleSource(AllOf(SourceRegistrationIs(SourceRegistrationMatches(
-                             SourceRegistrationMatcherConfig(
-                                 /*source_event_id=*/10,
-                                 *DestinationSet::Create({destination_site})))),
-                         SourceTypeIs(SourceType::kEvent),
-                         ImpressionOriginIs(page_origin),
-                         ReportingOriginIs(reporting_origin),
-                         SourceIsWithinFencedFrameIs(true)),
-                   kFrameId));
+  EXPECT_CALL(mock_manager_,
+              HandleSource(AllOf(SourceTypeIs(SourceType::kEvent),
+                                 ImpressionOriginIs(page_origin),
+                                 ReportingOriginIs(reporting_origin),
+                                 SourceIsWithinFencedFrameIs(true)),
+                           kFrameId));
 
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   data_host_manager_.RegisterDataHost(
@@ -1851,9 +1812,7 @@ TEST_F(AttributionDataHostManagerImplTest,
       *SuitableOrigin::Deserialize("https://reporter.example");
   EXPECT_CALL(
       mock_manager_,
-      HandleTrigger(AttributionTriggerMatches(AttributionTriggerMatcherConfig(
-                        reporting_origin, _, destination_origin,
-                        /*is_within_fenced_frame=*/true)),
+      HandleTrigger(Property(&AttributionTrigger::is_within_fenced_frame, true),
                     kFrameId));
 
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
@@ -2496,6 +2455,56 @@ TEST_F(AttributionDataHostManagerImplTest, WebDisabled_SourceNotRegistered) {
     // Wait for parsing to finish.
     task_environment_.FastForwardBy(base::TimeDelta());
   }
+}
+
+TEST_F(AttributionDataHostManagerImplTest, HeadersSize_MetricsRecorded) {
+  base::HistogramTester histograms;
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      network::features::kAttributionReportingCrossAppWeb);
+
+  auto reporting_url = GURL("https://report.test");
+  auto source_origin = *SuitableOrigin::Deserialize("https://source.test");
+  base::StringPiece os_registration(R"("https://r.test/x")");
+
+  data_host_manager_.NotifyFencedFrameReportingBeaconStarted(
+      kBeaconId, kNavigationId, source_origin,
+      /*is_within_fenced_frame=*/false, AttributionInputEvent(), kFrameId,
+      kDevtoolsRequestId);
+
+  auto headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+  headers->SetHeader(kAttributionReportingRegisterSourceHeader,
+                     kRegisterSourceJson);
+
+  data_host_manager_.NotifyFencedFrameReportingBeaconData(
+      kBeaconId, network::AttributionReportingRuntimeFeatures(), reporting_url,
+      headers.get(),
+      /*is_final_response=*/true);
+  histograms.ExpectUniqueSample("Conversions.HeadersSize.RegisterSource",
+                                strlen(kRegisterSourceJson), 1);
+
+  // Wait for parsing to finish.
+  task_environment_.FastForwardBy(base::TimeDelta());
+
+  // OS registration
+  headers->RemoveHeader(kAttributionReportingRegisterSourceHeader);
+  headers->SetHeader(kAttributionReportingRegisterOsSourceHeader,
+                     os_registration);
+
+  data_host_manager_.NotifyFencedFrameReportingBeaconStarted(
+      kBeaconId, /*navigation_id=*/absl::nullopt, source_origin,
+      /*is_within_fenced_frame=*/false, AttributionInputEvent(), kFrameId,
+      kDevtoolsRequestId);
+
+  data_host_manager_.NotifyFencedFrameReportingBeaconData(
+      kBeaconId, {network::AttributionReportingRuntimeFeature::kCrossAppWeb},
+      reporting_url, headers.get(),
+      /*is_final_response=*/true);
+  histograms.ExpectUniqueSample("Conversions.HeadersSize.RegisterOsSource",
+                                os_registration.length(), 1);
+
+  // Wait for parsing to finish.
+  task_environment_.FastForwardBy(base::TimeDelta());
 }
 
 }  // namespace

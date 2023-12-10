@@ -25,11 +25,11 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_loader.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_util.h"
-#include "chrome/browser/apps/app_service/app_icon/icon_effects.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/grit/app_icon_resources.h"
+#include "components/services/app_service/public/cpp/icon_effects.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
@@ -413,7 +413,7 @@ void ArcActivityIconsToImageSkias(
 }
 
 gfx::ImageSkia ConvertSquareBitmapsToImageSkia(
-    const std::map<SquareSizePx, SkBitmap>& icon_bitmaps,
+    const std::map<web_app::SquareSizePx, SkBitmap>& icon_bitmaps,
     IconEffects icon_effects,
     int size_hint_in_dip) {
   TRACE_EVENT0("ui", "apps::ConvertSquareBitmapsToImageSkia");
@@ -434,7 +434,7 @@ gfx::ImageSkia ConvertSquareBitmapsToImageSkia(
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 gfx::ImageSkia ConvertIconBitmapsToImageSkia(
-    const std::map<SquareSizePx, SkBitmap>& icon_bitmaps,
+    const std::map<web_app::SquareSizePx, SkBitmap>& icon_bitmaps,
     int size_hint_in_dip) {
   TRACE_EVENT0("ui", "apps::ConvertIconBitmapsToImageSkia");
   if (icon_bitmaps.empty()) {
@@ -447,7 +447,7 @@ gfx::ImageSkia ConvertIconBitmapsToImageSkia(
   for (const auto scale_factor : ui::GetSupportedResourceScaleFactors()) {
     float icon_scale = ui::GetScaleForResourceScaleFactor(scale_factor);
 
-    SquareSizePx icon_size_in_px =
+    web_app::SquareSizePx icon_size_in_px =
         gfx::ScaleToFlooredSize(gfx::Size(size_hint_in_dip, size_hint_in_dip),
                                 icon_scale)
             .width();

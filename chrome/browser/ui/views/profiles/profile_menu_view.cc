@@ -62,6 +62,8 @@
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/base/signin_switches.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
@@ -340,8 +342,10 @@ void ProfileMenuView::OnSyncErrorButtonClicked(AvatarSyncErrorType error) {
 #endif
 }
 
-void ProfileMenuView::OnSigninAccountButtonClicked(CoreAccountInfo account) {
-  RecordClick(ActionableItem::kSigninAccountButton);
+void ProfileMenuView::OnSigninButtonClicked(CoreAccountInfo account,
+                                            ActionableItem button_type) {
+  RecordClick(button_type);
+
   if (!perform_menu_actions())
     return;
   GetWidget()->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
@@ -379,17 +383,6 @@ void ProfileMenuView::OnSignoutButtonClicked() {
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-void ProfileMenuView::OnSigninButtonClicked() {
-  RecordClick(ActionableItem::kSigninButton);
-  if (!perform_menu_actions())
-    return;
-  GetWidget()->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
-
-  signin_ui_util::EnableSyncFromSingleAccountPromo(
-      browser()->profile(), AccountInfo(),
-      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
-}
-
 void ProfileMenuView::OnOtherProfileSelected(
     const base::FilePath& profile_path) {
   RecordClick(ActionableItem::kOtherProfileButton);
@@ -503,13 +496,25 @@ void ProfileMenuView::BuildIdentity() {
         ui::ImageModel::FromImage(account_info.account_image), menu_title_,
         menu_subtitle_);
   } else {
-    menu_title_ = std::u16string();
-    menu_subtitle_ =
-        l10n_util::GetStringUTF16(IDS_PROFILES_LOCAL_PROFILE_STATE);
+    if (base::FeatureList::IsEnabled(switches::kUnoDesktop) &&
+        account.IsEmpty()) {
+      account_info =
+          signin_ui_util::GetSingleAccountForPromos(identity_manager);
+    }
+    menu_title_ = l10n_util::GetStringUTF16(IDS_PROFILES_LOCAL_PROFILE_STATE);
+    // The email may be empty.
+    menu_subtitle_ = base::UTF8ToUTF16(account_info.email);
     SetProfileIdentityInfo(
         profile_name, background_color, edit_button_params,
         ui::ImageModel::FromImage(
-            profile_attributes->GetAvatarIcon(kIdentityImageSize)),
+            // If the user is in the web-only signed-in state in the UNO model,
+            // use the account image in the profile menu header.
+            // If the account does not have an image or it's not available yet,
+            // a grey silhouette will be used.
+            // If UNO is disabled or there is no account, use the profile icon.
+            !account_info.IsEmpty()
+                ? account_info.account_image
+                : profile_attributes->GetAvatarIcon(kIdentityImageSize)),
         menu_title_, menu_subtitle_);
   }
 }
@@ -599,31 +604,51 @@ void ProfileMenuView::BuildSyncInfo() {
 
   // If there's no error and sync-the-feature is disabled, show a sync promo.
   // For a signed-in user, the promo just opens the "turn on sync" dialog.
+  // For a web-only signed-in user in the UNO model, the promo signs the user on
+  // Chrome and opens the "turn on sync" dialog.
   // For a signed-out user, it prompts for sign-in first.
   CoreAccountInfo account_info =
       identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin);
+  AccountInfo account_info_for_promos =
+      signin_ui_util::GetSingleAccountForPromos(identity_manager);
+  std::u16string description;
+  std::u16string button_text;
+  ActionableItem button_type = ActionableItem::kSigninAccountButton;
+  bool show_sync_badge = false;
+
   if (!account_info.IsEmpty()) {
-    BuildSyncInfoWithCallToAction(
-        l10n_util::GetStringUTF16(IDS_PROFILES_DICE_NOT_SYNCING_TITLE),
-        l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON),
-        ui::kColorSyncInfoBackground,
-        base::BindRepeating(&ProfileMenuView::OnSigninAccountButtonClicked,
-                            base::Unretained(this), account_info),
-        /*show_sync_badge=*/true);
+    description =
+        l10n_util::GetStringUTF16(IDS_PROFILES_DICE_NOT_SYNCING_TITLE);
+    button_text = l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON);
+    show_sync_badge = true;
+  } else if (base::FeatureList::IsEnabled(switches::kUnoDesktop) &&
+             !account_info_for_promos.IsEmpty()) {
+    account_info = account_info_for_promos;
+    description = l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SYNC_PROMO);
+    button_text = l10n_util::GetStringFUTF16(
+        IDS_PROFILES_DICE_WEB_ONLY_SIGNIN_BUTTON,
+        base::UTF8ToUTF16(!account_info_for_promos.given_name.empty()
+                              ? account_info_for_promos.given_name
+                              : account_info_for_promos.email));
+    button_type = ActionableItem::kEnableSyncForWebOnlyAccountButton;
   } else {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     // There is always an account on ChromeOS.
     NOTREACHED_NORETURN();
 #else
-    BuildSyncInfoWithCallToAction(
-        l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SYNC_PROMO),
-        l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON),
-        ui::kColorSyncInfoBackground,
-        base::BindRepeating(&ProfileMenuView::OnSigninButtonClicked,
-                            base::Unretained(this)),
-        /*show_sync_badge=*/false);
+    description = l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SYNC_PROMO);
+    button_text = l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON);
+    button_type = ActionableItem::kSigninButton;
 #endif
   }
+
+  CHECK(!description.empty());
+  CHECK(!button_text.empty());
+  BuildSyncInfoWithCallToAction(
+      description, button_text, ui::kColorSyncInfoBackground,
+      base::BindRepeating(&ProfileMenuView::OnSigninButtonClicked,
+                          base::Unretained(this), account_info, button_type),
+      show_sync_badge);
 }
 
 void ProfileMenuView::BuildFeatureButtons() {

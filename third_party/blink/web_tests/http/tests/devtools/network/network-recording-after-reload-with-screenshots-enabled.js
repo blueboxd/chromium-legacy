@@ -6,6 +6,7 @@ import {TestRunner} from 'test_runner';
 import {NetworkTestRunner} from 'network_test_runner';
 
 import * as Network from 'devtools/panels/network/network.js';
+import * as SDK from 'devtools/core/sdk/sdk.js';
 
 (async function() {
   TestRunner.addResult(`Tests if page keeps recording after refresh with Screenshot enabled. Bug 569557\n`);
@@ -14,7 +15,7 @@ import * as Network from 'devtools/panels/network/network.js';
       <p id="test"></p>
     `);
 
-  UI.panels.network.networkRecordFilmStripSetting.set(true);
+  Network.NetworkPanel.NetworkPanel.instance().networkRecordFilmStripSetting.set(true);
 
   Network.NetworkPanel.NetworkPanel.displayScreenshotDelay = 0;
 
@@ -23,7 +24,7 @@ import * as Network from 'devtools/panels/network/network.js';
   TestRunner.resourceTreeModel.reloadPage();
 
   function checkRecording() {
-    TestRunner.addResult(UI.panels.network.networkLogView.recording ? 'Still recording' : 'Not recording');
+    TestRunner.addResult(Network.NetworkPanel.NetworkPanel.instance().networkLogView.recording ? 'Still recording' : 'Not recording');
 
     TestRunner.completeTest();
   }

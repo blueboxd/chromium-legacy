@@ -252,6 +252,10 @@ AppServerWin::~AppServerWin() {
   NOTREACHED();  // The instance of this class is a leaky singleton.
 }
 
+void AppServerWin::PostRpcTask(base::OnceClosure task) {
+  GetAppServerWinInstance()->PostRpcTaskOnMainSequence(std::move(task));
+}
+
 void AppServerWin::Stop() {
   VLOG(2) << __func__ << ": COM server is shutting down.";
   UnregisterClassObjects();
@@ -264,11 +268,20 @@ void AppServerWin::Stop() {
                               }));
 }
 
+void AppServerWin::PostRpcTaskOnMainSequence(base::OnceClosure task) {
+  main_task_runner_->PostTask(FROM_HERE, std::move(task));
+}
+
 bool AppServerWin::RestoreComInterfaces(bool is_internal) {
-  return InstallComInterfaces(updater_scope(), is_internal);
+  return AreComInterfacesPresent(updater_scope(), is_internal) ||
+         InstallComInterfaces(updater_scope(), is_internal);
 }
 
 HRESULT AppServerWin::RegisterClassObjects() {
+  // TODO(crbug.com/1484803): remove once we know why E_NOINTERFACE happens.
+  const bool succeeded = RestoreComInterfaces(false);
+  LOG_IF(ERROR, !succeeded);
+
   // Register COM class objects that are under either the ActiveSystem or the
   // ActiveUser group.
   // See wrl_classes.cc for details on the COM classes within the group.
@@ -277,6 +290,10 @@ HRESULT AppServerWin::RegisterClassObjects() {
 }
 
 HRESULT AppServerWin::RegisterInternalClassObjects() {
+  // TODO(crbug.com/1484803): remove once we know why E_NOINTERFACE happens.
+  const bool succeeded = RestoreComInterfaces(true);
+  LOG_IF(ERROR, !succeeded);
+
   // Register COM class objects that are under either the InternalSystem or the
   // InternalUser group.
   // See wrl_classes.cc for details on the COM classes within the group.
@@ -289,6 +306,11 @@ void AppServerWin::UnregisterClassObjects() {
       Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule()
           .UnregisterObjects();
   LOG_IF(ERROR, FAILED(hr)) << "UnregisterObjects failed; hr: " << hr;
+
+  // TODO(crbug.com/1484803): remove once we know why E_NOINTERFACE happens.
+  const bool succeeded =
+      RestoreComInterfaces(update_service_internal_ != nullptr);
+  LOG_IF(ERROR, !succeeded);
 }
 
 void AppServerWin::CreateWRLModule() {

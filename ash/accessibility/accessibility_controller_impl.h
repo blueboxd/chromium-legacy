@@ -258,7 +258,8 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   AutoclickEventType GetAutoclickEventType();
   void SetAutoclickMenuPosition(FloatingMenuPosition position);
   FloatingMenuPosition GetAutoclickMenuPosition();
-  void RequestAutoclickScrollableBoundsForPoint(gfx::Point& point_in_screen);
+  void RequestAutoclickScrollableBoundsForPoint(
+      const gfx::Point& point_in_screen);
   void MagnifierBoundsChanged(const gfx::Rect& bounds_in_screen);
 
   void SetFloatingMenuPosition(FloatingMenuPosition position);
@@ -394,16 +395,6 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   // features is going to be visible in the accessibility tray menu.
   bool IsPrimarySettingsViewVisibleInTray();
 
-  // Returns true if at least one of the additional settings of the
-  // accessibility features is going to be visible in the accessibility tray
-  // menu.
-  bool IsAdditionalSettingsViewVisibleInTray();
-
-  // Returns true if there exist one of the additional accessibility features
-  // and one of the primary accessibility features which are going to visible on
-  // accessibility tray menu.
-  bool IsAdditionalSettingsSeparatorVisibleInTray();
-
   // Starts point scanning, to select a point onscreen without using a mouse
   // (as used by Switch Access).
   void StartPointScanning();
@@ -450,7 +441,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
       const std::string& dictation_locale,
       const std::string& application_locale) override;
   void HandleAutoclickScrollableBoundsFound(
-      gfx::Rect& bounds_in_screen) override;
+      const gfx::Rect& bounds_in_screen) override;
   std::u16string GetBatteryDescription() const override;
   void SetVirtualKeyboardVisible(bool is_visible) override;
   void PerformAcceleratorAction(AcceleratorAction accelerator_action) override;

@@ -5,12 +5,12 @@
 import {TestRunner} from 'test_runner';
 import {ConsoleTestRunner} from 'console_test_runner';
 
-import * as SDK from 'devtools/core/sdk/sdk.js';
 import * as Common from 'devtools/core/common/common.js';
+import * as Elements from 'devtools/panels/elements/elements.js';
+import * as SDK from 'devtools/core/sdk/sdk.js';
 
 (async function() {
   TestRunner.addResult(`Tests that inspect() command line api works.\n`);
-  await TestRunner.loadLegacyModule('console');
   await TestRunner.loadHTML(`
       <p id="p1">
       </p>
@@ -44,7 +44,7 @@ import * as Common from 'devtools/core/common/common.js';
     evalAndDump('inspect($(\'#p1\'))');
 
     function step3() {
-      TestRunner.addResult('Selected node id: \'' + UI.panels.elements.selectedDOMNode().getAttribute('id') + '\'.');
+      TestRunner.addResult('Selected node id: \'' + Elements.ElementsPanel.ElementsPanel.instance().selectedDOMNode().getAttribute('id') + '\'.');
       next();
     }
   }]);

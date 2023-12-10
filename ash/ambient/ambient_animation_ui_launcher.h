@@ -50,11 +50,13 @@ class AmbientAnimationUiLauncher : public AmbientUiLauncher,
   void Finalize() override;
   AmbientBackendModel* GetAmbientBackendModel() override;
   AmbientPhotoController* GetAmbientPhotoController() override;
+  bool IsActive() override;
 
  private:
   const scoped_refptr<cc::SkottieWrapper> animation_;
   const raw_ptr<AmbientViewDelegateImpl> view_delegate_;
 
+  bool is_active_ = false;
   InitializationCallback initialization_callback_;
   AmbientPhotoController photo_controller_;
   AmbientUiSettings current_ui_settings_;
@@ -63,7 +65,6 @@ class AmbientAnimationUiLauncher : public AmbientUiLauncher,
   base::ScopedObservation<AmbientBackendModel, AmbientBackendModelObserver>
       ambient_backend_model_observer_{this};
   ScopedSessionObserver session_observer_{this};
-  std::unique_ptr<AmbientTopicQueue::Delegate> topic_queue_delegate_;
   std::unique_ptr<AmbientWeatherController::ScopedRefresher> weather_refresher_;
   std::unique_ptr<AmbientAnimationMetricsRecorder> animation_metrics_recorder_;
 };

@@ -219,8 +219,9 @@ class CORE_EXPORT NGPhysicalFragment
   }
   bool IsFrameSet() const { return IsCSSBox() && layout_object_->IsFrameSet(); }
   bool IsListMarker() const {
-    return IsCSSBox() && layout_object_->IsLayoutNGOutsideListMarker();
+    return IsCSSBox() && layout_object_->IsLayoutOutsideListMarker();
   }
+  bool IsRubyBase() const { return layout_object_->IsRubyBase(); }
   bool IsRubyColumn() const { return layout_object_->IsRubyColumn(); }
 
   // Return true if this fragment is for LayoutRubyColumn, LayoutNGRubyText, or
@@ -451,17 +452,17 @@ class CORE_EXPORT NGPhysicalFragment
   // returns |nullptr| for the historical reasons. TODO(kojii): We may change
   // this in future. Use |IsLineBox()| instead of testing this is |nullptr|.
   const LayoutObject* GetLayoutObject() const {
-    return IsCSSBox() ? layout_object_ : nullptr;
+    return IsCSSBox() ? layout_object_.Get() : nullptr;
   }
   // TODO(kojii): We should not have mutable version at all, the use of this
   // function should be eliminiated over time.
   LayoutObject* GetMutableLayoutObject() const {
-    return IsCSSBox() ? layout_object_ : nullptr;
+    return IsCSSBox() ? layout_object_.Get() : nullptr;
   }
   // Similar to |GetLayoutObject|, but returns the |LayoutObject| of its
   // container for |!IsCSSBox()| fragments instead of |nullptr|.
   const LayoutObject* GetSelfOrContainerLayoutObject() const {
-    return layout_object_;
+    return layout_object_.Get();
   }
 
   const FragmentData* GetFragmentData() const;
@@ -625,7 +626,7 @@ class CORE_EXPORT NGPhysicalFragment
     const NGLink* buffer_;
   };
 
-  const NGBreakToken* BreakToken() const { return break_token_; }
+  const NGBreakToken* BreakToken() const { return break_token_.Get(); }
 
   base::span<const NGLink> Children() const;
 
@@ -740,7 +741,7 @@ class CORE_EXPORT NGPhysicalFragment
       const ComputedStyle& container_style,
       const NGFragmentItem& line,
       bool has_hanging,
-      const NGInlineCursor& cursor,
+      const InlineCursor& cursor,
       TextHeightType height_type,
       PhysicalRect* overflow) const;
 
@@ -758,7 +759,7 @@ class CORE_EXPORT NGPhysicalFragment
                                 const PhysicalOffset& additional_offset,
                                 NGOutlineType outline_type,
                                 const LayoutBoxModelObject* containing_block,
-                                NGInlineCursor* cursor) const;
+                                InlineCursor* cursor) const;
   void AddOutlineRectsForDescendant(
       const NGLink& descendant,
       OutlineRectCollector& collector,
@@ -776,42 +777,46 @@ class CORE_EXPORT NGPhysicalFragment
   Member<LayoutObject> layout_object_;
   PhysicalSize size_;
 
-  unsigned has_floating_descendants_for_paint_ : 1;
-  unsigned has_adjoining_object_descendants_ : 1;
-  unsigned depends_on_percentage_block_size_ : 1;
-  mutable unsigned children_valid_ : 1;
+  const uint8_t type_ : 1;           // NGFragmentType
+  const uint8_t sub_type_ : 4;       // NGBoxType, NGTextType, or NGLineBoxType
+  const uint8_t style_variant_ : 2;  // NGStyleVariant
+  const uint8_t is_hidden_for_paint_ : 1;
+  uint8_t : 0;  // NOLINT, zero-length bitfield used to allow the compiler to
+                // split memory locations. If the above bitfields are part of
+                // the same memory location as the bitfields below, they will
+                // all be updated together, which will result in races.
+
+  uint8_t has_floating_descendants_for_paint_ : 1;  // NOLINT
+  uint8_t has_adjoining_object_descendants_ : 1;    // NOLINT
+  uint8_t depends_on_percentage_block_size_ : 1;    // NOLINT
+  mutable uint8_t children_valid_ : 1;              // NOLINT
 
   // The following bitfields are only to be used by NGPhysicalLineBoxFragment
   // (it's defined here to save memory, since that class has no bitfields).
-  unsigned has_propagated_descendants_ : 1;
-  unsigned has_hanging_ : 1;
-
-  const unsigned type_ : 1;           // NGFragmentType
-  const unsigned sub_type_ : 4;       // NGBoxType, NGTextType, or NGLineBoxType
-  const unsigned style_variant_ : 2;  // NGStyleVariant
-  const unsigned is_hidden_for_paint_ : 1;
-  unsigned is_opaque_ : 1;
-  unsigned is_block_in_inline_ : 1;
-  unsigned is_line_for_parallel_flow_ : 1;
-  unsigned is_math_fraction_ : 1;
-  unsigned is_math_operator_ : 1;
-  unsigned may_have_descendant_above_block_start_ : 1;
+  uint8_t has_propagated_descendants_ : 1;             // NOLINT
+  uint8_t has_hanging_ : 1;                            // NOLINT
+  uint8_t is_opaque_ : 1;                              // NOLINT
+  uint8_t is_block_in_inline_ : 1;                     // NOLINT
+  uint8_t is_line_for_parallel_flow_ : 1;              // NOLINT
+  uint8_t is_math_fraction_ : 1;                       // NOLINT
+  uint8_t is_math_operator_ : 1;                       // NOLINT
+  uint8_t may_have_descendant_above_block_start_ : 1;  // NOLINT
 
   // The following are only used by NGPhysicalBoxFragment but are initialized
   // for all types to allow methods using them to be inlined.
-  unsigned is_fieldset_container_ : 1;
-  unsigned is_table_ng_part_ : 1;
-  unsigned is_painted_atomically_ : 1;
-  unsigned has_collapsed_borders_ : 1;
-  unsigned has_first_baseline_ : 1;
-  unsigned has_last_baseline_ : 1;
-  unsigned use_last_baseline_for_inline_baseline_ : 1;
-  const unsigned has_fragmented_out_of_flow_data_ : 1;
-  const unsigned has_out_of_flow_fragment_child_ : 1;
-  const unsigned has_out_of_flow_in_fragmentainer_subtree_ : 1;
+  uint8_t is_fieldset_container_ : 1;                           // NOLINT
+  uint8_t is_table_ng_part_ : 1;                                // NOLINT
+  uint8_t is_painted_atomically_ : 1;                           // NOLINT
+  uint8_t has_collapsed_borders_ : 1;                           // NOLINT
+  uint8_t has_first_baseline_ : 1;                              // NOLINT
+  uint8_t has_last_baseline_ : 1;                               // NOLINT
+  uint8_t use_last_baseline_for_inline_baseline_ : 1;           // NOLINT
+  const uint8_t has_fragmented_out_of_flow_data_ : 1;           // NOLINT
+  const uint8_t has_out_of_flow_fragment_child_ : 1;            // NOLINT
+  const uint8_t has_out_of_flow_in_fragmentainer_subtree_ : 1;  // NOLINT
 
   // The following are only used by NGPhysicalLineBoxFragment.
-  unsigned base_direction_ : 1;  // TextDirection
+  uint8_t base_direction_ : 1;  // NOLINT, TextDirection
 
   Member<const PropagatedData> propagated_data_;
   Member<const NGBreakToken> break_token_;

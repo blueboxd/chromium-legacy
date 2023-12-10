@@ -134,6 +134,7 @@
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher_impl.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint_worklet_paint_dispatcher.h"
+#include "third_party/blink/renderer/platform/heap/cross_thread_handle.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
@@ -397,7 +398,7 @@ void WebFrameWidgetImpl::Close() {
 }
 
 WebLocalFrame* WebFrameWidgetImpl::LocalRoot() const {
-  return local_root_;
+  return local_root_.Get();
 }
 
 bool WebFrameWidgetImpl::RequestedMainFramePending() {
@@ -1622,6 +1623,11 @@ void WebFrameWidgetImpl::ScheduleAnimation() {
     non_composited_client_->ScheduleNonCompositedAnimation();
     return;
   }
+
+  if (widget_base_->WillBeDestroyed()) {
+    return;
+  }
+
   widget_base_->LayerTreeHost()->SetNeedsAnimate();
 }
 
@@ -2287,11 +2293,28 @@ void WebFrameWidgetImpl::ResetMeaningfulLayoutStateForMainFrame() {
 void WebFrameWidgetImpl::InitializeCompositing(
     const display::ScreenInfos& screen_infos,
     const cc::LayerTreeSettings* settings) {
+  InitializeCompositingInternal(screen_infos, settings, nullptr);
+}
+
+void WebFrameWidgetImpl::InitializeCompositingFromPreviousWidget(
+    const display::ScreenInfos& screen_infos,
+    const cc::LayerTreeSettings* settings,
+    WebFrameWidget& previous_widget) {
+  InitializeCompositingInternal(screen_infos, settings, &previous_widget);
+}
+
+void WebFrameWidgetImpl::InitializeCompositingInternal(
+    const display::ScreenInfos& screen_infos,
+    const cc::LayerTreeSettings* settings,
+    WebFrameWidget* previous_widget) {
   DCHECK(View()->does_composite());
   DCHECK(!non_composited_client_);  // Assure only one initialize is called.
   widget_base_->InitializeCompositing(
       *GetPage()->GetPageScheduler(), screen_infos, settings,
-      input_handler_weak_ptr_factory_.GetWeakPtr());
+      input_handler_weak_ptr_factory_.GetWeakPtr(),
+      previous_widget ? static_cast<WebFrameWidgetImpl*>(previous_widget)
+                            ->widget_base_.get()
+                      : nullptr);
 
   // TODO(bokan): This seems wrong. Page may host multiple FrameWidgets so this
   // will call DidInitializeCompositing once per FrameWidget. It probably makes
@@ -3140,7 +3163,11 @@ void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   }
 
   bool root_layer_exists = !!layer;
-  widget_base_->LayerTreeHost()->SetRootLayer(std::move(layer));
+  if (widget_base_->WillBeDestroyed()) {
+    CHECK(!layer);
+  } else {
+    widget_base_->LayerTreeHost()->SetRootLayer(std::move(layer));
+  }
 
   // Notify the WebView that we did set a layer.
   if (ForMainFrame()) {
@@ -3207,7 +3234,7 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
                         WebFrameWidgetImpl* widget)
       : promise_callbacks_(std::move(callbacks)),
         task_runner_(std::move(task_runner)),
-        widget_(widget) {}
+        widget_(MakeCrossThreadWeakHandle(widget)) {}
 
   ReportTimeSwapPromise(const ReportTimeSwapPromise&) = delete;
   ReportTimeSwapPromise& operator=(const ReportTimeSwapPromise&) = delete;
@@ -3227,7 +3254,8 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
     DCHECK_GT(frame_token_, 0u);
     PostCrossThreadTask(
         *task_runner_, FROM_HERE,
-        CrossThreadBindOnce(&RunCallbackAfterSwap, widget_,
+        CrossThreadBindOnce(&RunCallbackAfterSwap,
+                            MakeUnwrappingCrossThreadWeakHandle(widget_),
                             base::TimeTicks::Now(),
                             std::move(promise_callbacks_), frame_token_));
   }
@@ -3348,7 +3376,7 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
   WebFrameWidgetImpl::PromiseCallbacks promise_callbacks_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  CrossThreadWeakPersistent<WebFrameWidgetImpl> widget_;
+  CrossThreadWeakHandle<WebFrameWidgetImpl> widget_;
   uint32_t frame_token_ = 0;
 };
 
@@ -3613,8 +3641,7 @@ void WebFrameWidgetImpl::DidOverscroll(
   }
 }
 
-void WebFrameWidgetImpl::InjectGestureScrollEvent(
-    blink::WebGestureDevice device,
+void WebFrameWidgetImpl::InjectScrollbarGestureScroll(
     const gfx::Vector2dF& delta,
     ui::ScrollGranularity granularity,
     cc::ElementId scrollable_area_element_id,
@@ -3624,15 +3651,13 @@ void WebFrameWidgetImpl::InjectGestureScrollEvent(
   // TODO(crbug.com/1082590) ensure continuity in scroll metrics collection
   base::TimeTicks now = base::TimeTicks::Now();
   std::unique_ptr<WebGestureEvent> gesture_event =
-      WebGestureEvent::GenerateInjectedScrollGesture(
-          injected_type, now, device, gfx::PointF(0, 0), delta, granularity);
+      WebGestureEvent::GenerateInjectedScrollbarGestureScroll(
+          injected_type, now, gfx::PointF(0, 0), delta, granularity);
   if (injected_type == WebInputEvent::Type::kGestureScrollBegin) {
     gesture_event->data.scroll_begin.scrollable_area_element_id =
         scrollable_area_element_id.GetInternalValue();
     gesture_event->data.scroll_begin.main_thread_hit_tested_reasons =
-        device == WebGestureDevice::kScrollbar
-            ? cc::MainThreadScrollingReason::kScrollbarScrolling
-            : cc::MainThreadScrollingReason::kFailedHitTest;
+        cc::MainThreadScrollingReason::kScrollbarScrolling;
   }
 
   // Notifies TestWebFrameWidget of the injected event. Does nothing outside
@@ -3700,7 +3725,10 @@ bool WebFrameWidgetImpl::IsProvisional() {
 
 cc::ElementId WebFrameWidgetImpl::GetScrollableContainerIdAt(
     const gfx::PointF& point) {
-  return HitTestResultAt(point).GetScrollableContainerId();
+  gfx::PointF hit_test_point = point;
+  LocalFrameView* view = LocalRootImpl()->GetFrameView();
+  hit_test_point.Scale(1 / view->InputEventsScaleFactor());
+  return HitTestResultForRootFramePos(hit_test_point).GetScrollableContainer();
 }
 
 bool WebFrameWidgetImpl::ShouldHandleImeEvents() {
@@ -4318,7 +4346,7 @@ cc::LayerTreeHost* WebFrameWidgetImpl::LayerTreeHostForTesting() const {
 }
 
 ScreenMetricsEmulator* WebFrameWidgetImpl::DeviceEmulator() {
-  return device_emulator_;
+  return device_emulator_.Get();
 }
 
 bool WebFrameWidgetImpl::AutoResizeMode() {

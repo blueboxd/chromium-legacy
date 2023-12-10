@@ -105,9 +105,8 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
       return;
 
     views::Widget* widget = owner_->GetWidget();
-    if (!widget || !widget->GetNativeWindow()) {
+    if (!widget)
       return;
-    }
 
     // Forward the events to the containing widget, except for:
     // 1. Touches, because View should no longer receive touch events.

@@ -54,13 +54,19 @@ class AutofillDriverIOS : public AutofillDriver,
   bool HasSharedAutofillPermission() const override;
   bool CanShowAutofillUi() const override;
   bool RendererIsAvailable() override;
-  std::vector<FieldGlobalId> ApplyAutofillAction(
-      mojom::AutofillActionType action_type,
-      mojom::AutofillActionPersistence action_persistence,
+  std::vector<FieldGlobalId> ApplyFormAction(
+      mojom::ActionType action_type,
+      mojom::ActionPersistence action_persistence,
       const FormData& data,
       const url::Origin& triggered_origin,
       const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map)
       override;
+  void ApplyFieldAction(mojom::ActionPersistence action_persistence,
+                        const FieldGlobalId& field,
+                        const std::u16string& value) override;
+  void ExtractForm(FormGlobalId form,
+                   base::OnceCallback<void(const std::optional<FormData>&)>
+                       response_callback) override;
   void HandleParsedForms(const std::vector<FormData>& forms) override;
   void SendAutofillTypePredictionsToRenderer(
       const std::vector<FormStructure*>& forms) override;
@@ -74,7 +80,7 @@ class AutofillDriverIOS : public AutofillDriver,
       const std::u16string& value) override;
   void SendFieldsEligibleForManualFillingToRenderer(
       const std::vector<FieldGlobalId>& fields) override;
-  void TriggerFormExtraction() override;
+  void TriggerFormExtractionInDriverFrame() override;
   void TriggerFormExtractionInAllFrames(
       base::OnceCallback<void(bool)> form_extraction_finished_callback)
       override;
@@ -89,11 +95,6 @@ class AutofillDriverIOS : public AutofillDriver,
     browser_autofill_manager_ = std::move(browser_autofill_manager);
   }
 
-  void RendererShouldFillFieldWithValue(const FieldGlobalId& field,
-                                        const std::u16string& value) override;
-  void RendererShouldPreviewFieldWithValue(
-      const FieldGlobalId& field,
-      const std::u16string& value) override;
   void RendererShouldSetSuggestionAvailability(
       const FieldGlobalId& field,
       const mojom::AutofillState state) override;

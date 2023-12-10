@@ -438,6 +438,8 @@ class CONTENT_EXPORT NavigationRequest
   bool ExistingDocumentWasDiscarded() const override;
   blink::RuntimeFeatureStateContext& GetMutableRuntimeFeatureStateContext()
       override;
+  void SetContentSettings(
+      blink::mojom::RendererContentSettingsPtr content_settings) override;
   // End of NavigationHandle implementation.
 
   // mojom::NavigationRendererCancellationListener implementation:
@@ -1289,6 +1291,10 @@ class CONTENT_EXPORT NavigationRequest
     return early_render_frame_host_swap_type_;
   }
 
+  void set_previous_render_frame_host_id(GlobalRenderFrameHostId id) {
+    previous_render_frame_host_id_ = id;
+  }
+
  private:
   friend class NavigationRequestTest;
 
@@ -1371,6 +1377,9 @@ class CONTENT_EXPORT NavigationRequest
   // Note that an origin-keyed process may be used if this returns true, if
   // kOriginKeyedProcessesByDefault is enabled.
   bool IsIsolationImplied();
+
+  // Returns whether the navigation type is a restore navigation.
+  bool IsRestore() const;
 
   // The Origin-Agent-Cluster end result is determined early in the lifecycle of
   // a NavigationRequest, but used late. In particular, we want to trigger use
@@ -1982,6 +1991,11 @@ class CONTENT_EXPORT NavigationRequest
   // navigation.
   void RecordEarlyRenderFrameHostSwapMetrics();
 
+  // Helpers for GetTentativeOriginAtRequestTime and GetOriginToCommit.
+  std::pair<url::Origin, std::string>
+  GetOriginForURLLoaderFactoryUncheckedWithDebugInfo();
+  url::Origin GetOriginForURLLoaderFactoryUnchecked();
+
   // Never null. The pointee node owns this navigation request instance.
   // This field is not a raw_ptr because of incompatibilities with tracing
   // (TRACE_EVENT*), perfetto::TracedDictionary::Add and gmock/EXPECT_THAT.
@@ -2040,6 +2054,11 @@ class CONTENT_EXPORT NavigationRequest
 
   // URLLoaderFactory to facilitate loading blob URLs.
   const scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory_;
+
+  // A bundle of URLLoaderFactory to facilitate loading subresources.
+  // It is shared between prefetch, topics, keep-alive, and fetchLater.
+  scoped_refptr<network::SharedURLLoaderFactory>
+      subresource_proxying_factory_bundle_ = nullptr;
 
   NavigationState state_ = NOT_STARTED;
   bool is_navigation_started_ = false;
@@ -2308,8 +2327,21 @@ class CONTENT_EXPORT NavigationRequest
   // for this NavigationRequest.
   absl::optional<net::IsolationInfo> isolation_info_;
 
-  // This is used to store the current_frame_host id at request creation time.
-  const GlobalRenderFrameHostId previous_render_frame_host_id_;
+  // This is used to store the `RenderFrameHostManager::current_frame_host()` id
+  // when the navigation commits and about to potentially change the current
+  // RenderFrameHost. The ID (if set) refers to the RFH of the document that was
+  // replaced when this navigation committed, while the ID saved in
+  // `current_render_frame_host_id_at_construction_` below refers to the RFH of
+  // the document that was there when this navigation was started. The two might
+  // be different, since other navigations could commit and change the current
+  // RFH before this navigation commits, which can happen with navigation
+  // queueing or early RFH swap.
+  GlobalRenderFrameHostId previous_render_frame_host_id_;
+
+  // This is used to store the `RenderFrameHostManager::current_frame_host()` id
+  // at request creation time. See also the comment for
+  // `previous_render_frame_host_id_` above on how these two IDs may differ.
+  const GlobalRenderFrameHostId current_render_frame_host_id_at_construction_;
 
   // Frame token of the frame host that initiated the navigation, derived from
   // |begin_params().initiator_frame_token|. This is best effort: it is only
@@ -2323,6 +2355,10 @@ class CONTENT_EXPORT NavigationRequest
   // This is defined if and only if |initiator_frame_token_| above is, and it is
   // only valid in conjunction with it.
   const int initiator_process_id_ = ChildProcessHost::kInvalidUniqueID;
+
+  // The initiator Document's token, if it is present when this
+  // NavigationRequest was created.
+  absl::optional<blink::DocumentToken> initiator_document_token_;
 
   // The sandbox flags of the navigation's initiator, if any.
   // WebSandboxFlags::kNone otherwise.
@@ -2488,10 +2524,6 @@ class CONTENT_EXPORT NavigationRequest
   // Messages to be printed on the console in the target RenderFrameHost of this
   // NavigationRequest.
   std::vector<ConsoleMessage> console_messages_;
-
-  // The initiator RenderFrameHost, if the same document is present as when this
-  // NavigationRequest was created.
-  WeakDocumentPtr initiator_document_;
 
   // Indicates that this navigation is for PDF content in a renderer.
   bool is_pdf_ = false;

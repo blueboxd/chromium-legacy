@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 import {recordDirectoryListLoadWithTolerance, startInterval} from '../../common/js/metrics.js';
-import {util} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
-import {Store} from '../../externs/ts/store.js';
 import {updateDirectoryContent} from '../../state/ducks/current_directory.js';
 import {getStore} from '../../state/store.js';
 
@@ -26,35 +24,36 @@ export class ScanController {
    */
   constructor(
       directoryModel, listContainer, spinnerController, selectionHandler) {
-    /** @private @const {!DirectoryModel} */
+    /** @private @const @type {!DirectoryModel} */
     this.directoryModel_ = directoryModel;
 
-    /** @private @const {!ListContainer} */
+    /** @private @const @type {!ListContainer} */
     this.listContainer_ = listContainer;
 
-    /** @private @const {!SpinnerController} */
+    /** @private @const @type {!SpinnerController} */
     this.spinnerController_ = spinnerController;
 
-    /** @private @const {!FileSelectionHandler} */
+    /** @private @const @type {!FileSelectionHandler} */
     this.selectionHandler_ = selectionHandler;
 
-    /** @private @const {!Store} */
+    // @ts-ignore: error TS2304: Cannot find name 'Store'.
+    /** @private @const @type {!Store} */
     this.store_ = getStore();
 
     /**
      * Whether a scan is in progress.
-     * @private {boolean}
+     * @private @type {boolean}
      */
     this.scanInProgress_ = false;
 
     /**
      * Timer ID to delay UI refresh after a scan is updated.
-     * @private {number}
+     * @private @type {number}
      */
     this.scanUpdatedTimer_ = 0;
 
     /**
-     * @private {?function()}
+     * @private @type {?function():void}
      */
     this.spinnerHideCallback_ = null;
 

@@ -4,8 +4,11 @@
 
 package org.chromium.chrome.browser.compositor.scene_layer;
 
-import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeMethods;
+import androidx.annotation.VisibleForTesting;
+
+import org.jni_zero.JNINamespace;
+import org.jni_zero.NativeMethods;
+
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.layouts.scene_layer.SceneLayer;
@@ -81,7 +84,8 @@ public class StaticTabSceneLayer extends SceneLayer {
     }
 
     @NativeMethods
-    interface Natives {
+    @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
+    public interface Natives {
         long init(StaticTabSceneLayer caller);
         void updateTabLayer(long nativeStaticTabSceneLayer, StaticTabSceneLayer caller, int id,
                 boolean canUseLiveLayer, int backgroundColor, float x, float y,

@@ -342,6 +342,9 @@ void CreateAndAddOobeUIDataSource(Profile* profile,
   source->AddBoolean("isOobeConsumersLocalPasswordsEnabled",
                      features::AreLocalPasswordsEnabledForConsumers());
 
+  source->AddBoolean("isPasswordlessGaiaEnabledForConsumers",
+                     features::IsPasswordlessGaiaEnabledForConsumers());
+
   // Configure shared resources
   AddProductLogoResources(source);
   if (ash::features::IsOobeSimonEnabled()) {
@@ -357,6 +360,9 @@ void CreateAndAddOobeUIDataSource(Profile* profile,
   AddDebuggerResources(source);
   AddTestAPIResources(source);
 
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ScriptSrc,
+      "script-src chrome://resources chrome://webui-test 'self';");
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ObjectSrc, "object-src chrome:;");
 
@@ -466,6 +472,7 @@ void OobeUI::ConfigureOobeDisplay() {
   AddScreenHandler(std::make_unique<FingerprintSetupScreenHandler>());
 
   if (features::AreLocalPasswordsEnabledForConsumers()) {
+    AddScreenHandler(std::make_unique<PasswordSelectionScreenHandler>());
     AddScreenHandler(std::make_unique<LocalPasswordSetupHandler>());
   }
 
@@ -534,10 +541,6 @@ void OobeUI::ConfigureOobeDisplay() {
   AddScreenHandler(std::make_unique<SmartPrivacyProtectionScreenHandler>());
 
   AddScreenHandler(std::make_unique<ThemeSelectionScreenHandler>());
-
-  if (features::IsPasswordlessGaiaEnabledForConsumers()) {
-    AddScreenHandler(std::make_unique<PasswordSelectionScreenHandler>());
-  }
 
   if (features::IsOobeChoobeEnabled()) {
     AddScreenHandler(std::make_unique<ChoobeScreenHandler>());
@@ -650,7 +653,8 @@ void OobeUI::BindInterface(
 void OobeUI::BindInterface(
     mojo::PendingReceiver<auth::mojom::AuthFactorConfig> receiver) {
   auth::BindToAuthFactorConfig(std::move(receiver),
-                               quick_unlock::QuickUnlockFactory::GetDelegate());
+                               quick_unlock::QuickUnlockFactory::GetDelegate(),
+                               g_browser_process->local_state());
 }
 
 void OobeUI::BindInterface(
@@ -659,13 +663,14 @@ void OobeUI::BindInterface(
   CHECK(pin_backend);
   auth::BindToPinFactorEditor(std::move(receiver),
                               quick_unlock::QuickUnlockFactory::GetDelegate(),
-                              *pin_backend);
+                              g_browser_process->local_state(), *pin_backend);
 }
 
 void OobeUI::BindInterface(
     mojo::PendingReceiver<auth::mojom::PasswordFactorEditor> receiver) {
   auth::BindToPasswordFactorEditor(
-      std::move(receiver), quick_unlock::QuickUnlockFactory::GetDelegate());
+      std::move(receiver), quick_unlock::QuickUnlockFactory::GetDelegate(),
+      g_browser_process->local_state());
 }
 
 OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)

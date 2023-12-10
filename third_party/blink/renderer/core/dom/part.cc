@@ -14,11 +14,6 @@
 
 namespace blink {
 
-Part::Part(PartRoot& root, const Vector<String> metadata)
-    : root_(root), metadata_(metadata) {
-  root.AddPart(*this);
-}
-
 // When disconnecting a Node/Part, if the root() is the DocumentPartRoot,
 // then we disconnect the Part from the PartRoot so that it can be attached
 // to the new PartRoot when reconnected. For any Part type except a
@@ -30,7 +25,8 @@ Part::Part(PartRoot& root, const Vector<String> metadata)
 // by itself, that won't trigger any root changes, so we mark the PartRoot
 // dirty in this case.
 void Part::PartDisconnected(Node& node) {
-  if (!root()) {
+  if (!root() ||
+      !RuntimeEnabledFeatures::DOMPartsAPIActivePartTrackingEnabled()) {
     return;
   }
   if (&node == NodeToSortBy()) {
@@ -53,7 +49,8 @@ void Part::PartDisconnected(Node& node) {
 // then it will have the root container, otherwise we use the slow TreeRoot()
 // walk.
 void Part::PartConnected(Node& node, ContainerNode& insertion_point) {
-  if (node != NodeToSortBy() || root()) {
+  if (node != NodeToSortBy() || root() ||
+      !RuntimeEnabledFeatures::DOMPartsAPIActivePartTrackingEnabled()) {
     return;
   }
   Node* root_container = NodeMoveScope::GetDestinationTreeRoot();
@@ -81,6 +78,7 @@ void Part::MoveToRoot(PartRoot* new_root) {
     root_->RemovePart(*this);
   }
   root_ = new_root;
+  is_valid_ = root_ && connected_;
   if (new_root) {
     new_root->AddPart(*this);
   }
@@ -92,12 +90,13 @@ void Part::Trace(Visitor* visitor) const {
 }
 
 void Part::disconnect() {
-  CHECK(!disconnected_) << "disconnect should be overridden";
+  CHECK(connected_) << "disconnect should be overridden";
   if (root_) {
     root_->MarkPartsDirty();
     root_ = nullptr;
   }
-  disconnected_ = true;
+  connected_ = false;
+  is_valid_ = false;
 }
 
 PartRootUnion* Part::rootForBindings() const {

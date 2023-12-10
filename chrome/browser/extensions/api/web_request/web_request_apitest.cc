@@ -29,8 +29,8 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/auth_notification_types.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/protocol/devtools_protocol_test_support.h"
 #include "chrome/browser/devtools/url_constants.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
@@ -3889,7 +3889,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   const Extension* extension = LoadExtension(test_dir.UnpackedPath());
   ASSERT_TRUE(extension);
 
-  auto* router = ExtensionWebRequestEventRouter::GetInstance();
+  auto* router = WebRequestEventRouter::Get(profile());
   ASSERT_TRUE(router);
 
   static constexpr char kEventName[] = "webRequest.onBeforeRequest";
@@ -5542,8 +5542,8 @@ class ManifestV3WebRequestApiTest : public ExtensionWebRequestApiTest {
     return extension;
   }
 
-  ExtensionWebRequestEventRouter* web_request_router() {
-    return ExtensionWebRequestEventRouter::GetInstance();
+  WebRequestEventRouter* web_request_router() {
+    return WebRequestEventRouter::Get(profile());
   }
 };
 

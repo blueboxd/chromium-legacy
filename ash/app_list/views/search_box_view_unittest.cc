@@ -159,8 +159,9 @@ class SearchBoxViewTest : public views::test::WidgetTest,
 
   void TearDown() override {
     ui::ColorProviderManager::ResetForTesting();
-    if (app_list_view_)
+    if (app_list_view_) {
       app_list_view_->GetWidget()->Close();
+    }
     widget_->CloseNow();
     views::test::WidgetTest::TearDown();
   }
@@ -279,13 +280,13 @@ TEST_F(SearchBoxViewTest, SearchBoxTextUsesAppListSearchBoxTextColor) {
 
 // Tests that the close button is invisible by default.
 TEST_F(SearchBoxViewTest, CloseButtonInvisibleByDefault) {
-  EXPECT_FALSE(view()->close_button()->GetVisible());
+  EXPECT_FALSE(view()->filter_and_close_button_container()->GetVisible());
 }
 
 // Tests that the close button becomes visible after typing in the search box.
 TEST_F(SearchBoxViewTest, CloseButtonVisibleAfterTyping) {
   KeyPress(ui::VKEY_A);
-  EXPECT_TRUE(view()->close_button()->GetVisible());
+  EXPECT_TRUE(view()->filter_and_close_button_container()->GetVisible());
 }
 
 // Tests that the filter button is not created if the image search feature is
@@ -303,7 +304,7 @@ TEST_F(SearchBoxViewTest, FilterButtonNotCreatedWithDisabledImageSearch) {
 // activated (in zero state).
 TEST_F(SearchBoxViewTest, CloseButtonVisibleInZeroStateSearchBox) {
   SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
-  EXPECT_FALSE(view()->close_button()->GetVisible());
+  EXPECT_FALSE(view()->filter_and_close_button_container()->GetVisible());
 }
 
 // TODO(crbug.com/1446550): Re-enable this test
@@ -579,16 +580,16 @@ TEST_F(SearchBoxViewTest,
   // Tile results are not created when testing productivity launcher.
   selection = GetResultSelectionController()->selected_result();
 
-    EXPECT_EQ(u"testing almost", selection->result()->title());
+  EXPECT_EQ(u"testing almost", selection->result()->title());
 
-    // New result can override the default selection.
-    CreateSearchResultAt(0, ash::SearchResultDisplayType::kList, 1.0, u"test",
-                         std::u16string(),
-                         ash::AppListSearchResultCategory::kWeb);
-    base::RunLoop().RunUntilIdle();
+  // New result can override the default selection.
+  CreateSearchResultAt(0, ash::SearchResultDisplayType::kList, 1.0, u"test",
+                       std::u16string(),
+                       ash::AppListSearchResultCategory::kWeb);
+  base::RunLoop().RunUntilIdle();
 
-    selection = GetResultSelectionController()->selected_result();
-    EXPECT_EQ(u"test", selection->result()->title());
+  selection = GetResultSelectionController()->selected_result();
+  EXPECT_EQ(u"test", selection->result()->title());
 }
 
 // Tests that the default selection is reset after resetting and reactivating
@@ -668,7 +669,7 @@ class SearchBoxViewAssistantButtonTest : public SearchBoxViewTest {
 
 // Tests that the assistant button is visible by default.
 TEST_F(SearchBoxViewAssistantButtonTest, AssistantButtonVisibleByDefault) {
-  EXPECT_TRUE(view()->assistant_button()->GetVisible());
+  EXPECT_TRUE(view()->assistant_button_container()->GetVisible());
 }
 
 // Tests that the assistant button is invisible after typing in the search box,
@@ -676,10 +677,10 @@ TEST_F(SearchBoxViewAssistantButtonTest, AssistantButtonVisibleByDefault) {
 TEST_F(SearchBoxViewAssistantButtonTest,
        AssistantButtonChangeVisibilityWithTyping) {
   KeyPress(ui::VKEY_A);
-  EXPECT_FALSE(view()->assistant_button()->GetVisible());
+  EXPECT_FALSE(view()->assistant_button_container()->GetVisible());
 
   KeyPress(ui::VKEY_BACK);
-  EXPECT_TRUE(view()->assistant_button()->GetVisible());
+  EXPECT_TRUE(view()->assistant_button_container()->GetVisible());
 }
 
 class SearchBoxViewFilterButtonTest : public SearchBoxViewTest {
@@ -697,13 +698,13 @@ class SearchBoxViewFilterButtonTest : public SearchBoxViewTest {
 
 // Tests that the filter button is invisible by default.
 TEST_F(SearchBoxViewFilterButtonTest, FilterButtonInvisibleByDefault) {
-  EXPECT_FALSE(view()->filter_button()->GetVisible());
+  EXPECT_FALSE(view()->filter_button()->parent()->GetVisible());
 }
 
 // Tests that the filter button becomes visible after typing in the search box.
 TEST_F(SearchBoxViewFilterButtonTest, FilterButtonVisibleAfterTyping) {
   KeyPress(ui::VKEY_A);
-  EXPECT_TRUE(view()->filter_button()->GetVisible());
+  EXPECT_TRUE(view()->filter_button()->parent()->GetVisible());
 }
 
 class SearchBoxViewAutocompleteTest : public SearchBoxViewTest {
@@ -840,12 +841,11 @@ TEST_F(SearchBoxViewAutocompleteTest, SearchBoxAcceptsAutocompleteForClick) {
   // AshTestBase in order to test events using EventGenerator instead.
   static_cast<views::TextfieldController*>(view())->HandleMouseEvent(
       view()->search_box(), mouse_event);
-  // Search box autocomplete suggestion is accepted, but it should not
-  // trigger another query, thus it is not reflected in Search Model.
+  // Search box autocomplete suggestion is accepted, and triggers another query.
   EXPECT_EQ(u"hello world!", view()->search_box()->GetText());
-  EXPECT_EQ(u"he", view()->current_query());
-
-  EXPECT_EQ("Websites", view()->GetSearchBoxGhostTextForTest());
+  EXPECT_EQ(u"hello world!", view()->current_query());
+  EXPECT_EQ(u"", view()->search_box()->GetSelectedText());
+  EXPECT_EQ("", view()->GetSearchBoxGhostTextForTest());
 }
 
 TEST_F(SearchBoxViewAutocompleteTest, SearchBoxAcceptsAutocompleteForTap) {
@@ -861,10 +861,45 @@ TEST_F(SearchBoxViewAutocompleteTest, SearchBoxAcceptsAutocompleteForTap) {
   // EventGenerator instead.
   static_cast<views::TextfieldController*>(view())->HandleGestureEvent(
       view()->search_box(), gesture_event);
-  // Search box autocomplete suggestion is accepted, but it should not
-  // trigger another query, thus it is not reflected in Search Model.
+  // Search box autocomplete suggestion is accepted, and trigger updated query.
   EXPECT_EQ(u"hello world!", view()->search_box()->GetText());
-  EXPECT_EQ(u"he", view()->current_query());
+  EXPECT_EQ(u"hello world!", view()->current_query());
+  EXPECT_EQ(u"", view()->search_box()->GetSelectedText());
+  EXPECT_EQ("", view()->GetSearchBoxGhostTextForTest());
+}
+
+TEST_F(SearchBoxViewAutocompleteTest, SearchBoxAcceptsAutocompleteForRightKey) {
+  SetupAutocompleteBehaviorTest();
+
+  KeyPress(ui::VKEY_RIGHT);
+
+  // Search box autocomplete suggestion is accepted, and trigger updated query.
+  EXPECT_EQ(u"hello world!", view()->search_box()->GetText());
+  EXPECT_EQ(u"hello world!", view()->current_query());
+  EXPECT_EQ(u"", view()->search_box()->GetSelectedText());
+  EXPECT_EQ("", view()->GetSearchBoxGhostTextForTest());
+
+  CreateSearchResult(ash::SearchResultDisplayType::kList, 0.5, u"hello world 1",
+                     std::u16string(), ash::AppListSearchResultCategory::kApps);
+  CreateSearchResult(ash::SearchResultDisplayType::kList, 0.5,
+                     u"hello world! 123", std::u16string(),
+                     ash::AppListSearchResultCategory::kWeb);
+  base::RunLoop().RunUntilIdle();
+
+  // Change selection to the non-default item, and verify the search box text is
+  // updated as expected.
+  KeyPress(ui::VKEY_DOWN);
+
+  EXPECT_EQ(u"hello world!", view()->search_box()->GetText());
+  EXPECT_EQ(u"hello world!", view()->current_query());
+  EXPECT_EQ(u"", view()->search_box()->GetSelectedText());
+  EXPECT_EQ("hello world 1 - Apps", view()->GetSearchBoxGhostTextForTest());
+
+  KeyPress(ui::VKEY_DOWN);
+
+  EXPECT_EQ(u"hello world! 123", view()->search_box()->GetText());
+  EXPECT_EQ(u"hello world!", view()->current_query());
+  EXPECT_EQ(u" 123", view()->search_box()->GetSelectedText());
   EXPECT_EQ("Websites", view()->GetSearchBoxGhostTextForTest());
 }
 
@@ -1063,24 +1098,25 @@ TEST_F(SearchBoxViewAnimationTest, SearchBoxImageButtonAnimations) {
 
   // Initially the assistant button should be shown, and the close button
   // hidden.
-  EXPECT_FALSE(search_box->close_button()->GetVisible());
-  EXPECT_TRUE(search_box->assistant_button()->GetVisible());
+  EXPECT_FALSE(search_box->filter_and_close_button_container()->GetVisible());
+  EXPECT_TRUE(search_box->assistant_button_container()->GetVisible());
 
   // Set search box to active state.
   search_box->SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
 
   // Close button should be fading in.
-  EXPECT_TRUE(search_box->close_button()->GetVisible());
-  auto* close_animator = search_box->close_button()->layer()->GetAnimator();
+  EXPECT_TRUE(search_box->filter_and_close_button_container()->GetVisible());
+  auto* close_animator =
+      search_box->filter_and_close_button_container()->layer()->GetAnimator();
   ASSERT_TRUE(close_animator);
   EXPECT_TRUE(close_animator->IsAnimatingProperty(
       ui::LayerAnimationElement::AnimatableProperty::OPACITY));
   EXPECT_EQ(close_animator->GetTargetOpacity(), 1.0f);
 
   // Assistant button should be fading out.
-  EXPECT_TRUE(search_box->assistant_button()->GetVisible());
+  EXPECT_TRUE(search_box->assistant_button_container()->GetVisible());
   auto* assistant_animator =
-      search_box->assistant_button()->layer()->GetAnimator();
+      search_box->assistant_button_container()->layer()->GetAnimator();
   EXPECT_TRUE(assistant_animator->IsAnimatingProperty(
       ui::LayerAnimationElement::AnimatableProperty::OPACITY));
   EXPECT_EQ(assistant_animator->GetTargetOpacity(), 0.0f);
@@ -1089,13 +1125,13 @@ TEST_F(SearchBoxViewAnimationTest, SearchBoxImageButtonAnimations) {
   search_box->SetSearchBoxActive(false, ui::ET_MOUSE_PRESSED);
 
   // Close button should be fading out.
-  EXPECT_TRUE(search_box->close_button()->GetVisible());
+  EXPECT_TRUE(search_box->filter_and_close_button_container()->GetVisible());
   EXPECT_TRUE(close_animator->IsAnimatingProperty(
       ui::LayerAnimationElement::AnimatableProperty::OPACITY));
   EXPECT_EQ(close_animator->GetTargetOpacity(), 0.0f);
 
   // Assistant button should be fading in.
-  EXPECT_TRUE(search_box->assistant_button()->GetVisible());
+  EXPECT_TRUE(search_box->assistant_button_container()->GetVisible());
   ASSERT_TRUE(assistant_animator);
   EXPECT_TRUE(assistant_animator->IsAnimatingProperty(
       ui::LayerAnimationElement::AnimatableProperty::OPACITY));

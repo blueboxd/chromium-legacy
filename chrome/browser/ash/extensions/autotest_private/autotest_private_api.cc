@@ -111,7 +111,6 @@
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
-#include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/wizard_context.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_installer.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_installer_factory.h"
@@ -146,7 +145,6 @@
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -154,6 +152,7 @@
 #include "chrome/browser/ui/views/bruschetta/bruschetta_installer_view.h"
 #include "chrome/browser/ui/views/crostini/crostini_uninstaller_view.h"
 #include "chrome/browser/ui/views/plugin_vm/plugin_vm_installer_view.h"
+#include "chrome/browser/ui/web_applications/web_app_dialogs.h"
 #include "chrome/browser/ui/webui/ash/crostini_installer/crostini_installer_dialog.h"
 #include "chrome/browser/ui/webui/ash/crostini_installer/crostini_installer_ui.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -162,9 +161,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/dbus/dbus_thread_manager.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
-#include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "chromeos/ash/components/metrics/login_event_recorder.h"
-#include "chromeos/ash/components/osauth/public/auth_session_storage.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/ash/services/assistant/assistant_manager_service_impl.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_prefs.h"
@@ -2229,82 +2226,6 @@ ExtensionFunction::ResponseAction AutotestPrivateGetArcPackageFunction::Run() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// AutotestPrivateGetCryptohomeRecoveryDataFunction
-///////////////////////////////////////////////////////////////////////////////
-
-AutotestPrivateGetCryptohomeRecoveryDataFunction::
-    ~AutotestPrivateGetCryptohomeRecoveryDataFunction() = default;
-
-ExtensionFunction::ResponseAction
-AutotestPrivateGetCryptohomeRecoveryDataFunction::Run() {
-  // The API is available only on test images.
-  base::SysInfo::CrashIfChromeOSNonTestImage();
-
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kForceCryptohomeRecoveryForTesting)) {
-    return RespondNow(
-        Error("force-cryptohome-recovery-for-testing switch is not set"));
-  }
-
-  auto* host = ash::LoginDisplayHost::default_host();
-  if (!host) {
-    return RespondNow(Error("LoginDisplayHost is not available"));
-  }
-  auto* context = host->GetWizardContext();
-  if (!context) {
-    return RespondNow(Error("WizardContext is not available"));
-  }
-  if (ash::features::ShouldUseAuthSessionStorage()) {
-    if (!context->extra_factors_token.has_value()) {
-      return RespondNow(Error("UserContext is not available"));
-    }
-    auto* storage = ash::AuthSessionStorage::Get();
-    auto& token = context->extra_factors_token.value();
-    storage->BorrowAsync(
-        FROM_HERE, token,
-        base::BindOnce(
-            &AutotestPrivateGetCryptohomeRecoveryDataFunction::RunWithContext,
-            this, token));
-    return RespondLater();
-  } else {
-    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &AutotestPrivateGetCryptohomeRecoveryDataFunction::RunWithContext,
-            this, std::string(),
-            std::make_unique<ash::UserContext>(
-                *context->extra_factors_auth_session)));
-    return RespondLater();
-  }
-}
-
-void AutotestPrivateGetCryptohomeRecoveryDataFunction::RunWithContext(
-    const std::string& auth_token,
-    std::unique_ptr<ash::UserContext> context) {
-  if (!context) {
-    Respond(Error("UserContext is not available"));
-    return;
-  }
-
-  const std::string reauth_proof_token = context->GetReauthProofToken();
-  const std::string refresh_token = context->GetRefreshToken();
-  if (ash::features::ShouldUseAuthSessionStorage()) {
-    ash::AuthSessionStorage::Get()->Return(auth_token, std::move(context));
-  }
-
-  if (reauth_proof_token.empty() || refresh_token.empty()) {
-    Respond(Error("Tokens are empty"));
-    return;
-  }
-
-  api::autotest_private::CryptohomeRecoveryDataDict result;
-  result.reauth_proof_token = reauth_proof_token;
-  result.refresh_token = refresh_token;
-
-  Respond(WithArguments(result.ToValue()));
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // AutotestPrivateWaitForSystemWebAppsInstallFunction
 //////////////////////////////////////////////////////////////////////////////
 
@@ -2962,7 +2883,9 @@ AutotestPrivateRegisterComponentFunction::Run() {
 
   g_browser_process->platform_part()
       ->cros_component_manager()
-      ->RegisterCompatiblePath(params->name, base::FilePath(params->path));
+      ->RegisterCompatiblePath(
+          params->name, component_updater::CompatibleComponentInfo(
+                            base::FilePath(params->path), absl::nullopt));
 
   return RespondNow(NoArguments());
 }
@@ -3212,51 +3135,6 @@ ExtensionFunction::ResponseAction AutotestPrivateRemovePrinterFunction::Run() {
       ash::CupsPrintersManagerFactory::GetForBrowserContext(browser_context());
   printers_manager->RemoveSavedPrinter(params->printer_id);
   return RespondNow(NoArguments());
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// AutotestPrivateBootstrapMachineLearningServiceFunction
-///////////////////////////////////////////////////////////////////////////////
-
-AutotestPrivateBootstrapMachineLearningServiceFunction::
-    AutotestPrivateBootstrapMachineLearningServiceFunction() = default;
-AutotestPrivateBootstrapMachineLearningServiceFunction::
-    ~AutotestPrivateBootstrapMachineLearningServiceFunction() = default;
-
-ExtensionFunction::ResponseAction
-AutotestPrivateBootstrapMachineLearningServiceFunction::Run() {
-  DVLOG(1) << "AutotestPrivateBootstrapMachineLearningServiceFunction";
-
-  // Load a model. This will first bootstrap the Mojo connection to ML Service.
-  chromeos::machine_learning::ServiceConnection::GetInstance()
-      ->GetMachineLearningService()
-      .LoadBuiltinModel(
-          chromeos::machine_learning::mojom::BuiltinModelSpec::New(
-              chromeos::machine_learning::mojom::BuiltinModelId::TEST_MODEL),
-          model_.BindNewPipeAndPassReceiver(),
-          base::BindOnce(
-              &AutotestPrivateBootstrapMachineLearningServiceFunction::
-                  ModelLoaded,
-              this));
-  model_.set_disconnect_handler(base::BindOnce(
-      &AutotestPrivateBootstrapMachineLearningServiceFunction::OnMojoDisconnect,
-      this));
-  return RespondLater();
-}
-
-void AutotestPrivateBootstrapMachineLearningServiceFunction::ModelLoaded(
-    chromeos::machine_learning::mojom::LoadModelResult result) {
-  if (result == chromeos::machine_learning::mojom::LoadModelResult::OK) {
-    Respond(NoArguments());
-  } else {
-    Respond(Error(base::StrCat(
-        {"Model load error ", (std::ostringstream() << result).str()})));
-  }
-}
-
-void AutotestPrivateBootstrapMachineLearningServiceFunction::
-    OnMojoDisconnect() {
-  Respond(Error("ML Service connection error"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4326,7 +4204,8 @@ AutotestPrivateGetDefaultPinnedAppIdsFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateGetDefaultPinnedAppIdsFunction::Run() {
   std::vector<std::string> default_pinned_app_ids;
-  for (const char* default_app_id : GetDefaultPinnedAppsForFormFactor()) {
+  for (const char* default_app_id :
+       GetDefaultPinnedAppsForFormFactor(browser_context())) {
     default_pinned_app_ids.emplace_back(default_app_id);
   }
 
@@ -5028,7 +4907,7 @@ void AutotestPrivateInstallPWAForCurrentURLFunction::PWALoaded() {
       base::BindOnce(
           &AutotestPrivateInstallPWAForCurrentURLFunction::PWAInstalled, this));
 
-  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(true);
+  web_app::SetAutoAcceptPWAInstallConfirmationForTesting(true);
   if (!chrome::ExecuteCommand(browser, IDC_INSTALL_PWA)) {
     return Respond(Error("Failed to execute INSTALL_PWA command"));
   }
@@ -5036,13 +4915,13 @@ void AutotestPrivateInstallPWAForCurrentURLFunction::PWALoaded() {
 
 void AutotestPrivateInstallPWAForCurrentURLFunction::PWAInstalled(
     const webapps::AppId& app_id) {
-  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
+  web_app::SetAutoAcceptPWAInstallConfirmationForTesting(false);
   Respond(WithArguments(app_id));
   timeout_timer_.AbandonAndStop();
 }
 
 void AutotestPrivateInstallPWAForCurrentURLFunction::PWATimeout() {
-  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
+  web_app::SetAutoAcceptPWAInstallConfirmationForTesting(false);
   Respond(Error("Install PWA timed out"));
 }
 
@@ -5186,11 +5065,11 @@ AutotestPrivateRemoveActiveDeskFunction::
 
 ExtensionFunction::ResponseAction
 AutotestPrivateRemoveActiveDeskFunction::Run() {
-  // Check whether overview mode is active before removing the desk. In case of
+  // Check whether overview mode was active before removing the desk. In case of
   // split view, the desk removal may cause overview to end, but what matters is
-  // whether overview mode is active before.
-  const bool in_overview =
-      ash::Shell::Get()->overview_controller()->InOverviewSession();
+  // whether overview mode was active before.
+  const bool was_in_overview =
+      ash::OverviewController::Get()->InOverviewSession();
 
   if (!ash::AutotestDesksApi().RemoveActiveDesk(base::BindOnce(
           &AutotestPrivateRemoveActiveDeskFunction::OnAnimationComplete,
@@ -5198,11 +5077,12 @@ AutotestPrivateRemoveActiveDeskFunction::Run() {
     return RespondNow(WithArguments(false));
   }
 
-  // In overview, the desk removal animation does
-  // not apply, so we should not wait for it.
-  if (in_overview) {
+  // In overview, the desk removal animation does not apply, so we should not
+  // wait for it.
+  if (was_in_overview) {
     return RespondNow(WithArguments(true));
   }
+
   return RespondLater();
 }
 

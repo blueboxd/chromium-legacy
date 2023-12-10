@@ -12,7 +12,7 @@
 #import "components/omnibox/browser/omnibox_field_trial.h"
 #import "components/open_from_clipboard/clipboard_recent_content.h"
 #import "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/default_browser/utils.h"
+#import "ios/chrome/browser/default_browser/model/utils.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/commands/activity_service_commands.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
@@ -26,6 +26,7 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_constants.h"
 #import "ios/chrome/browser/ui/orchestrator/location_bar_offset_provider.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_type.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
@@ -85,7 +86,9 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
 
 @end
 
-@implementation LocationBarViewController
+@implementation LocationBarViewController {
+  BOOL _isNTP;
+}
 
 #pragma mark - public
 
@@ -257,12 +260,16 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
 // the location bar is visible after scrolling the fakebox off the page. On
 // iPhone, the location bar is not shown on the NTP at all.
 - (void)updateForNTP:(BOOL)isNTP {
+  _isNTP = isNTP;
   if (isNTP) {
     // Display a fake "placeholder".
     NSString* placeholderString =
         l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
     [self.locationBarSteadyView
         setLocationLabelPlaceholderText:placeholderString];
+  }
+  if (base::FeatureList::IsEnabled(kNewNTPOmniboxLayout)) {
+    [self.locationBarSteadyView setCentered:(!isNTP || self.incognito)];
   }
   self.hideShareButtonWhileOnIncognitoNTP = isNTP;
 }
@@ -342,8 +349,11 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
 // Computes the target offset for the focus/defocus animation that allows to
 // visually match the position of edit and steady views.
 - (CGFloat)targetOffset {
-  CGFloat offset = [self.offsetProvider
-      xOffsetForString:self.locationBarSteadyView.locationLabel.text];
+  CGFloat offset =
+      _isNTP
+          ? kOmniboxEditOffset
+          : [self.offsetProvider
+                xOffsetForString:self.locationBarSteadyView.locationLabel.text];
 
   CGRect labelRect = [self.view
       convertRect:self.locationBarSteadyView.locationLabel.frame
@@ -595,12 +605,12 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
   }
 
   // Show Top or Bottom Address Bar action.
-  if (IsBottomOmniboxSteadyStateEnabled() && _prefService &&
+  if (IsBottomOmniboxSteadyStateEnabled() && _originalPrefService &&
       IsSplitToolbarMode(self)) {
     NSString* title = nil;
     UIImage* image = nil;
     ToolbarType targetToolbarType;
-    if (_prefService->GetBoolean(prefs::kBottomOmnibox)) {
+    if (_originalPrefService->GetBoolean(prefs::kBottomOmnibox)) {
       title = l10n_util::GetNSString(IDS_IOS_TOOLBAR_MENU_TOP_OMNIBOX);
       if (@available(iOS 15.1, *)) {
         image = DefaultSymbolWithPointSize(kMovePlatterToTopPhoneSymbol,
@@ -638,9 +648,9 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
   }
 
   // Reverse the array manually when preferredMenuElementOrder is not available.
-  if (IsBottomOmniboxSteadyStateEnabled() && _prefService) {
+  if (IsBottomOmniboxSteadyStateEnabled() && _originalPrefService) {
     if (!base::ios::IsRunningOnIOS16OrLater()) {
-      if (_prefService->GetBoolean(prefs::kBottomOmnibox)) {
+      if (_originalPrefService->GetBoolean(prefs::kBottomOmnibox)) {
         menuElements =
             [[[menuElements reverseObjectEnumerator] allObjects] mutableCopy];
       }
@@ -744,9 +754,9 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
 
 /// Set the preferred omnibox position to `toolbarType`.
 - (void)moveOmniboxToToolbarType:(ToolbarType)toolbarType {
-  if (_prefService) {
-    _prefService->SetBoolean(prefs::kBottomOmnibox,
-                             toolbarType == ToolbarType::kSecondary);
+  if (_originalPrefService) {
+    _originalPrefService->SetBoolean(prefs::kBottomOmnibox,
+                                     toolbarType == ToolbarType::kSecondary);
 
     if (toolbarType == ToolbarType::kPrimary) {
       RecordAction(

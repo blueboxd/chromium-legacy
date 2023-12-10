@@ -55,6 +55,7 @@ constexpr char kFullBubbleVisibleHistogramName[] =
 
 class ShowAllDownloadsButton : public RichHoverButton {
  public:
+  METADATA_HEADER(ShowAllDownloadsButton);
   explicit ShowAllDownloadsButton(
       base::RepeatingClosure show_all_downloads_callback)
       : RichHoverButton(
@@ -123,6 +124,9 @@ class ShowAllDownloadsButton : public RichHoverButton {
   }
 };
 
+BEGIN_METADATA(ShowAllDownloadsButton, RichHoverButton)
+END_METADATA
+
 }  // namespace
 
 void DownloadDialogView::CloseBubble() {
@@ -189,14 +193,13 @@ DownloadDialogView::DownloadDialogView(
     base::WeakPtr<Browser> browser,
     base::WeakPtr<DownloadBubbleUIController> bubble_controller,
     base::WeakPtr<DownloadBubbleNavigationHandler> navigation_handler,
-    std::vector<DownloadUIModel::DownloadUIModelPtr> rows)
+    const DownloadBubbleRowListViewInfo& info)
     : navigation_handler_(std::move(navigation_handler)),
       browser_(std::move(browser)) {
   AddHeader();
   MaybeAddOtrInfoRow(browser_.get());
   BuildAndAddScrollView(browser_, std::move(bubble_controller),
-                        navigation_handler_, std::move(rows),
-                        DefaultPreferredWidth());
+                        navigation_handler_, info, DefaultPreferredWidth());
   AddFooter();
 }
 

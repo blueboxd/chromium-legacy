@@ -47,6 +47,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/network_session_configurator/browser/network_session_configurator.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/prefs/testing_pref_service.h"
@@ -199,20 +200,27 @@ void SetContentSetting(const GURL& primary_pattern,
                        const GURL& secondary_pattern,
                        ContentSetting setting,
                        NetworkContext* network_context) {
+  base::RunLoop runloop;
   network_context->cookie_manager()->SetContentSettings(
+      ContentSettingsType::COOKIES,
       {ContentSettingPatternSource(
           ContentSettingsPattern::FromURL(primary_pattern),
           ContentSettingsPattern::FromURL(secondary_pattern),
-          base::Value(setting), std::string(), false)});
+          base::Value(setting), std::string(), false)},
+      runloop.QuitClosure());
+  runloop.Run();
 }
 
 void SetDefaultContentSetting(ContentSetting setting,
                               NetworkContext* network_context) {
+  base::RunLoop runloop;
   network_context->cookie_manager()->SetContentSettings(
+      ContentSettingsType::COOKIES,
       {ContentSettingPatternSource(ContentSettingsPattern::Wildcard(),
                                    ContentSettingsPattern::Wildcard(),
-                                   base::Value(setting), std::string(),
-                                   false)});
+                                   base::Value(setting), std::string(), false)},
+      runloop.QuitClosure());
+  runloop.Run();
 }
 
 std::unique_ptr<TestURLLoaderClient> FetchRequest(
@@ -2203,8 +2211,8 @@ TEST_F(NetworkContextTest, ClearHttpAuthCache) {
     base::RunLoop run_loop;
     base::Time test_time;
     ASSERT_TRUE(base::Time::FromString("30 May 2018 12:30:00", &test_time));
-    network_context->ClearHttpAuthCache(base::Time(), test_time,
-                                        run_loop.QuitClosure());
+    network_context->ClearHttpAuthCache(
+        base::Time(), test_time, /*filter=*/nullptr, run_loop.QuitClosure());
     run_loop.Run();
 
     EXPECT_EQ(1u, cache->GetEntriesSizeForTesting());
@@ -2222,6 +2230,7 @@ TEST_F(NetworkContextTest, ClearHttpAuthCache) {
     base::Time test_time;
     ASSERT_TRUE(base::Time::FromString("30 May 2018 12:30:00", &test_time));
     network_context->ClearHttpAuthCache(test_time, base::Time::Max(),
+                                        /*filter=*/nullptr,
                                         run_loop.QuitClosure());
     run_loop.Run();
 
@@ -2273,6 +2282,7 @@ TEST_F(NetworkContextTest, ClearAllHttpAuthCache) {
 
   base::RunLoop run_loop;
   network_context->ClearHttpAuthCache(base::Time(), base::Time::Max(),
+                                      /*filter=*/nullptr,
                                       run_loop.QuitClosure());
   run_loop.Run();
 
@@ -2297,7 +2307,7 @@ TEST_F(NetworkContextTest, ClearEmptyHttpAuthCache) {
 
   base::RunLoop run_loop;
   network_context->ClearHttpAuthCache(base::Time::UnixEpoch(),
-                                      base::Time::Max(),
+                                      base::Time::Max(), /*filter=*/nullptr,
                                       base::BindOnce(run_loop.QuitClosure()));
   run_loop.Run();
 

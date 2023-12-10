@@ -155,7 +155,7 @@ class CORE_EXPORT MessagePort : public EventTarget,
       PostMessageTask() = default;
       explicit PostMessageTask(scheduler::TaskAttributionInfo* task)
           : task_(task) {}
-      scheduler::TaskAttributionInfo* GetTask() { return task_; }
+      scheduler::TaskAttributionInfo* GetTask() { return task_.Get(); }
       size_t DecrementAndReturnCounter() { return --counter_; }
       void IncrementCounter() { ++counter_; }
       void Trace(Visitor* visitor) const { visitor->Trace(task_); }
@@ -188,7 +188,7 @@ class CORE_EXPORT MessagePort : public EventTarget,
 
   // The entangled port. Only set on initial entanglement, and gets unset as
   // soon as the ports are disentangled.
-  Member<MessagePort> initially_entangled_port_;
+  WeakMember<MessagePort> initially_entangled_port_;
 
   Member<PostMessageTaskContainer> post_message_task_container_;
 };

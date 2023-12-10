@@ -19,6 +19,12 @@ bound_session_credentials::BoundSessionParams CreateValidBoundSessionParams() {
   params.set_session_id("123");
   params.set_site("https://example.org");
   params.set_wrapped_key("456");
+
+  bound_session_credentials::CookieCredential* cookie =
+      params.add_credentials()->mutable_cookie_credential();
+  cookie->set_name("auth_cookie");
+  cookie->set_domain(".example.org");
+  cookie->set_path("/");
   return params;
 }
 
@@ -34,25 +40,6 @@ MATCHER_P(EqualsProto, message, "") {
 }
 
 }  // namespace
-
-TEST(BoundSessionParamsStorageAreParamsValidTest, Valid) {
-  EXPECT_TRUE(BoundSessionParamsStorage::AreParamsValid(
-      CreateValidBoundSessionParams()));
-}
-
-TEST(BoundSessionParamsStorageAreParamsValidTest, InvalidMissingSessionId) {
-  bound_session_credentials::BoundSessionParams params =
-      CreateValidBoundSessionParams();
-  params.clear_session_id();
-  EXPECT_FALSE(BoundSessionParamsStorage::AreParamsValid(params));
-}
-
-TEST(BoundSessionParamsStorageAreParamsValidTest, InvalidMissingWrappedKey) {
-  bound_session_credentials::BoundSessionParams params =
-      CreateValidBoundSessionParams();
-  params.clear_wrapped_key();
-  EXPECT_FALSE(BoundSessionParamsStorage::AreParamsValid(params));
-}
 
 class BoundSessionParamsStorageTest : public testing::TestWithParam<bool> {
  public:

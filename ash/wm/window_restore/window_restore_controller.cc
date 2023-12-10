@@ -20,6 +20,7 @@
 #include "ash/wm/float/float_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_positioning_utils.h"
+#include "ash/wm/window_restore/informed_restore_dialog.h"
 #include "ash/wm/window_restore/window_restore_util.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
@@ -47,6 +48,10 @@ WindowRestoreController* g_instance = nullptr;
 // Callback for testing which is run when `SaveWindowImpl()` triggers a write to
 // file.
 WindowRestoreController::SaveWindowCallback g_save_window_callback_for_testing;
+
+// Temporary test widget brought up by a debug accelerator that hosts the
+// informed restore dialog.
+views::Widget* g_test_informed_restore_dialog_widget = nullptr;
 
 // The list of possible app window parents.
 constexpr ShellWindowId kAppParentContainers[19] = {
@@ -420,8 +425,7 @@ void WindowRestoreController::OnWindowVisibilityChanged(aura::Window* window,
   // Early return if we're not in tablet mode, or the app list is null.
   aura::Window* app_list_window =
       Shell::Get()->app_list_controller()->GetWindow();
-  if (!Shell::Get()->tablet_mode_controller()->InTabletMode() ||
-      !app_list_window) {
+  if (!Shell::Get()->IsInTabletMode() || !app_list_window) {
     return;
   }
 
@@ -485,6 +489,26 @@ bool WindowRestoreController::IsRestoringWindow(aura::Window* window) const {
   return windows_observation_.IsObservingSource(window);
 }
 
+void WindowRestoreController::MaybeStartInformedRestore() {
+  if (!features::ArePostLoginGlanceablesEnabled()) {
+    return;
+  }
+
+  // TODO(sammiequon|zxdan): Need to check "Ask every time" preference, the pref
+  // needs to be moved to ash_pref_names.h.
+
+  if (g_test_informed_restore_dialog_widget) {
+    return;
+  }
+
+  auto widget = InformedRestoreDialog::Create(Shell::GetPrimaryRootWindow());
+  g_test_informed_restore_dialog_widget = widget.release();
+  g_test_informed_restore_dialog_widget->widget_delegate()
+      ->RegisterWindowClosingCallback(base::BindOnce(
+          []() { g_test_informed_restore_dialog_widget = nullptr; }));
+  g_test_informed_restore_dialog_widget->Show();
+}
+
 void WindowRestoreController::SaveWindowImpl(
     WindowState* window_state,
     absl::optional<int> activation_index) {
@@ -545,8 +569,7 @@ void WindowRestoreController::RestoreStateTypeAndClearLaunchedKey(
       // in normal or maximized state.
       // TODO(crbug.com/1164472): Investigate splitview for ARC apps, which
       // are not managed by TabletModeWindowManager.
-      if (Shell::Get()->tablet_mode_controller()->InTabletMode())
-        Shell::Get()->tablet_mode_controller()->AddWindow(window);
+      Shell::Get()->tablet_mode_controller()->AddWindow(window);
 
       if (chromeos::IsSnappedWindowStateType(*state_type)) {
         base::AutoReset<aura::Window*> auto_reset_to_be_snapped(

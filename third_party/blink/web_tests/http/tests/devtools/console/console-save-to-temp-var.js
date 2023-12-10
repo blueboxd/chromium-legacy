@@ -6,12 +6,11 @@ import {TestRunner} from 'test_runner';
 import {ConsoleTestRunner} from 'console_test_runner';
 import {SourcesTestRunner} from 'sources_test_runner';
 
-import * as SDK from 'devtools/core/sdk/sdk.js';
 import * as UIModule from 'devtools/ui/legacy/legacy.js';
+import * as SDK from 'devtools/core/sdk/sdk.js';
 
 (async function() {
   TestRunner.addResult(`Tests saving objects to temporary variables.\n`);
-  await TestRunner.loadLegacyModule('console');
   await TestRunner.showPanel('sources');
   await TestRunner.showPanel('console');
   await TestRunner.evaluateInPagePromise(`

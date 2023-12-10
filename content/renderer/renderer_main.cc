@@ -82,7 +82,7 @@
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-#include "content/renderer/renderer_thread_type_handler.h"
+#include "content/child/sandboxed_process_thread_type_handler.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PPAPI)
@@ -267,8 +267,8 @@ int RendererMain(MainFunctionParams parameters) {
     // Thread type delegate of the process should be registered before
     // first thread type change in ChildProcess constructor.
     if (base::FeatureList::IsEnabled(
-            features::kHandleRendererThreadTypeChangesInBrowser)) {
-      RendererThreadTypeHandler::Create();
+            features::kHandleChildThreadTypeChangesInBrowser)) {
+      SandboxedProcessThreadTypeHandler::Create();
 
       // Change the main thread type. On Linux and ChromeOS this needs to be
       // done only if kHandleRendererThreadTypeChangesInBrowser is enabled to

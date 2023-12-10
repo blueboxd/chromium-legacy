@@ -344,6 +344,11 @@ bool ChromeWebAuthenticationDelegate::SupportsResidentKeys(
   return true;
 }
 
+bool ChromeWebAuthenticationDelegate::SupportsPasskeyMetadataSyncing() {
+  return base::FeatureList::IsEnabled(syncer::kSyncWebauthnCredentials) &&
+         base::FeatureList::IsEnabled(device::kWebAuthnNewPasskeyUI);
+}
+
 bool ChromeWebAuthenticationDelegate::IsFocused(
     content::WebContents* web_contents) {
   return web_contents->GetVisibility() == content::Visibility::VISIBLE;
@@ -730,7 +735,7 @@ void ChromeAuthenticatorRequestDelegate::ConfigureDiscoveries(
       webauthn_api && webauthn_api->SupportsHybrid() &&
       // For now, Chrome handles hybrid even if Windows supports it for synced
       // GPM passkeys.
-      !base::FeatureList::IsEnabled(device::kWebAuthnListSyncedPasskeys);
+      !base::FeatureList::IsEnabled(syncer::kSyncWebauthnCredentials);
 #else
   constexpr bool system_handles_cable = false;
 #endif
@@ -879,8 +884,8 @@ void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
     device::FidoRequestHandlerBase::TransportAvailabilityInfo data) {
   if (base::FeatureList::IsEnabled(device::kWebAuthnFilterGooglePasskeys) &&
       dialog_model()->relying_party_id() == kGoogleRpId &&
-      std::ranges::any_of(data.recognized_credentials,
-                          IsCredentialFromPlatformAuthenticator)) {
+      base::ranges::any_of(data.recognized_credentials,
+                           IsCredentialFromPlatformAuthenticator)) {
     // Regrettably, Chrome will create webauthn credentials for things other
     // than authentication (e.g. credit card autofill auth) under the rp id
     // "google.com". To differentiate those credentials from actual passkeys you
@@ -896,8 +901,7 @@ void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
           FidoRequestHandlerBase::RecognizedCredential::kNoRecognizedCredential;
     }
   }
-  if (base::FeatureList::IsEnabled(device::kWebAuthnListSyncedPasskeys) &&
-      base::FeatureList::IsEnabled(syncer::kSyncWebauthnCredentials) &&
+  if (base::FeatureList::IsEnabled(syncer::kSyncWebauthnCredentials) &&
       base::FeatureList::IsEnabled(device::kWebAuthnNewPasskeyUI) &&
       !IsVirtualEnvironmentEnabled() && can_use_synced_phone_passkeys_) {
     GetPhoneContactableGpmPasskeysForRpId(&data.recognized_credentials);
@@ -919,8 +923,13 @@ void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
     g_observer->OnTransportAvailabilityEnumerated(this, &data);
   }
 
-  if (disable_ui_ || dialog_model_->current_step() !=
-                         AuthenticatorRequestDialogModel::Step::kNotStarted) {
+  if (disable_ui_) {
+    return;
+  }
+
+  if (dialog_model_->current_step() !=
+      AuthenticatorRequestDialogModel::Step::kNotStarted) {
+    dialog_model_->OnTransportAvailabilityChanged(std::move(data));
     return;
   }
 
@@ -1029,7 +1038,7 @@ void ChromeAuthenticatorRequestDelegate::OnCancelRequest() {
 void ChromeAuthenticatorRequestDelegate::OnManageDevicesClicked() {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(GetRenderFrameHost());
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  Browser* browser = chrome::FindBrowserWithTab(web_contents);
   if (browser) {
     NavigateParams params(browser,
                           GURL("chrome://settings/securityKeys/phones"),

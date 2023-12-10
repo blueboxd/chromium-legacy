@@ -94,7 +94,10 @@ optimize_js("password_controller_js") {
   primary_script = "resources/password_controller.js"
   sources = [ "resources/password_controller.js" ]
 
-  deps = [ "//components/autofill/ios/form_util:fill_js_dependencies" ]
+  deps = [
+    "//components/autofill/ios/form_util:fill_js_dependencies",
+    "//ios/web/public/js_messaging:gcrweb",
+  ]
 }
 
 static_library("test_support") {
@@ -172,6 +175,6 @@ source_set("fake_bulk_leak_check_service") {
   ]
   deps = [
     "//base",
-    "//components/password_manager/core/browser",
+    "//components/password_manager/core/browser/leak_detection:leak_detection_interface_headers",
   ]
 }

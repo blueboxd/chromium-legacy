@@ -22,6 +22,7 @@
 #include "base/scoped_observation.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/tabs/tab_group_controller.h"
+#include "chrome/browser/ui/tabs/tab_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_scrubbing_metrics.h"
 #include "chrome/browser/ui/tabs/tab_strip_user_gesture_details.h"
 #include "components/sessions/core/session_id.h"
@@ -163,6 +164,9 @@ class TabStripModel : public TabGroupController {
   // Retrieve the number of WebContentses/emptiness of the TabStripModel.
   int count() const { return static_cast<int>(contents_data_.size()); }
   bool empty() const { return contents_data_.empty(); }
+
+  int GetIndexOfTab(TabHandle tab) const;
+  TabHandle GetTabHandleAt(int index) const;
 
   // Retrieve the Profile associated with this TabStripModel.
   Profile* profile() const { return profile_; }
@@ -583,7 +587,6 @@ class TabStripModel : public TabGroupController {
  private:
   FRIEND_TEST_ALL_PREFIXES(TabStripModelTest, GetIndicesClosedByCommand);
 
-  class Tab;
   struct DetachNotifications;
 
   // Perform tasks associated with changes to the model. Change the Active Index
@@ -805,7 +808,7 @@ class TabStripModel : public TabGroupController {
 
   // The WebContents data currently hosted within this TabStripModel. This must
   // be kept in sync with |selection_model_|.
-  std::vector<std::unique_ptr<Tab>> contents_data_;
+  std::vector<std::unique_ptr<TabModel>> contents_data_;
 
   // The model for tab groups hosted within this TabStripModel.
   std::unique_ptr<TabGroupModel> group_model_;

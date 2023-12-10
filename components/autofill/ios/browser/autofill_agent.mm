@@ -693,6 +693,12 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
                autofill::PopupItemId::kShowAccountCards) {
       // Show opt-in for showing cards from account.
       value = SysUTF16ToNSString(popup_suggestion.main_text.value);
+    } else if (popup_suggestion.popup_item_id ==
+                   autofill::PopupItemId::kFillExistingPlusAddress ||
+               popup_suggestion.popup_item_id ==
+                   autofill::PopupItemId::kCreateNewPlusAddress) {
+      // Show any plus_address suggestions.
+      value = SysUTF16ToNSString(popup_suggestion.main_text.value);
     }
 
     if (!value)
@@ -1001,7 +1007,7 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
 // if the current URL has a web scheme and the page content is HTML.
 - (BOOL)isAutofillEnabled {
   if (!autofill::prefs::IsAutofillProfileEnabled(_prefService) &&
-      !autofill::prefs::IsAutofillCreditCardEnabled(_prefService)) {
+      !autofill::prefs::IsAutofillPaymentMethodsEnabled(_prefService)) {
     return NO;
   }
 

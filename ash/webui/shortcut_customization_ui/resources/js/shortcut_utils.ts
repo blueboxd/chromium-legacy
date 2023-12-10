@@ -5,10 +5,10 @@
 import '../strings.m.js';
 
 import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
-import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
 import {mojoString16ToString} from 'chrome://resources/js/mojo_type_util.js';
 
-import {Accelerator, AcceleratorCategory, AcceleratorId, AcceleratorInfo, AcceleratorKeyState, AcceleratorSource, AcceleratorState, AcceleratorSubcategory, AcceleratorType, Modifier, MojoAcceleratorInfo, MojoSearchResult, StandardAcceleratorInfo, TextAcceleratorInfo, TextAcceleratorPart} from './shortcut_types.js';
+import {Accelerator, AcceleratorCategory, AcceleratorConfigResult, AcceleratorId, AcceleratorInfo, AcceleratorKeyState, AcceleratorSource, AcceleratorState, AcceleratorSubcategory, AcceleratorType, Modifier, MojoAcceleratorInfo, MojoSearchResult, StandardAcceleratorInfo, TextAcceleratorInfo, TextAcceleratorPart} from './shortcut_types.js';
 
 // TODO(jimmyxgong): ChromeOS currently supports up to F24 but can be updated to
 // F32. Update here when F32 is available.
@@ -34,6 +34,7 @@ export const keyCodeToModifier: {[keyCode: number]: number} = {
 
 export const unidentifiedKeyCodeToKey: {[keyCode: number]: string} = {
   159: 'MicrophoneMuteToggle',
+  192: '`',  // Backquote key.
   237: 'EmojiPicker',
   238: 'EnableOrToggleDictation',
   239: 'ViewAllApps',
@@ -202,6 +203,23 @@ export const getSubcategoryNameStringId =
 export const getAccelerator =
     (acceleratorInfo: StandardAcceleratorInfo): Accelerator => {
       return acceleratorInfo.layoutProperties.standardAccelerator.accelerator;
+    };
+
+export const areAcceleratorsEqual =
+    (first: Accelerator, second: Accelerator): boolean => {
+      return first.keyCode === second.keyCode &&
+          first.modifiers === second.modifiers &&
+          first.keyState === second.keyState;
+    };
+
+/**
+ * Checks if a retry can bypass the last error. Returns true for
+ * kConflictCanOverride or kNonSearchAcceleratorWarning results.
+ */
+export const canBypassErrorWithRetry =
+    (result: AcceleratorConfigResult): boolean => {
+      return result === AcceleratorConfigResult.kConflictCanOverride ||
+          result === AcceleratorConfigResult.kNonSearchAcceleratorWarning;
     };
 
 /**

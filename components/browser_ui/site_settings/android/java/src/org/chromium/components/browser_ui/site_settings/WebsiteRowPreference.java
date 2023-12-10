@@ -58,7 +58,7 @@ public class WebsiteRowPreference extends ChromeImageViewPreference {
         // favicon becomes available.
         setIcon(new ColorDrawable(Color.TRANSPARENT));
         setTitle(mSiteEntry.getTitleForPreferenceRow());
-        setImageView(R.drawable.ic_delete_white_24dp, R.string.webstorage_clear_data_dialog_title,
+        setImageView(R.drawable.ic_delete_white_24dp, R.string.webstorage_delete_data_dialog_title,
                 (View view) -> { displayResetDialog(); });
         updateSummary();
     }
@@ -79,8 +79,6 @@ public class WebsiteRowPreference extends ChromeImageViewPreference {
         }
         setFragment(mSiteEntry instanceof Website ? SingleWebsiteSettings.class.getName()
                                                   : GroupedWebsitesSettings.class.getName());
-        getExtras().putInt(SettingsNavigationSource.EXTRA_KEY,
-                args.getInt(SettingsNavigationSource.EXTRA_KEY, SettingsNavigationSource.OTHER));
     }
 
     @Override
@@ -110,11 +108,7 @@ public class WebsiteRowPreference extends ChromeImageViewPreference {
         TextView signedOutText = dialogView.findViewById(R.id.signed_out_text);
         signedOutText.setText(R.string.webstorage_clear_data_dialog_sign_out_message);
         TextView offlineText = dialogView.findViewById(R.id.offline_text);
-        offlineText.setText(R.string.webstorage_clear_data_dialog_offline_message);
-        if (mSiteSettingsDelegate.isPrivacySandboxSettings4Enabled()) {
-            TextView adPersonalizationText = dialogView.findViewById(R.id.ad_personalization_text);
-            adPersonalizationText.setVisibility(View.VISIBLE);
-        }
+        offlineText.setText(R.string.webstorage_delete_data_dialog_offline_message);
         // TODO(crbug.com/1342991): Refactor and combine this with the ClearWebsiteStorageDialog
         // code.
         mConfirmationDialog =

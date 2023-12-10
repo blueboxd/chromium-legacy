@@ -6,10 +6,10 @@
 #define ASH_SYSTEM_TIME_CALENDAR_EVENT_LIST_ITEM_VIEW_JELLY_H_
 
 #include "ash/ash_export.h"
-#include "ash/system/tray/actionable_view.h"
 #include "base/memory/raw_ptr.h"
 #include "google_apis/calendar/calendar_api_response_types.h"
 #include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/views/controls/button/button.h"
 #include "url/gurl.h"
 
 namespace ui {
@@ -60,7 +60,7 @@ struct EventListItemIndex {
 };
 
 // This view displays a jelly version of a calendar event entry.
-class ASH_EXPORT CalendarEventListItemViewJelly : public ActionableView {
+class ASH_EXPORT CalendarEventListItemViewJelly : public views::Button {
  public:
   METADATA_HEADER(CalendarEventListItemViewJelly);
 
@@ -79,8 +79,7 @@ class ASH_EXPORT CalendarEventListItemViewJelly : public ActionableView {
   // views::View:
   void OnThemeChanged() override;
 
-  // ActionableView:
-  bool PerformAction(const ui::Event& event) override;
+  void PerformAction(const ui::Event& event);
 
   // Sets up a custom highlight path for when the
   // `CalendarEventListItemViewJelly` view is focused. Conditionally follows the
@@ -88,6 +87,8 @@ class ASH_EXPORT CalendarEventListItemViewJelly : public ActionableView {
   void SetUpFocusHighlight(const gfx::RoundedCornersF& item_corner_radius);
 
   void OnJoinMeetingButtonPressed(const ui::Event& event);
+
+  bool is_current_or_next_event() const { return is_current_or_next_event_; }
 
  private:
   friend class CalendarViewEventListViewTest;
@@ -102,6 +103,10 @@ class ASH_EXPORT CalendarEventListItemViewJelly : public ActionableView {
   const GURL event_url_;
 
   const GURL video_conference_url_;
+
+  // Whether this item which is not an all-day or multi-day event is the current
+  // or next event. Used for auto scroll in the `CalendarEventListView`.
+  bool is_current_or_next_event_ = false;
 
   base::WeakPtrFactory<CalendarEventListItemViewJelly> weak_ptr_factory_{this};
 };

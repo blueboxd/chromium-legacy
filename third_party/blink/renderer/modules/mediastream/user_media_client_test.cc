@@ -55,8 +55,9 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "ui/display/screen_info.h"
 
-using testing::_;
-using testing::Mock;
+using blink::mojom::SubCaptureTargetType;
+using ::testing::_;
+using ::testing::Mock;
 
 namespace blink {
 
@@ -221,7 +222,11 @@ class MediaDevicesDispatcherHostMock
     NOTREACHED();
   }
 
-  void ProduceCropId(ProduceCropIdCallback callback) override { NOTREACHED(); }
+  void ProduceSubCaptureTargetId(
+      SubCaptureTargetType type,
+      ProduceSubCaptureTargetIdCallback callback) override {
+    NOTREACHED();
+  }
 #endif
 
   void GetAllVideoInputDeviceFormats(
@@ -336,7 +341,9 @@ class MockMediaDevicesDispatcherHost
     NOTREACHED();
   }
 
-  void ProduceCropId(ProduceCropIdCallback callback) override {
+  void ProduceSubCaptureTargetId(
+      SubCaptureTargetType type,
+      ProduceSubCaptureTargetIdCallback callback) override {
     std::move(callback).Run("");
   }
 #endif
@@ -375,7 +382,7 @@ class MockMediaDevicesDispatcherHost
  private:
   media::AudioParameters audio_parameters_ =
       media::AudioParameters::UnavailableDeviceParams();
-  raw_ptr<blink::MediaStreamVideoSource, ExperimentalRenderer> video_source_ =
+  raw_ptr<blink::MediaStreamVideoSource, DanglingUntriaged> video_source_ =
       nullptr;
 };
 
@@ -430,7 +437,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
   }
 
   MediaStreamDescriptor* last_generated_descriptor() {
-    return last_generated_descriptor_;
+    return last_generated_descriptor_.Get();
   }
   void ClearLastGeneratedStream() { last_generated_descriptor_ = nullptr; }
 
@@ -529,9 +536,9 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
   std::unique_ptr<WebMediaStreamDeviceObserver> media_stream_device_observer_;
   HeapMojoRemote<blink::mojom::blink::MediaDevicesDispatcherHost>
       media_devices_dispatcher_;
-  raw_ptr<MockMediaStreamVideoCapturerSource, ExperimentalRenderer>
-      video_source_ = nullptr;
-  raw_ptr<MockLocalMediaStreamAudioSource, ExperimentalRenderer>
+  raw_ptr<MockMediaStreamVideoCapturerSource, DanglingUntriaged> video_source_ =
+      nullptr;
+  raw_ptr<MockLocalMediaStreamAudioSource, DanglingUntriaged>
       local_audio_source_ = nullptr;
   bool create_source_that_fails_ = false;
   Member<MediaStreamDescriptor> last_generated_descriptor_;
@@ -699,7 +706,7 @@ class UserMediaClientTest : public ::testing::TestWithParam<bool> {
     EXPECT_EQ(audio_components.size(), 1u);
     EXPECT_TRUE(video_components.empty());
 
-    return audio_components[0];
+    return audio_components[0].Get();
   }
 
   void StartMockedVideoSource(

@@ -190,26 +190,12 @@ class CONTENT_EXPORT AttributionStorageDelegate {
       int max_event_level_reports,
       base::Time source_time) const = 0;
 
-  virtual absl::optional<base::Time> GetReportWindowTime(
-      absl::optional<base::TimeDelta> declared_window,
-      base::Time source_time) = 0;
-
-  virtual attribution_reporting::EventReportWindows
-  GetDefaultEventReportWindows(
-      attribution_reporting::mojom::SourceType source_type,
-      base::TimeDelta last_report_window) const = 0;
-
-  // Returns the maximum sum of the contributions (values) across all buckets
-  // per source.
-  int64_t GetAggregatableBudgetPerSource() const;
-
   int GetMaxAggregatableReportsPerSource() const;
 
   AttributionConfig::DestinationRateLimit GetDestinationRateLimit() const;
 
-  // Sanitizes `trigger_data` according to the data limits for `source_type`.
-  uint64_t SanitizeTriggerData(uint64_t trigger_data,
-                               attribution_reporting::mojom::SourceType) const;
+  uint64_t TriggerDataCardinality(
+      attribution_reporting::mojom::SourceType) const;
 
   // Returns zero or more null aggregatable reports for the given trigger.
   virtual std::vector<NullAggregatableReport> GetNullAggregatableReports(
@@ -218,9 +204,6 @@ class CONTENT_EXPORT AttributionStorageDelegate {
       absl::optional<base::Time> attributed_source_time) const = 0;
 
  protected:
-  uint64_t TriggerDataCardinality(
-      attribution_reporting::mojom::SourceType) const;
-
   AttributionConfig config_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   SEQUENCE_CHECKER(sequence_checker_);

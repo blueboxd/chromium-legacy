@@ -7,8 +7,10 @@
 #include <vector>
 
 #include "ash/public/cpp/window_properties.h"
+#include "ash/shell.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/overview/overview_constants.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_grid_event_handler.h"
 #include "ash/wm/overview/overview_group_item.h"
@@ -18,6 +20,7 @@
 #include "ash/wm/snap_group/snap_group.h"
 #include "ash/wm/snap_group/snap_group_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
+#include "chromeos/constants/chromeos_features.h"
 
 namespace ash {
 
@@ -47,11 +50,43 @@ std::unique_ptr<OverviewItemBase> OverviewItemBase::Create(
   }
 
   return std::make_unique<OverviewItem>(window, overview_session, overview_grid,
-                                        /*delegate=*/overview_grid);
+                                        /*delegate=*/overview_grid,
+                                        /*eligible_for_shadow_config=*/true);
 }
 
 bool OverviewItemBase::IsDragItem() const {
   return overview_session_->GetCurrentDraggedOverviewItem() == this;
+}
+
+void OverviewItemBase::RefreshShadowVisuals(bool shadow_visible) {
+  // Shadow is normally turned off during animations and reapplied when on
+  // animation complete. On destruction, `shadow_` is cleaned up before
+  // `transform_window_`, which may call this function, so early exit if
+  // `shadow_` is nullptr.
+  if (!shadow_) {
+    return;
+  }
+
+  const bool is_jellyroll_enabled = chromeos::features::IsJellyrollEnabled();
+  const gfx::RectF shadow_bounds_in_screen =
+      is_jellyroll_enabled ? target_bounds_ : GetTargetBoundsWithInsets();
+  auto* shadow_layer = shadow_->GetLayer();
+  if (!shadow_visible || shadow_bounds_in_screen.IsEmpty()) {
+    shadow_layer->SetVisible(false);
+    return;
+  }
+
+  shadow_layer->SetVisible(true);
+
+  gfx::Rect shadow_content_bounds(
+      gfx::ToRoundedRect(shadow_bounds_in_screen).size());
+  shadow_->SetContentBounds(shadow_content_bounds);
+  shadow_->SetRoundedCornerRadius(
+      is_jellyroll_enabled ? kOverviewItemCornerRadius : 0);
+}
+
+void OverviewItemBase::UpdateShadowTypeForDrag(bool is_dragging) {
+  shadow_->SetType(is_dragging ? kDraggedShadowType : kDefaultShadowType);
 }
 
 void OverviewItemBase::OnFocusedViewActivated() {

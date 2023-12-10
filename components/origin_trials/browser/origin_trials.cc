@@ -11,12 +11,10 @@
 #include "base/containers/flat_set.h"
 #include "components/origin_trials/common/persisted_trial_token.h"
 #include "net/base/schemeful_site.h"
-#include "third_party/blink/public/common/origin_trials/origin_trial_feature.h"
 #include "third_party/blink/public/common/origin_trials/origin_trials.h"
 #include "third_party/blink/public/common/origin_trials/trial_token.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_result.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
-#include "url/gurl.h"
 #include "url/origin.h"
 
 namespace origin_trials {
@@ -35,6 +33,45 @@ OriginTrials::OriginTrials(
 
 OriginTrials::~OriginTrials() = default;
 
+void OriginTrials::AddObserver(Observer* observer) {
+  CHECK(observer);
+  observer_map_[observer->trial_name()].AddObserver(observer);
+}
+
+void OriginTrials::RemoveObserver(Observer* observer) {
+  CHECK(observer);
+  auto it = observer_map_.find(observer->trial_name());
+  if (it == observer_map_.end()) {
+    return;
+  }
+  it->second.RemoveObserver(observer);
+  if (it->second.empty()) {
+    observer_map_.erase(it);
+  }
+}
+
+void OriginTrials::NotifyStatusChange(const url::Origin& origin,
+                                      const std::string& partition_site,
+                                      const std::string& trial,
+                                      bool enabled) {
+  const auto find_it = observer_map_.find(trial);
+  if (find_it == observer_map_.end()) {
+    return;
+  }
+
+  for (Observer& observer : find_it->second) {
+    observer.OnStatusChanged(origin, partition_site, enabled);
+  }
+}
+
+void OriginTrials::NotifyPersistedTokensCleared() {
+  for (const auto& it : observer_map_) {
+    for (Observer& observer : it.second) {
+      observer.OnPersistedTokensCleared();
+    }
+  }
+}
+
 base::flat_set<std::string> OriginTrials::GetPersistedTrialsForOrigin(
     const url::Origin& origin,
     const url::Origin& partition_origin,
@@ -46,7 +83,7 @@ base::flat_set<std::string> OriginTrials::GetPersistedTrialsForOrigin(
 bool OriginTrials::IsFeaturePersistedForOrigin(
     const url::Origin& origin,
     const url::Origin& partition_origin,
-    blink::OriginTrialFeature feature,
+    blink::mojom::OriginTrialFeature feature,
     const base::Time current_time) {
   return !GetPersistedTrialsForOriginWithMatch(origin, partition_origin,
                                                current_time, feature)
@@ -116,7 +153,7 @@ void OriginTrials::PersistTokensInternal(
       // TODO(crbug.com/1418340): Support for all third-party tokens.
       // Only accept deprecation trials as third-party for now.
       bool deprecation_trial = false;
-      for (const blink::OriginTrialFeature feature :
+      for (const blink::mojom::OriginTrialFeature feature :
            blink::origin_trials::FeaturesForTrial(
                parsed_token->feature_name())) {
         deprecation_trial |= blink::origin_trials::GetTrialType(feature) ==
@@ -145,7 +182,8 @@ base::flat_set<std::string> OriginTrials::GetPersistedTrialsForOriginWithMatch(
     const url::Origin& origin,
     const url::Origin& partition_origin,
     const base::Time current_time,
-    const absl::optional<blink::OriginTrialFeature> trial_feature_match) const {
+    const absl::optional<blink::mojom::OriginTrialFeature> trial_feature_match)
+    const {
   if (origin.opaque())
     return {};
 
@@ -181,6 +219,7 @@ base::flat_set<std::string> OriginTrials::GetPersistedTrialsForOriginWithMatch(
 
 void OriginTrials::ClearPersistedTokens() {
   persistence_provider_->ClearPersistedTokens();
+  NotifyPersistedTokensCleared();
 }
 
 // static
@@ -218,6 +257,8 @@ void OriginTrials::UpdatePersistedTokenSet(
       // partition.
       if (new_token_iter == new_tokens.end()) {
         token.RemoveFromPartition(partition_site);
+        NotifyStatusChange(origin, partition_site, token.trial_name,
+                           /* enabled = */ false);
       }
     }
     // Cleanup of tokens no longer in any partitions.
@@ -235,11 +276,23 @@ void OriginTrials::UpdatePersistedTokenSet(
                      });
 
     if (found_token != token_set.end()) {
+      // The status of the trial for `origin` under `partition_site` (with this
+      // token/signature) only changes if the token was not already logically in
+      // the top-level partition of `partition_site`.
+      // NOTE: This is because `found_token` can "match" `new_token` without
+      // `found_token->partition_sites` containing `partition_site`.
+      if (!found_token->partition_sites.contains(partition_site)) {
+        NotifyStatusChange(origin, partition_site, found_token->trial_name,
+                           /* enabled = */ true);
+      }
+
       // Update the existing stored trial token with the metadata fields, as it
       // may be a newly issued token.
       found_token->AddToPartition(partition_site);
     } else {
       token_set.emplace(new_token, partition_site);
+      NotifyStatusChange(origin, partition_site, new_token.feature_name(),
+                         /* enabled = */ true);
     }
   }
   persistence_provider_->SavePersistentTrialTokens(origin,

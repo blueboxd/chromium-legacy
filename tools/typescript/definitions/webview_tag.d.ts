@@ -262,7 +262,13 @@ declare global {
       // Manually added to match the webview_tag.js Closure externs file.
       export interface WebView extends HTMLIFrameElement {
         request: WebRequestEventInterface;
-        back(): void;
+        back(callback?: (success: boolean) => void): void;
+        reload(): void;
+        addContentScripts(contentScriptList: ContentScriptDetails[]): void;
+        removeContentScripts(scriptNameList?: string[]): void;
+        executeScript(
+            details: InjectDetails, callback?: (results: any[]) => void): void;
+        terminate(): void;
       }
 
       export enum ZoomMode {

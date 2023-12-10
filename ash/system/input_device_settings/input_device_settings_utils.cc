@@ -164,16 +164,13 @@ const base::Value::List* GetLoginScreenButtonRemappingList(
   return &list_value->GetList();
 }
 
-mojom::CustomizationRestriction GetCustomizationRestriction(
-    const ui::InputDevice& device) {
+bool IsMouseCustomizable(const ui::InputDevice& device) {
   // TODO(wangdanny): Update uncustomizable mice set with devices' vid and pid.
   static constexpr auto kUncustomizableMice =
       base::MakeFixedFlatSet<VendorProductId>({
           {0xffff, 0xffff},  // Fake data for testing.
       });
-  return kUncustomizableMice.contains({device.vendor_id, device.product_id})
-             ? mojom::CustomizationRestriction::kDisallowCustomizations
-             : mojom::CustomizationRestriction::kAllowCustomizations;
+  return !kUncustomizableMice.contains({device.vendor_id, device.product_id});
 }
 
 bool IsKeyboardPretendingToBeMouse(const ui::InputDevice& device) {
@@ -239,8 +236,17 @@ bool IsKeyboardPretendingToBeMouse(const ui::InputDevice& device) {
 }
 
 base::Value::Dict ConvertButtonRemappingToDict(
-    const mojom::ButtonRemapping& remapping) {
+    const mojom::ButtonRemapping& remapping,
+    mojom::CustomizationRestriction customization_restriction) {
   base::Value::Dict dict;
+
+  if (customization_restriction ==
+          mojom::CustomizationRestriction::kDisallowCustomizations ||
+      (remapping.button->is_vkey() &&
+       customization_restriction ==
+           mojom::CustomizationRestriction::kDisableKeyEventRewrites)) {
+    return dict;
+  }
 
   dict.Set(prefs::kButtonRemappingName, remapping.name);
   if (remapping.button->is_customizable_button()) {
@@ -283,24 +289,33 @@ base::Value::Dict ConvertButtonRemappingToDict(
 }
 
 base::Value::List ConvertButtonRemappingArrayToList(
-    const std::vector<mojom::ButtonRemappingPtr>& remappings) {
+    const std::vector<mojom::ButtonRemappingPtr>& remappings,
+    mojom::CustomizationRestriction customization_restriction) {
   base::Value::List list;
   for (const auto& remapping : remappings) {
-    base::Value::Dict dict = ConvertButtonRemappingToDict(*remapping);
+    base::Value::Dict dict =
+        ConvertButtonRemappingToDict(*remapping, customization_restriction);
+    // Remove empty dicts.
+    if (dict.empty()) {
+      continue;
+    }
+
     list.Append(std::move(dict));
   }
   return list;
 }
 
 std::vector<mojom::ButtonRemappingPtr> ConvertListToButtonRemappingArray(
-    const base::Value::List& list) {
+    const base::Value::List& list,
+    mojom::CustomizationRestriction customization_restriction) {
   std::vector<mojom::ButtonRemappingPtr> array;
   for (const auto& element : list) {
     if (!element.is_dict()) {
       continue;
     }
     const auto& dict = element.GetDict();
-    auto remapping = ConvertDictToButtonRemapping(dict);
+    auto remapping =
+        ConvertDictToButtonRemapping(dict, customization_restriction);
     if (remapping) {
       array.push_back(std::move(remapping));
     }
@@ -309,7 +324,13 @@ std::vector<mojom::ButtonRemappingPtr> ConvertListToButtonRemappingArray(
 }
 
 mojom::ButtonRemappingPtr ConvertDictToButtonRemapping(
-    const base::Value::Dict& dict) {
+    const base::Value::Dict& dict,
+    mojom::CustomizationRestriction customization_restriction) {
+  if (customization_restriction ==
+      mojom::CustomizationRestriction::kDisallowCustomizations) {
+    return nullptr;
+  }
+
   const std::string* name = dict.FindString(prefs::kButtonRemappingName);
   if (!name) {
     return nullptr;
@@ -329,12 +350,18 @@ mojom::ButtonRemappingPtr ConvertDictToButtonRemapping(
   if (!customizable_button && !key_code) {
     return nullptr;
   }
-  // Button can be either a keyboard key or a customization button.
+  // Button can be either a keyboard key or a customization button. If
+  // the customization_restriction is not kDisableKeyEventRewrites,
+  // the button is allowed to be a keyboard key.
   if (customizable_button) {
     button = mojom::Button::NewCustomizableButton(
         static_cast<mojom::CustomizableButton>(*customizable_button));
-  } else {
+  } else if (key_code &&
+             customization_restriction !=
+                 mojom::CustomizationRestriction::kDisableKeyEventRewrites) {
     button = mojom::Button::NewVkey(static_cast<::ui::KeyboardCode>(*key_code));
+  } else {
+    return nullptr;
   }
 
   // remapping_action is an optional union.

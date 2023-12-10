@@ -7,7 +7,7 @@ import './suggest_tile.js';
 import '../../discount.mojom-webui.js';
 
 import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {listenOnce} from 'chrome://resources/js/util_ts.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -116,7 +116,10 @@ export class HistoryClustersModuleElement extends I18nMixin
     HistoryClustersProxyImpl.getInstance().handler.recordLayoutTypeShown(
         this.layoutType, this.cluster.id);
 
-    listenOnce(window, 'unload', () => {
+    // Use `pagehide` rather than `unload` because unload is being deprecated.
+    // `pagehide` fires with the same timing and is safe to use since NTP never
+    // enters back/forward-cache.
+    listenOnce(window, 'pagehide', () => {
       const visitTiles: TileModuleElement[] = Array.from(
           this.shadowRoot!.querySelectorAll('ntp-history-clusters-tile'));
       const count = visitTiles.reduce(

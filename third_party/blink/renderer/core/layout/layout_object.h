@@ -359,17 +359,17 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
   LayoutObject* Parent() const {
     NOT_DESTROYED();
-    return parent_;
+    return parent_.Get();
   }
   bool IsDescendantOf(const LayoutObject*) const;
 
   LayoutObject* PreviousSibling() const {
     NOT_DESTROYED();
-    return previous_;
+    return previous_.Get();
   }
   LayoutObject* NextSibling() const {
     NOT_DESTROYED();
-    return next_;
+    return next_.Get();
   }
 
   DISABLE_CFI_PERF
@@ -592,10 +592,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     return AddChild(new_child, before_child);
   }
   virtual void RemoveChild(LayoutObject*);
-  virtual bool CreatesAnonymousWrapper() const {
-    NOT_DESTROYED();
-    return false;
-  }
   //////////////////////////////////////////
 
   UniqueObjectId UniqueId() const {
@@ -733,7 +729,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     if (RuntimeEnabledFeatures::ElementCaptureEnabled()) {
       if (Element* element = DynamicTo<Element>(GetNode())) {
-        return element->GetRegionCaptureCropId();
+        return element->GetRestrictionTargetId();
       }
     }
     return false;
@@ -908,29 +904,25 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     return IsOfType(kLayoutObjectNGFlexibleBox);
   }
-  bool IsLayoutNGListItem() const {
+  bool IsLayoutListItem() const {
     NOT_DESTROYED();
-    return IsOfType(kLayoutObjectNGListItem);
+    return IsOfType(kLayoutObjectListItem);
   }
   bool IsInlineListItem() const {
     NOT_DESTROYED();
-    return IsOfType(kLayoutObjectNGInlineListItem);
+    return IsOfType(kLayoutObjectInlineListItem);
   }
-  bool IsLayoutNGInsideListMarker() const {
+  bool IsLayoutInsideListMarker() const {
     NOT_DESTROYED();
-    return IsOfType(kLayoutObjectNGInsideListMarker);
+    return IsOfType(kLayoutObjectInsideListMarker);
   }
-  bool IsLayoutNGOutsideListMarker() const {
+  bool IsLayoutOutsideListMarker() const {
     NOT_DESTROYED();
-    return IsOfType(kLayoutObjectNGOutsideListMarker);
+    return IsOfType(kLayoutObjectOutsideListMarker);
   }
   bool IsLayoutTextCombine() const {
     NOT_DESTROYED();
     return IsOfType(kLayoutObjectTextCombine);
-  }
-  bool IsLayoutNGView() const {
-    NOT_DESTROYED();
-    return IsOfType(kLayoutObjectNGView);
   }
   bool IsLayoutTableCol() const {
     NOT_DESTROYED();
@@ -964,9 +956,9 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     return IsOfType(kLayoutObjectButton);
   }
-  bool IsLayoutNGCustom() const {
+  bool IsLayoutCustom() const {
     NOT_DESTROYED();
-    return IsOfType(kLayoutObjectNGCustom);
+    return IsOfType(kLayoutObjectCustom);
   }
   bool IsLayoutNGGrid() const {
     NOT_DESTROYED();
@@ -1477,7 +1469,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // For non-boxes, for better performance, the caller can prepare
   // |block_for_flipping| (= ContainingBlock()) if it will loop through many
   // rects/points to flip to avoid the cost of repeated ContainingBlock() calls.
-  [[nodiscard]] LayoutRect FlipForWritingMode(
+  [[nodiscard]] DeprecatedLayoutRect FlipForWritingMode(
       const PhysicalRect& r,
       const LayoutBox* box_for_flipping = nullptr) const {
     NOT_DESTROYED();
@@ -1487,7 +1479,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
             r.Y(), r.Width(), r.Height()};
   }
   [[nodiscard]] PhysicalRect FlipForWritingMode(
-      const LayoutRect& r,
+      const DeprecatedLayoutRect& r,
       const LayoutBox* box_for_flipping = nullptr) const {
     NOT_DESTROYED();
     if (LIKELY(!HasFlippedBlocksWritingMode()))
@@ -1776,7 +1768,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
   Node* GetNode() const {
     NOT_DESTROYED();
-    return IsAnonymous() ? nullptr : node_;
+    return IsAnonymous() ? nullptr : node_.Get();
   }
 
   Node* NonPseudoNode() const {
@@ -2353,7 +2345,10 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
   const LayoutBlock* InclusiveContainingBlock() const;
 
-  const LayoutBox* ContainingScrollContainer() const;
+  const LayoutBox* ContainingScrollContainer(
+      bool ignore_layout_view_for_fixed_pos = false) const;
+  const PaintLayer* ContainingScrollContainerLayer(
+      bool ignore_layout_view_for_fixed_pos = false) const;
 
   bool CanContainAbsolutePositionObjects() const {
     NOT_DESTROYED();
@@ -2500,7 +2495,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // Return the offset from the container() layoutObject (excluding transforms
   // and multicol).
   PhysicalOffset OffsetFromContainer(const LayoutObject*,
-                                     bool ignore_scroll_offset = false) const;
+                                     MapCoordinatesFlags = 0) const;
   // Return the offset from an object from the ancestor. The ancestor need
   // not be on the containing block chain of |this|. Note that this function
   // cannot be used when there are transforms between this object and the
@@ -2682,7 +2677,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // and the <ol>.
   bool AffectsWhitespaceSiblings() const {
     NOT_DESTROYED();
-    return !IsFloatingOrOutOfFlowPositioned() && !IsLayoutNGOutsideListMarker();
+    return !IsFloatingOrOutOfFlowPositioned() && !IsLayoutOutsideListMarker();
   }
 
   // Not returning StyleRef().BoxReflect() because some objects ignore the
@@ -2730,28 +2725,14 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
   /**
    * Returns the local coordinates of the caret within this layout object.
-   * @param caretOffset zero-based offset determining position within the
+   * @param caret_offset zero-based offset determining position within the
    * layout object.
-   * @param extraWidthToEndOfLine optional out arg to give extra width to end
-   * of line -
-   * useful for character range rect computations
+   * @param extra_width_to_end_of_line optional out arg to give extra width to
+   * end of line - useful for character range rect computations
    */
-  // TODO(crbug.com/1353190): Change the return type to PhysicalRect, and
-  // merge LocalCaretRect() and PhysicalLocalCaretRect().
-  virtual LayoutRect LocalCaretRect(
+  virtual PhysicalRect LocalCaretRect(
       int caret_offset,
       LayoutUnit* extra_width_to_end_of_line = nullptr) const;
-  PhysicalRect PhysicalLocalCaretRect(
-      int caret_offset,
-      LayoutUnit* extra_width_to_end_of_line = nullptr) const {
-    NOT_DESTROYED();
-    if (RuntimeEnabledFeatures::LayoutNGNoLocationEnabled()) {
-      return PhysicalRect(
-          LocalCaretRect(caret_offset, extra_width_to_end_of_line));
-    }
-    return FlipForWritingMode(
-        LocalCaretRect(caret_offset, extra_width_to_end_of_line));
-  }
 
   // When performing a global document tear-down, the layoutObject of the
   // document is cleared. We use this as a hook to detect the case of document
@@ -2771,24 +2752,24 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // TODO(1229581): Rename this function.
   bool IsListItemIncludingNG() const {
     NOT_DESTROYED();
-    return IsLayoutNGListItem() || IsInlineListItem();
+    return IsLayoutListItem() || IsInlineListItem();
   }
 
   // There 2 different types of list markers:
-  // * LayoutNGInsideListMarker (LayoutInline): for inside markers
-  // * LayoutNGOutsideListMarker (LayoutNGBlockFlow): for outside markers.
+  // * LayoutInsideListMarker (LayoutInline): for inside markers
+  // * LayoutOutsideListMarker (LayoutNGBlockFlow): for outside markers.
 
   // Any kind of LayoutBox list marker.
   // TODO(1229581): Remove this function. Just use
-  // IsLayoutNGOutsideListMarker().
+  // IsLayoutOutsideListMarker().
   bool IsBoxListMarkerIncludingNG() const {
     NOT_DESTROYED();
-    return IsLayoutNGOutsideListMarker();
+    return IsLayoutOutsideListMarker();
   }
   // Any kind of list marker.
   bool IsListMarker() const {
     NOT_DESTROYED();
-    return IsLayoutNGInsideListMarker() || IsLayoutNGOutsideListMarker();
+    return IsLayoutInsideListMarker() || IsLayoutOutsideListMarker();
   }
 
   // ImageResourceObserver override.
@@ -3319,19 +3300,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     bitfields_.SetShouldSkipLayoutCache(b);
   }
 
-  BackgroundPaintLocation GetBackgroundPaintLocation() const {
-    NOT_DESTROYED();
-    return static_cast<BackgroundPaintLocation>(background_paint_location_);
-  }
-  void SetBackgroundPaintLocation(BackgroundPaintLocation location) {
-    NOT_DESTROYED();
-    if (GetBackgroundPaintLocation() != location) {
-      SetBackgroundNeedsFullPaintInvalidation();
-      background_paint_location_ = static_cast<unsigned>(location);
-      DCHECK_EQ(location, GetBackgroundPaintLocation());
-    }
-  }
-
   bool IsBackgroundAttachmentFixedObject() const {
     NOT_DESTROYED();
     return bitfields_.IsBackgroundAttachmentFixedObject();
@@ -3374,19 +3342,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     auto* context = GetDisplayLockContext();
     return context && !context->ShouldPaintChildren();
-  }
-
-  // This flag caches StyleRef().HasBorderDecoration() &&
-  // !Table()->ShouldCollapseBorders().
-  bool HasNonCollapsedBorderDecoration() const {
-    NOT_DESTROYED();
-    DCHECK_GE(GetDocument().Lifecycle().GetState(),
-              DocumentLifecycle::kInPerformLayout);
-    return bitfields_.HasNonCollapsedBorderDecoration();
-  }
-  void SetHasNonCollapsedBorderDecoration(bool b) {
-    NOT_DESTROYED();
-    bitfields_.SetHasNonCollapsedBorderDecoration(b);
   }
 
   bool BeingDestroyed() const {
@@ -3513,13 +3468,17 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     kLayoutObjectButton,
     kLayoutObjectCanvas,
     kLayoutObjectCounter,
+    kLayoutObjectCustom,
     kLayoutObjectCustomScrollbarPart,
     kLayoutObjectEmbeddedObject,
+    kLayoutObjectFieldset,
     kLayoutObjectFrame,
+    kLayoutObjectFrameSet,
     kLayoutObjectIFrame,
     kLayoutObjectImage,
-    kLayoutObjectFieldset,
-    kLayoutObjectFrameSet,
+    kLayoutObjectInlineListItem,
+    kLayoutObjectInsideListMarker,
+    kLayoutObjectListItem,
     kLayoutObjectListMarkerImage,
     kLayoutObjectMathML,
     kLayoutObjectMathMLRoot,
@@ -3527,14 +3486,9 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     kLayoutObjectMultiColumnSet,
     kLayoutObjectMultiColumnSpannerPlaceholder,
     kLayoutObjectNGBlockFlow,
-    kLayoutObjectNGCustom,
     kLayoutObjectNGFlexibleBox,
     kLayoutObjectNGGrid,
-    kLayoutObjectNGInlineListItem,
-    kLayoutObjectNGInsideListMarker,
-    kLayoutObjectNGListItem,
-    kLayoutObjectNGOutsideListMarker,
-    kLayoutObjectNGView,
+    kLayoutObjectOutsideListMarker,
     kLayoutObjectProgress,
     kLayoutObjectQuote,
     kLayoutObjectReplaced,
@@ -3669,7 +3623,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
   virtual PhysicalOffset OffsetFromContainerInternal(
       const LayoutObject*,
-      bool ignore_scroll_offset) const;
+      MapCoordinatesFlags mode) const;
   PhysicalOffset OffsetFromScrollableContainer(const LayoutObject*,
                                                bool ignore_scroll_offset) const;
 
@@ -3726,6 +3680,22 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   bool HasValidCachedGeometry() const {
     NOT_DESTROYED();
     return bitfields_.HasValidCachedGeometry();
+  }
+
+  // For LayoutBox. They are here to use the bit fields.
+  BackgroundPaintLocation GetBackgroundPaintLocation() const {
+    NOT_DESTROYED();
+    DCHECK(IsBox());
+    return static_cast<BackgroundPaintLocation>(background_paint_location_);
+  }
+  void SetBackgroundPaintLocation(BackgroundPaintLocation location) {
+    NOT_DESTROYED();
+    DCHECK(IsBox());
+    if (GetBackgroundPaintLocation() != location) {
+      SetBackgroundNeedsFullPaintInvalidation();
+      background_paint_location_ = static_cast<unsigned>(location);
+      DCHECK_EQ(location, GetBackgroundPaintLocation());
+    }
   }
 
  private:
@@ -3924,7 +3894,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
           is_global_root_scroller_(false),
           registered_as_first_line_image_observer_(false),
           is_html_legend_element_(false),
-          has_non_collapsed_border_decoration_(false),
           being_destroyed_(false),
           is_table_column_constraints_dirty_(false),
           is_grid_placement_dirty_(true),
@@ -4187,11 +4156,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     // Whether this object's |Node| is a HTMLLegendElement. Used to increase
     // performance of |IsRenderedLegend| which is performance sensitive.
     ADD_BOOLEAN_BITFIELD(is_html_legend_element_, IsHTMLLegendElement);
-
-    // Caches StyleRef().HasBorderDecoration() &&
-    // !Table()->ShouldCollapseBorders().
-    ADD_BOOLEAN_BITFIELD(has_non_collapsed_border_decoration_,
-                         HasNonCollapsedBorderDecoration);
 
     // True at start of |Destroy()| before calling |WillBeDestroyed()|.
     ADD_BOOLEAN_BITFIELD(being_destroyed_, BeingDestroyed);

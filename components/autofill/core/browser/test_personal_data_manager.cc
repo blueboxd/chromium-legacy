@@ -69,16 +69,23 @@ void TestPersonalDataManager::UpdateProfile(const AutofillProfile& profile) {
 }
 
 void TestPersonalDataManager::RemoveByGUID(const std::string& guid) {
+  RemoveByGuidWithoutNotifications(guid);
+  NotifyPersonalDataObserver();
+}
+
+void TestPersonalDataManager::RemoveByGuidWithoutNotifications(
+    const std::string& guid) {
   if (CreditCard* credit_card = GetCreditCardByGUID(guid)) {
     local_credit_cards_.erase(base::ranges::find(
         local_credit_cards_, credit_card, &std::unique_ptr<CreditCard>::get));
-    NotifyPersonalDataObserver();
   } else if (AutofillProfile* profile = GetProfileByGUID(guid)) {
     std::vector<std::unique_ptr<AutofillProfile>>& profiles =
         GetProfileStorage(profile->source());
     profiles.erase(base::ranges::find(profiles, profile,
                                       &std::unique_ptr<AutofillProfile>::get));
-    NotifyPersonalDataObserver();
+  } else if (Iban* iban = GetIbanByGUID(guid)) {
+    local_ibans_.erase(
+        base::ranges::find(local_ibans_, iban, &std::unique_ptr<Iban>::get));
   }
 }
 
@@ -106,10 +113,20 @@ std::string TestPersonalDataManager::AddIban(Iban iban) {
   return iban.guid();
 }
 
+std::string TestPersonalDataManager::UpdateIban(const Iban& iban) {
+  Iban* old_iban = GetIbanByGUID(iban.guid());
+  CHECK(old_iban);
+  *old_iban = iban;
+  NotifyPersonalDataObserver();
+  return iban.guid();
+}
+
 void TestPersonalDataManager::DeleteLocalCreditCards(
     const std::vector<CreditCard>& cards) {
   for (const auto& card : cards)
-    RemoveByGUID(card.guid());
+    // Removed the cards silently and trigger a single notification to match the
+    // behavior of PersonalDataManager.
+    RemoveByGuidWithoutNotifications(card.guid());
 
   NotifyPersonalDataObserver();
 }
@@ -117,7 +134,10 @@ void TestPersonalDataManager::DeleteLocalCreditCards(
 void TestPersonalDataManager::UpdateCreditCard(const CreditCard& credit_card) {
   CreditCard* existing_credit_card = GetCreditCardByGUID(credit_card.guid());
   if (existing_credit_card) {
-    RemoveByGUID(existing_credit_card->guid());
+    // AddCreditCard will trigger a notification to observers. We remove the old
+    // card without notification so that exactly one notification is sent, which
+    // matches the behavior of the PersonalDataManager.
+    RemoveByGuidWithoutNotifications(existing_credit_card->guid());
     AddCreditCard(credit_card);
   }
 }
@@ -210,7 +230,7 @@ void TestPersonalDataManager::LoadCreditCardCloudTokenData() {
 }
 
 void TestPersonalDataManager::LoadIbans() {
-  pending_ibans_query_ = 128;
+  pending_local_ibans_query_ = 128;
   pending_server_ibans_query_ = 129;
   {
     std::vector<std::unique_ptr<Iban>> ibans;
@@ -218,7 +238,7 @@ void TestPersonalDataManager::LoadIbans() {
     std::unique_ptr<WDTypedResult> result =
         std::make_unique<WDResult<std::vector<std::unique_ptr<Iban>>>>(
             AUTOFILL_IBANS_RESULT, std::move(ibans));
-    OnWebDataServiceRequestDone(pending_ibans_query_, std::move(result));
+    OnWebDataServiceRequestDone(pending_local_ibans_query_, std::move(result));
   }
   {
     std::vector<std::unique_ptr<Iban>> server_ibans;
@@ -238,12 +258,13 @@ bool TestPersonalDataManager::IsAutofillProfileEnabled() const {
   return PersonalDataManager::IsAutofillProfileEnabled();
 }
 
-bool TestPersonalDataManager::IsAutofillCreditCardEnabled() const {
-  // Return the value of autofill_credit_card_enabled_ if it has been set,
+bool TestPersonalDataManager::IsAutofillPaymentMethodsEnabled() const {
+  // Return the value of autofill_payment_methods_enabled_ if it has been set,
   // otherwise fall back to the normal behavior of checking the pref_service.
-  if (autofill_credit_card_enabled_.has_value())
-    return autofill_credit_card_enabled_.value();
-  return PersonalDataManager::IsAutofillCreditCardEnabled();
+  if (autofill_payment_methods_enabled_.has_value()) {
+    return autofill_payment_methods_enabled_.value();
+  }
+  return PersonalDataManager::IsAutofillPaymentMethodsEnabled();
 }
 
 bool TestPersonalDataManager::IsAutofillWalletImportEnabled() const {
@@ -255,7 +276,7 @@ bool TestPersonalDataManager::IsAutofillWalletImportEnabled() const {
 }
 
 bool TestPersonalDataManager::ShouldSuggestServerCards() const {
-  return IsAutofillCreditCardEnabled() && IsAutofillWalletImportEnabled();
+  return IsAutofillPaymentMethodsEnabled() && IsAutofillWalletImportEnabled();
 }
 
 std::string TestPersonalDataManager::CountryCodeForCurrentTimezone() const {
@@ -348,6 +369,11 @@ void TestPersonalDataManager::AddAutofillOfferData(
   std::unique_ptr<AutofillOfferData> data =
       std::make_unique<AutofillOfferData>(offer_data);
   autofill_offer_data_.emplace_back(std::move(data));
+  NotifyPersonalDataObserver();
+}
+
+void TestPersonalDataManager::AddServerIban(const Iban& iban) {
+  server_ibans_.push_back(std::make_unique<Iban>(iban));
   NotifyPersonalDataObserver();
 }
 

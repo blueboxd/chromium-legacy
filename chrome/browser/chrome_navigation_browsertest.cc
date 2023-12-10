@@ -14,7 +14,6 @@
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/protocol/devtools_protocol_test_support.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/login_detection/login_detection_util.h"
@@ -48,7 +47,6 @@
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -189,15 +187,14 @@ class CtrlClickProcessTest : public ChromeNavigationBrowserTest {
     content::WebContents* new_contents = nullptr;
     {
       content::WebContentsAddedObserver new_tab_observer;
+      static constexpr char kNewTabClickScriptTemplate[] =
 #if BUILDFLAG(IS_MAC)
-      const char* new_tab_click_script_template =
           "simulateClick(\"%s\", { metaKey: true });";
 #else
-      const char* new_tab_click_script_template =
           "simulateClick(\"%s\", { ctrlKey: true });";
 #endif
-      std::string new_tab_click_script = base::StringPrintf(
-          new_tab_click_script_template, id_of_anchor_to_click);
+      std::string new_tab_click_script =
+          base::StringPrintf(kNewTabClickScriptTemplate, id_of_anchor_to_click);
       EXPECT_TRUE(ExecJs(main_contents, new_tab_click_script));
 
       // Wait for a new tab to appear (the whole point of this test).
@@ -1499,7 +1496,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   // Open a popup.
   content::WebContents* opener =
       browser()->tab_strip_model()->GetActiveWebContents();
-  const char* kScriptFormat = "!!window.open('%s');";
+  static constexpr char kScriptFormat[] = "!!window.open('%s');";
   GURL popup_url = embedded_test_server()->GetURL("b.com", "/title1.html");
   content::TestNavigationObserver popup_waiter(nullptr, 1);
   popup_waiter.StartWatchingNewWebContents();
@@ -1547,7 +1544,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   // Open a popup.
   content::WebContents* opener =
       browser()->tab_strip_model()->GetActiveWebContents();
-  const char* kScriptFormat = "!!window.open('%s');";
+  static constexpr char kScriptFormat[] = "!!window.open('%s');";
   GURL popup_url = embedded_test_server()->GetURL("a.com", "/title1.html");
   content::TestNavigationObserver popup_waiter(nullptr, 1);
   popup_waiter.StartWatchingNewWebContents();

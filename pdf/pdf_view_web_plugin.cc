@@ -1883,12 +1883,6 @@ void PdfViewWebPlugin::ClearDeferredInvalidates() {
 }
 
 void PdfViewWebPlugin::UpdateSnapshot(sk_sp<SkImage> snapshot) {
-  snapshot_ =
-      cc::PaintImageBuilder::WithDefault()
-          .set_image(std::move(snapshot), cc::PaintImage::GetNextContentId())
-          .set_id(cc::PaintImage::GetNextId())
-          .TakePaintImage();
-
   // Every time something changes (e.g. scale or scroll position),
   // `UpdateSnapshot()` is called, so the snapshot is effectively used only
   // once. Make it "no-cache" so that the old snapshots are not cached
@@ -1899,7 +1893,12 @@ void PdfViewWebPlugin::UpdateSnapshot(sk_sp<SkImage> snapshot) {
   // service transfer cache. The size of the service transfer cache is bounded,
   // so on desktop this "only" causes a 256MiB memory spike, but it's completely
   // wasted memory nonetheless.
-  snapshot_.set_no_cache(true);
+  snapshot_ =
+      cc::PaintImageBuilder::WithDefault()
+          .set_image(std::move(snapshot), cc::PaintImage::GetNextContentId())
+          .set_id(cc::PaintImage::GetNextId())
+          .set_no_cache(true)
+          .TakePaintImage();
 
   if (!plugin_rect_.IsEmpty())
     InvalidatePluginContainer();
@@ -2291,6 +2290,12 @@ void PdfViewWebPlugin::LoadAvailablePreviewPage() {
 void PdfViewWebPlugin::DidOpenPreview(std::unique_ptr<UrlLoader> loader,
                                       int32_t result) {
   DCHECK_EQ(result, kSuccess);
+
+  // `preview_engine_` holds a `raw_ptr` to `preview_client_`.
+  // We need to explicitly destroy it before clobbering
+  // `preview_client_` to dodge lifetime issues.
+  preview_engine_.reset();
+
   preview_client_ = std::make_unique<PreviewModeClient>(this);
   preview_engine_ = client_->CreateEngine(
       preview_client_.get(), PDFiumFormFiller::ScriptOption::kNoJavaScript);
@@ -2307,9 +2312,7 @@ void PdfViewWebPlugin::PreviewDocumentLoadComplete() {
   preview_document_load_state_ = DocumentLoadState::kComplete;
 
   int dest_page_index = preview_pages_info_.front().dest_page_index;
-  DCHECK_GT(dest_page_index, 0);
   preview_pages_info_.pop();
-  DCHECK(preview_engine_);
   engine_->AppendPage(preview_engine_.get(), dest_page_index);
 
   ++print_preview_loaded_page_count_;

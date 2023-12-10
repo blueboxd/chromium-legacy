@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FORM_CONTROL_ELEMENT_H_
 
 #include "third_party/blink/public/common/metrics/form_element_pii_type.h"
+#include "third_party/blink/public/mojom/forms/form_control_type.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_autofill_state.h"
@@ -59,42 +60,8 @@ class BLINK_EXPORT WebFormControlElement : public WebElement {
   bool IsReadOnly() const;
   WebString FormControlName() const;
 
-  enum class Type {
-    kButtonButton,
-    kButtonSubmit,
-    kButtonReset,
-    kButtonSelectList,
-    kFieldset,
-    kInputButton,
-    kInputCheckbox,
-    kInputColor,
-    kInputDate,
-    kInputDatetimeLocal,
-    kInputEmail,
-    kInputFile,
-    kInputHidden,
-    kInputImage,
-    kInputMonth,
-    kInputNumber,
-    kInputPassword,
-    kInputRadio,
-    kInputRange,
-    kInputReset,
-    kInputSearch,
-    kInputSubmit,
-    kInputTelephone,
-    kInputText,
-    kInputTime,
-    kInputUrl,
-    kInputWeek,
-    kOutput,
-    kSelectOne,
-    kSelectMultiple,
-    kSelectList,
-    kTextArea,
-  };
-  Type FormControlType() const;
-  Type FormControlTypeForAutofill() const;
+  mojom::FormControlType FormControlType() const;
+  mojom::FormControlType FormControlTypeForAutofill() const;
 
   enum WebAutofillState GetAutofillState() const;
   bool IsAutofilled() const;
@@ -155,6 +122,12 @@ class BLINK_EXPORT WebFormControlElement : public WebElement {
   // or insisde the textarea. If neither input element nor textarea element,
   // a null string is returned.
   WebString EditingValue() const;
+
+  // The maximum length in terms of text length the form control can hold. Like
+  // the maxLength IDL attribute, this is non-negative with two exceptions: if
+  // the attribute does not apply to the element or the element has no (valid)
+  // maximum length set, it is -1.
+  int MaxLength() const;
 
   // Sets character selection range.
   void SetSelectionRange(unsigned start, unsigned end);

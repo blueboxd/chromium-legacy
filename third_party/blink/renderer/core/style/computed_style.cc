@@ -33,6 +33,7 @@
 #include "base/ranges/algorithm.h"
 #include "build/build_config.h"
 #include "cc/input/overscroll_behavior.h"
+#include "cc/paint/paint_flags.h"
 #include "third_party/blink/public/mojom/css/preferred_color_scheme.mojom-blink.h"
 #include "third_party/blink/renderer/core/animation/css/css_animation_data.h"
 #include "third_party/blink/renderer/core/animation/css/css_transition_data.h"
@@ -50,11 +51,11 @@
 #include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/html/html_progress_element.h"
+#include "third_party/blink/renderer/core/layout/custom/layout_worklet.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/map_coordinates_flags.h"
-#include "third_party/blink/renderer/core/layout/ng/custom/layout_worklet.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/paint/compositing/compositing_reason_finder.h"
 #include "third_party/blink/renderer/core/style/applied_text_decoration.h"
@@ -471,20 +472,18 @@ ComputedStyle::ComputeDifferenceIgnoringInheritedFirstLineStyle(
 
 StyleSelfAlignmentData ResolvedSelfAlignment(
     const StyleSelfAlignmentData& value,
-    ItemPosition normal_value_behavior) {
+    ItemPosition normal_value_behavior,
+    bool has_out_of_flow_position) {
   if (value.GetPosition() == ItemPosition::kLegacy ||
       value.GetPosition() == ItemPosition::kNormal ||
       value.GetPosition() == ItemPosition::kAuto) {
     return {normal_value_behavior, OverflowAlignment::kDefault};
   }
+  if (!has_out_of_flow_position &&
+      value.GetPosition() == ItemPosition::kAnchorCenter) {
+    return {ItemPosition::kCenter, value.Overflow(), value.PositionType()};
+  }
   return value;
-}
-
-StyleSelfAlignmentData ComputedStyle::ResolvedAlignItems(
-    ItemPosition normal_value_behaviour) const {
-  // We will return the behaviour of 'normal' value if needed, which is specific
-  // of each layout model.
-  return ResolvedSelfAlignment(AlignItems(), normal_value_behaviour);
 }
 
 StyleSelfAlignmentData ComputedStyle::ResolvedAlignSelf(
@@ -493,18 +492,13 @@ StyleSelfAlignmentData ComputedStyle::ResolvedAlignSelf(
   // We will return the behaviour of 'normal' value if needed, which is specific
   // of each layout model.
   if (!parent_style || AlignSelf().GetPosition() != ItemPosition::kAuto) {
-    return ResolvedSelfAlignment(AlignSelf(), normal_value_behaviour);
+    return ResolvedSelfAlignment(AlignSelf(), normal_value_behaviour,
+                                 HasOutOfFlowPosition());
   }
 
   // The 'auto' keyword computes to the parent's align-items computed value.
-  return parent_style->ResolvedAlignItems(normal_value_behaviour);
-}
-
-StyleSelfAlignmentData ComputedStyle::ResolvedJustifyItems(
-    ItemPosition normal_value_behaviour) const {
-  // We will return the behaviour of 'normal' value if needed, which is specific
-  // of each layout model.
-  return ResolvedSelfAlignment(JustifyItems(), normal_value_behaviour);
+  return ResolvedSelfAlignment(parent_style->AlignItems(),
+                               normal_value_behaviour, HasOutOfFlowPosition());
 }
 
 StyleSelfAlignmentData ComputedStyle::ResolvedJustifySelf(
@@ -513,11 +507,13 @@ StyleSelfAlignmentData ComputedStyle::ResolvedJustifySelf(
   // We will return the behaviour of 'normal' value if needed, which is specific
   // of each layout model.
   if (!parent_style || JustifySelf().GetPosition() != ItemPosition::kAuto) {
-    return ResolvedSelfAlignment(JustifySelf(), normal_value_behaviour);
+    return ResolvedSelfAlignment(JustifySelf(), normal_value_behaviour,
+                                 HasOutOfFlowPosition());
   }
 
   // The auto keyword computes to the parent's justify-items computed value.
-  return parent_style->ResolvedJustifyItems(normal_value_behaviour);
+  return ResolvedSelfAlignment(parent_style->JustifyItems(),
+                               normal_value_behaviour, HasOutOfFlowPosition());
 }
 
 StyleContentAlignmentData ResolvedContentAlignment(
@@ -1222,6 +1218,7 @@ static bool HasPropertyThatCreatesStackingContext(
       case CSSPropertyID::kOffsetPath:
       case CSSPropertyID::kOffsetPosition:
       case CSSPropertyID::kWebkitMask:
+      case CSSPropertyID::kWebkitAlternativeMask:
       case CSSPropertyID::kWebkitMaskBoxImage:
       case CSSPropertyID::kClipPath:
       case CSSPropertyID::kWebkitBoxReflect:
@@ -2365,7 +2362,7 @@ TextEmphasisMark ComputedStyle::GetTextEmphasisMark() const {
   return TextEmphasisMark::kSesame;
 }
 
-NGPhysicalBoxStrut ComputedStyle::ImageOutsets(
+PhysicalBoxStrut ComputedStyle::ImageOutsets(
     const NinePieceImage& image) const {
   return {NinePieceImage::ComputeOutset(image.Outset().Top(),
                                         BorderTopWidth().ToInt()),
@@ -2402,13 +2399,13 @@ bool ComputedStyle::BorderObscuresBackground() const {
   return true;
 }
 
-NGPhysicalBoxStrut ComputedStyle::BoxDecorationOutsets() const {
+PhysicalBoxStrut ComputedStyle::BoxDecorationOutsets() const {
   DCHECK(HasVisualOverflowingEffect());
-  NGPhysicalBoxStrut outsets;
+  PhysicalBoxStrut outsets;
 
   if (const ShadowList* box_shadow = BoxShadow()) {
-    outsets = NGPhysicalBoxStrut::Enclosing(
-        box_shadow->RectOutsetsIncludingOriginal());
+    outsets =
+        PhysicalBoxStrut::Enclosing(box_shadow->RectOutsetsIncludingOriginal());
   }
 
   if (HasBorderImageOutsets()) {
@@ -2852,5 +2849,12 @@ STATIC_ASSERT_ENUM(cc::OverscrollBehavior::Type::kContain,
                    EOverscrollBehavior::kContain);
 STATIC_ASSERT_ENUM(cc::OverscrollBehavior::Type::kNone,
                    EOverscrollBehavior::kNone);
+
+STATIC_ASSERT_ENUM(cc::PaintFlags::DynamicRangeLimit::kStandard,
+                   EDynamicRangeLimit::kStandard);
+STATIC_ASSERT_ENUM(cc::PaintFlags::DynamicRangeLimit::kHigh,
+                   EDynamicRangeLimit::kHigh);
+STATIC_ASSERT_ENUM(cc::PaintFlags::DynamicRangeLimit::kConstrainedHigh,
+                   EDynamicRangeLimit::kConstrainedHigh);
 
 }  // namespace blink

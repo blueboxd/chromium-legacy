@@ -12,6 +12,7 @@
 
 #include "base/check.h"
 #include "base/containers/contains.h"
+#include "base/debug/crash_logging.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
@@ -19,6 +20,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "base/types/expected.h"
 #include "base/uuid.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
@@ -310,7 +312,7 @@ void AdAuctionServiceImpl::RunAdAuction(
   auto* auction_result_metrics =
       AdAuctionResultMetrics::GetOrCreateForPage(render_frame_host().GetPage());
   if (!auction_result_metrics->ShouldRunAuction()) {
-    std::move(callback).Run(/*manually_aborted=*/false,
+    std::move(callback).Run(/*aborted_by_script=*/false,
                             /*config=*/absl::nullopt);
     return;
   }
@@ -338,7 +340,7 @@ void AdAuctionServiceImpl::RunAdAuction(
   // If pending mapped URN cannot be generated due to number of mappings has
   // reached limit, stop the auction.
   if (!urn_uuid.has_value()) {
-    std::move(callback).Run(/*manually_aborted=*/false,
+    std::move(callback).Run(/*aborted_by_script=*/false,
                             /*config=*/absl::nullopt);
     return;
   }
@@ -467,12 +469,17 @@ void AdAuctionServiceImpl::DeprecatedReplaceInURN(
 
 void AdAuctionServiceImpl::GetInterestGroupAdAuctionData(
     const url::Origin& seller,
-    blink::mojom::AdAuctionCoordinator coordinator,
+    const absl::optional<url::Origin>& coordinator,
     GetInterestGroupAdAuctionDataCallback callback) {
-  // If the interest group API is not allowed for this seller do nothing.
+  if (coordinator && coordinator->scheme() != url::kHttpsScheme) {
+    ReportBadMessageAndDeleteThis("Invalid Bidding and Auction Coordinator");
+    return;
+  }
+
+  // If the interest group API is not allowed for this origin do nothing.
   if (!IsInterestGroupAPIAllowed(
-          ContentBrowserClient::InterestGroupApiOperation::kSell, seller)) {
-    std::move(callback).Run({}, {});
+          ContentBrowserClient::InterestGroupApiOperation::kSell, origin())) {
+    std::move(callback).Run({}, {}, "Invalid Operation");
     return;
   }
 
@@ -618,7 +625,7 @@ AdAuctionServiceImpl::~AdAuctionServiceImpl() {
     // callbacks from the renderers are invoked. Uninvoked Mojo callbacks may
     // not be destroyed before the Mojo pipe is, and the parent DocumentService
     // class owns the pipe, so it may still be open at this point.
-    auctions_.begin()->first->FailAuction(/*manually_aborted=*/false);
+    auctions_.begin()->first->FailAuction(/*aborted_by_script=*/false);
   }
 }
 
@@ -672,7 +679,7 @@ void AdAuctionServiceImpl::OnAuctionComplete(
     GlobalRenderFrameHostId render_frame_host_id,
     const base::WeakPtr<PageImpl> page_impl,
     AuctionRunner* auction,
-    bool manually_aborted,
+    bool aborted_by_script,
     absl::optional<blink::InterestGroupKey> winning_group_key,
     absl::optional<blink::AdSize> requested_ad_size,
     absl::optional<blink::AdDescriptor> ad_descriptor,
@@ -701,7 +708,7 @@ void AdAuctionServiceImpl::OnAuctionComplete(
   if (!ad_descriptor) {
     DCHECK(!reporter);
 
-    std::move(callback).Run(manually_aborted, /*config=*/absl::nullopt);
+    std::move(callback).Run(aborted_by_script, /*config=*/absl::nullopt);
     if (auction_result_metrics) {
       // `auction_result_metrics` can be null since PageUserData like
       // AdAuctionResultMetrics isn't guaranteed to be destroyed after document
@@ -742,28 +749,15 @@ void AdAuctionServiceImpl::OnAuctionComplete(
   // 1. The render frame host has changed.
   // 2. The page owned by the render frame host has changed.
   // 3. The fenced frame mapping of the page has changed.
-  //
-  // Each possible scenario is checked below. They are put in separate if branch
-  // in order to identify from the dump.
-  bool mismatch_with_auction_start = false;
-  if (render_frame_host_id != GetFrame()->GetGlobalId()) {
-    base::debug::DumpWithoutCrashing();
-    mismatch_with_auction_start = true;
-  } else if (page_impl.get() != &(GetFrame()->GetPage())) {
-    base::debug::DumpWithoutCrashing();
-    mismatch_with_auction_start = true;
-  } else if (fenced_frame_urls_map_id !=
-             current_fenced_frame_urls_map.unique_id()) {
-    base::debug::DumpWithoutCrashing();
-    mismatch_with_auction_start = true;
-  }
-
-  if (mismatch_with_auction_start) {
+  if (IsAuctionExpectedToFail(fenced_frame_urls_map_id, render_frame_host_id,
+                              page_impl)) {
+    // At least one of the RenderFrameHostImpl, PageImpl and the
+    // FencedFrameUrlMapping has changed during the auction.
     if (auction_result_metrics) {
       auction_result_metrics->ReportAuctionResult(
           AdAuctionResultMetrics::AuctionResult::kFailed);
     }
-    std::move(callback).Run(manually_aborted, /*config=*/absl::nullopt);
+    std::move(callback).Run(aborted_by_script, /*config=*/absl::nullopt);
     return;
   }
 
@@ -780,7 +774,7 @@ void AdAuctionServiceImpl::OnAuctionComplete(
           urn_uuid, requested_ad_size, *ad_descriptor,
           std::move(ad_auction_data), reporter->OnNavigateToWinningAdCallback(),
           ad_component_descriptors, reporter->fenced_frame_reporter());
-  std::move(callback).Run(/*manually_aborted=*/false, std::move(config));
+  std::move(callback).Run(/*aborted_by_script=*/false, std::move(config));
 
   // Start the InterestGroupAuctionReporter. It will run reporting scripts, but
   // nothing will be reported (nor the reporter deleted) until a fenced frame
@@ -859,23 +853,23 @@ void AdAuctionServiceImpl::OnGotAuctionData(
     BiddingAndAuctionDataConstructionState state,
     BiddingAndAuctionData data) {
   if (data.request.empty()) {
-    std::move(state.callback).Run({}, {});
+    std::move(state.callback).Run({}, {}, "");
     return;
   }
 
   state.data = std::move(data);
-  blink::mojom::AdAuctionCoordinator coordinator = state.coordinator;
+  absl::optional<url::Origin> coordinator = state.coordinator;
   GetInterestGroupManager().GetBiddingAndAuctionServerKey(
-      GetRefCountedTrustedURLLoaderFactory().get(), coordinator,
+      GetRefCountedTrustedURLLoaderFactory().get(), std::move(coordinator),
       base::BindOnce(&AdAuctionServiceImpl::OnGotBiddingAndAuctionServerKey,
                      weak_ptr_factory_.GetWeakPtr(), std::move(state)));
 }
 
 void AdAuctionServiceImpl::OnGotBiddingAndAuctionServerKey(
     BiddingAndAuctionDataConstructionState state,
-    absl::optional<BiddingAndAuctionServerKey> maybe_key) {
-  if (!maybe_key) {
-    std::move(state.callback).Run({}, {});
+    base::expected<BiddingAndAuctionServerKey, std::string> maybe_key) {
+  if (!maybe_key.has_value()) {
+    std::move(state.callback).Run({}, {}, maybe_key.error());
     return;
   }
 
@@ -890,7 +884,7 @@ void AdAuctionServiceImpl::OnGotBiddingAndAuctionServerKey(
           maybe_key->key, maybe_key_config.value(),
           kBiddingAndAuctionEncryptionRequestMediaType.Get());
   if (!maybe_request.ok()) {
-    std::move(state.callback).Run({}, {});
+    std::move(state.callback).Run({}, {}, "Could not create request");
     return;
   }
 
@@ -922,7 +916,7 @@ void AdAuctionServiceImpl::OnGotBiddingAndAuctionServerKey(
   CHECK_EQ(data.size() + start_offset, buf.size());
   std::memcpy(&buf.data()[start_offset], data.data(), data.size());
 
-  std::move(state.callback).Run(std::move(buf), state.request_id);
+  std::move(state.callback).Run(std::move(buf), state.request_id, "");
   // Request sizes only increase by factors of two so we only need to sample
   // the powers of two. The maximum of 1 GB size is much larger than it should
   // ever be.
@@ -944,6 +938,56 @@ url::Origin AdAuctionServiceImpl::GetTopWindowOrigin() const {
     return origin();
   }
   return render_frame_host().GetMainFrame()->GetLastCommittedOrigin();
+}
+
+bool AdAuctionServiceImpl::IsAuctionExpectedToFail(
+    FencedFrameURLMapping::Id fenced_frame_urls_map_id,
+    GlobalRenderFrameHostId render_frame_host_id,
+    const base::WeakPtr<PageImpl> page_impl) {
+  bool render_frame_host_impl_mismatch =
+      render_frame_host_id != GetFrame()->GetGlobalId();
+  bool page_impl_mismatch = page_impl.get() != &(GetFrame()->GetPage());
+  bool fenced_frame_url_mapping_mismatch =
+      fenced_frame_urls_map_id !=
+      GetFrame()->GetPage().fenced_frame_urls_map().unique_id();
+
+  if (!render_frame_host_impl_mismatch && !page_impl_mismatch &&
+      !fenced_frame_url_mapping_mismatch) {
+    // None of the RenderFrameHostImpl, PageImpl and FencedFrameUrlMapping are
+    // different from the ones at the start of the auction. The auction is not
+    // expected to fail.
+    return false;
+  }
+
+  // Record the `LifecycleState` of the main frame. If the auction is from a
+  // child frame, also record the `LifecycleState` of the child frame.
+  std::string main_frame_cycle;
+  std::string child_frame_cycle;
+
+  if (GetFrame()->IsOutermostMainFrame()) {
+    main_frame_cycle = RenderFrameHostImpl::LifecycleStateImplToString(
+        GetFrame()->lifecycle_state());
+    child_frame_cycle = "AuctionIsFromMainFrame";
+  } else {
+    main_frame_cycle = RenderFrameHostImpl::LifecycleStateImplToString(
+        GetFrame()->GetOutermostMainFrame()->lifecycle_state());
+    child_frame_cycle = RenderFrameHostImpl::LifecycleStateImplToString(
+        GetFrame()->lifecycle_state());
+  }
+
+  // Set the crash key with the string describing the state.
+  SCOPED_CRASH_KEY_STRING1024(
+      "fledge", "on-auction-complete-state",
+      base::StrCat({"RenderFrameHostImplMismatch_",
+                    render_frame_host_impl_mismatch ? "true" : "false",
+                    "_PageImplMismatch_", page_impl_mismatch ? "true" : "false",
+                    "_FencedFrameUrlMappingMismatch_",
+                    fenced_frame_url_mapping_mismatch ? "true" : "false",
+                    "_MainFrame_", main_frame_cycle, "_ChildFrame_",
+                    child_frame_cycle}));
+  base::debug::DumpWithoutCrashing();
+
+  return true;
 }
 
 }  // namespace content

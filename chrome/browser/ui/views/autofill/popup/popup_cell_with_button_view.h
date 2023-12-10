@@ -10,6 +10,7 @@
 
 #include "base/scoped_observation.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_cell_view.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/view_observer.h"
 
 namespace content {
@@ -64,8 +65,8 @@ class ButtonPlaceholder : public views::View, public views::ViewObserver {
 class PopupCellWithButtonView : public PopupCellView,
                                 public CellButtonDelegate {
  public:
-  explicit PopupCellWithButtonView(
-      bool should_ignore_mouse_observed_outside_item_bounds_check = false);
+  METADATA_HEADER(PopupCellWithButtonView);
+  PopupCellWithButtonView();
   PopupCellWithButtonView(const PopupCellWithButtonView&) = delete;
   PopupCellWithButtonView& operator=(const PopupCellWithButtonView&) = delete;
   ~PopupCellWithButtonView() override;
@@ -75,6 +76,7 @@ class PopupCellWithButtonView : public PopupCellView,
   // and its controller is overwritten.
   void SetCellButton(std::unique_ptr<views::ImageButton> cell_button);
   views::ImageButton* GetCellButtonForTest() { return button_; }
+  bool GetCellButtonFocusedForTest() { return button_focused_; }
 
   // Determines under which conditions the button (if there is one) is visible.
   enum class CellButtonBehavior {

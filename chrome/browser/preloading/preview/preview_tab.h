@@ -29,8 +29,6 @@ class PreviewTab final : public content::WebContentsDelegate {
   PreviewTab(const PreviewTab&) = delete;
   PreviewTab& operator=(const PreviewTab&) = delete;
 
-  void Show();
-
  private:
   class WebContentsObserver;
 
@@ -41,7 +39,9 @@ class PreviewTab final : public content::WebContentsDelegate {
   // content::WebCopntentsDelegate implementation:
   content::PreloadingEligibility IsPrerender2Supported(
       content::WebContents& web_contents) override;
+  bool IsInPreviewMode() const override;
 
+  std::unique_ptr<WebContentsObserver> observer_;
   std::unique_ptr<views::Widget> widget_;
   std::unique_ptr<views::WebView> view_;
   // TODO(b:298347467): Design the actual promotion sequence and move this to

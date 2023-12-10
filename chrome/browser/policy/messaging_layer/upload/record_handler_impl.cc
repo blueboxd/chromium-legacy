@@ -82,6 +82,7 @@ static absl::optional<Priority> GetPriorityProtoFromSequenceInformationValue(
 static bool IsMissingGenerationGuid(const std::string* generation_guid) {
   // Generation guid is only required for devices that aren't ChromeOS managed
   // devices.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (policy::ManagementServiceFactory::GetForPlatform()
           ->HasManagementAuthority(
               policy::EnterpriseManagementAuthority::CLOUD_DOMAIN)) {
@@ -111,6 +112,7 @@ static bool IsMissingSequenceInformation(
 // `generation_guid` does not need to be parsed based on the type of device.
 // Returns false otherwise.
 static bool GenerationGuidIsValid(const std::string& generation_guid) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (generation_guid.empty() &&
       policy::ManagementServiceFactory::GetForPlatform()
           ->HasManagementAuthority(
@@ -249,14 +251,19 @@ StatusOr<ConfigFile> GetConfigurationProtoFromDict(
   config_file.set_version(config_file_version.value());
 
   // Handle the signature.
-  const std::string* config_file_signature =
+  const std::string* config_file_signature_str =
       file.FindString("configFileSignature");
-  if (config_file_signature->empty()) {
+  if (!config_file_signature_str || config_file_signature_str->empty()) {
     return Status(
         error::INVALID_ARGUMENT,
         "Field configFileSignature is missing from configurationFile");
   }
-  config_file.set_config_file_signature(*config_file_signature);
+  std::string config_file_signature;
+  if (!base::Base64Decode(*config_file_signature_str, &config_file_signature)) {
+    return Status(error::INVALID_ARGUMENT,
+                  "Unable to decode configFileSignature");
+  }
+  config_file.set_config_file_signature(config_file_signature);
 
   auto* const event_config_result = file.FindList("blockedEventConfigs");
   if (!event_config_result) {
@@ -478,6 +485,7 @@ void RecordHandlerImpl::ReportUploader::LogNumRecordsInUpload(
     size_t num_records) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 #if BUILDFLAG(IS_CHROMEOS)
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (policy::ManagementServiceFactory::GetForPlatform()
           ->HasManagementAuthority(
               policy::EnterpriseManagementAuthority::CLOUD_DOMAIN)) {
@@ -488,7 +496,9 @@ void RecordHandlerImpl::ReportUploader::LogNumRecordsInUpload(
     base::UmaHistogramCounts1000(
         "Browser.ERP.RecordsPerUploadFromUnmanagedDevice", num_records);
   }
-// TODO(b/304623373): Add separate UMA for non-ChromeOS devices.
+#else
+  base::UmaHistogramCounts1000(
+      "Browser.ERP.RecordsPerUploadFromNonChromeosDevice", num_records);
 #endif  // BUILDFLAG(IS_CHROMEOS)
 }
 

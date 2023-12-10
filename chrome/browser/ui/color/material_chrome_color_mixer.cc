@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/color/chrome_color_provider_utils.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/compose/core/browser/compose_features.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_mixer.h"
@@ -84,7 +85,7 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
 
   // Tab Search colors.
   mixer[kColorTabSearchBackground] = {ui::kColorSysSurface};
-  mixer[kColorTabSearchDivider] = {ui::kColorSysOnBaseDivider};
+  mixer[kColorTabSearchDivider] = {ui::kColorSysDivider};
   mixer[kColorTabSearchMediaIcon] = {ui::kColorSysOnSurfaceSubtle};
   mixer[kColorTabSearchMediaRecordingIcon] = {ui::kColorSysError};
   mixer[kColorTabSearchPrimaryForeground] = {ui::kColorSysOnSurface};
@@ -104,6 +105,29 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
 
   // Cast Dialog colors.
   mixer[kColorCastDialogHelpIcon] = {ui::kColorSysPrimary};
+
+  if (base::FeatureList::IsEnabled(compose::features::kEnableCompose)) {
+    // Compose colors.
+    mixer[kColorComposeDialogBackground] = {ui::kColorSysSurface};
+    mixer[kColorComposeDialogDivider] = {ui::kColorSysDivider};
+    mixer[kColorComposeDialogError] = {ui::kColorSysError};
+    mixer[kColorComposeDialogForegroundSubtle] = {ui::kColorSysOnSurfaceSubtle};
+    mixer[kColorComposeDialogLink] = {ui::kColorSysPrimary};
+    mixer[kColorComposeDialogScrollbarThumb] = {ui::kColorSysPrimary};
+    mixer[kColorComposeDialogResultBackground] = {ui::kColorSysBaseContainer};
+    mixer[kColorComposeDialogResultForeground] = {ui::kColorSysOnSurface};
+    mixer[kColorComposeDialogResultIcon] = {ui::kColorSysOnSurfaceSubtle};
+    mixer[kColorComposeDialogTitle] = {ui::kColorSysOnSurface};
+    mixer[kColorComposeDialogTextarea] = {ui::kColorSysOnSurface};
+    mixer[kColorComposeDialogTextareaOutline] = {ui::kColorSysNeutralOutline};
+    mixer[kColorComposeDialogTextareaPlaceholder] = {
+        ui::kColorSysOnSurfaceSecondary};
+    mixer[kColorComposeDialogTextareaReadonlyBackground] = {
+        ui::kColorSysNeutralContainer};
+    mixer[kColorComposeDialogTextareaReadonlyForeground] = {
+        ui::kColorSysOnSurface};
+    mixer[kColorComposeDialogTextareaIcon] = {ui::kColorSysOnSurfaceSubtle};
+  }
 
   if (!ShouldApplyChromeMaterialOverrides(key)) {
     return;
@@ -138,7 +162,7 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
   // Aligns with kColorToolbarButtonIconInactive.
   mixer[kColorBookmarkBarForegroundDisabled] = {ui::GetResultingPaintColor(
       {ui::kColorSysStateDisabled}, {kColorToolbar})};
-  mixer[kColorBookmarkBarSeparatorChromeRefresh] = {ui::kColorSysOnBaseDivider};
+  mixer[kColorBookmarkBarSeparatorChromeRefresh] = {ui::kColorSysDivider};
   mixer[kColorBookmarkButtonIcon] = {kColorBookmarkBarForeground};
   mixer[kColorBookmarkDialogProductImageBorder] = {ui::kColorSysNeutralOutline};
   mixer[kColorBookmarkDialogTrackPriceIcon] = {ui::kColorSysOnSurfaceSubtle};
@@ -266,7 +290,7 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorToolbarIconContainerBorder] = {ui::kColorSysNeutralOutline};
   mixer[kColorToolbarInkDropHover] = {ui::kColorSysStateHoverOnSubtle};
   mixer[kColorToolbarInkDropRipple] = {ui::kColorSysStateRippleNeutralOnSubtle};
-  mixer[kColorToolbarExtensionSeparatorEnabled] = {ui::kColorSysOnBaseDivider};
+  mixer[kColorToolbarExtensionSeparatorEnabled] = {ui::kColorSysDivider};
   mixer[kColorToolbarExtensionSeparatorDisabled] = {
       kColorToolbarButtonIconInactive};
   mixer[kColorToolbarSeparator] = {kColorToolbarSeparatorDefault};

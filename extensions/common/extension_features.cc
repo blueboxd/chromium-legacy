@@ -11,11 +11,6 @@ namespace extensions_features {
 // API Features
 ///////////////////////////////////////////////////////////////////////////////
 
-// Controls the availability of the AccessibilityServicePrivate API.
-BASE_FEATURE(kApiAccessibilityServicePrivate,
-             "ApiAccessibilityServicePrivate",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Controls the availability of the ReadingList API.
 BASE_FEATURE(kApiReadingList,
              "ApiReadingList",
@@ -187,6 +182,13 @@ BASE_FEATURE(kTelemetryExtensionPendingApprovalApi,
              "TelemetryExtensionPendingApprovalApi",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// If enabled, calling WebRequestEventRouter::Get will return an instance of the
+// per-BrowserContext WebRequestEventRouter instead of the global singleton
+// ExtensionWebRequestEventRouter.
+BASE_FEATURE(kUsePerBrowserContextWebRequestEventRouter,
+             "kUsePerBrowserContextWebRequestEventRouter",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls the <webview> tag behaviour changes proposed as part of the guest
 // view MPArch migration. See
 // https://docs.google.com/document/d/1RVbtvklXUg9QCNvMT0r-1qDwJNeQFGoTCOD1Ur9mDa4/edit?usp=sharing
@@ -214,6 +216,14 @@ BASE_FEATURE(kExtensionsServiceWorkerOptimizedEventDispatch,
 // the user to the new chrome webstore URL.
 BASE_FEATURE(kNewWebstoreURL,
              "NewWebstoreURL",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables a relaxed rule count for "safe" dynqmic or session scoped rules above
+// the current limit. If disabled, all dynamic and session scoped rules are
+// treated as "safe" but the rule limit's value will be the stricter "unsafe"
+// limit.
+BASE_FEATURE(kDeclarativeNetRequestSafeRuleLimits,
+             "DeclarativeNetRequestSafeDynamicRules",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace extensions_features

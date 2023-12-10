@@ -17,6 +17,7 @@
 <translation id="1591119736686995611">เปิดตารางกริดของแท็บ Chromium</translation>
 <translation id="1617663976202781617">ข้อมูลจากการซิงค์ Chromium</translation>
 <translation id="1647558790457890304">การตั้งค่า Chromium</translation>
+<translation id="164952285225495380">ติดตามพัสดุนี้ใน Chromium แล้ว</translation>
 <translation id="1722370509450468186">ระบบจะบันทึกรหัสผ่านไว้ในบัญชี (<ph name="EMAIL" />)</translation>
 <translation id="1736662517232558588">ล้างข้อมูล Chromium แล้ว</translation>
 <translation id="1791845338122684020">เปิดหน้าประวัติการเข้าชมใน Chromium</translation>
@@ -95,7 +96,6 @@
 <translation id="4736424910885271643">บัญชีของคุณจัดการโดย <ph name="HOSTED_DOMAIN" /> ระบบจึงจะล้างข้อมูล Chromium จากอุปกรณ์นี้</translation>
 <translation id="4790638144988730920">ใช้ข้อมูล Chromium ในบัญชี Google ต่อไป</translation>
 <translation id="4828317641996116749">Chromium ตรวจสอบรหัสผ่านได้ไม่ครบทั้งหมด โปรดลองอีกครั้งภายหลัง</translation>
-<translation id="4935539884203837577">Chromium สามารถตรวจจับหมายเลขติดตามพัสดุที่คุณป้อนและติดตามแพ็กเกจของคุณในหน้าแท็บใหม่ได้ รวมถึงช่วยมอบประสบการณ์อื่นๆ ในการช็อปปิ้งจาก Chromium</translation>
 <translation id="4985291216379576555">ออฟไลน์อยู่ Chromium ตรวจหาอัปเดตไม่ได้</translation>
 <translation id="4996471330284142407">ทำสิ่งต่างๆ ได้มากขึ้นด้วย Chromium ที่ใช้งานง่าย ปลอดภัย และรวดเร็วกว่าที่เคย</translation>
 <translation id="4999538639245140991">เนื่องจากคุณกำลังออกจากระบบบัญชีที่จัดการโดย <ph name="SIGNOUT_MANAGED_DOMAIN" /> ข้อมูล Chromium ของคุณจะถูกลบออกจากอุปกรณ์นี้ แต่ข้อมูลจะยังคงอยู่ในบัญชี Google</translation>
@@ -120,7 +120,6 @@
 <translation id="5688047395118852662">การ์ดนี้แสดงคำแนะนำเกี่ยวกับวิธีใช้ Chromium ให้เกิดประโยชน์สูงสุด</translation>
 <translation id="5700709190537129682">Chromium ตรวจสอบรหัสผ่านของคุณไม่ได้</translation>
 <translation id="5777187867430702742">หน้า Chromium</translation>
-<translation id="584303319228224680">ติดตามแพ็กเกจใน Chromium โดยอัตโนมัติ</translation>
 <translation id="5889847953983052353">เมื่อเปิด
 <ph name="BEGIN_INDENT" /> • ช่วยปรับปรุง Chromium ให้ดีขึ้นสำหรับผู้ที่ใช้งานในลักษณะเดียวกับคุณ<ph name="END_INDENT" />
 
@@ -160,6 +159,7 @@
 <translation id="6911341667534646387">ใช้ข้อมูล Chromium ในบัญชี Google ต่อไป</translation>
 <translation id="7006920032187763988">คุณใช้รหัสผ่านที่บันทึกอยู่ในเครื่องมือจัดการรหัสผ่านในแอปอื่นๆ บน iPad ได้</translation>
 <translation id="7018284295775193585">อัปเดต Chromium ไม่ได้</translation>
+<translation id="7025471822960602362">ติดตามแพ็กเกจที่ตรวจพบใน Chromium</translation>
 <translation id="7045244423563602563">ปรับเปลี่ยน Chromium ในแบบของคุณ</translation>
 <translation id="7055269218854630176">องค์กร <ph name="DOMAIN" /> ของคุณจะเป็นผู้จัดการบัญชีที่คุณลงชื่อเข้าใช้และวิธีใช้ Chromium ผู้ดูแลระบบจะตั้งค่าหรือจำกัดฟีเจอร์บางอย่างได้</translation>
 <translation id="7099326575020694068">Chromium ไม่สามารถใช้กล้องถ่ายรูปในโหมด Split View</translation>

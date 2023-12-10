@@ -168,7 +168,6 @@ group("gn_all") {
 
     if (is_chromeos_lacros) {
       deps += [
-        "//chrome/test:lacros_chrome_browsertests",
         "//chrome/test:lacros_chrome_unittests",
       ]
     }
@@ -1604,6 +1603,10 @@ if (use_blink && !is_cronet_build) {
       "//third_party/wpt_tools/",
       "//tools/idl_parser/",
     ]
+
+    if (is_ios) {
+      data += [ "//third_party/blink/web_tests/IOSTestExpectations" ]
+    }
 
     data_deps = [ "//ui/base:goldctl" ]
   }

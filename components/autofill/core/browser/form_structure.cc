@@ -221,6 +221,7 @@ void EncodeRandomizedValue(const RandomizedEncoder& encoder,
 //   In that case, use the server prediction instead. In the special case that
 //   the last specified manual override is a pass through, copy all server
 //   predictions.
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 std::deque<FieldSuggestion> MergeManualAndServerOverrides(
     std::deque<FieldSuggestion> manual_overrides,
     std::deque<FieldSuggestion> server_overrides) {
@@ -246,6 +247,7 @@ std::deque<FieldSuggestion> MergeManualAndServerOverrides(
 
   return result;
 }
+#endif
 
 void PopulateRandomizedFormMetadata(const RandomizedEncoder& encoder,
                                     const FormStructure& form,
@@ -1040,7 +1042,6 @@ void FormStructure::RetrieveFromCache(const FormStructure& cached_form,
         // to be preserved.
         if (!field->IsSelectOrSelectListElement()) {
           field->value = cached_field->value;
-          value_from_dynamic_change_form_ = true;
         }
         break;
       case RetrieveFromCacheReason::kFormImport:
@@ -1226,6 +1227,17 @@ void FormStructure::ParseFieldTypesWithPatterns(
     FormField::ParseStandaloneCVCFields(fields_, client_country, page_language,
                                         pattern_source, field_type_map,
                                         log_manager);
+
+    // For standalone email fields inside a form tag, allow heuristics even
+    // when the minimum number of fields is not met. See similar comments
+    // in `FormField::ClearCandidatesIfHeuristicsDidNotFindEnoughFields`.
+    if (is_form_tag_ &&
+        base::FeatureList::IsEnabled(
+            features::kAutofillEnableEmailHeuristicOnlyAddressForms)) {
+      FormField::ParseStandaloneEmailFields(fields_, client_country,
+                                            page_language, pattern_source,
+                                            field_type_map, log_manager);
+    }
   }
   if (field_type_map.empty())
     return;
@@ -1477,7 +1489,8 @@ void FormStructure::IdentifySectionsWithNewMethod() {
   for (const auto& field : fields_) {
     const ServerFieldType current_type = field->Type().GetStorableType();
     // Put credit card fields into one, separate credit card section.
-    if (AutofillType(current_type).group() == FieldTypeGroup::kCreditCard) {
+    if (GroupTypeOfServerFieldType(current_type) ==
+        FieldTypeGroup::kCreditCard) {
       if (!credit_card_section) {
         credit_card_section =
             Section::FromFieldIdentifier(*field, frame_token_ids);
@@ -1494,7 +1507,7 @@ void FormStructure::IdentifySectionsWithNewMethod() {
     // Forms often ask for multiple phone numbers -- e.g. both a daytime and
     // evening phone number.  Our phone number detection is also generally a
     // little off.  Hence, ignore this field type as a signal here.
-    if (AutofillType(current_type).group() == FieldTypeGroup::kPhone) {
+    if (GroupTypeOfServerFieldType(current_type) == FieldTypeGroup::kPhone) {
       already_saw_current_type = false;
     }
 
@@ -1643,8 +1656,10 @@ void FormStructure::IdentifySections(bool ignore_autocomplete) {
     for (const auto& field : fields_) {
       const ServerFieldType current_type = field->Type().GetStorableType();
       // Credit card fields are already in one, separate credit card section.
-      if (AutofillType(current_type).group() == FieldTypeGroup::kCreditCard)
+      if (GroupTypeOfServerFieldType(current_type) ==
+          FieldTypeGroup::kCreditCard) {
         continue;
+      }
 
       if (!current_section)
         current_section = Section::FromFieldIdentifier(*field, frame_token_ids);
@@ -1654,7 +1669,7 @@ void FormStructure::IdentifySections(bool ignore_autocomplete) {
       // Forms often ask for multiple phone numbers -- e.g. both a daytime and
       // evening phone number.  Our phone number detection is also generally a
       // little off.  Hence, ignore this field type as a signal here.
-      if (AutofillType(current_type).group() == FieldTypeGroup::kPhone) {
+      if (GroupTypeOfServerFieldType(current_type) == FieldTypeGroup::kPhone) {
         already_saw_current_type = false;
       }
 

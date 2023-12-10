@@ -133,6 +133,20 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     return config;
   }
 
+  if (kIPHGMCLocalMediaCastingFeature.name == feature->name) {
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(ANY, 0);
+    config->session_rate_impact.type = SessionRateImpact::Type::NONE;
+    config->trigger = EventConfig("gmc_local_media_cast_iph_trigger",
+                                  Comparator(EQUAL, 0), 180, 180);
+    config->used = EventConfig("media_route_started_from_gmc",
+                               Comparator(EQUAL, 0), 180, 180);
+
+    return config;
+  }
+
   if (kIPHDesktopSharedHighlightingFeature.name == feature->name) {
     // A config that allows the shared highlighting desktop IPH to be shown
     // when a user receives a highlight:
@@ -186,6 +200,19 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     return config;
   }
 
+  if (kIPHTrackingProtectionOffboardingFeature.name == feature->name) {
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(ANY, 0);
+    config->trigger =
+        EventConfig("iph_tracking_protection_offboarding_triggered",
+                    Comparator(GREATER_THAN_OR_EQUAL, 0), 0, 0);
+    config->used = EventConfig("iph_tracking_protection_offboarding_used",
+                               Comparator(ANY, 0), 0, 0);
+    return config;
+  }
+
   if (kIPHTrackingProtectionOnboardingFeature.name == feature->name) {
     absl::optional<FeatureConfig> config = FeatureConfig();
     config->valid = true;
@@ -226,22 +253,6 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     config->event_configs.insert(
         EventConfig("high_efficiency_prompt_in_trigger",
                     Comparator(LESS_THAN, 1), 360, 360));
-    return config;
-  }
-
-  if (kIPHPerformanceNewBadgeFeature.name == feature->name) {
-    absl::optional<FeatureConfig> config = FeatureConfig();
-    config->valid = true;
-    config->availability = Comparator(ANY, 0);
-    config->session_rate = Comparator(ANY, 0);
-    config->session_rate_impact.type = SessionRateImpact::Type::NONE;
-    // Show the new badge max 20 times within a year
-    config->trigger = EventConfig("performance_new_badge_shown",
-                                  Comparator(LESS_THAN, 20), 360, 360);
-
-    // Badge stops showing after the user uses it 3 times
-    config->used = EventConfig("performance_activated",
-                               Comparator(LESS_THAN, 3), 360, 360);
     return config;
   }
 
@@ -489,6 +500,21 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
                                Comparator(EQUAL, 0), 7, 360);
     config->snooze_params.snooze_interval = 7;
     config->snooze_params.max_limit = 4;
+    return config;
+  }
+
+  if (kIPHComposeNewBadgeFeature.name == feature->name) {
+    // A config that allows the new badge for the Compose feature to be shown at
+    // most 4 times in a 10-day window and only while the user has opened the
+    // Compose feature less than 3 times.
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(ANY, 0);
+    config->trigger = EventConfig("compose_new_badge_triggered",
+                                  Comparator(LESS_THAN, 4), 10, 360);
+    config->used =
+        EventConfig("compose_activated", Comparator(LESS_THAN, 3), 360, 360);
     return config;
   }
 
@@ -1742,6 +1768,26 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
         Comparator(EQUAL, 0), 360, 360));
     config->blocked_by.type = BlockedBy::Type::NONE;
     config->blocking.type = Blocking::Type::NONE;
+    return config;
+  }
+
+  if (kIPHiOSLensKeyboardFeature.name == feature->name) {
+    // A config that allows a user education bubble to be shown for the Lens
+    // button in the omnibox keyboard. Will be shown up to 3 times, but
+    // opening Lens from the keyboard will prevent the bubble from appearing
+    // again.
+
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(EQUAL, 0);
+    config->trigger =
+        EventConfig("lens_keyboard_feature_trigger", Comparator(LESS_THAN, 3),
+                    feature_engagement::kMaxStoragePeriod,
+                    feature_engagement::kMaxStoragePeriod);
+    config->used = EventConfig("lens_keyboard_used", Comparator(EQUAL, 0),
+                               feature_engagement::kMaxStoragePeriod,
+                               feature_engagement::kMaxStoragePeriod);
     return config;
   }
 

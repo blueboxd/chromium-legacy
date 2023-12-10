@@ -12,6 +12,7 @@
 #include "ui/accessibility/ax_event_generator.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_selection.h"
+#include "ui/accessibility/ax_tree_manager.h"
 
 namespace ui {
 class AXNode;
@@ -84,7 +85,6 @@ class ReadAnythingAppModel {
   const ukm::SourceId& active_ukm_source_id() const {
     return active_ukm_source_id_;
   }
-  const ui::AXTreeID& active_tree_id() const { return active_tree_id_; }
 
   const std::vector<ui::AXNodeID>& content_node_ids() const {
     return content_node_ids_;
@@ -95,6 +95,11 @@ class ReadAnythingAppModel {
   const std::set<ui::AXNodeID>& selection_node_ids() const {
     return selection_node_ids_;
   }
+
+  // Returns the active tree id. For PDFs, this will return the tree id of the
+  // PDF iframe, since that is where the PDF contents are. If that tree id is
+  // not yet in the model, AXTreeIDUnknown will be returned.
+  ui::AXTreeID GetActiveTreeId() const;
 
   void SetDistillationInProgress(bool distillation) {
     distillation_in_progress_ = distillation;
@@ -136,8 +141,7 @@ class ReadAnythingAppModel {
   // clears their selection or selects content inside the distilled content.
   void ComputeDisplayNodeIdsForDistilledTree();
 
-  const std::unique_ptr<ui::AXSerializableTree>& GetTreeFromId(
-      ui::AXTreeID tree_id) const;
+  ui::AXSerializableTree* GetTreeFromId(ui::AXTreeID tree_id) const;
   void AddTree(ui::AXTreeID tree_id,
                std::unique_ptr<ui::AXSerializableTree> tree);
 
@@ -156,7 +160,7 @@ class ReadAnythingAppModel {
   std::map<ui::AXTreeID, std::vector<ui::AXTreeUpdate>>&
   GetPendingUpdatesForTesting();
 
-  std::map<ui::AXTreeID, std::unique_ptr<ui::AXSerializableTree>>*
+  std::map<ui::AXTreeID, std::unique_ptr<ui::AXTreeManager>>*
   GetTreesForTesting();
 
   void EraseTreeForTesting(ui::AXTreeID tree_id);
@@ -169,6 +173,20 @@ class ReadAnythingAppModel {
   void IncreaseTextSize();
   void DecreaseTextSize();
   void ResetTextSize();
+
+  // PDF handling.
+  void SetIsPdf(const GURL& url);
+  bool is_pdf() const { return is_pdf_; }
+  ui::AXTreeID GetPDFWebContents() const;
+
+  // Checks assumptions made about the PDF's structure, specifically that the
+  // main web contents AXTree has one child (the pdf web contents), and that
+  // the pdf web contents AXTree has one child (the pdf iframe). If there is
+  // not enough information to check a certain assumption, ie the model does
+  // not contain a certain tree, this function could still return true. When
+  // tree updates are received for the missing tree(s), this function should
+  // be ran again to check for the correct structure.
+  bool IsPDFFormatted() const;
 
  private:
   void EraseTree(ui::AXTreeID tree_id);
@@ -195,10 +213,12 @@ class ReadAnythingAppModel {
   ui::AXNode* GetParentForSelection(ui::AXNode* node);
 
   // State.
-  // AXTrees of web contents in the browser’s tab strip.
-  std::map<ui::AXTreeID, std::unique_ptr<ui::AXSerializableTree>> trees_;
+  // Store AXTrees of web contents in the browser's tab strip as AXTreeManagers.
+  std::map<ui::AXTreeID, std::unique_ptr<ui::AXTreeManager>> tree_managers_;
 
-  // The AXTreeID of the currently active web contents.
+  // The AXTreeID of the currently active web contents. For PDFs, this will
+  // always be the AXTreeID of the main web contents (not the PDF iframe or its
+  // child).
   ui::AXTreeID active_tree_id_ = ui::AXTreeIDUnknown();
 
   // The UKM source ID of the main frame of the active web contents, whose
@@ -207,6 +227,19 @@ class ReadAnythingAppModel {
 
   // Certain websites (e.g. Docs and PDFs) are not distillable with selection.
   bool active_tree_selectable_ = true;
+
+  // PDFs are handled differently than regular webpages. That is because they
+  // are stored in a different web contents and the actual PDF text is inside an
+  // iframe. In order to get tree information from the PDF web contents, we need
+  // to enable accessibility on it first. Then, we will get tree updates from
+  // the iframe to send to the distiller.
+  // This is the flow:
+  //    main web contents -> pdf web contents -> iframe
+  // In accessibility terms:
+  //    AXTree -(via child tree)-> AXTree -(via child tree)-> AXTree
+  // The last AXTree is the one we want to send to the distiller since it
+  // contains the PDF text.
+  bool is_pdf_ = false;
 
   // Distillation is slow and happens out-of-process when Screen2x is running.
   // This boolean marks when distillation is in progress to avoid sending

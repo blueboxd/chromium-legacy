@@ -125,7 +125,7 @@ _DEVICE_GOLD_DIR = 'skia_gold'
 # A map of Android product models to SDK ints.
 RENDER_TEST_MODEL_SDK_CONFIGS = {
     # Android x86 emulator.
-    'Android SDK built for x86': [23, 24],
+    'Android SDK built for x86': [24, 26],
     # We would like this to be supported, but it is currently too prone to
     # introducing flakiness due to a combination of Gold and Chromium issues.
     # See crbug.com/1233700 and skbug.com/12149 for more information.
@@ -721,8 +721,8 @@ class LocalDeviceInstrumentationTestRun(
         # WebView tests run in 2 process modes (single and multi). We must
         # restart the process for each mode, so this means singleprocess tests
         # and multiprocess tests must not be in the same batch.
-        webview_multiprocess_mode = test['method'].endswith(
-            base_test_result.MULTIPROCESS_SUFFIX)
+        webview_multiprocess_mode = (
+          base_test_result.MULTIPROCESS_SUFFIX in test['method'])
         if webview_multiprocess_mode:
           batch_name += '|multiprocess_mode'
 
@@ -1000,13 +1000,9 @@ class LocalDeviceInstrumentationTestRun(
 
             # Handling Clang coverage data.
             # TODO(b/293175593): Use device.ResolveSpecialPath for multi-user
-            if device.PathExists(device_clang_profile_dir, retries=0):
-              code_coverage_utils.PullAndMaybeMergeClangCoverageFiles(
-                  device, device_clang_profile_dir,
-                  self._test_instance.coverage_directory, coverage_basename)
-            else:
-              logging.warning('Clang coverage data folder does not exist: %s',
-                              device_clang_profile_dir)
+            code_coverage_utils.PullAndMaybeMergeClangCoverageFiles(
+                device, device_clang_profile_dir,
+                self._test_instance.coverage_directory, coverage_basename)
 
           except (OSError, base_error.BaseError) as e:
             logging.warning('Failed to handle coverage data after tests: %s', e)
@@ -1454,13 +1450,25 @@ class LocalDeviceInstrumentationTestRun(
   def _ProcessRenderTestResults(self, device, results):
     if not self._render_tests_device_output_dir:
       return
+    # TODO(b/295350872): Remove this and other timestamp logging in Gold-related
+    # code once the source of flaky slowness is tracked down.
+    logging.info('Starting render test result processing')
+    start_time = time.time()
     self._ProcessSkiaGoldRenderTestResults(device, results)
+    logging.info('Render test result processing took %fs',
+                 time.time() - start_time)
 
   def _ProcessSkiaGoldRenderTestResults(self, device, results):
     gold_dir = posixpath.join(self._render_tests_device_output_dir.name,
                               _DEVICE_GOLD_DIR)
-    if not device.FileExists(gold_dir):
-      return
+    logging.info('Starting Gold directory existence check')
+    start_time = time.time()
+    try:
+      if not device.FileExists(gold_dir):
+        return
+    finally:
+      logging.info('Gold directory existence check took %fs',
+                   time.time() - start_time)
 
     gold_properties = self._test_instance.skia_gold_properties
     with tempfile_ext.NamedTemporaryDirectory() as host_dir:
@@ -1471,7 +1479,12 @@ class LocalDeviceInstrumentationTestRun(
       # slightly faster since each command over adb has some overhead compared
       # to doing the same thing locally.
       host_dir = os.path.join(host_dir, _DEVICE_GOLD_DIR)
+
+      logging.info('Starting Gold directory pull')
+      start_time = time.time()
       device.PullFile(gold_dir, host_dir)
+      logging.info('Gold directory pull took %fs', time.time() - start_time)
+
       for image_name in os.listdir(host_dir):
         if not image_name.endswith('.png'):
           continue
@@ -1533,6 +1546,8 @@ class LocalDeviceInstrumentationTestRun(
         gold_session = self._skia_gold_session_manager.GetSkiaGoldSession(
             keys_input=json_path)
 
+        logging.info('Starting Gold comparison')
+        start_time = time.time()
         try:
           status, error = gold_session.RunComparison(
               name=render_name,
@@ -1545,6 +1560,8 @@ class LocalDeviceInstrumentationTestRun(
           _AppendToLog(results, full_test_name,
                        'Skia Gold comparison raised exception: %s' % e)
           continue
+        finally:
+          logging.info('Gold comparison took %fs', time.time() - start_time)
 
         if not status:
           continue

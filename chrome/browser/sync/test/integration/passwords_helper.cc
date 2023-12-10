@@ -17,7 +17,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "chrome/browser/password_manager/account_password_store_factory.h"
-#include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/password_manager/profile_password_store_factory.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
@@ -126,14 +126,14 @@ void RemoveLogins(PasswordStoreInterface* store) {
                                     /*delete_end=*/base::Time::Max());
 }
 PasswordStoreInterface* GetProfilePasswordStoreInterface(int index) {
-  return PasswordStoreFactory::GetForProfile(test()->GetProfile(index),
-                                             ServiceAccessType::IMPLICIT_ACCESS)
+  return ProfilePasswordStoreFactory::GetForProfile(
+             test()->GetProfile(index), ServiceAccessType::IMPLICIT_ACCESS)
       .get();
 }
 
 PasswordStoreInterface* GetVerifierProfilePasswordStoreInterface() {
-  return PasswordStoreFactory::GetForProfile(test()->verifier(),
-                                             ServiceAccessType::IMPLICIT_ACCESS)
+  return ProfilePasswordStoreFactory::GetForProfile(
+             test()->verifier(), ServiceAccessType::IMPLICIT_ACCESS)
       .get();
 }
 

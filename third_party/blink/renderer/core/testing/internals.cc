@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
+#include "third_party/blink/renderer/core/css/parser/css_property_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_unresolved_property.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -131,7 +132,6 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/print_context.h"
 #include "third_party/blink/renderer/core/page/scrolling/root_scroller_controller.h"
-#include "third_party/blink/renderer/core/page/scrolling/scroll_state.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 #include "third_party/blink/renderer/core/page/touch_adjustment.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
@@ -1428,7 +1428,7 @@ DocumentMarker* Internals::MarkerAt(Text* text,
       text->GetDocument().Markers().MarkersFor(*text, marker_types.value());
   if (markers.size() <= index)
     return nullptr;
-  return markers[index];
+  return markers[index].Get();
 }
 
 Range* Internals::markerRangeForNode(Text* text,
@@ -3611,13 +3611,8 @@ void Internals::forceLoseCanvasContext(OffscreenCanvas* offscreencanvas,
   context->LoseContext(CanvasRenderingContext::kSyntheticLostContext);
 }
 
-void Internals::setScrollChain(ScrollState* scroll_state,
-                               const HeapVector<Member<Element>>& elements,
-                               ExceptionState&) {
-  Deque<DOMNodeId> scroll_chain;
-  for (wtf_size_t i = 0; i < elements.size(); ++i)
-    scroll_chain.push_back(elements[i].Get()->GetDomNodeId());
-  scroll_state->SetScrollChain(scroll_chain);
+void Internals::disableCanvasAcceleration(HTMLCanvasElement* canvas) {
+  canvas->DisableAcceleration();
 }
 
 String Internals::selectedHTMLForClipboard() {

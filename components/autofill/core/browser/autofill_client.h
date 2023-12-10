@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_CLIENT_H_
 
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <vector>
@@ -14,6 +15,7 @@
 #include "base/functional/callback_forward.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
+#include "base/types/optional_ref.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_trigger_details.h"
 #include "components/autofill/core/browser/country_type.h"
@@ -42,10 +44,6 @@
 #include "url/origin.h"
 
 class PrefService;
-
-namespace compose {
-class ComposeManager;
-}
 
 namespace plus_addresses {
 class PlusAddressService;
@@ -78,6 +76,7 @@ namespace autofill {
 class AddressNormalizer;
 class AutocompleteHistoryManager;
 class AutofillAblationStudy;
+class AutofillComposeDelegate;
 class AutofillDriver;
 class AutofillDownloadManager;
 struct AutofillErrorDialogContext;
@@ -254,16 +253,6 @@ class AutofillClient : public RiskDataLoader {
 
   // Used for options of upload prompt.
   struct SaveCreditCardOptions {
-    SaveCreditCardOptions& with_from_dynamic_change_form(bool b) {
-      from_dynamic_change_form = b;
-      return *this;
-    }
-
-    SaveCreditCardOptions& with_has_non_focusable_field(bool b) {
-      has_non_focusable_field = b;
-      return *this;
-    }
-
     SaveCreditCardOptions& with_should_request_name_from_user(bool b) {
       should_request_name_from_user = b;
       return *this;
@@ -296,8 +285,6 @@ class AutofillClient : public RiskDataLoader {
       return *this;
     }
 
-    bool from_dynamic_change_form = false;
-    bool has_non_focusable_field = false;
     bool should_request_name_from_user = false;
     bool should_request_expiration_date_from_user = false;
     bool show_prompt = false;
@@ -336,6 +323,24 @@ class AutofillClient : public RiskDataLoader {
         AutofillSuggestionTriggerSource::kUnspecified};
   };
 
+  // Describes the position of the Autofill popup on the screen.
+  struct PopupScreenLocation {
+    // The bounds of the popup in the screen coordinate system.
+    gfx::Rect bounds;
+    // Describes the position of the arrow on the popup's border and corresponds
+    // to a subset of the available options in `views::BubbleBorder::Arrow`.
+    enum class ArrowPosition {
+      kTopRight,
+      kTopLeft,
+      kBottomRight,
+      kBottomLeft,
+      kLeftTop,
+      kRightTop,
+      kMax = kRightTop
+    };
+    ArrowPosition arrow_position;
+  };
+
   // Callback to run after local credit card save or local CVC save is offered.
   // Sends whether the prompt was accepted, declined, or ignored in
   // |user_decision|.
@@ -365,11 +370,11 @@ class AutofillClient : public RiskDataLoader {
   using MigrationDeleteCardCallback =
       base::RepeatingCallback<void(const std::string&)>;
 
-  // Callback to run after local IBAN save is offered. The callback runs with
-  // `user_decision` indicating whether the prompt was accepted, declined,
+  // Callback to run after local/upload IBAN save is offered. The callback runs
+  // with `user_decision` indicating whether the prompt was accepted, declined,
   // or ignored. `nickname` is optionally provided by the user when IBAN local
-  // save is offered, and can be nullopt.
-  using LocalSaveIbanPromptCallback =
+  // or upload save is offered, and can be nullopt.
+  using SaveIbanPromptCallback =
       base::OnceCallback<void(SaveIbanOfferUserDecision user_decision,
                               const absl::optional<std::u16string>& nickname)>;
 
@@ -378,11 +383,13 @@ class AutofillClient : public RiskDataLoader {
   using WebauthnDialogCallback =
       base::RepeatingCallback<void(WebauthnDialogCallbackType)>;
 
-  // TODO(crbug.com/1486412): investigate if AutofillProfile should be passed
-  // by const reference.
+  // Callback to run when the user makes a decision on whether to save the
+  // profile. If the user edits the Autofill profile and then accepts edits, the
+  // edited version of the profile should be passed as the second parameter. No
+  // Autofill profile is passed otherwise.
   using AddressProfileSavePromptCallback =
       base::OnceCallback<void(SaveAddressProfileOfferUserDecision,
-                              AutofillProfile profile)>;
+                              base::optional_ref<const AutofillProfile>)>;
 
   // The callback accepts the boolean parameter indicating whether the user has
   // accepted the delete dialog. The callback is intended to be called only upon
@@ -416,6 +423,8 @@ class AutofillClient : public RiskDataLoader {
   const PersonalDataManager* GetPersonalDataManager() const;
 
   // Gets the AutofillOptimizationGuide instance associated with the client.
+  // This function can return nullptr if we are on an unsupported platform, or
+  // if the AutofillOptimizationGuide's dependencies are not present.
   virtual AutofillOptimizationGuide* GetAutofillOptimizationGuide() const;
 
   // Gets the AutofillModelHandler instance for autofill machine learning
@@ -433,8 +442,8 @@ class AutofillClient : public RiskDataLoader {
   // KeyedService that manages that data.
   virtual plus_addresses::PlusAddressService* GetPlusAddressService();
 
-  // Returns the `ComposeManager` instance for the tab of this client.
-  virtual compose::ComposeManager* GetComposeManager();
+  // Returns the `AutofillComposeDelegate` instance for the tab of this client.
+  virtual AutofillComposeDelegate* GetComposeDelegate();
 
   // Orchestrates UI for enterprise plus address creation; no-op except on
   // supported platforms.
@@ -594,10 +603,6 @@ class AutofillClient : public RiskDataLoader {
   // Hides the virtual card enroll bubble and icon if it is visible.
   virtual void HideVirtualCardEnrollBubbleAndIconIfVisible();
 
-  // Returns the list of allowed merchants and BIN ranges for virtual cards.
-  virtual std::vector<std::string> GetAllowedMerchantsForVirtualCards() = 0;
-  virtual std::vector<std::string> GetAllowedBinRangesForVirtualCards() = 0;
-
   // Runs |show_migration_dialog_closure| if the user accepts the card migration
   // offer. This causes the card migration dialog to be shown.
   virtual void ShowLocalCardMigrationDialog(
@@ -630,7 +635,16 @@ class AutofillClient : public RiskDataLoader {
   // `should_show_prompt` is true; otherwise only shows the omnibox icon.
   virtual void ConfirmSaveIbanLocally(const Iban& iban,
                                       bool should_show_prompt,
-                                      LocalSaveIbanPromptCallback callback) = 0;
+                                      SaveIbanPromptCallback callback) = 0;
+
+  // Runs `callback` once the user makes a decision with respect to the
+  // offer-to-upload prompt. On desktop, shows the offer-to-upload bubble if
+  // `should_show_prompt` is true; otherwise only shows the omnibox icon.
+  virtual void ConfirmUploadIbanToCloud(
+      const Iban& iban,
+      const LegalMessageLines& legal_message_lines,
+      bool should_show_prompt,
+      SaveIbanPromptCallback callback) = 0;
 
   // TODO(crbug.com/991037): Find a way to merge these two functions. Shouldn't
   // use WebauthnDialogState as that state is a purely UI state (should not be
@@ -801,6 +815,10 @@ class AutofillClient : public RiskDataLoader {
   virtual PopupOpenArgs GetReopenPopupArgs(
       AutofillSuggestionTriggerSource trigger_source) const = 0;
 
+  // Returns the information of the popup on the screen, if there is one that is
+  // showing. Note that this implemented only on Desktop.
+  virtual std::optional<PopupScreenLocation> GetPopupScreenLocation() const;
+
   // Returns (not elided) suggestions currently held by the UI.
   virtual std::vector<Suggestion> GetPopupSuggestions() const = 0;
 
@@ -856,10 +874,9 @@ class AutofillClient : public RiskDataLoader {
   virtual bool IsPasswordManagerEnabled() = 0;
 
   // Inform the client that the form has been filled.
-  virtual void DidFillOrPreviewForm(
-      mojom::AutofillActionPersistence action_persistence,
-      AutofillTriggerSource trigger_source,
-      bool is_refill) = 0;
+  virtual void DidFillOrPreviewForm(mojom::ActionPersistence action_persistence,
+                                    AutofillTriggerSource trigger_source,
+                                    bool is_refill) = 0;
 
   // Inform the client that the field has been filled.
   virtual void DidFillOrPreviewField(

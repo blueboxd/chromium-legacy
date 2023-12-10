@@ -35,7 +35,7 @@ class FederatedAuthUserInfoRequest;
 class FederatedIdentityApiPermissionContextDelegate;
 class FederatedIdentityAutoReauthnPermissionContextDelegate;
 class FederatedIdentityPermissionContextDelegate;
-class MDocProvider;
+class DigitalCredentialProvider;
 class RenderFrameHost;
 
 using MediationRequirement = ::password_manager::CredentialMediationRequirement;
@@ -226,10 +226,8 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
 
   void MaybeShowAccountsDialog();
   void ShowModalDialog(const GURL& url);
-  void ShowErrorDialog(
-      const GURL& idp_config_url,
-      absl::optional<IdpNetworkRequestManager::IdentityCredentialTokenError>
-          error);
+  void ShowErrorDialog(const GURL& idp_config_url,
+                       absl::optional<TokenError> error);
 
   // Updates the IdpSigninStatus in case of accounts fetch failure and shows a
   // failure UI if applicable.
@@ -287,7 +285,7 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
       RequestUserInfoCallback callback,
       blink::mojom::RequestUserInfoStatus status,
       absl::optional<std::vector<blink::mojom::IdentityUserInfoPtr>> user_info);
-  void CompleteWalletRequest(std::string response);
+  void CompleteDigitalCredentialRequest(std::string response);
 
   // Notifies metrics endpoint that either the user did not select the IDP in
   // the prompt or that there was an error in fetching data for the IDP.
@@ -299,7 +297,7 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
 
   std::unique_ptr<IdpNetworkRequestManager> CreateNetworkManager();
   std::unique_ptr<IdentityRequestDialogController> CreateDialogController();
-  std::unique_ptr<MDocProvider> CreateWalletProvider();
+  std::unique_ptr<DigitalCredentialProvider> CreateDigitalCredentialProvider();
 
   // Creates an inspector issue related to a federated authentication request to
   // the Issues panel in DevTools.
@@ -341,6 +339,8 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
   // `preventSilentAccess` call.
   bool RequiresUserMediation();
   void SetRequiresUserMediation(bool requires_user_mediation);
+
+  void SignInToIdP(GURL signin_url);
 
   std::unique_ptr<IdpNetworkRequestManager> network_manager_;
   std::unique_ptr<IdentityRequestDialogController> request_dialog_controller_;
@@ -423,8 +423,8 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
   DialogType dialog_type_ = kNone;
   MediationRequirement mediation_requirement_;
 
-  std::unique_ptr<MDocProvider> wallet_provider_;
-  RequestTokenCallback wallet_request_callback_;
+  std::unique_ptr<DigitalCredentialProvider> digital_credential_provider_;
+  RequestTokenCallback digital_credential_request_callback_;
 
   // Time when the accounts dialog is last shown for metrics purposes.
   absl::optional<base::TimeTicks> accounts_dialog_shown_time_;

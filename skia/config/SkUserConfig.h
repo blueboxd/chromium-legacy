@@ -233,9 +233,15 @@ SK_API void SkDebugf_FileLine(const char* file,
 
 #define SK_RESOLVE_FILTERS_BEFORE_RESTORE
 
+#define SK_USE_LEGACY_CONTENT_BOUNDS_PROPAGATION
+
 #define SK_ENABLE_SKSL_IN_RASTER_PIPELINE
 
-#define SK_USE_PADDED_BLUR_UPSCALE
+/* When --disable-skia-runtime-opts is set in Chrome (or when SkGraphics::Init
+   is not called), Skia will prefer precision over performance when computing
+   reciprocals and inverse-square roots.
+*/
+#define SK_IMPROVE_RASTER_PIPELINE_PRECISION
 
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 

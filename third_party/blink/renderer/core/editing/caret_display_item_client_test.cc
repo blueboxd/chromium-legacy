@@ -67,11 +67,11 @@ class CaretDisplayItemClientTest : public PaintAndRasterInvalidationTest {
   }
 
   const LayoutBlock* CaretLayoutBlock() {
-    return GetCaretDisplayItemClient().layout_block_;
+    return GetCaretDisplayItemClient().layout_block_.Get();
   }
 
   const LayoutBlock* PreviousCaretLayoutBlock() {
-    return GetCaretDisplayItemClient().previous_layout_block_;
+    return GetCaretDisplayItemClient().previous_layout_block_.Get();
   }
 
   bool ShouldPaintCursorCaret(const LayoutBlock& block) {
@@ -651,7 +651,7 @@ TEST_P(CaretDisplayItemClientTest, FullDocumentPaintingWithCaret) {
   auto& div = *To<Element>(GetDocument().body()->firstChild());
   auto& layout_text = *To<Text>(div.firstChild())->GetLayoutObject();
   DCHECK(layout_text.IsInLayoutNGInlineFormattingContext());
-  NGInlineCursor cursor;
+  InlineCursor cursor;
   cursor.MoveTo(layout_text);
   const DisplayItemClient* text_inline_box =
       cursor.Current().GetDisplayItemClient();

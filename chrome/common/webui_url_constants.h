@@ -77,6 +77,8 @@ extern const char kChromeUIDeviceLogUrl[];
 extern const char kChromeUIDevUiLoaderURL[];
 extern const char kChromeUIDiceWebSigninInterceptHost[];
 extern const char kChromeUIDiceWebSigninInterceptURL[];
+extern const char kChromeUIDiceWebSigninInterceptChromeSigninURL[];
+extern const char kChromeUIDiceWebSigninInterceptChromeSigninSubPage[];
 extern const char kChromeUIDownloadInternalsHost[];
 extern const char kChromeUIDownloadsHost[];
 extern const char kChromeUIDownloadsURL[];
@@ -150,6 +152,9 @@ extern const char kChromeUIOmniboxHost[];
 extern const char kChromeUIOmniboxURL[];
 extern const char kChromeUIOmniboxPopupHost[];
 extern const char kChromeUIOmniboxPopupURL[];
+#if !BUILDFLAG(IS_ANDROID)
+extern const char kChromeUIOnDeviceInternalsHost[];
+#endif
 extern const char kChromeUISuggestInternalsHost[];
 extern const char kChromeUISuggestInternalsURL[];
 #if BUILDFLAG(IS_CHROMEOS)
@@ -384,6 +389,8 @@ extern const char kChromeUIVcTrayTesterURL[];
 extern const char kChromeUIVcTrayTesterHost[];
 extern const char kChromeUIVmHost[];
 extern const char kChromeUIVmUrl[];
+extern const char kChromeUIWebAppInstallDialogHost[];
+extern const char kChromeUIWebAppInstallDialogURL[];
 
 // Returns true if this web UI is part of the "system UI". Generally this is
 // UI that opens in a window (not a browser tab) and that on other operating
@@ -394,6 +401,8 @@ bool IsSystemWebUIHost(base::StringPiece host);
 
 #if BUILDFLAG(IS_CHROMEOS)
 extern const char kChromeUIAppDisabledHost[];
+extern const char kChromeUIDlpInternalsHost[];
+extern const char kChromeUIDlpInternalsURL[];
 extern const char kChromeUIGpuURL[];
 extern const char kChromeUIHistogramsURL[];
 extern const char kChromeUIKerberosInBrowserHost[];

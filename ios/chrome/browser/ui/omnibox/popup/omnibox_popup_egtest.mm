@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_app_interface.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_constants.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_earl_grey.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_accessibility_identifier_constants.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -23,6 +24,7 @@
 #import "net/test/embedded_test_server/embedded_test_server.h"
 #import "net/test/embedded_test_server/http_request.h"
 #import "net/test/embedded_test_server/http_response.h"
+#import "ui/base/l10n/l10n_util_mac.h"
 
 namespace {
 
@@ -539,6 +541,33 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
                   @"Keyboard Should not be Shown");
 }
 
+// Tests that selecting a suggestion in the omnibox and successfully navigating
+// to it adds an entry in the shortcuts database.
+- (void)testShortcutsDatabasePopulation {
+  [[AppLaunchManager sharedManager]
+      ensureAppLaunchedWithFeaturesEnabled:{kOmniboxPopulateShortcutsDatabase}
+                                  disabled:{}
+                            relaunchPolicy:NoForceRelaunchAndResetState];
+  [ChromeEarlGrey clearBrowsingHistory];
+  // Ensure the database is initialized and empty.
+  [OmniboxEarlGrey waitForShortcutsBackendInitialization];
+  [OmniboxEarlGrey waitForNumberOfShortcutsInDatabase:0];
+
+  [self populateHistory];
+  NSString* omniboxInput = [NSString
+      stringWithFormat:@"%@:%@", base::SysUTF8ToNSString(_URL3.host()),
+                       base::SysUTF8ToNSString(_URL3.port())];
+
+  [ChromeEarlGreyUI focusOmniboxAndType:omniboxInput];
+
+  [[EarlGrey selectElementWithMatcher:PopupRowWithUrl(_URL1)]
+      performAction:grey_tap()];
+  [ChromeEarlGrey waitForWebStateContainingText:kPage1];
+
+  // Verify that the shortcut database has been populated.
+  [OmniboxEarlGrey waitForNumberOfShortcutsInDatabase:1];
+}
+
 #pragma mark - Helpers
 
 // Populate history by visiting the 3 different pages.
@@ -576,7 +605,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [ChromeEarlGrey loadURL:GURL("about:blank")];
 
   // Clears the url and replace it with local url host.
-  [ChromeEarlGreyUI focusOmniboxAndType:base::SysUTF8ToNSString("abc")];
+  [ChromeEarlGreyUI focusOmniboxAndType:@"abc"];
 
   // Wait for the suggestions to show.
   [ChromeEarlGrey waitForUIElementToAppearWithMatcher:
@@ -633,7 +662,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 - (void)testUpDownArrowAutocomplete {
   // Focus omnibox from Web.
   [ChromeEarlGrey loadURL:GURL("about:blank")];
-  [ChromeEarlGreyUI focusOmniboxAndType:base::SysUTF8ToNSString("testupdown")];
+  [ChromeEarlGreyUI focusOmniboxAndType:@"testupdown"];
 
   // Matcher for the first autocomplete suggestions.
   id<GREYMatcher> testupDownAutocomplete1 =
@@ -681,8 +710,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
   // Typing the title of page1.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-      performAction:grey_replaceText(
-                        base::SysUTF8ToNSString(std::string(kPage1Title)))];
+      performAction:grey_replaceText(base::SysUTF8ToNSString(kPage1Title))];
 
   // Wait for suggestions to show.
   [ChromeEarlGrey

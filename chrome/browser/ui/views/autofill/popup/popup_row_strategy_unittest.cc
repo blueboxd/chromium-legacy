@@ -41,6 +41,7 @@ namespace {
 
 enum class StrategyType {
   kSuggestion,
+  kComposeSuggestion,
   kPasswordSuggestion,
   kFooter,
 };
@@ -95,6 +96,13 @@ const RowStrategyTestdata kTestcases[] = {
         .strategy_type = StrategyType::kSuggestion,
         .set_size = 3,
         .set_index = 2,
+    },
+    RowStrategyTestdata{
+        .popup_item_ids = {PopupItemId::kCompose},
+        .line_number = 0,
+        .strategy_type = StrategyType::kComposeSuggestion,
+        .set_size = 1,
+        .set_index = 1,
     }};
 
 }  // namespace
@@ -117,13 +125,6 @@ class PopupRowStrategyTest : public ChromeViewsTestBase {
   // Checks that the expected callbacks for content cells are set and call the
   // controller.
   void TestContentCallbacks(const PopupCellView& cell, int index) {
-    constexpr base::TimeTicks kTime = base::TimeTicks() + base::Seconds(5);
-    PopupCellView::OnAcceptedCallback on_accept_callback =
-        cell.GetOnAcceptedCallback();
-    ASSERT_TRUE(on_accept_callback);
-    EXPECT_CALL(controller(), AcceptSuggestion(index, kTime));
-    on_accept_callback.Run(kTime);
-
     base::RepeatingClosure on_select_callback = cell.GetOnSelectedCallback();
     ASSERT_TRUE(on_select_callback);
     EXPECT_CALL(controller(), SelectSuggestion(absl::optional<size_t>(index)));
@@ -142,6 +143,9 @@ class PopupRowStrategyTest : public ChromeViewsTestBase {
       case StrategyType::kSuggestion:
         return std::make_unique<PopupSuggestionStrategy>(
             controller().GetWeakPtr(), line_number);
+      case StrategyType::kComposeSuggestion:
+        return std::make_unique<PopupComposeSuggestionStrategy>(
+            controller().GetWeakPtr(), line_number, /*show_new_badge=*/false);
       case StrategyType::kPasswordSuggestion:
         return std::make_unique<PopupPasswordSuggestionStrategy>(
             controller().GetWeakPtr(), line_number);
@@ -182,25 +186,6 @@ TEST_P(PopupRowStrategyParametrizedTest, ContentAreaCallbacksWork) {
   std::unique_ptr<PopupCellView> content_cell = strategy->CreateContent();
   ASSERT_THAT(content_cell, NotNull());
   TestContentCallbacks(*content_cell, kTestdata.line_number);
-}
-
-TEST_P(PopupRowStrategyParametrizedTest, DeletedControllerIsHandledGracefully) {
-  const RowStrategyTestdata kTestdata = GetParam();
-
-  SetSuggestions(kTestdata.popup_item_ids);
-  std::unique_ptr<PopupRowStrategy> strategy =
-      CreateStrategy(kTestdata.strategy_type, kTestdata.line_number);
-
-  std::unique_ptr<PopupCellView> content_cell = strategy->CreateContent();
-  ASSERT_THAT(content_cell, NotNull());
-
-  // Test that the executing the callbacks does not crash even if the controller
-  // has disappeared.
-  PopupCellView::OnAcceptedCallback callback =
-      content_cell->GetOnAcceptedCallback();
-  controller().InvalidateWeakPtrs();
-  EXPECT_CALL(controller(), AcceptSuggestion).Times(0);
-  callback.Run(base::TimeTicks::Now());
 }
 
 TEST_P(PopupRowStrategyParametrizedTest,
@@ -371,6 +356,16 @@ TEST_F(PopupSuggestionStrategyTest, AutocompleteDeleteButtonSetsAccessibility) {
       l10n_util::GetStringFUTF16(
           IDS_AUTOFILL_DELETE_AUTOCOMPLETE_SUGGESTION_A11Y_HINT, u"Some entry"),
       node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
+}
+
+TEST_F(PopupSuggestionStrategyTest, AutocompleteControlsFocusByKeyboardKeys) {
+  ShowAutocompleteSuggestion();
+
+  SimulateKeyPress(ui::VKEY_RIGHT);
+  EXPECT_TRUE(cell_with_button_view().GetCellButtonFocusedForTest());
+
+  SimulateKeyPress(ui::VKEY_LEFT);
+  EXPECT_FALSE(cell_with_button_view().GetCellButtonFocusedForTest());
 }
 
 }  // namespace autofill

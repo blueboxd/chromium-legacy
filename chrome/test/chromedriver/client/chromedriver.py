@@ -2,10 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import sys
-import util
-
 import psutil
+import sys
+import time
+import urllib.parse
+import util
 
 import command_executor
 from command_executor import Command
@@ -359,6 +360,13 @@ class ChromeDriver(object):
   def CreateWebSocketConnection(self):
     return WebSocketConnection(self._server_url, self._session_id)
 
+  def CreateWebSocketConnectionIPv6(self):
+    url_components = urllib.parse.urlparse(self._server_url)
+    new_url = urllib.parse.urlunparse(
+        url_components._replace(
+            netloc=('%s:%d' % ('[::1]', url_components.port))))
+    return WebSocketConnection(new_url, self._session_id)
+
   def GetWindowHandles(self):
     return self.ExecuteCommand(Command.GET_WINDOW_HANDLES)
 
@@ -384,6 +392,24 @@ class ChromeDriver(object):
     converted_args = list(args)
     return self.ExecuteCommand(
         Command.EXECUTE_SCRIPT, {'script': script, 'args': converted_args})
+
+  def CreateVirtualSensor(self, sensor_type, sensor_params=None):
+    params = {'type': sensor_type}
+    if sensor_params is not None:
+      params.update(sensor_params)
+    return self.ExecuteCommand(Command.CREATE_VIRTUAL_SENSOR, params)
+
+  def UpdateVirtualSensor(self, sensor_type, reading):
+    params = {'type': sensor_type, 'reading': reading}
+    return self.ExecuteCommand(Command.UPDATE_VIRTUAL_SENSOR, params)
+
+  def RemoveVirtualSensor(self, sensor_type):
+    params = {'type': sensor_type}
+    return self.ExecuteCommand(Command.REMOVE_VIRTUAL_SENSOR, params)
+
+  def GetVirtualSensorInformation(self, sensor_type):
+    params = {'type': sensor_type}
+    return self.ExecuteCommand(Command.GET_VIRTUAL_SENSOR_INFORMATION, params)
 
   def SetPermission(self, parameters):
     return self.ExecuteCommand(Command.SET_PERMISSION, parameters)

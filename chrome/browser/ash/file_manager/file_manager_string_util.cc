@@ -1008,6 +1008,8 @@ void AddStringsGeneric(base::Value::Dict* dict) {
              IDS_WEBSTORE_WIDGET_LOADING_SPINNER_ALT);
   SET_STRING("SUGGEST_DIALOG_INSTALLING_SPINNER_ALT",
              IDS_WEBSTORE_WIDGET_INSTALLING_SPINNER_ALT);
+  SET_STRING("TASK_INSTALL_ISOLATED_WEB_APP",
+             IDS_FILE_BROWSER_TASK_INSTALL_ISOLATED_WEB_APP);
   SET_STRING("TASK_INSTALL_LINUX_PACKAGE",
              IDS_FILE_BROWSER_TASK_INSTALL_LINUX_PACKAGE);
   SET_STRING("TASK_IMPORT_CROSTINI_IMAGE", IDS_SETTINGS_CROSTINI_IMPORT_LABEL);
@@ -1328,6 +1330,8 @@ void AddFileManagerFeatureStrings(const std::string& locale,
   dict->Set("ARC_VM_ENABLED", arc::IsArcVmEnabled());
   dict->Set("FILES_SEARCH_V2",
             base::FeatureList::IsEnabled(ash::features::kFilesSearchV2));
+  dict->Set("FILES_LOCAL_IMAGE_SEARCH",
+            ash::features::IsFilesLocalImageSearchEnabled());
   dict->Set("FILES_TRASH_DRIVE_ENABLED",
             base::FeatureList::IsEnabled(ash::features::kFilesTrashDrive));
   dict->Set(
@@ -1357,6 +1361,9 @@ void AddFileManagerFeatureStrings(const std::string& locale,
             drive::util::IsDriveFsBulkPinningAvailable(profile));
 
   dict->Set("CROS_COMPONENTS", chromeos::features::IsCrosComponentsEnabled());
+
+  dict->Set("NEW_DIRECTORY_TREE", base::FeatureList::IsEnabled(
+                                      ash::features::kFilesNewDirectoryTree));
 
   if (base::FeatureList::IsEnabled(features::kDataLeakPreventionPolicy) &&
       base::FeatureList::IsEnabled(

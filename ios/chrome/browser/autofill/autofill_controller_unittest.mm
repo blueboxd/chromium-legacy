@@ -39,8 +39,8 @@
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 #import "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #import "ios/chrome/browser/infobars/infobar_manager_impl.h"
-#import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
-#import "ios/chrome/browser/passwords/password_controller.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
+#import "ios/chrome/browser/passwords/model/password_controller.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/ui/autofill/chrome_autofill_client_ios.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_mediator.h"
@@ -207,7 +207,7 @@ class AutofillControllerTest : public PlatformTest {
   AutofillControllerTest() : web_client_(std::make_unique<ChromeWebClient>()) {
     TestChromeBrowserState::Builder builder;
     builder.AddTestingFactory(
-        IOSChromePasswordStoreFactory::GetInstance(),
+        IOSChromeProfilePasswordStoreFactory::GetInstance(),
         base::BindRepeating(&password_manager::BuildPasswordStoreInterface<
                             web::BrowserState,
                             password_manager::MockPasswordStoreInterface>));
@@ -360,7 +360,7 @@ void AutofillControllerTest::SetUp() {
   [accessory_mediator_ injectWebState:web_state()];
   [accessory_mediator_ injectProvider:suggestion_controller_];
 
-  histogram_tester_.reset(new base::HistogramTester());
+  histogram_tester_ = std::make_unique<base::HistogramTester>();
 }
 
 void AutofillControllerTest::TearDown() {
@@ -801,13 +801,13 @@ TEST_F(AutofillControllerTest, CreditCardImport) {
   infobars::InfoBarManager* infobar_manager =
       InfoBarManagerImpl::FromWebState(web_state());
   WaitForCondition(^bool() {
-    return infobar_manager->infobar_count();
+    return infobar_manager->infobars().size();
   });
   ExpectMetric("Autofill.CreditCardInfoBar.Local",
                AutofillMetrics::INFOBAR_SHOWN);
-  ASSERT_EQ(1U, infobar_manager->infobar_count());
+  ASSERT_EQ(1U, infobar_manager->infobars().size());
   infobars::InfoBarDelegate* infobar =
-      infobar_manager->infobar_at(0)->delegate();
+      infobar_manager->infobars()[0]->delegate();
   ConfirmInfoBarDelegate* confirm_infobar = infobar->AsConfirmInfoBarDelegate();
 
   // This call cause a modification of the PersonalDataManager, so wait until

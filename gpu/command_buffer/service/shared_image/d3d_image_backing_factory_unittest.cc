@@ -627,32 +627,23 @@ TEST_F(D3DImageBackingFactoryTest, GL_SkiaGL) {
 #if BUILDFLAG(USE_DAWN)
 // Test to check interaction between Dawn and skia GL representations.
 TEST_F(D3DImageBackingFactoryTest, Dawn_SkiaGL) {
-  // Create a Dawn D3D12 device
+  // Find a Dawn D3D12 adapter
   dawn::native::Instance instance;
-  instance.DiscoverDefaultPhysicalDevices();
-
-  std::vector<dawn::native::Adapter> adapters = instance.GetAdapters();
-  auto adapter_it = base::ranges::find(adapters, wgpu::BackendType::D3D12,
-                                       [](dawn::native::Adapter adapter) {
-                                         wgpu::AdapterProperties properties;
-                                         adapter.GetProperties(&properties);
-                                         return properties.backendType;
-                                       });
-  ASSERT_NE(adapter_it, adapters.end());
+  wgpu::RequestAdapterOptions adapter_options;
+  adapter_options.backendType = wgpu::BackendType::D3D12;
+  std::vector<dawn::native::Adapter> adapters =
+      instance.EnumerateAdapters(&adapter_options);
+  ASSERT_GT(adapters.size(), 0u);
 
   // We need to request internal usage to be able to do operations with
   // internal methods that would need specific usages.
   wgpu::FeatureName dawn_internal_usage = wgpu::FeatureName::DawnInternalUsages;
   wgpu::DeviceDescriptor device_descriptor;
-#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
   device_descriptor.requiredFeatureCount = 1;
-#else
-  device_descriptor.requiredFeaturesCount = 1;
-#endif
   device_descriptor.requiredFeatures = &dawn_internal_usage;
 
   wgpu::Device device =
-      wgpu::Device::Acquire(adapter_it->CreateDevice(&device_descriptor));
+      wgpu::Device::Acquire(adapters[0].CreateDevice(&device_descriptor));
 
   // Create a backing using mailbox.
   const auto mailbox = Mailbox::GenerateForSharedImage();
@@ -820,32 +811,23 @@ TEST_F(D3DImageBackingFactoryTest, Dawn_ConcurrentReads) {
     GTEST_SKIP();
   }
 
-  // Create a Dawn D3D12 device
+  // Find a Dawn D3D12 adapter
   dawn::native::Instance instance;
-  instance.DiscoverDefaultPhysicalDevices();
-
-  std::vector<dawn::native::Adapter> adapters = instance.GetAdapters();
-  auto adapter_it = base::ranges::find(adapters, wgpu::BackendType::D3D12,
-                                       [](dawn::native::Adapter adapter) {
-                                         wgpu::AdapterProperties properties;
-                                         adapter.GetProperties(&properties);
-                                         return properties.backendType;
-                                       });
-  ASSERT_NE(adapter_it, adapters.end());
+  wgpu::RequestAdapterOptions adapter_options;
+  adapter_options.backendType = wgpu::BackendType::D3D12;
+  std::vector<dawn::native::Adapter> adapters =
+      instance.EnumerateAdapters(&adapter_options);
+  ASSERT_GT(adapters.size(), 0u);
 
   // We need to request internal usage to be able to do operations with
   // internal methods that would need specific usages.
   wgpu::FeatureName dawn_internal_usage = wgpu::FeatureName::DawnInternalUsages;
   wgpu::DeviceDescriptor device_descriptor;
-#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
   device_descriptor.requiredFeatureCount = 1;
-#else
-  device_descriptor.requiredFeaturesCount = 1;
-#endif
   device_descriptor.requiredFeatures = &dawn_internal_usage;
 
   wgpu::Device device =
-      wgpu::Device::Acquire(adapter_it->CreateDevice(&device_descriptor));
+      wgpu::Device::Acquire(adapters[0].CreateDevice(&device_descriptor));
 
   // Create a backing using mailbox.
   const auto mailbox = Mailbox::GenerateForSharedImage();
@@ -985,32 +967,23 @@ TEST_F(D3DImageBackingFactoryTest, GL_Dawn_Skia_UnclearTexture) {
     EXPECT_FALSE(factory_ref->IsCleared());
   }
 
-  // Create a Dawn D3D12 device
+  // Find a Dawn D3D12 adapter
   dawn::native::Instance instance;
-  instance.DiscoverDefaultPhysicalDevices();
-
-  std::vector<dawn::native::Adapter> adapters = instance.GetAdapters();
-  auto adapter_it = base::ranges::find(adapters, wgpu::BackendType::D3D12,
-                                       [](dawn::native::Adapter adapter) {
-                                         wgpu::AdapterProperties properties;
-                                         adapter.GetProperties(&properties);
-                                         return properties.backendType;
-                                       });
-  ASSERT_NE(adapter_it, adapters.end());
+  wgpu::RequestAdapterOptions adapter_options;
+  adapter_options.backendType = wgpu::BackendType::D3D12;
+  std::vector<dawn::native::Adapter> adapters =
+      instance.EnumerateAdapters(&adapter_options);
+  ASSERT_GT(adapters.size(), 0u);
 
   // We need to request internal usage to be able to do operations with
   // internal methods that would need specific usages.
   wgpu::FeatureName dawn_internal_usage = wgpu::FeatureName::DawnInternalUsages;
   wgpu::DeviceDescriptor device_descriptor;
-#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
   device_descriptor.requiredFeatureCount = 1;
-#else
-  device_descriptor.requiredFeaturesCount = 1;
-#endif
   device_descriptor.requiredFeatures = &dawn_internal_usage;
 
   wgpu::Device device =
-      wgpu::Device::Acquire(adapter_it->CreateDevice(&device_descriptor));
+      wgpu::Device::Acquire(adapters[0].CreateDevice(&device_descriptor));
 
   {
     auto dawn_representation =
@@ -1075,32 +1048,23 @@ TEST_F(D3DImageBackingFactoryTest, UnclearDawn_SkiaFails) {
       shared_image_manager_.Register(std::move(backing),
                                      memory_type_tracker_.get());
 
-  // Create dawn device
+  // Find a Dawn D3D12 adapter
   dawn::native::Instance instance;
-  instance.DiscoverDefaultPhysicalDevices();
-
-  std::vector<dawn::native::Adapter> adapters = instance.GetAdapters();
-  auto adapter_it = base::ranges::find(adapters, wgpu::BackendType::D3D12,
-                                       [](dawn::native::Adapter adapter) {
-                                         wgpu::AdapterProperties properties;
-                                         adapter.GetProperties(&properties);
-                                         return properties.backendType;
-                                       });
-  ASSERT_NE(adapter_it, adapters.end());
+  wgpu::RequestAdapterOptions adapter_options;
+  adapter_options.backendType = wgpu::BackendType::D3D12;
+  std::vector<dawn::native::Adapter> adapters =
+      instance.EnumerateAdapters(&adapter_options);
+  ASSERT_GT(adapters.size(), 0u);
 
   // We need to request internal usage to be able to do operations with
   // internal methods that would need specific usages.
   wgpu::FeatureName dawn_internal_usage = wgpu::FeatureName::DawnInternalUsages;
   wgpu::DeviceDescriptor device_descriptor;
-#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
   device_descriptor.requiredFeatureCount = 1;
-#else
-  device_descriptor.requiredFeaturesCount = 1;
-#endif
   device_descriptor.requiredFeatures = &dawn_internal_usage;
 
   wgpu::Device device =
-      wgpu::Device::Acquire(adapter_it->CreateDevice(&device_descriptor));
+      wgpu::Device::Acquire(adapters[0].CreateDevice(&device_descriptor));
   {
     auto dawn_representation =
         shared_image_representation_factory_->ProduceDawn(
@@ -1340,32 +1304,23 @@ TEST_F(D3DImageBackingFactoryTest, Dawn_ReuseExternalImage) {
       shared_image_manager_.Register(std::move(backing),
                                      memory_type_tracker_.get());
 
-  // Create a Dawn D3D12 device
+  // Find a Dawn D3D12 adapter
   dawn::native::Instance instance;
-  instance.DiscoverDefaultPhysicalDevices();
-
-  std::vector<dawn::native::Adapter> adapters = instance.GetAdapters();
-  auto adapter_it = base::ranges::find(adapters, wgpu::BackendType::D3D12,
-                                       [](dawn::native::Adapter adapter) {
-                                         wgpu::AdapterProperties properties;
-                                         adapter.GetProperties(&properties);
-                                         return properties.backendType;
-                                       });
-  ASSERT_NE(adapter_it, adapters.end());
+  wgpu::RequestAdapterOptions adapter_options;
+  adapter_options.backendType = wgpu::BackendType::D3D12;
+  std::vector<dawn::native::Adapter> adapters =
+      instance.EnumerateAdapters(&adapter_options);
+  ASSERT_GT(adapters.size(), 0u);
 
   // We need to request internal usage to be able to do operations with
   // internal methods that would need specific usages.
   wgpu::FeatureName dawn_internal_usage = wgpu::FeatureName::DawnInternalUsages;
   wgpu::DeviceDescriptor device_descriptor;
-#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
   device_descriptor.requiredFeatureCount = 1;
-#else
-  device_descriptor.requiredFeaturesCount = 1;
-#endif
   device_descriptor.requiredFeatures = &dawn_internal_usage;
 
   wgpu::Device device =
-      wgpu::Device::Acquire(adapter_it->CreateDevice(&device_descriptor));
+      wgpu::Device::Acquire(adapters[0].CreateDevice(&device_descriptor));
 
   const wgpu::TextureUsage texture_usage = wgpu::TextureUsage::RenderAttachment;
 
@@ -1468,32 +1423,23 @@ TEST_F(D3DImageBackingFactoryTest, Dawn_HasLastRef) {
       shared_image_manager_.Register(std::move(backing),
                                      memory_type_tracker_.get());
 
-  // Create a Dawn D3D12 device
+  // Find a Dawn D3D12 adapter
   dawn::native::Instance instance;
-  instance.DiscoverDefaultPhysicalDevices();
-
-  std::vector<dawn::native::Adapter> adapters = instance.GetAdapters();
-  auto adapter_it = base::ranges::find(adapters, wgpu::BackendType::D3D12,
-                                       [](dawn::native::Adapter adapter) {
-                                         wgpu::AdapterProperties properties;
-                                         adapter.GetProperties(&properties);
-                                         return properties.backendType;
-                                       });
-  ASSERT_NE(adapter_it, adapters.end());
+  wgpu::RequestAdapterOptions adapter_options;
+  adapter_options.backendType = wgpu::BackendType::D3D12;
+  std::vector<dawn::native::Adapter> adapters =
+      instance.EnumerateAdapters(&adapter_options);
+  ASSERT_GT(adapters.size(), 0u);
 
   // We need to request internal usage to be able to do operations with
   // internal methods that would need specific usages.
   wgpu::FeatureName dawn_internal_usage = wgpu::FeatureName::DawnInternalUsages;
   wgpu::DeviceDescriptor device_descriptor;
-#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
   device_descriptor.requiredFeatureCount = 1;
-#else
-  device_descriptor.requiredFeaturesCount = 1;
-#endif
   device_descriptor.requiredFeatures = &dawn_internal_usage;
 
   wgpu::Device device =
-      wgpu::Device::Acquire(adapter_it->CreateDevice(&device_descriptor));
+      wgpu::Device::Acquire(adapters[0].CreateDevice(&device_descriptor));
   auto dawn_representation = shared_image_representation_factory_->ProduceDawn(
       mailbox, device, wgpu::BackendType::D3D12, {});
   ASSERT_NE(dawn_representation, nullptr);

@@ -9,6 +9,11 @@
 
 namespace ash {
 
+// IMPORTANT PLEASE READ.
+// Please ensure that the order of these enums are stable. If adding a new
+// accelerator action, please but at the end and before DEBUG-related
+// accelerator actions.
+//
 // Please keep the ActionName in sync with the ActionName under
 // <histogram name="Ash.Accelerators.Actions.{ActionName}" in this file
 // tools/metrics/histograms/metadata/ash/histograms.xml.
@@ -106,7 +111,6 @@ namespace ash {
   ACCELERATOR_ACTION_ENTRY(ShowEmojiPicker)                             \
   ACCELERATOR_ACTION_ENTRY(ToggleImeMenuBubble)                         \
   ACCELERATOR_ACTION_ENTRY(ShowShortcutViewer)                          \
-  ACCELERATOR_ACTION_ENTRY(ShowStylusTools)                             \
   ACCELERATOR_ACTION_ENTRY(ShowTaskManager)                             \
   ACCELERATOR_ACTION_ENTRY(StartAssistant)                              \
   ACCELERATOR_ACTION_ENTRY(StopScreenRecording)                         \
@@ -141,6 +145,7 @@ namespace ash {
   ACCELERATOR_ACTION_ENTRY(ToggleSnapGroupWindowsGroupAndUngroup)       \
   ACCELERATOR_ACTION_ENTRY(ToggleSnapGroupWindowsMinimizeAndRestore)    \
   ACCELERATOR_ACTION_ENTRY(ToggleSpokenFeedback)                        \
+  ACCELERATOR_ACTION_ENTRY(ToggleStylusTools)                           \
   ACCELERATOR_ACTION_ENTRY(ToggleSystemTrayBubble)                      \
   ACCELERATOR_ACTION_ENTRY(ToggleWifi)                                  \
   ACCELERATOR_ACTION_ENTRY(TouchHudClear)                               \
@@ -166,6 +171,7 @@ namespace ash {
   ACCELERATOR_ACTION_ENTRY(DebugPrintLayerHierarchy)                    \
   ACCELERATOR_ACTION_ENTRY(DebugPrintViewHierarchy)                     \
   ACCELERATOR_ACTION_ENTRY(DebugPrintWindowHierarchy)                   \
+  ACCELERATOR_ACTION_ENTRY(DebugShowInformedRestore)                    \
   ACCELERATOR_ACTION_ENTRY(DebugShowToast)                              \
   ACCELERATOR_ACTION_ENTRY(DebugShowSystemNudge)                        \
   ACCELERATOR_ACTION_ENTRY(DebugSystemUiStyleViewer)                    \

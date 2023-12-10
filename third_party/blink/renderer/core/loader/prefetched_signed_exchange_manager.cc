@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/loader/alternate_signed_exchange_resource_info.h"
 #include "third_party/blink/renderer/core/loader/loader_factory_for_frame.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/loader/fetch/code_cache_host.h"
 #include "third_party/blink/renderer/platform/loader/fetch/loader_freeze_mode.h"
 #include "third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader.h"
 #include "third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader_client.h"
@@ -89,34 +90,34 @@ class PrefetchedSignedExchangeManager::PrefetchedSignedExchangeLoader
   }
 
   // URLLoader methods:
-  void LoadSynchronously(
-      std::unique_ptr<network::ResourceRequest> request,
-      scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
-      bool pass_response_pipe_to_client,
-      bool no_mime_sniffing,
-      base::TimeDelta timeout_interval,
-      URLLoaderClient* client,
-      WebURLResponse& response,
-      absl::optional<WebURLError>& error,
-      scoped_refptr<SharedBuffer>& data,
-      int64_t& encoded_data_length,
-      uint64_t& encoded_body_length,
-      scoped_refptr<BlobDataHandle>& downloaded_blob,
-      std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
-          resource_load_info_notifier_wrapper) override {
+  void LoadSynchronously(std::unique_ptr<network::ResourceRequest> request,
+                         scoped_refptr<const SecurityOrigin> top_frame_origin,
+                         bool pass_response_pipe_to_client,
+                         bool no_mime_sniffing,
+                         base::TimeDelta timeout_interval,
+                         URLLoaderClient* client,
+                         WebURLResponse& response,
+                         absl::optional<WebURLError>& error,
+                         scoped_refptr<SharedBuffer>& data,
+                         int64_t& encoded_data_length,
+                         uint64_t& encoded_body_length,
+                         scoped_refptr<BlobDataHandle>& downloaded_blob,
+                         std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
+                             resource_load_info_notifier_wrapper) override {
     NOTREACHED();
   }
   void LoadAsynchronously(
       std::unique_ptr<network::ResourceRequest> request,
-      scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
+      scoped_refptr<const SecurityOrigin> top_frame_origin,
       bool no_mime_sniffing,
       std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
           resource_load_info_notifier_wrapper,
+      CodeCacheHost* code_cache_host,
       URLLoaderClient* client) override {
     if (url_loader_) {
       url_loader_->LoadAsynchronously(
-          std::move(request), std::move(url_request_extra_data),
-          no_mime_sniffing, std::move(resource_load_info_notifier_wrapper),
+          std::move(request), std::move(top_frame_origin), no_mime_sniffing,
+          std::move(resource_load_info_notifier_wrapper), code_cache_host,
           client);
       return;
     }
@@ -124,9 +125,24 @@ class PrefetchedSignedExchangeManager::PrefetchedSignedExchangeLoader
     // ResourceLoader which owns |this|, and we are binding with weak ptr of
     // |this| here.
     pending_method_calls_.push(WTF::BindOnce(
-        &PrefetchedSignedExchangeLoader::LoadAsynchronously, GetWeakPtr(),
-        std::move(request), std::move(url_request_extra_data), no_mime_sniffing,
-        std::move(resource_load_info_notifier_wrapper),
+        [](base::WeakPtr<PrefetchedSignedExchangeLoader> self,
+           std::unique_ptr<network::ResourceRequest> request,
+           scoped_refptr<const SecurityOrigin> top_frame_origin,
+           bool no_mime_sniffing,
+           std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
+               resource_load_info_notifier_wrapper,
+           base::WeakPtr<CodeCacheHost> code_cache_host,
+           URLLoaderClient* client) {
+          if (self) {
+            self->LoadAsynchronously(
+                std::move(request), top_frame_origin, no_mime_sniffing,
+                std::move(resource_load_info_notifier_wrapper),
+                code_cache_host.get(), client);
+          }
+        },
+        GetWeakPtr(), std::move(request), std::move(top_frame_origin),
+        no_mime_sniffing, std::move(resource_load_info_notifier_wrapper),
+        code_cache_host ? code_cache_host->GetWeakPtr() : nullptr,
         WTF::Unretained(client)));
   }
   void Freeze(LoaderFreezeMode value) override {

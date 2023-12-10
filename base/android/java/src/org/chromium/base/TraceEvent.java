@@ -15,12 +15,12 @@ import android.view.ViewGroup;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeMethods;
+import org.jni_zero.CalledByNative;
+import org.jni_zero.JNINamespace;
+import org.jni_zero.NativeMethods;
+
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
-import org.chromium.build.annotations.MainDex;
 
 import java.util.ArrayList;
 
@@ -41,7 +41,6 @@ import java.util.ArrayList;
  * @see EarlyTraceEvent for details.
  */
 @JNINamespace("base::android")
-@MainDex
 public class TraceEvent implements AutoCloseable {
     private static volatile boolean sEnabled; // True when tracing into Chrome's tracing service.
     private static volatile boolean sUiThreadReady;

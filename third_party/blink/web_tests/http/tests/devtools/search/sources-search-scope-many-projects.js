@@ -8,10 +8,10 @@ import {SourcesTestRunner} from 'sources_test_runner';
 
 import * as Workspace from 'devtools/models/workspace/workspace.js';
 import * as SourcesModule from 'devtools/panels/sources/sources.js';
+import * as Persistence from 'devtools/models/persistence/persistence.js';
 
 (async function() {
   TestRunner.addResult(`Tests that ScriptSearchScope sorts network and dirty results correctly.\n`);
-  await TestRunner.loadLegacyModule('search');
   await TestRunner.showPanel('sources');
 
   const workspace = Workspace.Workspace.WorkspaceImpl.instance();
@@ -80,7 +80,7 @@ import * as SourcesModule from 'devtools/panels/sources/sources.js';
       var paths = [];
       for (var i = 0; i < names.length; ++i)
         paths.push('/var/www/' + names[i]);
-      Persistence.isolatedFileSystemManager.onSearchCompleted(
+      Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().onSearchCompleted(
           {data: {requestId: requestId, fileSystemPath: path, files: paths}});
     }
   };

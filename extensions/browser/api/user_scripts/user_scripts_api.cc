@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/functional/bind.h"
+#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/types/optional_util.h"
 #include "extensions/browser/api/scripting/scripting_constants.h"
@@ -17,6 +18,7 @@
 #include "extensions/browser/user_script_manager.h"
 #include "extensions/common/api/extension_types.h"
 #include "extensions/common/api/user_scripts.h"
+#include "extensions/common/mojom/execution_world.mojom-shared.h"
 #include "extensions/common/user_script.h"
 #include "extensions/common/utils/content_script_utils.h"
 #include "extensions/common/utils/extension_types_utils.h"
@@ -32,6 +34,30 @@ constexpr char kInvalidSourceError[] =
     "js source.";
 constexpr char kMatchesMissingError[] =
     "User script with ID '*' must specify 'matches'.";
+
+mojom::ExecutionWorld ConvertExecutionWorld(
+    api::user_scripts::ExecutionWorld world) {
+  switch (world) {
+    // Execution world defaults to `kUserScript` when it's not provided.
+    case api::user_scripts::EXECUTION_WORLD_NONE:
+    case api::user_scripts::EXECUTION_WORLD_USER_SCRIPT:
+      return mojom::ExecutionWorld::kUserScript;
+    case api::user_scripts::EXECUTION_WORLD_MAIN:
+      return mojom::ExecutionWorld::kMain;
+  }
+}
+
+api::user_scripts::ExecutionWorld ConvertExecutionWorldForAPI(
+    mojom::ExecutionWorld world) {
+  switch (world) {
+    case mojom::ExecutionWorld::kUserScript:
+      return api::user_scripts::EXECUTION_WORLD_USER_SCRIPT;
+    case mojom::ExecutionWorld::kMain:
+      return api::user_scripts::EXECUTION_WORLD_MAIN;
+    case mojom::ExecutionWorld::kIsolated:
+      NOTREACHED_NORETURN() << "ISOLATED worlds are not supported in this API.";
+  }
+}
 
 std::unique_ptr<UserScript> ParseUserScript(
     const Extension& extension,
@@ -63,11 +89,15 @@ std::unique_ptr<UserScript> ParseUserScript(
           *user_script.matches,
           base::OptionalToPtr(user_script.exclude_matches),
           extension.creation_flags(), scripting::kScriptsCanExecuteEverywhere,
-          valid_schemes, scripting::kAllUrlsIncludesChromeUrls, result.get(),
-          error, /*wants_file_access=*/nullptr,
-          /*definition_index=*/absl::nullopt)) {
+          valid_schemes, scripting::kAllUrlsIncludesChromeUrls,
+          /*definition_index=*/absl::nullopt, result.get(), error,
+          /*wants_file_access=*/nullptr)) {
     return nullptr;
   }
+
+  script_parsing::ParseGlobs(base::OptionalToPtr(user_script.include_globs),
+                             base::OptionalToPtr(user_script.exclude_globs),
+                             result.get());
 
   if (user_script.js.empty()) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
@@ -93,6 +123,8 @@ std::unique_ptr<UserScript> ParseUserScript(
           resource.extension_root(), resource.relative_path(), url));
     }
   }
+
+  result->set_execution_world(ConvertExecutionWorld(user_script.world));
 
   return result;
 }
@@ -132,6 +164,8 @@ api::user_scripts::RegisteredUserScript CreateRegisteredUserScriptInfo(
       script_info.js.push_back(std::move(source));
     }
   }
+
+  script_info.world = ConvertExecutionWorldForAPI(script.execution_world());
 
   return script_info;
 }
@@ -376,7 +410,6 @@ ExtensionFunction::ResponseAction UserScriptsUpdateFunction::Run() {
 std::unique_ptr<UserScript> UserScriptsUpdateFunction::ApplyUpdate(
     api::user_scripts::RegisteredUserScript& new_script,
     api::user_scripts::RegisteredUserScript& original_script,
-    int definition_index,
     std::u16string* parse_error) {
   if (new_script.run_at != api::extension_types::RunAt::kNone) {
     original_script.run_at = new_script.run_at;
@@ -396,6 +429,10 @@ std::unique_ptr<UserScript> UserScriptsUpdateFunction::ApplyUpdate(
 
   if (!new_script.js.empty()) {
     original_script.js = std::move(new_script.js);
+  }
+
+  if (new_script.world) {
+    original_script.world = std::move(new_script.world);
   }
 
   std::unique_ptr<UserScript> parsed_script =

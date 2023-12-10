@@ -167,15 +167,7 @@ class SessionRestoreTest : public InProcessBrowserTest {
 #if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
     scoped_feature_list_.InitWithFeatures(
         /*enabled_features=*/{},
-        /*disabled_features=*/{// Disable What's New for non-branded builds
-                               // where the welcome page will be
-                               // disabled. Otherwise the bots may run with a
-                               // configuration (What's New
-                               // enabled + Welcome disabled) that does not
-                               // actually occur in production,
-                               // and causes tests to flake.
-                               features::kChromeWhatsNewUI,
-                               // TODO(crbug.com/1394910): Use HTTPS URLs in
+        /*disabled_features=*/{// TODO(crbug.com/1394910): Use HTTPS URLs in
                                // tests to avoid having to
                                // disable this feature.
                                features::kHttpsUpgrades});
@@ -283,8 +275,7 @@ class SessionRestoreTest : public InProcessBrowserTest {
       Navigate(&params);
     }
 
-    Browser* new_browser =
-        chrome::FindBrowserWithWebContents(tab_waiter.Wait());
+    Browser* new_browser = chrome::FindBrowserWithTab(tab_waiter.Wait());
 
     // Stop loading anything more if we are running out of space.
     if (!no_memory_pressure) {
@@ -1563,7 +1554,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, CloseSingleTabRestoresNothing) {
 
   chrome::NewEmptyWindow(profile);
 
-  Browser* new_browser = chrome::FindBrowserWithWebContents(tab_waiter.Wait());
+  Browser* new_browser = chrome::FindBrowserWithTab(tab_waiter.Wait());
 
   restore_observer.Wait();
   WaitForTabsToLoad(new_browser);
@@ -1627,7 +1618,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
   // Create a new browser from scratch and verify the tab is not restored.
   chrome::NewEmptyWindow(profile);
 
-  Browser* new_browser = chrome::FindBrowserWithWebContents(tab_waiter.Wait());
+  Browser* new_browser = chrome::FindBrowserWithTab(tab_waiter.Wait());
 
   restore_observer2.Wait();
   WaitForTabsToLoad(new_browser);

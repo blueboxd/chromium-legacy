@@ -89,10 +89,11 @@ const std::array<ServerFieldType, 7> kStructuredDataTypes = {
 // similarly.
 ServerFieldType GetStorableTypeCollapsingGroups(ServerFieldType type) {
   ServerFieldType storable_type = AutofillType(type).GetStorableType();
-  if (AutofillType(storable_type).group() == FieldTypeGroup::kName)
+  if (GroupTypeOfServerFieldType(storable_type) == FieldTypeGroup::kName) {
     return NAME_FULL;
+  }
 
-  if (AutofillType(storable_type).group() == FieldTypeGroup::kPhone) {
+  if (GroupTypeOfServerFieldType(storable_type) == FieldTypeGroup::kPhone) {
     return PHONE_HOME_WHOLE_NUMBER;
   }
 
@@ -307,7 +308,6 @@ base::android::ScopedJavaLocalRef<jobject> AutofillProfile::CreateJavaObject(
   base::android::ScopedJavaLocalRef<jobject> jprofile =
       Java_AutofillProfile_Constructor(
           env, base::android::ConvertUTF8ToJavaString(env, guid()),
-          record_type() == AutofillProfile::LOCAL_PROFILE,
           static_cast<jint>(source()),
           base::android::ConvertUTF8ToJavaString(env, language_code()));
 

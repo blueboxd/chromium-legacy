@@ -184,7 +184,7 @@ class PaymentManifestDownloader {
       scoped_refptr<net::HttpResponseHeaders> headers,
       int net_error);
 
-  void TryFallbackToDownloadingResponseBody(
+  void FallbackToDownloadingResponseBody(
       const GURL& url_to_download,
       std::unique_ptr<Download> download_info);
 

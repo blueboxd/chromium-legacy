@@ -131,14 +131,14 @@ source_set("omnibox_internal") {
     "//ios/chrome/browser/autocomplete/model",
     "//ios/chrome/browser/bookmarks/model",
     "//ios/chrome/browser/bookmarks/model:model_utils",
-    "//ios/chrome/browser/default_browser:utils",
+    "//ios/chrome/browser/default_browser/model:utils",
     "//ios/chrome/browser/favicon",
-    "//ios/chrome/browser/feature_engagement",
-    "//ios/chrome/browser/https_upgrades",
+    "//ios/chrome/browser/feature_engagement/model",
+    "//ios/chrome/browser/https_upgrades/model",
     "//ios/chrome/browser/intents:intents_donation_helper",
     "//ios/chrome/browser/net",
     "//ios/chrome/browser/ntp",
-    "//ios/chrome/browser/prerender",
+    "//ios/chrome/browser/prerender/model",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/search_engines:search_engines_util",
     "//ios/chrome/browser/sessions",
@@ -156,6 +156,7 @@ source_set("omnibox_internal") {
     "//ios/chrome/browser/shared/public/features:system_flags",
     "//ios/chrome/browser/shared/ui/symbols",
     "//ios/chrome/browser/shared/ui/util",
+    "//ios/chrome/browser/ui/bubble",
     "//ios/chrome/browser/ui/default_promo",
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/lens:lens_entrypoint",
@@ -166,7 +167,7 @@ source_set("omnibox_internal") {
     "//ios/chrome/browser/ui/omnibox/popup:popup_ui_protocols",
     "//ios/chrome/browser/ui/orchestrator:orchestrator",
     "//ios/chrome/browser/ui/toolbar/public:constants",
-    "//ios/chrome/browser/url_loading",
+    "//ios/chrome/browser/url_loading/model",
     "//ios/chrome/common",
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/favicon:favicon",
@@ -238,8 +239,14 @@ source_set("eg_test_support+eg2") {
   sources = [
     "omnibox_app_interface.h",
     "omnibox_app_interface_stub.mm",
+    "omnibox_earl_grey.h",
+    "omnibox_earl_grey.mm",
   ]
-  deps = [ "//ios/testing/earl_grey:eg_test_support+eg2" ]
+  deps = [
+    "//base/test:test_support",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ui/base",
+  ]
 }
 
 source_set("eg2_tests") {

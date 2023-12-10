@@ -2,7 +2,8 @@
 # Copyright 2022 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-'''Assembles a Rust toolchain in-tree linked against in-tree LLVM.
+'''Assembles a Rust toolchain in-tree linked against the LLVM revision
+specified in //tools/clang/scripts/update.py.
 
 Builds a Rust toolchain bootstrapped from an untrusted rustc build.
 
@@ -21,9 +22,9 @@ can be extensively customized. See for details:
 https://rustc-dev-guide.rust-lang.org/building/bootstrapping.html
 
 This script clones the Rust repository, checks it out to a defined revision,
-then builds stage 1 rustc and libstd using the LLVM build from
-//tools/clang/scripts/build.py or clang-libs fetched from
-//tools/clang/scripts/update.py.
+builds LLVM and Clang via //tools/clang/scripts/build.py, then builds rustc and
+libstd against it. Clang is included in the build for libclang, which is needed
+for building and shipping bindgen.
 
 Ideally our build would begin with our own trusted stage0 rustc. As it is
 simpler, for now we use an official build.
@@ -91,6 +92,8 @@ EXCLUDED_TESTS_MAC = [
     # https://crbug.com/1479875 This fails on Mac. It relates to the large code
     # model which we don't use, so suppress it for now.
     os.path.join('tests', 'ui', 'thread-local', 'thread-local-issue-37508.rs'),
+    # https://crbug.com/1486137 Fails on Mac. Probably not critical.
+    os.path.join('tests', 'ui', 'abi', 'stack-probes-lto.rs'),
 ]
 
 CLANG_SCRIPTS_DIR = os.path.join(CHROMIUM_DIR, 'tools', 'clang', 'scripts')

@@ -14,7 +14,7 @@ import {ShareDataPageElement} from 'chrome://os-feedback/share_data_page.js';
 import {getDeepActiveElement} from 'chrome://resources/ash/common/util.js';
 import {mojoString16ToString, stringToMojoString16} from 'chrome://resources/js/mojo_type_util.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {assertArrayEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
+import {assertArrayEquals, assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {eventToPromise, isVisible} from '../test_util.js';
@@ -188,11 +188,10 @@ export function shareDataPageTestSuite() {
     // Privacy note is a long localized string in HTML format.
     assertTrue(page.i18nExists('privacyNote'));
     assertEquals(
-        'Go to the Legal Help page to request content changes for ' +
-            'legal reasons. Some account and system information ' +
-            'may be sent to Google. We will use the information you ' +
-            'give us to help address technical issues and to improve our ' +
-            'services, subject to our Privacy Policy and Terms of Service.',
+        'Some account and system information may be sent to Google. We use ' +
+            'this information to help address technical issues and improve ' +
+            'our services, subject to our Privacy Policy and Terms of ' +
+            'Service. To request content changes, go to Legal Help.',
         getElementContent('#privacyNote'));
   });
 
@@ -209,6 +208,18 @@ export function shareDataPageTestSuite() {
             ' go to Legal Help ' +
             '(https://support.google.com/legal/answer/3110420).',
         getElementContent('#privacyNote'));
+  });
+
+  // Test the add file section is invisible to logged out users.
+  test('addFileInvisible_loggedOut_users', async () => {
+    await initializePage();
+    page.feedbackContext = fakeLoginFeedbackContext;
+    assertEquals('Login', page.feedbackContext.categoryTag);
+    assertFalse(isVisible(getElement('#addFileContainer')));
+
+    page.feedbackContext = fakeFeedbackContext;
+    assertNotEquals('Login', page.feedbackContext.categoryTag);
+    assertTrue(isVisible(getElement('#addFileContainer')));
   });
 
   // Test that the email drop down is populated with two options.

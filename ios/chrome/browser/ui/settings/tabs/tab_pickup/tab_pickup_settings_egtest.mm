@@ -8,14 +8,17 @@
 #import "components/sync/base/features.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/tabs/tab_pickup/features.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
+#import "ios/chrome/browser/ui/authentication/signin_matchers.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/settings/tabs/tabs_settings_constants.h"
 #import "ios/chrome/common/string_util.h"
 #import "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -73,29 +76,6 @@ id<GREYMatcher> TabPickupSettingsSwitchItem(bool is_toggled_on, bool enabled) {
                                                is_toggled_on, enabled);
 }
 
-// GREYMatcher for the tab pickup privacy footer in the tab pickup settings
-// screen corresponding to the given `message_id`.
-id<GREYMatcher> TabPickupPrivacyFooter(int message_id) {
-  NSString* message = l10n_util::GetNSString(message_id);
-  return grey_allOf(
-      grey_accessibilityID(kTabPickupSettingsPrivacyFooterId),
-      grey_descendant(grey_text(ParseStringWithLinks(message).string)), nil);
-}
-
-// GREYMatcher for the tab pickup privacy Sync footer link.
-id<GREYMatcher> TabPickupPrivacyFooterSyncLink() {
-  return grey_allOf(grey_accessibilityLabel(@"Sync"),
-                    grey_kindOfClassName(@"UIAccessibilityLinkSubelement"),
-                    nil);
-}
-
-// GREYMatcher for the tab pickup privacy Google Servicies footer link.
-id<GREYMatcher> TabPickupPrivacyFooterGoogleServicesLink() {
-  return grey_allOf(grey_accessibilityLabel(@"Google Services"),
-                    grey_kindOfClassName(@"UIAccessibilityLinkSubelement"),
-                    nil);
-}
-
 }  // namespace
 
 @interface TabPickupSettingsTestCase : ChromeTestCase
@@ -136,10 +116,6 @@ id<GREYMatcher> TabPickupPrivacyFooterGoogleServicesLink() {
       selectElementWithMatcher:TabPickupSettingsSwitchItem(
                                    /*is_toggled_on=*/true, /*enabled=*/true)]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey selectElementWithMatcher:
-                 TabPickupPrivacyFooter(
-                     IDS_IOS_PRIVACY_SYNC_AND_GOOGLE_SERVICES_FOOTER)]
-      assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 // Ensures that the tab pickup settings are correctly working when not synced.
@@ -153,45 +129,58 @@ id<GREYMatcher> TabPickupPrivacyFooterGoogleServicesLink() {
       assertWithMatcher:grey_sufficientlyVisible()];
   [[EarlGrey
       selectElementWithMatcher:TabPickupSettingsSwitchItem(
-                                   /*is_toggled_on=*/false, /*enabled=*/false)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey
-      selectElementWithMatcher:TabPickupPrivacyFooter(
-                                   IDS_IOS_PRIVACY_GOOGLE_SERVICES_FOOTER)]
+                                   /*is_toggled_on=*/false, /*enabled=*/true)]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-// Ensures that tab pickup settings links are correctly working.
-// TODO(crbug.com/1487979): Test fails on official builds.
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#define MAYBE_testTabPickupSettingsLinks DISABLED_testTabPickupSettingsLinks
-#else
-#define MAYBE_testTabPickupSettingsLinks testTabPickupSettingsLinks
-#endif
-- (void)MAYBE_testTabPickupSettingsLinks {
-  SignInAndSync();
+// Ensures that the tab pickup settings are correctly working when sign in from
+// tab pickup settings.
+- (void)testTabPickupSettingsSignInFlow {
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
   OpenTabsSettings();
-  OpenTabPickupFromTabsSettings();
-
-  // Check the "Sync" link.
-  [[EarlGrey selectElementWithMatcher:TabPickupPrivacyFooterSyncLink()]
-      performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kManageSyncTableViewAccessibilityIdentifier)]
+  [[EarlGrey selectElementWithMatcher:TabsSettingsTabPickupDetailText(false)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsMenuBackButton(
-                                          0)] performAction:grey_tap()];
+  OpenTabPickupFromTabsSettings();
+  [[EarlGrey selectElementWithMatcher:SettingsTabPickupTableView()]
+      assertWithMatcher:grey_sufficientlyVisible()];
 
-  // Check the "Google Services" link.
+  // Toogle and skip sign-in.
   [[EarlGrey
-      selectElementWithMatcher:TabPickupPrivacyFooterGoogleServicesLink()]
+      selectElementWithMatcher:TabPickupSettingsSwitchItem(
+                                   /*is_toggled_on=*/false, /*enabled=*/true)]
+      performAction:chrome_test_util::TurnTableViewSwitchOn(YES)];
+  [[EarlGrey
+      selectElementWithMatcher:TabPickupSettingsSwitchItem(
+                                   /*is_toggled_on=*/true, /*enabled=*/true)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::WebSigninSkipButtonMatcher()]
+      performAction:grey_tap()];
+
+  // Toogle and Sign-in.
+  [[EarlGrey
+      selectElementWithMatcher:TabPickupSettingsSwitchItem(
+                                   /*is_toggled_on=*/false, /*enabled=*/true)]
+      performAction:chrome_test_util::TurnTableViewSwitchOn(YES)];
+  [[EarlGrey
+      selectElementWithMatcher:TabPickupSettingsSwitchItem(
+                                   /*is_toggled_on=*/true, /*enabled=*/true)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          WebSigninPrimaryButtonMatcher()]
+      performAction:grey_tap()];
+  // Accept History Sync.
+  [[[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                           HistoryOptInPrimaryButtonMatcher()]
+         usingSearchAction:chrome_test_util::HistoryOptInScrollDown()
+      onElementWithMatcher:chrome_test_util::HistoryOptInPromoMatcher()]
       performAction:grey_tap()];
   [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kGoogleServicesSettingsViewIdentifier)]
+      selectElementWithMatcher:TabPickupSettingsSwitchItem(
+                                   /*is_toggled_on=*/true, /*enabled=*/true)]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 

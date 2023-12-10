@@ -329,6 +329,7 @@
 <translation id="3619115746895587757">កាពូឈីណូ</translation>
 <translation id="3619593063686672873">គ្មាន​វីដេអូ​ថ្មីៗទេ</translation>
 <translation id="3634507049637220048">បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, គ្រប់គ្រងដោយ​អ្នកគ្រប់គ្រង​របស់អ្នក, ព័ត៌មាន​លម្អិត</translation>
+<translation id="36451918667380448">ក្រុមហ៊ុន​ផ្ដល់សេវា​បណ្ដាញ​ទូរសព្ទចល័ត​ត្រូវបាន​ចាក់សោ។ សូម​ទាក់ទង​ទៅក្រុមហ៊ុន​ផ្ដល់សេវា​របស់អ្នក ដើម្បីទទួលបាន​ជំនួយ។</translation>
 <translation id="3645233063072417428">បានផ្លាស់ទី​ធាតុ <ph name="NUMBER_OF_ITEMS" />។</translation>
 <translation id="3658269352872031728">បានជ្រើសរើស​ឯកសារ <ph name="SELECTED_FILE_COUNT" /></translation>
 <translation id="3685122418104378273">សមកម្ម Google Drive ត្រូវបានបិទដំណើរការតាមលំនាំដើម នៅពេលប្រើទិន្នន័យចល័ត។</translation>
@@ -1014,6 +1015,7 @@
 <translation id="8698877009525468705">ឯកសារ​នេះ​មាន​លក្ខណៈ​សម្ងាត់ និង​ស្ថិតក្រោម​ការរឹតបន្តឹង​ដោយ​គោលការណ៍​អ្នកគ្រប់គ្រង។</translation>
 <translation id="8712637175834984815">យល់ហើយ</translation>
 <translation id="8713112442029511308">ភាសា​ម៉ាល់តា</translation>
+<translation id="8714138378966541668">ក្រុមហ៊ុនផ្ដល់សេវាបានចាក់សោ</translation>
 <translation id="8714406895390098252">កង់</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> ដែលបានជ្រើសរើស។</translation>
 <translation id="872537912056138402">ភាសាក្រូអាត</translation>

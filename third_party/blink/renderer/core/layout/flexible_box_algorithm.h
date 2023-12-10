@@ -84,8 +84,8 @@ class FlexItem {
            absl::optional<MinMaxSizes> min_max_cross_sizes,
            LayoutUnit main_axis_border_padding,
            LayoutUnit cross_axis_border_padding,
-           NGPhysicalBoxStrut physical_margins,
-           NGBoxStrut scrollbars,
+           PhysicalBoxStrut physical_margins,
+           BoxStrut scrollbars,
            WritingMode baseline_writing_mode,
            BaselineGroup baseline_group = BaselineGroup::kMajor,
            bool depends_on_min_max_sizes = false);
@@ -158,8 +158,8 @@ class FlexItem {
   const LayoutUnit hypothetical_main_content_size_;
   const LayoutUnit main_axis_border_padding_;
   const LayoutUnit cross_axis_border_padding_;
-  NGPhysicalBoxStrut physical_margins_;
-  const NGBoxStrut scrollbars_;
+  PhysicalBoxStrut physical_margins_;
+  const BoxStrut scrollbars_;
   const WritingDirectionMode baseline_writing_direction_;
   const BaselineGroup baseline_group_;
 
@@ -340,7 +340,7 @@ class CORE_EXPORT FlexLayoutAlgorithm {
 
   wtf_size_t NumItems() const { return all_items_.size(); }
 
-  const ComputedStyle* Style() const { return style_; }
+  const ComputedStyle* Style() const { return style_.Get(); }
   const ComputedStyle& StyleRef() const { return *style_; }
 
   const Vector<FlexLine>& FlexLines() const { return flex_lines_; }

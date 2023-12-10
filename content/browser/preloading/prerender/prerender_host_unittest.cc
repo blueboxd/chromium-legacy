@@ -129,12 +129,14 @@ class PrerenderHostTest : public RenderViewHostImplTestHarness {
     RenderFrameHostImpl* rfh = contents()->GetPrimaryMainFrame();
     return PrerenderAttributes(
         url, PrerenderTriggerType::kSpeculationRule,
-        /*embedder_histogram_suffix=*/"", Referrer(),
+        /*embedder_histogram_suffix=*/"",
+        blink::mojom::SpeculationTargetHint::kNoHint, Referrer(),
         blink::mojom::SpeculationEagerness::kEager,
         rfh->GetLastCommittedOrigin(), rfh->GetProcess()->GetID(),
         contents()->GetWeakPtr(), rfh->GetFrameToken(),
         rfh->GetFrameTreeNodeId(), rfh->GetPageUkmSourceId(),
-        ui::PAGE_TRANSITION_LINK, std::move(url_match_predicate));
+        ui::PAGE_TRANSITION_LINK, std::move(url_match_predicate),
+        /*prerender_navigation_handle_callback=*/absl::nullopt);
   }
 
   void ExpectFinalStatus(PrerenderFinalStatus status) {

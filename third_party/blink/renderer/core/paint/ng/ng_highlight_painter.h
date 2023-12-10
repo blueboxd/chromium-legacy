@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/editing/markers/highlight_pseudo_marker.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/selection_state.h"
+#include "third_party/blink/renderer/core/paint/line_relative_rect.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_highlight_overlay.h"
 #include "third_party/blink/renderer/core/paint/text_decoration_info.h"
 #include "third_party/blink/renderer/core/paint/text_paint_style.h"
@@ -25,16 +26,20 @@ namespace blink {
 
 class ComputedStyle;
 class FrameSelection;
+class InlineCursor;
 class LayoutObject;
 class NGFragmentItem;
 class NGTextPainter;
 class NGTextDecorationPainter;
-class NGInlineCursor;
 class Node;
 struct LayoutSelectionStatus;
 struct NGTextFragmentPaintInfo;
 struct PaintInfo;
 struct PhysicalOffset;
+
+namespace {
+class MarkerRangeMappingContext;
+}
 
 // Highlight overlay painter for LayoutNG. Operates on NGFragmentItem that
 // IsText(). Delegates to NGTextPainter to paint the text itself.
@@ -49,11 +54,11 @@ class CORE_EXPORT NGHighlightPainter {
     // ComputeSelectionStyle must be called to finish initializing. Until then,
     // only Status() may be called.
     explicit SelectionPaintState(
-        const NGInlineCursor& containing_block,
+        const InlineCursor& containing_block,
         const PhysicalOffset& box_offset,
         const absl::optional<AffineTransform> writing_mode_rotation = {});
     explicit SelectionPaintState(
-        const NGInlineCursor& containing_block,
+        const InlineCursor& containing_block,
         const PhysicalOffset& box_offset,
         const absl::optional<AffineTransform> writing_mode_rotation,
         const FrameSelection&);
@@ -78,8 +83,8 @@ class CORE_EXPORT NGHighlightPainter {
     // need to rotate the canvas into a line-relative coordinate space. Paint
     // ops done while rotated need coordinates in this rotated space, but ops
     // done outside of these rotations need the original physical rect.
-    const PhysicalRect& RectInPhysicalSpace();
-    const PhysicalRect& RectInWritingModeSpace();
+    const PhysicalRect& PhysicalSelectionRect();
+    const LineRelativeRect& LineRelativeSelectionRect();
 
     void PaintSelectionBackground(
         GraphicsContext& context,
@@ -90,7 +95,6 @@ class CORE_EXPORT NGHighlightPainter {
 
     void PaintSelectedText(NGTextPainter& text_painter,
                            const NGTextFragmentPaintInfo&,
-                           unsigned length,
                            const TextPaintStyle& text_style,
                            DOMNodeId node_id,
                            const AutoDarkMode& auto_dark_mode);
@@ -98,7 +102,6 @@ class CORE_EXPORT NGHighlightPainter {
     void PaintSuppressingTextProperWhereSelected(
         NGTextPainter& text_painter,
         const NGTextFragmentPaintInfo&,
-        unsigned length,
         const TextPaintStyle& text_style,
         DOMNodeId node_id,
         const AutoDarkMode& auto_dark_mode);
@@ -106,7 +109,7 @@ class CORE_EXPORT NGHighlightPainter {
    private:
     struct SelectionRect {
       PhysicalRect physical;
-      PhysicalRect rotated;
+      LineRelativeRect rotated;
       STACK_ALLOCATED();
     };
 
@@ -117,7 +120,7 @@ class CORE_EXPORT NGHighlightPainter {
 
     const LayoutSelectionStatus selection_status_;
     const SelectionState state_;
-    const NGInlineCursor& containing_block_;
+    const InlineCursor& containing_block_;
     const PhysicalOffset& box_offset_;
     const absl::optional<AffineTransform> writing_mode_rotation_;
     absl::optional<SelectionRect> selection_rect_;
@@ -130,7 +133,7 @@ class CORE_EXPORT NGHighlightPainter {
       NGTextPainter& text_painter,
       NGTextDecorationPainter& decoration_painter,
       const PaintInfo& paint_info,
-      const NGInlineCursor& cursor,
+      const InlineCursor& cursor,
       const NGFragmentItem& fragment_item,
       const absl::optional<AffineTransform> writing_mode_rotation,
       const PhysicalOffset& box_origin,
@@ -197,6 +200,15 @@ class CORE_EXPORT NGHighlightPainter {
                               bool paint_marker_backgrounds,
                               absl::optional<AffineTransform> rotation);
 
+  static void PaintHighlightBackground(
+      GraphicsContext& context,
+      Node* node,
+      const Document& document,
+      const ComputedStyle& style,
+      Color color,
+      const PhysicalRect& rect,
+      const absl::optional<AffineTransform>& rotation);
+
   // Return the text content offset for a particular fragment offset.
   static unsigned GetTextContentOffset(const Text& text, unsigned offset);
 
@@ -231,6 +243,14 @@ class CORE_EXPORT NGHighlightPainter {
 
  private:
   Case ComputePaintCase() const;
+
+  const PhysicalRect ComputeBackgroundRect(StringView text,
+                                           unsigned start_offset,
+                                           unsigned end_offset);
+  Vector<LayoutSelectionStatus> GetHighlights(const LayerPaintState& layer);
+  LayoutSelectionStatus GetSelectionStatusFromMarker(
+      const Member<DocumentMarker>& marker,
+      const MarkerRangeMappingContext* mapping_context);
   void FastPaintSpellingGrammarDecorations(const Text& text_node,
                                            const StringView& text,
                                            const DocumentMarkerVector& markers);
@@ -246,9 +266,9 @@ class CORE_EXPORT NGHighlightPainter {
       const ComputedStyle& style,
       const TextPaintStyle& text_style,
       const AppliedTextDecoration* decoration_override);
-  PhysicalRect RectInWritingModeSpace(
+  LineRelativeRect LineRelativeWorldRect(
       const NGHighlightOverlay::HighlightRange&);
-  void ClipToPartDecorations(const PhysicalRect&);
+  void ClipToPartDecorations(const LineRelativeRect&);
   void PaintDecorationsExceptLineThrough(
       const NGHighlightOverlay::HighlightPart&);
   void PaintDecorationsExceptLineThrough(
@@ -273,7 +293,7 @@ class CORE_EXPORT NGHighlightPainter {
   NGTextPainter& text_painter_;
   NGTextDecorationPainter& decoration_painter_;
   const PaintInfo& paint_info_;
-  const NGInlineCursor& cursor_;
+  const InlineCursor& cursor_;
   const NGFragmentItem& fragment_item_;
   const PhysicalOffset& box_origin_;
   const ComputedStyle& originating_style_;

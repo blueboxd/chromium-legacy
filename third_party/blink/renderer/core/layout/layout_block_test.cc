@@ -72,7 +72,7 @@ TEST_F(LayoutBlockTest, OverflowWithTransformAndPerspective) {
     </div>
   )HTML");
   auto* scroller = GetLayoutBoxByElementId("target");
-  EXPECT_EQ(187.625, scroller->LayoutOverflowRect().Width().ToFloat());
+  EXPECT_EQ(187.625, scroller->PhysicalLayoutOverflowRect().Width().ToFloat());
 }
 
 TEST_F(LayoutBlockTest, NestedInlineVisualOverflow) {
@@ -85,8 +85,7 @@ TEST_F(LayoutBlockTest, NestedInlineVisualOverflow) {
   )HTML");
 
   auto* target = GetLayoutBoxByElementId("target");
-  EXPECT_EQ(LayoutRect(-15, 0, 40, 40), target->VisualOverflowRect());
-  EXPECT_EQ(PhysicalRect(-15, 0, 40, 40), target->PhysicalVisualOverflowRect());
+  EXPECT_EQ(PhysicalRect(-15, 0, 40, 40), target->VisualOverflowRect());
 }
 
 TEST_F(LayoutBlockTest, NestedInlineVisualOverflowVerticalRL) {
@@ -101,10 +100,7 @@ TEST_F(LayoutBlockTest, NestedInlineVisualOverflowVerticalRL) {
   )HTML");
 
   auto* target = GetLayoutBoxByElementId("target");
-  const int kLeft =
-      RuntimeEnabledFeatures::LayoutNGNoLocationEnabled() ? -25 : -15;
-  EXPECT_EQ(LayoutRect(kLeft, 0, 40, 40), target->VisualOverflowRect());
-  EXPECT_EQ(PhysicalRect(-25, 0, 40, 40), target->PhysicalVisualOverflowRect());
+  EXPECT_EQ(PhysicalRect(-25, 0, 40, 40), target->VisualOverflowRect());
 }
 
 TEST_F(LayoutBlockTest, ContainmentStyleChange) {

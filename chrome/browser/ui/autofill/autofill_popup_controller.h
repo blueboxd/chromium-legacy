@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_CONTROLLER_H_
 #define CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_CONTROLLER_H_
 
+#include <optional>
 #include <string>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view_delegate.h"
+#include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/common/aliases.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -33,6 +35,10 @@ class AutofillPopupController : public AutofillPopupViewDelegate {
   // `event_time` to allow ruling out accidental popup interactions
   // (crbug.com/1279268).
   virtual void AcceptSuggestion(int index, base::TimeTicks event_time) = 0;
+
+  // Executes the action associated with the button that is displayed in the
+  // suggestion at `index`. Button actions depend on the type of the suggestion.
+  virtual void PerformButtonActionForSuggestion(int index) = 0;
 
   // Removes the suggestion at the given index.
   virtual bool RemoveSuggestion(int index) = 0;
@@ -96,6 +102,9 @@ class AutofillPopupController : public AutofillPopupViewDelegate {
 
   // Hides open by `OpenSubPopup()` popup, noop if there is no open sub-popup.
   virtual void HideSubPopup() = 0;
+
+  virtual std::optional<AutofillClient::PopupScreenLocation>
+  GetPopupScreenLocation() const = 0;
 
  protected:
   ~AutofillPopupController() override = default;

@@ -53,6 +53,22 @@ void RecordChoiceScreenNavigationCondition(
       condition);
 }
 
+bool IsBrowserTypeSupported(const Browser& browser) {
+  switch (browser.type()) {
+    case Browser::TYPE_NORMAL:
+    case Browser::TYPE_POPUP:
+      return true;
+    case Browser::TYPE_APP_POPUP:
+    case Browser::TYPE_PICTURE_IN_PICTURE:
+    case Browser::TYPE_APP:
+    case Browser::TYPE_DEVTOOLS:
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    case Browser::TYPE_CUSTOM_TAB:
+#endif
+      return false;
+  }
+}
+
 }  // namespace
 
 SearchEngineChoiceService::BrowserObserver::BrowserObserver(
@@ -163,19 +179,9 @@ bool SearchEngineChoiceService::IsShowingDialog(Browser* browser) {
   return base::Contains(browsers_with_open_dialogs_, browser);
 }
 
-std::vector<std::unique_ptr<TemplateURLData>>
+std::vector<std::unique_ptr<TemplateURL>>
 SearchEngineChoiceService::GetSearchEngines() {
-  // We call `GetPrepopulatedEngines` instead of
-  // `GetSearchProvidersUsingLoadedEngines` because the latter will return the
-  // list of search engines that might have been modified by the user (by
-  // changing the engine's keyword in settings for example).
-  PrefService* pref_service = profile_->GetPrefs();
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(&profile_.get());
-  return TemplateURLPrepopulateData::GetPrepopulatedEngines(
-      pref_service,
-      /*default_search_provider_index=*/nullptr,
-      /*include_current_default=*/true, template_url_service);
+  return template_url_service_->GetTemplateURLsForChoiceScreen();
 }
 
 bool SearchEngineChoiceService::CanShowDialog(Browser& browser) {
@@ -190,6 +196,15 @@ bool SearchEngineChoiceService::CanShowDialog(Browser& browser) {
     // Showing a Chrome-specific search engine dialog on top of a window
     // dedicated to a specific web app is a horrible UX, we suppress it for this
     // window. When the user proceeds to a non-web app window they will get it.
+    return false;
+  }
+
+  // Only show the dialog over normal and popup browsers. This is to avoid
+  // showing it in picture-in-picture for example.
+  if (!IsBrowserTypeSupported(browser)) {
+    RecordChoiceScreenNavigationCondition(
+        search_engines::SearchEngineChoiceScreenConditions::
+            kUnsupportedBrowserType);
     return false;
   }
 

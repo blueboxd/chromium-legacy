@@ -14,10 +14,10 @@
 #import "components/sessions/core/tab_restore_service_helper.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
-#import "ios/chrome/browser/find_in_page/abstract_find_tab_helper.h"
+#import "ios/chrome/browser/find_in_page/model/abstract_find_tab_helper.h"
 #import "ios/chrome/browser/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/policy/policy_util.h"
-#import "ios/chrome/browser/reading_list/reading_list_browser_agent.h"
+#import "ios/chrome/browser/reading_list/model/reading_list_browser_agent.h"
 #import "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/shared/coordinator/layout_guide/layout_guide_util.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
@@ -35,7 +35,7 @@
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
-#import "ios/chrome/browser/url_loading/url_loading_util.h"
+#import "ios/chrome/browser/url_loading/model/url_loading_util.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 #import "ios/chrome/browser/window_activities/model/window_activity_helpers.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -162,13 +162,11 @@ using base::UserMetricsAction;
     }
     return canPerformForward;
   }
-  if (sel_isEqual(action, @selector(keyCommand_showHistory))) {
-    return !_browser->GetBrowserState()->IsOffTheRecord() && self.tabsCount > 0;
-  }
   if (sel_isEqual(action, @selector(keyCommand_openLocation)) ||
       sel_isEqual(action, @selector(keyCommand_closeTab)) ||
       sel_isEqual(action, @selector(keyCommand_showBookmarks)) ||
       sel_isEqual(action, @selector(keyCommand_reload)) ||
+      sel_isEqual(action, @selector(keyCommand_showHistory)) ||
       sel_isEqual(action, @selector(keyCommand_voiceSearch)) ||
       sel_isEqual(action, @selector(keyCommand_stop)) ||
       sel_isEqual(action, @selector(keyCommand_showHelp)) ||

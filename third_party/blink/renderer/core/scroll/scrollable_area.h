@@ -249,12 +249,12 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // This getter will return null if the ScrollAnimatorBase hasn't been created
   // yet.
   ScrollAnimatorBase* ExistingScrollAnimator() const {
-    return scroll_animator_;
+    return scroll_animator_.Get();
   }
 
   ProgrammaticScrollAnimator& GetProgrammaticScrollAnimator() const;
   ProgrammaticScrollAnimator* ExistingProgrammaticScrollAnimator() const {
-    return programmatic_scroll_animator_;
+    return programmatic_scroll_animator_.Get();
   }
 
   virtual cc::AnimationHost* GetCompositorAnimationHost() const {
@@ -542,12 +542,11 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   float ScrollStep(ui::ScrollGranularity, ScrollbarOrientation) const;
 
-  // Injects a gesture scroll event based on the given parameters,
-  // targeted at this scrollable area.
-  void InjectGestureScrollEvent(WebGestureDevice device,
-                                ScrollOffset delta,
-                                ui::ScrollGranularity granularity,
-                                WebInputEvent::Type gesture_type) const;
+  // Injects a gesture scroll event based on the given parameters for mouse
+  // events on a scrollbar of this scrollable area.
+  void InjectScrollbarGestureScroll(ScrollOffset delta,
+                                    ui::ScrollGranularity granularity,
+                                    WebInputEvent::Type gesture_type) const;
   // If the layout box is a global root scroller then the root frame view's
   // ScrollableArea is returned. Otherwise, the layout box's
   // PaintLayerScrollableArea (which can be null) is returned.

@@ -255,15 +255,19 @@ const CGFloat kStatusBarCornerRadius = 3.0f;
 // Returns the appropriate icon image for a `parcelType`.
 - (UIImage*)iconImageForParcelType:(ParcelType)parcelType {
 #if !BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
-  return DefaultSymbolWithPointSize(kBoxTruckFill, kIconSize);
+  if (@available(iOS 16.0, *)) {
+    return DefaultSymbolWithPointSize(kBoxTruckFillSymbol, kIconSize);
+  } else {
+    return DefaultSymbolWithPointSize(kShippingBoxFillSymbol, kIconSize);
+  }
 #else
   switch (parcelType) {
     case ParcelType::kUSPS:
-      return [UIImage imageNamed:kUSPSCarrier];
+      return [UIImage imageNamed:kUSPSCarrierImage];
     case ParcelType::kUPS:
-      return [UIImage imageNamed:kUPSCarrier];
+      return [UIImage imageNamed:kUPSCarrierImage];
     case ParcelType::kFedex:
-      return [UIImage imageNamed:kFedexCarrier];
+      return [UIImage imageNamed:kFedexCarrierImage];
     default:
       return nil;
   }

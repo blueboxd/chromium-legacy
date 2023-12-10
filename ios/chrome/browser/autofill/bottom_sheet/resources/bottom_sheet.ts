@@ -101,9 +101,8 @@ function focusEventHandler_(event: Event): void {
  * @private
  */
 function focusEmptyOnlyEventHandler_(event: Event): void {
-  // Field must be empty (ignoring white spaces)
-  if ((event.target instanceof HTMLInputElement) &&
-      event.target.value.trim()) {
+  // Field must be empty
+  if ((event.target instanceof HTMLInputElement) && event.target.value) {
     return;
   }
   focusEventHandler_(event);
@@ -144,8 +143,7 @@ function attachListeners(renderer_ids: number[], must_be_empty: boolean): void {
         !observedElements_.find(elem => elem === element)) {
       elementsToObserve.push(element);
       if (document.activeElement === element) {
-        // Check if the field is empty (ignoring white spaces)
-        if (element.value.trim() != '') {
+        if (element.value != '') {
           // The user has already started filling the active field, so bail out
           // without attaching listeners.
           return;

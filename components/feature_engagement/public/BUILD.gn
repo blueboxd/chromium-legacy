@@ -45,6 +45,7 @@ source_set("public") {
     "//components/flags_ui",
     "//components/keyed_service/core",
   ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   if (is_android) {
     sources += [
@@ -91,8 +92,8 @@ if (is_android) {
     deps = [
       ":jni_headers",
       "//base:base_java",
-      "//base:jni_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
+      "//third_party/jni_zero:jni_zero_java",
     ]
 
     srcjar_deps = [

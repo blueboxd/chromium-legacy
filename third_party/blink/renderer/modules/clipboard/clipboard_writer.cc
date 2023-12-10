@@ -8,6 +8,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_parse_from_string_options.h"
 #include "third_party/blink/renderer/core/clipboard/clipboard_mime_types.h"
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
@@ -18,6 +19,7 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer_contents.h"
+#include "third_party/blink/renderer/core/xml/dom_parser.h"
 #include "third_party/blink/renderer/modules/clipboard/clipboard.h"
 #include "third_party/blink/renderer/platform/heap/cross_thread_handle.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
@@ -163,17 +165,20 @@ class ClipboardHtmlWriter final : public ClipboardWriter {
     if (!local_frame || !execution_context) {
       return;
     }
-    execution_context->CountUse(
-        RuntimeEnabledFeatures::ClipboardUnsanitizedContentEnabled()
-            ? WebFeature::kHtmlClipboardApiUnsanitizedWrite
-            : WebFeature::kHtmlClipboardApiWrite);
-
     String html_string =
         String::FromUTF8(reinterpret_cast<const LChar*>(html_data->Data()),
                          html_data->ByteLength());
     const KURL& url = local_frame->GetDocument()->Url();
-    if (RuntimeEnabledFeatures::ClipboardUnsanitizedContentEnabled()) {
-      Write(html_string, url);
+    if (RuntimeEnabledFeatures::
+            ClipboardWellFormedHtmlSanitizationWriteEnabled()) {
+      DOMParser* dom_parser =
+          blink::DOMParser::Create(promise_->GetScriptState());
+      ParseFromStringOptions* options = blink::ParseFromStringOptions::Create();
+      const Document* doc =
+          dom_parser->parseFromString(html_string, "text/html", options);
+      DCHECK(doc);
+      String serialized_html = CreateMarkup(doc, kIncludeNode, kResolveAllURLs);
+      Write(serialized_html, url);
       return;
     }
     // Sanitizing on the main thread because HTML DOM nodes can only be used on

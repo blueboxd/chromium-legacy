@@ -39,10 +39,6 @@ BASE_DECLARE_FEATURE(kQuickSettingsPWANotifications);
 BASE_DECLARE_FEATURE(kDoubleTapToZoomInTabletMode);
 #endif
 
-#if BUILDFLAG(IS_MAC)
-BASE_DECLARE_FEATURE(kEnableUniveralLinks);
-#endif
-
 #if !BUILDFLAG(IS_ANDROID)
 BASE_DECLARE_FEATURE(kCopyLinkToText);
 BASE_DECLARE_FEATURE(kMuteNotificationSnoozeAction);
@@ -101,12 +97,6 @@ const base::FeatureParam<int>
 // This flag controls whether to trigger prerendering when the default search
 // engine suggests to prerender a search result.
 BASE_DECLARE_FEATURE(kSupportSearchSuggestionForPrerender2);
-enum class SearchSuggestionPrerenderImplementationType {
-  kUsePrefetch,
-  kIgnorePrefetch,
-};
-extern const base::FeatureParam<SearchSuggestionPrerenderImplementationType>
-    kSearchSuggestionPrerenderImplementationTypeParam;
 // Indicates whether to make search prefetch response shareable to prerender.
 // When allowing this, prerender can only copy the cache but cannot take over
 // the ownership.
@@ -130,6 +120,10 @@ BASE_DECLARE_FEATURE(kPrerenderDSEHoldback);
 BASE_DECLARE_FEATURE(kAutocompleteActionPredictorConfidenceCutoff);
 
 BASE_DECLARE_FEATURE(kOmniboxTriggerForNoStatePrefetch);
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+BASE_DECLARE_FEATURE(kPayloadTestComponent);
+#endif
 
 }  // namespace features
 

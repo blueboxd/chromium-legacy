@@ -37,10 +37,10 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/extension_apps_utils.h"
-#include "chrome/browser/apps/app_service/package_id.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_service.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_update.h"
 #include "chrome/browser/apps/icon_standardizer.h"
@@ -80,7 +80,6 @@
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_item_factory.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_prefs.h"
-#include "chrome/browser/ui/ash/shelf/shelf_controller_helper.h"
 #include "chrome/browser/ui/ash/shelf/shelf_extension_app_updater.h"
 #include "chrome/browser/ui/ash/shelf/shelf_spinner_controller.h"
 #include "chrome/browser/ui/browser.h"
@@ -106,6 +105,7 @@
 #include "components/app_constants/constants.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/package_id.h"
 #include "components/services/app_service/public/cpp/shortcut/shortcut.h"
 #include "components/services/app_service/public/cpp/shortcut/shortcut_update.h"
 #include "components/strings/grit/components_strings.h"
@@ -249,16 +249,16 @@ ChromeShelfController* ChromeShelfController::instance() {
 }
 
 ChromeShelfController::ChromeShelfController(Profile* profile,
-                                             ash::ShelfModel* model,
-                                             ChromeShelfItemFactory* creator)
-    : model_(model),
-      shelf_item_factory_(creator),
-      shelf_prefs_(std::make_unique<ChromeShelfPrefs>(profile)) {
+                                             ash::ShelfModel* model)
+    : model_(model), shelf_prefs_(std::make_unique<ChromeShelfPrefs>(profile)) {
   TRACE_EVENT0("ui", "ChromeShelfController::ChromeShelfController");
   DCHECK(!g_instance);
   g_instance = this;
 
   CHECK(model_);
+
+  shelf_item_factory_ = std::make_unique<ChromeShelfItemFactory>();
+  model->SetShelfItemFactory(shelf_item_factory_.get());
 
   if (!profile) {
     // If no profile was passed, we take the currently active profile and use it
@@ -322,6 +322,8 @@ ChromeShelfController::~ChromeShelfController() {
   // Destroy the ShelfSpinnerController before clearing delegates.
   shelf_spinner_controller_.reset();
 
+  model_->SetShelfItemFactory(nullptr);
+
   // Destroy local shelf item delegates; some subclasses have complex cleanup.
   model_->DestroyItemDelegates();
 
@@ -360,10 +362,15 @@ void ChromeShelfController::Init() {
 ash::ShelfID ChromeShelfController::CreateAppItem(
     std::unique_ptr<ash::ShelfItemDelegate> item_delegate,
     ash::ShelfItemStatus status,
+    bool pinned,
     const std::u16string& title) {
   TRACE_EVENT0("ui", "ChromeShelfController::CreateAppItem");
-  return InsertAppItem(std::move(item_delegate), status, model_->item_count(),
-                       ash::TYPE_APP, title);
+  std::unique_ptr<ash::ShelfItem> item =
+      shelf_item_factory_->CreateShelfItemForApp(
+          item_delegate->shelf_id(), status,
+          pinned ? ash::TYPE_PINNED_APP : ash::TYPE_APP, title);
+  return InsertAppItem(std::move(item), std::move(item_delegate),
+                       model_->item_count());
 }
 
 const ash::ShelfItem* ChromeShelfController::GetItem(
@@ -451,9 +458,13 @@ void ChromeShelfController::SetAppStatus(const std::string& app_id,
   if (item) {
     SetItemStatusOrRemove(id, status);
   } else if (status != ash::STATUS_CLOSED && !app_id.empty()) {
-    InsertAppItem(
-        std::make_unique<AppShortcutShelfItemController>(ash::ShelfID(app_id)),
-        status, model_->item_count(), ash::TYPE_APP);
+    const ash::ShelfID shelf_id = ash::ShelfID(app_id);
+    std::unique_ptr<ash::ShelfItem> new_item =
+        shelf_item_factory_->CreateShelfItemForApp(
+            shelf_id, status, ash::TYPE_APP, /*title=*/base::EmptyString16());
+    InsertAppItem(std::move(new_item),
+                  std::make_unique<AppShortcutShelfItemController>(shelf_id),
+                  model_->item_count());
   }
 }
 
@@ -1067,9 +1078,27 @@ void ChromeShelfController::OnPromiseAppUpdate(
   // through sync and check if the item should be pinned. If it should be
   // pinned, the UpdatePinnedAppsFromSync() call will create an item for it.
   if (index == kInvalidIndex) {
-    UpdatePinnedAppsFromSync();
+    if (update.StatusChanged() || update.ShouldShowChanged()) {
+      auto* app_list_syncable_service =
+          app_list::AppListSyncableServiceFactory::GetForProfile(profile());
+
+      // Try linking the promise app to an existing sync item. On success, this
+      // will set the promise app's sync item pin ordinal to reflect the
+      // existing app item.
+      if (app_list_syncable_service) {
+        app_list_syncable_service->CreateLinkedPromiseSyncItemIfAvailable(
+            update.PackageId().ToString());
+      }
+
+      UpdatePinnedAppsFromSync();
+    }
     return;
   }
+
+  // NOTE: When the promise app installation completes, if the app is not linked
+  // to an existing sync item, the app's pin state should be copied to the
+  // existing app. This is accomplished by copying promise app sync item
+  // attributes, which is done by `AppServicePromiseAppModelBuilder`.
 
   ash::ShelfItem item = model_->items()[index];
   if (update.Progress().has_value()) {
@@ -1078,8 +1107,8 @@ void ChromeShelfController::OnPromiseAppUpdate(
   if (update.StatusChanged()) {
     item.app_status =
         ShelfControllerHelper::ConvertPromiseStatusToAppStatus(update.Status());
-    item.title = base::UTF8ToUTF16(
-        ShelfControllerHelper::GetLabelForPromiseStatus(update.Status()));
+    item.title =
+        ShelfControllerHelper::GetLabelForPromiseStatus(update.Status());
   }
   model_->Set(index, item);
 }
@@ -1090,10 +1119,8 @@ void ChromeShelfController::OnPromiseAppRemoved(
   if (index == kInvalidIndex) {
     return;
   }
-  const ash::ShelfItem& item = model_->items()[index];
 
-  // TODO(b/288832707): Instead of just unpinning the shelf item, replace it
-  // with the installed app item after the animation completes.
+  const ash::ShelfItem& item = model_->items()[index];
   UnpinShelfItemInternal(item.id);
 }
 
@@ -1341,17 +1368,19 @@ void ChromeShelfController::UpdatePinnedAppsFromSync() {
   // the new pin at that position.
   for (const auto& pref_shelf_id : pinned_apps) {
     const std::string& app_id = pref_shelf_id.app_id;
-    std::string promise_package_id =
-        shelf_prefs_->GetPromisePackageIdForSyncItem(app_id);
 
     // Checks whether the sync item matches with a current promise app that can
     // be shown in the shelf.
-    bool is_ready_promise_app =
-        IsPromiseAppReadyToShowInShelf(profile(), promise_package_id);
+    bool is_valid_promise_app =
+        IsPromiseAppReadyToShowInShelf(profile(), app_id);
 
-    // Do not show apps in the shelf if they are explicitly forbidden (and
-    // provided that they are not promise apps).
-    if (IsAppHiddenFromShelf(profile(), app_id) && !is_ready_promise_app) {
+    // Checks whether the sync item matches an installed app that can be shown
+    // in the shelf.
+    bool is_valid_app =
+        shelf_controller_helper_->IsValidIDForCurrentUser(app_id) &&
+        !IsAppHiddenFromShelf(profile(), app_id);
+
+    if (!is_valid_app && !is_valid_promise_app) {
       continue;
     }
 
@@ -1362,15 +1391,13 @@ void ChromeShelfController::UpdatePinnedAppsFromSync() {
     int app_index = index;
     for (; app_index < model_->item_count(); ++app_index) {
       const ash::ShelfItem& item = model_->items()[app_index];
-      if (item.id == pref_shelf_id || item.id.app_id == promise_package_id) {
+      if (item.id == pref_shelf_id) {
         break;
       }
     }
 
-    std::string item_id = is_ready_promise_app ? promise_package_id : app_id;
-
     const bool item_pinned = EnsureAppPinnedInModelAtIndex(
-        item_id,
+        app_id,
         /*current_index=*/app_index < model_->item_count() ? app_index : -1,
         /*target_index=*/index);
 
@@ -1419,16 +1446,13 @@ bool ChromeShelfController::EnsureAppPinnedInModelAtIndex(
     return false;
 
   // We need to create a new pin for a synced app.
-  ash::ShelfItem item;
-  std::unique_ptr<ash::ShelfItemDelegate> item_delegate;
-  if (!shelf_item_factory_->CreateShelfItemForAppId(app_id, &item,
-                                                    &item_delegate)) {
-    return false;
-  }
-
-  InsertAppItem(std::move(item_delegate), ash::STATUS_CLOSED, target_index,
-                ash::TYPE_PINNED_APP,
-                /*title=*/std::u16string());
+  std::unique_ptr<ash::ShelfItemDelegate> item_delegate =
+      shelf_item_factory_->CreateShelfItemDelegateForAppId(app_id);
+  std::unique_ptr<ash::ShelfItem> item =
+      shelf_item_factory_->CreateShelfItemForApp(
+          ash::ShelfID(app_id), ash::STATUS_CLOSED, ash::TYPE_PINNED_APP,
+          /*title=*/base::EmptyString16());
+  InsertAppItem(std::move(item), std::move(item_delegate), target_index);
   return true;
 }
 
@@ -1474,7 +1498,7 @@ ash::ShelfItemStatus ChromeShelfController::GetAppState(
     const std::string& app_id) {
   for (auto [web_contents, to_app_id] : web_contents_to_app_id_) {
     if (app_id == to_app_id) {
-      Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+      Browser* browser = chrome::FindBrowserWithTab(web_contents);
       // Usually there should never be an item in our |web_contents_to_app_id_|
       // list which got deleted already. However - in some situations e.g.
       // Browser::SwapTabContent there is temporarily no associated browser.
@@ -1488,13 +1512,12 @@ ash::ShelfItemStatus ChromeShelfController::GetAppState(
 }
 
 ash::ShelfID ChromeShelfController::InsertAppItem(
+    std::unique_ptr<ash::ShelfItem> item,
     std::unique_ptr<ash::ShelfItemDelegate> item_delegate,
-    ash::ShelfItemStatus status,
-    int index,
-    ash::ShelfItemType shelf_item_type,
-    const std::u16string& title) {
+    int index) {
   TRACE_EVENT0("ui", "ChromeShelfController::InsertAppItem");
   CHECK(item_delegate);
+  CHECK_EQ(item->id, item_delegate->shelf_id());
   if (GetItem(item_delegate->shelf_id())) {
     static bool once = true;
     if (once) {
@@ -1504,23 +1527,10 @@ ash::ShelfID ChromeShelfController::InsertAppItem(
     return item_delegate->shelf_id();
   }
 
-  ash::ShelfItem item;
-  item.status = status;
-  item.type = shelf_item_type;
-  item.id = item_delegate->shelf_id();
-  item.title = title;
-  item.app_status = ShelfControllerHelper::GetAppStatus(
-      latest_active_profile_, item_delegate->shelf_id().app_id);
-  if (ash::features::ArePromiseIconsEnabled()) {
-    item.progress = ShelfControllerHelper::GetPromiseAppProgress(
-        latest_active_profile_, item_delegate->shelf_id().app_id);
-    item.is_promise_app = ShelfControllerHelper::IsPromiseApp(
-        latest_active_profile_, item_delegate->shelf_id().app_id);
-  }
-  model_->AddAt(index, item, std::move(item_delegate));
+  model_->AddAt(index, *item, std::move(item_delegate));
 
   ReportUpdateShelfIconList(model_);
-  return item.id;
+  return item->id;
 }
 
 void ChromeShelfController::CreateBrowserShortcutItem(bool pinned) {
@@ -1657,6 +1667,7 @@ void ChromeShelfController::AttachProfile(Profile* profile_to_attach) {
   TRACE_EVENT0("ui", "ChromeShelfController::AttachProfile");
   profile_ = profile_to_attach;
   latest_active_profile_ = profile_to_attach;
+  shelf_item_factory_->set_profile(profile_to_attach);
 
   AddAppUpdaterAndIconLoader(profile_to_attach);
 

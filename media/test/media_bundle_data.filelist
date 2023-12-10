@@ -73,6 +73,7 @@ data/bear-1280x720-hevc-12bit-444.mp4
 data/bear-1280x720-hevc-8bit-422.mp4
 data/bear-1280x720-hevc-no-audio.mp4
 data/bear-1280x720-hevc.mp4
+data/bear-1280x720-hls-clear-mpl.m3u8
 data/bear-1280x720-hls-sample-aes.ts
 data/bear-1280x720-hls-with-CAT.bin
 data/bear-1280x720-hls.ts
@@ -267,7 +268,9 @@ data/bear_640x384_40frames.yuv.webm
 data/bear_adts_in_private_stream_1.ts
 data/bear_alaw.wav
 data/bear_audio_longer_than_video.ogv
+data/bear_audio_longer_than_video_vp8.ogv
 data/bear_audio_shorter_than_video.ogv
+data/bear_audio_shorter_than_video_vp8.ogv
 data/bear_divx_mp3.avi
 data/bear_dtsc.mp4
 data/bear_dtse.mp4

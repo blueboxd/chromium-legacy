@@ -21,7 +21,6 @@
 namespace {
 
 constexpr char kAuthHeaderBearer[] = "Bearer ";
-constexpr char kApiKeyHeader[] = "X-Goog-Api-Key";
 
 optimization_guide::proto::Platform GetPlatform() {
 #if BUILDFLAG(IS_WIN)
@@ -37,7 +36,7 @@ optimization_guide::proto::Platform GetPlatform() {
 #elif BUILDFLAG(IS_LINUX)
   return optimization_guide::proto::PLATFORM_LINUX;
 #else
-  return optimization_guide::proto::PLATFORM_UNKNOWN;
+  return optimization_guide::proto::PLATFORM_UNDEFINED;
 #endif
 }
 }  // namespace
@@ -116,16 +115,10 @@ void LogFeatureFlagsInfo(OptimizationGuideLogger* optimization_guide_logger,
 void PopulateAuthorizationRequestHeader(
     network::ResourceRequest* resource_request,
     std::string_view access_token) {
-  CHECK(!access_token.empty());
+  DCHECK(!access_token.empty());
   resource_request->headers.SetHeader(
       net::HttpRequestHeaders::kAuthorization,
       base::StrCat({kAuthHeaderBearer, access_token}));
-}
-
-void PopulateApiKeyRequestHeader(network::ResourceRequest* resource_request,
-                                 std::string_view api_key) {
-  CHECK(!api_key.empty());
-  resource_request->headers.SetHeader(kApiKeyHeader, api_key);
 }
 
 }  // namespace optimization_guide

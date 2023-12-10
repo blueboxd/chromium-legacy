@@ -310,7 +310,6 @@
 <translation id="2276987123919776440">15 分鐘</translation>
 <translation id="2277103315734023688">快轉</translation>
 <translation id="2282073721614284166">在分頁中開啟連結</translation>
-<translation id="2284237890386182187">開啟，未連線至任何裝置</translation>
 <translation id="2292698582925480719">顯示比例</translation>
 <translation id="229397294990920565">正在關閉行動數據...</translation>
 <translation id="2295777434187870477">麥克風已開啟；使用切換鈕可將麥克風設為靜音。</translation>
@@ -352,7 +351,6 @@
 <translation id="243878895369688216">昨天開啟過</translation>
 <translation id="2440978926514840421">已錄製 GIF</translation>
 <translation id="2441427462554639370">儲存空間嚴重不足，因此已停止錄製</translation>
-<translation id="24452542372838207">展開通知</translation>
 <translation id="2448312741937722512">類型</translation>
 <translation id="2449089818483227734">電量不足</translation>
 <translation id="2450205753526923158">螢幕截圖模式</translation>
@@ -493,7 +491,6 @@
 <translation id="3062298103034426069">不支援</translation>
 <translation id="3068622547379332530">版本 <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">在左側顯示檔案櫃</translation>
-<translation id="3070639127620815135">搜尋鍵 + Esc 鍵</translation>
 <translation id="3077734595579995578">Shift</translation>
 <translation id="3081696990447829002">展開選單</translation>
 <translation id="3087734570205094154">置底</translation>
@@ -572,7 +569,6 @@
 <translation id="3387527074123400161">Chromium OS</translation>
 <translation id="3389599499324569679">要開啟語音輸入功能嗎？</translation>
 <translation id="3394432020929931914">，已展開</translation>
-<translation id="3400357268283240774">其他設定</translation>
 <translation id="3405101454990027959">允許存取麥克風</translation>
 <translation id="3408735331120433841">你目前正在投放螢幕畫面。</translation>
 <translation id="3409584356742878290">顯示或隱藏開發人員工具檢查器</translation>
@@ -620,7 +616,6 @@
 <translation id="3563775809269155755">啟用無線基地台</translation>
 <translation id="3566240529365775567">剛才開啟過</translation>
 <translation id="3571734092741541777">設定</translation>
-<translation id="3572988532398145777">面板開啟時無法展開通知，請先關閉下方的面板。</translation>
 <translation id="3573179567135747900">改回「<ph name="FROM_LOCALE" />」(需要重新啟動)</translation>
 <translation id="3576141592585647168">變更時區</translation>
 <translation id="3577473026931028326">發生錯誤，請再試一次。</translation>
@@ -700,7 +695,6 @@
 <translation id="385300504083504382">開頭</translation>
 <translation id="3859364108019690">無法以串流方式使用應用程式</translation>
 <translation id="3861651314799684201">按下 Enter 鍵以錄製全螢幕畫面</translation>
-<translation id="3865912916886104060">未連線到任何裝置。系統將關閉 Wi-Fi，並開始使用無線基地台。</translation>
 <translation id="3886872229787704059">今天開啟過</translation>
 <translation id="3891340733213178823">按兩下 Ctrl+Shift+Q 鍵即可登出。</translation>
 <translation id="3893630138897523026">ChromeVox (互動朗讀)</translation>
@@ -785,7 +779,6 @@
 <translation id="4197790712631116042">關閉</translation>
 <translation id="4201033867194214117">「<ph name="FEATURE_NAME" />」無法使用。</translation>
 <translation id="4201051445878709314">顯示上一個月</translation>
-<translation id="4202362334312791952">1 部裝置已連線。系統將關閉 Wi-Fi，並開始使用無線基地台。</translation>
 <translation id="4209973997261364186">Wi-Fi 已開啟</translation>
 <translation id="4212472694152630271">切換為 PIN 碼</translation>
 <translation id="4215497585250573029">VPN 設定</translation>
@@ -902,7 +895,6 @@
 <translation id="468293128311738995">你手機上的應用程式</translation>
 <translation id="4690510401873698237">在底部顯示檔案櫃</translation>
 <translation id="4696813013609194136">使用家長存取碼將裝置解鎖</translation>
-<translation id="4698850295812410683">顯示觸控筆工具</translation>
 <translation id="4702647871202761252">已停用隱私保護畫面</translation>
 <translation id="4706121060329443414">系統稍後將再次嘗試下載，目前會暫時把語音傳送給 Google 處理。</translation>
 <translation id="470644585772471629">色彩反轉</translation>
@@ -1050,6 +1042,7 @@
 <translation id="5260676007519551770">桌面 4</translation>
 <translation id="5268819379131021772">Google Tasks 清單</translation>
 <translation id="5275923704957843041">桌面預覽</translation>
+<translation id="5277869901083657836">切換觸控筆工具</translation>
 <translation id="5278086053818066789">開啟/關閉 ChromeVox (互動朗讀功能)</translation>
 <translation id="5283099933536931082">「<ph name="APP_ITEM_TITLE" />」有通知需要查看。</translation>
 <translation id="5283198616748585639">增加 1 分鐘</translation>
@@ -1092,7 +1085,6 @@
 <translation id="5426063383988017631">已關閉設定選單</translation>
 <translation id="5428899915242071344">開始選取</translation>
 <translation id="5429993543155113935">目前不支援無痕式視窗</translation>
-<translation id="5430931332414098647">即時網路共用</translation>
 <translation id="5431318178759467895">彩色</translation>
 <translation id="5433020815079095860">音訊輸入</translation>
 <translation id="544691375626129091">現有使用者已全部加入這個工作階段。</translation>
@@ -1121,6 +1113,7 @@
 <translation id="554893713779400387">切換語音輸入</translation>
 <translation id="5551456515017410630">開啟/關閉日曆</translation>
 <translation id="5551974246223970793">搜尋網頁時，前往下一個符合搜尋的項目</translation>
+<translation id="5555639311269196631">關閉無線基地台</translation>
 <translation id="5558091555391176027">將鄰近分享功能切換為向附近的所有裝置顯示</translation>
 <translation id="556042886152191864">按鈕</translation>
 <translation id="5570122939431135380">在新的無痕式視窗中開啟新分頁</translation>
@@ -1166,7 +1159,6 @@
 <translation id="5707775774148071965">你使用的連接線無法達到裝置所支援的資料傳輸速率。裝置效能可能會因此受到限制。</translation>
 <translation id="5710450975648804523">「零打擾」模式已開啟</translation>
 <translation id="571295407079589142">行動數據已關閉</translation>
-<translation id="5716891621595980681"><ph name="DEVICECOUNT" /> 部裝置已連線。系統將關閉 Wi-Fi，並開始使用無線基地台。</translation>
 <translation id="5727460725221669831">如果你忘記密碼，或最近曾變更 Google 帳戶密碼，建議你復原這個使用者密碼。</translation>
 <translation id="573413375004481890">這部裝置無法支援你的所有螢幕，因此其中一個畫面已中斷連線</translation>
 <translation id="5740328398383587084">鄰近分享</translation>
@@ -1216,7 +1208,6 @@
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">開啟</translation>
 <translation id="5920710855273935292">麥克風已設為靜音。</translation>
-<translation id="5924855612669061715">無線基地台已開啟</translation>
 <translation id="5946788582095584774"><ph name="FEATURE_NAME" />功能已開啟。</translation>
 <translation id="5947494881799873997">還原</translation>
 <translation id="595202126637698455">效能追蹤已啟用</translation>
@@ -1232,6 +1223,7 @@
 <translation id="598407983968395253">使用範本</translation>
 <translation id="598882571027504733">如要更新，請連接鍵盤並重新啟動 Chromebook。</translation>
 <translation id="6000279412553873020">按鍵、按鈕等等</translation>
+<translation id="6002122790816966947">你的裝置</translation>
 <translation id="6012623610530968780">第 <ph name="SELECTED_PAGE" /> 頁 (共 <ph name="TOTAL_PAGE_NUM" /> 頁)</translation>
 <translation id="601304062528754300">醒目顯示檔案櫃中的下一個項目</translation>
 <translation id="6015573907265691211">標示為完成</translation>
@@ -1300,7 +1292,6 @@
 <translation id="6231419273573514727">周邊裝置效能可能受到限制</translation>
 <translation id="6232891689835436217">「<ph name="APP_NAME" />」正在使用你的攝影機和麥克風</translation>
 <translation id="6237231532760393653">1X</translation>
-<translation id="6244986124527896815">使用「<ph name="NEW_SHORTCUT" />」開啟工作管理員應用程式。</translation>
 <translation id="6247728804802644171">開啟通知</translation>
 <translation id="6254629735336163724">已鎖定為水平畫面</translation>
 <translation id="6259254695169772643">請使用觸控筆選取</translation>
@@ -1521,6 +1512,7 @@
 <translation id="7188494361780961876">已將選單移至畫面左上角。</translation>
 <translation id="7189412385142492784">金星有多遠</translation>
 <translation id="7198435252016571249">攝影機已對齊右下角，與系統平台發生衝突。</translation>
+<translation id="7219573373513695352">未連線到任何裝置</translation>
 <translation id="7229029500464092426">記憶體可用量：<ph name="AVAILABLE_MEMORY" /> | 總量：<ph name="TOTAL_MEMORY" /></translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />。這部 Chromebook 需要重新啟動才能套用更新。最多可能需要 1 分鐘才能完成。</translation>
 <translation id="7256634071279256947">後置麥克風</translation>
@@ -1945,7 +1937,6 @@
 <translation id="9030665205623277906">CPU 用量數據匯報：<ph name="CPU_USEAGE" />%</translation>
 <translation id="9034924485347205037">Linux 檔案</translation>
 <translation id="9047624247355796468">開啟「<ph name="NETWORK_NAME" />」設定</translation>
-<translation id="9059834730836941392">收合通知</translation>
 <translation id="906458777597946297">將視窗放到最大</translation>
 <translation id="9065203028668620118">編輯</translation>
 <translation id="9070640332319875144">個人助理設定</translation>

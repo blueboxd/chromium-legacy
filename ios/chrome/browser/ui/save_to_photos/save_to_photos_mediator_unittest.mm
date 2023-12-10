@@ -39,6 +39,8 @@
 
 namespace {
 
+NSString* const kGooglePhotosAppProductIdentifier = @"962194608";
+
 // Fake image URL.
 const char kFakeImageUrl[] = "http://example.com/image.png";
 
@@ -60,6 +62,13 @@ NSString* GetFakeImageSize() {
 NSString* GetFakeImageName() {
   return base::SysUTF8ToNSString(GURL(kFakeImageUrl).ExtractFileName());
 }
+
+// URL to open the Google Photos app.
+NSString* const kGooglePhotosRecentlyAddedURLString =
+    @"https://photos.google.com/search/_tra_?obfsgid=";
+
+// URL Scheme to test whether the Google Photos app is installed.
+NSString* const kGooglePhotosAppURLScheme = @"googlephotos";
 
 // Returns the URL to test whether the Google Photos app is installed.
 NSURL* GetGooglePhotosAppURL() {
@@ -534,8 +543,7 @@ TEST_F(SaveToPhotosMediatorTest,
   // Expect that the mediator tries to show StoreKit with the expected product
   // identifier.
   OCMExpect([mock_save_to_photos_mediator_delegate
-      showStoreKitWithProductIdentifier:kGooglePhotosAppProductIdentifier
-                          campaignToken:kGooglePhotosStoreKitCampaignToken]);
+      showStoreKitWithProductIdentifier:kGooglePhotosAppProductIdentifier]);
 
   // Simulate the user tapped the "Open" button.
   savedMessageAction();

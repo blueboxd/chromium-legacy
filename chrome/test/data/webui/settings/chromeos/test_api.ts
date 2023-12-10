@@ -152,7 +152,7 @@ export class LockScreenSettings implements LockScreenSettingsInterface {
     await assertForDuration(property);
   }
 
-  public async goToPasswordSettings():
+  async goToPasswordSettings():
       Promise<{passwordSettings: PasswordSettingsApiRemote}> {
     const passwordSettings =
         await retryUntilSome(() => this.queryPasswordSettings());
@@ -174,9 +174,7 @@ export class LockScreenSettings implements LockScreenSettingsInterface {
       if (toggle === null) {
         return !isAvailable;
       }
-      // Check for presence of "learn more" link
-      return toggle.outerHTML.includes('https://support.google.com/chrome') ===
-          !isAvailable;
+      return toggle.outerHTML.includes('not supported') === !isAvailable;
     };
 
     await assertAsync(property);
@@ -286,7 +284,7 @@ export class LockScreenSettings implements LockScreenSettingsInterface {
     return new PinSettingsApi(element);
   }
 
-  public async goToPinSettings(): Promise<{pinSettings: PinSettingsApiRemote}> {
+  async goToPinSettings(): Promise<{pinSettings: PinSettingsApiRemote}> {
     return {pinSettings: (await this.pinSettingsApi()).newRemote()};
   }
 

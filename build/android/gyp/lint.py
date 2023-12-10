@@ -271,9 +271,10 @@ def _RunLint(create_cache,
                                                    extra_manifest_paths,
                                                    min_sdk_version,
                                                    android_sdk_version)
-  # Include the rebased manifest_path in the lint generated path so that it is
-  # clear in error messages where the original AndroidManifest.xml came from.
-  lint_android_manifest_path = os.path.join(lint_gen_dir, manifest_path)
+  # Just use a hardcoded name, since we may have different target names (and
+  # thus different manifest_paths) using the same lint baseline. Eg.
+  # trichrome_chrome_bundle and trichrome_chrome_32_64_bundle.
+  lint_android_manifest_path = os.path.join(lint_gen_dir, 'AndroidManifest.xml')
   _WriteXmlFile(android_manifest_tree.getroot(), lint_android_manifest_path)
 
   resource_root_dir = os.path.join(lint_gen_dir, _RES_ZIP_DIR)
@@ -339,7 +340,7 @@ def _RunLint(create_cache,
 
   start = time.time()
   logging.debug('Lint command %s', ' '.join(cmd))
-  failed = True
+  failed = False
 
   if creating_baseline and not warnings_as_errors:
     # Allow error code 6 when creating a baseline: ERRNO_CREATED_BASELINE
@@ -348,14 +349,14 @@ def _RunLint(create_cache,
     fail_func = lambda returncode, _: returncode != 0
 
   try:
-    failed = bool(
-        build_utils.CheckOutput(cmd,
-                                print_stdout=True,
-                                stdout_filter=stdout_filter,
-                                stderr_filter=stderr_filter,
-                                fail_on_output=warnings_as_errors,
-                                fail_func=fail_func))
+    build_utils.CheckOutput(cmd,
+                            print_stdout=True,
+                            stdout_filter=stdout_filter,
+                            stderr_filter=stderr_filter,
+                            fail_on_output=warnings_as_errors,
+                            fail_func=fail_func)
   except build_utils.CalledProcessError as e:
+    failed = True
     # Do not output the python stacktrace because it is lengthy and is not
     # relevant to the actual lint error.
     sys.stderr.write(e.output)

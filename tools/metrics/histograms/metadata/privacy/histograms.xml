@@ -380,24 +380,6 @@ reviewer.
   </summary>
 </histogram>
 
-<histogram name="Privacy.DIPS.TimeFromInteractionToStorage{DIPSCookieMode}"
-    units="ms" expires_after="2023-11-01">
-  <owner>jdh@chromium.org</owner>
-  <owner>rtarpine@chromium.org</owner>
-  <owner>src/chrome/browser/dips/OWNERS</owner>
-  <summary>
-    The amount of time after a user interacts with a site until the site
-    persists state (e.g. cookies), {DIPSCookieMode} (where site = eTLD+1). Not
-    recorded if state is written before interaction takes place (see analogous
-    histogram below).
-
-    In M-109, the DIPS Service was updated to explicitly not collect metrics for
-    non-user profiles, such as system profiles and ChromeOS Signin, LockScreen,
-    and LockScreenApp profiles.
-  </summary>
-  <token key="DIPSCookieMode" variants="DIPSCookieMode"/>
-</histogram>
-
 <histogram name="Privacy.DIPS.TimeFromNavigationCommitToClientBounce"
     units="ms" expires_after="2024-04-22">
   <owner>jdh@chromium.org</owner>
@@ -413,24 +395,6 @@ reviewer.
     non-user profiles, such as system profiles and ChromeOS Signin, LockScreen,
     and LockScreenApp profiles.
   </summary>
-</histogram>
-
-<histogram name="Privacy.DIPS.TimeFromStorageToInteraction{DIPSCookieMode}"
-    units="ms" expires_after="2023-11-01">
-  <owner>jdh@chromium.org</owner>
-  <owner>rtarpine@chromium.org</owner>
-  <owner>src/chrome/browser/dips/OWNERS</owner>
-  <summary>
-    The amount of time after a site persists state (e.g. cookies) until the user
-    interacts with the site, {DIPSCookieMode} (where site = eTLD+1). Not
-    recorded if interaction takes place before state is written (see analogous
-    histogram above).
-
-    In M-109, the DIPS Service was updated to explicitly not collect metrics for
-    non-user profiles, such as system profiles and ChromeOS Signin, LockScreen,
-    and LockScreenApp profiles.
-  </summary>
-  <token key="DIPSCookieMode" variants="DIPSCookieMode"/>
 </histogram>
 
 <histogram name="Privacy.DoNotTrackSetting" enum="BooleanEnabled"
@@ -916,6 +880,109 @@ reviewer.
     cleared due to budget denial. Also breaks out the case of a report that
     started with no contributions. Recorded for each individual report request
     (but not each individual histogram contribution).
+  </summary>
+</histogram>
+
+<histogram name="PrivacySandbox.ProtectedAudience.JoiningTopFrameDisplayed"
+    enum="BooleanShown" expires_after="M125">
+  <owner>sauski@google.com</owner>
+  <owner>behamilton@chromium.org</owner>
+  <summary>
+    Records whether the joining site (including host fallback) for a Protected
+    Audience interest group was successfully displayed. True if it was, false if
+    the interest group was not displayed because no site or host could be
+    determined. Recorded on a per interest group data key basis when the user
+    opens the Protected Audience settings page.
+  </summary>
+</histogram>
+
+<histogram
+    name="PrivacySandbox.TrackingProtection.Onboarding.EligibleToOnboardedDuration"
+    units="ms" expires_after="2024-09-30">
+  <owner>jacobstanley@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <summary>
+    Records the duration it takes while being eligible up till onboarding to
+    3PCD. This occurs once during the process of onboarding.
+  </summary>
+</histogram>
+
+<histogram
+    name="PrivacySandbox.TrackingProtection.Onboarding.LastShownToAckedDuration"
+    units="ms" expires_after="2024-09-30">
+  <owner>jacobstanley@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <summary>
+    Records the duration it takes to acknowledge the notice from the last time
+    it was shown. This occurs once during the process of onboarding.
+  </summary>
+</histogram>
+
+<histogram
+    name="PrivacySandbox.TrackingProtection.Onboarding.NoticeControllerEvent"
+    enum="TrackingProtectionNoticeControllerEvent" expires_after="2024-09-01">
+  <owner>tommasin@chromium.org</owner>
+  <owner>kartoffel-core-eng@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <summary>
+    Records the current state of the Tracking Protection onboarding notice and
+    its controller. This is a Clank-only metric and helps understanding whether
+    the message was requested to be shown but wasn't due to e.g. navigation only
+    on tabs with non-secure connection state.
+  </summary>
+</histogram>
+
+<histogram
+    name="PrivacySandbox.TrackingProtection.Onboarding.OnboardedToAckedDuration"
+    units="ms" expires_after="2024-09-30">
+  <owner>jacobstanley@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <summary>
+    Records the time it takes to acknowledge the notice for 3PCD after being
+    onboarded. This occurs once during the process of onboarding.
+  </summary>
+</histogram>
+
+<histogram
+    name="PrivacySandbox.TrackingProtection.OnboardingStartup.EligibleToOnboardedDuration"
+    units="ms" expires_after="2024-09-30">
+  <owner>jacobstanley@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <summary>
+    Records the duration it takes while being eligible up till onboarding to
+    3PCD. This occurs once per profile during the startup of onboarding.
+  </summary>
+</histogram>
+
+<histogram name="PrivacySandbox.TrackingProtection.OnboardingStartup.State"
+    enum="OnboardingStartupState" expires_after="2024-09-30">
+  <owner>jacobstanley@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <summary>
+    Records the state on startup of being onboarded to 3PCD. This occurs once
+    per profile during the startup of onboarding.
+  </summary>
+</histogram>
+
+<histogram
+    name="PrivacySandbox.TrackingProtection.OnboardingStartup.WaitingToAckSince"
+    units="ms" expires_after="2024-09-30">
+  <owner>jacobstanley@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <summary>
+    Records the time it takes to acknowledge the notice for 3PCD after being
+    onboarded. This occurs once per profile during the startup of onboarding.
+  </summary>
+</histogram>
+
+<histogram
+    name="PrivacySandbox.TrackingProtection.OnboardingStartup.WaitingToOnboardSince"
+    units="ms" expires_after="2024-09-30">
+  <owner>jacobstanley@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <summary>
+    Records the time it takes while waiting to be onboarded to 3PCD. This occurs
+    once per profile during the startup of onboarding.
   </summary>
 </histogram>
 

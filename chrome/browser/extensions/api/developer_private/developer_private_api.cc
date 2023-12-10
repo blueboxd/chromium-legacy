@@ -67,9 +67,6 @@
 #include "components/supervised_user/core/common/buildflags.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
@@ -2077,7 +2074,7 @@ DeveloperPrivateOpenDevToolsFunction::Run() {
   }
 
   // Once we open the inspector, we focus on the appropriate tab...
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  Browser* browser = chrome::FindBrowserWithTab(web_contents);
 
   // ... but some pages (popups and apps) don't have tabs, and some (background
   // pages) don't have an associated browser. For these, the inspector opens in
@@ -2184,9 +2181,8 @@ ExtensionFunction::ResponseAction DeveloperPrivateShowOptionsFunction::Run() {
   if (!web_contents)
     return RespondNow(Error(kCouldNotFindWebContentsError));
 
-  ExtensionTabUtil::OpenOptionsPage(
-      extension,
-      chrome::FindBrowserWithWebContents(web_contents));
+  ExtensionTabUtil::OpenOptionsPage(extension,
+                                    chrome::FindBrowserWithTab(web_contents));
   return RespondNow(NoArguments());
 }
 
@@ -2717,7 +2713,7 @@ DeveloperPrivateRemoveMultipleExtensionsFunction::Run() {
     return RespondNow(NoArguments());
   }
 
-  Browser* browser = chrome::FindBrowserWithWebContents(GetSenderWebContents());
+  Browser* browser = chrome::FindBrowserWithTab(GetSenderWebContents());
   CHECK(browser);
 
   ShowExtensionMultipleUninstallDialog(

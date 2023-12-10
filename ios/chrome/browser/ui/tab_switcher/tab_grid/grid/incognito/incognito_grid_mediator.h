@@ -8,7 +8,6 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/base_grid_mediator.h"
 
 @protocol IncognitoGridMediatorDelegate;
-@class IncognitoReauthSceneAgent;
 @protocol TabCollectionConsumer;
 class PrefService;
 
@@ -17,8 +16,6 @@ class PrefService;
 
 // Incognito mediator delegate.
 @property(nonatomic, weak) id<IncognitoGridMediatorDelegate> incognitoDelegate;
-// The reauth scene agent to handle the button enabled state.
-@property(nonatomic, weak) IncognitoReauthSceneAgent* reauthSceneAgent;
 
 @end
 

@@ -95,7 +95,7 @@ class MockBaseFetchContext final : public BaseFetchContext {
       base::optional_ref<const ResourceRequest::RedirectInfo>,
       const KURL&,
       ReportingDisposition,
-      base::optional_ref<const String>) const override {
+      const String&) const override {
     return false;
   }
   bool ShouldBlockFetchAsCredentialedSubresource(const ResourceRequest&,
@@ -115,7 +115,7 @@ class MockBaseFetchContext final : public BaseFetchContext {
   }
 
   ExecutionContext* GetExecutionContext() const override {
-    return execution_context_;
+    return execution_context_.Get();
   }
 
  private:

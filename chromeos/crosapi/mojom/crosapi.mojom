@@ -41,6 +41,7 @@ import "chromeos/crosapi/mojom/editor_panel.mojom";
 import "chromeos/crosapi/mojom/emoji_picker.mojom";
 import "chromeos/crosapi/mojom/extension_info_private.mojom";
 import "chromeos/crosapi/mojom/extension_keeplist.mojom";
+import "chromeos/crosapi/mojom/eye_dropper.mojom";
 import "chromeos/crosapi/mojom/feedback.mojom";
 import "chromeos/crosapi/mojom/field_trial.mojom";
 import "chromeos/crosapi/mojom/file_manager.mojom";
@@ -147,8 +148,8 @@ struct BrowserInfo {
 // please note the milestone when you added it, to help us reason about
 // compatibility between the client applications and older ash-chrome binaries.
 //
-// Next version: 120
-// Next method id: 122
+// Next version: 121
+// Next method id: 123
 [Stable, Uuid="8b79c34f-2bf8-4499-979a-b17cac522c1e",
  RenamedFrom="crosapi.mojom.AshChromeService"]
 interface Crosapi {
@@ -601,6 +602,10 @@ interface Crosapi {
   // Added in M87.
   BindHidManager@4(pending_receiver<device.mojom.HidManager> receiver);
 
+  // Binds the EyeDropper interface for showing EyeDropper UI.
+  // Added in M120.
+  [MinVersion=120] BindEyeDropper@122(pending_receiver<EyeDropper> receiver);
+
   // Binds the Feedback interface for showing feedback UI.
   // Added in M87.
   [MinVersion=3] BindFeedback@5(pending_receiver<Feedback> receiver);
@@ -1034,8 +1039,8 @@ enum OpenUrlFrom {
 // parameters here. If a new parameter is added and its value is only known
 // after the user has logged in, please update BrowserPostLoginParams as well.
 //
-// Next version: 70
-// Next id: 70
+// Next version: 72
+// Next id: 72
 [Stable, RenamedFrom="crosapi.mojom.LacrosInitParams"]
 struct BrowserInitParams {
   // This is ash-chrome's version of the Crosapi interface. This is used by
@@ -1460,6 +1465,14 @@ struct BrowserInitParams {
   // unavailable.
   [MinVersion=69]
   bool is_floss_availability_check_needed@69;
+
+  // Tells lacros whether the app install service URI is enabled.
+  [MinVersion=70]
+  bool is_app_install_service_uri_enabled@70;
+
+  // Tells if the desk profiles feature is enabled.
+  [MinVersion=71]
+  bool is_desk_profiles_enabled@71;
 };
 
 // BrowserPostLoginParams is the subset of parameters in BrowserInitParams

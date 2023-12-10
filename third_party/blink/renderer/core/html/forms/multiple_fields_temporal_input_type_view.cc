@@ -62,6 +62,8 @@
 
 namespace blink {
 
+using mojom::blink::FormControlType;
+
 class DateTimeFormatValidator : public DateTimeFormat::TokenHandler {
  public:
   DateTimeFormatValidator()
@@ -296,11 +298,11 @@ void MultipleFieldsTemporalInputTypeView::PickerIndicatorChooseValue(
   EventQueueScope scope;
   DateComponents date;
   unsigned end;
-  if (input_type_->FormControlType() == input_type_names::kTime) {
+  if (input_type_->FormControlType() == FormControlType::kInputTime) {
     if (date.ParseTime(value, 0, end) && end == value.length())
       edit->SetOnlyTime(date);
   } else if (input_type_->FormControlType() ==
-             input_type_names::kDatetimeLocal) {
+             FormControlType::kInputDatetimeLocal) {
     if (date.ParseDateTimeLocal(value, 0, end) && end == value.length())
       edit->SetDateTimeLocal(date);
   } else {
@@ -413,9 +415,9 @@ void MultipleFieldsTemporalInputTypeView::CreateShadowSubtree() {
       MakeGarbageCollected<DateTimeEditElement, Document&,
                            DateTimeEditElement::EditControlOwner&>(document,
                                                                    *this));
-  if (LayoutTheme::GetTheme().SupportsCalendarPicker(
-          input_type_->FormControlType()))
+  if (LayoutTheme::GetTheme().SupportsCalendarPicker(input_type_->type())) {
     picker_indicator_is_always_visible_ = true;
+  }
   container->AppendChild(
       MakeGarbageCollected<PickerIndicatorElement, Document&,
                            PickerIndicatorElement::PickerIndicatorOwner&>(

@@ -52,6 +52,8 @@ using OIT = metrics::OmniboxInputType;
 namespace {
 
 using ResultType = ZeroSuggestProvider::ResultType;
+constexpr bool is_ios = !!BUILDFLAG(IS_IOS);
+constexpr bool is_android = !!BUILDFLAG(IS_ANDROID);
 
 // Represents whether ZeroSuggestProvider is allowed to display zero-prefix
 // suggestions, and if not, why not.
@@ -169,25 +171,6 @@ bool AllowRemoteNoURL(const AutocompleteProviderClient* client) {
          (!check_authentication_state || client->IsAuthenticated());
 }
 
-// Returns a copy of |input| with an empty text for zero-suggest. The input text
-// is checked against the suggest response which always has an empty query. If
-// those don't match, the response is dropped. It however copies over the URL,
-// as zero-suggest on Web/SRP on Mobile relies on the URL to be set.
-// TODO(crbug.com/1344004): Find out if the other fields also need to be set and
-// whether this call can be avoided altogether by e.g., not checking the input
-// text against the query in the response.
-AutocompleteInput GetZeroSuggestInput(
-    const AutocompleteInput& input,
-    const AutocompleteProviderClient* client) {
-  AutocompleteInput sanitized_input(u"", input.current_page_classification(),
-                                    client->GetSchemeClassifier());
-  sanitized_input.set_current_url(input.current_url());
-  sanitized_input.set_current_title(input.current_title());
-  sanitized_input.set_prevent_inline_autocomplete(true);
-  sanitized_input.set_allow_exact_keyword_match(false);
-  return sanitized_input;
-}
-
 // Called in StoreRemoteResponse() and ReadStoredResponse() to determine if the
 // zero suggest cache is being used to store ZPS responses received from the
 // remote Suggest service for the given |result_type|.
@@ -233,24 +216,21 @@ bool StoreRemoteResponse(const std::string& response_json,
     return false;
   }
 
-  const AutocompleteInput zero_suggest_input =
-      GetZeroSuggestInput(input, client);
-
   if (!SearchSuggestionParser::ParseSuggestResults(
-          *response_data, zero_suggest_input, client->GetSchemeClassifier(),
-          kDefaultZeroSuggestRelevance,
+          *response_data, input, client->GetSchemeClassifier(),
+          /*default_result_relevance=*/kDefaultZeroSuggestRelevance,
           /*is_keyword_result=*/false, results)) {
     return false;
   }
 
-  const auto page_class = zero_suggest_input.current_page_classification();
+  const auto page_class = input.current_page_classification();
   if (!ShouldCacheResultTypeInContext(result_type, page_class)) {
     return true;
   }
 
   // Force use of empty page URL when given an input with "No URL" result type.
   const std::string page_url = result_type != ResultType::kRemoteNoURL
-                                   ? zero_suggest_input.current_url().spec()
+                                   ? input.current_url().spec()
                                    : std::string();
   client->GetZeroSuggestCacheService()->StoreZeroSuggestResponse(page_url,
                                                                  response_json);
@@ -270,17 +250,14 @@ bool ReadStoredResponse(const AutocompleteProviderClient* client,
   DCHECK(results);
   DCHECK_NE(ResultType::kNone, result_type);
 
-  const AutocompleteInput zero_suggest_input =
-      GetZeroSuggestInput(input, client);
-
-  const auto page_class = zero_suggest_input.current_page_classification();
+  const auto page_class = input.current_page_classification();
   if (!ShouldCacheResultTypeInContext(result_type, page_class)) {
     return false;
   }
 
   // Force use of empty page URL when given an input with "No URL" result type.
   const std::string page_url = result_type != ResultType::kRemoteNoURL
-                                   ? zero_suggest_input.current_url().spec()
+                                   ? input.current_url().spec()
                                    : std::string();
   std::string response_json = client->GetZeroSuggestCacheService()
                                   ->ReadZeroSuggestResponse(page_url)
@@ -296,8 +273,8 @@ bool ReadStoredResponse(const AutocompleteProviderClient* client,
   }
 
   if (!SearchSuggestionParser::ParseSuggestResults(
-          *response_data, zero_suggest_input, client->GetSchemeClassifier(),
-          kDefaultZeroSuggestRelevance,
+          *response_data, input, client->GetSchemeClassifier(),
+          /*default_result_relevance=*/kDefaultZeroSuggestRelevance,
           /*is_keyword_result=*/false, results)) {
     return false;
   }
@@ -340,8 +317,7 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::ResultTypeToRun(
   if (omnibox::IsOtherWebPage(page_class)) {
     if (focus_type_input_type ==
             std::make_pair(OFT::INTERACTION_FOCUS, OIT::URL) &&
-        base::FeatureList::IsEnabled(
-            omnibox::kFocusTriggersContextualWebZeroSuggest)) {
+        (is_ios || is_android)) {
       return ResultType::kRemoteSendURL;
     }
     if (focus_type_input_type ==
@@ -356,7 +332,7 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::ResultTypeToRun(
   if (omnibox::IsSearchResultsPage(page_class)) {
     if (focus_type_input_type ==
             std::make_pair(OFT::INTERACTION_FOCUS, OIT::URL) &&
-        base::FeatureList::IsEnabled(omnibox::kFocusTriggersSRPZeroSuggest)) {
+        (is_ios || is_android)) {
       return ResultType::kRemoteSendURL;
     }
     if (focus_type_input_type ==
@@ -686,11 +662,9 @@ void ZeroSuggestProvider::ConvertSuggestResultsToAutocompleteMatches(
 
   // Add all the SuggestResults to the map. We display all ZeroSuggest search
   // suggestions as unbolded.
-  const AutocompleteInput zero_suggest_input =
-      GetZeroSuggestInput(input, client());
   MatchMap map;
   for (size_t i = 0; i < results.suggest_results.size(); ++i) {
-    AddMatchToMap(results.suggest_results[i], std::string(), zero_suggest_input,
+    AddMatchToMap(results.suggest_results[i], std::string(), input,
                   client()->GetTemplateURLService()->GetDefaultSearchProvider(),
                   client()->GetTemplateURLService()->search_terms_data(), i,
                   false, false, &map);

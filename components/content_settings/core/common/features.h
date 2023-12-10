@@ -93,6 +93,12 @@ extern const base::FeatureParam<int> kUserBypassUIReloadCount;
 COMPONENT_EXPORT(CONTENT_SETTINGS_FEATURES)
 extern const base::FeatureParam<base::TimeDelta> kUserBypassUIReloadTime;
 
+// The reloading bubble will be shown until either the page full reloads or this
+// timeout is reached.
+COMPONENT_EXPORT(CONTENT_SETTINGS_FEATURES)
+extern const base::FeatureParam<base::TimeDelta>
+    kUserBypassUIReloadBubbleTimeout;
+
 // Hide activity indicators if a permission is no longer used.
 COMPONENT_EXPORT(CONTENT_SETTINGS_FEATURES)
 BASE_DECLARE_FEATURE(kImprovedSemanticsActivityIndicators);
@@ -100,6 +106,16 @@ BASE_DECLARE_FEATURE(kImprovedSemanticsActivityIndicators);
 // Feature to enable redesigned tracking protection UX + prefs for 3PCD.
 COMPONENT_EXPORT(CONTENT_SETTINGS_FEATURES)
 BASE_DECLARE_FEATURE(kTrackingProtection3pcd);
+
+// Enables writing and reading temporary storage access grants from 3PCD
+// heuristics.
+COMPONENT_EXPORT(CONTENT_SETTINGS_FEATURES)
+BASE_DECLARE_FEATURE(kTpcdHeuristicsGrants);
+
+// Whether 3PCD heuristics grants should be considered to override cookie access
+// behavior.
+COMPONENT_EXPORT(CONTENT_SETTINGS_FEATURES)
+extern const base::FeatureParam<bool> kTpcdReadHeuristicsGrants;
 
 }  // namespace features
 }  // namespace content_settings

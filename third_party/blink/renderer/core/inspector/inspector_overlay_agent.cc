@@ -158,6 +158,8 @@ const char* OverlayNames::OVERLAY_DISTANCES = "distances";
 const char* OverlayNames::OVERLAY_VIEWPORT_SIZE = "viewportSize";
 const char* OverlayNames::OVERLAY_SCREENSHOT = "screenshot";
 const char* OverlayNames::OVERLAY_PAUSED = "paused";
+const char* OverlayNames::OVERLAY_WINDOW_CONTROLS_OVERLAY =
+    "windowControlsOverlay";
 
 // InspectTool -----------------------------------------------------------------
 bool InspectTool::HandleInputEvent(LocalFrameView* frame_view,
@@ -481,10 +483,7 @@ protocol::Response InspectorOverlayAgent::enable() {
 }
 
 void InspectorOverlayAgent::EnsureAXContext(Node* node) {
-  EnsureAXContext(node->GetDocument());
-}
-
-void InspectorOverlayAgent::EnsureAXContext(Document& document) {
+  Document& document = node->GetDocument();
   if (!document_to_ax_context_.Contains(&document)) {
     auto context = std::make_unique<AXContext>(document, ui::kAXModeComplete);
     document_to_ax_context_.Set(&document, std::move(context));
@@ -636,6 +635,28 @@ protocol::Response InspectorOverlayAgent::setShowWebVitals(bool show) {
   debug_state.show_web_vital_metrics = show;
   widget->SetLayerTreeDebugState(debug_state);
   return protocol::Response::Success();
+}
+
+protocol::Response InspectorOverlayAgent::setShowWindowControlsOverlay(
+    protocol::Maybe<protocol::Overlay::WindowControlsOverlayConfig>
+        wco_config) {
+  // Hide WCO when called without a configuration.
+  if (!wco_config.has_value()) {
+    SetInspectTool(nullptr);
+    return protocol::Response::Success();
+  }
+
+  std::unique_ptr<protocol::DictionaryValue> result =
+      protocol::DictionaryValue::create();
+
+  protocol::Overlay::WindowControlsOverlayConfig& config = wco_config.value();
+
+  result->setBoolean("showCSS", config.getShowCSS());
+  result->setString("selectedPlatform", config.getSelectedPlatform());
+  result->setString("themeColor", config.getThemeColor());
+
+  return SetInspectTool(MakeGarbageCollected<WindowControlsOverlayTool>(
+      this, GetFrontend(), std::move(result)));
 }
 
 protocol::Response InspectorOverlayAgent::setPausedInDebuggerMessage(
@@ -1003,8 +1024,8 @@ protocol::Response InspectorOverlayAgent::getHighlightObjectForTest(
   }
   NodeHighlightTool tool(this, GetFrontend(), node, "" /* selector_list */,
                          std::move(config));
-  node->GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
-      DocumentUpdateReason::kInspector);
+  node->GetDocument().EnsurePaintLocationDataValidForNode(
+      node, DocumentUpdateReason::kInspector);
   *result = tool.GetNodeInspectorHighlightAsJson(
       true /* append_element_info */, include_distance.value_or(false));
   return protocol::Response::Success();
@@ -1644,7 +1665,6 @@ protocol::Response InspectorOverlayAgent::SetInspectTool(
   LoadOverlayPageResource();
   EvaluateInOverlay("setOverlay", inspect_tool->GetOverlayName());
   EnsureEnableFrameOverlay();
-  EnsureAXContext(frame->GetDocument());
   ScheduleUpdate();
   return protocol::Response::Success();
 }

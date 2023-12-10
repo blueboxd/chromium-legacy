@@ -14,9 +14,9 @@
 #import "components/keyed_service/core/service_access_type.h"
 #import "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 #import "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/passwords/ios_chrome_account_password_store_factory.h"
-#import "ios/chrome/browser/passwords/ios_chrome_affiliation_service_factory.h"
-#import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_account_password_store_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_affiliation_service_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -166,7 +166,7 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
   _savedPasswordsPresenter =
       std::make_unique<password_manager::SavedPasswordsPresenter>(
           IOSChromeAffiliationServiceFactory::GetForBrowserState(browserState),
-          IOSChromePasswordStoreFactory::GetForBrowserState(
+          IOSChromeProfilePasswordStoreFactory::GetForBrowserState(
               browserState, ServiceAccessType::EXPLICIT_ACCESS),
           IOSChromeAccountPasswordStoreFactory::GetForBrowserState(
               browserState, ServiceAccessType::EXPLICIT_ACCESS));
@@ -198,15 +198,12 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
   self.mediator.consumer = self.passwordSettingsViewController;
   self.passwordSettingsViewController.delegate = self.mediator;
 
-  // Don't animate presentation when content will be covered for authentication.
-  // Otherwise content can be visible during the animation phase.
+  [self startReauthCoordinatorWithAuthOnStart:!_skipAuthenticationOnStart];
+
   [self.baseViewController
       presentViewController:self.settingsNavigationController
-                   animated:_skipAuthenticationOnStart ||
-                            !IsAuthOnEntryV2Enabled()
+                   animated:YES
                  completion:nil];
-
-  [self startReauthCoordinatorWithAuthOnStart:!_skipAuthenticationOnStart];
 }
 
 - (void)stop {
@@ -445,11 +442,12 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
       pattern, "COUNT", count, "EMAIL", base::UTF8ToUTF16(email));
 
   TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
-  [self.handlerForSnackbarCommands
-      showSnackbarWithMessage:base::SysUTF16ToNSString(result)
-                   buttonText:nil
-                messageAction:nil
-             completionAction:nil];
+  id<SnackbarCommands> handler = HandlerForProtocol(
+      self.browser->GetCommandDispatcher(), SnackbarCommands);
+  [handler showSnackbarWithMessage:base::SysUTF16ToNSString(result)
+                        buttonText:nil
+                     messageAction:nil
+                  completionAction:nil];
 }
 
 #pragma mark - PasswordExportHandler
@@ -560,22 +558,6 @@ constexpr const char* kBulkMovePasswordsToAccountConfirmationDialogAccepted =
 
 - (void)settingsWasDismissed {
   [self.delegate passwordSettingsCoordinatorDidRemove:self];
-}
-
-- (id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>)
-    handlerForSettings {
-  NOTREACHED();
-  return nil;
-}
-
-- (id<ApplicationCommands>)handlerForApplicationCommands {
-  NOTREACHED();
-  return nil;
-}
-
-- (id<SnackbarCommands>)handlerForSnackbarCommands {
-  return HandlerForProtocol(self.browser->GetCommandDispatcher(),
-                            SnackbarCommands);
 }
 
 #pragma mark - ReauthenticationCoordinatorDelegate

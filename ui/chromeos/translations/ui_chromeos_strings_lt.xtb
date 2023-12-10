@@ -329,6 +329,7 @@
 <translation id="3619115746895587757">Kapučino kava</translation>
 <translation id="3619593063686672873">Nėra naujausių vaizdo įrašų</translation>
 <translation id="3634507049637220048"><ph name="NETWORK_INDEX" /> tinklas iš <ph name="NETWORK_COUNT" />, „<ph name="NETWORK_NAME" />“, <ph name="CONNECTION_STATUS" />, tvarko administratorius, išsami informacija</translation>
+<translation id="36451918667380448">Mobiliojo ryšio tinklo teikėjas užrakintas. Norėdami gauti pagalbos, susisiekite su teikėju.</translation>
 <translation id="3645233063072417428">Perkelta elementų: <ph name="NUMBER_OF_ITEMS" />.</translation>
 <translation id="3658269352872031728">Pasirinkta failų: <ph name="SELECTED_FILE_COUNT" /></translation>
 <translation id="3685122418104378273">„Google“ disko sinchronizavimas pagal numatytuosius nustatymus yra išjungtas, kai naudojami mobiliojo ryšio duomenys.</translation>
@@ -1014,6 +1015,7 @@
 <translation id="8698877009525468705">Šis failas yra konfidencialus ir jam taikomi administratoriaus politikos apribojimai.</translation>
 <translation id="8712637175834984815">Supratau</translation>
 <translation id="8713112442029511308">Maltiečių k.</translation>
+<translation id="8714138378966541668">Užrakino teikėjas</translation>
 <translation id="8714406895390098252">Dviratis</translation>
 <translation id="8719721339511222681">Pasirinktas įrašas „<ph name="ENTRY_NAME" />“.</translation>
 <translation id="872537912056138402">Kroatų</translation>

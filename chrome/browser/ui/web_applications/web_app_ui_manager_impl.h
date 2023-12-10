@@ -18,7 +18,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/web_applications/web_app_callback_app_identity.h"
-#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/web_app_uninstall_dialog_user_options.h"
@@ -137,6 +136,13 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
       gfx::NativeWindow parent_window,
       UninstallCompleteCallback callback,
       UninstallScheduledCallback scheduled_callback) override;
+
+  void LaunchIsolatedWebAppInstaller(
+      const base::FilePath& bundle_path) override;
+
+  void MaybeCreateEnableSupportedLinksInfobar(
+      content::WebContents* web_contents,
+      const std::string& launch_name) override;
 
   // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override;

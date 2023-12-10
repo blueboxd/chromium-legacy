@@ -11,9 +11,9 @@
 #import "ios/chrome/browser/credential_provider/model/credential_provider_service.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
-#import "ios/chrome/browser/passwords/ios_chrome_account_password_store_factory.h"
-#import "ios/chrome/browser/passwords/ios_chrome_affiliation_service_factory.h"
-#import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_account_password_store_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_affiliation_service_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
@@ -40,7 +40,7 @@ CredentialProviderServiceFactory::CredentialProviderServiceFactory()
           BrowserStateDependencyManager::GetInstance()) {
   DependsOn(IOSChromeAffiliationServiceFactory::GetInstance());
   DependsOn(IOSChromeAccountPasswordStoreFactory::GetInstance());
-  DependsOn(IOSChromePasswordStoreFactory::GetInstance());
+  DependsOn(IOSChromeProfilePasswordStoreFactory::GetInstance());
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(SyncServiceFactory::GetInstance());
   DependsOn(IOSChromeFaviconLoaderFactory::GetInstance());
@@ -55,7 +55,7 @@ CredentialProviderServiceFactory::BuildServiceInstanceFor(
       ChromeBrowserState::FromBrowserState(context);
   scoped_refptr<password_manager::PasswordStoreInterface>
       profile_password_store =
-          IOSChromePasswordStoreFactory::GetForBrowserState(
+          IOSChromeProfilePasswordStoreFactory::GetForBrowserState(
               browser_state, ServiceAccessType::IMPLICIT_ACCESS);
   scoped_refptr<password_manager::PasswordStoreInterface>
       account_password_store =

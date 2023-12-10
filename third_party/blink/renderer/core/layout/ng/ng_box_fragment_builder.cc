@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 
+#include "third_party/blink/renderer/core/layout/exclusions/exclusion_space.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
-#include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
@@ -105,7 +105,7 @@ void NGBoxFragmentBuilder::AddBreakBeforeChild(
 void NGBoxFragmentBuilder::AddResult(
     const NGLayoutResult& child_layout_result,
     const LogicalOffset offset,
-    absl::optional<const NGBoxStrut> margins,
+    absl::optional<const BoxStrut> margins,
     absl::optional<LogicalOffset> relative_offset,
     const NGInlineContainer<LogicalOffset>* inline_container) {
   const auto& fragment = child_layout_result.PhysicalFragment();
@@ -135,7 +135,7 @@ void NGBoxFragmentBuilder::AddResult(
     }
   }
 
-  const NGMarginStrut end_margin_strut = child_layout_result.EndMarginStrut();
+  const MarginStrut end_margin_strut = child_layout_result.EndMarginStrut();
   // No margins should pierce outside formatting-context roots.
   DCHECK(!fragment.IsFormattingContextRoot() || end_margin_strut.IsEmpty());
 
@@ -171,7 +171,7 @@ void NGBoxFragmentBuilder::AddResult(const NGLayoutResult& child_layout_result,
 void NGBoxFragmentBuilder::AddChild(
     const NGPhysicalFragment& child,
     const LogicalOffset& child_offset,
-    const NGMarginStrut* margin_strut,
+    const MarginStrut* margin_strut,
     bool is_self_collapsing,
     absl::optional<LogicalOffset> relative_offset,
     const NGInlineContainer<LogicalOffset>* inline_container) {
@@ -221,7 +221,7 @@ void NGBoxFragmentBuilder::AddChild(
       // layout-overflow, but just don't influence where this padding is.
       if (Node().IsScrollContainer() && !IsFragmentainerBoxType() &&
           !child.IsOutOfFlowPositioned()) {
-        NGBoxStrut margins;
+        BoxStrut margins;
         if (child.IsCSSBox()) {
           margins = ComputeMarginsFor(child.Style(),
                                       child_available_size_.inline_size,
@@ -231,7 +231,7 @@ void NGBoxFragmentBuilder::AddChild(
         // If we are in block-flow layout we use the end *margin-strut* as the
         // block-end "margin" (instead of just the block-end margin).
         if (margin_strut) {
-          NGMarginStrut end_margin_strut = *margin_strut;
+          MarginStrut end_margin_strut = *margin_strut;
           end_margin_strut.Append(margins.block_end, /* is_quirky */ false);
 
           // Self-collapsing blocks are special, their end margin-strut is part
@@ -517,7 +517,7 @@ const NGLayoutResult* NGBoxFragmentBuilder::ToBoxFragment(
       // we don't prevent such propagation, the trailing margin may push down
       // subsequent nodes that are being resumed after a break, rather than
       // resuming at the block-start of the fragmentainer.
-      end_margin_strut_ = NGMarginStrut();
+      end_margin_strut_ = MarginStrut();
     }
 
     if (!break_token_) {

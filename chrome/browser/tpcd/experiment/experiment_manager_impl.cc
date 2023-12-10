@@ -51,7 +51,7 @@ ExperimentManagerImpl* ExperimentManagerImpl::GetForProfile(Profile* profile) {
   }
 
   if (!features::kCookieDeprecationFacilitatedTestingEnableOTRProfiles.Get() &&
-      (profile->IsOffTheRecord() || profile->IsGuestSession())) {
+      profile->IsOffTheRecord()) {
     return nullptr;
   }
 

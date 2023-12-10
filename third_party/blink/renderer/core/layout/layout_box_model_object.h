@@ -168,11 +168,11 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   // border boxes.
   virtual gfx::Rect BorderBoundingBox() const = 0;
 
-  virtual PhysicalRect PhysicalVisualOverflowRect() const = 0;
+  virtual PhysicalRect VisualOverflowRect() const = 0;
 
   // Returns the visual overflow rect, expanded to the area affected by any
   // filters that paint outside of the box, in physical coordinates.
-  PhysicalRect PhysicalVisualOverflowRectIncludingFilters() const;
+  PhysicalRect VisualOverflowRectIncludingFilters() const;
 
   // Returns a physical rect that is a result of apply this object's filters to
   // it. If there are no filters, it returns its argument.
@@ -271,12 +271,12 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
     return BorderTop() + BorderBottom();
   }
 
-  NGPhysicalBoxStrut BorderOutsets() const {
+  PhysicalBoxStrut BorderOutsets() const {
     NOT_DESTROYED();
     return {BorderTop(), BorderRight(), BorderBottom(), BorderLeft()};
   }
 
-  NGPhysicalBoxStrut PaddingOutsets() const {
+  PhysicalBoxStrut PaddingOutsets() const {
     NOT_DESTROYED();
     return {PaddingTop(), PaddingRight(), PaddingBottom(), PaddingLeft()};
   }
@@ -365,7 +365,7 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
     return MarginStart() + MarginEnd();
   }
 
-  NGPhysicalBoxStrut MarginOutsets() const {
+  PhysicalBoxStrut MarginOutsets() const {
     NOT_DESTROYED();
     return {MarginTop(), MarginRight(), MarginBottom(), MarginLeft()};
   }
@@ -383,13 +383,6 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   // The query rect is given in local coordinate system.
   virtual bool BackgroundIsKnownToBeOpaqueInRect(const PhysicalRect&) const {
     NOT_DESTROYED();
-    return false;
-  }
-  // Returns true if all text in the paint-order subtree will be painted on
-  // opaque background.
-  virtual bool TextIsKnownToBeOnOpaqueBackground() const {
-    NOT_DESTROYED();
-    DCHECK(!RuntimeEnabledFeatures::CompositeScrollAfterPaintEnabled());
     return false;
   }
 
@@ -416,8 +409,11 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   PhysicalOffset AdjustedPositionRelativeTo(const PhysicalOffset&,
                                             const Element*) const;
 
-  LayoutRect LocalCaretRectForEmptyElement(LayoutUnit width,
-                                           LayoutUnit text_indent_offset) const;
+  // This returns a logical rectangle.
+  // TODO(crbug.com/1229581): Change it to LogicalRect.
+  DeprecatedLayoutRect LocalCaretRectForEmptyElement(
+      LayoutUnit width,
+      LayoutUnit text_indent_offset) const;
 
   void AddOutlineRectsForDescendant(const LayoutObject& descendant,
                                     OutlineRectCollector&,

@@ -9,6 +9,7 @@
 
 import '//resources/cr_elements/cr_shared_style.css.js';
 import '//resources/polymer/v3_0/iron-list/iron-list.js';
+import '//resources/cr_components/localized_link/localized_link.js';
 import './base_page.js';
 import './profile_discovery_list_item.js';
 
@@ -41,14 +42,6 @@ Polymer({
       type: Object,
       notify: true,
     },
-
-    /**
-     * Indicates the UI is busy with an operation and cannot be interacted with.
-     */
-    showBusy: {
-      type: Boolean,
-      value: false,
-    },
   },
 
   /**
@@ -57,5 +50,16 @@ Polymer({
    */
   isProfilePropertiesSelected_(profileProperties) {
     return this.selectedProfileProperties === profileProperties;
+  },
+
+  /**
+   * @param {Event} e
+   * @private
+   */
+  enterManuallyClicked_(e) {
+    e.detail.event.preventDefault();
+    e.stopPropagation();
+    this.selectedProfileProperties = null;
+    this.fire('forward-navigation-requested');
   },
 });

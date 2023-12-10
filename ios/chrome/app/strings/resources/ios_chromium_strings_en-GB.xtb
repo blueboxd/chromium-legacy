@@ -17,6 +17,7 @@
 <translation id="1591119736686995611">Opens the Chromium Tab Grid.</translation>
 <translation id="1617663976202781617">Data from Chromium sync</translation>
 <translation id="1647558790457890304">Chromium settings</translation>
+<translation id="164952285225495380">This package has already been tracked on Chromium.</translation>
 <translation id="1722370509450468186">Your password will be saved in your Account (<ph name="EMAIL" />).</translation>
 <translation id="1736662517232558588">Cleared Chromium Data</translation>
 <translation id="1791845338122684020">Opens your Chromium History Page.</translation>
@@ -95,7 +96,6 @@ To change this setting, <ph name="BEGIN_LINK" />clear the Chromium data in your 
 <translation id="4736424910885271643">Your account is managed by <ph name="HOSTED_DOMAIN" />, so your Chromium data will be cleared from this device</translation>
 <translation id="4790638144988730920">Keep using the Chromium data in your Google Account.</translation>
 <translation id="4828317641996116749">Chromium couldn't check all passwords. Try again later.</translation>
-<translation id="4935539884203837577">Chromium can detect the tracking numbers you input and track your packages on the New Tab Page while helping other shopping experiences from Chromium.</translation>
 <translation id="4985291216379576555">Offline, Chromium can't check for updates</translation>
 <translation id="4996471330284142407">Get more done with a simple, secure and faster-than-ever Chromium.</translation>
 <translation id="4999538639245140991">Because you're signing out of an account managed by <ph name="SIGNOUT_MANAGED_DOMAIN" />, your Chromium data will be deleted from this device. Your data will remain in your Google Account.</translation>
@@ -120,7 +120,6 @@ To change this setting, <ph name="BEGIN_LINK" />clear the Chromium data in your 
 <translation id="5688047395118852662">This card shows you suggestions on how to get the most out of Chromium.</translation>
 <translation id="5700709190537129682">Chromium can't check your passwords</translation>
 <translation id="5777187867430702742">Chromium page</translation>
-<translation id="584303319228224680">Auto-track your packages on Chromium</translation>
 <translation id="5889847953983052353">When on:
 <ph name="BEGIN_INDENT" />  • Help make Chromium better for people who use it the way you do.<ph name="END_INDENT" />
 
@@ -160,6 +159,7 @@ Only someone with your passphrase can read your encrypted data. The passphrase i
 <translation id="6911341667534646387">Keep using the Chromium data in your Google Account</translation>
 <translation id="7006920032187763988">You can use the passwords that you saved to Password Manager in other apps on your iPad.</translation>
 <translation id="7018284295775193585">Chromium can't update</translation>
+<translation id="7025471822960602362">Track Detected Packages on Chromium</translation>
 <translation id="7045244423563602563">Make Chromium your own</translation>
 <translation id="7055269218854630176">Your organisation, <ph name="DOMAIN" />, manages the account that you're signing in to and how Chromium can be used. Your administrator can set up or restrict certain features.</translation>
 <translation id="7099326575020694068">Chromium can't use your camera in Split View mode</translation>

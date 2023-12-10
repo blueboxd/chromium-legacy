@@ -101,7 +101,7 @@ import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler.VoiceIn
 import org.chromium.chrome.browser.paint_preview.DemoPaintPreview;
 import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
 import org.chromium.chrome.browser.password_manager.PasswordManagerLauncher;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.price_tracking.PriceTrackingButtonController;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.quick_delete.QuickDeleteController;
@@ -321,7 +321,8 @@ public class RootUiCoordinator
     private final boolean mInitializeUiWithIncognitoColors;
     private HistoryClustersCoordinator mHistoryClustersCoordinator;
     private final Supplier<EphemeralTabCoordinator> mEphemeralTabCoordinatorSupplier;
-    @Nullable protected final BackPressManager mBackPressManager;
+    @Nullable
+    private final BackPressManager mBackPressManager;
     private final boolean mIsIncognitoReauthPendingOnRestore;
     protected final ExpandedSheetHelper mExpandedBottomSheetHelper;
     private final ObservableSupplierImpl<ReadAloudController> mReadAloudControllerSupplier =
@@ -545,13 +546,6 @@ public class RootUiCoordinator
      */
     public TopUiThemeColorProvider getTopUiThemeColorProvider() {
         return mTopUiThemeColorProvider;
-    }
-
-    /** Returns the controller for the Page Insights bottom sheet, if it is enabled. */
-    // TODO(b/307046796): Remove this once we have found better way to integrate with back handling
-    // logic.
-    public @Nullable ManagedBottomSheetController getPageInsightsBottomSheetController() {
-        return null;
     }
 
     public void onAttachFragment(Fragment fragment) {
@@ -1236,7 +1230,7 @@ public class RootUiCoordinator
             AdaptiveToolbarButtonController adaptiveToolbarButtonController =
                     new AdaptiveToolbarButtonController(mActivity, new SettingsLauncherImpl(),
                             mActivityLifecycleDispatcher, new AdaptiveButtonActionMenuCoordinator(),
-                            mWindowAndroid, SharedPreferencesManager.getInstance());
+                            mWindowAndroid, ChromeSharedPreferences.getInstance());
             adaptiveToolbarButtonController.addButtonVariant(
                     AdaptiveToolbarButtonVariant.NEW_TAB, newTabButtonController);
             adaptiveToolbarButtonController.addButtonVariant(

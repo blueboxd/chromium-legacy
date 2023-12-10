@@ -246,8 +246,8 @@ bool IsV8Initialized() {
 
 void SetUpV8() {
   if (!gin::IsolateHolder::Initialized()) {
-    // TODO(crbug.com/1111024): V8 flags for the Unseasoned Viewer need to be
-    // set up as soon as the renderer process is created in the constructor of
+    // TODO(crbug.com/1111024): V8 flags for the PDF Viewer need to be set up as
+    // soon as the renderer process is created in the constructor of
     // `content::RenderProcessImpl`.
     const char* recommended = FPDF_GetRecommendedV8Flags();
     v8::V8::SetFlagsFromString(recommended, strlen(recommended));
@@ -759,6 +759,9 @@ std::unique_ptr<URLLoaderWrapper> PDFiumEngine::CreateURLLoader() {
 }
 
 void PDFiumEngine::AppendPage(PDFEngine* engine, int index) {
+  CHECK(engine);
+  CHECK(PageIndexInBounds(index));
+
   // Unload and delete the blank page before appending.
   pages_[index]->Unload();
   pages_[index]->set_calculated_links(false);
@@ -2144,11 +2147,13 @@ void PDFiumEngine::ZoomUpdated(double new_zoom_level) {
 }
 
 void PDFiumEngine::RotateClockwise() {
+  SaveSelection();
   desired_layout_options_.RotatePagesClockwise();
   ProposeNextDocumentLayout();
 }
 
 void PDFiumEngine::RotateCounterclockwise() {
+  SaveSelection();
   desired_layout_options_.RotatePagesCounterclockwise();
   ProposeNextDocumentLayout();
 }
@@ -2176,6 +2181,7 @@ void PDFiumEngine::SetReadOnly(bool enable) {
 }
 
 void PDFiumEngine::SetDocumentLayout(DocumentLayout::PageSpread page_spread) {
+  SaveSelection();
   desired_layout_options_.set_page_spread(page_spread);
   ProposeNextDocumentLayout();
 }
@@ -3805,6 +3811,8 @@ gfx::Size PDFiumEngine::ApplyDocumentLayout(
   // TODO(thestig): It would be better to also restore the position on the page.
   client_->ScrollToPage(most_visible_page);
 
+  RestoreSelection();
+
   return layout_.size();
 }
 
@@ -3916,6 +3924,22 @@ void PDFiumEngine::SetSelection(const PageCharacterIndex& selection_start_index,
       end_char_index = sel_end_index.char_index;
     selection_.push_back(PDFiumRange(pages_[i].get(), start_char_index,
                                      end_char_index - start_char_index));
+  }
+}
+
+void PDFiumEngine::SaveSelection() {
+  // The PDFiumRange in the `selection_` has stored some previously cached
+  // information. The `saved_selection_` needs a fresh PDFiumRange for future
+  // use.
+  for (const auto& item : selection_) {
+    saved_selection_.push_back(PDFiumRange(
+        pages_[item.page_index()].get(), item.char_index(), item.char_count()));
+  }
+}
+
+void PDFiumEngine::RestoreSelection() {
+  if (!saved_selection_.empty()) {
+    selection_ = std::move(saved_selection_);
   }
 }
 

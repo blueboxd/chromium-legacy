@@ -216,9 +216,17 @@ TEST_P(AppListItemViewPixelTest, AppListFolderItemsLayoutInIcon) {
   CreateFoldersContainingDifferentNumOfItems(max_items_in_folder);
   ShowAppList();
 
-  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-      GenerateScreenshotName(), /*revision_number=*/8, GetItemViewAt(0),
-      GetItemViewAt(1), GetItemViewAt(2), GetItemViewAt(3), GetItemViewAt(4)));
+  if (jelly_enabled()) {
+    EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
+        GenerateScreenshotName(), /*revision_number=*/4, GetItemViewAt(0),
+        GetItemViewAt(1), GetItemViewAt(2), GetItemViewAt(3),
+        GetItemViewAt(4)));
+  } else {
+    EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
+        GenerateScreenshotName(), /*revision_number=*/5, GetItemViewAt(0),
+        GetItemViewAt(1), GetItemViewAt(2), GetItemViewAt(3),
+        GetItemViewAt(4)));
+  }
 }
 
 // Verifies the folder icon is extended when an app is dragged upon it.
@@ -253,9 +261,17 @@ TEST_P(AppListItemViewPixelTest, AppListFolderIconExtendedState) {
     GetItemViewAt(i)->OnDraggedViewEnter();
   }
 
-  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-      GenerateScreenshotName(), /*revision_number=*/8, GetItemViewAt(0),
-      GetItemViewAt(1), GetItemViewAt(2), GetItemViewAt(3), GetItemViewAt(4)));
+  if (jelly_enabled()) {
+    EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
+        GenerateScreenshotName(), /*revision_number=*/4, GetItemViewAt(0),
+        GetItemViewAt(1), GetItemViewAt(2), GetItemViewAt(3),
+        GetItemViewAt(4)));
+  } else {
+    EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
+        GenerateScreenshotName(), /*revision_number=*/5, GetItemViewAt(0),
+        GetItemViewAt(1), GetItemViewAt(2), GetItemViewAt(3),
+        GetItemViewAt(4)));
+  }
 
   // Reset the states.
   for (int i = 0; i < max_items_in_folder; ++i) {

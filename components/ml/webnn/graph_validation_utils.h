@@ -10,6 +10,7 @@
 #include "base/containers/span.h"
 #include "base/types/expected.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace webnn {
 
@@ -68,18 +69,19 @@ enum AutoPad { kExplicit, kSameUpper, kSameLower };
 enum RoundingType { kFloor, kCeil };
 
 // A size has height and width values.
+template <typename T>
 struct Size2d {
-  uint32_t height;
-  uint32_t width;
+  T height;
+  T width;
 };
 
 // The additional rows and columns added to the beginning and ending of each
 // spatial dimension of input.
 struct Padding2d {
   // The height and width padding at the beginning of input tensor.
-  Size2d beginning;
+  Size2d<uint32_t> beginning;
   // The height and width padding at the ending of input tensor.
-  Size2d ending;
+  Size2d<uint32_t> ending;
 };
 
 // Contains the attributes of conv2d operator.
@@ -97,9 +99,9 @@ struct Conv2dAttributes {
   // spatial dimension of input.
   Padding2d padding;
   // The stride of the sliding window for each spatial dimension of input.
-  Size2d strides;
+  Size2d<uint32_t> strides;
   // The dilation factor for each spatial dimension of input.
-  Size2d dilations;
+  Size2d<uint32_t> dilations;
   // The automatic input padding options.
   AutoPad auto_pad = AutoPad::kExplicit;
   // The number of groups that input channels and output channels are divided
@@ -117,15 +119,15 @@ struct Conv2dAttributes {
 // Contains the attributes of pool2d operator.
 struct Pool2dAttributes {
   // The dimensions of the sliding window.
-  absl::optional<Size2d> window_dimensions;
+  absl::optional<Size2d<uint32_t>> window_dimensions;
   // The additional rows and columns added to the beginning and ending of each
   // spatial dimension of input.
   Padding2d padding;
   // The element stride of the sliding window for each spatial dimension of
   // input.
-  Size2d strides;
+  Size2d<uint32_t> strides;
   // The dilation factor for each spatial dimension of input.
-  Size2d dilations;
+  Size2d<uint32_t> dilations;
   // The automatic input padding options.
   AutoPad auto_pad = AutoPad::kExplicit;
   // The layout format of the input.
@@ -133,7 +135,7 @@ struct Pool2dAttributes {
   // The rounding function used to compute the output shape.
   RoundingType rounding_type = RoundingType::kFloor;
   // The element height and width of the output tensor.
-  absl::optional<Size2d> output_sizes;
+  absl::optional<Size2d<uint32_t>> output_sizes;
 };
 
 // Contains the attributes of gemm operator.
@@ -159,10 +161,47 @@ struct GemmAttributes {
   bool b_transpose = false;
 };
 
+struct SliceAttributes {
+  SliceAttributes();
+  ~SliceAttributes();
+
+  SliceAttributes(SliceAttributes&& other);
+  SliceAttributes& operator=(SliceAttributes&& other);
+
+  SliceAttributes(const SliceAttributes&) = delete;
+  SliceAttributes& operator=(const SliceAttributes&) = delete;
+
+  // The sequence of unsigned integer values indicating the starting index to
+  // slice of each input dimension.
+  std::vector<uint32_t> starts;
+  // The sequence of unsigned integer values indicating the number of elements
+  // to slice of each input dimension.
+  std::vector<uint32_t> sizes;
+};
+
 // Validate softmax operator defined in WebIDL here
 // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-softmax
 base::expected<Operand, std::string> ValidateSoftmaxAndInferOutput(
     Operand input);
+
+// Contains the attributes of the split operator.
+struct SplitAttribute {
+  // splits defines how the input tensor will be split.
+  //  uint32_t: The input tensor will be split into splits number of outputs
+  //   with equal sizes.
+  //  base::span<const uint32_t>: The input tensor will be split into
+  //   splits.size() number of outputs with sizes specified in splits.
+  absl::variant<uint32_t, base::span<const uint32_t>> splits;
+  // Axis specifies which input tensor dimension will be split.
+  uint32_t axis = 0;
+};
+
+// Validate and infer the output tensors' ranks and sizes for split operator
+// based on the WebNN WebIDL
+// https://www.w3.org/TR/webnn/#api-mlgraphbuilder-split
+base::expected<std::vector<Operand>, std::string> ValidateSplitAndInferOutput(
+    const Operand& input,
+    const SplitAttribute& attributes);
 
 // Validate and infer output information of 2-D convolution operator defined in
 // WebIDL here https://www.w3.org/TR/webnn/#api-mlgraphbuilder-conv2d
@@ -171,8 +210,8 @@ base::expected<Operand, std::string> ValidateConv2dAndInferOutput(
     const Operand& filter,
     const Conv2dAttributes& attributes);
 
-// Validate a mean, L2 norm, or max reduction operator defined in WebIDL here
-// https://www.w3.org/TR/webnn/#api-mlgraphbuilder-pool2d
+// Validate and infer output information of 2-D pooling operator defined in
+// WebIDL here https://www.w3.org/TR/webnn/#api-mlgraphbuilder-pool2d
 base::expected<Operand, std::string> ValidatePool2dAndInferOutput(
     const Operand& input,
     const Pool2dAttributes& attributes);
@@ -184,12 +223,35 @@ base::expected<Operand, std::string> ValidateGemmAndInferOutput(
     const Operand& b,
     const GemmAttributes& attributes);
 
+// Validate concat operator defined in WebIDL here
+// https://www.w3.org/TR/webnn/#api-mlgraphbuilder-concat
+base::expected<Operand, std::string> ValidateConcatAndInferOutput(
+    const std::vector<Operand>& input,
+    const uint32_t axis);
+
+// Validate transpose operator defined in WebIDL here
+// https://www.w3.org/TR/webnn/#api-mlgraphbuilder-transpose
+base::expected<Operand, std::string> ValidateTransposeAndInferOutput(
+    const Operand& input,
+    base::span<const uint32_t> permutation);
+
+// Validate slice operator defined in WebIDL here:
+// https://www.w3.org/TR/webnn/#api-mlgraphbuilder-slice
+base::expected<Operand, std::string> ValidateSliceAndInferOutput(
+    const Operand& input,
+    const SliceAttributes& attributes);
+
 base::expected<size_t, std::string> ValidateAndCalculateElementsNumber(
     base::span<const uint32_t> dimensions);
 
 base::expected<size_t, std::string> ValidateAndCalculateByteLength(
     size_t type_bytes,
     base::span<const uint32_t> dimensions);
+
+// Validate that the axes are within the range of [0, rank - 1] without
+// duplication.
+base::expected<void, std::string> ValidateAxes(base::span<const uint32_t> axes,
+                                               uint32_t rank);
 
 // Broadcast the input shapes and return the output shape.
 // If bidirectional is true, its behavior follows the numpy-broadcasting-rule:

@@ -4,13 +4,86 @@
   }
 
   .content {
-    padding: 16px;
+    margin: 16px 16px 8px;
+  }
+
+  #descriptorMenuD cr-button {
+    background-color: var(--sys-color-neutral-container);
+    height: 40px;
+    min-width: 40px;
+    padding: 0px;
+  }
+
+  .descriptor-d {
+    border-radius: 50%;
+    height: 28px;
+    width: 28px;
   }
 
   #btnContainer {
     display: flex;
     justify-content: flex-end;
     margin-top: 16px;
+  }
+
+  .sp-hr {
+    margin: 16px 0;
+  }
+
+  cr-grid {
+    --cr-column-width: 1fr;
+    --cr-grid-gap: 10px;
+    --cr-grid-width: 100%;
+    display: block;
+  }
+
+  .tile {
+    background-color: var(--color-sys-surface2);
+    border-radius: 12px;
+    outline-width: 0;
+    overflow: hidden;
+    place-self: stretch;
+  }
+
+  :host-context(.focus-outline-visible) .tile:focus {
+    box-shadow: 0 0 0 2px var(--cr-focus-outline-color);
+  }
+
+  .result {
+    cursor: pointer;
+  }
+
+  .result img {
+    height: 100%;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+  }
+
+  .image-container {
+    padding-top: 100%;
+    position: relative;
+    width: 100%;
+  }
+
+  .image-container img {
+    position: absolute;
+  }
+
+  @media (forced-colors: active) {
+    :host-context(.focus-outline-visible) .tile:focus {
+      /* Set outline to hcm (high contrast mode) value. */
+      outline: var(--cr-focus-outline-hcm);
+    }
+  }
+
+  /** Temporary CSS to style demo. */
+  [selected] {
+    background: green;
+  }
+
+  [highlighted] {
+    background: yellow;
   }
 </style>
 <div class="sp-card">
@@ -19,20 +92,87 @@
       back-button-title="$i18n{backButton}">
     <h2 slot="heading">Wallpaper Search</h2>
   </sp-heading>
-  <div class="content">
-    <cr-input
-        id="queryInput"
-        type="text"
-        placeholder="Query"
-        value="{{query_}}">
-    </cr-input>
+  <div class="content" hidden$="[[!descriptors_]]">
+    <cr-button id="descriptorBtnA" on-click="onDescriptorMenuClickA_">
+      Descriptor A
+    </cr-button>
+    <cr-action-menu id="descriptorMenuA">
+      <template is="dom-repeat" items="[[descriptors_.descriptorA]]">
+        <span>[[item.category]]</span>
+        <template is="dom-repeat" items="[[item.labels]]">
+          <button class="dropdown-item" on-click="onDescriptorLabelClickA_">
+            <span>[[item]]</span>
+          </button>
+        </template>
+      </template>
+    </cr-action-menu>
+    <cr-button id="descriptorBtnB" on-click="onDescriptorMenuClickB_">
+      Descriptor B
+    </cr-button>
+    <cr-action-menu id="descriptorMenuB">
+      <template is="dom-repeat" items="[[descriptors_.descriptorB]]">
+        <button class="dropdown-item" on-click="onDescriptorLabelClickB_">
+          <img src="[[item.imagePath]]"></img>
+          <span>[[item.label]]</span>
+        </button>
+      </template>
+    </cr-action-menu>
+    <cr-button id="descriptorBtnC" on-click="onDescriptorMenuClickC_">
+      Descriptor C
+    </cr-button>
+    <cr-action-menu id="descriptorMenuC">
+      <template is="dom-repeat" items="[[descriptors_.descriptorC]]">
+        <button class="dropdown-item" on-click="onDescriptorLabelClickC_">
+          <span>[[item]]</span>
+        </button>
+      </template>
+    </cr-action-menu>
+    <div id="descriptorMenuD">
+      <template is="dom-repeat" items="[[descriptorD_]]">
+        <cr-button on-click="onDescriptorLabelClickD_">
+          <span class="descriptor-d" style$="background-color: [[item]];">
+          </span>
+        </cr-button>
+      </template>
+    </div>
     <div id="btnContainer">
       <cr-button
           id="submitButton"
           on-click="onSearchClick_"
           class="action-button">
-        Search
+        [[submitBtnText_]]
       </cr-button>
     </div>
+    <hr class="sp-hr">
+    <cr-grid columns="3" disable-arrow-navigation>
+      <template is="dom-repeat" id="resultsRepeat" items="[[results_]]">
+        <div class="tile result" tabindex="0" role="button"
+            on-click="onResultClick_">
+          <div class="image-container">
+            <img src="data:image/png;base64,[[item.image]]">
+            </img>
+          </div>
+        </div>
+      </template>
+      <template is="dom-repeat" id="emptyRepeat" items="[[emptyContainers_]]">
+        <div class="tile empty">
+          <div class="image-container"></div>
+        </div>
+      </template>
+    <cr-grid>
   </div>
 </div>
+
+<!-- demo -->
+<customize-chrome-combobox id="combobox" label="Descriptor A"
+    value="[[selectedDescriptorA_]]"
+    on-value-changed="onComboboxDemoChange_">
+  <template is="dom-repeat" items="[[descriptors_.descriptorA]]">
+    <div role="group">
+      [[item.category]]
+      <template is="dom-repeat" items="[[item.labels]]">
+        <div role="option" value="[[item]]">[[item]]</div>
+      </template>
+    </div>
+  </template>
+</customize-chrome-combobox>

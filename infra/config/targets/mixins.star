@@ -358,17 +358,6 @@ targets.mixin(
 )
 
 targets.mixin(
-    name = "chromeos-kevin",
-    swarming = targets.swarming(
-        dimensions = {
-            "os": "ChromeOS",
-            "device_type": "kevin",
-            "pool": "chromium.tests",
-        },
-    ),
-)
-
-targets.mixin(
     name = "chromeos-octopus",
     swarming = targets.swarming(
         dimensions = {
@@ -504,6 +493,16 @@ targets.mixin(
     name = "fuchsia-code-coverage",
     args = [
         "--code-coverage-dir=${ISOLATED_OUTDIR}",
+    ],
+)
+
+# TODO(b/300509814): Large device spec should be the default choice.
+# Choose virtual_device_large spec for more ram. This mixin works on emulators
+# only.
+targets.mixin(
+    name = "fuchsia-large-device-spec",
+    args = [
+        "--device-spec=virtual_device_large",
     ],
 )
 
@@ -682,72 +681,6 @@ targets.mixin(
     swarming = targets.swarming(
         dimensions = {
             "os": "Ubuntu-22.04",
-        },
-    ),
-)
-
-# TODO: Remove this mixin after task scheduling issue is resolved.
-# This uses a different task dimensions set to reduce Datastore index size.
-targets.mixin(
-    name = "linux-jammy-2",
-    swarming = targets.swarming(
-        dimensions = {
-            "os": "Ubuntu-22.04",
-            "zone": "us",
-        },
-    ),
-)
-targets.mixin(
-    name = "linux-jammy-3",
-    swarming = targets.swarming(
-        dimensions = {
-            "os": "Ubuntu-22.04",
-            "locale": "en_US.UTF-8",
-        },
-    ),
-)
-targets.mixin(
-    name = "linux-jammy-4",
-    swarming = targets.swarming(
-        dimensions = {
-            "os": "Ubuntu-22.04",
-            "kvm": "1",
-        },
-    ),
-)
-targets.mixin(
-    name = "linux-jammy-5",
-    swarming = targets.swarming(
-        dimensions = {
-            "os": "Ubuntu-22.04",
-            "python": "3",
-        },
-    ),
-)
-targets.mixin(
-    name = "linux-jammy-6",
-    swarming = targets.swarming(
-        dimensions = {
-            "os": "Ubuntu-22.04",
-            "inside_docker": "0",
-        },
-    ),
-)
-targets.mixin(
-    name = "linux-jammy-7",
-    swarming = targets.swarming(
-        dimensions = {
-            "os": "Ubuntu-22.04",
-            "python": "3.8",
-        },
-    ),
-)
-targets.mixin(
-    name = "linux-jammy-8",
-    swarming = targets.swarming(
-        dimensions = {
-            "os": "Ubuntu-22.04",
-            "cipd_platform": "linux-amd64",
         },
     ),
 )
@@ -944,6 +877,16 @@ targets.mixin(
 )
 
 targets.mixin(
+    name = "mac_14_arm64",
+    swarming = targets.swarming(
+        dimensions = {
+            "cpu": "arm64",
+            "os": "Mac-14",
+        },
+    ),
+)
+
+targets.mixin(
     name = "mac_arm64_apple_m1_gpu_experimental",
     swarming = targets.swarming(
         dimensions = {
@@ -962,7 +905,7 @@ targets.mixin(
         dimensions = {
             "cpu": "arm64",
             "mac_model": "Macmini9,1",
-            "os": "Mac-13.4",
+            "os": "Mac-13.5.2",
             "pool": "chromium.tests",
             "display_attached": "1",
         },
@@ -1128,7 +1071,7 @@ targets.mixin(
             targets.cipd_package(
                 package = "infra/tools/mac_toolchain/${platform}",
                 location = ".",
-                revision = "git_revision:59ddedfe3849abf560cbe0b41bb8e431041cd2bb",
+                revision = "git_revision:32d81d877ee07af07bf03b7f70ce597e323b80ce",
             ),
         ],
     ),
@@ -1621,12 +1564,12 @@ targets.mixin(
     name = "xcode_15_beta",
     args = [
         "--xcode-build-version",
-        "15a240d",
+        "15c5028h",
     ],
     swarming = targets.swarming(
         named_caches = [
             swarming.cache(
-                name = "xcode_ios_15a240d",
+                name = "xcode_ios_15c5028h",
                 path = "Xcode.app",
             ),
         ],
@@ -1637,12 +1580,12 @@ targets.mixin(
     name = "xcode_15_main",
     args = [
         "--xcode-build-version",
-        "15a240d",
+        "15a507",
     ],
     swarming = targets.swarming(
         named_caches = [
             swarming.cache(
-                name = "xcode_ios_15a240d",
+                name = "xcode_ios_15a507",
                 path = "Xcode.app",
             ),
         ],

@@ -13,6 +13,8 @@
 
 namespace apps {
 
+using AppInfo = AppStorageFileHandler::AppInfo;
+
 namespace {
 
 constexpr char kAppServiceDirName[] = "app_service";
@@ -20,7 +22,13 @@ constexpr char kAppStorageFileName[] = "AppStorage";
 
 constexpr char kTypeKey[] = "type";
 constexpr char kNameKey[] = "name";
+constexpr char kShortNameKey[] = "short_name";
 constexpr char kReadinessKey[] = "readiness";
+constexpr char kInstallReasonKey[] = "install_reason";
+constexpr char kInstallSourceKey[] = "install_source";
+constexpr char kIsPlatformAppKey[] = "is_platform_app";
+constexpr char kRecommendableKey[] = "recommendable";
+constexpr char kSearchableKey[] = "searchable";
 
 absl::optional<std::string> GetStringValueFromDict(
     const base::Value::Dict& dict,
@@ -30,6 +38,9 @@ absl::optional<std::string> GetStringValueFromDict(
 }
 
 }  // namespace
+
+AppStorageFileHandler::AppInfo::AppInfo() = default;
+AppStorageFileHandler::AppInfo::~AppInfo() = default;
 
 AppStorageFileHandler::AppStorageFileHandler(const base::FilePath& base_path)
     : RefCountedDeleteOnSequence(base::ThreadPool::CreateSequencedTaskRunner(
@@ -44,10 +55,6 @@ void AppStorageFileHandler::WriteToFile(std::vector<AppPtr> apps) {
 
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-
-  if (apps.empty()) {
-    return;
-  }
 
   if (!base::CreateDirectory(file_path_.DirName())) {
     LOG(ERROR) << "Fail to create the directory for " << file_path_;
@@ -64,20 +71,20 @@ void AppStorageFileHandler::WriteToFile(std::vector<AppPtr> apps) {
   }
 }
 
-std::vector<AppPtr> AppStorageFileHandler::ReadFromFile() {
+std::unique_ptr<AppInfo> AppStorageFileHandler::ReadFromFile() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
   if (!base::PathExists(file_path_)) {
-    return std::vector<AppPtr>();
+    return nullptr;
   }
 
   std::string app_info_data;
   if (!base::ReadFileToString(file_path_, &app_info_data) ||
       app_info_data.empty()) {
-    return std::vector<AppPtr>();
+    return nullptr;
   }
 
   base::JSONReader::Result app_info_value =
@@ -88,7 +95,7 @@ std::vector<AppPtr> AppStorageFileHandler::ReadFromFile() {
         << app_info_value.error().message << ", in line "
         << app_info_value.error().line << ", column "
         << app_info_value.error().column;
-    return std::vector<AppPtr>();
+    return nullptr;
   }
 
   return ConvertValueToApps(std::move(*app_info_value));
@@ -106,11 +113,38 @@ base::Value AppStorageFileHandler::ConvertAppsToValue(
 
     app_details_dict.Set(kTypeKey, static_cast<int>(app->app_type));
 
+    if (app->readiness != Readiness::kUnknown) {
+      app_details_dict.Set(kReadinessKey, static_cast<int>(app->readiness));
+    }
+
     if (app->name.has_value()) {
       app_details_dict.Set(kNameKey, app->name.value());
     }
+    if (app->short_name.has_value()) {
+      app_details_dict.Set(kShortNameKey, app->short_name.value());
+    }
 
-    app_details_dict.Set(kReadinessKey, static_cast<int>(app->readiness));
+    if (app->install_reason != InstallReason::kUnknown) {
+      app_details_dict.Set(kInstallReasonKey,
+                           static_cast<int>(app->install_reason));
+    }
+
+    if (app->install_source != InstallSource::kUnknown) {
+      app_details_dict.Set(kInstallSourceKey,
+                           static_cast<int>(app->install_source));
+    }
+
+    if (app->is_platform_app.has_value()) {
+      app_details_dict.Set(kIsPlatformAppKey, app->is_platform_app.value());
+    }
+
+    if (app->recommendable.has_value()) {
+      app_details_dict.Set(kRecommendableKey, app->recommendable.value());
+    }
+
+    if (app->searchable.has_value()) {
+      app_details_dict.Set(kSearchableKey, app->searchable.value());
+    }
 
     // TODO(crbug.com/1385932): Add other files in the App structure.
     app_info_dict.Set(app->app_id, std::move(app_details_dict));
@@ -119,15 +153,15 @@ base::Value AppStorageFileHandler::ConvertAppsToValue(
   return base::Value(std::move(app_info_dict));
 }
 
-std::vector<AppPtr> AppStorageFileHandler::ConvertValueToApps(
+std::unique_ptr<AppInfo> AppStorageFileHandler::ConvertValueToApps(
     base::Value app_info_value) {
-  std::vector<AppPtr> apps;
+  std::unique_ptr<AppInfo> app_info = std::make_unique<AppInfo>();
 
   base::Value::Dict* dict = app_info_value.GetIfDict();
   if (!dict) {
     LOG(ERROR) << "Fail to parse the app info value. "
                << "Cannot find the app info dict.";
-    return apps;
+    return nullptr;
   }
 
   for (auto [app_id, app_value] : *dict) {
@@ -150,7 +184,6 @@ std::vector<AppPtr> AppStorageFileHandler::ConvertValueToApps(
 
     auto app =
         std::make_unique<App>(static_cast<AppType>(app_type.value()), app_id);
-    app->name = GetStringValueFromDict(*value, kNameKey);
 
     auto readiness = value->FindInt(kReadinessKey);
     if (readiness.has_value() &&
@@ -159,10 +192,32 @@ std::vector<AppPtr> AppStorageFileHandler::ConvertValueToApps(
       app->readiness = static_cast<Readiness>(readiness.value());
     }
 
+    app->name = GetStringValueFromDict(*value, kNameKey);
+    app->short_name = GetStringValueFromDict(*value, kShortNameKey);
+
+    auto install_reason = value->FindInt(kInstallReasonKey);
+    if (install_reason.has_value() &&
+        install_reason.value() >= static_cast<int>(InstallReason::kUnknown) &&
+        install_reason.value() <= static_cast<int>(InstallReason::kMaxValue)) {
+      app->install_reason = static_cast<InstallReason>(install_reason.value());
+    }
+
+    auto install_source = value->FindInt(kInstallSourceKey);
+    if (install_source.has_value() &&
+        install_source.value() >= static_cast<int>(InstallSource::kUnknown) &&
+        install_source.value() <= static_cast<int>(InstallSource::kMaxValue)) {
+      app->install_source = static_cast<InstallSource>(install_source.value());
+    }
+
+    app->is_platform_app = value->FindBool(kIsPlatformAppKey);
+    app->recommendable = value->FindBool(kRecommendableKey);
+    app->searchable = value->FindBool(kSearchableKey);
+
     // TODO(crbug.com/1385932): Add other files in the App structure.
-    apps.push_back(std::move(app));
+    app_info->apps.push_back(std::move(app));
+    app_info->app_types.insert(static_cast<AppType>(app_type.value()));
   }
-  return apps;
+  return app_info;
 }
 
 }  // namespace apps

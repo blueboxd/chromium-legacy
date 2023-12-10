@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/core/dom/mutation_observer_options.h"
 #include "third_party/blink/renderer/core/dom/node_rare_data.h"
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
-#include "third_party/blink/renderer/core/scroll/scroll_customization.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/graphics/dom_node_id.h"
@@ -83,8 +82,6 @@ class QualifiedName;
 class RegisteredEventListener;
 class ScrollTimeline;
 class SVGQualifiedName;
-class ScrollState;
-class ScrollStateCallback;
 class ShadowRoot;
 template <typename NodeType>
 class StaticNodeTypeList;
@@ -218,24 +215,14 @@ class CORE_EXPORT Node : public EventTarget {
   Element* parentElement() const;
   ContainerNode* ParentElementOrShadowRoot() const;
   ContainerNode* ParentElementOrDocumentFragment() const;
-  Node* previousSibling() const { return previous_; }
-  bool HasPreviousSibling() const { return previous_; }
-  Node* nextSibling() const { return next_; }
-  bool HasNextSibling() const { return next_; }
+  Node* previousSibling() const { return previous_.Get(); }
+  bool HasPreviousSibling() const { return static_cast<bool>(previous_); }
+  Node* nextSibling() const { return next_.Get(); }
+  bool HasNextSibling() const { return static_cast<bool>(next_); }
   NodeList* childNodes();
   Node* firstChild() const;
   Node* lastChild() const;
   Node* getRootNode(const GetRootNodeOptions*) const;
-
-  // TODO(crbug.com/1369739): Get rid of these.
-  void SetApplyScroll(ScrollStateCallback*);
-  void RemoveApplyScroll();
-  ScrollStateCallback* GetApplyScroll();
-  void NativeDistributeScroll(ScrollState&);
-  void NativeApplyScroll(ScrollState&);
-  void CallDistributeScroll(ScrollState&);
-  void CallApplyScroll(ScrollState&);
-
   Node& TreeRoot() const;
   Node& ShadowIncludingRoot() const;
   // closed-shadow-hidden is defined at
@@ -772,7 +759,8 @@ class CORE_EXPORT Node : public EventTarget {
   // Detaches the node from the layout tree, making it invisible in the rendered
   // view. This method will remove the node's layout object from the layout tree
   // and delete it.
-  virtual void DetachLayoutTree(bool performing_reattach = false);
+  void DetachLayoutTree() { DetachLayoutTree(/*performing_reattach=*/false); }
+  virtual void DetachLayoutTree(bool performing_reattach);
 
   void ReattachLayoutTree(AttachContext&);
 
@@ -981,6 +969,16 @@ class CORE_EXPORT Node : public EventTarget {
                                     Document& document,
                                     ExceptionState& exception_state);
 
+  // Creates a DocumentFragment, converts |node_unions| from bindings into
+  // actual Nodes by converting strings and script into text nodes via
+  // NodeOrStringToNode, appends all resulting Nodes to the DocumentFragment,
+  // and returns it. Returns nullptr if exceptions are thrown.
+  static Node* ConvertNodeUnionsIntoNode(
+      const Node* parent,
+      const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& node_unions,
+      Document& document,
+      ExceptionState& exception_state);
+
   bool SelfOrAncestorHasDirAutoAttribute() const {
     return GetFlag(kSelfOrAncestorHasDirAutoAttribute);
   }
@@ -1005,6 +1003,11 @@ class CORE_EXPORT Node : public EventTarget {
   void ClearDirAutoInheritsFromParent();
 
   void Trace(Visitor*) const override;
+
+  bool IsModifiedBySoftNavigation() {
+    return GetFlag(kModifiedBySoftNavigation);
+  }
+  void SetIsModifiedBySoftNavigation() { SetFlag(kModifiedBySoftNavigation); }
 
  private:
   enum NodeFlags : uint32_t {
@@ -1065,9 +1068,13 @@ class CORE_EXPORT Node : public EventTarget {
     // RuntimeEnabledFeatures::CSSPseudoDirEnabled():
     kDirAutoInheritsFromParent = 1u << 30,
 
+    // Indicates that the node was added in a task descendant of a potential
+    // soft navigation.
+    kModifiedBySoftNavigation = 1u << 31,
+
     kDefaultNodeFlags = kIsFinishedParsingChildrenFlag,
 
-    // 1 bit remaining.
+    // 0 bits remaining.
   };
 
   ALWAYS_INLINE bool GetFlag(NodeFlags mask) const {

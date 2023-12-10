@@ -75,8 +75,7 @@ out_linux_lacros/Release/bin/run_browser_tests --gtest_filter=BrowserTest.Title
 ```
 
 You can use this to run Chrome tests, such as browser_tests, unit_tests,
-interactive_ui_tests, lacros_chrome_browsertests,
-lacros_chrome_browsertests_run_in_series etc.
+interactive_ui_tests, lacros_chrome_browsertests etc.
 
 Note: Some tests are disabled by filter file. e.g. This
 [file](https://source.chromium.org/chromium/chromium/src/+/main:testing/buildbot/filters/linux-lacros.browser_tests.filter)

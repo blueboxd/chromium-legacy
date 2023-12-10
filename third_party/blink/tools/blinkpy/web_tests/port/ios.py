@@ -51,14 +51,14 @@ class IOSPort(base.Port):
     def cmd_line(self):
         return [
             self._path_to_simulator(), '-d',
-            self.device_name(), '-c',
+            self.device_name(), '-k', 'never', '-c',
             '%s -' % self.additional_driver_flags()
         ]
 
     def reinstall_cmd_line(self):
         return [
             self._path_to_simulator(), '-d',
-            self.device_name(), '-c', '--prepare-web-tests',
+            self.device_name(), '-k', 'never', '-c', '--prepare-web-tests',
             self.path_to_driver()
         ]
 
@@ -127,6 +127,13 @@ class IOSPort(base.Port):
         # this device, re-deploy the content shell app to the simulator to
         # ensure it is up to date.
         self.host.executive.run_command(self.reinstall_cmd_line())
+
+    def used_expectations_files(self):
+        files = super(IOSPort, self).used_expectations_files()
+        ios_additional_expectations_files = self._filesystem.join(
+            self.web_tests_dir(), 'IOSTestExpectations')
+        files.append(ios_additional_expectations_files)
+        return files
 
 
 class ChromiumIOSDriver(driver.Driver):

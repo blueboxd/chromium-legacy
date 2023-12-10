@@ -19,7 +19,7 @@
 #include <vector>
 
 #include "base/allocator/early_zone_registration_apple.h"
-#include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
+#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
 #include "ios/chrome/app/chrome_main_module_buildflags.h"
 
 extern "C" {
@@ -55,7 +55,7 @@ const char kBlinkFrameworkPath[] =
 class Library {
  public:
   static Library Load(const std::string& path) {
-    void* handle = dlopen(path.data(), RTLD_NOW | RTLD_LOCAL | RTLD_FIRST);
+    void* handle = dlopen(path.data(), RTLD_LAZY | RTLD_LOCAL | RTLD_FIRST);
     if (!handle) {
       FatalError("dlopen %s: %s.", path.data(), dlerror());
     }

@@ -15,7 +15,6 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/performance_manager/browser_child_process_watcher.h"
 #include "chrome/browser/performance_manager/decorators/frozen_frame_aggregator.h"
 #include "chrome/browser/performance_manager/decorators/helpers/page_live_state_decorator_helper.h"
 #include "chrome/browser/performance_manager/decorators/page_aggregator.h"
@@ -60,6 +59,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/performance_manager/policies/oom_score_policy_chromeos.h"
+#include "chrome/browser/performance_manager/policies/report_page_processes_policy.h"
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -68,7 +68,6 @@
 
 #if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/performance_manager/mechanisms/page_freezer.h"
-#include "chrome/browser/performance_manager/policies/heuristic_memory_saver_policy.h"
 #include "chrome/browser/performance_manager/policies/high_efficiency_mode_policy.h"
 #include "chrome/browser/performance_manager/policies/page_discarding_helper.h"
 #include "chrome/browser/performance_manager/policies/page_freezing_policy.h"
@@ -138,6 +137,9 @@ void ChromeBrowserMainExtraPartsPerformanceManager::CreatePoliciesAndDecorators(
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   graph->PassToGraph(std::make_unique<
                      performance_manager::policies::OomScorePolicyChromeOS>());
+  graph->PassToGraph(
+      std::make_unique<
+          performance_manager::policies::ReportPageProcessesPolicy>());
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
   if (base::FeatureList::IsEnabled(
           performance_manager::features::
@@ -145,6 +147,9 @@ void ChromeBrowserMainExtraPartsPerformanceManager::CreatePoliciesAndDecorators(
     graph->PassToGraph(
         std::make_unique<
             performance_manager::policies::OomScorePolicyChromeOS>());
+    graph->PassToGraph(
+        std::make_unique<
+            performance_manager::policies::ReportPageProcessesPolicy>());
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
@@ -190,10 +195,6 @@ void ChromeBrowserMainExtraPartsPerformanceManager::CreatePoliciesAndDecorators(
   graph->PassToGraph(
       std::make_unique<performance_manager::policies::PageFreezingPolicy>());
 
-  // Add both policies. Only one will be enabled at a time.
-  graph->PassToGraph(
-      std::make_unique<
-          performance_manager::policies::HeuristicMemorySaverPolicy>());
   graph->PassToGraph(
       std::make_unique<
           performance_manager::policies::HighEfficiencyModePolicy>());
@@ -221,18 +222,11 @@ ChromeBrowserMainExtraPartsPerformanceManager::GetFeatureObserverClient() {
 }
 
 void ChromeBrowserMainExtraPartsPerformanceManager::PostCreateThreads() {
-  auto graph_features = performance_manager::GraphFeatures::WithDefault();
-  if (performance_manager::features::kUseResourceAttributionCPUMonitor.Get()) {
-    graph_features.EnableResourceAttributionRegistries();
-  }
   performance_manager_lifetime_ =
       std::make_unique<performance_manager::PerformanceManagerLifetime>(
-          graph_features,
+          performance_manager::GraphFeatures::WithDefault(),
           base::BindOnce(&ChromeBrowserMainExtraPartsPerformanceManager::
                              CreatePoliciesAndDecorators));
-  browser_child_process_watcher_ =
-      std::make_unique<performance_manager::BrowserChildProcessWatcher>();
-  browser_child_process_watcher_->Initialize();
 
   // There are no existing loaded profiles.
   DCHECK(g_browser_process->profile_manager()->GetLoadedProfiles().empty());
@@ -318,11 +312,6 @@ void ChromeBrowserMainExtraPartsPerformanceManager::PreMainMessageLoopRun() {
 }
 
 void ChromeBrowserMainExtraPartsPerformanceManager::PostMainMessageLoopRun() {
-  // Release all graph nodes before destroying the performance manager.
-  // First release the browser and GPU process nodes.
-  browser_child_process_watcher_->TearDown();
-  browser_child_process_watcher_.reset();
-
   g_browser_process->profile_manager()->RemoveObserver(this);
   profile_observations_.RemoveAllObservations();
 

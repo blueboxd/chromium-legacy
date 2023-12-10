@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
+#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
 #include "base/containers/fixed_flat_set.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -139,10 +139,11 @@ constexpr auto kAllocatorDumpNameAllowlist = base::MakeFixedFlatSet<
         "discardable/madv_free_allocated",
         "discardable/child_0x?",
         "extensions/functions",
-        "extensions/value_store/Extensions.Database.Open.Settings/0x?",
+        "extensions/value_store/Extensions.Database.Open.OriginManagedConfiguration/0x?",
         "extensions/value_store/Extensions.Database.Open.Rules/0x?",
-        "extensions/value_store/Extensions.Database.Open.State/0x?",
         "extensions/value_store/Extensions.Database.Open.Scripts/0x?",
+        "extensions/value_store/Extensions.Database.Open.Settings/0x?",
+        "extensions/value_store/Extensions.Database.Open.State/0x?",
         "extensions/value_store/Extensions.Database.Open.WebAppsLockScreen/0x?",
         "extensions/value_store/Extensions.Database.Open/0x?",
         "extensions/value_store/Extensions.Database.Restore/0x?",

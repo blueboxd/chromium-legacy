@@ -19,9 +19,8 @@ namespace ash {
 class QuickSettingsFooterPixelTest : public AshTestBase {
  public:
   QuickSettingsFooterPixelTest() {
-    feature_list_.InitWithFeatures(
-        {features::kQsRevamp, chromeos::features::kJelly},
-        {features::kAdaptiveCharging});
+    feature_list_.InitWithFeatures({chromeos::features::kJelly},
+                                   {features::kAdaptiveCharging});
   }
 
   // AshTestBase:
@@ -71,7 +70,7 @@ TEST_F(QuickSettingsFooterPixelTest, FooterShouldBeRenderedCorrectly) {
   InitPowerStatusAndOpenBubble();
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "with_no_extra_button",
-      /*revision_number=*/5, GetFooter()));
+      /*revision_number=*/3, GetFooter()));
   CloseBubble();
 
   // Regression test for b/293484037: The settings button is missing when
@@ -80,7 +79,7 @@ TEST_F(QuickSettingsFooterPixelTest, FooterShouldBeRenderedCorrectly) {
   InitPowerStatusAndOpenBubble();
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "with_exit_button",
-      /*revision_number=*/5, GetFooter()));
+      /*revision_number=*/3, GetFooter()));
   CloseBubble();
 }
 

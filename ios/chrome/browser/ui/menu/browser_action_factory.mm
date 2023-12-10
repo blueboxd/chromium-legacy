@@ -28,9 +28,9 @@
 #import "ios/chrome/browser/shared/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/menu/action_factory+protected.h"
-#import "ios/chrome/browser/url_loading/image_search_param_generator.h"
-#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
-#import "ios/chrome/browser/url_loading/url_loading_params.h"
+#import "ios/chrome/browser/url_loading/model/image_search_param_generator.h"
+#import "ios/chrome/browser/url_loading/model/url_loading_browser_agent.h"
+#import "ios/chrome/browser/url_loading/model/url_loading_params.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 #import "url/gurl.h"
@@ -272,8 +272,7 @@
 
 - (UIAction*)actionToSaveToPhotosWithImageURL:(const GURL&)imageURL
                                      referrer:(const web::Referrer&)referrer
-                                     webState:(web::WebState*)webState
-                                        block:(ProceduralBlock)block {
+                                     webState:(web::WebState*)webState {
   __weak id<SaveToPhotosCommands> handler = HandlerForProtocol(
       self.browser->GetCommandDispatcher(), SaveToPhotosCommands);
   SaveImageToPhotosCommand* command =
@@ -294,9 +293,6 @@
                          image:image
                           type:MenuActionType::SaveImageToGooglePhotos
                          block:^{
-                           if (block) {
-                             block();
-                           }
                            [handler saveImageToPhotos:command];
                          }];
 }

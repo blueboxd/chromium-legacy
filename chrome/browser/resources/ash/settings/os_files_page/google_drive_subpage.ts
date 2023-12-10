@@ -14,7 +14,7 @@ import '//resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
 import {SettingsToggleButtonElement} from '/shared/settings/controls/settings_toggle_button.js';
 import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {assertNotReached} from 'chrome://resources/js/assert_ts.js';
+import {assertNotReached} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -394,6 +394,11 @@ export class SettingsGoogleDriveSubpageElement extends
           'googleDriveCleanUpStorageDisabledUnknownStorageTooltip');
     }
 
+    if (this.getPref(GOOGLE_DRIVE_BULK_PINNING_PREF).value &&
+        this.contentCacheSize_ !== '0 B') {
+      return this.i18n('googleDriveCleanUpStorageDisabledFileSyncTooltip');
+    }
+
     return this.i18n('googleDriveCleanUpStorageDisabledTooltip');
   }
 
@@ -558,11 +563,9 @@ export class SettingsGoogleDriveSubpageElement extends
   }
 
   private getListingFilesDialogBody_(): string {
-    return this.listedFiles_ > 0n ?
-        this.i18n(
-            'googleDriveFileSyncListingFilesItemsFoundBody',
-            this.listedFiles_.toLocaleString()) :
-        this.i18n('googleDriveFileSyncListingFilesBody');
+    return this.i18n(
+        'googleDriveFileSyncListingFilesItemsFoundBody',
+        this.listedFiles_.toLocaleString());
   }
 
   /**

@@ -9,8 +9,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/tablet_mode/tablet_mode_multitask_menu_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
-#include "base/test/scoped_feature_list.h"
-#include "chromeos/ui/wm/features.h"
+#include "base/functional/bind.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/layer_animation_stopped_waiter.h"
 #include "ui/wm/core/window_util.h"
@@ -19,8 +18,7 @@ namespace ash {
 
 class TabletModeMultitaskCueControllerTest : public AshTestBase {
  public:
-  TabletModeMultitaskCueControllerTest()
-      : scoped_feature_list_(chromeos::wm::features::kWindowLayoutMenu) {}
+  TabletModeMultitaskCueControllerTest() = default;
   TabletModeMultitaskCueControllerTest(
       const TabletModeMultitaskCueControllerTest&) = delete;
   TabletModeMultitaskCueControllerTest& operator=(
@@ -39,9 +37,6 @@ class TabletModeMultitaskCueControllerTest : public AshTestBase {
     AshTestBase::SetUp();
     TabletModeControllerTestApi().EnterTabletMode();
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Tests that the cue layer is created properly.
@@ -176,6 +171,32 @@ TEST_F(TabletModeMultitaskCueControllerTest, TransientChildFocus) {
   // window was not associated with it.
   wm::ActivateWindow(window1.get());
   EXPECT_TRUE(multitask_cue_controller->cue_layer());
+}
+
+TEST_F(TabletModeMultitaskCueControllerTest,
+       CueDoesNotShowOnClamshellTransition) {
+  auto* split_view_controller =
+      SplitViewController::Get(Shell::GetPrimaryRootWindow());
+
+  auto window1 = CreateAppWindow();
+
+  // Dismiss the cue so it can (attempt to) be shown again later.
+  auto* multitask_cue_controller = GetMultitaskCue();
+
+  multitask_cue_controller->DismissCue();
+
+  // Window must be split so overview mode is active on the opposite side.
+  split_view_controller->SnapWindow(
+      window1.get(), SplitViewController::SnapPosition::kPrimary);
+
+  multitask_cue_controller->set_pre_cue_shown_callback_for_test(
+      base::BindOnce([]() { ASSERT_TRUE(false); }));
+
+  // When we go back to clamshell mode, overview mode will shutdown and try to
+  // restore activation to the window, and therefore call `MaybeShowCue()`. If
+  // it passes all checks, then it will run the callback and immediately fail
+  // this test.
+  TabletModeControllerTestApi().LeaveTabletMode();
 }
 
 }  // namespace ash

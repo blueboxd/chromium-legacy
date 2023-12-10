@@ -381,7 +381,7 @@ class IdentityManagerTest : public testing::Test {
             std::move(remote),
             /*remote_version=*/std::numeric_limits<uint32_t>::max(),
             /*account_manager_for_tests=*/
-            ash_account_manager);
+            ash_account_manager->GetWeakPtr());
 
     auto token_service = std::make_unique<CustomFakeProfileOAuth2TokenService>(
         &pref_service_,
@@ -456,9 +456,7 @@ class IdentityManagerTest : public testing::Test {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     init_params.account_manager_facade = account_manager_facade_.get();
 #endif
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
     init_params.signin_client = &signin_client_;
-#endif
     init_params.account_fetcher_service = std::move(account_fetcher_service);
     init_params.account_tracker_service = std::move(account_tracker_service);
     init_params.gaia_cookie_manager_service =

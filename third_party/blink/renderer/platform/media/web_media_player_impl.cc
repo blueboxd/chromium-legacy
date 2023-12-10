@@ -799,6 +799,9 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
+  is_cache_disabled_ = is_cache_disabled;
+  cors_mode_ = cors_mode;
+
   // Start a new observation.  If there was one before, then we didn't play it.
   will_play_helper_.CompleteObservationIfNeeded(learning::TargetValue(false));
   // For now, send in an empty set of features.  We should fill some in here,
@@ -1570,11 +1573,27 @@ void WebMediaPlayerImpl::AddVideoTrack(const std::string& id,
 #endif  // BUILDFLAG(ENABLE_FFMPEG)
 
 #if BUILDFLAG(ENABLE_HLS_DEMUXER)
+
+void WebMediaPlayerImpl::GetUrlData(
+    const GURL& gurl,
+    base::OnceCallback<void(scoped_refptr<UrlData>)> cb) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  auto url_data = url_index_->GetByUrl(
+      gurl, static_cast<UrlData::CorsMode>(cors_mode_),
+      is_cache_disabled_ ? UrlIndex::kCacheDisabled : UrlIndex::kNormal);
+  std::move(cb).Run(std::move(url_data));
+}
+
 base::SequenceBound<media::HlsDataSourceProvider>
 WebMediaPlayerImpl::GetHlsDataSourceProvider() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   return base::SequenceBound<HlsDataSourceProviderImpl>(
-      main_task_runner_, media_log_.get(), url_index_, main_task_runner_,
-      media_task_runner_, tick_clock_);
+      main_task_runner_,
+      std::make_unique<MultiBufferDataSourceFactory>(
+          media_log_.get(),
+          base::BindRepeating(&WebMediaPlayerImpl::GetUrlData,
+                              weak_factory_.GetWeakPtr()),
+          main_task_runner_, tick_clock_));
 }
 #endif
 
@@ -2835,7 +2854,7 @@ void WebMediaPlayerImpl::StartPipeline() {
   // base::Unretained(this) is safe here, since |CreateDemuxer| calls the bound
   // method directly and immediately.
   auto create_demuxer_error = demuxer_manager_->CreateDemuxer(
-      load_type_ == kLoadTypeMediaSource, preload_, has_poster_,
+      load_type_ == kLoadTypeMediaSource, preload_, needs_first_frame_,
       base::BindOnce(&WebMediaPlayerImpl::OnDemuxerCreated,
                      base::Unretained(this)));
 

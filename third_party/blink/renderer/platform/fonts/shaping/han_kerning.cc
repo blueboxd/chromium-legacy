@@ -16,6 +16,23 @@ namespace blink {
 
 namespace {
 
+HashSet<uint32_t> ExclusiveFeatures() {
+  // https://learn.microsoft.com/en-us/typography/opentype/spec/features_ae#chws
+  // https://learn.microsoft.com/en-us/typography/opentype/spec/features_uz#vchw
+  return HashSet<uint32_t>{
+      HB_TAG('h', 'a', 'l', 't'), HB_TAG('h', 'w', 'i', 'd'),
+      HB_TAG('p', 'a', 'l', 't'), HB_TAG('p', 'w', 'i', 'd'),
+      HB_TAG('q', 'w', 'i', 'd'), HB_TAG('t', 'w', 'i', 'd'),
+      HB_TAG('v', 'a', 'l', 't'), HB_TAG('v', 'h', 'a', 'l'),
+      HB_TAG('v', 'p', 'a', 'l'),
+  };
+}
+
+bool IsExclusiveFeature(uint32_t tag) {
+  DEFINE_STATIC_LOCAL(HashSet<uint32_t>, tags, (ExclusiveFeatures()));
+  return tags.Contains(tag);
+}
+
 // Get `CharType` from the glyph bounding box.
 HanKerning::CharType GetType(const SkRect& bound,
                              float em,
@@ -55,54 +72,58 @@ HanKerning::CharType GetType(base::span<SkRect> bounds,
 
 }  // namespace
 
+void HanKerning::ResetFeatures() {
+  DCHECK(features_);
+#if EXPENSIVE_DCHECKS_ARE_ON()
+  for (wtf_size_t i = num_features_before_; i < features_->size(); ++i) {
+    const hb_feature_t& feature = (*features_)[i];
+    DCHECK(feature.tag == HB_TAG('h', 'a', 'l', 't') ||
+           feature.tag == HB_TAG('v', 'h', 'a', 'l'));
+  }
+#endif
+  features_->Shrink(num_features_before_);
+}
+
 // Compute the character class.
 // See Text Spacing Character Classes:
 // https://drafts.csswg.org/css-text-4/#text-spacing-classes
 HanKerning::CharType HanKerning::GetCharType(UChar ch,
                                              const FontData& font_data) {
-  // TODO(crbug.com/1463890): This logic is only for prototyping.
-  switch (ch) {
-    case kIdeographicCommaCharacter:     // U+3001
-    case kIdeographicFullStopCharacter:  // U+3002
-    case kFullwidthComma:                // U+FF0C
-    case kFullwidthFullStop:             // U+FF0E
+  const CharType type = Character::GetHanKerningCharType(ch);
+  switch (type) {
+    case CharType::kOther:
+    case CharType::kOpen:
+    case CharType::kClose:
+    case CharType::kMiddle:
+    case CharType::kOpenNarrow:
+    case CharType::kCloseNarrow:
+      return type;
+    case CharType::kDot:
       return font_data.type_for_dot;
-    case kFullwidthColon:      // U+FF1A
+    case CharType::kColon:
       return font_data.type_for_colon;
-    case kFullwidthSemicolon:  // U+FF1B
+    case CharType::kSemicolon:
       return font_data.type_for_semicolon;
-    case kLeftSingleQuotationMarkCharacter:  // U+2018
-    case kLeftDoubleQuotationMarkCharacter:  // U+201C
-      return CharType::kOpen;
-    case kRightSingleQuotationMarkCharacter:  // U+2019
-    case kRightDoubleQuotationMarkCharacter:  // U+201D
-      return CharType::kClose;
-    case kIdeographicSpaceCharacter:  // U+3000
-    case kKatakanaMiddleDot:          // U+30FB
-      return CharType::kMiddle;
   }
-  if (Character::IsBlockCjkSymbolsAndPunctuation(ch) ||
-      Character::IsEastAsianWidthFullwidth(ch)) {
-    const auto gc = static_cast<UCharCategory>(u_charType(ch));
-    if (gc == UCharCategory::U_START_PUNCTUATION) {
-      return CharType::kOpen;
-    }
-    if (gc == UCharCategory::U_END_PUNCTUATION) {
-      return CharType::kClose;
-    }
-  }
-  return CharType::kOther;
+  NOTREACHED_NORETURN();
+}
+
+bool HanKerning::IsOpen(UChar ch) {
+  // Any `FontData` will do, because it only changes between `kClose` and
+  // `kMiddle`. See `FontData::FontData`.
+  return GetCharType(ch, FontData()) == CharType::kOpen;
 }
 
 inline bool HanKerning::ShouldKern(CharType type, CharType last_type) {
   return type == CharType::kOpen &&
          (last_type == CharType::kOpen || last_type == CharType::kMiddle ||
-          last_type == CharType::kClose);
+          last_type == CharType::kClose || last_type == CharType::kOpenNarrow);
 }
 
 inline bool HanKerning::ShouldKernLast(CharType type, CharType last_type) {
   return last_type == CharType::kClose &&
-         (type == CharType::kClose || type == CharType::kMiddle);
+         (type == CharType::kClose || type == CharType::kMiddle ||
+          type == CharType::kCloseNarrow);
 }
 
 // Compute kerning and apply features.
@@ -113,22 +134,32 @@ void HanKerning::Compute(const String& text,
                          wtf_size_t end,
                          const SimpleFontData& font,
                          const FontDescription& font_description,
-                         bool is_horizontal,
-                         FontFeatures& features) {
+                         Options options,
+                         FontFeatures* features) {
+  DCHECK(!features_);
+  const LayoutLocale& locale = font_description.LocaleOrDefault();
+  const FontData& font_data =
+      font.HanKerningData(locale, options.is_horizontal);
+  if (!font_data.has_alternate_spacing) {
+    return;
+  }
   if (UNLIKELY(font_description.GetTextSpacingTrim() !=
                TextSpacingTrim::kSpaceFirst)) {
     return;
   }
-  const LayoutLocale& locale = font_description.LocaleOrDefault();
-  const FontData& font_data = font.HanKerningData(locale, is_horizontal);
-  if (!font_data.has_alternate_spacing) {
-    return;
+  for (const hb_feature_t& feature : *features) {
+    if (feature.value && IsExclusiveFeature(feature.tag)) {
+      return;
+    }
   }
 
   // Compute for the first character.
   Vector<wtf_size_t, 32> indices;
   CharType last_type;
-  if (start) {
+  if (options.apply_start) {
+    indices.push_back(start);
+    last_type = GetCharType(text[start], font_data);
+  } else if (start) {
     last_type = GetCharType(text[start - 1], font_data);
     const CharType type = GetCharType(text[start], font_data);
     if (ShouldKern(type, last_type)) {
@@ -179,11 +210,13 @@ void HanKerning::Compute(const String& text,
     return;
   }
   DCHECK(std::is_sorted(indices.begin(), indices.end(), std::less_equal<>()));
-  const hb_tag_t tag =
-      is_horizontal ? HB_TAG('h', 'a', 'l', 't') : HB_TAG('v', 'h', 'a', 'l');
-  features.Reserve(features.size() + indices.size());
+  const hb_tag_t tag = options.is_horizontal ? HB_TAG('h', 'a', 'l', 't')
+                                             : HB_TAG('v', 'h', 'a', 'l');
+  features_ = features;
+  num_features_before_ = features->size();
+  features->Reserve(features->size() + indices.size());
   for (const wtf_size_t i : indices) {
-    features.Append({tag, 1, i, i + 1});
+    features->Append({tag, 1, i, i + 1});
   }
 }
 
@@ -276,9 +309,9 @@ HanKerning::FontData::FontData(const SimpleFontData& font,
 
   // Compute types from glyph bounds.
   DCHECK_EQ(bounds.size(), std::size(kChars));
-  type_for_dot = GetType(base::make_span(bounds.begin() + kDotStartIndex,
-                                         kDotStartIndex + kDotSize),
-                         em, is_horizontal);
+  type_for_dot =
+      GetType(base::make_span(bounds.begin() + kDotStartIndex, kDotSize), em,
+              is_horizontal);
   type_for_colon = GetType(bounds[kColonIndex], em, is_horizontal);
   type_for_semicolon = GetType(bounds[kSemicolonIndex], em, is_horizontal);
 }

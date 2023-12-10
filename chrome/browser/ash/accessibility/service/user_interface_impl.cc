@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/accessibility/service/user_interface_impl.h"
 
+#include "ash/public/cpp/accessibility_controller.h"
 #include "ash/public/cpp/accessibility_focus_ring_info.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "content/public/common/color_parser.h"
@@ -20,6 +21,14 @@ UserInterfaceImpl::~UserInterfaceImpl() = default;
 void UserInterfaceImpl::Bind(
     mojo::PendingReceiver<ax::mojom::UserInterface> ui_receiver) {
   ui_receivers_.Add(this, std::move(ui_receiver));
+}
+
+void UserInterfaceImpl::DarkenScreen(bool darken) {
+  AccessibilityManager::Get()->SetDarkenScreen(darken);
+}
+
+void UserInterfaceImpl::OpenSettingsSubpage(const std::string& subpage) {
+  AccessibilityManager::Get()->OpenSettingsSubpage(subpage);
 }
 
 void UserInterfaceImpl::SetFocusRings(
@@ -79,6 +88,15 @@ void UserInterfaceImpl::SetFocusRings(
 
     accessibility_manager->SetFocusRing(id, std::move(focus_ring));
   }
+}
+
+void UserInterfaceImpl::SetHighlights(const std::vector<gfx::Rect>& rects,
+                                      SkColor color) {
+  AccessibilityManager::Get()->SetHighlights(rects, color);
+}
+
+void UserInterfaceImpl::SetVirtualKeyboardVisible(bool is_visible) {
+  AccessibilityController::Get()->SetVirtualKeyboardVisible(is_visible);
 }
 
 }  // namespace ash

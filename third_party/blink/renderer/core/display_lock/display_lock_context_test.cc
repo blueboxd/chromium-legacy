@@ -2144,8 +2144,9 @@ TEST_P(DisplayLockContextRenderingTest, FloatChildLocked) {
   auto* lockable = GetDocument().getElementById(AtomicString("lockable"));
   auto* lockable_box = lockable->GetLayoutBox();
   auto* floating = GetDocument().getElementById(AtomicString("floating"));
-  EXPECT_EQ(LayoutRect(0, 0, 200, 100), lockable_box->VisualOverflowRect());
-  EXPECT_EQ(LayoutRect(0, 0, 200, 100), lockable_box->LayoutOverflowRect());
+  EXPECT_EQ(PhysicalRect(0, 0, 200, 100), lockable_box->VisualOverflowRect());
+  EXPECT_EQ(PhysicalRect(0, 0, 200, 100),
+            lockable_box->PhysicalLayoutOverflowRect());
 
   lockable->classList().Add(AtomicString("hidden"));
   UpdateAllLifecyclePhasesForTest();
@@ -2155,8 +2156,9 @@ TEST_P(DisplayLockContextRenderingTest, FloatChildLocked) {
   ASSERT_TRUE(lockable->GetDisplayLockContext());
   EXPECT_TRUE(DescendantDependentFlagUpdateWasBlocked(
       lockable->GetDisplayLockContext()));
-  EXPECT_EQ(LayoutRect(0, 0, 200, 50), lockable_box->VisualOverflowRect());
-  EXPECT_EQ(LayoutRect(0, 0, 200, 50), lockable_box->LayoutOverflowRect());
+  EXPECT_EQ(PhysicalRect(0, 0, 200, 50), lockable_box->VisualOverflowRect());
+  EXPECT_EQ(PhysicalRect(0, 0, 200, 50),
+            lockable_box->PhysicalLayoutOverflowRect());
 
   floating->setAttribute(html_names::kStyleAttr, AtomicString("height: 200px"));
   // The following should not crash/DCHECK.
@@ -2165,15 +2167,17 @@ TEST_P(DisplayLockContextRenderingTest, FloatChildLocked) {
   ASSERT_TRUE(lockable->GetDisplayLockContext());
   EXPECT_TRUE(DescendantDependentFlagUpdateWasBlocked(
       lockable->GetDisplayLockContext()));
-  EXPECT_EQ(LayoutRect(0, 0, 200, 50), lockable_box->VisualOverflowRect());
-  EXPECT_EQ(LayoutRect(0, 0, 200, 50), lockable_box->LayoutOverflowRect());
+  EXPECT_EQ(PhysicalRect(0, 0, 200, 50), lockable_box->VisualOverflowRect());
+  EXPECT_EQ(PhysicalRect(0, 0, 200, 50),
+            lockable_box->PhysicalLayoutOverflowRect());
 
   // After unlocking, we should process the pending visual overflow recalc.
   lockable->classList().Remove(AtomicString("hidden"));
   UpdateAllLifecyclePhasesForTest();
 
-  EXPECT_EQ(LayoutRect(0, 0, 200, 200), lockable_box->VisualOverflowRect());
-  EXPECT_EQ(LayoutRect(0, 0, 200, 200), lockable_box->LayoutOverflowRect());
+  EXPECT_EQ(PhysicalRect(0, 0, 200, 200), lockable_box->VisualOverflowRect());
+  EXPECT_EQ(PhysicalRect(0, 0, 200, 200),
+            lockable_box->PhysicalLayoutOverflowRect());
 }
 
 TEST_P(DisplayLockContextRenderingTest,

@@ -36,7 +36,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/download/bubble/download_bubble_prefs.h"
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
@@ -184,7 +183,6 @@
 #include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
-#include "chromeos/ui/wm/features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/feature_constants.h"
@@ -219,10 +217,10 @@
 #include "components/webapps/browser/banners/app_banner_manager.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -286,6 +284,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/metrics_util.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
@@ -847,8 +846,13 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
     : views::ClientView(nullptr, nullptr),
       browser_(std::move(browser)),
       accessibility_mode_observer_(
-          std::make_unique<AccessibilityModeObserver>(this)),
-      browser_actions_(*browser_) {
+          std::make_unique<AccessibilityModeObserver>(this)) {
+  // Store the actions so that the access is available for other classes.
+  if (base::FeatureList::IsEnabled(features::kSidePanelPinning)) {
+    browser_->SetUserData(BrowserActions::UserDataKey(),
+                          std::make_unique<BrowserActions>(*browser_));
+  }
+
   SetShowIcon(
       ::ShouldShowWindowIcon(browser_.get(), AppUsesWindowControlsOverlay()));
 
@@ -873,8 +877,16 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
 
   SetProperty(views::kElementIdentifierKey, kBrowserViewElementId);
 
-  // Create user education resources unless headless mode is in effect.
-  if (!headless::IsHeadlessMode()) {
+  // In order to do feature promos, the browser must have a UI and not be an
+  // "off-the-record" or in a demo or guest mode.
+  bool is_profile_type_without_iph = GetIncognito() || GetGuestSession() ||
+                                     profiles::IsManagedGuestSession() ||
+                                     profiles::IsDemoSession() ||
+                                     profiles::IsChromeAppKioskSession();
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  is_profile_type_without_iph |= profiles::IsWebKioskSession();
+#endif
+  if (!headless::IsHeadlessMode() && !is_profile_type_without_iph) {
     if (UserEducationService* const user_education_service =
             UserEducationServiceFactory::GetForBrowserContext(GetProfile())) {
       RegisterChromeHelpBubbleFactories(
@@ -911,7 +923,8 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
     UpdateBorderlessModeEnabled();
   }
 
-  UpdateResizable();
+  // Initialize Blink's 'resizable' CSS @media feature state.
+  OnWidgetSizeConstraintsChanged(GetWidget());
 
   // TabStrip takes ownership of the controller.
   auto tabstrip_controller = std::make_unique<BrowserTabStripController>(
@@ -1086,7 +1099,7 @@ BrowserWindow* BrowserWindow::FindBrowserWindowWithWebContents(
     return BrowserView::GetBrowserViewForNativeWindow(
         widget->GetNativeWindow());
   }
-  const auto* browser = chrome::FindBrowserWithWebContents(web_contents);
+  const auto* browser = chrome::FindBrowserWithTab(web_contents);
   return browser ? browser->window() : nullptr;
 }
 
@@ -1620,7 +1633,8 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
     old_contents->StoreFocus();
   }
 
-  UpdateResizable();
+  // window.setResizable API should never be called from multi-tab browser.
+  CHECK(!can_resize_from_web_api_);
 
   // If |contents_container_| already has the correct WebContents, we can save
   // some work.  This also prevents extra events from being reported by the
@@ -2164,20 +2178,6 @@ bool BrowserView::IsWindowControlsOverlayEnabled() const {
   return window_controls_overlay_enabled_;
 }
 
-// TODO(laurila, crbug.com/1466855): Now this is only called when `BrowserView`
-// is initialized / tab changed and that's not enough. This should also be
-// called every time `WidgetDelegate::SetCanResize` is called.
-void BrowserView::UpdateResizable() {
-  // Additional windowing controls (AWC) is a desktop-only feature.
-#if !BUILDFLAG(IS_ANDROID)
-  content::WebContents* web_contents = GetActiveWebContents();
-  if (!web_contents) {
-    return;
-  }
-  web_contents->UpdateResizable(CanResize());
-#endif
-}
-
 void BrowserView::UpdateWindowControlsOverlayEnabled() {
   UpdateWindowControlsOverlayToggleVisible();
 
@@ -2523,6 +2523,50 @@ void BrowserView::OnWidgetVisibilityChanged(views::Widget* widget,
   }
 }
 
+absl::optional<bool> BrowserView::GetCanResizeFromWebAPI() const {
+  // TODO(laurila, crbug.com/1466855): Use PageUserData instead.
+  return can_resize_from_web_api_;
+}
+
+void BrowserView::SetCanResizeFromWebAPI(absl::optional<bool> can_resize) {
+  content::WebContents* web_contents = GetActiveWebContents();
+  if (!web_contents || !web_contents->GetPrimaryMainFrame()) {
+    return;
+  }
+
+  // Setting it absl::nullopt should never be blocked.
+  if (can_resize.has_value() && !GetIsWebAppType()) {
+    web_contents->GetPrimaryMainFrame()->AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kWarning,
+        base::StringPrintf("window.setResizable blocked due to being called "
+                           "from something else than a web app."));
+    return;
+  }
+
+  // TODO(laurila, crbug.com/1466855): Use PageUserData instead.
+  if (can_resize == can_resize_from_web_api_) {
+    return;
+  }
+
+  can_resize_from_web_api_ = can_resize;
+  if (GetWidget()) {
+    GetWidget()->OnSizeConstraintsChanged();
+  }
+}
+
+void BrowserView::OnWidgetSizeConstraintsChanged(views::Widget* widget) {
+  content::WebContents* web_contents = GetActiveWebContents();
+  if (!web_contents || !web_contents->GetPrimaryMainFrame()) {
+    return;
+  }
+  // This will update `resizable` @media feature value in renderer whenever the
+  // widget's resizability has changed.
+  if (content::RenderWidgetHost* render_widget_host =
+          web_contents->GetPrimaryMainFrame()->GetRenderWidgetHost()) {
+    render_widget_host->SynchronizeVisualProperties();
+  }
+}
+
 void BrowserView::TouchModeChanged() {
   MaybeInitializeWebUITabStrip();
   MaybeShowWebUITabStripIPH();
@@ -2828,7 +2872,6 @@ views::Button* BrowserView::GetSharingHubIconButton() {
 }
 
 void BrowserView::ToggleMultitaskMenu() const {
-  DCHECK(chromeos::wm::features::IsWindowLayoutMenuEnabled());
   auto* frame_view =
       static_cast<BrowserNonClientFrameViewChromeOS*>(frame_->GetFrameView());
   if (!frame_view) {
@@ -3246,6 +3289,20 @@ bool BrowserView::GetAcceleratorForCommandId(
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, views::WidgetDelegate implementation:
 
+bool BrowserView::CanResize() const {
+  return WidgetDelegate::CanResize() && GetCanResizeFromWebAPI().value_or(true);
+}
+
+bool BrowserView::CanFullscreen() const {
+  return WidgetDelegate::CanFullscreen() &&
+         GetCanResizeFromWebAPI().value_or(true);
+}
+
+bool BrowserView::CanMaximize() const {
+  return WidgetDelegate::CanMaximize() &&
+         GetCanResizeFromWebAPI().value_or(true);
+}
+
 bool BrowserView::CanActivate() const {
   javascript_dialogs::AppModalDialogQueue* queue =
       javascript_dialogs::AppModalDialogQueue::GetInstance();
@@ -3579,8 +3636,12 @@ ui::ImageModel BrowserView::GetWindowIcon() {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  if (browser_->is_type_normal())
-    return ui::ImageModel::FromImage(rb.GetImageNamed(IDR_CHROME_APP_ICON_192));
+  if (browser_->is_type_normal()) {
+    int resource_id = ash::switches::IsAshDebugBrowserEnabled()
+                          ? IDR_DEBUG_CHROME_APP_ICON_192
+                          : IDR_CHROME_APP_ICON_192;
+    return ui::ImageModel::FromImage(rb.GetImageNamed(resource_id));
+  }
   auto* window = GetNativeWindow();
   int override_window_icon_resource_id =
       window ? window->GetProperty(kOverrideWindowIconResourceIdKey) : -1;
@@ -4967,7 +5028,7 @@ void BrowserView::ActivateAppModalDialog() const {
     return;
 
   Browser* modal_browser =
-      chrome::FindBrowserWithWebContents(active_dialog->web_contents());
+      chrome::FindBrowserWithTab(active_dialog->web_contents());
   if (modal_browser && (browser_.get() != modal_browser)) {
     modal_browser->window()->FlashFrame(true);
     modal_browser->window()->Activate();

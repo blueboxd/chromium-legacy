@@ -7,7 +7,7 @@ import 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 
 import {CrLinkRowElement, CrToggleElement, FakeInputDeviceSettingsProvider, fakeMice, fakeMice2, Mouse, PolicyStatus, Router, routes, setInputDeviceSettingsProviderForTesting, SettingsDropdownMenuElement, SettingsPerDeviceMouseSubsectionElement, SettingsSliderElement, SettingsToggleButtonElement} from 'chrome://os-settings/os_settings.js';
 import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 import {isVisible} from 'chrome://webui-test/test_util.js';
@@ -141,6 +141,58 @@ suite('<settings-per-device-mouse-subsection>', function() {
         subsection.shadowRoot!.querySelector<CrLinkRowElement>(
             '#customizeMouseButtons');
     assertFalse(!!customizeButtonsRow);
+  });
+
+  /**
+   * Test that there is mouse swap toggle button if the mouse
+   * has kDisallowCustomizations restriction and PeripheralCustomization
+   * is enabled.
+   */
+  test('Check if show mouse swap toggle button', async () => {
+    await initializePerDeviceMouseSubsection(fakeMice2);
+    let mouseSwapToggleButton =
+        subsection.shadowRoot!.querySelector<SettingsToggleButtonElement>(
+            '#mouseSwapToggleButton');
+    let customizeButtonsRow =
+        subsection.shadowRoot!.querySelector<CrLinkRowElement>(
+            '#customizeMouseButtons');
+    assertTrue(!!mouseSwapToggleButton);
+    assertTrue(mouseSwapToggleButton!.pref!.value);
+    assertEquals(
+        fakeMice2[0]!.settings.swapRight, mouseSwapToggleButton!.pref!.value);
+    assertFalse(!!customizeButtonsRow);
+
+    // Click mouse swap toggle button will update the pref value.
+    mouseSwapToggleButton.click();
+    await flushTasks();
+    assertFalse(mouseSwapToggleButton!.pref!.value);
+    assertEquals(
+        fakeMice2[0]!.settings.swapRight, mouseSwapToggleButton!.pref!.value);
+
+    // Turn off the feature flag, the mouse swap toggle button disappear.
+    setPeripheralCustomizationEnabled(false);
+    await initializePerDeviceMouseSubsection(fakeMice2);
+    mouseSwapToggleButton =
+        subsection.shadowRoot!.querySelector<SettingsToggleButtonElement>(
+            '#mouseSwapToggleButton');
+    assertFalse(!!mouseSwapToggleButton);
+    customizeButtonsRow =
+        subsection.shadowRoot!.querySelector<CrLinkRowElement>(
+            '#customizeMouseButtons');
+    assertFalse(!!customizeButtonsRow);
+
+    // If the customization restriction is not kDisallowCustomizations,
+    // the mouse swap toggle button disappear.
+    setPeripheralCustomizationEnabled(true);
+    await initializePerDeviceMouseSubsection(fakeMice);
+    mouseSwapToggleButton =
+        subsection.shadowRoot!.querySelector<SettingsToggleButtonElement>(
+            '#mouseSwapToggleButton');
+    assertFalse(!!mouseSwapToggleButton);
+    customizeButtonsRow =
+        subsection.shadowRoot!.querySelector<CrLinkRowElement>(
+            '#customizeMouseButtons');
+    assertTrue(!!customizeButtonsRow);
   });
 
   /**

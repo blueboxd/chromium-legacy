@@ -77,7 +77,7 @@ import org.chromium.chrome.browser.commerce.PriceTrackingUtilsJni;
 import org.chromium.chrome.browser.commerce.ShoppingFeatures;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
@@ -118,6 +118,7 @@ import org.chromium.components.sync.SyncService;
 import org.chromium.components.sync.SyncService.SyncStateChangedListener;
 import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.ui.accessibility.AccessibilityState;
 import org.chromium.ui.base.TestActivity;
 import org.chromium.ui.modelutil.ListObservable;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
@@ -257,7 +258,7 @@ public class BookmarkManagerMediatorTest {
     private final ModelList mModelList = new ModelList();
     private final Bitmap mBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
     private BookmarkUiPrefs mBookmarkUiPrefs =
-            new BookmarkUiPrefs(SharedPreferencesManager.getInstance());
+            new BookmarkUiPrefs(ChromeSharedPreferences.getInstance());
 
     private Activity mActivity;
     private BookmarkManagerMediator mMediator;
@@ -827,6 +828,28 @@ public class BookmarkManagerMediatorTest {
         assertNotNull(model.get(ImprovedBookmarkRowProperties.LIST_MENU_BUTTON_DELEGATE));
         assertEquals(true, model.get(ImprovedBookmarkRowProperties.EDITABLE));
         assertNotNull(model.get(ImprovedBookmarkRowProperties.ROW_CLICK_LISTENER));
+    }
+
+    @Test
+    @EnableFeatures(ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS)
+    public void testBuildImprovedBookmarkRow_SelectionStateCarriedOver() {
+        doReturn(true).when(mSelectionDelegate).isItemSelected(mBookmarkItem21.getId());
+        ListItem item =
+                mMediator.buildImprovedBookmarkRow(
+                        BookmarkListEntry.createBookmarkEntry(
+                                mBookmarkItem21,
+                                null,
+                                mBookmarkUiPrefs.getBookmarkRowDisplayPref()));
+        assertTrue(item.model.get(ImprovedBookmarkRowProperties.SELECTED));
+
+        doReturn(false).when(mSelectionDelegate).isItemSelected(mBookmarkItem21.getId());
+        item =
+                mMediator.buildImprovedBookmarkRow(
+                        BookmarkListEntry.createBookmarkEntry(
+                                mBookmarkItem21,
+                                null,
+                                mBookmarkUiPrefs.getBookmarkRowDisplayPref()));
+        assertFalse(item.model.get(ImprovedBookmarkRowProperties.SELECTED));
     }
 
     @Test
@@ -1482,6 +1505,13 @@ public class BookmarkManagerMediatorTest {
 
         assertTrue(mModelList.get(1).model.get(ImprovedBookmarkRowProperties.SELECTION_ACTIVE));
         assertTrue(mModelList.get(2).model.get(ImprovedBookmarkRowProperties.SELECTION_ACTIVE));
+
+        mModelList.get(1).model.set(ImprovedBookmarkRowProperties.SELECTED, true);
+        mMediator.changeSelectionMode(false);
+
+        assertFalse(mModelList.get(1).model.get(ImprovedBookmarkRowProperties.SELECTION_ACTIVE));
+        assertFalse(mModelList.get(2).model.get(ImprovedBookmarkRowProperties.SELECTED));
+        assertFalse(mModelList.get(2).model.get(ImprovedBookmarkRowProperties.SELECTION_ACTIVE));
     }
 
     @Test
@@ -1545,6 +1575,9 @@ public class BookmarkManagerMediatorTest {
     @Test
     @EnableFeatures(ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS)
     public void testClearSearchTextRunnable() {
+        when(mBookmarkModel.searchBookmarks(anyString(), anyInt()))
+                .thenReturn(Collections.singletonList(mFolderId1));
+
         finishLoading();
         mMediator.openFolder(mFolderId1);
         assertEquals(ViewType.SEARCH_BOX, mModelList.get(0).type);
@@ -1562,11 +1595,16 @@ public class BookmarkManagerMediatorTest {
         assertEquals(searchText, propertyModel.get(BookmarkSearchBoxRowProperties.SEARCH_TEXT));
         assertTrue(propertyModel.get(
                 BookmarkSearchBoxRowProperties.CLEAR_SEARCH_TEXT_BUTTON_VISIBILITY));
+        verify(mBookmarkModel, times(1)).searchBookmarks(anyString(), anyInt());
+        verifyCurrentBookmarkIds(null, mFolderId1);
 
         clearSearchTextRunnable.run();
         assertEquals("", propertyModel.get(BookmarkSearchBoxRowProperties.SEARCH_TEXT));
         assertFalse(propertyModel.get(
                 BookmarkSearchBoxRowProperties.CLEAR_SEARCH_TEXT_BUTTON_VISIBILITY));
+        // It shouldn't search again.
+        verify(mBookmarkModel, times(1)).searchBookmarks(anyString(), anyInt());
+        assertEquals(1, mModelList.size());
     }
 
     @Test
@@ -1827,5 +1865,27 @@ public class BookmarkManagerMediatorTest {
         // Measure number of #setBookmarks by counting #getChildIds.
         verify(mBookmarkModel, times(2)).getChildIds(mFolderId1);
         verifyCurrentBookmarkIds(null, mFolderId2);
+    }
+
+    @Test
+    @EnableFeatures(ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS)
+    public void onPreferenceChanged_sortOrderChanged_readsAccessibility() {
+        AccessibilityState.setIsTouchExplorationEnabledForTesting(true);
+
+        mMediator.onBookmarkModelLoaded();
+        mMediator.openFolder(mFolderId1);
+        mBookmarkUiPrefs.setBookmarkRowSortOrder(BookmarkRowSortOrder.ALPHABETICAL);
+        verify(mRecyclerView).announceForAccessibility("Sorting from A to Z");
+    }
+
+    @Test
+    @EnableFeatures(ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS)
+    public void onPreferenceChanged_viewPreferenceUpdated_readsAccessibility() {
+        AccessibilityState.setIsTouchExplorationEnabledForTesting(true);
+
+        mMediator.onBookmarkModelLoaded();
+        mMediator.openFolder(mFolderId1);
+        mBookmarkUiPrefs.setBookmarkRowDisplayPref(BookmarkRowDisplayPref.VISUAL);
+        verify(mRecyclerView).announceForAccessibility("Showing visual view");
     }
 }

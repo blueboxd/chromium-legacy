@@ -97,7 +97,7 @@ void HeadlessModeProtocolBrowserTest::OnLoadEventFired(
     const base::Value::Dict& params) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath src_dir;
-  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
+  CHECK(base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &src_dir));
   base::FilePath test_path =
       src_dir.Append(kTestsScriptRoot).AppendASCII(script_name_);
   std::string script;
@@ -156,7 +156,7 @@ void HeadlessModeProtocolBrowserTest::ProcessTestResult(
   base::ScopedAllowBlockingForTesting allow_blocking;
 
   base::FilePath src_dir;
-  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &src_dir));
   base::FilePath expectation_path =
       src_dir.Append(kTestsScriptRoot)
           .AppendASCII(script_name_.substr(0, script_name_.length() - 3) +
@@ -245,8 +245,8 @@ class HeadlessModeInputSelectFileDialogTest
   bool select_file_dialog_has_run_ = false;
 };
 
-// TODO(crbug.com/1459246): flaky on Mac builders.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1459246): flaky on Mac and Linux builders.
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 #define MAYBE_InputSelectFileDialog DISABLED_InputSelectFileDialog
 #else
 #define MAYBE_InputSelectFileDialog InputSelectFileDialog
@@ -267,9 +267,8 @@ HEADLESS_MODE_PROTOCOL_TEST(MAYBE_ScreencastBasics,
 HEADLESS_MODE_PROTOCOL_TEST(LargeBrowserWindowSize,
                             "sanity/large-browser-window-size.js")
 
-// These currently fail on Mac and Windows,see https://crbug.com/1488010 and
-// https://crbug.com/1487021.
-#if !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_MAC)
+// These currently fail on Mac,see https://crbug.com/1488010
+#if !BUILDFLAG(IS_MAC)
 HEADLESS_MODE_PROTOCOL_TEST(MinimizeRestoreWindow,
                             "sanity/minimize-restore-window.js")
 HEADLESS_MODE_PROTOCOL_TEST(MaximizeRestoreWindow,

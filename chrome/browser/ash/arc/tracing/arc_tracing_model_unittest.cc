@@ -27,7 +27,7 @@ namespace arc {
 namespace {
 
 using GraphicsEvents = ArcTracingGraphicsModel::BufferEvents;
-using GraphicsEventType = ArcTracingGraphicsModel::BufferEventType;
+using GraphicsEventType = ArcTracingGraphicsModel::EventType;
 
 constexpr char kAcquireBufferQuery[] =
     "android:onMessageReceived/android:handleMessageInvalidate/"
@@ -84,34 +84,33 @@ bool ValidateCpuEvents(const CpuEvents& cpu_events) {
 // each type is found at least once.
 bool ValidateGrahpicsEvents(const GraphicsEvents& events,
                             const std::set<GraphicsEventType>& allowed_types) {
-  if (events.empty()) {
-    return false;
-  }
+  bool ok = true;
   uint64_t previous_timestamp = 0;
   std::set<GraphicsEventType> used_types;
+
   for (const auto& event : events) {
     if (event.timestamp < previous_timestamp) {
       LOG(ERROR) << "Timestamp sequence broken: " << event.timestamp << " vs "
                  << previous_timestamp << ".";
-      return false;
+      ok = false;
     }
     previous_timestamp = event.timestamp;
     if (!allowed_types.count(event.type)) {
       LOG(ERROR) << "Unexpected event type " << event.type << ".";
-      return false;
+      ok = false;
     }
     used_types.insert(event.type);
   }
-  if (used_types.size() != allowed_types.size()) {
-    for (const auto& allowed_type : allowed_types) {
-      if (!used_types.count(allowed_type)) {
-        LOG(ERROR) << "Required event type " << allowed_type
-                   << " << is not found.";
-      }
+
+  for (const auto& allowed_type : allowed_types) {
+    if (!used_types.count(allowed_type)) {
+      LOG(ERROR) << "Required event type " << allowed_type
+                 << " << is not found.";
+      ok = false;
     }
-    return false;
   }
-  return true;
+
+  return ok;
 }
 
 std::unique_ptr<ArcTracingGraphicsModel> LoadGraphicsModel(
@@ -191,21 +190,14 @@ TEST_F(ArcTracingModelTest, TopLevel) {
   // Continue in this test to avoid heavy calculations for building base model.
   // Make sure we can create graphics model.
   ArcTracingGraphicsModel graphics_model;
-  TraceTimestamps commits;
-  commits.Add(base::TimeTicks::FromUptimeMillis(42));
-  ASSERT_TRUE(graphics_model.Build(model, commits));
+  TraceTimestamps timestamps;
+  timestamps.AddCommit(base::TimeTicks::FromUptimeMillis(42));
+  ASSERT_TRUE(graphics_model.Build(model, timestamps));
 
-  EXPECT_EQ(2U, graphics_model.chrome_top_level().buffer_events().size());
+  EXPECT_EQ(1U, graphics_model.chrome_top_level().buffer_events().size());
   for (const auto& chrome_top_level_band :
        graphics_model.chrome_top_level().buffer_events()) {
-    EXPECT_TRUE(ValidateGrahpicsEvents(
-        chrome_top_level_band, {
-                                   GraphicsEventType::kChromeOSDraw,
-                                   GraphicsEventType::kChromeOSSwap,
-                                   GraphicsEventType::kChromeOSWaitForAck,
-                                   GraphicsEventType::kChromeOSPresentationDone,
-                                   GraphicsEventType::kChromeOSSwapDone,
-                               }));
+    EXPECT_TRUE(ValidateGrahpicsEvents(chrome_top_level_band, {}));
   }
   EXPECT_FALSE(graphics_model.view_buffers().empty());
   for (const auto& view : graphics_model.view_buffers()) {
@@ -243,6 +235,24 @@ TEST_F(ArcTracingModelTest, TopLevel) {
 
   // Models should match.
   EnsureGraphicsModelsEqual(graphics_model, graphics_model_loaded);
+}
+
+TEST_F(ArcTracingModelTest, FrameDisplayed) {
+  std::string tracing_data = R"({"traceEvents":[
+{"args":{},"cat":"benchmark,viz,disabled-by-default-display.framedisplayed","name":"Display::FrameDisplayed","ph":"I","pid":18869,"s":"t","tid":18912,"ts":4966534893},
+{"args":{},"cat":"benchmark,viz,disabled-by-default-display.framedisplayed","name":"Display::FrameDisplayed","ph":"I","pid":18869,"s":"t","tid":18912,"ts":4966551562},
+{"args":{},"cat":"benchmark,viz,disabled-by-default-display.framedisplayed","name":"Display::FrameDisplayed","ph":"I","pid":18869,"s":"t","tid":18912,"ts":4966568229}
+],"systemTraceEvents":""})";
+
+  ArcTracingModel model;
+  ASSERT_TRUE(model.Build(tracing_data));
+
+  ArcTracingGraphicsModel graphics_model;
+  ASSERT_TRUE(graphics_model.Build(model, {}));
+
+  EXPECT_TRUE(ValidateGrahpicsEvents(
+      graphics_model.chrome_top_level().buffer_events()[0],
+      {GraphicsEventType::kChromeOSSwapDone}));
 }
 
 // Validates basic system event timestamp processing

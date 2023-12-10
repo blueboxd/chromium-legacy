@@ -7,10 +7,11 @@ package org.chromium.chrome.browser.feed.webfeed;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.jni_zero.CalledByNative;
+import org.jni_zero.JNINamespace;
+import org.jni_zero.NativeMethods;
+
 import org.chromium.base.Callback;
-import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.url.GURL;
 
@@ -209,6 +210,10 @@ public class WebFeedBridge {
         public final String url;
     }
 
+    public static boolean isCormorantEnabledForLocale() {
+        return WebFeedBridgeJni.get().isCormorantEnabledForLocale();
+    }
+
     /**
      * Requests to follow of the most relevant Web Feed represented by the provided URL.
      * @param tab The tab with the loaded page that should be followed.
@@ -304,5 +309,6 @@ public class WebFeedBridge {
         void incrementFollowedFromWebPageMenuCount();
         void queryWebFeed(String url, Callback<QueryResult> callback);
         void queryWebFeedId(String id, Callback<QueryResult> callback);
+        boolean isCormorantEnabledForLocale();
     }
 }

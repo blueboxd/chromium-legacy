@@ -596,8 +596,6 @@ static_library("extensions") {
     "external_component_loader.h",
     "external_install_error.cc",
     "external_install_error.h",
-    "external_install_error_constants.cc",
-    "external_install_error_constants.h",
     "external_install_manager.cc",
     "external_install_manager.h",
     "external_loader.cc",
@@ -1043,8 +1041,6 @@ static_library("extensions") {
       "api/platform_keys/platform_keys_api.h",
       "api/platform_keys/verify_trust_api.cc",
       "api/platform_keys/verify_trust_api.h",
-      "api/printing/print_job_controller.cc",
-      "api/printing/print_job_controller.h",
       "api/shared_storage/shared_storage_private_api.h",
 
       # TODO(crbug.com/1340540): Find an appropriate spot for this.

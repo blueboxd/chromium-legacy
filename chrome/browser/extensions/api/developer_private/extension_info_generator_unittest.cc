@@ -301,7 +301,7 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
       StackTrace(1, StackFrame(1, 1, u"source", u"function")), kContextUrl,
       logging::LOGGING_ERROR, 1, 1));
   error_console->ReportError(std::make_unique<ManifestError>(
-      extension->id(), u"message", u"key", std::u16string()));
+      extension->id(), u"message", "key", std::u16string()));
   error_console->ReportError(std::make_unique<RuntimeError>(
       extension->id(), false, u"source", u"message",
       StackTrace(1, StackFrame(1, 1, u"source", u"function")), kContextUrl,
@@ -523,10 +523,41 @@ TEST_F(ExtensionInfoGeneratorUnitTest, SafetyCheckStringsTest) {
     cws_info.unpublished_long_ago = true;
     developer::SafetyCheckStrings display_strings =
         ExtensionInfoGenerator::CreateSafetyCheckDisplayString(
-            cws_info, developer::EXTENSION_STATE_DISABLED);
+            cws_info, developer::EXTENSION_STATE_DISABLED,
+            BitMapBlocklistState::BLOCKLISTED_MALWARE);
     EXPECT_EQ(l10n_util::GetStringUTF8(IDS_SAFETY_CHECK_EXTENSIONS_MALWARE),
               display_strings.detail_string);
     EXPECT_EQ(l10n_util::GetStringUTF8(IDS_EXTENSIONS_SC_MALWARE),
+              display_strings.panel_string);
+  }
+  {
+    // Check edge case where CWSViolationType and BitMapBlocklistState differ.
+    CWSInfoService::CWSInfo cws_info;
+    cws_info.is_present = true;
+    cws_info.violation_type = CWSInfoService::CWSViolationType::kNone;
+    cws_info.unpublished_long_ago = true;
+    developer::SafetyCheckStrings display_strings =
+        ExtensionInfoGenerator::CreateSafetyCheckDisplayString(
+            cws_info, developer::EXTENSION_STATE_DISABLED,
+            BitMapBlocklistState::BLOCKLISTED_MALWARE);
+    EXPECT_EQ(l10n_util::GetStringUTF8(IDS_SAFETY_CHECK_EXTENSIONS_MALWARE),
+              display_strings.detail_string);
+    EXPECT_EQ(l10n_util::GetStringUTF8(IDS_EXTENSIONS_SC_MALWARE),
+              display_strings.panel_string);
+  }
+  {
+    CWSInfoService::CWSInfo cws_info;
+    cws_info.is_present = true;
+    cws_info.violation_type = CWSInfoService::CWSViolationType::kNone;
+    cws_info.unpublished_long_ago = true;
+    developer::SafetyCheckStrings display_strings =
+        ExtensionInfoGenerator::CreateSafetyCheckDisplayString(
+            cws_info, developer::EXTENSION_STATE_DISABLED,
+            BitMapBlocklistState::BLOCKLISTED_CWS_POLICY_VIOLATION);
+    EXPECT_EQ(
+        l10n_util::GetStringUTF8(IDS_SAFETY_CHECK_EXTENSIONS_POLICY_VIOLATION),
+        display_strings.detail_string);
+    EXPECT_EQ(l10n_util::GetStringUTF8(IDS_EXTENSIONS_SC_POLICY_VIOLATION_OFF),
               display_strings.panel_string);
   }
   {
@@ -536,7 +567,8 @@ TEST_F(ExtensionInfoGeneratorUnitTest, SafetyCheckStringsTest) {
     cws_info.unpublished_long_ago = true;
     developer::SafetyCheckStrings display_strings =
         ExtensionInfoGenerator::CreateSafetyCheckDisplayString(
-            cws_info, developer::EXTENSION_STATE_DISABLED);
+            cws_info, developer::EXTENSION_STATE_DISABLED,
+            BitMapBlocklistState::BLOCKLISTED_CWS_POLICY_VIOLATION);
     EXPECT_EQ(
         l10n_util::GetStringUTF8(IDS_SAFETY_CHECK_EXTENSIONS_POLICY_VIOLATION),
         display_strings.detail_string);
@@ -549,7 +581,19 @@ TEST_F(ExtensionInfoGeneratorUnitTest, SafetyCheckStringsTest) {
     cws_info.violation_type = CWSInfoService::CWSViolationType::kPolicy;
     developer::SafetyCheckStrings display_strings =
         ExtensionInfoGenerator::CreateSafetyCheckDisplayString(
-            cws_info, developer::EXTENSION_STATE_ENABLED);
+            cws_info, developer::EXTENSION_STATE_ENABLED,
+            BitMapBlocklistState::BLOCKLISTED_CWS_POLICY_VIOLATION);
+    EXPECT_EQ(l10n_util::GetStringUTF8(IDS_EXTENSIONS_SC_POLICY_VIOLATION_ON),
+              display_strings.panel_string);
+  }
+  {
+    CWSInfoService::CWSInfo cws_info;
+    cws_info.is_present = true;
+    cws_info.violation_type = CWSInfoService::CWSViolationType::kPolicy;
+    developer::SafetyCheckStrings display_strings =
+        ExtensionInfoGenerator::CreateSafetyCheckDisplayString(
+            cws_info, developer::EXTENSION_STATE_ENABLED,
+            BitMapBlocklistState::BLOCKLISTED_CWS_POLICY_VIOLATION);
     EXPECT_EQ(l10n_util::GetStringUTF8(IDS_EXTENSIONS_SC_POLICY_VIOLATION_ON),
               display_strings.panel_string);
   }
@@ -560,13 +604,15 @@ TEST_F(ExtensionInfoGeneratorUnitTest, SafetyCheckStringsTest) {
     cws_info.unpublished_long_ago = true;
     developer::SafetyCheckStrings display_strings =
         ExtensionInfoGenerator::CreateSafetyCheckDisplayString(
-            cws_info, developer::EXTENSION_STATE_DISABLED);
+            cws_info, developer::EXTENSION_STATE_DISABLED,
+            BitMapBlocklistState::NOT_BLOCKLISTED);
     EXPECT_EQ(l10n_util::GetStringUTF8(IDS_SAFETY_CHECK_EXTENSIONS_UNPUBLISHED),
               display_strings.detail_string);
     EXPECT_EQ(l10n_util::GetStringUTF8(IDS_EXTENSIONS_SC_UNPUBLISHED_OFF),
               display_strings.panel_string);
     display_strings = ExtensionInfoGenerator::CreateSafetyCheckDisplayString(
-        cws_info, developer::EXTENSION_STATE_ENABLED);
+        cws_info, developer::EXTENSION_STATE_ENABLED,
+        BitMapBlocklistState::NOT_BLOCKLISTED);
     EXPECT_EQ(l10n_util::GetStringUTF8(IDS_EXTENSIONS_SC_UNPUBLISHED_ON),
               display_strings.panel_string);
   }
@@ -579,7 +625,8 @@ TEST_F(ExtensionInfoGeneratorUnitTest, SafetyCheckEmptyStringTest) {
   cws_info.unpublished_long_ago = false;
   developer::SafetyCheckStrings display_strings;
   display_strings = ExtensionInfoGenerator::CreateSafetyCheckDisplayString(
-      cws_info, developer::EXTENSION_STATE_DISABLED);
+      cws_info, developer::EXTENSION_STATE_DISABLED,
+      BitMapBlocklistState::NOT_BLOCKLISTED);
   EXPECT_EQ(display_strings.detail_string, "");
   EXPECT_EQ(display_strings.panel_string, "");
 }
@@ -1082,10 +1129,15 @@ TEST_F(ExtensionInfoGeneratorUnitTest, IsPinnedToToolbar) {
 // Tests for supervised users (child accounts). Supervised users are not allowed
 // to install apps or extensions unless their parent approves.
 class ExtensionInfoGeneratorUnitTestSupervised
-    : public ExtensionInfoGeneratorUnitTest {
+    : public ExtensionInfoGeneratorUnitTest,
+      public testing::WithParamInterface<bool> {
  public:
   ExtensionInfoGeneratorUnitTestSupervised() = default;
   ~ExtensionInfoGeneratorUnitTestSupervised() override = default;
+
+  SupervisedUserExtensionsDelegate* GetSupervisedUserExtensionsDelegate() {
+    return supervised_user_extensions_delegate_.get();
+  }
 
   // ExtensionInfoGeneratorUnitTest:
   ExtensionServiceInitParams GetExtensionServiceInitParams() override {
@@ -1105,29 +1157,39 @@ class ExtensionInfoGeneratorUnitTestSupervised
     supervised_user_test_util::
         SetSupervisedUserExtensionsMayRequestPermissionsPref(profile(), true);
 
+    supervised_user_extensions_delegate_ =
+        std::make_unique<SupervisedUserExtensionsDelegateImpl>(profile());
   }
 
   void TearDown() override {
+    supervised_user_extensions_delegate_.reset();
     ExtensionInfoGeneratorUnitTest::TearDown();
   }
+
+ private:
+  std::unique_ptr<SupervisedUserExtensionsDelegate>
+      supervised_user_extensions_delegate_;
 };
 
 // Tests that when an extension is disabled pending permission updates, and the
 // parent has turned off the "Permissions for sites, apps and extensions"
 // toggle, then supervised users will see a kite error icon with a tooltip.
-TEST_F(ExtensionInfoGeneratorUnitTestSupervised,
+TEST_P(ExtensionInfoGeneratorUnitTestSupervised,
        ParentDisabledPermissionsForSupervisedUsers) {
-  // Extension permissions for supervised users is already enabled on ChromeOS.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+  // Preconditions.
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      supervised_user::kEnableExtensionsPermissionsForSupervisedUsersOnDesktop);
-#endif
+  bool extensions_permissions_for_supervised_users_on_desktop = GetParam();
+  if (extensions_permissions_for_supervised_users_on_desktop) {
+    feature_list.InitAndEnableFeature(
+        supervised_user::
+            kEnableExtensionsPermissionsForSupervisedUsersOnDesktop);
+  } else {
+    feature_list.InitAndDisableFeature(
+        supervised_user::
+            kEnableExtensionsPermissionsForSupervisedUsersOnDesktop);
+  }
   ASSERT_TRUE(profile()->IsChild());
 
-  std::unique_ptr<SupervisedUserExtensionsDelegate>
-      supervised_user_extensions_delegate =
-          std::make_unique<SupervisedUserExtensionsDelegateImpl>(profile());
   base::FilePath base_path = data_dir().AppendASCII("permissions_increase");
   base::FilePath pem_path = base_path.AppendASCII("permissions.pem");
   base::FilePath path = base_path.AppendASCII("v1");
@@ -1145,7 +1207,7 @@ TEST_F(ExtensionInfoGeneratorUnitTestSupervised,
       extension_id, disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED));
 
   // Simulate parent approval for the extension installation.
-  supervised_user_extensions_delegate->AddExtensionApproval(*extension);
+  GetSupervisedUserExtensionsDelegate()->AddExtensionApproval(*extension);
   // The extension should be enabled now.
   EXPECT_TRUE(registry()->enabled_extensions().Contains(extension_id));
 
@@ -1169,7 +1231,22 @@ TEST_F(ExtensionInfoGeneratorUnitTestSupervised,
 
   // Verify that the kite icon error tooltip appears for supervised users on
   // platforms where extensions are enabled for supervised users.
-  EXPECT_TRUE(info->disable_reasons.parent_disabled_permissions);
+
+  if (extensions_permissions_for_supervised_users_on_desktop) {
+    EXPECT_TRUE(info->disable_reasons.parent_disabled_permissions);
+  } else {
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
+    EXPECT_TRUE(info->disable_reasons.parent_disabled_permissions);
+#else
+    EXPECT_FALSE(info->disable_reasons.parent_disabled_permissions);
+#endif
+  }
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    ExtensionsPermissionsForSupervisedUsersOnDesktopFeature,
+    ExtensionInfoGeneratorUnitTestSupervised,
+    testing::Bool());
+
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 }  // namespace extensions

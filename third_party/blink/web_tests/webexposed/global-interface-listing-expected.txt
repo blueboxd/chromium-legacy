@@ -249,6 +249,11 @@ interface Attr : Node
     getter value
     method constructor
     setter value
+interface AttributePart : NodePart
+    attribute @@toStringTag
+    getter automatic
+    getter localName
+    method constructor
 interface Audio
     attribute @@toStringTag
     method constructor
@@ -1278,6 +1283,7 @@ interface ChildNodePart : Part
     getter rootContainer
     method clone
     method constructor
+    method getPartNode
     method getParts
     method replaceChildren
 interface Clipboard : EventTarget
@@ -1388,6 +1394,10 @@ interface CookieChangeEvent : Event
     getter changed
     getter deleted
     method constructor
+interface CookieDeprecationLabel
+    attribute @@toStringTag
+    method constructor
+    method getValue
 interface CookieStore : EventTarget
     attribute @@toStringTag
     getter onchange
@@ -1794,6 +1804,7 @@ interface Directive
     method constructor
     method toString
 interface Document : Node
+    static method parseHTMLUnsafe
     attribute @@toStringTag
     attribute @@unscopables
     getter URL
@@ -2201,6 +2212,7 @@ interface DocumentPartRoot
     getter rootContainer
     method clone
     method constructor
+    method getPartNode
     method getParts
 interface DocumentPictureInPicture : EventTarget
     attribute @@toStringTag
@@ -2411,6 +2423,7 @@ interface Element : Node
     method setAttributeNode
     method setAttributeNodeNS
     method setHTML
+    method setHTMLUnsafe
     method setPointerCapture
     method toggleAttribute
     method webkitMatchesSelector
@@ -4619,6 +4632,15 @@ interface HTMLParamElement : HTMLElement
     setter type
     setter value
     setter valueType
+interface HTMLPermissionElement : HTMLElement
+    attribute @@toStringTag
+    getter ondismissed
+    getter onresolved
+    getter type
+    method constructor
+    setter ondismissed
+    setter onresolved
+    setter type
 interface HTMLPictureElement : HTMLElement
     attribute @@toStringTag
     method constructor
@@ -4900,9 +4922,11 @@ interface HTMLTableSectionElement : HTMLElement
 interface HTMLTemplateElement : HTMLElement
     attribute @@toStringTag
     getter content
+    getter parseparts
     getter shadowRoot
     getter shadowRootMode
     method constructor
+    setter parseparts
     setter shadowRootMode
 interface HTMLTextAreaElement : HTMLElement
     attribute @@toStringTag
@@ -5235,7 +5259,7 @@ interface IIRFilterNode : AudioNode
 interface IdentityCredential : Credential
     static method logoutRPs
     attribute @@toStringTag
-    getter isAccountAutoSelected
+    getter isIdentityCredentialAutoSelected
     getter token
     method constructor
 interface IdentityCredentialError : DOMException
@@ -5615,6 +5639,7 @@ interface MLGraphBuilder
     method mul
     method neg
     method pad
+    method pow
     method prelu
     method reduceMean
     method reduceSum
@@ -6412,6 +6437,7 @@ interface Navigator
     getter clipboard
     getter connection
     getter contacts
+    getter cookieDeprecationLabel
     getter cookieEnabled
     getter credentials
     getter deprecatedRunAdAuctionEnforcesKAnonymity
@@ -6440,6 +6466,7 @@ interface Navigator
     getter permissions
     getter platform
     getter plugins
+    getter preferences
     getter presentation
     getter product
     getter productSub
@@ -6652,6 +6679,7 @@ interface OTPCredential : Credential
 interface Observable
     attribute @@toStringTag
     method constructor
+    method subscribe
 interface OfflineAudioCompletionEvent : Event
     attribute @@toStringTag
     getter renderedBuffer
@@ -7229,6 +7257,21 @@ interface PopStateEvent : Event
     getter hasUAVisualTransition
     getter state
     method constructor
+interface PreferenceManager
+    attribute @@toStringTag
+    getter colorScheme
+    getter contrast
+    getter reducedData
+    getter reducedMotion
+    getter reducedTransparency
+    method constructor
+interface PreferenceObject
+    attribute @@toStringTag
+    getter override
+    getter validValues
+    method clearOverride
+    method constructor
+    method requestOverride
 interface Presentation
     attribute @@toStringTag
     getter defaultRequest
@@ -9203,17 +9246,19 @@ interface ShadowRoot : DocumentFragment
     getter slotAssignment
     getter styleSheets
     method constructor
+    method createElement
+    method createElementNS
     method elementFromPoint
     method elementsFromPoint
     method getAnimations
     method getInnerHTML
     method getSelection
+    method setHTMLUnsafe
     setter adoptedStyleSheets
     setter fullscreenElement
     setter innerHTML
     setter onslotchange
 interface SharedStorage
-    attribute @@asyncIterator
     attribute @@toStringTag
     getter worklet
     method append
@@ -9413,6 +9458,13 @@ interface SubmitEvent : Event
     attribute @@toStringTag
     getter submitter
     method constructor
+interface Subscriber
+    attribute @@toStringTag
+    getter signal
+    method complete
+    method constructor
+    method error
+    method next
 interface SubtleCrypto
     attribute @@toStringTag
     method constructor
@@ -9733,6 +9785,7 @@ interface UIEvent : Event
     method constructor
     method initUIEvent
 interface URL
+    static method canParse
     static method createObjectURL
     static method revokeObjectURL
     attribute @@toStringTag
@@ -12201,6 +12254,7 @@ interface webkitSpeechRecognitionEvent : Event
     getter resultIndex
     getter results
 interface webkitURL
+    static method canParse
     static method createObjectURL
     static method revokeObjectURL
     attribute @@toStringTag
@@ -12578,6 +12632,7 @@ namespace console
     method confirm
     method createImageBitmap
     method fetch
+    method fetchLater
     method find
     method focus
     method gc
@@ -12610,6 +12665,7 @@ namespace console
     method scrollBy
     method scrollTo
     method setInterval
+    method setResizable
     method setTimeout
     method showDirectoryPicker
     method showOpenFilePicker

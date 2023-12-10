@@ -310,7 +310,6 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="2276987123919776440">15 min</translation>
 <translation id="2277103315734023688">Spol fremover</translation>
 <translation id="2282073721614284166">Åpne link i fane</translation>
-<translation id="2284237890386182187">På – ingen enheter er tilkoblet</translation>
 <translation id="2292698582925480719">Visningsskala</translation>
 <translation id="229397294990920565">Mobildata slås av …</translation>
 <translation id="2295777434187870477">Mikrofonen er på. Hvis du slår den av, kuttes lyden for innenheten.</translation>
@@ -352,7 +351,6 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="243878895369688216">Åpnet i går</translation>
 <translation id="2440978926514840421">Et GIF-opptak er tatt</translation>
 <translation id="2441427462554639370">Opptaket ble avsluttet på grunn av kritisk lite lagringsplass</translation>
-<translation id="24452542372838207">Vis varselet</translation>
 <translation id="2448312741937722512">Type</translation>
 <translation id="2449089818483227734">Lavt batteri</translation>
 <translation id="2450205753526923158">Skjermdumpmodus</translation>
@@ -493,7 +491,6 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="3062298103034426069">Støttes ikke</translation>
 <translation id="3068622547379332530">Versjon <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">Hyllen er til venstre</translation>
-<translation id="3070639127620815135">søketasten + Esc</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Vis menyen</translation>
 <translation id="3087734570205094154">Bunn</translation>
@@ -572,7 +569,6 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="3387527074123400161">ChromiumOS</translation>
 <translation id="3389599499324569679">Vil du slå på diktering?</translation>
 <translation id="3394432020929931914">, vises</translation>
-<translation id="3400357268283240774">Flere innstillinger</translation>
 <translation id="3405101454990027959">Slå på mikrofontilgang</translation>
 <translation id="3408735331120433841">Du caster skjermen nå.</translation>
 <translation id="3409584356742878290">Vis eller skjul utviklerverktøy-inspektøren</translation>
@@ -620,7 +616,6 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="3563775809269155755">Slå på wifi-sone</translation>
 <translation id="3566240529365775567">Åpnet nå nettopp</translation>
 <translation id="3571734092741541777">Konfigurer</translation>
-<translation id="3572988532398145777">Du kan ikke vise varselet mens et panel er åpent. Lukk panelet nedenfor først.</translation>
 <translation id="3573179567135747900">Endre tilbake til <ph name="FROM_LOCALE" /> (krever omstart)</translation>
 <translation id="3576141592585647168">Endre tidssonen</translation>
 <translation id="3577473026931028326">Noe gikk galt. Prøv på nytt.</translation>
@@ -703,7 +698,6 @@ Koble enheten til strøm.</translation>
 <translation id="385300504083504382">Begynnelsen</translation>
 <translation id="3859364108019690">Kan ikke strømme apper</translation>
 <translation id="3861651314799684201">Trykk på Enter for å ta opp hele skjermen</translation>
-<translation id="3865912916886104060">Ingen enheter er koblet til. Wifi blir slått av, slik at wifi-sonen kan startes.</translation>
 <translation id="3886872229787704059">Åpnet i dag</translation>
 <translation id="3891340733213178823">Trykk på Control+Shift+Q to ganger for å logge av.</translation>
 <translation id="3893630138897523026">ChromeVox (muntlig tilbakemelding)</translation>
@@ -788,7 +782,6 @@ Koble enheten til strøm.</translation>
 <translation id="4197790712631116042">Av</translation>
 <translation id="4201033867194214117"><ph name="FEATURE_NAME" /> er ikke tilgjengelig.</translation>
 <translation id="4201051445878709314">Se forrige måned</translation>
-<translation id="4202362334312791952">1 enhet er tilkoblet. Wifi blir slått av, slik at wifi-sonen kan startes.</translation>
 <translation id="4209973997261364186">Wifi er slått på</translation>
 <translation id="4212472694152630271">Bytt til PIN-kode</translation>
 <translation id="4215497585250573029">VPN-innstillinger</translation>
@@ -905,7 +898,6 @@ Koble enheten til strøm.</translation>
 <translation id="468293128311738995">Apper fra telefonen din</translation>
 <translation id="4690510401873698237">Hyllen er nederst</translation>
 <translation id="4696813013609194136">Lås opp enheten med foreldrekode</translation>
-<translation id="4698850295812410683">Vis pekepennverktøyet</translation>
 <translation id="4702647871202761252">Personvernskjermen er av</translation>
 <translation id="4706121060329443414">Vi forsøker å laste ned filene senere. Inntil videre blir tale sendt til Google for behandling.</translation>
 <translation id="470644585772471629">Fargeinvertering</translation>
@@ -1053,6 +1045,7 @@ Koble enheten til strøm.</translation>
 <translation id="5260676007519551770">Skrivebord 4</translation>
 <translation id="5268819379131021772">Liste fra Google Huskeliste</translation>
 <translation id="5275923704957843041">Forhåndsvisning av skrivebord</translation>
+<translation id="5277869901083657836">Slå av/på pekepennverktøyene</translation>
 <translation id="5278086053818066789">Slå ChromeVox av/på (taletilbakemelding)</translation>
 <translation id="5283099933536931082"><ph name="APP_ITEM_TITLE" /> ber om din oppmerksomhet.</translation>
 <translation id="5283198616748585639">Legg til 1 min</translation>
@@ -1095,7 +1088,6 @@ Koble enheten til strøm.</translation>
 <translation id="5426063383988017631">Innstillinger-menyen er lukket</translation>
 <translation id="5428899915242071344">Begynn å merke</translation>
 <translation id="5429993543155113935">Inkognitovinduer støttes ikke for øyeblikket</translation>
-<translation id="5430931332414098647">Umiddelbar internettdeling</translation>
 <translation id="5431318178759467895">Farge</translation>
 <translation id="5433020815079095860">Innenhet for lyd</translation>
 <translation id="544691375626129091">Alle tilgjengelige brukere er allerede lagt til i denne økten.</translation>
@@ -1124,6 +1116,7 @@ Koble enheten til strøm.</translation>
 <translation id="554893713779400387">Slå av/på diktering</translation>
 <translation id="5551456515017410630">Åpne/lukk kalenderen</translation>
 <translation id="5551974246223970793">Gå til neste søketreff når du søker på en side</translation>
+<translation id="5555639311269196631">Slå av wifi-sone</translation>
 <translation id="5558091555391176027">Slå av/på høy synlighet for nærdeling</translation>
 <translation id="556042886152191864">Knapp</translation>
 <translation id="5570122939431135380">Åpne en ny fane i et nytt inkognitovindu</translation>
@@ -1169,7 +1162,6 @@ Koble enheten til strøm.</translation>
 <translation id="5707775774148071965">Enheten støtter en høyere datafrekvens enn kabelen. Enhetens ytelse kan være begrenset.</translation>
 <translation id="5710450975648804523">Ikke forstyrr er på</translation>
 <translation id="571295407079589142">Mobildata er slått av</translation>
-<translation id="5716891621595980681"><ph name="DEVICECOUNT" /> enheter er tilkoblet. Wifi blir slått av, slik at wifi-sonen kan startes.</translation>
 <translation id="5727460725221669831">Hvis du har glemt passordet ditt eller nylig endret passordet for Google-kontoen din, kan du prøve å gjenopprette denne brukeren.</translation>
 <translation id="573413375004481890">Enheten kunne ikke støtte alle skjermene dine, så en av dem ble koblet fra</translation>
 <translation id="5740328398383587084">Nærdeling</translation>
@@ -1219,7 +1211,6 @@ Koble enheten til strøm.</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">På</translation>
 <translation id="5920710855273935292">Lyden for mikrofonen er kuttet.</translation>
-<translation id="5924855612669061715">Wifi-sonen er på</translation>
 <translation id="5946788582095584774"><ph name="FEATURE_NAME" /> er på.</translation>
 <translation id="5947494881799873997">Tilbakestill</translation>
 <translation id="595202126637698455">Ytelsessporing er aktivert</translation>
@@ -1235,6 +1226,7 @@ Koble enheten til strøm.</translation>
 <translation id="598407983968395253">Bruk mal</translation>
 <translation id="598882571027504733">For å laste ned oppdateringen, start Chromebooken på nytt med tastaturet tilkoblet.</translation>
 <translation id="6000279412553873020">Taster, knapper med mer</translation>
+<translation id="6002122790816966947">Enhetene dine</translation>
 <translation id="6012623610530968780">Side <ph name="SELECTED_PAGE" /> av <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="601304062528754300">Fremhev neste element på hyllen</translation>
 <translation id="6015573907265691211">Merk som fullført</translation>
@@ -1303,7 +1295,6 @@ Koble enheten til strøm.</translation>
 <translation id="6231419273573514727">Ytelsen til eksterne enheter kan være begrenset</translation>
 <translation id="6232891689835436217"><ph name="APP_NAME" /> bruker kameraet ditt og mikrofonen din for øyeblikket</translation>
 <translation id="6237231532760393653">1X</translation>
-<translation id="6244986124527896815">Åpne Oppgavebehandling-appen med «<ph name="NEW_SHORTCUT" />».</translation>
 <translation id="6247728804802644171">Åpne varsler</translation>
 <translation id="6254629735336163724">Låst til horisontal</translation>
 <translation id="6259254695169772643">Bruk pekepennen til å velge</translation>
@@ -1525,6 +1516,7 @@ Nylig installert</translation>
 <translation id="7188494361780961876">Menyen ble flyttet til øvre venstre hjørne av skjermen.</translation>
 <translation id="7189412385142492784">Hvor langt unna er Venus?</translation>
 <translation id="7198435252016571249">Kameraet er festet til nedre høyre hjørne. Konflikt med systemoverflaten.</translation>
+<translation id="7219573373513695352">Ingen enheter er koblet til</translation>
 <translation id="7229029500464092426">Minne <ph name="AVAILABLE_MEMORY" /> | <ph name="TOTAL_MEMORY" /> totalt</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Chromebook må startes på nytt for å ta i bruk en oppdatering. Dette kan ta opptil ett minutt.</translation>
 <translation id="7256634071279256947">Mikrofon bak</translation>
@@ -1950,7 +1942,6 @@ For å slå av enheten, trykk og hold på av/på-knappen på enheten igjen.</tra
 <translation id="9030665205623277906">Øyeblikksbilde av prosessorbruken: <ph name="CPU_USEAGE" /> %</translation>
 <translation id="9034924485347205037">Linux-filer</translation>
 <translation id="9047624247355796468">Åpne innstillinger for <ph name="NETWORK_NAME" /></translation>
-<translation id="9059834730836941392">Skjul varselet</translation>
 <translation id="906458777597946297">Maksimer vinduet</translation>
 <translation id="9065203028668620118">Endre</translation>
 <translation id="9070640332319875144">Assistent-innstillinger</translation>

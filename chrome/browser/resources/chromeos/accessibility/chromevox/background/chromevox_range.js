@@ -53,6 +53,8 @@ export class ChromeVoxRange {
     /** @private {?CursorRange} */
     this.current_ = null;
     /** @private {?CursorRange} */
+    this.pageSel_ = null;
+    /** @private {?CursorRange} */
     this.previous_ = null;
   }
 
@@ -75,6 +77,16 @@ export class ChromeVoxRange {
   }
 
   /** @return {?CursorRange} */
+  static get pageSel() {
+    return ChromeVoxRange.instance.pageSel_;
+  }
+
+  /** @param {?CursorRange} newPageSel */
+  static set pageSel(newPageSel) {
+    ChromeVoxRange.instance.pageSel_ = newPageSel;
+  }
+
+  /** @return {?CursorRange} */
   static get previous() {
     return ChromeVoxRange.instance.previous_;
   }
@@ -88,6 +100,26 @@ export class ChromeVoxRange {
   }
 
   /**
+   * Check for loss of focus which results in us invalidating our current range.
+   */
+  static maybeResetFromFocus() {
+    ChromeVoxRange.instance.maybeResetFromFocus_();
+  }
+
+  /**
+   * Navigate to the given range - it both sets the range and outputs it.
+   * @param {!CursorRange} range The new range.
+   * @param {boolean=} opt_focus Focus the range; defaults to true.
+   * @param {TtsSpeechProperties=} opt_speechProps Speech properties.
+   * @param {boolean=} opt_skipSettingSelection If true, does not set
+   *     the selection, otherwise it does by default.
+   */
+  static navigateTo(
+      range, opt_focus, opt_speechProps, opt_skipSettingSelection) {
+    ChromeVoxRange.instance.navigateTo_(...arguments);
+  }
+
+  /**
    * @param {?CursorRange} newRange The new range.
    * @param {boolean=} opt_fromEditing
    */
@@ -95,14 +127,32 @@ export class ChromeVoxRange {
     ChromeVoxRange.instance.set_(...arguments);
   }
 
+  // ================= Observer Functions =================
+
+  /** @param {ChromeVoxRangeObserver} observer */
+  static addObserver(observer) {
+    ChromeVoxRange.observers_.push(observer);
+  }
+
+  /** @param {ChromeVoxRangeObserver} observer */
+  static removeObserver(observer) {
+    const index = ChromeVoxRange.observers_.indexOf(observer);
+    if (index > -1) {
+      ChromeVoxRange.observers_.splice(index, 1);
+    }
+  }
+
+  // ================= Private Methods =================
+
   /**
    * Check for loss of focus which results in us invalidating our current
    * range. Note the getFocus() callback is synchronous, so the focus will be
    * updated when this function returns (despite being technicallly a separate
    * function call). Note: do not convert this method to async, as it would
    * change the execution order described above.
+   * @private
    */
-  static maybeResetFromFocus() {
+  maybeResetFromFocus_() {
     chrome.automation.getFocus(focus => {
       const cur = ChromeVoxRange.current;
       // If the current node is not valid and there's a current focus:
@@ -137,36 +187,6 @@ export class ChromeVoxRange {
    * @param {boolean=} opt_skipSettingSelection If true, does not set
    *     the selection, otherwise it does by default.
    */
-  static navigateTo(
-      range, opt_focus, opt_speechProps, opt_skipSettingSelection) {
-    ChromeVoxRange.instance.navigateTo_(...arguments);
-  }
-
-  // ================= Observer Functions =================
-
-  /** @param {ChromeVoxRangeObserver} observer */
-  static addObserver(observer) {
-    ChromeVoxRange.observers_.push(observer);
-  }
-
-  /** @param {ChromeVoxRangeObserver} observer */
-  static removeObserver(observer) {
-    const index = ChromeVoxRange.observers_.indexOf(observer);
-    if (index > -1) {
-      ChromeVoxRange.observers_.splice(index, 1);
-    }
-  }
-
-  // ================= Private Methods =================
-
-  /**
-   * Navigate to the given range - it both sets the range and outputs it.
-   * @param {!CursorRange} range The new range.
-   * @param {boolean=} opt_focus Focus the range; defaults to true.
-   * @param {TtsSpeechProperties=} opt_speechProps Speech properties.
-   * @param {boolean=} opt_skipSettingSelection If true, does not set
-   *     the selection, otherwise it does by default.
-   */
   navigateTo_(range, opt_focus, opt_speechProps, opt_skipSettingSelection) {
     opt_focus = opt_focus ?? true;
     opt_speechProps = opt_speechProps ?? new TtsSpeechProperties();
@@ -190,14 +210,13 @@ export class ChromeVoxRange {
     let selectedRange;
     let msg;
 
-    if (ChromeVoxState.instance.pageSel?.isValid() && range.isValid()) {
+    if (this.pageSel_?.isValid() && range.isValid()) {
       // Suppress hints.
       o.withoutHints();
 
       // Selection across roots isn't supported.
-      // ADD CONST BACK
-      const pageRootStart = ChromeVoxState.instance.pageSel.start.node.root;
-      const pageRootEnd = ChromeVoxState.instance.pageSel.end.node.root;
+      const pageRootStart = this.pageSel_.start.node.root;
+      const pageRootEnd = this.pageSel_.end.node.root;
       const curRootStart = range.start.node.root;
       const curRootEnd = range.end.node.root;
 
@@ -207,7 +226,7 @@ export class ChromeVoxRange {
         o.format('@end_selection');
         DesktopAutomationInterface.instance.ignoreDocumentSelectionFromAction(
             false);
-        ChromeVoxState.instance.pageSel = null;
+        this.pageSel_ = null;
       } else {
         // Expand or shrink requires different feedback.
 
@@ -215,7 +234,7 @@ export class ChromeVoxRange {
         // selections. It is important to keep track of the directedness in
         // places, but when comparing to other ranges, take the undirected
         // range.
-        const dir = ChromeVoxState.instance.pageSel.normalize().compare(range);
+        const dir = this.pageSel_.normalize().compare(range);
         if (dir) {
           // Directed expansion.
           msg = '@selected';
@@ -225,13 +244,11 @@ export class ChromeVoxRange {
           selectedRange = prevRange;
         }
         const wasBackwardSel =
-            ChromeVoxState.instance.pageSel.start.compare(
-                ChromeVoxState.instance.pageSel.end) === Dir.BACKWARD ||
+            this.pageSel_.start.compare(this.pageSel_.end) === Dir.BACKWARD ||
             dir === Dir.BACKWARD;
-        ChromeVoxState.instance.pageSel = new CursorRange(
-            ChromeVoxState.instance.pageSel.start,
-            wasBackwardSel ? range.start : range.end);
-        ChromeVoxState.instance.pageSel?.select();
+        this.pageSel_ = new CursorRange(
+            this.pageSel_.start, wasBackwardSel ? range.start : range.end);
+        this.pageSel_.select();
       }
     } else if (!opt_skipSettingSelection) {
       // Ensure we don't select the editable when we first encounter it.

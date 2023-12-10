@@ -10,7 +10,7 @@
 #include "base/functional/bind.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/password_manager/account_password_store_factory.h"
-#include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/password_manager/profile_password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/model_type_store_service_factory.h"
 #include "chrome/common/channel_info.h"
@@ -46,12 +46,13 @@ PasswordReceiverServiceFactory::PasswordReceiverServiceFactory()
               .Build()) {
   DependsOn(AccountPasswordStoreFactory::GetInstance());
   DependsOn(ModelTypeStoreServiceFactory::GetInstance());
-  DependsOn(PasswordStoreFactory::GetInstance());
+  DependsOn(ProfilePasswordStoreFactory::GetInstance());
 }
 
 PasswordReceiverServiceFactory::~PasswordReceiverServiceFactory() = default;
 
-KeyedService* PasswordReceiverServiceFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService>
+PasswordReceiverServiceFactory::BuildServiceInstanceForBrowserContext(
     content::BrowserContext* context) const {
   if (!base::FeatureList::IsEnabled(
           password_manager::features::kPasswordManagerEnableReceiverService)) {
@@ -75,10 +76,10 @@ KeyedService* PasswordReceiverServiceFactory::BuildServiceInstanceFor(
       std::move(change_processor),
       ModelTypeStoreServiceFactory::GetForProfile(profile)->GetStoreFactory());
 
-  return new password_manager::PasswordReceiverServiceImpl(
+  return std::make_unique<password_manager::PasswordReceiverServiceImpl>(
       profile->GetPrefs(), std::move(sync_bridge),
-      PasswordStoreFactory::GetForProfile(profile,
-                                          ServiceAccessType::EXPLICIT_ACCESS)
+      ProfilePasswordStoreFactory::GetForProfile(
+          profile, ServiceAccessType::EXPLICIT_ACCESS)
           .get(),
       AccountPasswordStoreFactory::GetForProfile(
           profile, ServiceAccessType::EXPLICIT_ACCESS)

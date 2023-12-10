@@ -11,11 +11,11 @@
 #import "components/password_manager/core/browser/password_manager_test_utils.h"
 #import "components/password_manager/core/browser/test_password_store.h"
 #import "components/password_manager/core/common/password_manager_features.h"
-#import "ios/chrome/browser/passwords/ios_chrome_affiliation_service_factory.h"
-#import "ios/chrome/browser/passwords/ios_chrome_password_check_manager_factory.h"
-#import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
-#import "ios/chrome/browser/passwords/password_check_observer_bridge.h"
-#import "ios/chrome/browser/passwords/password_checkup_utils.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_affiliation_service_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_password_check_manager_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
+#import "ios/chrome/browser/passwords/model/password_check_observer_bridge.h"
+#import "ios/chrome/browser/passwords/model/password_checkup_utils.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/ui/settings/password/password_checkup/password_checkup_consumer.h"
 #import "ios/web/public/test/web_task_environment.h"
@@ -34,7 +34,7 @@ using password_manager::TestPasswordStore;
 PasswordForm CreatePasswordForm() {
   PasswordForm form;
   form.username_value = u"test@egmail.com";
-  form.password_value = u"test";
+  form.password_value = u"strongPa55w0rd";
   form.signon_realm = "http://www.example.com/";
   form.in_store = PasswordForm::Store::kProfileStore;
   return form;
@@ -57,7 +57,7 @@ class PasswordCheckupMediatorTest : public PlatformTest {
   PasswordCheckupMediatorTest() {
     TestChromeBrowserState::Builder builder;
     builder.AddTestingFactory(
-        IOSChromePasswordStoreFactory::GetInstance(),
+        IOSChromeProfilePasswordStoreFactory::GetInstance(),
         base::BindRepeating(
             &password_manager::BuildPasswordStore<web::BrowserState,
                                                   TestPasswordStore>));
@@ -88,7 +88,7 @@ class PasswordCheckupMediatorTest : public PlatformTest {
 
   TestPasswordStore& GetTestStore() {
     return *static_cast<TestPasswordStore*>(
-        IOSChromePasswordStoreFactory::GetForBrowserState(
+        IOSChromeProfilePasswordStoreFactory::GetForBrowserState(
             browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS)
             .get());
   }
@@ -123,6 +123,9 @@ TEST_F(PasswordCheckupMediatorTest,
 
   [password_check_observer
       passwordCheckStateDidChange:PasswordCheckState::kIdle];
+
+  // Wait for the observer updates to complete.
+  RunUntilIdle();
 
   EXPECT_OCMOCK_VERIFY(consumer());
 }

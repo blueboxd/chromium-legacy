@@ -16,7 +16,7 @@ namespace gfx {
 struct VectorIcon;
 }  // namespace gfx
 
-class TabStrip;
+class TabStripController;
 
 enum class Edge {
   kNone = 0,
@@ -32,17 +32,17 @@ class TabStripControlButton : public views::LabelButton,
   static const int kIconSize;
   static const gfx::Size kButtonSize;
 
-  TabStripControlButton(TabStrip* tab_strip,
+  TabStripControlButton(TabStripController* tab_strip,
                         PressedCallback callback,
                         const gfx::VectorIcon& icon,
                         Edge flat_edge = Edge::kNone);
 
-  TabStripControlButton(TabStrip* tab_strip,
+  TabStripControlButton(TabStripController* tab_strip,
                         PressedCallback callback,
                         const std::u16string& text,
                         Edge flat_edge = Edge::kNone);
 
-  TabStripControlButton(TabStrip* tab_strip,
+  TabStripControlButton(TabStripController* tab_strip,
                         PressedCallback callback,
                         const gfx::VectorIcon& icon,
                         const std::u16string& text,
@@ -52,20 +52,12 @@ class TabStripControlButton : public views::LabelButton,
   TabStripControlButton& operator=(const TabStripControlButton&) = delete;
   ~TabStripControlButton() override = default;
 
-  // Update the Colors of the button.
-  void SetForegroundFrameActiveColorId(ui::ColorId new_color_id);
-  void SetForegroundFrameInactiveColorId(ui::ColorId new_color_id);
-  void SetBackgroundFrameActiveColorId(ui::ColorId new_color_id);
-  void SetBackgroundFrameInactiveColorId(ui::ColorId new_color_id);
-
-  // Updates the icon model.
-  void SetVectorIcon(const gfx::VectorIcon& icon);
-
   // Updates the styling and icons for the button. Should be called when colors
   // change.
   void UpdateIcon();
 
   virtual int GetCornerRadius() const;
+  virtual int GetFlatCornerRadius() const;
   float GetScaledCornerRadius(float initial_radius, Edge edge) const;
 
   Edge flat_edge() { return flat_edge_; }
@@ -98,6 +90,23 @@ class TabStripControlButton : public views::LabelButton,
   // views::Button
   void NotifyClick(const ui::Event& event) override;
 
+  void UpdateForegroundFrameActiveColorId(ui::ColorId new_color_id) {
+    foreground_frame_active_color_id_ = new_color_id;
+    UpdateColors();
+  }
+  void UpdateForegroundFrameInactiveColorId(ui::ColorId new_color_id) {
+    foreground_frame_inactive_color_id_ = new_color_id;
+    UpdateColors();
+  }
+  void UpdateBackgroundFrameActiveColorId(ui::ColorId new_color_id) {
+    background_frame_active_color_id_ = new_color_id;
+    UpdateColors();
+  }
+  void UpdateBackgroundFrameInactiveColorId(ui::ColorId new_color_id) {
+    background_frame_inactive_color_id_ = new_color_id;
+    UpdateColors();
+  }
+
   void set_paint_transparent_for_custom_image_theme(
       bool paint_transparent_for_custom_image_theme) {
     paint_transparent_for_custom_image_theme_ =
@@ -109,7 +118,7 @@ class TabStripControlButton : public views::LabelButton,
   void UpdateInkDrop();
 
   // Optional icon for the label button.
-  raw_ref<const gfx::VectorIcon> icon_;
+  const raw_ref<const gfx::VectorIcon> icon_;
 
   bool paint_transparent_for_custom_image_theme_;
 
@@ -122,7 +131,8 @@ class TabStripControlButton : public views::LabelButton,
   float flat_edge_factor_ = 1;
 
   // Tab strip that contains this button.
-  raw_ptr<TabStrip, AcrossTasksDanglingUntriaged> tab_strip_;
+  raw_ptr<TabStripController, AcrossTasksDanglingUntriaged>
+      tab_strip_controller_;
 
   // Stored ColorId values to differentiate for ChromeRefresh.
   ui::ColorId foreground_frame_active_color_id_;

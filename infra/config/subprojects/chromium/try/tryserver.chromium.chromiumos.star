@@ -23,6 +23,7 @@ try_.defaults.set(
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
+    siso_configs = ["builder"],
     siso_enable_cloud_profiler = True,
     siso_enable_cloud_trace = True,
     siso_project = siso.project.DEFAULT_UNTRUSTED,
@@ -102,9 +103,7 @@ This builder should be removed after migrating chromeos-amd64-generic-rel from N
     },
     main_list_view = "try",
     tryjob = try_.job(
-        # TODO(b/277863839): increase percentage.
-        # TODO(b/294160948): Siso doesn't support cxx actions for lacros.
-        experiment_percentage = 0.01,
+        experiment_percentage = 10,
     ),
 )
 
@@ -143,19 +142,19 @@ try_.builder(
         "ci/lacros-amd64-generic-rel",
     ],
     builderless = not settings.is_main,
+    contact_team_email = "chrome-desktop-engprod@google.com",
     main_list_view = "try",
     tryjob = try_.job(),
 )
 
 try_.builder(
-    name = "lacros-amd64-generic-rel-skylab",
+    name = "lacros-amd64-generic-rel-non-skylab",
     branch_selector = branches.selector.CROS_BRANCHES,
     mirrors = [
-        "ci/lacros-amd64-generic-rel-skylab",
+        "ci/lacros-amd64-generic-rel-non-skylab",
     ],
-    tryjob = try_.job(
-        experiment_percentage = 1,
-    ),
+    contact_team_email = "chrome-desktop-engprod@google.com",
+    main_list_view = "try",
 )
 
 try_.builder(
@@ -178,11 +177,31 @@ try_.builder(
 )
 
 try_.builder(
+    name = "lacros-arm-generic-rel-skylab",
+    branch_selector = branches.selector.CROS_BRANCHES,
+    mirrors = [
+        "ci/lacros-arm-generic-rel-skylab",
+    ],
+    contact_team_email = "chrome-desktop-engprod@google.com",
+    main_list_view = "try",
+)
+
+try_.builder(
     name = "lacros-arm64-generic-rel",
     branch_selector = branches.selector.CROS_BRANCHES,
     mirrors = [
         "ci/lacros-arm64-generic-rel",
     ],
+    main_list_view = "try",
+)
+
+try_.builder(
+    name = "lacros-arm64-generic-rel-skylab",
+    branch_selector = branches.selector.CROS_BRANCHES,
+    mirrors = [
+        "ci/lacros-arm64-generic-rel-skylab",
+    ],
+    contact_team_email = "chrome-desktop-engprod@google.com",
     main_list_view = "try",
 )
 
@@ -253,36 +272,6 @@ try_.compilator_builder(
     siso_enabled = True,
 )
 
-try_.orchestrator_builder(
-    name = "linux-chromeos-siso-rel",
-    description_html = """\
-This builder shadows linux-chromeos-rel builder to compare between Siso builds and Ninja builds.<br/>
-This builder should be removed after migrating linux-chromeos-rel from Ninja to Siso. b/277863839
-""",
-    mirrors = builder_config.copy_from("try/linux-chromeos-rel"),
-    try_settings = builder_config.try_settings(
-        is_compile_only = True,
-    ),
-    compilator = "linux-chromeos-siso-rel-compilator",
-    coverage_test_types = ["unit", "overall"],
-    experiments = {
-        # go/nplus1shardsproposal
-        "chromium.add_one_test_shard": 10,
-    },
-    main_list_view = "try",
-    tryjob = try_.job(
-        experiment_percentage = 10,
-    ),
-    use_clang_coverage = True,
-)
-
-try_.compilator_builder(
-    name = "linux-chromeos-siso-rel-compilator",
-    cores = 32,
-    main_list_view = "try",
-    siso_enabled = True,
-)
-
 try_.builder(
     name = "linux-lacros-dbg",
     branch_selector = branches.selector.CROS_BRANCHES,
@@ -301,6 +290,10 @@ try_.orchestrator_builder(
     ],
     compilator = "linux-lacros-rel-compilator",
     coverage_test_types = ["unit", "overall"],
+    experiments = {
+        # go/nplus1shardsproposal
+        "chromium.add_one_test_shard": 10,
+    },
     main_list_view = "try",
     tryjob = try_.job(),
     use_clang_coverage = True,
@@ -312,32 +305,6 @@ try_.orchestrator_builder(
 try_.compilator_builder(
     name = "linux-lacros-rel-compilator",
     branch_selector = branches.selector.CROS_BRANCHES,
-    cores = 32,
-    main_list_view = "try",
-    siso_enabled = True,
-)
-
-try_.orchestrator_builder(
-    name = "linux-lacros-siso-rel",
-    description_html = """\
-This builder shadows linux-lacros-rel builder to compare between Siso builds and Ninja builds.<br/>
-This builder should be removed after migrating linux-lacros-rel from Ninja to Siso. b/277863839
-""",
-    mirrors = builder_config.copy_from("try/linux-lacros-rel"),
-    try_settings = builder_config.try_settings(
-        is_compile_only = True,
-    ),
-    compilator = "linux-lacros-siso-rel-compilator",
-    coverage_test_types = ["unit", "overall"],
-    main_list_view = "try",
-    tryjob = try_.job(
-        experiment_percentage = 10,
-    ),
-    use_clang_coverage = True,
-)
-
-try_.compilator_builder(
-    name = "linux-lacros-siso-rel-compilator",
     cores = 32,
     main_list_view = "try",
     siso_enabled = True,

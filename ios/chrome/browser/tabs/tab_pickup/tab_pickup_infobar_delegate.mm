@@ -19,9 +19,9 @@
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/sync/model/session_sync_service_factory.h"
-#import "ios/chrome/browser/synced_sessions/distant_session.h"
-#import "ios/chrome/browser/synced_sessions/distant_tab.h"
-#import "ios/chrome/browser/synced_sessions/synced_sessions.h"
+#import "ios/chrome/browser/synced_sessions/model/distant_session.h"
+#import "ios/chrome/browser/synced_sessions/model/distant_tab.h"
+#import "ios/chrome/browser/synced_sessions/model/synced_sessions.h"
 #import "ios/chrome/browser/tabs/tab_pickup/features.h"
 #import "ios/chrome/common/ui/favicon/favicon_attributes.h"
 #import "ios/chrome/common/ui/favicon/favicon_constants.h"
@@ -29,15 +29,14 @@
 
 TabPickupInfobarDelegate::TabPickupInfobarDelegate(
     Browser* browser,
-    const synced_sessions::DistantSession* session)
+    const synced_sessions::DistantSession* session,
+    const synced_sessions::DistantTab* tab)
     : browser_(browser) {
   CHECK(IsTabPickupEnabled());
   CHECK(!IsTabPickupDisabledByUser());
 
   favicon_loader_ = IOSChromeFaviconLoaderFactory::GetForBrowserState(
       browser_->GetBrowserState());
-
-  const synced_sessions::DistantTab* tab = session->tabs.front().get();
 
   session_name_ = session->name;
   synced_time_ = session->modified_time;

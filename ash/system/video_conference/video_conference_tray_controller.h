@@ -101,7 +101,8 @@ class ASH_EXPORT VideoConferenceTrayController
   void MaybeRunNudgeRequest();
 
   // Attempts showing the speak-on-mute opt-in nudge.
-  void MaybeShowSpeakOnMuteOptInNudge();
+  void MaybeShowSpeakOnMuteOptInNudge(
+      VideoConferenceTray* video_conference_tray);
 
   // Callback used to update prefs whenever a user opts in or out of the
   // speak-on-mute feature. An `opt_in` value of false means the user opted out.

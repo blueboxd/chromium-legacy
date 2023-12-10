@@ -10,6 +10,7 @@
 #import "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "components/autofill/core/browser/autofill_test_utils.h"
+#import "components/autofill/core/browser/browser_autofill_manager_test_api.h"
 #import "components/autofill/core/browser/form_data_importer.h"
 #import "components/autofill/core/browser/payments/credit_card_save_manager.h"
 #import "components/autofill/core/browser/personal_data_manager.h"
@@ -22,7 +23,7 @@
 #import "components/password_manager/core/browser/password_store_consumer.h"
 #import "components/password_manager/core/browser/password_store_interface.h"
 #import "ios/chrome/browser/autofill/personal_data_manager_factory.h"
-#import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -45,7 +46,7 @@ scoped_refptr<password_manager::PasswordStoreInterface> GetPasswordStore() {
   // This test does not deal with Incognito, and should not run in Incognito
   // context. Therefore IMPLICIT_ACCESS is used to let the test fail if in
   // Incognito context.
-  return IOSChromePasswordStoreFactory::GetForBrowserState(
+  return IOSChromeProfilePasswordStoreFactory::GetForBrowserState(
       chrome_test_util::GetOriginalBrowserState(),
       ServiceAccessType::IMPLICIT_ACCESS);
 }
@@ -402,7 +403,8 @@ class SaveCardInfobarEGTestHelper
 
   ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();
-  autofill::prefs::SetAutofillCreditCardEnabled(browserState->GetPrefs(), YES);
+  autofill::prefs::SetAutofillPaymentMethodsEnabled(browserState->GetPrefs(),
+                                                    YES);
 }
 
 + (NSString*)saveLocalCreditCard {
@@ -479,8 +481,9 @@ class SaveCardInfobarEGTestHelper
       autofill::AutofillJavaScriptFeature::GetInstance()->GetWebFramesManager(
           web_state);
   web::WebFrame* main_frame = frames_manager->GetMainWebFrame();
-  autofill::AutofillDriverIOS::FromWebStateAndWebFrame(web_state, main_frame)
-      ->GetAutofillManager()
+  test_api(autofill::AutofillDriverIOS::FromWebStateAndWebFrame(web_state,
+                                                                main_frame)
+               ->GetAutofillManager())
       .SetConsiderFormAsSecureForTesting(true);
 }
 

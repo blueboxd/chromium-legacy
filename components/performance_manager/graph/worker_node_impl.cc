@@ -6,7 +6,7 @@
 
 #include "components/performance_manager/graph/frame_node_impl.h"
 #include "components/performance_manager/graph/process_node_impl.h"
-#include "components/performance_manager/public/resource_attribution/resource_contexts.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace performance_manager {
 
@@ -24,7 +24,13 @@ WorkerNodeImpl::WorkerNodeImpl(const std::string& browser_context_id,
       worker_type_(worker_type),
       process_node_(process_node),
       worker_token_(worker_token) {
+  // Nodes are created on the UI thread, then accessed on the PM sequence.
+  // `weak_this_` can be returned from GetWeakPtrOnUIThread() and dereferenced
+  // on the PM sequence.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DETACH_FROM_SEQUENCE(sequence_checker_);
+  weak_this_ = weak_factory_.GetWeakPtr();
+
   DCHECK(process_node);
 }
 
@@ -151,8 +157,7 @@ const blink::WorkerToken& WorkerNodeImpl::worker_token() const {
 
 resource_attribution::WorkerContext WorkerNodeImpl::resource_context() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Re-use the WorkerToken as the ResourceContext token.
-  return resource_attribution::WorkerContext(worker_token_);
+  return resource_attribution::WorkerContext::FromWorkerNode(this);
 }
 
 const base::flat_set<FrameNodeImpl*>& WorkerNodeImpl::client_frames() const {
@@ -185,8 +190,30 @@ uint64_t WorkerNodeImpl::private_footprint_kb_estimate() const {
   return private_footprint_kb_estimate_;
 }
 
+base::WeakPtr<WorkerNodeImpl> WorkerNodeImpl::GetWeakPtrOnUIThread() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return weak_this_;
+}
+
+base::WeakPtr<WorkerNodeImpl> WorkerNodeImpl::GetWeakPtr() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return weak_factory_.GetWeakPtr();
+}
+
 void WorkerNodeImpl::OnJoiningGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Make sure all weak pointers, even `weak_this_` that was created on the UI
+  // thread in the constructor, can only be dereferenced on the graph sequence.
+  //
+  // If this is the first pointer dereferenced, it will bind all pointers from
+  // `weak_factory_` to the current sequence. If not, get() will DCHECK.
+  // DCHECK'ing the return value of get() prevents the compiler from optimizing
+  // it away.
+  //
+  // TODO(crbug.com/1134162): Use WeakPtrFactory::BindToCurrentSequence for this
+  // (it's clearer but currently not exposed publicly).
+  DCHECK(GetWeakPtr().get());
 
   process_node_->AddWorker(this);
 }

@@ -90,9 +90,13 @@ EncoderStatus SetUpVpxConfig(const VideoEncoder::Options& opts,
     config->kf_max_dist = opts.keyframe_interval.value();
   }
 
+  uint32_t default_bitrate = GetDefaultVideoEncodeBitrate(
+      opts.frame_size, opts.framerate.value_or(30));
+  config->rc_end_usage = VPX_VBR;
+  // The unit of rc_target_bitrate is kilobits per second.
+  config->rc_target_bitrate = default_bitrate / 1000;
   if (opts.bitrate.has_value()) {
-    auto& bitrate = opts.bitrate.value();
-    config->rc_target_bitrate = bitrate.target_bps() / 1000;
+    const auto& bitrate = opts.bitrate.value();
     switch (bitrate.mode()) {
       case Bitrate::Mode::kVariable:
         config->rc_end_usage = VPX_VBR;
@@ -110,9 +114,9 @@ EncoderStatus SetUpVpxConfig(const VideoEncoder::Options& opts,
         config->rc_min_quantizer = 0;
         break;
     }
-  } else {
-    config->rc_target_bitrate = GetDefaultVideoEncodeBitrate(
-        opts.frame_size, opts.framerate.value_or(30));
+    if (bitrate.target_bps() != 0) {
+      config->rc_target_bitrate = bitrate.target_bps() / 1000;
+    }
   }
 
   config->g_w = opts.frame_size.width();
@@ -381,6 +385,11 @@ void VpxVideoEncoder::Initialize(VideoCodecProfile profile,
     if (codec_config_.rc_end_usage == VPX_CBR) {
       vpx_codec_control(codec.get(), VP9E_SET_AQ_MODE, 3);
     }
+
+    if (options.content_hint == ContentHint::Screen) {
+      vpx_codec_control(codec.get(), VP9E_SET_TUNE_CONTENT,
+                        VP9E_CONTENT_SCREEN);
+    }
   }
 
   options_ = options;
@@ -644,10 +653,6 @@ void VpxVideoEncoder::ChangeOptions(const Options& options,
     std::move(done_cb).Run(status);
     return;
   }
-
-  // libvpx doesn't support adjusting the number of threads
-  // midway through an encoding session. More details: crbug.com/1486441
-  new_config.g_threads = codec_config_.g_threads;
 
   status = ReallocateVpxImageIfNeeded(&vpx_image_, vpx_image_.fmt,
                                       options.frame_size.width(),

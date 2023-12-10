@@ -996,6 +996,10 @@ void FakeUserDataAuthClient::PrepareEphemeralVault(
     return;
   }
   auth_session.authenticated = true;
+  auth_session.requested_auth_session_intent =
+      user_data_auth::AUTH_INTENT_DECRYPT;
+  auth_session.lifetime =
+      base::Time::Now() + cryptohome::kAuthsessionInitialLifetime;
 
   const auto [_, was_inserted] =
       users_.insert({auth_session.account, UserCryptohomeState()});
@@ -1008,6 +1012,11 @@ void FakeUserDataAuthClient::PrepareEphemeralVault(
   }
 
   reply.set_sanitized_username(GetStubSanitizedUsername(account));
+
+  reply.mutable_auth_properties()->add_authorized_for(
+      auth_session.requested_auth_session_intent);
+  reply.mutable_auth_properties()->set_seconds_left(
+      cryptohome::kAuthsessionInitialLifetime.InSeconds());
 }
 
 void FakeUserDataAuthClient::CreatePersistentUser(
@@ -1049,10 +1058,15 @@ void FakeUserDataAuthClient::CreatePersistentUser(
   }
 
   auth_session.authenticated = true;
-  // TODO(b/301078137): once proto includes lifetime information, add it
-  // to the reply.
+  auth_session.requested_auth_session_intent =
+      user_data_auth::AUTH_INTENT_DECRYPT;
   auth_session.lifetime =
       base::Time::Now() + cryptohome::kAuthsessionInitialLifetime;
+
+  reply.mutable_auth_properties()->add_authorized_for(
+      auth_session.requested_auth_session_intent);
+  reply.mutable_auth_properties()->set_seconds_left(
+      cryptohome::kAuthsessionInitialLifetime.InSeconds());
 }
 
 void FakeUserDataAuthClient::PreparePersistentVault(
@@ -1307,6 +1321,12 @@ void FakeUserDataAuthClient::AuthenticateAuthFactor(
       session.requested_auth_session_intent);
   session.lifetime =
       base::Time::Now() + cryptohome::kAuthsessionInitialLifetime;
+  reply.mutable_auth_properties()->add_authorized_for(
+      session.requested_auth_session_intent);
+  reply.mutable_auth_properties()->set_seconds_left(
+      cryptohome::kAuthsessionInitialLifetime.InSeconds());
+  // TODO(b/301078137): Remove usage of these fields in favor of
+  // auth_properties.
   reply.add_authorized_for(session.requested_auth_session_intent);
   reply.set_seconds_left(cryptohome::kAuthsessionInitialLifetime.InSeconds());
 }
@@ -1412,7 +1432,10 @@ void FakeUserDataAuthClient::GetAuthSessionStatus(
     return;
   }
   reply.set_status(::user_data_auth::AUTH_SESSION_STATUS_AUTHENTICATED);
-  // Use 5 minutes timeout - as if auth session has just started.
+  reply.mutable_auth_properties()->add_authorized_for(
+      auth_session->second.requested_auth_session_intent);
+  reply.mutable_auth_properties()->set_seconds_left(time_left.InSeconds());
+  // TODO(b/301078137): Remove usage of these field in favor of auth_properties.
   reply.set_time_left(time_left.InSeconds());
 }
 

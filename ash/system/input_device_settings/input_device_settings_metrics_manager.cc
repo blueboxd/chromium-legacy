@@ -6,6 +6,7 @@
 
 #include <cstdint>
 
+#include "ash/accelerators/accelerator_encoding.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/input_device_settings_controller.h"
 #include "ash/public/mojom/input_device_settings.mojom-forward.h"
@@ -361,6 +362,11 @@ void HandleSettingsUpdatedMetric(const T& device) {
 void RecordCurrentButtonRemappingAction(
     const mojom::ButtonRemappingPtr& button_remapping,
     const char* peripheral_kind) {
+  if (!button_remapping->remapping_action) {
+    // TOOD(dpad): Add metric for recording default button remapping.
+    return;
+  }
+
   const std::string metric_name_prefix = base::StrCat(
       {"ChromeOS.Settings.Device.", peripheral_kind, ".ButtonRemapping."});
   switch (button_remapping->remapping_action->which()) {
@@ -373,7 +379,11 @@ void RecordCurrentButtonRemappingAction(
           button_remapping->remapping_action->get_static_shortcut_action());
       break;
     case mojom::RemappingAction::Tag::kKeyEvent:
-      // TODO(cambickel): Add metric recording for KeyEvent.
+      base::UmaHistogramSparse(
+          base::StrCat({metric_name_prefix, "KeyEvent.Initial"}),
+          GetEncodedShortcut(
+              button_remapping->remapping_action->get_key_event()->modifiers,
+              button_remapping->remapping_action->get_key_event()->vkey));
       break;
   }
 }

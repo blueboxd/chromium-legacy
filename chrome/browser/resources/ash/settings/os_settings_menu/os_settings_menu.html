@@ -9,6 +9,11 @@
     padding-top: 8px;
   }
 
+  :host-context(body.revamp-wayfinding-enabled):host {
+    padding-inline-end: 8px;
+    padding-inline-start: 16px;
+  }
+
   :host * {
     -webkit-tap-highlight-color: transparent;
   }
@@ -71,6 +76,21 @@
     border-bottom: var(--cr-separator-line);
     margin-bottom: 8px;
     margin-top: 8px;
+  }
+
+  #topMenu > os-settings-menu-item {
+    margin-bottom: 8px;
+  }
+
+  :host-context(body:not(.revamp-wayfinding-enabled))
+      #topMenu > os-settings-menu-item {
+    margin-inline-end: 2px;
+  }
+
+  :host-context(body:not(.revamp-wayfinding-enabled))
+      #advancedSubmenu > os-settings-menu-item {
+    margin-bottom: 8px;
+    margin-inline-end: 2px;
   }
 
   #topMenu > os-settings-menu-item:last-of-type {

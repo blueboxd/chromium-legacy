@@ -7,6 +7,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <algorithm>
+#include <cstddef>
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -27,6 +30,8 @@
 #include "content/browser/interest_group/interest_group_storage.h"
 #include "content/browser/interest_group/interest_group_update.h"
 #include "content/browser/interest_group/storage_interest_group.h"
+#include "content/common/features.h"
+#include "content/public/browser/interest_group_manager.h"
 #include "content/services/auction_worklet/public/cpp/auction_downloader.h"
 #include "net/base/isolation_info.h"
 #include "net/base/net_errors.h"
@@ -102,11 +107,14 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     const blink::InterestGroupKey& group_key,
     const base::Value::Dict& dict) {
   const std::string* maybe_owner = dict.FindString("owner");
-  if (maybe_owner && url::Origin::Create(GURL(*maybe_owner)) != group_key.owner)
+  if (maybe_owner &&
+      url::Origin::Create(GURL(*maybe_owner)) != group_key.owner) {
     return false;
+  }
   const std::string* maybe_name = dict.FindString("name");
-  if (maybe_name && *maybe_name != group_key.name)
+  if (maybe_name && *maybe_name != group_key.name) {
     return false;
+  }
   return true;
 }
 
@@ -116,10 +124,12 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     const base::Value::Dict& dict,
     absl::optional<base::flat_map<std::string, double>>& priority_vector) {
   const base::Value* maybe_dict = dict.Find("priorityVector");
-  if (!maybe_dict)
+  if (!maybe_dict) {
     return true;
-  if (!maybe_dict->is_dict())
+  }
+  if (!maybe_dict->is_dict()) {
     return false;
+  }
 
   // Extract all key/value pairs to a vector before writing to a flat_map, since
   // flat_map insertion is O(n).
@@ -145,10 +155,12 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     absl::optional<base::flat_map<std::string, absl::optional<double>>>&
         priority_signals_overrides) {
   const base::Value* maybe_dict = dict.Find("prioritySignalsOverrides");
-  if (!maybe_dict)
+  if (!maybe_dict) {
     return true;
-  if (!maybe_dict->is_dict())
+  }
+  if (!maybe_dict->is_dict()) {
     return false;
+  }
 
   std::vector<std::pair<std::string, absl::optional<double>>> pairs;
   for (const std::pair<const std::string&, const base::Value&> pair :
@@ -175,21 +187,25 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     const base::Value::Dict& dict,
     InterestGroupUpdate& interest_group_update) {
   const base::Value* maybe_dict = dict.Find("sellerCapabilities");
-  if (!maybe_dict)
+  if (!maybe_dict) {
     return true;
-  if (!maybe_dict->is_dict())
+  }
+  if (!maybe_dict->is_dict()) {
     return false;
+  }
 
   std::vector<std::pair<url::Origin, blink::SellerCapabilitiesType>>
       seller_capabilities_vec;
   for (const std::pair<const std::string&, const base::Value&> pair :
        maybe_dict->GetDict()) {
-    if (!pair.second.is_list())
+    if (!pair.second.is_list()) {
       return false;
+    }
     blink::SellerCapabilitiesType capabilities;
     for (const base::Value& maybe_capability : pair.second.GetList()) {
-      if (!maybe_capability.is_string())
+      if (!maybe_capability.is_string()) {
         return false;
+      }
       const std::string& capability = maybe_capability.GetString();
       base::UmaHistogramBoolean(
           "Ads.InterestGroup.EnumNaming.Update.SellerCapabilities",
@@ -211,8 +227,9 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
           url::Origin::Create(GURL(pair.first)), capabilities);
     }
   }
-  if (!seller_capabilities_vec.empty())
+  if (!seller_capabilities_vec.empty()) {
     interest_group_update.seller_capabilities.emplace(seller_capabilities_vec);
+  }
   return true;
 }
 
@@ -222,8 +239,9 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     const base::Value::Dict& dict,
     InterestGroupUpdate& interest_group_update) {
   const std::string* maybe_execution_mode = dict.FindString("executionMode");
-  if (!maybe_execution_mode)
+  if (!maybe_execution_mode) {
     return true;
+  }
   base::UmaHistogramBoolean(
       "Ads.InterestGroup.EnumNaming.Update.WorkletExecutionMode",
       *maybe_execution_mode == "groupByOrigin");
@@ -246,14 +264,16 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     InterestGroupUpdate& interest_group_update) {
   const base::Value::List* maybe_update_trusted_bidding_signals_keys =
       dict.FindList("trustedBiddingSignalsKeys");
-  if (!maybe_update_trusted_bidding_signals_keys)
+  if (!maybe_update_trusted_bidding_signals_keys) {
     return true;
+  }
   std::vector<std::string> trusted_bidding_signals_keys;
   for (const base::Value& keys_value :
        *maybe_update_trusted_bidding_signals_keys) {
     const std::string* maybe_key = keys_value.GetIfString();
-    if (!maybe_key)
+    if (!maybe_key) {
       return false;
+    }
     trusted_bidding_signals_keys.push_back(*maybe_key);
   }
   interest_group_update.trusted_bidding_signals_keys =
@@ -268,8 +288,9 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
   std::vector<blink::InterestGroup::Ad> ads;
   for (const base::Value& ads_value : ads_list) {
     const base::Value::Dict* ads_dict = ads_value.GetIfDict();
-    if (!ads_dict)
+    if (!ads_dict) {
       return absl::nullopt;
+    }
     const std::string* maybe_render_url = ads_dict->FindString("renderURL");
     const std::string* maybe_render_url_deprecated =
         ads_dict->FindString("renderUrl");
@@ -282,8 +303,9 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
         maybe_render_url = maybe_render_url_deprecated;
       }
     }
-    if (!maybe_render_url)
+    if (!maybe_render_url) {
       return absl::nullopt;
+    }
     blink::InterestGroup::Ad ad;
     ad.render_url = GURL(*maybe_render_url);
     const std::string* maybe_size_group = ads_dict->FindString("sizeGroup");
@@ -339,12 +361,14 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
 [[nodiscard]] bool TryToCopyAds(const base::Value::Dict& dict,
                                 InterestGroupUpdate& interest_group_update) {
   const base::Value::List* maybe_ads = dict.FindList("ads");
-  if (!maybe_ads)
+  if (!maybe_ads) {
     return true;
+  }
   absl::optional<std::vector<blink::InterestGroup::Ad>> maybe_extracted_ads =
       ExtractAds(*maybe_ads, /*for_components=*/false);
-  if (!maybe_extracted_ads)
+  if (!maybe_extracted_ads) {
     return false;
+  }
   interest_group_update.ads = std::move(*maybe_extracted_ads);
   return true;
 }
@@ -355,12 +379,14 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     const base::Value::Dict& dict,
     InterestGroupUpdate& interest_group_update) {
   const base::Value::List* maybe_ads = dict.FindList("adComponents");
-  if (!maybe_ads)
+  if (!maybe_ads) {
     return true;
+  }
   absl::optional<std::vector<blink::InterestGroup::Ad>> maybe_extracted_ads =
       ExtractAds(*maybe_ads, /*for_components=*/true);
-  if (!maybe_extracted_ads)
+  if (!maybe_extracted_ads) {
     return false;
+  }
   interest_group_update.ad_components = std::move(*maybe_extracted_ads);
   return true;
 }
@@ -475,8 +501,9 @@ absl::optional<InterestGroupUpdate> ParseUpdateJson(
       dict->Find("enableBiddingSignalsPrioritization");
   if (maybe_enable_bidding_signals_prioritization) {
     // If the field is specified, it must be a bool.
-    if (!maybe_enable_bidding_signals_prioritization->is_bool())
+    if (!maybe_enable_bidding_signals_prioritization->is_bool()) {
       return absl::nullopt;
+    }
     interest_group_update.enable_bidding_signals_prioritization =
         maybe_enable_bidding_signals_prioritization->GetBool();
   }
@@ -564,6 +591,12 @@ absl::optional<InterestGroupUpdate> ParseUpdateJson(
   if (!TryToCopyAuctionServerRequestFlags(*dict, interest_group_update)) {
     return absl::nullopt;
   }
+  const std::string* maybe_aggregation_coordinator_origin =
+      dict->FindString("aggregationCoordinatorOrigin");
+  if (maybe_aggregation_coordinator_origin) {
+    interest_group_update.aggregation_coordinator_origin =
+        url::Origin::Create(GURL(*maybe_aggregation_coordinator_origin));
+  }
   return interest_group_update;
 }
 
@@ -641,16 +674,38 @@ bool InterestGroupUpdateManager::OwnersToUpdate::Enqueue(
 void InterestGroupUpdateManager::OwnersToUpdate::PopFront() {
   security_state_map_.erase(owners_to_update_.front());
   owners_to_update_.pop_front();
+
+  if (owners_to_update_.empty()) {
+    joining_origin_isolation_info_map_.clear();
+  }
+}
+
+net::IsolationInfo*
+InterestGroupUpdateManager::OwnersToUpdate::GetIsolationInfoByJoiningOrigin(
+    const url::Origin& joining_origin) {
+  auto isolation_info_it =
+      joining_origin_isolation_info_map_.find(joining_origin);
+  if (isolation_info_it != joining_origin_isolation_info_map_.end()) {
+    return &isolation_info_it->second;
+  } else {
+    net::IsolationInfo isolation_info = net::IsolationInfo::CreateTransient();
+    const auto [it, success] = joining_origin_isolation_info_map_.insert(
+        {joining_origin, std::move(isolation_info)});
+    CHECK(success);
+    return &it->second;
+  }
 }
 
 void InterestGroupUpdateManager::OwnersToUpdate::Clear() {
   owners_to_update_.clear();
   security_state_map_.clear();
+  joining_origin_isolation_info_map_.clear();
 }
 
 void InterestGroupUpdateManager::MaybeContinueUpdatingCurrentOwner() {
-  if (num_in_flight_updates_ > 0 || waiting_on_db_read_)
+  if (num_in_flight_updates_ > 0 || waiting_on_db_read_) {
     return;
+  }
 
   if (owners_to_update_.Empty()) {
     // This update round is finished, there's no more work to do.
@@ -679,37 +734,34 @@ void InterestGroupUpdateManager::MaybeContinueUpdatingCurrentOwner() {
 
 void InterestGroupUpdateManager::GetInterestGroupsForUpdate(
     const url::Origin& owner,
-    base::OnceCallback<
-        void(std::vector<std::pair<blink::InterestGroupKey, GURL>>)> callback) {
+    base::OnceCallback<void(std::vector<InterestGroupUpdateParameter>)>
+        callback) {
   DCHECK_EQ(num_in_flight_updates_, 0);
   DCHECK(!waiting_on_db_read_);
   waiting_on_db_read_ = true;
+
+  // Read one more interest group than `max_parallel_updates_` from database to
+  //  support the batching logic in `DidUpdateInterestGroupsOfOwnerDbLoad()`.
   manager_->GetInterestGroupsForUpdate(
-      owner, /*groups_limit=*/max_parallel_updates_, std::move(callback));
+      owner, /*groups_limit=*/max_parallel_updates_ + 1, std::move(callback));
 }
 
-void InterestGroupUpdateManager::DidUpdateInterestGroupsOfOwnerDbLoad(
-    url::Origin owner,
-    std::vector<std::pair<blink::InterestGroupKey, GURL>> ig_to_update_urls) {
-  DCHECK_EQ(owner, owners_to_update_.FrontOwner());
-  DCHECK_EQ(num_in_flight_updates_, 0);
-  DCHECK(waiting_on_db_read_);
-  DCHECK_LE(ig_to_update_urls.size(),
+void InterestGroupUpdateManager::UpdateInterestGroupByBatch(
+    const url::Origin& owner,
+    std::vector<InterestGroupUpdateParameter> update_parameters) {
+  DCHECK_LE(update_parameters.size(),
             static_cast<unsigned int>(max_parallel_updates_));
-  waiting_on_db_read_ = false;
-  if (ig_to_update_urls.empty()) {
-    // All interest groups for `owner` are up to date, so we can pop it off the
-    // queue.
-    owners_to_update_.PopFront();
-    MaybeContinueUpdatingCurrentOwner();
-    return;
-  }
-  net::IsolationInfo per_update_isolation_info =
-      net::IsolationInfo::CreateTransient();
 
-  for (auto& [interest_group_key, update_url] : ig_to_update_urls) {
+  // If feature kGroupNIKByJoiningOriginPerOwner is not enabled, use one single
+  // NIK for all storage interest groups.
+  net::IsolationInfo per_update_isolation_info;
+  if (!base::FeatureList::IsEnabled(features::kGroupNIKByJoiningOrigin)) {
+    per_update_isolation_info = net::IsolationInfo::CreateTransient();
+  }
+
+  for (auto& [interest_group_key, update_url, joining_origin] :
+       update_parameters) {
     manager_->QueueKAnonymityUpdateForInterestGroup(interest_group_key);
-    // TODO(behamilton): Don't update unless daily update url is k-anonymous
     ++num_in_flight_updates_;
     base::UmaHistogramCounts100000(
         "Ads.InterestGroup.Net.RequestUrlSizeBytes.Update",
@@ -721,8 +773,13 @@ void InterestGroupUpdateManager::DidUpdateInterestGroupsOfOwnerDbLoad(
     resource_request->request_initiator = owner;
     resource_request->trusted_params =
         network::ResourceRequest::TrustedParams();
-    resource_request->trusted_params->isolation_info =
-        per_update_isolation_info;
+    if (base::FeatureList::IsEnabled(features::kGroupNIKByJoiningOrigin)) {
+      resource_request->trusted_params->isolation_info =
+          *owners_to_update_.GetIsolationInfoByJoiningOrigin(joining_origin);
+    } else {
+      resource_request->trusted_params->isolation_info =
+          per_update_isolation_info;
+    }
     resource_request->trusted_params->client_security_state =
         owners_to_update_.FrontSecurityState();
     auto simple_url_loader = network::SimpleURLLoader::Create(
@@ -739,6 +796,84 @@ void InterestGroupUpdateManager::DidUpdateInterestGroupsOfOwnerDbLoad(
                            interest_group_key),
             kMaxUpdateSize);
   }
+}
+
+void InterestGroupUpdateManager::DidUpdateInterestGroupsOfOwnerDbLoad(
+    url::Origin owner,
+    std::vector<InterestGroupUpdateParameter> update_parameters) {
+  DCHECK_EQ(owner, owners_to_update_.FrontOwner());
+  DCHECK_EQ(num_in_flight_updates_, 0);
+  DCHECK(waiting_on_db_read_);
+  waiting_on_db_read_ = false;
+
+  if (update_parameters.empty()) {
+    // All interest groups for `owner` are up to date, so we can pop it off the
+    // queue.
+    owners_to_update_.PopFront();
+    MaybeContinueUpdatingCurrentOwner();
+    return;
+  }
+
+  if (!base::FeatureList::IsEnabled(features::kGroupNIKByJoiningOrigin)) {
+    update_parameters.resize(std::min(
+        update_parameters.size(), static_cast<size_t>(max_parallel_updates_)));
+    DCHECK_LE(update_parameters.size(),
+              static_cast<unsigned int>(max_parallel_updates_));
+    UpdateInterestGroupByBatch(owner, std::move(update_parameters));
+    return;
+  }
+
+  // A group of IGs of the same joining origin and update NIK may only be
+  // updated across batches if all but the last of those batches contain only
+  // IGs of that joining origin / NIK -- otherwise, a server that knows the
+  // batch size could deduce information about the number of interest groups
+  // that had a different joining origin for prior batches. For details, see the
+  // discussion at
+  // https://chromium-review.googlesource.com/c/chromium/src/+/4794574/17..20/content/browser/interest_group/interest_group_update_manager.cc#b736.
+
+  // If the size of storage groups vector is not larger than the limitation,
+  // the storage groups can be put into one batch and update together.
+  if (update_parameters.size() <= static_cast<size_t>(max_parallel_updates_)) {
+    UpdateInterestGroupByBatch(owner, std::move(update_parameters));
+    return;
+  }
+
+  // If the first group and the last group have same joining origin, it is
+  // safe to put them in the same update batch.
+  if (update_parameters.at(0).joining_origin.IsSameOriginWith(
+          update_parameters.at(static_cast<size_t>(max_parallel_updates_) - 1)
+              .joining_origin)) {
+    update_parameters.resize(max_parallel_updates_);
+    UpdateInterestGroupByBatch(owner, std::move(update_parameters));
+    return;
+  }
+
+  // Resize the interest group to the limit if the last storage group has
+  // different joining origin than the next storage group after the batch
+  // limit.
+  if (!update_parameters.at(max_parallel_updates_ - 1)
+           .joining_origin.IsSameOriginWith(
+               update_parameters.at(max_parallel_updates_).joining_origin)) {
+    update_parameters.resize(max_parallel_updates_);
+  } else {
+    // Interest groups with same joining origin cannot be put into
+    // different batches, unless it can fill all the batches except the
+    // last one. Therefore, after resize, all the interest groups with
+    // same joining origin as the last one need to be popped out to be
+    // loaded in the next batch.
+    update_parameters.resize(max_parallel_updates_);
+    url::Origin pop_out_origin =
+        update_parameters.at(max_parallel_updates_ - 1).joining_origin;
+
+    while (update_parameters.size() > 0 and
+           update_parameters.back().joining_origin.IsSameOriginWith(
+               pop_out_origin)) {
+      update_parameters.pop_back();
+    }
+  }
+
+  UpdateInterestGroupByBatch(owner, std::move(update_parameters));
+  return;
 }
 
 void InterestGroupUpdateManager::DidUpdateInterestGroupsOfOwnerNetFetch(
@@ -847,8 +982,9 @@ void InterestGroupUpdateManager::ReportUpdateFailed(
     // To avoid violating the invariant that we're always updating the front of
     // the queue, only clear we encounter this error on the last in-flight
     // update.
-    if (num_in_flight_updates_ == 1)
+    if (num_in_flight_updates_ == 1) {
       owners_to_update_.Clear();
+    }
   }
 
   OnOneUpdateCompleted();

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.readaloud;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.ViewStub;
 
@@ -13,33 +14,36 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Log;
 import org.chromium.base.ResettersForTesting;
 import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.readaloud.expandedplayer.ExpandedPlayerCoordinator;
 import org.chromium.chrome.browser.readaloud.player.PlayerCoordinator;
-import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelTabObserver;
 import org.chromium.chrome.browser.translate.TranslateBridge;
-import org.chromium.chrome.modules.readaloud.ExpandedPlayer;
 import org.chromium.chrome.modules.readaloud.Playback;
-import org.chromium.chrome.modules.readaloud.PlaybackListener;
 import org.chromium.chrome.modules.readaloud.PlaybackArgs;
+import org.chromium.chrome.modules.readaloud.PlaybackArgs.PlaybackVoice;
+import org.chromium.chrome.modules.readaloud.PlaybackListener;
+import org.chromium.chrome.modules.readaloud.Player;
 import org.chromium.chrome.modules.readaloud.ReadAloudPlaybackHooks;
 import org.chromium.chrome.modules.readaloud.ReadAloudPlaybackHooksProvider;
+import org.chromium.chrome.modules.readaloud.contentjs.Highlighter;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.content_public.browser.GlobalRenderFrameHostId;
 import org.chromium.url.GURL;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 /**
- * The main entrypoint component for Read Aloud feature. It's responsible for
- * checking its availability and triggering playback.
- **/
-public class ReadAloudController {
+ * The main entrypoint component for Read Aloud feature. It's responsible for checking its
+ * availability and triggering playback.
+ */
+public class ReadAloudController implements Player.Observer, Player.Delegate, PlaybackListener {
     private static final String TAG = "ReadAloudController";
 
     private final ObservableSupplier<Profile> mProfileSupplier;
@@ -47,12 +51,14 @@ public class ReadAloudController {
     private final Map<String, Boolean> mTimepointsSupportedMap = new HashMap<>();
     private final HashSet<String> mPendingRequests = new HashSet<>();
     private final TabModel mTabModel;
-    private final ExpandedPlayer mExpandedPlayer;
     private final PlayerCoordinator mPlayerCoordinator;
+    private final Context mContext;
     @Nullable
     private static PlayerCoordinator sPlayerCoordinatorForTesting;
 
     private TabModelTabObserver mTabObserver;
+
+    private final BottomSheetController mBottomSheetController;
 
     private final ReadAloudReadabilityHooks mReadabilityHooks;
     @Nullable
@@ -61,25 +67,26 @@ public class ReadAloudController {
     private ReadAloudPlaybackHooks mPlaybackHooks;
     @Nullable
     private static ReadAloudPlaybackHooks sPlaybackHooksForTesting;
-    // When playback is reset, it should be set to null together with the mCurrentlyPlayingTab
-    @Nullable
-    private Playback mPlayback;
+    @Nullable private Highlighter mHighligher;
+
+    // Information tied to a playback. When playback is reset it should be set to null together
+    //  with the mCurrentlyPlayingTab and mGlobalRenderFrameId
+    @Nullable private Playback mPlayback;
     @Nullable
     private Tab mCurrentlyPlayingTab;
+    @Nullable private GlobalRenderFrameHostId mGlobalRenderFrameId;
 
     /**
-     * Kicks of readability check on a page load iff: the url is valid, no previous
-     * result is available/pending and if a request has to be sent, the necessary
-     * conditions are satisfied.
-     * TODO: Add optimizations (don't send requests on chrome:// pages, remove
-     * password from the url, etc). Also include enterprise policy check.
+     * Kicks of readability check on a page load iff: the url is valid, no previous result is
+     * available/pending and if a request has to be sent, the necessary conditions are satisfied.
+     * TODO: Add optimizations (don't send requests on chrome:// pages, remove password from the
+     * url, etc). Also include enterprise policy check.
      */
-
     private ReadAloudReadabilityHooks.ReadabilityCallback mReadabilityCallback =
             new ReadAloudReadabilityHooks.ReadabilityCallback() {
                 @Override
                 public void onSuccess(String url, boolean isReadable, boolean timepointsSupported) {
-                    Log.i(TAG, "onSuccess called for %s", url);
+                    Log.d(TAG, "onSuccess called for %s", url);
                     mReadabilityMap.put(url, isReadable);
                     mTimepointsSupportedMap.put(url, timepointsSupported);
                     mPendingRequests.remove(url);
@@ -87,7 +94,7 @@ public class ReadAloudController {
 
                 @Override
                 public void onFailure(String url, Throwable t) {
-                    Log.i(TAG, "onFailure called for %s", url);
+                    Log.d(TAG, "onFailure called for %s because %s", url, t);
                     mPendingRequests.remove(url);
                 }
             };
@@ -96,14 +103,17 @@ public class ReadAloudController {
             new ReadAloudPlaybackHooks.CreatePlaybackCallback() {
                 @Override
                 public void onSuccess(Playback playback) {
-                    Log.i(TAG, "Playback created");
+                    Log.d(TAG, "Playback created");
+                    maybeSetUpHighlighter(playback.getMetadata());
                     mPlayback = playback;
+                    mPlayback.addListener(ReadAloudController.this);
                     mPlayerCoordinator.playbackReady(mPlayback, PlaybackListener.State.PLAYING);
                     mPlayback.play();
                 }
+
                 @Override
                 public void onFailure(Throwable t) {
-                    Log.i(TAG, t.getMessage());
+                    Log.d(TAG, t.getMessage());
                     mPlayerCoordinator.playbackFailed();
                 }
             };
@@ -111,31 +121,37 @@ public class ReadAloudController {
     public ReadAloudController(Context context, ObservableSupplier<Profile> profileSupplier,
             TabModel tabModel, ViewStub miniPlayerStub,
             BottomSheetController bottomSheetController) {
+        this.mContext = context;
         mProfileSupplier = profileSupplier;
         mTabModel = tabModel;
         mReadabilityHooks = sReadabilityHooksForTesting != null
                 ? sReadabilityHooksForTesting
                 : new ReadAloudReadabilityHooksImpl(context, ReadAloudFeatures.getApiKeyOverride());
-        mExpandedPlayer = new ExpandedPlayerCoordinator(context, bottomSheetController);
-        mPlayerCoordinator = sPlayerCoordinatorForTesting != null
-                ? sPlayerCoordinatorForTesting
-                : new PlayerCoordinator(context, miniPlayerStub);
-
+        mBottomSheetController = bottomSheetController;
+        mPlayerCoordinator =
+                sPlayerCoordinatorForTesting != null
+                        ? sPlayerCoordinatorForTesting
+                        : new PlayerCoordinator(context, miniPlayerStub, this);
         if (mReadabilityHooks.isEnabled()) {
-            mTabObserver = new TabModelTabObserver(mTabModel) {
-                @Override
-                public void onPageLoadStarted(Tab tab, GURL url) {
-                    Log.i(TAG, "onPageLoad called for %s", url.getPossiblyInvalidSpec());
-                    maybeCheckReadability(url);
-                }
+            mTabObserver =
+                    new TabModelTabObserver(mTabModel) {
+                        @Override
+                        public void onPageLoadStarted(Tab tab, GURL url) {
+                            Log.d(TAG, "onPageLoad called for %s", url.getPossiblyInvalidSpec());
+                            maybeCheckReadability(url);
+                            maybeHandleTabReload(tab, url);
+                        }
 
-                @Override
-                protected void onTabSelected(Tab tab) {
-                    Log.i(TAG, "onTabSelected called for" + tab.getUrl().getPossiblyInvalidSpec());
-                    super.onTabSelected(tab);
-                    maybeCheckReadability(tab.getUrl());
-                }
-            };
+                        @Override
+                        protected void onTabSelected(Tab tab) {
+                            Log.d(
+                                    TAG,
+                                    "onTabSelected called for"
+                                            + tab.getUrl().getPossiblyInvalidSpec());
+                            super.onTabSelected(tab);
+                            maybeCheckReadability(tab.getUrl());
+                        }
+                    };
         }
     }
 
@@ -180,14 +196,7 @@ public class ReadAloudController {
      * incognito mode and user opted into "Make searches and browsing better".
      */
     public boolean isAvailable() {
-        Profile profile = mProfileSupplier.get();
-        if (profile == null || profile.isOffTheRecord()) {
-            return false;
-        }
-        // Check whether the user has enabled anonymous URL-keyed data collection.
-        // This is surfaced on the relatively new "Make searches and browsing better"
-        // user setting.
-        return UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionEnabled(profile);
+        return ReadAloudFeatures.isAllowed(mProfileSupplier.get());
     }
 
     /**
@@ -224,6 +233,7 @@ public class ReadAloudController {
 
             // Notify player UI that playback is happening soon.
             mPlayerCoordinator.playTabRequested();
+            mPlayerCoordinator.addObserver(this);
         }
     }
 
@@ -239,6 +249,31 @@ public class ReadAloudController {
         return false;
     }
 
+    private void resetCurrentPlayback() {
+        // TODO(b/303294007): Investigate exception sometimes thrown by release().
+        if (mPlayback != null) {
+            maybeClearHighlights();
+            mPlayback.removeListener(this);
+            mPlayback.release();
+            mPlayback = null;
+        }
+        if (mCurrentlyPlayingTab != null) {
+            // TODO: remove translation observer
+            mCurrentlyPlayingTab = null;
+        }
+        mGlobalRenderFrameId = null;
+    }
+
+    /** Stops the playback, hides the UI and resets its state. */
+    public void stopPlayback() {
+        // Players should be dismissed before releasing playback so that the playback
+        // listener can be removed.
+        mPlayerCoordinator.removeObserver(this);
+        mPlayerCoordinator.dismissPlayers();
+
+        resetCurrentPlayback();
+    }
+
     /** Cleanup: unregister listeners. */
     public void destroy() {
         // Stop playback and hide players.
@@ -248,13 +283,129 @@ public class ReadAloudController {
             mTabObserver.destroy();
         }
 
-        if (mPlayback != null) {
-            mPlayback.release();
-            mPlayback = null;
+        resetCurrentPlayback();
+    }
+
+    private void maybeSetUpHighlighter(Playback.Metadata metadata) {
+        if (timepointsSupported(mCurrentlyPlayingTab)) {
+            if (mHighligher == null) {
+                mHighligher = mPlaybackHooks.createHighlighter();
+            }
+
+            mHighligher.initializeJs(
+                    mCurrentlyPlayingTab, metadata, new Highlighter.Config(mContext));
+            assert (mCurrentlyPlayingTab.getWebContents() != null
+                    && mCurrentlyPlayingTab.getWebContents().getMainFrame() != null);
+            if (mCurrentlyPlayingTab.getWebContents() != null
+                    && mCurrentlyPlayingTab.getWebContents().getMainFrame() != null) {
+                mGlobalRenderFrameId =
+                        mCurrentlyPlayingTab
+                                .getWebContents()
+                                .getMainFrame()
+                                .getGlobalRenderFrameHostId();
+            }
         }
-        if (mCurrentlyPlayingTab != null) {
-            mCurrentlyPlayingTab = null;
+    }
+
+    private void maybeClearHighlights() {
+        if (mHighligher != null && mGlobalRenderFrameId != null && mCurrentlyPlayingTab != null) {
+            mHighligher.clearHighlights(mGlobalRenderFrameId, mCurrentlyPlayingTab);
         }
+    }
+
+    private void maybeHighlightText(PhraseTiming phraseTiming) {
+        if (mHighligher != null && mGlobalRenderFrameId != null && mCurrentlyPlayingTab != null) {
+            mHighligher.highlightText(mGlobalRenderFrameId, mCurrentlyPlayingTab, phraseTiming);
+        }
+    }
+
+    private void maybeHandleTabReload(Tab tab, GURL newUrl) {
+        if (mHighligher != null
+                && tab.getUrl() != null
+                && tab.getUrl().getSpec().equals(newUrl.getSpec())) {
+            mHighligher.handleTabReloaded(tab);
+        }
+    }
+
+    // Player.Delegate
+    @Override
+    public BottomSheetController getBottomSheetController() {
+        return mBottomSheetController;
+    }
+
+    @Override
+    public boolean isHighlightingSupported() {
+        // TODO: implement
+        return false;
+    }
+
+    @Override
+    public ObservableSupplierImpl<Boolean> getHighlightingEnabledSupplier() {
+        // TODO: implement
+        return new ObservableSupplierImpl<Boolean>();
+    }
+
+    @Override
+    public ObservableSupplier<List<PlaybackVoice>> getCurrentLanguageVoicesSupplier() {
+        // TODO: implement
+        return new ObservableSupplierImpl<List<PlaybackVoice>>();
+    }
+
+    @Override
+    public ObservableSupplier<String> getVoiceIdSupplier() {
+        // TODO: implement
+        return new ObservableSupplierImpl<String>();
+    }
+
+    @Override
+    public Map<String, String> getVoiceOverrides() {
+        // TODO: implement
+        return new HashMap<String, String>();
+    }
+
+    @Override
+    public void setVoiceOverride(PlaybackVoice voice) {
+        // TODO: implement
+    }
+
+    @Override
+    public void previewVoice(PlaybackVoice voice) {
+        // TODO: implement
+    }
+
+    @Override
+    public void navigateToPlayingTab() {
+        // TODO: implement
+    }
+
+    @Override
+    public Activity getActivity() {
+        return null;
+    }
+
+    // Player.Observer
+    @Override
+    public void onRequestClosePlayers() {
+        stopPlayback();
+    }
+
+    // PlaybackListener methods
+    @Override
+    public void onPhraseChanged(PhraseTiming phraseTiming) {
+        maybeHighlightText(phraseTiming);
+    }
+
+    // Tests.
+    public void setHighlighterForTests(Highlighter highighter) {
+        mHighligher = highighter;
+    }
+
+    public void setTimepointsSupportedForTest(String url, boolean supported) {
+        mTimepointsSupportedMap.put(url, supported);
+    }
+
+    public TabModelTabObserver getTabModelTabObserverforTests() {
+        return mTabObserver;
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)

@@ -8,15 +8,17 @@ import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.jni_zero.CalledByNative;
+import org.jni_zero.NativeMethods;
+
 import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
-import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.signin.base.AccountInfo;
 import org.chromium.components.signin.base.CoreAccountId;
 import org.chromium.components.signin.base.CoreAccountInfo;
 
 import java.util.List;
+
 /**
  * IdentityManager provides access to native IdentityManager's public API to java components.
  */
@@ -183,6 +185,11 @@ public class IdentityManager {
         }
     }
 
+    /** Returns true if the primary account can be cleared/removed from the browser. */
+    public boolean isClearPrimaryAccountAllowed() {
+        return IdentityManagerJni.get().isClearPrimaryAccountAllowed(mNativeIdentityManager);
+    }
+
     /**
      * Called by native to invalidate an OAuth2 token. Please note that the token is invalidated
      * asynchronously.
@@ -207,5 +214,7 @@ public class IdentityManager {
         AccountInfo findExtendedAccountInfoByEmailAddress(long nativeIdentityManager, String email);
         CoreAccountInfo[] getAccountsWithRefreshTokens(long nativeIdentityManager);
         void refreshAccountInfoIfStale(long nativeIdentityManager, CoreAccountId coreAccountId);
+
+        boolean isClearPrimaryAccountAllowed(long nativeIdentityManager);
     }
 }

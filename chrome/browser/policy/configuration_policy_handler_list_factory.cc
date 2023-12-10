@@ -280,6 +280,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kPasswordManagerEnabled,
     password_manager::prefs::kCredentialsEnableService,
     base::Value::Type::BOOLEAN },
+  { key::kPasswordSharingEnabled,
+    password_manager::prefs::kPasswordSharingEnabled,
+    base::Value::Type::BOOLEAN},
   { key::kPopupsAllowedForUrls,
     prefs::kManagedPopupsAllowedForUrls,
     base::Value::Type::LIST },
@@ -1202,6 +1205,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kArcEnabled,
     arc::prefs::kArcEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kUnaffiliatedDeviceArcAllowed,
+    arc::prefs::kUnaffiliatedDeviceArcAllowed,
+    base::Value::Type::BOOLEAN },
   { key::kReportArcStatusEnabled,
     prefs::kReportArcStatusEnabled,
     base::Value::Type::BOOLEAN },
@@ -1544,6 +1550,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDeviceExtendedFkeysModifier,
     ash::prefs::kExtendedFkeysModifier,
     base::Value::Type::INTEGER },
+  { key::kShowHumanPresenceSensorScreenEnabled,
+    ash::prefs::kShowHumanPresenceSensorScreenEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kUserFeedbackWithLowLevelDebugDataAllowed,
+    ash::prefs::kUserFeedbackWithLowLevelDebugDataAllowed,
+    base::Value::Type::LIST },
 #endif // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_LINUX)
@@ -1830,6 +1842,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kKioskTroubleshootingToolsEnabled,
     prefs::kKioskTroubleshootingToolsEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kRemoteAccessHostAllowEnterpriseRemoteSupportConnections,
+    prefs::kRemoteAccessHostAllowEnterpriseRemoteSupportConnections,
+    base::Value::Type::BOOLEAN },
   { key::kRealTimeDownloadProtectionRequestAllowed,
     prefs::kRealTimeDownloadProtectionRequestAllowedByPolicy,
     base::Value::Type::BOOLEAN },
@@ -2021,6 +2036,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     policy::policy_prefs::kPPAPISharedImagesForVideoDecoderAllowed,
     base::Value::Type::BOOLEAN },
 #endif
+  { key::kIPv6ReachabilityOverrideEnabled,
+    prefs::kIPv6ReachabilityOverrideEnabled,
+    base::Value::Type::BOOLEAN },
 };
 // clang-format on
 
@@ -2813,9 +2831,13 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       key::kAllHttpAuthSchemesAllowedForOrigins,
       prefs::kAllHttpAuthSchemesAllowedForOrigins));
 
-  handlers->AddHandler(
-      std::make_unique<first_party_sets::FirstPartySetsOverridesPolicyHandler>(
-          chrome_schema));
+  handlers->AddHandler(std::make_unique<SimpleDeprecatingPolicyHandler>(
+      /*legacy_policy_handler=*/std::make_unique<
+          first_party_sets::FirstPartySetsOverridesPolicyHandler>(
+          policy::key::kFirstPartySetsOverrides, chrome_schema),
+      /*new_policy_handler=*/std::make_unique<
+          first_party_sets::FirstPartySetsOverridesPolicyHandler>(
+          policy::key::kRelatedWebsiteSetsOverrides, chrome_schema)));
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_ANDROID)
   handlers->AddHandler(std::make_unique<PrivacySandboxPolicyHandler>());
@@ -2831,12 +2853,12 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
 #endif  // BUILDFLAG(ENTERPRISE_DATA_CONTROLS)
 
   handlers->AddHandler(std::make_unique<SimpleDeprecatingPolicyHandler>(
-      std::make_unique<SimplePolicyHandler>(
-          key::kFirstPartySetsEnabled,  // Legacy Policy
+      /*legacy_policy_handler=*/std::make_unique<SimplePolicyHandler>(
+          key::kFirstPartySetsEnabled,
           prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
           base::Value::Type::BOOLEAN),
-      std::make_unique<SimplePolicyHandler>(
-          key::kRelatedWebsiteSetsEnabled,  // New Policy
+      /*new_policy_handler=*/std::make_unique<SimplePolicyHandler>(
+          key::kRelatedWebsiteSetsEnabled,
           prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
           base::Value::Type::BOOLEAN)));
 

@@ -30,6 +30,10 @@ using blink::WebString;
 
 namespace autofill {
 
+using form_util::ExtractOption;
+using form_util::UnownedFormElementsToFormData;
+using form_util::WebFormElementToFormData;
+
 namespace {
 
 const char kPasswordSiteUrlRegex[] =
@@ -87,9 +91,8 @@ bool IsGaiaReauthenticationForm(const blink::WebFormElement& form) {
     // We're only interested in the presence
     // of <input type="hidden" /> elements.
     const WebInputElement input = element.DynamicTo<WebInputElement>();
-    if (input.IsNull() ||
-        input.FormControlTypeForAutofill() !=
-            blink::WebFormControlElement::Type::kInputHidden) {
+    if (input.IsNull() || input.FormControlTypeForAutofill() !=
+                              blink::mojom::FormControlType::kInputHidden) {
       continue;
     }
 
@@ -138,7 +141,7 @@ std::unique_ptr<FormData> CreateFormDataFromWebForm(
     return nullptr;
 
   if (!WebFormElementToFormData(web_form, WebFormControlElement(),
-                                field_data_manager, form_util::EXTRACT_VALUE,
+                                field_data_manager, {ExtractOption::kValue},
                                 form_data.get(), /*field=*/nullptr)) {
     return nullptr;
   }
@@ -168,7 +171,7 @@ std::unique_ptr<FormData> CreateFormDataFromUnownedInputElements(
   auto form_data = std::make_unique<FormData>();
   if (!UnownedFormElementsToFormData(control_elements, iframe_elements, nullptr,
                                      frame.GetDocument(), field_data_manager,
-                                     form_util::EXTRACT_VALUE, form_data.get(),
+                                     {ExtractOption::kValue}, form_data.get(),
                                      /*field=*/nullptr)) {
     return nullptr;
   }

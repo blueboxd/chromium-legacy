@@ -8,7 +8,6 @@
 
 #include "base/notreached.h"
 #include "build/chromeos_buildflags.h"
-#include "components/sync/base/features.h"
 #include "components/sync/base/model_type.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -39,7 +38,7 @@ constexpr char kSavedTabGroupsTypeName[] = "savedTabGroups";
 constexpr char kPaymentsTypeName[] = "payments";
 
 UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
-  static_assert(48 == syncer::GetNumModelTypes(),
+  static_assert(47 == syncer::GetNumModelTypes(),
                 "Almost always when adding a new ModelType, you must tie it to "
                 "a UserSelectableType below (new or existing) so the user can "
                 "disable syncing of that data. Today you must also update the "
@@ -86,7 +85,7 @@ UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
     case UserSelectableType::kReadingList:
       return {kReadingListTypeName, READING_LIST, {READING_LIST}};
     case UserSelectableType::kTabs:
-      return {kTabsTypeName, PROXY_TABS, {PROXY_TABS, SESSIONS}};
+      return {kTabsTypeName, SESSIONS, {SESSIONS}};
     case UserSelectableType::kSavedTabGroups:
       return {kSavedTabGroupsTypeName, SAVED_TAB_GROUP, {SAVED_TAB_GROUP}};
     case UserSelectableType::kPayments:

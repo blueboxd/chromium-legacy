@@ -80,7 +80,6 @@ class ReadableStream;
 class RecordTest;
 class ScriptPromiseResolver;
 class ScriptState;
-class ScrollState;
 class SequenceTest;
 class ShadowRoot;
 class StaticSelection;
@@ -528,10 +527,7 @@ class Internals final : public ScriptWrappable {
 
   void forceLoseCanvasContext(OffscreenCanvas* offscreencanvas,
                               const String& context_type);
-
-  void setScrollChain(ScrollState*,
-                      const HeapVector<Member<Element>>& elements,
-                      ExceptionState&);
+  void disableCanvasAcceleration(HTMLCanvasElement* canvas);
 
   String selectedHTMLForClipboard();
   String selectedTextForClipboard();

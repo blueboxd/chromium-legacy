@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/app_mode/kiosk_controller.h"
 #include "chrome/browser/ash/login/choobe_flow_controller.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_check_screen.h"
@@ -480,8 +481,8 @@ class WizardController : public OobeUI::Observer {
   // Update the status area visibility for `screen`.
   void UpdateStatusAreaVisibilityForScreen(OobeScreenId screen_id);
 
-  // Launched kiosk app configured for auto-launch.
-  void AutoLaunchKioskApp(KioskAppType app_type);
+  // Launch the given `app` configured for Kiosk auto-launch.
+  void AutoLaunchKioskApp(const KioskApp& app);
 
   // Called when LocalState is initialized.
   void OnLocalStateInitialized(bool /* succeeded */);
@@ -536,10 +537,6 @@ class WizardController : public OobeUI::Observer {
   // When --tpm-is-dynamic switch is set, pre-enrollment TPM check relies on
   // the TPM being un-owned until enrollment. b/187429309
   void MaybeTakeTPMOwnership();
-
-  // Hides the current screen if it's not set to `nullptr` and sets it to
-  // `nullptr`.
-  void ResetCurrentScreen();
 
   std::unique_ptr<policy::AutoEnrollmentController> auto_enrollment_controller_;
   std::unique_ptr<ChoobeFlowController> choobe_flow_controller_;

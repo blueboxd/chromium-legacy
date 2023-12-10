@@ -8,6 +8,8 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.chromium.net.truth.UrlResponseInfoSubject.assertThat;
 
+import android.os.Build;
+
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
@@ -28,16 +30,26 @@ import java.util.Arrays;
 @RunWith(AndroidJUnit4.class)
 @RequiresMinApi(5) // Brotli support added in API version 5: crrev.com/465216
 @Batch(Batch.UNIT_TESTS)
-@IgnoreFor(implementations = {CronetImplementation.FALLBACK},
+@IgnoreFor(
+        implementations = {CronetImplementation.FALLBACK},
         reason = "The fallback implementation doesn't support Brotli")
 public class BrotliTest {
-    @Rule
-    public final CronetTestRule mTestRule = CronetTestRule.withManualEngineStartup();
+    @Rule public final CronetTestRule mTestRule = CronetTestRule.withManualEngineStartup();
 
     private CronetEngine mCronetEngine;
 
     @Before
     public void setUp() throws Exception {
+        // TODO(crbug/1490552): Fallback to MockCertVerifier when custom CAs are not supported.
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
+            mTestRule
+                    .getTestFramework()
+                    .applyEngineBuilderPatch(
+                            (builder) -> {
+                                CronetTestUtil.setMockCertVerifierForTesting(
+                                        builder, QuicTestServer.createMockCertVerifier());
+                            });
+        }
         assertThat(Http2TestServer.startHttp2TestServer(mTestRule.getTestFramework().getContext()))
                 .isTrue();
     }
@@ -50,11 +62,12 @@ public class BrotliTest {
     @Test
     @SmallTest
     public void testBrotliAdvertised() throws Exception {
-        mTestRule.getTestFramework().applyEngineBuilderPatch((builder) -> {
-            builder.enableBrotli(true);
-            CronetTestUtil.setMockCertVerifierForTesting(
-                    builder, QuicTestServer.createMockCertVerifier());
-        });
+        mTestRule
+                .getTestFramework()
+                .applyEngineBuilderPatch(
+                        (builder) -> {
+                            builder.enableBrotli(true);
+                        });
 
         mCronetEngine = mTestRule.getTestFramework().startEngine();
         String url = Http2TestServer.getEchoAllHeadersUrl();
@@ -66,11 +79,6 @@ public class BrotliTest {
     @Test
     @SmallTest
     public void testBrotliNotAdvertised() throws Exception {
-        mTestRule.getTestFramework().applyEngineBuilderPatch((builder) -> {
-            CronetTestUtil.setMockCertVerifierForTesting(
-                    builder, QuicTestServer.createMockCertVerifier());
-        });
-
         mCronetEngine = mTestRule.getTestFramework().startEngine();
         String url = Http2TestServer.getEchoAllHeadersUrl();
         TestUrlRequestCallback callback = startAndWaitForComplete(url);
@@ -81,11 +89,12 @@ public class BrotliTest {
     @Test
     @SmallTest
     public void testBrotliDecoded() throws Exception {
-        mTestRule.getTestFramework().applyEngineBuilderPatch((builder) -> {
-            builder.enableBrotli(true);
-            CronetTestUtil.setMockCertVerifierForTesting(
-                    builder, QuicTestServer.createMockCertVerifier());
-        });
+        mTestRule
+                .getTestFramework()
+                .applyEngineBuilderPatch(
+                        (builder) -> {
+                            builder.enableBrotli(true);
+                        });
 
         mCronetEngine = mTestRule.getTestFramework().startEngine();
         String url = Http2TestServer.getServeSimpleBrotliResponse();

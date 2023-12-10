@@ -13,6 +13,7 @@
 #include "ash/style/switch.h"
 #include "ash/style/system_textfield.h"
 #include "ash/system/focus_mode/focus_mode_controller.h"
+#include "ash/system/focus_mode/focus_mode_countdown_view.h"
 #include "ash/system/focus_mode/focus_mode_util.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/fake_detailed_view_delegate.h"
@@ -67,6 +68,12 @@ class FocusModeDetailedViewTest : public AshTestBase {
     widget_->SetContentsView(std::move(focus_mode_detailed_view));
   }
 
+  void SetInactiveSessionDuration(SystemTextfield* timer_textfield) {
+    DCHECK(!FocusModeController::Get()->in_focus_session());
+    focus_mode_detailed_view_->SetInactiveSessionDuration(base::Minutes(
+        focus_mode_util::GetTimerTextfieldInputInMinutes(timer_textfield)));
+  }
+
   views::Label* GetToggleRowLabel() {
     return focus_mode_detailed_view_->toggle_view_->text_label();
   }
@@ -81,7 +88,6 @@ class FocusModeDetailedViewTest : public AshTestBase {
   }
 
   views::BoxLayoutView* GetTimerSettingView() {
-    CHECK(!FocusModeController::Get()->in_focus_session());
     return focus_mode_detailed_view_->timer_setting_view_;
   }
 
@@ -91,15 +97,19 @@ class FocusModeDetailedViewTest : public AshTestBase {
   }
 
   IconButton* GetTimerSettingIncrementButton() {
-    return views::AsViewClass<IconButton>(GetTimerSettingView()->children()[3]);
+    return focus_mode_detailed_view_->timer_increment_button_;
   }
 
   IconButton* GetTimerSettingDecrementButton() {
-    return views::AsViewClass<IconButton>(GetTimerSettingView()->children()[2]);
+    return focus_mode_detailed_view_->timer_decrement_button_;
   }
 
   Switch* GetDoNotDisturbToggleButton() {
     return focus_mode_detailed_view_->do_not_disturb_toggle_button_;
+  }
+
+  FocusModeCountdownView* GetTimerCountdownView() {
+    return focus_mode_detailed_view_->timer_countdown_view_;
   }
 
  private:
@@ -268,10 +278,16 @@ TEST_F(FocusModeDetailedViewTest, TimerSettingViewTextfield) {
 // - 300, we will not increment further.
 TEST_F(FocusModeDetailedViewTest, TimerSettingViewIncrements) {
   SystemTextfield* timer_textfield = GetTimerSettingTextfield();
+  IconButton* decrement_button = GetTimerSettingDecrementButton();
   IconButton* increment_button = GetTimerSettingIncrementButton();
 
   // Check incrementing 1 through 5.
   timer_textfield->SetText(u"1");
+  SetInactiveSessionDuration(timer_textfield);
+
+  // The `decrement_button` will be disabled only when setting the duration to
+  // the minimum duration.
+  EXPECT_FALSE(decrement_button->GetEnabled());
   LeftClickOn(increment_button);
   int expected_next_value = 2;
   for (int i = 0; i < 3; i++) {
@@ -281,6 +297,7 @@ TEST_F(FocusModeDetailedViewTest, TimerSettingViewIncrements) {
     expected_next_value += 1;
     LeftClickOn(increment_button);
   }
+  EXPECT_TRUE(decrement_button->GetEnabled());
 
   // Increment 5 to 10.
   EXPECT_EQ(u"5", timer_textfield->GetText());
@@ -333,11 +350,18 @@ TEST_F(FocusModeDetailedViewTest, TimerSettingViewIncrements) {
 TEST_F(FocusModeDetailedViewTest, TimerSettingViewDecrements) {
   SystemTextfield* timer_textfield = GetTimerSettingTextfield();
   IconButton* decrement_button = GetTimerSettingDecrementButton();
+  IconButton* increment_button = GetTimerSettingIncrementButton();
 
   // Decrement 300 to 285.
   timer_textfield->SetText(u"300");
+  SetInactiveSessionDuration(timer_textfield);
+
+  // The `increment_button` will be disabled only when setting the duration to
+  // the maximum duration.
+  EXPECT_FALSE(increment_button->GetEnabled());
   LeftClickOn(decrement_button);
   EXPECT_EQ(u"285", timer_textfield->GetText());
+  EXPECT_TRUE(increment_button->GetEnabled());
 
   // Try decrementing 299 to 285, and then continue decrementing to 60.
   timer_textfield->SetText(u"299");
@@ -384,6 +408,39 @@ TEST_F(FocusModeDetailedViewTest, TimerSettingViewDecrements) {
   EXPECT_EQ(u"1", timer_textfield->GetText());
   LeftClickOn(decrement_button);
   EXPECT_EQ(u"1", timer_textfield->GetText());
+}
+
+// Tests that the timer setting view is visible outside of a focus session and
+// the countdown view is visible in a focus session.
+TEST_F(FocusModeDetailedViewTest, TimerViewVisibility) {
+  auto* focus_mode_controller = FocusModeController::Get();
+  auto* timer_setting_view = GetTimerSettingView();
+  auto* countdown_view = GetTimerCountdownView();
+
+  // Before turning on a focus session both views should exist and the setting
+  // view should be visible.
+  ASSERT_TRUE(countdown_view);
+  ASSERT_TRUE(timer_setting_view);
+  EXPECT_FALSE(countdown_view->GetVisible());
+  EXPECT_TRUE(timer_setting_view->GetVisible());
+
+  // In a focus session the countdown view should be visible and the timer view
+  // hidden.
+  focus_mode_controller->ToggleFocusMode();
+  EXPECT_TRUE(focus_mode_controller->in_focus_session());
+  // Starting the focus session closes the bubble, so we need to recreate the
+  // detailed view.
+  CreateFakeFocusModeDetailedView();
+  timer_setting_view = GetTimerSettingView();
+  countdown_view = GetTimerCountdownView();
+  EXPECT_TRUE(countdown_view->GetVisible());
+  EXPECT_FALSE(timer_setting_view->GetVisible());
+
+  // Turning the focus session back off should swap the visibilities again.
+  focus_mode_controller->ToggleFocusMode();
+  EXPECT_FALSE(focus_mode_controller->in_focus_session());
+  EXPECT_FALSE(countdown_view->GetVisible());
+  EXPECT_TRUE(timer_setting_view->GetVisible());
 }
 
 }  // namespace ash

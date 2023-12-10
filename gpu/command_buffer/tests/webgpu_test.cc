@@ -217,7 +217,6 @@ void WebGPUTest::WaitForCompletion(wgpu::Device device) {
   wgpu::Queue queue = device.GetQueue();
   bool done = false;
   queue.OnSubmittedWorkDone(
-      0u,
       [](WGPUQueueWorkDoneStatus, void* userdata) {
         *static_cast<bool*>(userdata) = true;
       },
@@ -408,11 +407,7 @@ TEST_F(WebGPUTest, RequestDeviceWithUnsupportedFeature) {
 
   DCHECK(adapter_);
   wgpu::DeviceDescriptor device_desc = {};
-#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
   device_desc.requiredFeatureCount = 1;
-#else
-  device_desc.requiredFeaturesCount = 1;
-#endif
   device_desc.requiredFeatures = &invalid_feature;
 
   adapter_.RequestDevice(&device_desc, callback->UnboundCallback(),

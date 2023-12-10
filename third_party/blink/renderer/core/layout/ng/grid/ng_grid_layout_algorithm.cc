@@ -441,7 +441,7 @@ GridArea SubgriddedAreaInParent(const NGSubgriddedItemData& opt_subgrid_data) {
   return subgridded_area_in_parent;
 }
 
-NGFragmentGeometry CalculateInitialFragmentGeometryForSubgrid(
+FragmentGeometry CalculateInitialFragmentGeometryForSubgrid(
     const GridItemData& subgrid_data,
     const NGConstraintSpace& space) {
   DCHECK(subgrid_data.IsSubgrid());
@@ -979,7 +979,7 @@ GridTrackSizingDirection RelativeDirectionInSubgrid(
 }
 
 LayoutUnit GetExtraMarginForBaseline(
-    const NGBoxStrut& margins,
+    const BoxStrut& margins,
     const NGSubgriddedItemData& subgridded_item,
     GridTrackSizingDirection track_direction,
     WritingMode writing_mode) {
@@ -3119,15 +3119,14 @@ LayoutUnit AlignmentOffset(LayoutUnit container_size,
   return LayoutUnit();
 }
 
-void AlignmentOffsetForOutOfFlow(
-    const AxisEdge inline_axis_edge,
-    const AxisEdge block_axis_edge,
-    const LogicalSize container_size,
-    NGLogicalStaticPosition::InlineEdge* inline_edge,
-    NGLogicalStaticPosition::BlockEdge* block_edge,
-    LogicalOffset* offset) {
-  using InlineEdge = NGLogicalStaticPosition::InlineEdge;
-  using BlockEdge = NGLogicalStaticPosition::BlockEdge;
+void AlignmentOffsetForOutOfFlow(const AxisEdge inline_axis_edge,
+                                 const AxisEdge block_axis_edge,
+                                 const LogicalSize container_size,
+                                 LogicalStaticPosition::InlineEdge* inline_edge,
+                                 LogicalStaticPosition::BlockEdge* block_edge,
+                                 LogicalOffset* offset) {
+  using InlineEdge = LogicalStaticPosition::InlineEdge;
+  using BlockEdge = LogicalStaticPosition::BlockEdge;
 
   switch (inline_axis_edge) {
     case AxisEdge::kStart:
@@ -4079,8 +4078,8 @@ void NGGridLayoutAlgorithm::PlaceOutOfFlowItems(
                                            ? containing_block_rect->size
                                            : default_containing_block_size;
 
-    NGLogicalStaticPosition::InlineEdge inline_edge;
-    NGLogicalStaticPosition::BlockEdge block_edge;
+    LogicalStaticPosition::InlineEdge inline_edge;
+    LogicalStaticPosition::BlockEdge block_edge;
 
     AlignmentOffsetForOutOfFlow(out_of_flow_item.InlineAxisAlignment(),
                                 out_of_flow_item.BlockAxisAlignment(),
@@ -4263,7 +4262,7 @@ LayoutUnit TrackEndOffset(const NGGridLayoutTrackCollection& track_collection,
 void ComputeOutOfFlowOffsetAndSize(
     const GridItemData& out_of_flow_item,
     const NGGridLayoutTrackCollection& track_collection,
-    const NGBoxStrut& borders,
+    const BoxStrut& borders,
     const LogicalSize& border_box_size,
     LayoutUnit* start_offset,
     LayoutUnit* size) {
@@ -4335,7 +4334,7 @@ LogicalRect NGGridLayoutAlgorithm::ComputeOutOfFlowItemContainingRect(
     const NGGridPlacementData& placement_data,
     const NGGridLayoutData& layout_data,
     const ComputedStyle& grid_style,
-    const NGBoxStrut& borders,
+    const BoxStrut& borders,
     const LogicalSize& border_box_size,
     GridItemData* out_of_flow_item) {
   DCHECK(out_of_flow_item && out_of_flow_item->IsOutOfFlow());

@@ -3,9 +3,12 @@
 // found in the LICENSE file.
 
 #include "content/common/service_worker/service_worker_router_evaluator.h"
+#include <vector>
 
 #include "base/strings/string_piece.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/service_worker/embedded_worker_status.h"
+#include "third_party/blink/public/common/service_worker/service_worker_router_rule.h"
 #include "third_party/liburlpattern/parse.h"
 #include "third_party/liburlpattern/pattern.h"
 
@@ -1034,6 +1037,151 @@ TEST(ServiceWorkerRouterEvaluator, RunningStatusMatch) {
   }
 }
 
+TEST(ServiceWorkerRouterEvaluator, EmptyOrConditionAlwaysUnMatch) {
+  blink::ServiceWorkerRouterRules rules;
+  {
+    blink::ServiceWorkerRouterRule rule;
+    {
+      blink::ServiceWorkerRouterCondition condition;
+      condition.type = blink::ServiceWorkerRouterCondition::Type::kOr;
+      condition.or_condition.emplace();
+      rule.conditions.push_back(condition);
+    }
+    {
+      blink::ServiceWorkerRouterSource source;
+      source.type = blink::ServiceWorkerRouterSource::Type::kNetwork;
+      source.network_source.emplace();
+      rule.sources.push_back(source);
+    }
+    rules.rules.push_back(rule);
+  }
+  ASSERT_EQ(1U, rules.rules.size());
+
+  ServiceWorkerRouterEvaluator evaluator(rules);
+  ASSERT_EQ(1U, evaluator.rules().rules.size());
+  EXPECT_TRUE(evaluator.IsValid());
+  EXPECT_FALSE(evaluator.need_running_status());
+
+  {
+    network::ResourceRequest request;
+    request.method = "GET";
+    request.url = GURL("https://example.com/");
+    const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
+    EXPECT_EQ(0U, sources.size());
+  }
+  {
+    network::ResourceRequest request;
+    request.method = "POST";
+    request.url = GURL("https://example.com/");
+    const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
+    EXPECT_EQ(0U, sources.size());
+  }
+  {
+    network::ResourceRequest request;
+    request.method = "GET";
+    request.url = GURL("https://example.com/");
+    const auto sources =
+        evaluator.Evaluate(request, blink::EmbeddedWorkerStatus::kRunning);
+    EXPECT_EQ(0U, sources.size());
+  }
+}
+
+TEST(ServiceWorkerRouterEvaluator, OrConditionMatch) {
+  blink::ServiceWorkerRouterRules rules;
+  {
+    blink::ServiceWorkerRouterRule rule;
+    {
+      blink::ServiceWorkerRouterCondition outer;
+      outer.type = blink::ServiceWorkerRouterCondition::Type::kOr;
+      outer.or_condition.emplace();
+      {
+        blink::ServiceWorkerRouterCondition inner;
+        inner.type = blink::ServiceWorkerRouterCondition::Type::kOr;
+        {
+          blink::ServiceWorkerRouterCondition condition;
+          condition.type =
+              blink::ServiceWorkerRouterCondition::Type::kRunningStatus;
+          blink::ServiceWorkerRouterRunningStatusCondition running_status;
+          running_status.status =
+              blink::ServiceWorkerRouterRunningStatusCondition::
+                  RunningStatusEnum::kRunning;
+          condition.running_status = running_status;
+
+          blink::ServiceWorkerRouterConditionObject inner_object;
+          inner_object.conditions.push_back(std::move(condition));
+
+          inner.or_condition.emplace(std::vector(1, std::move(inner_object)));
+        }
+        blink::ServiceWorkerRouterConditionObject outer_object{
+            std::vector(1, std::move(inner))};
+        outer.or_condition->objects.push_back(std::move(outer_object));
+      }
+      {
+        blink::ServiceWorkerRouterCondition condition;
+        condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
+        blink::SafeUrlPattern url_pattern = DefaultURLPattern();
+        auto parse_result = liburlpattern::Parse(
+            "/test/page.html",
+            [](base::StringPiece input) { return std::string(input); });
+        ASSERT_TRUE(parse_result.ok());
+        url_pattern.pathname = parse_result.value().PartList();
+        condition.url_pattern = url_pattern;
+        blink::ServiceWorkerRouterConditionObject outer_object{
+            std::vector(1, std::move(condition))};
+        outer.or_condition->objects.push_back(std::move(outer_object));
+      }
+
+      rule.conditions.push_back(outer);
+    }
+    {
+      blink::ServiceWorkerRouterSource source;
+      source.type = blink::ServiceWorkerRouterSource::Type::kNetwork;
+      source.network_source.emplace();
+      rule.sources.push_back(source);
+    }
+    rules.rules.push_back(rule);
+  }
+  ASSERT_EQ(1U, rules.rules.size());
+
+  ServiceWorkerRouterEvaluator evaluator(rules);
+  ASSERT_EQ(1U, evaluator.rules().rules.size());
+  EXPECT_TRUE(evaluator.IsValid());
+  EXPECT_TRUE(evaluator.need_running_status());
+
+  {
+    network::ResourceRequest request;
+    request.method = "GET";
+    request.url = GURL("https://example.com/");
+    const auto sources =
+        evaluator.Evaluate(request, blink::EmbeddedWorkerStatus::kRunning);
+    EXPECT_EQ(1U, sources.size());
+  }
+  {
+    network::ResourceRequest request;
+    request.method = "GET";
+    request.url = GURL("https://example.com/");
+    const auto sources =
+        evaluator.Evaluate(request, blink::EmbeddedWorkerStatus::kStopped);
+    EXPECT_EQ(0U, sources.size());
+  }
+  {
+    network::ResourceRequest request;
+    request.method = "GET";
+    request.url = GURL("https://www.example.com/test/page.html");
+    const auto sources =
+        evaluator.Evaluate(request, blink::EmbeddedWorkerStatus::kStopped);
+    EXPECT_EQ(1U, sources.size());
+  }
+  {
+    network::ResourceRequest request;
+    request.method = "GET";
+    request.url = GURL("https://www.example.com/test/page.html");
+    const auto sources =
+        evaluator.Evaluate(request, blink::EmbeddedWorkerStatus::kRunning);
+    EXPECT_EQ(1U, sources.size());
+  }
+}
+
 TEST(ServiceWorkerRouterEvaluator, ToValueEmptyRule) {
   blink::ServiceWorkerRouterRules rules;
   ServiceWorkerRouterEvaluator evaluator(rules);
@@ -1177,6 +1325,139 @@ TEST(ServiceWorkerRouterEvaluator, ToValueBasicSimpleRule) {
           source.Set("cache_name", "example_cache_name");
           sources.Append(std::move(source));
         }
+        rule.Set("source", std::move(sources));
+      }
+    }
+    expected_rules.Append(std::move(rule));
+  }
+  EXPECT_EQ(expected_rules, evaluator.ToValue());
+}
+
+TEST(ServiceWorkerRouterEvaluator, ToValueEmptyOrCondition) {
+  blink::ServiceWorkerRouterRules rules;
+  {
+    blink::ServiceWorkerRouterRule rule;
+    {
+      blink::ServiceWorkerRouterCondition condition;
+      condition.type = blink::ServiceWorkerRouterCondition::Type::kOr;
+      condition.or_condition.emplace();
+      rule.conditions.push_back(condition);
+    }
+    {
+      blink::ServiceWorkerRouterSource source;
+      source.type = blink::ServiceWorkerRouterSource::Type::kNetwork;
+      source.network_source.emplace();
+      rule.sources.push_back(source);
+    }
+    rules.rules.push_back(rule);
+  }
+  ASSERT_EQ(1U, rules.rules.size());
+
+  ServiceWorkerRouterEvaluator evaluator(rules);
+  ASSERT_EQ(1U, evaluator.rules().rules.size());
+  EXPECT_TRUE(evaluator.IsValid());
+  base::Value::List expected_rules;
+  {
+    base::Value::Dict rule;
+    {
+      {
+        base::Value::List conditions;
+        {
+          base::Value::Dict condition;
+          condition.Set("or", base::Value::List());
+          conditions.Append(std::move(condition));
+        }
+        rule.Set("condition", std::move(conditions));
+      }
+      {
+        base::Value::List sources;
+        sources.Append("network");
+        rule.Set("source", std::move(sources));
+      }
+    }
+    expected_rules.Append(std::move(rule));
+  }
+  EXPECT_EQ(expected_rules, evaluator.ToValue());
+}
+
+TEST(ServiceWorkerRouterEvaluator, ToValueNestedOrCondition) {
+  blink::ServiceWorkerRouterRules rules;
+  {
+    blink::ServiceWorkerRouterRule rule;
+    {
+      blink::ServiceWorkerRouterCondition outer;
+      outer.type = blink::ServiceWorkerRouterCondition::Type::kOr;
+      {
+        blink::ServiceWorkerRouterCondition inner;
+        inner.type = blink::ServiceWorkerRouterCondition::Type::kOr;
+        {
+          blink::ServiceWorkerRouterCondition condition;
+          condition.type =
+              blink::ServiceWorkerRouterCondition::Type::kRunningStatus;
+          blink::ServiceWorkerRouterRunningStatusCondition running_status;
+          running_status.status =
+              blink::ServiceWorkerRouterRunningStatusCondition::
+                  RunningStatusEnum::kRunning;
+          condition.running_status = running_status;
+
+          blink::ServiceWorkerRouterConditionObject inner_object;
+          inner_object.conditions.push_back(std::move(condition));
+
+          inner.or_condition.emplace(std::vector(1, std::move(inner_object)));
+        }
+        blink::ServiceWorkerRouterConditionObject outer_object;
+        outer_object.conditions.push_back(std::move(inner));
+
+        outer.or_condition.emplace(std::vector(1, std::move(outer_object)));
+      }
+      rule.conditions.push_back(outer);
+    }
+    {
+      blink::ServiceWorkerRouterSource source;
+      source.type = blink::ServiceWorkerRouterSource::Type::kNetwork;
+      source.network_source.emplace();
+      rule.sources.push_back(source);
+    }
+    rules.rules.push_back(rule);
+  }
+  ASSERT_EQ(1U, rules.rules.size());
+
+  ServiceWorkerRouterEvaluator evaluator(rules);
+  ASSERT_EQ(1U, evaluator.rules().rules.size());
+  EXPECT_TRUE(evaluator.IsValid());
+  base::Value::List expected_rules;
+  {
+    base::Value::Dict rule;
+    {
+      {
+        base::Value::List conditions;
+        {
+          base::Value::Dict outer;
+          base::Value::List outer_objects;
+          base::Value::List outer_object;
+          {
+            base::Value::Dict inner;
+            base::Value::List inner_objects;
+            base::Value::List inner_object;
+            {
+              base::Value::Dict condition;
+              condition.Set("running_status", "running");
+              inner_object.Append(std::move(condition));
+            }
+            inner_objects.Append(std::move(inner_object));
+            inner.Set("or", std::move(inner_objects));
+            outer_object.Append(std::move(inner));
+          }
+          outer_objects.Append(std::move(outer_object));
+
+          outer.Set("or", std::move(outer_objects));
+          conditions.Append(std::move(outer));
+        }
+        rule.Set("condition", std::move(conditions));
+      }
+      {
+        base::Value::List sources;
+        sources.Append("network");
         rule.Set("source", std::move(sources));
       }
     }

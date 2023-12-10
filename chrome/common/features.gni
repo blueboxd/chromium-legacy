@@ -38,7 +38,7 @@ declare_args() {
   # chrome_root_store_optional platforms.
   # See https://crbug.com/1228958. This can be removed when the Chrome Root
   # Store is unconditionally enabled on all platforms.
-  chrome_root_store_policy_supported = is_linux || is_chromeos || is_android
+  chrome_root_store_policy_supported = is_android
 
   # Enables support for background apps.
   enable_background_contents = !is_android
@@ -90,6 +90,9 @@ use_brlapi = is_chromeos_ash
 # proper build flags can be set.
 chrome_grit_defines = [
   "enable_arcore=$enable_arcore",
+  "enable_gvr_services=$enable_gvr_services",
+  "enable_cardboard=$enable_cardboard",
+  "enable_openxr=$enable_openxr",
   "enable_printing=$enable_printing",
   "enable_extensions=$enable_extensions",
   "enable_hangout_services_extension=$enable_hangout_services_extension",

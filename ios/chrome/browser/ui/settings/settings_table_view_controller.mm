@@ -38,22 +38,23 @@
 #import "components/sync/service/sync_user_settings.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/browser/commerce/model/push_notification/push_notification_feature.h"
-#import "ios/chrome/browser/default_browser/utils.h"
-#import "ios/chrome/browser/feature_engagement/tracker_factory.h"
-#import "ios/chrome/browser/language/language_model_manager_factory.h"
+#import "ios/chrome/browser/default_browser/model/utils.h"
+#import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
+#import "ios/chrome/browser/language/model/language_model_manager_factory.h"
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/ntp/features.h"
-#import "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
-#import "ios/chrome/browser/passwords/ios_chrome_password_check_manager_factory.h"
-#import "ios/chrome/browser/passwords/password_check_observer_bridge.h"
-#import "ios/chrome/browser/passwords/password_checkup_utils.h"
+#import "ios/chrome/browser/ntp/home/features.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_password_check_manager.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_password_check_manager_factory.h"
+#import "ios/chrome/browser/passwords/model/password_check_observer_bridge.h"
+#import "ios/chrome/browser/passwords/model/password_checkup_utils.h"
 #import "ios/chrome/browser/photos/photos_service.h"
 #import "ios/chrome/browser/photos/photos_service_factory.h"
 #import "ios/chrome/browser/search_engines/search_engine_observer_bridge.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#import "ios/chrome/browser/settings/sync/utils/identity_error_util.h"
-#import "ios/chrome/browser/settings/sync/utils/sync_state.h"
-#import "ios/chrome/browser/settings/sync/utils/sync_util.h"
+#import "ios/chrome/browser/settings/model/sync/utils/identity_error_util.h"
+#import "ios/chrome/browser/settings/model/sync/utils/sync_state.h"
+#import "ios/chrome/browser/settings/model/sync/utils/sync_util.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
@@ -95,7 +96,6 @@
 #import "ios/chrome/browser/ui/authentication/cells/table_view_account_item.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/settings/about_chrome_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/address_bar_preference/address_bar_preference_coordinator.h"
@@ -129,9 +129,9 @@
 #import "ios/chrome/browser/ui/settings/table_cell_catalog_view_controller.h"
 #import "ios/chrome/browser/ui/settings/tabs/tabs_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/voice_search_table_view_controller.h"
-#import "ios/chrome/browser/upgrade/upgrade_utils.h"
-#import "ios/chrome/browser/voice/speech_input_locale_config.h"
-#import "ios/chrome/browser/voice/voice_search_prefs.h"
+#import "ios/chrome/browser/upgrade/model/upgrade_utils.h"
+#import "ios/chrome/browser/voice/model/speech_input_locale_config.h"
+#import "ios/chrome/browser/voice/model/voice_search_prefs.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #import "ios/chrome/grit/ios_branded_strings.h"
@@ -303,17 +303,12 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 @end
 
 @implementation SettingsTableViewController
-@synthesize dispatcher = _dispatcher;
 @synthesize managedFeedSettingsItem = _managedFeedSettingsItem;
 @synthesize feedSettingsItem = _feedSettingsItem;
 
 #pragma mark Initialization
 
-- (instancetype)
-    initWithBrowser:(Browser*)browser
-         dispatcher:
-             (id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>)
-                 dispatcher {
+- (instancetype)initWithBrowser:(Browser*)browser {
   DCHECK(browser);
   DCHECK(!browser->GetBrowserState()->IsOffTheRecord());
 
@@ -406,8 +401,6 @@ UIImage* GetBrandedGoogleServicesSymbol() {
     _notificationsObserver =
         [[NotificationsSettingsObserver alloc] initWithPrefService:prefService];
     _notificationsObserver.delegate = self;
-
-    _dispatcher = dispatcher;
 
     // TODO(crbug.com/764578): -loadModel should not be called from
     // initializer. A possible fix is to move this call to -viewDidLoad.
@@ -868,7 +861,8 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 
 - (TableViewItem*)autoFillCreditCardDetailItem {
   BOOL autofillCreditCardEnabled =
-      autofill::prefs::IsAutofillCreditCardEnabled(_browserState->GetPrefs());
+      autofill::prefs::IsAutofillPaymentMethodsEnabled(
+          _browserState->GetPrefs());
   NSString* detailText = autofillCreditCardEnabled
                              ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                              : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
@@ -1302,7 +1296,7 @@ UIImage* GetBrandedGoogleServicesSymbol() {
           [[AccountsTableViewController alloc] initWithBrowser:_browser
                                      closeSettingsOnAddAccount:NO];
       accountsTableViewController.applicationCommandsHandler =
-          self.applicationCommandsHandler;
+          self.applicationHandler;
       controller = accountsTableViewController;
       break;
     }
@@ -1434,10 +1428,6 @@ UIImage* GetBrandedGoogleServicesSymbol() {
       base::RecordAction(base::UserMetricsAction("AboutChrome"));
       AboutChromeTableViewController* aboutChromeTableViewController =
           [[AboutChromeTableViewController alloc] init];
-      aboutChromeTableViewController.applicationCommandsHandler =
-          self.applicationCommandsHandler;
-      aboutChromeTableViewController.snackbarCommandsHandler =
-          self.snackbarCommandsHandler;
       controller = aboutChromeTableViewController;
       break;
     }
@@ -1456,7 +1446,7 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   }
 
   if (controller) {
-    controller.dispatcher = self.dispatcher;
+    [self configureHandlersForRootViewController:controller];
     [self.navigationController pushViewController:controller animated:YES];
   }
 }
@@ -2006,7 +1996,7 @@ UIImage* GetBrandedGoogleServicesSymbol() {
                  BOOL success = result == SigninCoordinatorResultSuccess;
                  [weakSelf didFinishSignin:success];
                }];
-  [self.applicationCommandsHandler showSignin:command baseViewController:self];
+  [self.applicationHandler showSignin:command baseViewController:self];
 }
 
 - (void)didFinishSignin:(BOOL)signedIn {
@@ -2268,7 +2258,8 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 
   if (preferenceName == autofill::prefs::kAutofillCreditCardEnabled) {
     BOOL autofillCreditCardEnabled =
-        autofill::prefs::IsAutofillCreditCardEnabled(_browserState->GetPrefs());
+        autofill::prefs::IsAutofillPaymentMethodsEnabled(
+            _browserState->GetPrefs());
     NSString* detailText = autofillCreditCardEnabled
                                ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                                : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);

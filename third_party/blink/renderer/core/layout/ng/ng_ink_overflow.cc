@@ -357,7 +357,7 @@ NGInkOverflow::Type NGInkOverflow::Set(Type type,
 
 NGInkOverflow::Type NGInkOverflow::SetTextInkOverflow(
     Type type,
-    const NGInlineCursor& cursor,
+    const InlineCursor& cursor,
     const NGTextFragmentPaintInfo& text_info,
     const ComputedStyle& style,
     const PhysicalRect& rect_in_container,
@@ -379,7 +379,7 @@ NGInkOverflow::Type NGInkOverflow::SetTextInkOverflow(
 
 NGInkOverflow::Type NGInkOverflow::SetSvgTextInkOverflow(
     Type type,
-    const NGInlineCursor& cursor,
+    const InlineCursor& cursor,
     const NGTextFragmentPaintInfo& text_info,
     const ComputedStyle& style,
     const Font& scaled_font,
@@ -447,7 +447,7 @@ NGInkOverflow::Type NGInkOverflow::SetSvgTextInkOverflow(
 
 // static
 absl::optional<PhysicalRect> NGInkOverflow::ComputeTextInkOverflow(
-    const NGInlineCursor& cursor,
+    const InlineCursor& cursor,
     const NGTextFragmentPaintInfo& text_info,
     const ComputedStyle& style,
     const Font& scaled_font,
@@ -481,9 +481,8 @@ absl::optional<PhysicalRect> NGInkOverflow::ComputeTextInkOverflow(
 
   const WritingMode writing_mode = style.GetWritingMode();
   if (ShadowList* text_shadow = style.TextShadow()) {
-    NGLineBoxStrut text_shadow_logical_outsets =
-        NGPhysicalBoxStrut::Enclosing(
-            text_shadow->RectOutsetsIncludingOriginal())
+    LineBoxStrut text_shadow_logical_outsets =
+        PhysicalBoxStrut::Enclosing(text_shadow->RectOutsetsIncludingOriginal())
             .ConvertToLineLogical({writing_mode, TextDirection::kLtr});
     ink_overflow.ExpandEdges(
         text_shadow_logical_outsets.line_over.ClampNegativeToZero(),
@@ -532,7 +531,7 @@ LogicalRect NGInkOverflow::ComputeEmphasisMarkOverflow(
 
 // static
 LogicalRect NGInkOverflow::ComputeDecorationOverflow(
-    const NGInlineCursor& cursor,
+    const InlineCursor& cursor,
     const ComputedStyle& style,
     const Font& scaled_font,
     const PhysicalOffset& container_offset,
@@ -546,6 +545,17 @@ LogicalRect NGInkOverflow::ComputeDecorationOverflow(
   if (style.HasAppliedTextDecorations()) {
     accumulated_bound = ComputeAppliedDecorationOverflow(
         style, scaled_font, container_offset, ink_overflow, inline_context);
+  }
+
+  // Text decorations due to selection
+  if (UNLIKELY(cursor.Current().GetLayoutObject()->IsSelected())) {
+    const ComputedStyle* selection_style = style.HighlightData().Selection();
+    if (selection_style && selection_style->HasAppliedTextDecorations()) {
+      LogicalRect selection_bound = ComputeAppliedDecorationOverflow(
+          *selection_style, scaled_font, container_offset, ink_overflow,
+          inline_context);
+      accumulated_bound.Unite(selection_bound);
+    }
   }
 
   bool do_highlights =
@@ -624,7 +634,8 @@ LogicalRect NGInkOverflow::ComputeAppliedDecorationOverflow(
   // so use it as a proxy for determining minimum thickness.
   const MinimumThickness1 kMinimumThicknessIsOne(!decoration_override);
   TextDecorationInfo decoration_info(
-      offset_in_container, ink_overflow.size.inline_size, style, inline_context,
+      LineRelativeOffset::CreateFromBoxOrigin(offset_in_container),
+      ink_overflow.size.inline_size, style, inline_context,
       /* selection_text_decoration */ absl::nullopt, decoration_override,
       &scaled_font, kMinimumThicknessIsOne);
   NGTextDecorationOffset decoration_offset(style);

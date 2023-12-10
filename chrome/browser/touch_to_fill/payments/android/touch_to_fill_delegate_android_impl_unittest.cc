@@ -11,7 +11,6 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
-#include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_browser_autofill_manager.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -96,14 +95,14 @@ class MockBrowserAutofillManager : public TestBrowserAutofillManager {
               (override));
   MOCK_METHOD(void,
               FillOrPreviewCreditCardForm,
-              (mojom::AutofillActionPersistence action_persistence,
+              (mojom::ActionPersistence action_persistence,
                const FormData& form,
                const FormFieldData& field,
                const CreditCard* credit_card,
                const AutofillTriggerDetails& trigger_details));
   MOCK_METHOD(void,
               FillOrPreviewVirtualCardInformation,
-              (mojom::AutofillActionPersistence action_persistence,
+              (mojom::ActionPersistence action_persistence,
                const std::string& guid,
                const FormData& form,
                const FormFieldData& field,
@@ -227,9 +226,9 @@ TEST_F(TouchToFillDelegateAndroidImplUnitTest, TryToShowTouchToFillSucceeds) {
 
 TEST_F(TouchToFillDelegateAndroidImplUnitTest,
        TryToShowTouchToFillFailsIfNotCreditCardField) {
-  form_.fields.insert(
-      form_.fields.begin(),
-      test::CreateTestFormField("Arbitrary", "arbitrary", "", "text"));
+  form_.fields.insert(form_.fields.begin(),
+                      test::CreateTestFormField("Arbitrary", "arbitrary", "",
+                                                FormControlType::kInputText));
 
   ASSERT_FALSE(touch_to_fill_delegate_->IsShowingTouchToFill());
 

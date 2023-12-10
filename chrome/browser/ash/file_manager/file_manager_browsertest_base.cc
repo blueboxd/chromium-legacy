@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/file_manager/file_manager_browsertest_base.h"
+#include "base/base_paths.h"
 #include "base/memory/raw_ptr.h"
 
 #include <stddef.h>
@@ -124,7 +125,7 @@
 #include "chromeos/ash/components/dbus/vm_concierge/concierge_service.pb.h"
 #include "chromeos/ash/components/disks/mount_point.h"
 #include "chromeos/ash/components/drivefs/drivefs_host.h"
-#include "chromeos/ash/components/drivefs/drivefs_pin_manager.h"
+#include "chromeos/ash/components/drivefs/drivefs_pinning_manager.h"
 #include "chromeos/ash/components/drivefs/fake_drivefs.h"
 #include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/ash/components/smbfs/smbfs_host.h"
@@ -701,7 +702,7 @@ class TestVolume {
   static base::FilePath GetTestDataFilePath(const std::string& file_name) {
     // Get the path to file manager's test data directory.
     base::FilePath source_dir;
-    CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_dir));
+    CHECK(base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &source_dir));
     auto test_data_dir = source_dir.AppendASCII("chrome")
                              .AppendASCII("test")
                              .AppendASCII("data")
@@ -1792,8 +1793,8 @@ class DocumentsProviderTestVolume : public TestVolume {
 
   std::string EncodeURI(const std::string& component) {
     url::RawCanonOutputT<char> encoded;
-    url::EncodeURIComponent(component.c_str(), component.size(), &encoded);
-    return {encoded.data(), static_cast<size_t>(encoded.length())};
+    url::EncodeURIComponent(component, &encoded);
+    return std::string(encoded.view());
   }
 };
 
@@ -2335,11 +2336,13 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     disabled_features.push_back(ash::features::kFilesSearchV2);
   }
 
-  if (options.enable_image_content_search) {
+  if (options.enable_local_image_search) {
+    enabled_features.push_back(ash::features::kFilesLocalImageSearch);
     enabled_features.push_back(search_features::kLauncherImageSearch);
     enabled_features.push_back(search_features::kLauncherImageSearchIca);
     enabled_features.push_back(search_features::kLauncherImageSearchOcr);
   } else {
+    disabled_features.push_back(ash::features::kFilesLocalImageSearch);
     disabled_features.push_back(search_features::kLauncherImageSearch);
     disabled_features.push_back(search_features::kLauncherImageSearchIca);
     disabled_features.push_back(search_features::kLauncherImageSearchOcr);
@@ -2373,16 +2376,8 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     disabled_features.push_back(ash::features::kFilesDriveShortcuts);
   }
 
-  if (options.enable_jellybean) {
-    enabled_features.push_back(chromeos::features::kJelly);
-  } else {
-    disabled_features.push_back(chromeos::features::kJelly);
-  }
-
   if (options.enable_cros_components) {
     enabled_features.push_back(chromeos::features::kCrosComponents);
-    DCHECK(options.enable_jellybean)
-        << "Cannot enable cros-components without jellybean";
   } else {
     disabled_features.push_back(chromeos::features::kCrosComponents);
   }
@@ -2391,6 +2386,12 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     for (const std::string& feature_id : options.feature_ids) {
       base::AddTagToTestResult("feature_id", feature_id);
     }
+  }
+
+  if (options.enable_new_directory_tree) {
+    enabled_features.push_back(ash::features::kFilesNewDirectoryTree);
+  } else {
+    disabled_features.push_back(ash::features::kFilesNewDirectoryTree);
   }
 
   // This is destroyed in |TearDown()|. We cannot initialize this in the
@@ -2621,9 +2622,10 @@ void FileManagerBrowserTestBase::StartTest() {
       ->InstallSystemAppsForTesting();
   const std::string full_test_name = GetFullTestCaseName();
   LOG(INFO) << "FileManagerBrowserTest::StartTest " << full_test_name;
-  static const base::FilePath test_extension_dir =
-      base::FilePath(FILE_PATH_LITERAL("ui/file_manager/integration_tests"));
-  LaunchExtension(test_extension_dir, GetTestExtensionManifestName());
+  static const base::FilePath test_extension_dir = base::FilePath(
+      FILE_PATH_LITERAL("ui/file_manager/integration_tests/tsc"));
+  LaunchExtension(base::DIR_GEN_TEST_DATA_ROOT, test_extension_dir,
+                  GetTestExtensionManifestName());
   RunTestMessageLoop();
 
   if (devtools_code_coverage_dir_.empty()) {
@@ -2651,15 +2653,17 @@ void FileManagerBrowserTestBase::StartTest() {
   content::RunAllTasksUntilIdle();
 }
 
-void FileManagerBrowserTestBase::LaunchExtension(const base::FilePath& path,
+void FileManagerBrowserTestBase::LaunchExtension(base::BasePathKey root,
+                                                 const base::FilePath& path,
                                                  const char* manifest_name) {
-  base::FilePath source_dir;
-  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_dir));
+  base::FilePath root_dir;
+  CHECK(base::PathService::Get(root, &root_dir));
 
-  const base::FilePath source_path = source_dir.Append(path);
+  const base::FilePath source_path = root_dir.Append(path);
   const extensions::Extension* const extension_launched =
       LoadExtensionAsComponentWithManifest(source_path, manifest_name);
-  CHECK(extension_launched) << "Launching: " << manifest_name;
+  CHECK(extension_launched)
+      << "Launching: " << source_path << "/" << manifest_name;
 }
 
 void FileManagerBrowserTestBase::RunTestMessageLoop() {
@@ -2801,8 +2805,13 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
       arg_value.Set("volumeFilter", std::move(cloned_volume_filter));
     }
 
+    const std::string* query = value.FindString("searchQuery");
+    if (query) {
+      arg_value.Set("searchQuery", *query);
+    }
+
     std::string search;
-    if (launch_dir || type || volume_filter) {
+    if (launch_dir || type || volume_filter || query) {
       std::string json_args;
       base::JSONWriter::Write(arg_value, &json_args);
       search = base::StrCat(
@@ -3368,12 +3377,12 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
-  if (name == "forcePinManagerSpaceCheck") {
+  if (name == "forcePinningManagerSpaceCheck") {
     auto* integration_service =
         drive::DriveIntegrationServiceFactory::FindForProfile(profile());
     ASSERT_NE(integration_service, nullptr);
-    ASSERT_NE(integration_service->GetPinManager(), nullptr);
-    integration_service->GetPinManager()->CheckFreeSpace();
+    ASSERT_NE(integration_service->GetPinningManager(), nullptr);
+    integration_service->GetPinningManager()->CheckFreeSpace();
     return;
   }
 
@@ -3391,8 +3400,8 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     auto* integration_service =
         drive::DriveIntegrationServiceFactory::FindForProfile(profile());
     ASSERT_NE(integration_service, nullptr);
-    ASSERT_NE(integration_service->GetPinManager(), nullptr);
-    integration_service->GetPinManager()->SetOnline(enabled.value());
+    ASSERT_NE(integration_service->GetPinningManager(), nullptr);
+    integration_service->GetPinningManager()->SetOnline(enabled.value());
     return;
   }
 
@@ -3400,8 +3409,9 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     auto* integration_service =
         drive::DriveIntegrationServiceFactory::FindForProfile(profile());
     ASSERT_NE(integration_service, nullptr);
-    ASSERT_NE(integration_service->GetPinManager(), nullptr);
-    ASSERT_TRUE(integration_service->GetPinManager()->CalculateRequiredSpace());
+    ASSERT_NE(integration_service->GetPinningManager(), nullptr);
+    ASSERT_TRUE(
+        integration_service->GetPinningManager()->CalculateRequiredSpace());
     return;
   }
 
@@ -3409,8 +3419,8 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     auto* integration_service =
         drive::DriveIntegrationServiceFactory::FindForProfile(profile());
     ASSERT_NE(integration_service, nullptr);
-    ASSERT_NE(integration_service->GetPinManager(), nullptr);
-    auto progress = integration_service->GetPinManager()->GetProgress();
+    ASSERT_NE(integration_service->GetPinningManager(), nullptr);
+    auto progress = integration_service->GetPinningManager()->GetProgress();
     *output = drivefs::pinning::ToString(progress.stage);
     return;
   }
@@ -3419,8 +3429,8 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     auto* integration_service =
         drive::DriveIntegrationServiceFactory::FindForProfile(profile());
     ASSERT_NE(integration_service, nullptr);
-    ASSERT_NE(integration_service->GetPinManager(), nullptr);
-    auto progress = integration_service->GetPinManager()->GetProgress();
+    ASSERT_NE(integration_service->GetPinningManager(), nullptr);
+    auto progress = integration_service->GetPinningManager()->GetProgress();
     *output = base::NumberToString(progress.required_space);
     return;
   }
@@ -3432,8 +3442,8 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     auto* integration_service =
         drive::DriveIntegrationServiceFactory::FindForProfile(profile());
     ASSERT_NE(integration_service, nullptr);
-    ASSERT_NE(integration_service->GetPinManager(), nullptr);
-    integration_service->GetPinManager()->SetShouldPinFilesForTesting(
+    ASSERT_NE(integration_service->GetPinningManager(), nullptr);
+    integration_service->GetPinningManager()->SetShouldPinFilesForTesting(
         enabled.value());
     return;
   }
@@ -3532,7 +3542,8 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   if (name == "launchProviderExtension") {
     const std::string* manifest = value.FindString("manifest");
     ASSERT_TRUE(manifest);
-    LaunchExtension(base::FilePath(FILE_PATH_LITERAL(
+    LaunchExtension(base::DIR_SRC_TEST_DATA_ROOT,
+                    base::FilePath(FILE_PATH_LITERAL(
                         "ui/file_manager/integration_tests/testing_provider")),
                     (*manifest).c_str());
     return;
@@ -3616,12 +3627,29 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
+  // Spawn the open file window, the one which is invoked by Ctrl+O. Since this
+  // window typically is used to navigate the browser to the local file, it
+  // stores the navigation observer, which later could be used via the
+  // `waitForSelectFileDialogNavigation` message.
   if (name == "runSelectFileDialog") {
     browser()->OpenFile();
-    content::TestNavigationObserver observer(
-        browser()->tab_strip_model()->GetActiveWebContents(), 1);
-    observer.Wait();
-    *output = observer.last_navigation_url().spec();
+    test_navigation_observer_ =
+        std::make_unique<content::TestNavigationObserver>(
+            browser()->tab_strip_model()->GetActiveWebContents(), 1);
+    return;
+  }
+
+  // Waits for the navigation which will happen or happened since a stored
+  // navigation observer was created. Return the URL which the browser was
+  // navigated to.
+  if (name == "waitForSelectFileDialogNavigation") {
+    if (!test_navigation_observer_) {
+      *output = "";
+      return;
+    }
+    test_navigation_observer_->Wait();
+    *output = test_navigation_observer_->last_navigation_url().spec();
+    test_navigation_observer_.reset();
     return;
   }
 
@@ -3670,6 +3698,11 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 
   if (name == "isFilesExperimentalEnabled") {
     *output = options.files_experimental ? "true" : "false";
+    return;
+  }
+
+  if (name == "isNewDirectoryTreeEnabled") {
+    *output = options.enable_new_directory_tree ? "true" : "false";
     return;
   }
 
@@ -3894,11 +3927,6 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     const std::string* path = value.FindString("path");
     ASSERT_TRUE(path) << "No supplied path to sendDriveFilesChangedEvent";
     drive_volume_->SendCloudDeleteEvent(*path);
-    return;
-  }
-
-  if (name == "isJellybean") {
-    *output = options.enable_jellybean ? "true" : "false";
     return;
   }
 
@@ -4140,7 +4168,7 @@ bool FileManagerBrowserTestBase::PostKeyEvent(ui::KeyEvent* key_event) {
     web_contents = std::prev(swa_web_contents_.end())->second;
   }
   if (web_contents) {
-    const Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+    const Browser* browser = chrome::FindBrowserWithTab(web_contents);
     if (browser) {
       BrowserWindow* window = browser->window();
       if (window) {

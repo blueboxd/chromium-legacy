@@ -31,8 +31,6 @@ BASE_DECLARE_FEATURE(kChromeLabs);
 extern const char kChromeLabsActivationParameterName[];
 extern const base::FeatureParam<int> kChromeLabsActivationPercentage;
 
-BASE_DECLARE_FEATURE(kChromeWhatsNewUI);
-
 BASE_DECLARE_FEATURE(kExtensionsMenuInAppMenu);
 bool IsExtensionMenuInRootAppMenu();
 
@@ -59,8 +57,6 @@ BASE_DECLARE_FEATURE(kHaTSWebUI);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 BASE_DECLARE_FEATURE(kLightweightExtensionOverrideConfirmations);
 #endif
-
-BASE_DECLARE_FEATURE(kPowerBookmarksSidePanel);
 
 BASE_DECLARE_FEATURE(kQuickCommands);
 

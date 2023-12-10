@@ -31,7 +31,7 @@
 #include "chrome/browser/password_manager/field_info_manager_factory.h"
 #include "chrome/browser/password_manager/password_manager_settings_service_factory.h"
 #include "chrome/browser/password_manager/password_reuse_manager_factory.h"
-#include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/password_manager/profile_password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
@@ -462,6 +462,7 @@ void ChromePasswordManagerClient::ShowKeyboardReplacingSurface(
               driver->GetLastCommittedURL().DeprecatedGetOriginAsURL()))
           .GetCredentials(),
       passkeys, std::move(ttf_controller_autofill_delegate),
+      GetWebAuthnCredManDelegateForDriver(driver),
       base::AsWeakPtr(content_driver));
 }
 #endif
@@ -686,8 +687,8 @@ password_manager::PasswordStoreInterface*
 ChromePasswordManagerClient::GetProfilePasswordStore() const {
   // Always use EXPLICIT_ACCESS as the password manager checks IsOffTheRecord
   // itself when it shouldn't access the PasswordStore.
-  return PasswordStoreFactory::GetForProfile(profile_,
-                                             ServiceAccessType::EXPLICIT_ACCESS)
+  return ProfilePasswordStoreFactory::GetForProfile(
+             profile_, ServiceAccessType::EXPLICIT_ACCESS)
       .get();
 }
 
@@ -967,7 +968,7 @@ void ChromePasswordManagerClient::NavigateToManagePasswordsPage(
   password_manager_launcher::ShowPasswordSettings(web_contents(), referrer,
                                                   /*manage_passkeys=*/false);
 #else
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  Browser* browser = chrome::FindBrowserWithTab(web_contents());
   if (!browser) {
     browser = chrome::FindLastActive();
   }
@@ -1027,10 +1028,6 @@ version_info::Channel ChromePasswordManagerClient::GetChannel() const {
 void ChromePasswordManagerClient::RefreshPasswordManagerSettingsIfNeeded()
     const {
 #if BUILDFLAG(IS_ANDROID)
-  // Settings need to be requested for android clients enrolled into the unified
-  // password manager experiment.
-  if (!password_manager::features::UsesUnifiedPasswordManagerUi())
-    return;
   PasswordManagerSettingsServiceFactory::GetForProfile(profile_)
       ->RequestSettingsFromBackend();
 #endif
@@ -1067,8 +1064,13 @@ void ChromePasswordManagerClient::AutomaticGenerationAvailable(
       password_generation_driver_receivers_.GetCurrentTargetFrame(),
       ui_data.bounds);
 
+  auto has_saved_credentials =
+      !credential_cache_.GetCredentialStore(rfh->GetLastCommittedOrigin())
+           .GetCredentials()
+           .empty();
   generation_controller->OnAutomaticGenerationAvailable(
-      base::AsWeakPtr(driver), ui_data, element_bounds_in_screen_space);
+      base::AsWeakPtr(driver), ui_data, has_saved_credentials,
+      element_bounds_in_screen_space);
   // Trigger password suggestions. This is a fallback case if the field was
   // wrongly classified as new password field.
   driver->GetPasswordAutofillManager()->MaybeShowPasswordSuggestions(
@@ -1344,8 +1346,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
           &password_feature_manager_,
           base::BindRepeating(
               [](content::WebContents* web_contents) {
-                Browser* browser =
-                    chrome::FindBrowserWithWebContents(web_contents);
+                Browser* browser = chrome::FindBrowserWithTab(web_contents);
                 return browser ? browser->signin_view_controller() : nullptr;
               },
               web_contents)),

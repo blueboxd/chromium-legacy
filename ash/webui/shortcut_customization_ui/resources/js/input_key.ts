@@ -7,7 +7,7 @@ import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -134,6 +134,11 @@ export class InputKeyElement extends InputKeyElementBase {
         `String ID ${ariaLabelStringId} should exist, but it doesn't.`);
 
     return this.i18n(ariaLabelStringId);
+  }
+
+  // Prevent announcing input keys when in editing mode.
+  private getAriaHidden(): boolean {
+    return this.keyState === KeyInputState.NOT_SELECTED;
   }
 }
 

@@ -10,16 +10,17 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/icon_button.h"
-#include "ash/style/rounded_container.h"
 #include "ash/style/typography.h"
 #include "base/notreached.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/action.h"
+#include "chrome/browser/ash/arc/input_overlay/constants.h"
 #include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
 #include "chrome/browser/ash/arc/input_overlay/touch_injector.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/action_view_list_item.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/ui_utils.h"
 #include "chrome/grit/component_extension_resources.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -30,7 +31,6 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/table_layout.h"
-#include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 
 namespace arc::input_overlay {
@@ -39,7 +39,6 @@ namespace {
 
 constexpr int kMainContainerWidth = 296;
 
-constexpr int kInsideBorderInsets = 16;
 constexpr int kHeaderBottomMargin = 16;
 // This is associated to the size of `ash::IconButton::Type::kMedium`.
 constexpr int kIconButtonSize = 32;
@@ -109,24 +108,16 @@ void EditingList::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void EditingList::Init() {
-  SetUseDefaultFillLayout(true);
-
-  // Main container.
-  auto* main_container =
-      AddChildView(std::make_unique<ash::RoundedContainer>());
-  main_container->SetBackground(views::CreateThemedSolidBackground(
-      cros_tokens::kCrosSysSystemBaseElevatedOpaque));
-  main_container->SetBorderInsets(
-      gfx::Insets::VH(kInsideBorderInsets, kInsideBorderInsets));
-  main_container
-      ->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kVertical))
+  SetBackground(views::CreateThemedRoundedRectBackground(
+      cros_tokens::kCrosSysSystemBaseElevatedOpaque, /*radius=*/24));
+  SetBorder(views::CreateEmptyBorder(kEditingListInsideBorderInsets));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+                       views::BoxLayout::Orientation::kVertical))
       ->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kCenter);
 
-  AddHeader(main_container);
+  AddHeader();
 
-  scroll_view_ =
-      main_container->AddChildView(std::make_unique<views::ScrollView>());
+  scroll_view_ = AddChildView(std::make_unique<views::ScrollView>());
   scroll_view_->SetBackgroundColor(absl::nullopt);
   scroll_content_ = scroll_view_->SetContents(std::make_unique<views::View>());
   scroll_content_
@@ -151,9 +142,8 @@ bool EditingList::HasControls() const {
   return controller_->GetActiveActionsSize() != 0u;
 }
 
-void EditingList::AddHeader(views::View* container) {
-  auto* header_container =
-      container->AddChildView(std::make_unique<views::View>());
+void EditingList::AddHeader() {
+  auto* header_container = AddChildView(std::make_unique<views::View>());
   header_container->SetLayoutManager(std::make_unique<views::TableLayout>())
       ->AddColumn(/*h_align=*/views::LayoutAlignment::kStart,
                   /*v_align=*/views::LayoutAlignment::kCenter,
@@ -268,6 +258,7 @@ void EditingList::OnDragUpdate(const ui::LocatedEvent& event) {
   auto* widget = GetWidget();
   DCHECK(widget);
 
+  controller_->RemoveDeleteEditShortcutWidget();
   auto widget_bounds = widget->GetNativeWindow()->GetBoundsInScreen();
   widget_bounds.Offset(
       /*horizontal=*/(event.location() - start_drag_event_pos_).x(),
@@ -341,7 +332,7 @@ gfx::Point EditingList::GetWidgetMagneticPositionLocal() {
 
 void EditingList::ClipScrollViewHeight(bool is_outside) {
   int max_height = controller_->touch_injector()->content_bounds().height() -
-                   2 * kInsideBorderInsets - kHeaderBottomMargin -
+                   2 * kEditingListInsideBorderInsets - kHeaderBottomMargin -
                    kIconButtonSize;
   if (!is_outside) {
     max_height -= kEditingListOffsetInsideMainWindow;
@@ -456,5 +447,8 @@ void EditingList::OnActionNewStateRemoved(const Action& action) {
     }
   }
 }
+
+BEGIN_METADATA(EditingList, views::View)
+END_METADATA
 
 }  // namespace arc::input_overlay

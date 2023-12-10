@@ -48,7 +48,9 @@ AnchorPositionScrollersData::AnchorPositionScrollersData(
 bool AnchorPositionScrollersData::operator==(
     const AnchorPositionScrollersData& other) const {
   return accumulated_scroll_origin == other.accumulated_scroll_origin &&
-         scroll_container_ids == other.scroll_container_ids;
+         scroll_container_ids == other.scroll_container_ids &&
+         needs_scroll_adjustment_in_x == other.needs_scroll_adjustment_in_x &&
+         needs_scroll_adjustment_in_y == other.needs_scroll_adjustment_in_y;
 }
 
 bool AnchorPositionScrollersData::operator!=(
@@ -514,7 +516,15 @@ gfx::Vector2dF TransformTree::AnchorPositionScrollOffset(TransformNode* node) {
     accumulated_scroll_offset +=
         transform_node->scroll_offset.OffsetFromOrigin();
   }
-  return data->accumulated_scroll_origin - accumulated_scroll_offset;
+  gfx::Vector2dF result =
+      data->accumulated_scroll_origin - accumulated_scroll_offset;
+  if (!data->needs_scroll_adjustment_in_x) {
+    result.set_x(0);
+  }
+  if (!data->needs_scroll_adjustment_in_y) {
+    result.set_y(0);
+  }
+  return result;
 }
 
 void TransformTree::UndoOverscroll(
@@ -1430,6 +1440,10 @@ bool ScrollTree::CanRealizeScrollsOnCompositor(const ScrollNode& node) const {
 uint32_t ScrollTree::GetMainThreadRepaintReasons(const ScrollNode& node) const {
   uint32_t reasons = node.main_thread_scrolling_reasons;
   if (!reasons && !node.is_composited) {
+    // `reasons` can contain kPopupNoThreadedInput which is not a repaint
+    // reason, but the flag should be set only when there is no threaded input
+    // handler and this function should not be called.
+    CHECK(MainThreadScrollingReason::AreRepaintReasons(reasons));
     return MainThreadScrollingReason::kNoScrollingLayer;
   }
   return reasons;

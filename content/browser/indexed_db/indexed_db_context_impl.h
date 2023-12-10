@@ -82,13 +82,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   // mojom::IndexedDBControl implementation:
   void BindIndexedDB(
-      const blink::StorageKey& storage_key,
-      mojo::PendingAssociatedRemote<storage::mojom::IndexedDBClientStateChecker>
-          client_state_checker_remote,
-      mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
-  void BindIndexedDBForBucket(
       const storage::BucketLocator& bucket_locator,
-      mojo::PendingAssociatedRemote<storage::mojom::IndexedDBClientStateChecker>
+      mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
           client_state_checker_remote,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
   void GetUsage(GetUsageCallback usage_callback) override;
@@ -160,11 +155,11 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   int64_t GetBucketDiskUsage(const storage::BucketLocator& bucket_locator);
 
-  const scoped_refptr<base::SequencedTaskRunner>& IDBTaskRunner() {
+  const scoped_refptr<base::SequencedTaskRunner>& IDBTaskRunner() const {
     return idb_task_runner_;
   }
 
-  const scoped_refptr<base::TaskRunner>& IOTaskRunner() {
+  const scoped_refptr<base::TaskRunner>& IOTaskRunner() const {
     return io_task_runner_;
   }
 
@@ -240,7 +235,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   // mojom::IndexedDBControl internal implementation:
   void BindIndexedDBImpl(
-      mojo::PendingAssociatedRemote<storage::mojom::IndexedDBClientStateChecker>
+      mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
           client_state_checker_remote,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver,
       storage::QuotaErrorOr<storage::BucketInfo> bucket_info);
@@ -293,11 +288,11 @@ class CONTENT_EXPORT IndexedDBContextImpl
   // default buckets in first party contexts. Non-default buckets and default
   // buckets in third party contexts, when partitioning is enabled, are returned
   // by `FindIndexedDBFiles`.
-  const std::map<blink::StorageKey, base::FilePath> FindLegacyIndexedDBFiles();
+  std::map<blink::StorageKey, base::FilePath> FindLegacyIndexedDBFiles() const;
 
   // Reads IDB files from disk, looking in the directories where
   // third-party-context IDB files are stored.
-  const std::map<storage::BucketId, base::FilePath> FindIndexedDBFiles();
+  std::map<storage::BucketId, base::FilePath> FindIndexedDBFiles() const;
 
   void OnBucketInfoReady(
       GetAllBucketsDetailsCallback callback,

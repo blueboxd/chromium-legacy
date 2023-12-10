@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_FRAGMENTATION_UTILS_H_
 
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
+#include "third_party/blink/renderer/core/layout/geometry/box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
@@ -196,7 +196,7 @@ inline LayoutUnit UnclampedFragmentainerSpaceLeft(
 // below). For all other fragments, leading/trailing block margins must be
 // ignored.
 inline void AdjustMarginsForFragmentation(const NGBlockBreakToken* break_token,
-                                          NGBoxStrut* box_strut) {
+                                          BoxStrut* box_strut) {
   if (!break_token)
     return;
 
@@ -486,7 +486,7 @@ NGConstraintSpace CreateConstraintSpaceForFragmentainer(
 NGBoxFragmentBuilder CreateContainerBuilderForMulticol(
     const NGBlockNode& multicol,
     const NGConstraintSpace& space,
-    const NGFragmentGeometry& fragment_geometry);
+    const FragmentGeometry& fragment_geometry);
 NGConstraintSpace CreateConstraintSpaceForMulticol(const NGBlockNode& multicol);
 
 // Return the adjusted child margin to be applied at the end of a fragment.

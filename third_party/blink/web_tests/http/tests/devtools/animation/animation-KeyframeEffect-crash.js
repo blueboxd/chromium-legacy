@@ -4,6 +4,7 @@
 
 import {TestRunner} from 'test_runner';
 import {ElementsTestRunner} from 'elements_test_runner';
+import * as UI from 'devtools/ui/legacy/legacy.js';
 
 (async function() {
   TestRunner.addResult(
@@ -21,8 +22,7 @@ import {ElementsTestRunner} from 'elements_test_runner';
       }
   `);
 
-  await UI.viewManager.showView('animations');
-  var timeline = Animation.AnimationTimeline.instance();
+  await UI.ViewManager.ViewManager.instance().showView('animations');
   TestRunner.evaluateInPage('startAnimationWithKeyframeEffect()');
   ElementsTestRunner.waitForAnimationAdded(step2);
 

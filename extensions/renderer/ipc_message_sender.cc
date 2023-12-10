@@ -12,7 +12,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/worker_thread.h"
-#include "extensions/common/api/messaging/channel_type.h"
 #include "extensions/common/api/messaging/messaging_endpoint.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
@@ -20,6 +19,7 @@
 #include "extensions/common/mojom/automation_registry.mojom.h"
 #include "extensions/common/mojom/event_router.mojom.h"
 #include "extensions/common/mojom/frame.mojom.h"
+#include "extensions/common/mojom/message_port.mojom-shared.h"
 #include "extensions/common/mojom/renderer_host.mojom.h"
 #include "extensions/common/trace_util.h"
 #include "extensions/renderer/api/messaging/message_target.h"
@@ -28,6 +28,7 @@
 #include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/native_extension_bindings_system.h"
 #include "extensions/renderer/script_context.h"
+#include "extensions/renderer/service_worker_data.h"
 #include "extensions/renderer/trace_util.h"
 #include "extensions/renderer/worker_thread_dispatcher.h"
 #include "ipc/ipc_sync_channel.h"
@@ -89,8 +90,8 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
     DCHECK(!context->IsForServiceWorker());
     DCHECK_EQ(kMainThreadId, content::WorkerThread::GetCurrentId());
 
-    GetEventRouter()->AddListenerForMainThread(GetEventListenerOwner(context),
-                                               event_name);
+    GetEventRouter()->AddListenerForMainThread(mojom::EventListener::New(
+        GetEventListenerOwner(context), event_name, nullptr, absl::nullopt));
   }
 
   void SendRemoveUnfilteredEventListenerIPC(
@@ -99,8 +100,8 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
     DCHECK(!context->IsForServiceWorker());
     DCHECK_EQ(kMainThreadId, content::WorkerThread::GetCurrentId());
 
-    GetEventRouter()->RemoveListenerForMainThread(
-        GetEventListenerOwner(context), event_name);
+    GetEventRouter()->RemoveListenerForMainThread(mojom::EventListener::New(
+        GetEventListenerOwner(context), event_name, nullptr, absl::nullopt));
   }
 
   void SendAddUnfilteredLazyEventListenerIPC(
@@ -158,7 +159,7 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
   void SendOpenMessageChannel(ScriptContext* script_context,
                               const PortId& port_id,
                               const MessageTarget& target,
-                              ChannelType channel_type,
+                              mojom::ChannelType channel_type,
                               const std::string& channel_name) override {
     content::RenderFrame* render_frame = script_context->GetRenderFrame();
     DCHECK(render_frame);
@@ -169,7 +170,8 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
     // TODO(https://crbug.com/1430999): We should just avoid passing a
     // channel name in at all for non-connect messages; we no longer need to.
     std::string channel_name_to_use =
-        channel_type == ChannelType::kConnect ? channel_name : std::string();
+        channel_type == mojom::ChannelType::kConnect ? channel_name
+                                                     : std::string();
 
     switch (target.type) {
       case MessageTarget::EXTENSION: {
@@ -226,7 +228,7 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
         break;
       }
       case MessageTarget::NATIVE_APP:
-        CHECK_EQ(ChannelType::kNative, channel_type);
+        CHECK_EQ(mojom::ChannelType::kNative, channel_type);
         render_frame->Send(new ExtensionHostMsg_OpenChannelToNativeApp(
             frame_context, *target.native_application_name, port_id));
         break;
@@ -311,7 +313,7 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
     return renderer_host_.get();
   }
 
-  const raw_ptr<content::RenderThread, ExperimentalRenderer> render_thread_;
+  const raw_ptr<content::RenderThread, DanglingUntriaged> render_thread_;
   mojo::AssociatedRemote<mojom::EventRouter> event_router_remote_;
   mojo::AssociatedRemote<mojom::RendererHost> renderer_host_;
   mojo::AssociatedRemote<extensions::mojom::RendererAutomationRegistry>
@@ -346,7 +348,25 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
     params->worker_thread_id = worker_thread_id;
     params->service_worker_version_id = service_worker_version_id_;
 
+#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
     dispatcher_->RequestWorker(std::move(params));
+#else
+    const int request_id = params->request_id;
+    WorkerThreadDispatcher::GetServiceWorkerData()
+        ->GetServiceWorkerHost()
+        ->RequestWorker(std::move(params),
+                        base::BindOnce(
+                            [](int request_id, bool success,
+                               base::Value::List args, const std::string& error,
+                               mojom::ExtraResponseDataPtr extra_data) {
+                              WorkerThreadDispatcher::GetServiceWorkerData()
+                                  ->bindings_system()
+                                  ->HandleResponse(request_id, success,
+                                                   std::move(args), error,
+                                                   std::move(extra_data));
+                            },
+                            request_id));
+#endif
   }
 
   void SendResponseAckIPC(ScriptContext* context,
@@ -355,7 +375,13 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
     CHECK(context->IsForServiceWorker());
     CHECK_NE(kMainThreadId, content::WorkerThread::GetCurrentId());
 
+#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
     dispatcher_->SendResponseAck(request_uuid);
+#else
+    WorkerThreadDispatcher::GetServiceWorkerData()
+        ->GetServiceWorkerHost()
+        ->WorkerResponseAck(request_uuid);
+#endif
   }
 
   void SendAddUnfilteredEventListenerIPC(
@@ -366,10 +392,20 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
     DCHECK_NE(blink::mojom::kInvalidServiceWorkerVersionId,
               context->service_worker_version_id());
 
-    dispatcher_->SendAddEventListener(
-        context->GetExtensionID(), context->service_worker_scope(), event_name,
-        context->service_worker_version_id(),
-        content::WorkerThread::GetCurrentId());
+    auto event_listener = mojom::EventListener::New(
+        mojom::EventListenerOwner::NewExtensionId(context->GetExtensionID()),
+        event_name,
+        mojom::ServiceWorkerContext::New(context->service_worker_scope(),
+                                         context->service_worker_version_id(),
+                                         content::WorkerThread::GetCurrentId()),
+        /*event_filter=*/absl::nullopt);
+#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
+    dispatcher_->SendAddEventListener(std::move(event_listener));
+#else
+    WorkerThreadDispatcher::GetServiceWorkerData()
+        ->GetEventRouter()
+        ->AddListenerForServiceWorker(std::move(event_listener))
+#endif
   }
 
   void SendRemoveUnfilteredEventListenerIPC(
@@ -380,10 +416,21 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
     DCHECK_NE(blink::mojom::kInvalidServiceWorkerVersionId,
               context->service_worker_version_id());
 
-    dispatcher_->SendRemoveEventListener(
-        context->GetExtensionID(), context->service_worker_scope(), event_name,
-        context->service_worker_version_id(),
-        content::WorkerThread::GetCurrentId());
+    auto event_listener = mojom::EventListener::New(
+        mojom::EventListenerOwner::NewExtensionId(context->GetExtensionID()),
+        event_name,
+        mojom::ServiceWorkerContext::New(context->service_worker_scope(),
+                                         context->service_worker_version_id(),
+                                         content::WorkerThread::GetCurrentId()),
+        /*event_filter=*/absl::nullopt);
+
+#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
+    dispatcher_->SendRemoveEventListener(std::move(event_listener));
+#else
+    WorkerThreadDispatcher::GetServiceWorkerData()
+        ->GetEventRouter()
+        ->RemoveListenerForServiceWorker(std::move(event_listener));
+#endif
   }
 
   void SendAddUnfilteredLazyEventListenerIPC(
@@ -392,8 +439,16 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
     DCHECK(context->IsForServiceWorker());
     DCHECK_NE(kMainThreadId, content::WorkerThread::GetCurrentId());
 
+#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
     dispatcher_->SendAddEventLazyListener(
         context->GetExtensionID(), context->service_worker_scope(), event_name);
+#else
+    WorkerThreadDispatcher::GetServiceWorkerData()
+        ->GetEventRouter()
+        ->AddLazyListenerForServiceWorker(context->GetExtensionID(),
+                                          context->service_worker_scope(),
+                                          event_name);
+#endif
   }
 
   void SendRemoveUnfilteredLazyEventListenerIPC(
@@ -402,8 +457,16 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
     DCHECK(context->IsForServiceWorker());
     DCHECK_NE(kMainThreadId, content::WorkerThread::GetCurrentId());
 
+#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
     dispatcher_->SendRemoveEventLazyListener(
         context->GetExtensionID(), context->service_worker_scope(), event_name);
+#else
+    WorkerThreadDispatcher::GetServiceWorkerData()
+        ->GetEventRouter()
+        ->RemoveLazyListenerForServiceWorker(context->GetExtensionID(),
+                                             context->service_worker_scope(),
+                                             event_name);
+#endif
   }
 
   void SendAddFilteredEventListenerIPC(ScriptContext* context,
@@ -415,10 +478,22 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
     DCHECK_NE(blink::mojom::kInvalidServiceWorkerVersionId,
               context->service_worker_version_id());
 
+#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
     dispatcher_->SendAddEventFilteredListener(
         context->GetExtensionID(), context->service_worker_scope(), event_name,
         context->service_worker_version_id(),
         content::WorkerThread::GetCurrentId(), filter.Clone(), is_lazy);
+#else
+    WorkerThreadDispatcher::GetServiceWorkerData()
+        ->GetEventRouter()
+        ->AddFilteredListenerForServiceWorker(
+            context->GetExtensionID(), event_name,
+            mojom::ServiceWorkerContext::New(
+                context->service_worker_scope(),
+                context->service_worker_version_id(),
+                content::WorkerThread::GetCurrentId()),
+            filter.Clone(), is_lazy);
+#endif
   }
 
   void SendRemoveFilteredEventListenerIPC(ScriptContext* context,
@@ -430,11 +505,23 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
     DCHECK_NE(blink::mojom::kInvalidServiceWorkerVersionId,
               context->service_worker_version_id());
 
+#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
     dispatcher_->SendRemoveEventFilteredListener(
         context->GetExtensionID(), context->service_worker_scope(), event_name,
         context->service_worker_version_id(),
         content::WorkerThread::GetCurrentId(), filter.Clone(),
         remove_lazy_listener);
+#else
+    WorkerThreadDispatcher::GetServiceWorkerData()
+        ->GetEventRouter()
+        ->RemoveFilteredListenerForServiceWorker(
+            context->GetExtensionID(), event_name,
+            mojom::ServiceWorkerContext::New(
+                context->service_worker_scope(),
+                context->service_worker_version_id(),
+                content::WorkerThread::GetCurrentId()),
+            filter.Clone(), remove_lazy_listener);
+#endif
   }
 
   void SendBindAutomationIPC(
@@ -442,13 +529,19 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
       mojo::PendingAssociatedRemote<ax::mojom::Automation> pending_remote)
       override {
     CHECK(context->IsForServiceWorker());
+#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
     dispatcher_->SendBindAutomation(std::move(pending_remote));
+#else
+    WorkerThreadDispatcher::GetServiceWorkerData()
+        ->GetAutomationRegistry()
+        ->BindAutomation(std::move(pending_remote));
+#endif
   }
 
   void SendOpenMessageChannel(ScriptContext* script_context,
                               const PortId& port_id,
                               const MessageTarget& target,
-                              ChannelType channel_type,
+                              mojom::ChannelType channel_type,
                               const std::string& channel_name) override {
     DCHECK(!script_context->GetRenderFrame());
     DCHECK(script_context->IsForServiceWorker());
@@ -457,7 +550,8 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
     // TODO(https://crbug.com/1430999): We should just avoid passing a
     // channel name in at all for non-connect messages; we no longer need to.
     std::string channel_name_to_use =
-        channel_type == ChannelType::kConnect ? channel_name : std::string();
+        channel_type == mojom::ChannelType::kConnect ? channel_name
+                                                     : std::string();
 
     switch (target.type) {
       case MessageTarget::EXTENSION: {
@@ -487,7 +581,7 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
         break;
       }
       case MessageTarget::NATIVE_APP:
-        CHECK_EQ(ChannelType::kNative, channel_type);
+        CHECK_EQ(mojom::ChannelType::kNative, channel_type);
         dispatcher_->Send(new ExtensionHostMsg_OpenChannelToNativeApp(
             PortContextForCurrentWorker(), *target.native_application_name,
             port_id));

@@ -446,10 +446,6 @@
       "--log-path=${ISOLATED_OUTDIR}/chromedriver.log",
     ],
   },
-  "chromedriver_webview_shell_apk": {
-    "label": "//chrome/test/chromedriver/test/webview_shell:chromedriver_webview_shell_apk",
-    "type": "additional_compile_target",
-  },
   "chromeos_integration_tests": {
     "label": "//chrome/test:chromeos_integration_tests",
     "type": "windowed_test_launcher",
@@ -514,10 +510,6 @@
   "chromedriver_unittests": {
     "label": "//chrome/test/chromedriver:chromedriver_unittests",
     "type": "windowed_test_launcher",
-  },
-  "chrome_finch_smoke_tests": {
-    "label": "//clank/java:chrome_finch_smoke_tests",
-    "type": "generated_script",
   },
   "chromeos_components_unittests": {
     "label": "//chromeos/components:chromeos_components_unittests",
@@ -1022,10 +1014,6 @@
   "lacros_chrome_browsertests": {
     "label": "//chrome/test:lacros_chrome_browsertests",
     "type": "windowed_test_launcher",
-  },
-  "lacros_chrome_browsertests_run_in_series": {
-    "label": "//chrome/test:lacros_chrome_browsertests_run_in_series",
-    "type": "windowed_test_launcher",
     "args": [
       "--test-launcher-jobs=1",
     ],
@@ -1148,10 +1136,6 @@
   },
   "module_installer_junit_tests": {
     "label": "//components/module_installer/android:module_installer_junit_tests",
-    "type": "generated_script",
-  },
-  "monochrome_finch_smoke_tests": {
-    "label": "//clank/android_webview/components:monochrome_finch_smoke_tests",
     "type": "generated_script",
   },
   "monochrome_public_smoke_test": {
@@ -1483,10 +1467,6 @@
   "services_junit_tests": {
     "label": "//services:services_junit_tests",
     "type": "generated_script",
-  },
-  "service_manager_unittests": {
-    "label": "//services/service_manager/tests:service_manager_unittests",
-    "type": "console_test_launcher",
   },
   "services_unittests": {
     "label": "//services:services_unittests",

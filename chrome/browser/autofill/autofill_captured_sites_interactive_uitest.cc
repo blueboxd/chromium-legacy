@@ -57,6 +57,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "services/network/public/cpp/data_element.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 
 using captured_sites_test_utils::CapturedSiteParams;
 using captured_sites_test_utils::GetCapturedSites;
@@ -77,7 +78,7 @@ constexpr base::TimeDelta kAutofillWaitForFillInterval = base::Seconds(60);
 
 base::FilePath GetReplayFilesRootDirectory() {
   base::FilePath src_dir;
-  if (base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir)) {
+  if (base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &src_dir)) {
     return src_dir.AppendASCII("chrome")
         .AppendASCII("test")
         .AppendASCII("data")
@@ -217,7 +218,7 @@ class AutofillCapturedSitesInteractiveTest
       // the "Enter CVC" dialog will pop up for card autofill.
       bool is_credit_card_field =
           triggered_field_type.has_value() &&
-          AutofillType(triggered_field_type.value()).group() ==
+          GroupTypeOfServerFieldType(triggered_field_type.value()) ==
               FieldTypeGroup::kCreditCard;
       bool should_cvc_dialog_pop_up = is_credit_card_field && cvc;
 
@@ -333,7 +334,11 @@ class AutofillCapturedSitesInteractiveTest
     // prediction. Test will check this attribute on all the relevant input
     // elements in a form to determine if the form is ready for interaction.
     feature_list_.InitWithFeaturesAndParameters(
-        /*enabled_features=*/{{features::test::kAutofillServerCommunication,
+        /*enabled_features=*/{{blink::features::
+                                   kAutofillUseDomNodeIdForRendererId,
+                               {}},
+                              {features::kAutofillContentEditables, {}},
+                              {features::test::kAutofillServerCommunication,
                                {}},
                               {features::test::kAutofillShowTypePredictions,
                                {}},
@@ -419,7 +424,7 @@ IN_PROC_BROWSER_TEST_P(AutofillCapturedSitesInteractiveTest, Recipe) {
   }
 
   base::FilePath src_dir;
-  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &src_dir));
 
   bool test_completed = recipe_replayer()->ReplayTest(
       GetParam().capture_file_path, GetParam().recipe_file_path,

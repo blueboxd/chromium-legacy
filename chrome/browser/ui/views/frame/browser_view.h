@@ -31,7 +31,6 @@
 #include "chrome/browser/ui/user_education/browser_feature_promo_storage_service.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views_context.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
-#include "chrome/browser/ui/views/frame/browser_actions.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/contents_web_view.h"
@@ -90,10 +89,6 @@ class TopControlsSlideControllerTest;
 class WebAppFrameToolbarView;
 class WebContentsCloseHandler;
 class WebUITabStripContainerView;
-
-namespace actions {
-class ActionItem;
-}  // namespace actions
 
 namespace ui {
 class NativeTheme;
@@ -376,10 +371,6 @@ class BrowserView : public BrowserWindow,
     return immersive_mode_controller_.get();
   }
 
-  actions::ActionItem* root_action_item() const {
-    return browser_actions_.root_action_item();
-  }
-
   // Returns true if the view has been initialized.
   bool initialized() const { return initialized_; }
 
@@ -456,6 +447,10 @@ class BrowserView : public BrowserWindow,
   void UpdateSidePanelHorizontalAlignment();
 
   void UpdateWebAppStatusIconsVisiblity();
+
+  // Setter and getter for the `window.setResizable(bool)` state.
+  void SetCanResizeFromWebAPI(absl::optional<bool> can_resize);
+  absl::optional<bool> GetCanResizeFromWebAPI() const;
 
   // BrowserWindow:
   void Show() override;
@@ -551,7 +546,6 @@ class BrowserView : public BrowserWindow,
   bool IsLocationBarVisible() const override;
   bool IsBorderlessModeEnabled() const override;
   void ShowChromeLabs() override;
-
   SharingDialog* ShowSharingDialog(content::WebContents* contents,
                                    SharingDialogData data) override;
   void ShowUpdateChromeDialog() override;
@@ -676,6 +670,9 @@ class BrowserView : public BrowserWindow,
                                   ui::Accelerator* accelerator) const override;
 
   // views::WidgetDelegate:
+  bool CanResize() const override;
+  bool CanFullscreen() const override;
+  bool CanMaximize() const override;
   bool CanActivate() const override;
   std::u16string GetWindowTitle() const override;
   std::u16string GetAccessibleWindowTitle() const override;
@@ -716,6 +713,7 @@ class BrowserView : public BrowserWindow,
   void OnWidgetBoundsChanged(views::Widget* widget,
                              const gfx::Rect& new_bounds) override;
   void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
+  void OnWidgetSizeConstraintsChanged(views::Widget* widget) override;
 
   // views::ClientView:
   views::CloseRequestResult OnWindowCloseRequested() override;
@@ -987,10 +985,6 @@ class BrowserView : public BrowserWindow,
 
   void UpdateWindowControlsOverlayEnabled();
 
-  // Sends widget's `can_resize` to blink to update `resizable` CSS @media
-  // feature.
-  void UpdateResizable();
-
   // Updates the visibility of the Window Controls Overlay toggle button.
   void UpdateWindowControlsOverlayToggleVisible();
 
@@ -1253,10 +1247,6 @@ class BrowserView : public BrowserWindow,
   // The last bounds we notified about in TryNotifyWindowBoundsChanged().
   gfx::Rect last_widget_bounds_;
 
-  // `browser_actions_` creates the root browser level action along with child
-  // actions.
-  const BrowserActions browser_actions_;
-
   std::unique_ptr<AccessibilityFocusHighlight> accessibility_focus_highlight_;
 
   std::unique_ptr<BrowserFeaturePromoStorageService>
@@ -1281,6 +1271,9 @@ class BrowserView : public BrowserWindow,
   bool window_management_permission_granted_ = false;
   absl::optional<content::PermissionController::SubscriptionId>
       window_management_subscription_id_;
+
+  // Keeps track of the resizability set by `window.setResizable(bool)` API.
+  absl::optional<bool> can_resize_from_web_api_;
 
   base::CallbackListSubscription paint_as_active_subscription_;
 

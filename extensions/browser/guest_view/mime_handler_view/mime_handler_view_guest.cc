@@ -375,6 +375,12 @@ bool MimeHandlerViewGuest::IsFullscreenForTabOrPending(
   return is_guest_fullscreen_;
 }
 
+bool MimeHandlerViewGuest::ShouldResumeRequestsForCreatedWindow() {
+  // Not reached due to the use of `CreateCustomWebContents`.
+  NOTREACHED();
+  return true;
+}
+
 bool MimeHandlerViewGuest::IsWebContentsCreationOverridden(
     content::SiteInstance* source_site_instance,
     content::mojom::WindowContainerType window_container_type,
@@ -444,7 +450,7 @@ void MimeHandlerViewGuest::ReadyToCommitNavigation(
   const GURL& url = navigation_handle->GetURL();
   if (url.SchemeIs(kExtensionScheme) &&
       url.host_piece() == extension_misc::kPdfExtensionId) {
-    // The unseasoned PDF viewer will navigate to the stream URL (using
+    // The PDF viewer will navigate to the stream URL (using
     // PdfNavigtionThrottle), rather than using it as a subresource.
     return;
   }

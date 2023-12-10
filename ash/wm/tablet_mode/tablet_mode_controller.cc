@@ -145,9 +145,14 @@ TabletModeController::UiMode GetUiMode() {
 
 // Returns true if the device has an active internal display.
 bool HasActiveInternalDisplay() {
-  return display::HasInternalDisplay() &&
-         Shell::Get()->display_manager()->IsActiveDisplayId(
-             display::Display::InternalDisplayId());
+  if (!display::HasInternalDisplay()) {
+    return false;
+  }
+
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  return display_manager->IsActiveDisplayId(
+             display::Display::InternalDisplayId()) ||
+         display_manager->IsInUnifiedMode();
 }
 
 // Returns true if |sequence| has the same properties as the ones we care about
@@ -454,8 +459,9 @@ void TabletModeController::Shutdown() {
 }
 
 void TabletModeController::AddWindow(aura::Window* window) {
-  if (InTabletMode())
+  if (tablet_mode_window_manager_) {
     tablet_mode_window_manager_->AddWindow(window);
+  }
 }
 
 bool TabletModeController::ShouldAutoHideTitlebars(views::Widget* widget) {

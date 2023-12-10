@@ -39,6 +39,7 @@
 #include "components/viz/service/debugger/viz_debugger.h"
 #include "components/viz/service/display/aggregated_frame.h"
 #include "components/viz/service/display/display_resource_provider.h"
+#include "components/viz/service/display/overlay_candidate.h"
 #include "components/viz/service/display/renderer_utils.h"
 #include "components/viz/service/display/resolved_frame_data.h"
 #include "components/viz/service/surfaces/surface.h"
@@ -427,7 +428,6 @@ struct SurfaceAggregator::PrewalkResult {
   // This is the set of Surfaces that were referenced by another Surface, but
   // not included in a SurfaceDrawQuad.
   base::flat_set<SurfaceId> undrawn_surfaces;
-  bool video_capture_enabled = false;
   bool frame_sinks_changed = false;
   bool page_fullscreen_mode = false;
   gfx::ContentColorUsage content_color_usage = gfx::ContentColorUsage::kSRGB;
@@ -617,14 +617,26 @@ const DrawQuad* SurfaceAggregator::FindQuadWithOverlayDamage(
   // quad. So if we promote the now smaller quad to an overlay this frame we
   // should not remove this damage rect. i.e. we should not assign the damage
   // rect to this quad.
+  // For similar reasons, we should not assign damage to quads with non-axis
+  // aligned transforms, because those won't be promoted to overlay.
   auto& damage_rect_in_target_space = surface_damage_rect_list_->back();
   if (!damage_rect_in_target_space.IsEmpty()) {
     gfx::Transform transform =
         parent_target_transform *
         target_quad->shared_quad_state->quad_to_target_transform;
-    gfx::Rect rect_in_target_space =
-        cc::MathUtil::MapEnclosingClippedRect(transform, target_quad->rect);
-    if (!rect_in_target_space.Contains(damage_rect_in_target_space)) {
+    if (!transform.Preserves2dAxisAlignment()) {
+      return nullptr;
+    }
+
+    gfx::RectF rect_in_target_space =
+        cc::MathUtil::MapClippedRect(transform, gfx::RectF(target_quad->rect));
+    // Because OverlayCandidate.damage_rect is a gfx::Rect, we can't really
+    // assign damage if the display_rect is not pixel-aligned.
+    if (!gfx::IsNearestRectWithinDistance(rect_in_target_space, 0.01f)) {
+      return nullptr;
+    }
+    if (!rect_in_target_space.Contains(
+            gfx::RectF(damage_rect_in_target_space))) {
       return nullptr;
     }
   }
@@ -879,13 +891,15 @@ void SurfaceAggregator::EmitSurfaceContent(
 
   TRACE_EVENT(
       "viz,benchmark,graphics.pipeline", "Graphics.Pipeline",
-      perfetto::Flow::Global(frame.metadata.begin_frame_ack.trace_id),
-      [&](perfetto::EventContext ctx) {
+      perfetto::TerminatingFlow::Global(
+          frame.metadata.begin_frame_ack.trace_id),
+      perfetto::Flow::Global(display_trace_id_),
+      [trace_id = display_trace_id_](perfetto::EventContext ctx) {
         auto* event = ctx.event<perfetto::protos::pbzero::ChromeTrackEvent>();
         auto* data = event->set_chrome_graphics_pipeline();
         data->set_step(perfetto::protos::pbzero::ChromeGraphicsPipeline::
                            StepName::STEP_SURFACE_AGGREGATION);
-        data->set_display_trace_id(display_trace_id_);
+        data->set_display_trace_id(trace_id);
       });
 
   const gfx::Rect& surface_quad_visible_rect = surface_quad->visible_rect;
@@ -926,23 +940,21 @@ void SurfaceAggregator::EmitSurfaceContent(
       surface_quad->is_reflection &&
       !scaled_quad_to_target_transform.IsIdentityOrTranslation();
 
-  bool merge_pass = CanPotentiallyMergePass(*surface_quad) &&
-                    !reflected_and_scaled && copy_requests.empty() &&
-                    combined_transform.Preserves2dAxisAlignment() &&
-                    mask_filter_info.CanMergeMaskFilterInfo(
-                        *render_pass_list.back(), combined_transform);
+  const bool pass_is_mergeable =
+      CanPotentiallyMergePass(*surface_quad) && !reflected_and_scaled &&
+      combined_transform.Preserves2dAxisAlignment() &&
+      mask_filter_info.CanMergeMaskFilterInfo(*render_pass_list.back(),
+                                              combined_transform);
 
-  absl::optional<gfx::Rect> surface_quad_clip;
-  if (merge_pass) {
-    // Compute a clip rect in |dest_pass| coordinate space to ensure merged
-    // surface cannot draw outside where a non-merged surface would draw. An
-    // enclosing rect in |surface_quad| target render pass coordinate space is
-    // computed, then transformed into |dest_pass| coordinate space and finally
-    // that is intersected with existing |added_clip_rect|.
-    surface_quad_clip = CalculateClipRect(
-        added_clip_rect, ComputeDrawableRectForQuad(surface_quad),
-        target_transform);
-  }
+  // When a surface has video capture enabled, but no copy requests, we do not
+  // require an intermediate surface. However, video capture being enabled is a
+  // hint that we will have a copy request soon, so we prevent |merge_pass| to
+  // avoid thrashing on the render pass backing allocation.
+  const bool has_video_capture =
+      !copy_requests.empty() || surface->IsVideoCaptureOnFromClient();
+
+  const bool merge_pass = pass_is_mergeable && !has_video_capture;
+
   // Update PersistentPassData.merge_status of the root render pass of the
   // current frame before making a call to AddSurfaceDamageToDamageList() where
   // RenderPassNeedsFullDamage() is called and needs root pass |merge_state|
@@ -1015,10 +1027,46 @@ void SurfaceAggregator::EmitSurfaceContent(
     dest_pass_list_->push_back(std::move(copy_pass));
   }
 
+  if (surface->IsVideoCaptureOnFromClient()) {
+    CHECK(!merge_pass);
+    dest_pass_list_->back()->video_capture_enabled = true;
+  }
+
   const auto& last_pass = *render_pass_list.back();
   auto& resolved_root_pass = resolved_frame.GetRootRenderPassData();
 
-  if (merge_pass) {
+  // This hack allows for quads that require overlay to appear in a render pass
+  // for a copy request as well as be merged into the dest pass (eventually the
+  // root) to be promoted to overlay. This allows e.g. protected content to be
+  // visible to the user, even if something is capturing the tab (the protected
+  // content will still not appear in the capture). Note this does not handle
+  // the case when the root pass is captured with protected content, which needs
+  // to be handled during overlay processing.
+  //
+  // It works by preventing merging when there is a copy request (as usual), so
+  // we have an intermediate render pass (and backing) that can service the copy
+  // request. Then, we detect here if the render pass has quads that require
+  // overlay and could've otherwise merged. If so, we force a merge, resulting
+  // in a copy of the render pass quads in the intermediate pass and a copy in
+  // the dest pass. Since we are not copying the copy request itself to the dest
+  // pass, the quads that require overlay can still be promoted to overlay.
+  const bool allow_forced_merge_pass = base::FeatureList::IsEnabled(
+      features::kAllowForceMergeRenderPassWithRequireOverlayQuads);
+  const bool force_merge_pass =
+      allow_forced_merge_pass && !merge_pass && pass_is_mergeable &&
+      base::ranges::any_of(dest_pass_list_->back()->quad_list,
+                           &OverlayCandidate::RequiresOverlay);
+
+  if (merge_pass || force_merge_pass) {
+    // Compute a clip rect in |dest_pass| coordinate space to ensure merged
+    // surface cannot draw outside where a non-merged surface would draw. An
+    // enclosing rect in |surface_quad| target render pass coordinate space is
+    // computed, then transformed into |dest_pass| coordinate space and finally
+    // that is intersected with existing |added_clip_rect|.
+    absl::optional<gfx::Rect> surface_quad_clip = CalculateClipRect(
+        added_clip_rect, ComputeDrawableRectForQuad(surface_quad),
+        target_transform);
+
     // UpdatePersistentPassDataMergeState() has been called earlier.
     CopyQuadsToPass(resolved_frame, resolved_root_pass, dest_pass,
                     frame.device_scale_factor(), combined_transform,
@@ -2072,8 +2120,6 @@ gfx::Rect SurfaceAggregator::PrewalkSurface(ResolvedFrameData& resolved_frame,
   // If any CopyOutputRequests were made at FrameSink level, make sure we grab
   // them too.
   surface->TakeCopyOutputRequestsFromClient();
-  if (surface->IsVideoCaptureOnFromClient())
-    result.video_capture_enabled = true;
 
   if (root_resolved_pass.aggregation().will_draw)
     surface->OnWillBeDrawn();
@@ -2202,14 +2248,15 @@ AggregatedFrame SurfaceAggregator::Aggregate(
       surface->GetActiveOrInterpolatedFrame();
   TRACE_EVENT(
       "viz,benchmark,graphics.pipeline", "Graphics.Pipeline",
-      perfetto::Flow::Global(
+      perfetto::TerminatingFlow::Global(
           root_surface_frame.metadata.begin_frame_ack.trace_id),
-      [&](perfetto::EventContext ctx) {
+      perfetto::Flow::Global(display_trace_id_),
+      [trace_id = display_trace_id_](perfetto::EventContext ctx) {
         auto* event = ctx.event<perfetto::protos::pbzero::ChromeTrackEvent>();
         auto* data = event->set_chrome_graphics_pipeline();
         data->set_step(perfetto::protos::pbzero::ChromeGraphicsPipeline::
                            StepName::STEP_SURFACE_AGGREGATION);
-        data->set_display_trace_id(display_trace_id_);
+        data->set_display_trace_id(trace_id);
       });
 
   AggregatedFrame frame;
@@ -2264,7 +2311,6 @@ AggregatedFrame SurfaceAggregator::Aggregate(
     manager_->AggregatedFrameSinksChanged();
 
   frame.has_copy_requests = has_copy_requests_ && take_copy_requests_;
-  frame.video_capture_enabled = prewalk_result.video_capture_enabled;
   frame.content_color_usage = prewalk_result.content_color_usage;
   frame.page_fullscreen_mode = prewalk_result.page_fullscreen_mode;
 

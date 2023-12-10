@@ -16,6 +16,7 @@
 #include "base/barrier_closure.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/dcheck_is_on.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
@@ -165,6 +166,8 @@
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#include "content/browser/media/cdm_storage_common.h"
+#include "content/browser/media/cdm_storage_manager.h"
 #include "content/browser/media/media_license_manager.h"
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
@@ -1029,6 +1032,9 @@ class StoragePartitionImpl::DataDeletionHelper {
       AggregationService* aggregation_service,
       PrivateAggregationManagerImpl* private_aggregation_manager,
       storage::SharedStorageManager* shared_storage_manager,
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+      CdmStorageManager* cdm_storage_manager,
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
       bool perform_storage_cleanup,
       const base::Time begin,
       const base::Time end);
@@ -1258,6 +1264,9 @@ StoragePartitionImpl::StoragePartitionImpl(
       deletion_helpers_running_(0) {}
 
 StoragePartitionImpl::~StoragePartitionImpl() {
+#if DCHECK_IS_ON()
+  DCHECK(on_browser_context_will_be_destroyed_called_);
+#endif
   browser_context_ = nullptr;
 
   if (url_loader_factory_getter_) {
@@ -1275,10 +1284,6 @@ StoragePartitionImpl::~StoragePartitionImpl() {
     database_tracker_ptr->task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&storage::DatabaseTracker::Shutdown,
                                   std::move(database_tracker)));
-  }
-
-  if (GetFileSystemAccessManager()) {
-    GetFileSystemAccessManager()->Shutdown();
   }
 
   if (GetFileSystemContext()) {
@@ -1305,12 +1310,23 @@ StoragePartitionImpl::~StoragePartitionImpl() {
     GetBackgroundFetchContext()->Shutdown();
   }
 
-  if (GetContentIndexContext()) {
-    GetContentIndexContext()->Shutdown();
-  }
-
   if (GetGeneratedCodeCacheContext()) {
     GetGeneratedCodeCacheContext()->Shutdown();
+  }
+}
+
+void StoragePartitionImpl::OnBrowserContextWillBeDestroyed() {
+#if DCHECK_IS_ON()
+  on_browser_context_will_be_destroyed_called_ = true;
+#endif
+  // These hold raw pointers to objects that are about to be destroyed, before
+  // this object is destroyed. Shut them down now to avoid dangling pointers.
+  if (GetFileSystemAccessManager()) {
+    GetFileSystemAccessManager()->Shutdown();
+  }
+
+  if (GetContentIndexContext()) {
+    GetContentIndexContext()->Shutdown();
   }
 }
 
@@ -1563,9 +1579,30 @@ void StoragePartitionImpl::Initialize(
   }
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  if (base::FeatureList::IsEnabled(features::kCdmStorageDatabase)) {
+    if (is_in_memory()) {
+      // Pass an empty path if in_memory so that CdmStorage.db is not stored on
+      // disk.
+      cdm_storage_manager_ =
+          std::make_unique<CdmStorageManager>(base::FilePath());
+    } else {
+      cdm_storage_manager_ = std::make_unique<CdmStorageManager>(
+          partition_path_.Append(kCdmStorageDatabaseFileName));
+    }
+  }
+
   media_license_manager_ = std::make_unique<MediaLicenseManager>(
       is_in_memory(), browser_context_->GetSpecialStoragePolicy(),
       quota_manager_proxy);
+
+  // When 'kCdmStorageDatabaseMigration' is enabled, in the
+  // 'MediaLicenseStorageHost', when operations occur, we make sure to
+  // update and reflect that in the CdmStorageDatabase as well.
+  if (base::FeatureList::IsEnabled(features::kCdmStorageDatabase) &&
+      base::FeatureList::IsEnabled(features::kCdmStorageDatabaseMigration)) {
+    CHECK(cdm_storage_manager_);
+    media_license_manager_->set_cdm_storage_manager(cdm_storage_manager_.get());
+  }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
   if (base::FeatureList::IsEnabled(blink::features::kSharedStorageAPI)) {
@@ -1884,6 +1921,10 @@ MediaLicenseManager* StoragePartitionImpl::GetMediaLicenseManager() {
   DCHECK(initialized_);
   return media_license_manager_.get();
 }
+
+CdmStorageManager* StoragePartitionImpl::GetCdmStorageManager() {
+    return cdm_storage_manager_.get();
+}
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 InterestGroupManager* StoragePartitionImpl::GetInterestGroupManager() {
@@ -2129,8 +2170,8 @@ void StoragePartitionImpl::OnAuthRequired(
 void StoragePartitionImpl::OnPrivateNetworkAccessPermissionRequired(
     const GURL& url,
     const net::IPAddress& ip_address,
-    const std::string& private_network_device_id,
-    const std::string& private_network_device_name,
+    const absl::optional<std::string>& private_network_device_id,
+    const absl::optional<std::string>& private_network_device_name,
     OnPrivateNetworkAccessPermissionRequiredCallback callback) {
   if (!base::FeatureList::IsEnabled(
           network::features::kPrivateNetworkAccessPermissionPrompt)) {
@@ -2518,7 +2559,11 @@ void StoragePartitionImpl::ClearDataImpl(
       filesystem_context_.get(), GetCookieManagerForBrowserProcess(),
       interest_group_manager_.get(), attribution_manager_.get(),
       aggregation_service_.get(), private_aggregation_manager_.get(),
-      shared_storage_manager_.get(), perform_storage_cleanup, begin, end);
+      shared_storage_manager_.get(),
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+      cdm_storage_manager_.get(),
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+      perform_storage_cleanup, begin, end);
 }
 
 void StoragePartitionImpl::DeletionHelperDone(base::OnceClosure callback) {
@@ -2716,6 +2761,9 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     AggregationService* aggregation_service,
     PrivateAggregationManagerImpl* private_aggregation_manager,
     storage::SharedStorageManager* shared_storage_manager,
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+    CdmStorageManager* cdm_storage_manager,
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
     bool perform_storage_cleanup,
     const base::Time begin,
     const base::Time end) {
@@ -2805,6 +2853,22 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     }
   }
 
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  if ((remove_mask_ & REMOVE_DATA_MASK_MEDIA_LICENSES) && cdm_storage_manager) {
+    // If no storage key specified, then delete the CdmStorage.db.
+    if (storage_key_origin_empty) {
+      cdm_storage_manager->DeleteDatabase();
+    } else {
+      // TODO(crbug.com/1454512): Investigate and add logic to handle
+      // filter_builder and storage_key_policy_matcher.
+      cdm_storage_manager->DeleteDataForStorageKey(storage_key,
+                                                   base::DoNothing());
+    }
+  }
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
+  // TODO(crbug.com/1454512): Remove REMOVE_DATA_MASK_MEDIA_LICENSES from here
+  // when MediaLicense is removed from Quota types.
   if (remove_mask_ & REMOVE_DATA_MASK_INDEXEDDB ||
       remove_mask_ & REMOVE_DATA_MASK_WEBSQL ||
       remove_mask_ & REMOVE_DATA_MASK_FILE_SYSTEMS ||

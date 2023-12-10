@@ -4,28 +4,43 @@
 
 #include "chrome/browser/web_applications/web_app_helpers.h"
 
-#include "base/base64.h"
-#include "base/feature_list.h"
+#include "base/check_op.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
-#include "chrome/common/webui_url_constants.h"
 #include "components/crx_file/id_util.h"
 #include "components/password_manager/content/common/web_ui_constants.h"
-#include "components/prefs/pref_service.h"
-#include "content/public/common/content_features.h"
 #include "crypto/sha2.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
 
 namespace web_app {
+
+namespace {
+// The following string is used to concatenate the id of a sub-app with the id
+// of the respective parent app, to produce a new id that is assured to not
+// conflict with the id of the same app when installed as a standalone app.
+const char kSubAppIdConcatenation[] = ":";
+
+std::string MaybeConcatenateParentAppManifestId(
+    const webapps::ManifestId& manifest_id,
+    const absl::optional<webapps::ManifestId>& parent_manifest_id) {
+  if (parent_manifest_id.has_value()) {
+    CHECK(parent_manifest_id->is_valid());
+    CHECK_NE(parent_manifest_id.value(), manifest_id)
+        << "An app cannot be a parent to itself.";
+    return base::StrCat({manifest_id.GetWithoutRef().spec(),
+                         kSubAppIdConcatenation,
+                         parent_manifest_id->GetWithoutRef().spec()});
+  } else {
+    return manifest_id.GetWithoutRef().spec();
+  }
+}
+}  // namespace
 
 // The following string is used to build the directory name for
 // shortcuts to chrome applications (the kind which are installed
@@ -52,25 +67,42 @@ webapps::AppId GetAppIdFromApplicationName(const std::string& app_name) {
   return app_name.substr(prefix.length());
 }
 
+webapps::AppId GenerateAppId(
+    const absl::optional<std::string>& manifest_id_path,
+    const GURL& start_url,
+    const absl::optional<webapps::ManifestId>& parent_manifest_id) {
+  if (!manifest_id_path) {
+    return GenerateAppIdFromManifestId(
+        GenerateManifestIdFromStartUrlOnly(start_url), parent_manifest_id);
+  }
+  return GenerateAppIdFromManifestId(
+      GenerateManifestId(manifest_id_path.value(), start_url),
+      parent_manifest_id);
+}
+
+webapps::AppId GenerateAppIdFromManifest(
+    const blink::mojom::Manifest& manifest,
+    const absl::optional<webapps::ManifestId>& parent_manifest_id) {
+  CHECK(manifest.id.is_valid());
+  return GenerateAppIdFromManifestId(manifest.id, parent_manifest_id);
+}
+
 webapps::AppId GenerateAppIdFromManifestId(
-    const webapps::ManifestId& manifest_id) {
+    const webapps::ManifestId& manifest_id,
+    const absl::optional<webapps::ManifestId>& parent_manifest_id) {
   // The app ID is hashed twice: here and in GenerateId.
   // The double-hashing is for historical reasons and it needs to stay
   // this way for backwards compatibility. (Back then, a web app's input to the
   // hash needed to be formatted like an extension public key.)
+  auto concatenated_manifest_id =
+      MaybeConcatenateParentAppManifestId(manifest_id, parent_manifest_id);
   return crx_file::id_util::GenerateId(
-      crypto::SHA256HashString(manifest_id.spec()));
+      crypto::SHA256HashString(concatenated_manifest_id));
 }
 
-webapps::AppId GenerateAppId(
-    const absl::optional<std::string>& manifest_id_path,
-    const GURL& start_url) {
-  if (!manifest_id_path) {
-    return GenerateAppIdFromManifestId(
-        GenerateManifestIdFromStartUrlOnly(start_url));
-  }
-  return GenerateAppIdFromManifestId(
-      GenerateManifestId(manifest_id_path.value(), start_url));
+webapps::ManifestId GenerateManifestIdFromStartUrlOnly(const GURL& start_url) {
+  CHECK(start_url.is_valid()) << start_url.spec();
+  return start_url.GetWithoutRef();
 }
 
 webapps::ManifestId GenerateManifestId(const std::string& manifest_id_path,
@@ -83,17 +115,6 @@ webapps::ManifestId GenerateManifestId(const std::string& manifest_id_path,
   CHECK(app_id.is_valid()) << "start_url: " << start_url
                            << ", manifest_id = " << manifest_id_path;
   return app_id.GetWithoutRef();
-}
-
-webapps::AppId GenerateAppIdFromManifest(
-    const blink::mojom::Manifest& manifest) {
-  CHECK(manifest.id.is_valid());
-  return GenerateAppIdFromManifestId(manifest.id);
-}
-
-webapps::ManifestId GenerateManifestIdFromStartUrlOnly(const GURL& start_url) {
-  CHECK(start_url.is_valid()) << start_url.spec();
-  return start_url.GetWithoutRef();
 }
 
 bool IsValidWebAppUrl(const GURL& app_url) {

@@ -33,6 +33,8 @@
 #include "chrome/browser/ash/printing/synced_printers_manager.h"
 #include "chrome/browser/ash/printing/usb_printer_detector.h"
 #include "chrome/browser/ash/printing/usb_printer_notification_controller.h"
+#include "chrome/browser/printing/print_preview_sticky_settings.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
@@ -243,6 +245,10 @@ class FakePrinterDetector : public PrinterDetector {
                        });
 
     detections_.resize(new_end - detections_.begin());
+    on_printers_found_callback_.Run(detections_);
+  }
+
+  void RunPrintersFoundCallback() {
     on_printers_found_callback_.Run(detections_);
   }
 
@@ -1192,7 +1198,7 @@ TEST_F(CupsPrintersManagerTest, ActiveNetworkStrengthChanged) {
 
 // Tests that local printers observers are triggered when added.
 TEST_F(CupsPrintersManagerTest, AddLocalPrintersObserver) {
-  feature_list_.InitAndEnableFeature(features::kLocalPrinterObserving);
+  feature_list_.InitAndEnableFeature(::features::kLocalPrinterObserving);
 
   // Add the same observer twice to verify it's only added once and triggered
   // once.
@@ -1207,6 +1213,69 @@ TEST_F(CupsPrintersManagerTest, AddLocalPrintersObserver) {
   manager_->AddLocalPrintersObserver(&observer2);
   EXPECT_EQ(1u, observer2.num_observer_calls());
   EXPECT_EQ(1u, observer1.num_observer_calls());
+}
+
+// Tests that when a new local printer is detected the observer is triggered.
+TEST_F(CupsPrintersManagerTest, LocalPrintersDetected) {
+  feature_list_.InitAndEnableFeature(::features::kLocalPrinterObserving);
+
+  // The observer should fire when first registered.
+  FakeLocalPrintersObserver observer1;
+  manager_->AddLocalPrintersObserver(&observer1);
+  EXPECT_EQ(1u, observer1.num_observer_calls());
+
+  // The observer should fire for a new zeroconf printer detection.
+  const auto detected_printer = MakeDiscoveredPrinter("DiscoveredPrinter");
+  zeroconf_detector_->AddDetections({detected_printer});
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(2u, observer1.num_observer_calls());
+
+  // The observer shouldn't fire when the same printer is sent for detection so
+  // the call count should remain the same.
+  zeroconf_detector_->RunPrintersFoundCallback();
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(2u, observer1.num_observer_calls());
+
+  // The observer should fire again for a new USB printer detection.
+  const auto usb_detected_printer = MakeUsbDiscoveredPrinter("UsbPrinter");
+  usb_detector_->AddDetections({usb_detected_printer});
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(3u, observer1.num_observer_calls());
+}
+
+// Tests that the polling printer status requests trigger the local printers
+// observer up until the max time allocated for polling statuses.
+TEST_F(CupsPrintersManagerTest, PrinterStatusPolling) {
+  feature_list_.InitAndEnableFeature(::features::kLocalPrinterObserving);
+
+  // Add a saved printer to be queried for status.
+  synced_printers_manager_.AddSavedPrinters({Printer("SavedPrinter")});
+  zeroconf_detector_->AddDetections({MakeDiscoveredPrinter("RecentPrinter"),
+                                     MakeDiscoveredPrinter("OldPrinter")});
+  task_environment_.RunUntilIdle();
+
+  // Add `RecentPrinter` to the Print Preview sticky settings so it'll get
+  // polled for status. `OldPrinter` will not get queried.
+  ::printing::PrintPreviewStickySettings* sticky_settings =
+      ::printing::PrintPreviewStickySettings::GetInstance();
+  sticky_settings->StoreAppState(R"({
+    "recentDestinations": [
+      {
+        "id": "RecentPrinter"
+      }
+    ]
+  })");
+
+  // Add the observer to capture the triggers from printer status queries.
+  FakeLocalPrintersObserver observer;
+  manager_->AddLocalPrintersObserver(&observer);
+  task_environment_.FastForwardUntilNoTasksRemain();
+
+  // 1 call when observer added + 2 calls for initial printer status queries to
+  // the Saved and Recent printer + 60 calls from polling both the Saved and
+  // Recent printer 30 times each (every 10 seconds for 5 minutes).
+  const size_t expected_obsever_calls = 63;
+  EXPECT_EQ(expected_obsever_calls, observer.num_observer_calls());
 }
 
 }  // namespace

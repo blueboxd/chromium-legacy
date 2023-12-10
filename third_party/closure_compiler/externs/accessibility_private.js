@@ -276,7 +276,6 @@ chrome.accessibilityPrivate.AcceleratorAction = {
 chrome.accessibilityPrivate.AccessibilityFeature = {
   GOOGLE_TTS_LANGUAGE_PACKS: 'googleTtsLanguagePacks',
   DICTATION_CONTEXT_CHECKING: 'dictationContextChecking',
-  CHROMEVOX_SETTINGS_MIGRATION: 'chromevoxSettingsMigration',
   GAME_FACE_INTEGRATION: 'gameFaceIntegration',
   GOOGLE_TTS_HIGH_QUALITY_VOICES: 'googleTtsHighQualityVoices',
 };
@@ -476,9 +475,9 @@ chrome.accessibilityPrivate.setKeyboardListener = function(enabled, capture) {};
 
 /**
  * Darkens or undarkens the screen.
- * @param {boolean} enabled True to darken screen; false to undarken screen.
+ * @param {boolean} darken True to darken screen; false to undarken screen.
  */
-chrome.accessibilityPrivate.darkenScreen = function(enabled) {};
+chrome.accessibilityPrivate.darkenScreen = function(darken) {};
 
 /**
  * When enabled, forwards key events to the Switch Access extension

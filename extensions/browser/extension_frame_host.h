@@ -17,6 +17,9 @@ class WebContents;
 
 namespace extensions {
 
+class Extension;
+class ProcessManager;
+
 // Implements the mojo interface of extensions::mojom::LocalFrameHost.
 // ExtensionWebContentsObserver creates and owns this class and it's destroyed
 // when WebContents is destroyed.
@@ -54,8 +57,20 @@ class ExtensionFrameHost : public mojom::LocalFrameHost {
       const std::u16string& source,
       const StackTrace& stack_trace,
       blink::mojom::ConsoleMessageLevel level) override;
+  void ContentScriptsExecuting(
+      const base::flat_map<std::string, std::vector<std::string>>&
+          extension_id_to_scripts,
+      const GURL& frame_url) override;
+  void IncrementLazyKeepaliveCount() override;
+  void DecrementLazyKeepaliveCount() override;
+  void UpdateDraggableRegions(
+      std::vector<mojom::DraggableRegionPtr> regions) override;
+  void AppWindowReady() override;
 
  protected:
+  const Extension* GetExtension(ProcessManager* process_manager,
+                                content::RenderFrameHost* frame);
+
   // This raw pointer is safe to use because ExtensionWebContentsObserver whose
   // lifetime is tied to the WebContents owns this instance.
   raw_ptr<content::WebContents> web_contents_;

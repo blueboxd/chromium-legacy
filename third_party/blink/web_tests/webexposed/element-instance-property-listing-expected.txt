@@ -327,6 +327,7 @@ namespace http://www.w3.org/1999/xhtml
     property setAttributeNode
     property setAttributeNodeNS
     property setHTML
+    property setHTMLUnsafe
     property setPointerCapture
     property shadowRoot
     property showPopover
@@ -936,6 +937,10 @@ html element param
     property type
     property value
     property valueType
+html element permission
+    property ondismissed
+    property onresolved
+    property type
 html element picture
 html element plaintext
 html element pre
@@ -1090,6 +1095,7 @@ html element td
     property width
 html element template
     property content
+    property parseparts
     property shadowRootMode
 html element textarea
     property autocomplete
@@ -1569,6 +1575,7 @@ namespace http://www.w3.org/2000/svg
     property setAttributeNode
     property setAttributeNodeNS
     property setHTML
+    property setHTMLUnsafe
     property setPointerCapture
     property shadowRoot
     property slot

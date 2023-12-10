@@ -27,6 +27,7 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/features_generated.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -84,11 +85,17 @@ void CopyElementValueToOtherInputElements(
 
 void PreviewGeneratedValue(WebInputElement& input_element,
                            const blink::WebString& value) {
+  if (base::FeatureList::IsEnabled(blink::features::kPasswordStrongLabel)) {
+    input_element.SetShouldShowStrongPasswordLabel(true);
+  }
   input_element.SetShouldRevealPassword(true);
   input_element.SetSuggestedValue(value);
 }
 
 void ClearPreviewedValue(WebInputElement& input_element) {
+  if (base::FeatureList::IsEnabled(blink::features::kPasswordStrongLabel)) {
+    input_element.SetShouldShowStrongPasswordLabel(false);
+  }
   input_element.SetShouldRevealPassword(false);
   input_element.SetSuggestedValue(blink::WebString());
 }
@@ -408,8 +415,8 @@ void PasswordGenerationAgent::FoundFormEligibleForGeneration(
     if (doc.IsNull())
       return;
     WebFormControlElement new_password_input =
-        form_util::FindFormControlElementByUniqueRendererId(
-            doc, form.new_password_renderer_id);
+        form_util::FindFormControlByRendererId(doc,
+                                               form.new_password_renderer_id);
     if (!new_password_input.IsNull()) {
       // Mark the input element with renderer id
       // |form.new_password_renderer_id|.
@@ -453,6 +460,7 @@ bool PasswordGenerationAgent::SetUpTriggeredGeneration() {
   const WebInputElement last_focused_password_element =
       password_agent_->focused_element().DynamicTo<WebInputElement>();
   if (last_focused_password_element.IsNull() ||
+      last_focused_password_element.IsReadOnly() ||
       !last_focused_password_element.IsPasswordFieldForAutofill()) {
     return false;
   }
@@ -737,8 +745,8 @@ void PasswordGenerationAgent::MaybeCreateCurrentGenerationItem(
   std::vector<blink::WebInputElement> passwords = {generation_element};
 
   WebFormControlElement confirmation_password =
-      form_util::FindFormControlElementByUniqueRendererId(
-          generation_element.GetDocument(), confirmation_password_renderer_id);
+      form_util::FindFormControlByRendererId(generation_element.GetDocument(),
+                                             confirmation_password_renderer_id);
 
   if (!confirmation_password.IsNull()) {
     WebInputElement input = confirmation_password.DynamicTo<WebInputElement>();

@@ -4,8 +4,20 @@
 
 // https://github.com/WICG/observable
 
-[Exposed=Window, RuntimeEnabled=ObservableAPI]
+callback SubscribeCallback = void (Subscriber subscriber);
+callback ObserverCallback = void (any value);
+callback ObserverCompleteCallback = void ();
+
+dictionary Observer {
+  ObserverCallback next;
+  ObserverCompleteCallback complete;
+  ObserverCallback error;
+  AbortSignal signal;
+};
+
+[Exposed=(Window,Worker), RuntimeEnabled=ObservableAPI]
 interface Observable {
-    [CallWith=ScriptState, MeasureAs=ObservableConstructor] constructor();
+    [CallWith=ScriptState, MeasureAs=ObservableConstructor] constructor(SubscribeCallback callback);
+    [CallWith=ScriptState] void subscribe(optional Observer observer = {});
 };
 

@@ -29,6 +29,7 @@
 #include "chrome/grit/os_settings_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/isolated_web_apps_policy.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -40,6 +41,7 @@ namespace ash::settings {
 namespace mojom {
 using ::chromeos::settings::mojom::kAppDetailsSubpagePath;
 using ::chromeos::settings::mojom::kAppManagementSubpagePath;
+using ::chromeos::settings::mojom::kAppNotificationsManagerSubpagePath;
 using ::chromeos::settings::mojom::kAppNotificationsSubpagePath;
 using ::chromeos::settings::mojom::kAppsSectionPath;
 using ::chromeos::settings::mojom::kArcVmUsbPreferencesSubpagePath;
@@ -81,6 +83,18 @@ const std::vector<SearchConcept>& GetAppNotificationsSearchConcepts() {
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kAppNotifications}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetAppNotificationsManagerSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_APP_NOTIFICATIONS_MANAGER,
+       mojom::kAppNotificationsManagerSubpagePath,
+       mojom::SearchResultIcon::kAppsGrid,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kAppNotificationsManager}},
   });
   return *tags;
 }
@@ -188,6 +202,8 @@ void AddAppManagementStrings(content::WebUIDataSource* html_source) {
 
   webui::LocalizedString kLocalizedStrings[] = {
       {"appManagementAppDetailsTitle", IDS_APP_MANAGEMENT_APP_DETAILS_TITLE},
+      {"appManagementAppDetailsTooltipWebA11y",
+       IDS_APP_MANAGEMENT_APP_DETAILS_TOOLTIP_WEB_A11Y},
       {"appManagementAppDetailsTypeAndroid",
        IDS_APP_MANAGEMENT_APP_DETAILS_TYPE_ANDROID},
       {"appManagementAppDetailsTypeChrome",
@@ -434,6 +450,10 @@ void AppsSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"manageIsolatedWebAppsTitle",
        IDS_SETTINGS_MANAGE_ISOLATED_WEB_APPS_SUBPAGE_TITLE},
 
+      {"appNotificationsManagerLabel",
+       IDS_OS_SETTINGS_REVAMP_NOTIFICATIONS_MANAGER_LABEL},
+      {"appNotificationsManagerSublabel",
+       IDS_OS_SETTINGS_REVAMP_NOTIFICATIONS_MANAGER_LINK_DESCRIPTION},
       {"doNotDisturbToggleDescription",
        kIsRevampEnabled
            ? IDS_OS_SETTINGS_REVAMP_APP_NOTIFICATIONS_DO_NOT_DISTURB_TOGGLE_DESCRIPTION
@@ -489,12 +509,11 @@ void AppsSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   // check.
   html_source->AddBoolean(
       "showManageIsolatedWebAppsRow",
-      base::FeatureList::IsEnabled(::features::kIsolatedWebApps));
+      content::IsolatedWebAppsPolicy::AreIsolatedWebAppsEnabled(profile()));
   html_source->AddString(
       "isolatedWebAppsDescription",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_ISOLATED_WEB_APPS_DESCRIPTION,
-          base::ASCIIToUTF16(chrome::kIsolatedWebAppsLearnMoreUrl)));
+      l10n_util::GetStringFUTF16(IDS_SETTINGS_ISOLATED_WEB_APPS_DESCRIPTION,
+                                 chrome::kIsolatedWebAppsLearnMoreUrl));
 
   AddAppManagementStrings(html_source);
   AddGuestOsStrings(html_source);
@@ -556,13 +575,19 @@ void AppsSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                                      mojom::SearchResultIcon::kAppsGrid,
                                      mojom::SearchResultDefaultRank::kMedium,
                                      mojom::kAppManagementSubpagePath);
+
   // App Notifications
   generator->RegisterTopLevelSubpage(IDS_SETTINGS_APP_NOTIFICATIONS_LINK_TEXT,
                                      mojom::Subpage::kAppNotifications,
                                      mojom::SearchResultIcon::kAppsGrid,
                                      mojom::SearchResultDefaultRank::kMedium,
                                      mojom::kAppNotificationsSubpagePath);
-
+  generator->RegisterNestedSubpage(
+      IDS_OS_SETTINGS_TAG_APP_NOTIFICATIONS_MANAGER,
+      mojom::Subpage::kAppNotificationsManager,
+      mojom::Subpage::kAppNotifications, mojom::SearchResultIcon::kAppsGrid,
+      mojom::SearchResultDefaultRank::kMedium,
+      mojom::kAppNotificationsManagerSubpagePath);
   generator->RegisterNestedSetting(mojom::Setting::kDoNotDisturbOnOff,
                                    mojom::Subpage::kAppNotifications);
   generator->RegisterNestedSetting(mojom::Setting::kAppBadgingOnOff,
@@ -734,14 +759,23 @@ void AppsSection::OnQuietModeChanged(bool in_quiet_mode) {
   if (!features::IsAppNotificationsPageEnabled()) {
     return;
   }
+
+  const bool kIsRevampEnabled =
+      ash::features::IsOsSettingsRevampWayfindingEnabled();
   SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
 
   updater.RemoveSearchTags(GetTurnOnAppNotificationSearchConcepts());
   updater.RemoveSearchTags(GetTurnOffAppNotificationSearchConcepts());
   updater.RemoveSearchTags(GetAppNotificationsSearchConcepts());
+  if (kIsRevampEnabled) {
+    updater.RemoveSearchTags(GetAppNotificationsManagerSearchConcepts());
+  }
   updater.RemoveSearchTags(GetAppBadgingSearchConcepts());
 
   updater.AddSearchTags(GetAppNotificationsSearchConcepts());
+  if (kIsRevampEnabled) {
+    updater.AddSearchTags(GetAppNotificationsManagerSearchConcepts());
+  }
   if (features::IsOsSettingsAppBadgingToggleEnabled()) {
     updater.AddSearchTags(GetAppBadgingSearchConcepts());
   }

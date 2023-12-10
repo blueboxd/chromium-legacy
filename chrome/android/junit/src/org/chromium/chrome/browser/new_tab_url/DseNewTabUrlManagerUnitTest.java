@@ -21,11 +21,12 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.shared_preferences.SharedPreferencesManager;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.test.util.browser.Features;
@@ -61,7 +62,7 @@ public class DseNewTabUrlManagerUnitTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mSharedPreferenceManager = SharedPreferencesManager.getInstance();
+        mSharedPreferenceManager = ChromeSharedPreferences.getInstance();
 
         doReturn(SEARCH_URL).when(mTemplateUrl).getURL();
         doReturn(NEW_TAB_URL).when(mTemplateUrl).getNewTabURL();
@@ -107,7 +108,7 @@ public class DseNewTabUrlManagerUnitTest {
     @Test
     @DisableFeatures({ChromeFeatureList.NEW_TAB_SEARCH_ENGINE_URL_ANDROID})
     public void testShouldOverrideUrlWithNewTabSearchEngineUrlDisabled() {
-        // Verifies that shouldn't override the URL if the feature flag is disabled.
+        // Verifies that the URL is not overridden when the feature flag is disabled.
         assertFalse(DseNewTabUrlManager.isNewTabSearchEngineUrlAndroidEnabled());
         assertEquals(JUnitTestGURLs.NTP_URL,
                 mDseNewTabUrlManager.maybeGetOverrideUrl(
@@ -126,16 +127,16 @@ public class DseNewTabUrlManagerUnitTest {
     public void testShouldOverrideUrlWithNewTabSearchEngineUrlEnabled() {
         assertTrue(DseNewTabUrlManager.isNewTabSearchEngineUrlAndroidEnabled());
 
-        // Verifies that don't override the URL when the DSE is Google.
-        assertEquals(JUnitTestGURLs.NTP_URL,
-                mDseNewTabUrlManager.maybeGetOverrideUrl(
-                        /* gurl= */ JUnitTestGURLs.NTP_URL));
+        // Verifies that the URL is not overridden when the DSE is Google.
+        assertEquals(
+                JUnitTestGURLs.NTP_URL,
+                mDseNewTabUrlManager.maybeGetOverrideUrl(/* gurl= */ JUnitTestGURLs.NTP_URL));
 
         assertEquals(JUnitTestGURLs.SEARCH_URL,
                 mDseNewTabUrlManager.maybeGetOverrideUrl(
                         /* gurl= */ JUnitTestGURLs.SEARCH_URL));
 
-        // Verifies that don't override the URL when it is in incognito mode.
+        // Verifies that the URL is not overridden when it is in incognito mode.
         doReturn(false).when(mTemplateUrlService).isDefaultSearchEngineGoogle();
         doReturn(true).when(mProfile).isOffTheRecord();
         mProfileSupplier.set(mProfile);
@@ -143,8 +144,16 @@ public class DseNewTabUrlManagerUnitTest {
                 mDseNewTabUrlManager.maybeGetOverrideUrl(
                         /* gurl= */ JUnitTestGURLs.NTP_URL));
 
-        // Verifies the case that should override a NTP URL.
+        // Verifies that the URL is not overridden when {@link DseNewTabUrlManager.SWAP_OUT_NTP} is
+        // false.
         doReturn(false).when(mProfile).isOffTheRecord();
+        assertFalse(DseNewTabUrlManager.SWAP_OUT_NTP.getValue());
+        assertEquals(
+                JUnitTestGURLs.NTP_URL,
+                mDseNewTabUrlManager.maybeGetOverrideUrl(/* gurl= */ JUnitTestGURLs.NTP_URL));
+
+        // Verifies that the NTP URL should be overridden.
+        DseNewTabUrlManager.SWAP_OUT_NTP.setForTesting(true);
         assertEquals(NEW_TAB_URL,
                 mDseNewTabUrlManager
                         .maybeGetOverrideUrl(
@@ -194,15 +203,15 @@ public class DseNewTabUrlManagerUnitTest {
     public void testIsDefaultSearchEngineGoogle() {
         assertNull(mDseNewTabUrlManager.getTemplateUrlServiceForTesting());
 
-        assertFalse(SharedPreferencesManager.getInstance().contains(
-                ChromePreferenceKeys.IS_DSE_GOOGLE));
+        assertFalse(
+                ChromeSharedPreferences.getInstance().contains(ChromePreferenceKeys.IS_DSE_GOOGLE));
         assertTrue(DseNewTabUrlManager.isDefaultSearchEngineGoogle());
 
-        SharedPreferencesManager.getInstance().writeBoolean(
+        ChromeSharedPreferences.getInstance().writeBoolean(
                 ChromePreferenceKeys.IS_DSE_GOOGLE, false);
         assertFalse(DseNewTabUrlManager.isDefaultSearchEngineGoogle());
 
-        SharedPreferencesManager.getInstance().writeBoolean(
+        ChromeSharedPreferences.getInstance().writeBoolean(
                 ChromePreferenceKeys.IS_DSE_GOOGLE, true);
         assertTrue(DseNewTabUrlManager.isDefaultSearchEngineGoogle());
     }

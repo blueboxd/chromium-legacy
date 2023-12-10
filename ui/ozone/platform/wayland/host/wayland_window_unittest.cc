@@ -3299,6 +3299,26 @@ TEST_P(WaylandWindowTest, PopupPassesSetAnchorInformation) {
                          nested_menu_window_positioner);
 }
 
+TEST_P(WaylandWindowTest, SetBoundsResizesEmptySizes) {
+  auto* toplevel_window = window_.get();
+  toplevel_window->SetBoundsInDIP(gfx::Rect(666, 666));
+
+  testing::NiceMock<MockWaylandPlatformWindowDelegate> popup_delegate;
+  gfx::Rect menu_window_bounds(gfx::Point(0, 0), {0, 0});
+  std::unique_ptr<WaylandWindow> popup = CreateWaylandWindowWithParams(
+      PlatformWindowType::kMenu, menu_window_bounds, &popup_delegate,
+      toplevel_window->GetWidget());
+  EXPECT_TRUE(popup);
+
+  popup->SetBoundsInDIP({0, 0, 0, 0});
+
+  VerifyXdgPopupPosition(
+      popup.get(),
+      {gfx::Rect(0, 0, 1, 1), gfx::Size(1, 1), XDG_POSITIONER_ANCHOR_TOP_LEFT,
+       XDG_POSITIONER_GRAVITY_BOTTOM_RIGHT,
+       XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_FLIP_Y});
+}
+
 TEST_P(WaylandWindowTest, SetOpaqueRegion) {
   gfx::Rect new_bounds(500, 600);
   SkIRect rect =
@@ -4918,21 +4938,20 @@ TEST_P(WaylandWindowTest, OverviewMode) {
     GTEST_SKIP();
   }
 
-  testing::NiceMock<MockWaylandPlatformWindowDelegate> delegate;
-  std::unique_ptr<WaylandWindow> toplevel_window =
-      CreateWaylandWindowWithParams(PlatformWindowType::kWindow,
-                                    gfx::Rect(300, 300), &delegate);
-
-  EXPECT_CALL(delegate, OnOverviewModeChanged(Eq(true))).Times(1);
-  PostToServerAndWait([](wl::TestWaylandServerThread* server) {
-    auto* const zaura_shell = server->zaura_shell()->resource();
-    zaura_shell_send_set_overview_mode(zaura_shell);
+  EXPECT_CALL(delegate_, OnOverviewModeChanged(Eq(true))).Times(1);
+  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
+    auto* surface = server->GetObject<wl::MockSurface>(surface_id_);
+    auto* toplevel = surface->xdg_surface()->xdg_toplevel()->zaura_toplevel();
+    zaura_toplevel_send_overview_change(toplevel->resource(),
+                                        ZAURA_TOPLEVEL_IN_OVERVIEW_IN_OVERVIEW);
   });
 
-  EXPECT_CALL(delegate, OnOverviewModeChanged(Eq(false))).Times(1);
-  PostToServerAndWait([](wl::TestWaylandServerThread* server) {
-    auto* const zaura_shell = server->zaura_shell()->resource();
-    zaura_shell_send_unset_overview_mode(zaura_shell);
+  EXPECT_CALL(delegate_, OnOverviewModeChanged(Eq(false))).Times(1);
+  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
+    auto* surface = server->GetObject<wl::MockSurface>(surface_id_);
+    auto* toplevel = surface->xdg_surface()->xdg_toplevel()->zaura_toplevel();
+    zaura_toplevel_send_overview_change(
+        toplevel->resource(), ZAURA_TOPLEVEL_IN_OVERVIEW_NOT_IN_OVERVIEW);
   });
 }
 #endif

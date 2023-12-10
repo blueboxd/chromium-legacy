@@ -179,14 +179,12 @@ class VideoTrackRecorder : public TrackRecorder<MediaStreamVideoSink> {
     void StartFrameEncode(
         WTF::CrossThreadRepeatingFunction<base::TimeTicks()> time_now_callback,
         scoped_refptr<media::VideoFrame> video_frame,
-        std::vector<scoped_refptr<media::VideoFrame>> scaled_video_frames,
         base::TimeTicks capture_timestamp);
 
     // Like StartFrameEncode but using base::TimeTicks::Now in
     // `time_now_callback`.
     void StartFrameEncodeWithTimeTicksNow(
         scoped_refptr<media::VideoFrame> video_frame,
-        std::vector<scoped_refptr<media::VideoFrame>> scaled_video_frames,
         base::TimeTicks capture_timestamp);
 
     using OnEncodedVideoInternalCB = WTF::CrossThreadFunction<void(
@@ -198,6 +196,7 @@ class VideoTrackRecorder : public TrackRecorder<MediaStreamVideoSink> {
 
     void SetPaused(bool paused);
     virtual bool CanEncodeAlphaChannel() const;
+    virtual base::WeakPtr<Encoder> GetWeakPtr() = 0;
     void ForceKeyFrameForNextFrameForTesting() {
       request_key_frame_for_testing_ = true;
     }
@@ -367,7 +366,6 @@ class MODULES_EXPORT VideoTrackRecorderImpl : public VideoTrackRecorder {
       uint32_t bits_per_second,
       bool allow_vea_encoder,
       scoped_refptr<media::VideoFrame> video_frame,
-      std::vector<scoped_refptr<media::VideoFrame>> scaled_video_frames,
       base::TimeTicks capture_time);
   void InitializeEncoderOnEncoderSupportKnown(
       CodecProfile codec_profile,
@@ -376,6 +374,19 @@ class MODULES_EXPORT VideoTrackRecorderImpl : public VideoTrackRecorder {
       bool allow_vea_encoder,
       scoped_refptr<media::VideoFrame> frame,
       base::TimeTicks capture_time);
+  std::unique_ptr<Encoder> CreateSoftwareVideoEncoder(
+      scoped_refptr<base::SequencedTaskRunner> encoding_task_runner,
+      CodecProfile codec_profile,
+      uint32_t bits_per_second,
+      const OnEncodedVideoCB& on_encoded_video_cb);
+  std::unique_ptr<Encoder> CreateHardwareVideoEncoder(
+      scoped_refptr<base::SequencedTaskRunner> encoding_task_runner,
+      CodecProfile codec_profile,
+      const gfx::Size& input_size,
+      uint32_t bits_per_second,
+      const OnEncodedVideoCB& on_encoded_video_cb,
+      bool use_import_mode,
+      bool create_vea_encoder);
   void OnHardwareEncoderError();
 
   void ConnectToTrack(const VideoCaptureDeliverFrameCB& callback);
@@ -393,7 +404,6 @@ class MODULES_EXPORT VideoTrackRecorderImpl : public VideoTrackRecorder {
   base::RepeatingCallback<void(
       bool allow_vea_encoder,
       scoped_refptr<media::VideoFrame> video_frame,
-      std::vector<scoped_refptr<media::VideoFrame>> scaled_video_frames,
       base::TimeTicks capture_time)>
       initialize_encoder_cb_;
 

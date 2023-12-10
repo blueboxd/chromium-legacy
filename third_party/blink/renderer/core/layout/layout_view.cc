@@ -46,12 +46,14 @@
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view_transition_root.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_inline_list_item.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
+#include "third_party/blink/renderer/core/layout/list/layout_inline_list_item.h"
+#include "third_party/blink/renderer/core/layout/list/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_text.h"
 #include "third_party/blink/renderer/core/layout/view_fragmentation_context.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -67,8 +69,13 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "ui/display/screen_info.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/size_conversions.h"
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#endif
 
 namespace blink {
 
@@ -103,12 +110,12 @@ class HitTestLatencyRecorder {
 LayoutView::LayoutView(ContainerNode* document)
     : LayoutNGBlockFlow(document),
       frame_view_(To<Document>(document)->View()),
-      layout_counter_count_(0),
       hit_test_count_(0),
       hit_test_cache_hits_(0),
       hit_test_cache_(MakeGarbageCollected<HitTestCache>()),
       autosize_h_scrollbar_mode_(mojom::blink::ScrollbarMode::kAuto),
       autosize_v_scrollbar_mode_(mojom::blink::ScrollbarMode::kAuto) {
+  DCHECK(document->IsDocumentNode());
   // init LayoutObject attributes
   SetInline(false);
 
@@ -122,6 +129,10 @@ LayoutView::LayoutView(ContainerNode* document)
       GetDocument()) {
     SetIsEffectiveRootScroller(true);
   }
+
+  // This flag is normally set when an object is inserted into the tree, but
+  // this doesn't happen for LayoutView, since it's the root.
+  SetMightTraversePhysicalFragments(true);
 }
 
 LayoutView::~LayoutView() = default;
@@ -138,6 +149,20 @@ void LayoutView::Trace(Visitor* visitor) const {
 bool LayoutView::HitTest(const HitTestLocation& location,
                          HitTestResult& result) {
   NOT_DESTROYED();
+  if (RuntimeEnabledFeatures::SvgTextFixHittestAfterScaleEnabled() &&
+      has_svg_text_descendants_) {
+    // This is necessary because SVG <text> might have obsolete geometry after
+    // scale-only changes.  See crbug.com/1296089#c16
+    auto it = svg_text_descendants_->find(this);
+    if (it != svg_text_descendants_->end()) {
+      for (LayoutBox* box : *it->value) {
+        auto* svg_text = To<LayoutSVGText>(box);
+        if (svg_text->NeedsTextMetricsUpdate()) {
+          svg_text->SetNeedsLayout(layout_invalidation_reason::kStyleChange);
+        }
+      }
+    }
+  }
   // We have to recursively update layout/style here because otherwise, when the
   // hit test recurses into a child document, it could trigger a layout on the
   // parent document, which can destroy PaintLayer that are higher up in the
@@ -318,7 +343,7 @@ bool LayoutView::ShouldPlaceBlockDirectionScrollbarOnLogicalLeft() const {
 
 PhysicalRect LayoutView::LocalVisualRectIgnoringVisibility() const {
   NOT_DESTROYED();
-  PhysicalRect rect = PhysicalVisualOverflowRect();
+  PhysicalRect rect = VisualOverflowRect();
   rect.Unite(PhysicalRect(rect.offset, ViewRect().size));
   return rect;
 }
@@ -676,7 +701,7 @@ PhysicalSize LayoutView::PageAreaSize(wtf_size_t page_index,
   const ComputedStyle* page_style =
       GetDocument().StyleForPage(page_index, page_name);
   WebPrintPageDescription description = default_page_description_;
-  GetDocument().GetPageDescriptionNoLifecycleUpdate(*page_style, &description);
+  GetDocument().GetPageDescription(*page_style, &description);
 
   gfx::SizeF page_size(
       std::max(.0f, description.size.width() -
@@ -698,9 +723,27 @@ PhysicalSize LayoutView::PageAreaSize(wtf_size_t page_index,
   return PhysicalSize(gfx::ToCeiledSize(page_size));
 }
 
+AtomicString LayoutView::NamedPageAtIndex(wtf_size_t page_index) const {
+  // If layout is dirty, it's not possible to look up page names reliably.
+  DCHECK_GE(GetDocument().Lifecycle().GetState(),
+            DocumentLifecycle::kLayoutClean);
+
+  if (!PhysicalFragmentCount()) {
+    return AtomicString();
+  }
+  DCHECK_EQ(PhysicalFragmentCount(), 1u);
+  const NGPhysicalBoxFragment& view_fragment = *GetPhysicalFragment(0);
+  const auto children = view_fragment.Children();
+  if (page_index >= children.size()) {
+    return AtomicString();
+  }
+  const auto& page_fragment = To<NGPhysicalBoxFragment>(*children[page_index]);
+  return page_fragment.PageName();
+}
+
 PhysicalRect LayoutView::DocumentRect() const {
   NOT_DESTROYED();
-  return FlipForWritingMode(LayoutOverflowRect());
+  return PhysicalLayoutOverflowRect();
 }
 
 gfx::Size LayoutView::GetLayoutSize(
@@ -750,6 +793,62 @@ const LayoutBox& LayoutView::RootBox() const {
   DCHECK(document_element);
   DCHECK(document_element->GetLayoutObject());
   return To<LayoutBox>(*document_element->GetLayoutObject());
+}
+
+void LayoutView::UpdateLayout() {
+  NOT_DESTROYED();
+  if (ShouldUsePrintingLayout()) {
+    intrinsic_logical_widths_ = LogicalWidth();
+    if (!fragmentation_context_) {
+      fragmentation_context_ =
+          MakeGarbageCollected<ViewFragmentationContext>(*this);
+    }
+  } else if (fragmentation_context_) {
+    fragmentation_context_.Clear();
+  }
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+  // The font code in FontPlatformData does not have a direct connection to the
+  // document, the frame or anything from which we could retrieve the device
+  // scale factor. After using zoom for DSF, the GraphicsContext does only ever
+  // have a DSF of 1 on Linux. In order for the font code to be aware of an up
+  // to date DSF when layout happens, we plumb this through to the FontCache, so
+  // that we can correctly retrieve RenderStyleForStrike from out of
+  // process. crbug.com/845468
+  LocalFrame& frame = GetFrameView()->GetFrame();
+  ChromeClient& chrome_client = frame.GetChromeClient();
+  FontCache::SetDeviceScaleFactor(
+      chrome_client.GetScreenInfo(frame).device_scale_factor);
+#endif
+
+  bool is_resizing_initial_containing_block =
+      LogicalWidth() != ViewLogicalWidthForBoxSizing() ||
+      LogicalHeight() != ViewLogicalHeightForBoxSizing();
+  bool invalidate_svg_roots =
+      GetDocument().SvgExtensions() && !ShouldUsePrintingLayout() &&
+      (!GetFrameView() || is_resizing_initial_containing_block);
+  if (invalidate_svg_roots) {
+    GetDocument()
+        .AccessSVGExtensions()
+        .InvalidateSVGRootsWithRelativeLengthDescendents();
+  }
+
+  DCHECK(!initial_containing_block_resize_handled_list_);
+  if (is_resizing_initial_containing_block) {
+    initial_containing_block_resize_handled_list_ =
+        MakeGarbageCollected<HeapHashSet<Member<const LayoutObject>>>();
+  }
+
+  const auto& style = StyleRef();
+  NGConstraintSpaceBuilder builder(
+      style.GetWritingMode(), style.GetWritingDirection(),
+      /* is_new_fc */ true, /* adjust_inline_size_if_needed */ false);
+  builder.SetAvailableSize(InitialContainingBlockSize());
+  builder.SetIsFixedInlineSize(true);
+  builder.SetIsFixedBlockSize(true);
+
+  NGBlockNode(this).Layout(builder.ToConstraintSpace());
+  initial_containing_block_resize_handled_list_ = nullptr;
 }
 
 void LayoutView::UpdateAfterLayout() {
@@ -904,7 +1003,7 @@ void LayoutView::UpdateMarkersAndCountersAfterStyleChange(
          "container query style recalcs";
 
   needs_marker_counter_update_ = false;
-  if (!HasLayoutCounters() && !HasLayoutListItems()) {
+  if (!HasLayoutListItems()) {
     return;
   }
 
@@ -921,13 +1020,11 @@ void LayoutView::UpdateMarkersAndCountersAfterStyleChange(
 
   for (LayoutObject* layout_object = start; layout_object;
        layout_object = layout_object->NextInPreOrder(stay_within)) {
-    if (auto* ng_list_item = DynamicTo<LayoutNGListItem>(layout_object)) {
+    if (auto* ng_list_item = DynamicTo<LayoutListItem>(layout_object)) {
       ng_list_item->UpdateCounterStyle();
     } else if (auto* inline_list_item =
-                   DynamicTo<LayoutNGInlineListItem>(layout_object)) {
+                   DynamicTo<LayoutInlineListItem>(layout_object)) {
       inline_list_item->UpdateCounterStyle();
-    } else if (auto* counter = DynamicTo<LayoutCounter>(layout_object)) {
-      counter->UpdateCounter();
     }
   }
 }
@@ -940,6 +1037,10 @@ bool LayoutView::HasTickmarks() const {
 Vector<gfx::Rect> LayoutView::GetTickmarks() const {
   NOT_DESTROYED();
   return GetDocument().Markers().LayoutRectsForTextMatchMarkers();
+}
+
+bool LayoutView::IsFragmentationContextRoot() const {
+  return ShouldUsePrintingLayout();
 }
 
 }  // namespace blink

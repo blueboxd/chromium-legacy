@@ -126,9 +126,6 @@ BASE_DECLARE_FEATURE(kEnableLensInKeyboard);
 // Feature flag to enable the Lens entrypoint in the new tab page.
 BASE_DECLARE_FEATURE(kEnableLensInNTP);
 
-// Feature flag to enable the Lens context menu alternate text string.
-BASE_DECLARE_FEATURE(kEnableLensContextMenuAltText);
-
 // Feature flag to enable the Lens "Search copied image" omnibox entrypoint.
 BASE_DECLARE_FEATURE(kEnableLensInOmniboxCopiedImage);
 
@@ -152,14 +149,14 @@ BASE_DECLARE_FEATURE(kEnableShortenedPasswordAutoFillInstruction);
 // Feature flag to enable Apple Calendar event in experience kit.
 BASE_DECLARE_FEATURE(kEnableExpKitAppleCalendar);
 
+// Feature flag / Kill Switch for TCRex.
+BASE_DECLARE_FEATURE(kTCRexKillSwitch);
+
 // When enabled uses new transitions in the TabGrid.
 BASE_DECLARE_FEATURE(kTabGridNewTransitions);
 
 // Whether the new tab grid tabs transitions should be enabled.
 bool IsNewTabGridTransitionsEnabled();
-
-// Feature to enable multiline gradient support in fade truncating label.
-BASE_DECLARE_FEATURE(kMultilineFadeTruncatingLabel);
 
 // Feature flag to control the maximum amount of non-modal DB promo impressions
 // server-side. Enabled by default to always have a default impression limit
@@ -245,5 +242,11 @@ BASE_DECLARE_FEATURE(kIOSSaveToPhotos);
 // Kill switch to control the `settingsWillBeDismissed` bug fix (see
 // crbug.com/1482284).
 BASE_DECLARE_FEATURE(kSettingsWillBeDismissedBugFixKillSwitch);
+
+// Enables the new UIEditMenuInteraction system to be used in place of
+// UIMenuController which was deprecated in iOS 16.
+// TODO(crbug.com/1489734) Remove Flag once the minimum iOS deployment version
+// has been increased to iOS 16.
+BASE_DECLARE_FEATURE(kEnableUIEditMenuInteraction);
 
 #endif  // IOS_CHROME_BROWSER_SHARED_PUBLIC_FEATURES_FEATURES_H_

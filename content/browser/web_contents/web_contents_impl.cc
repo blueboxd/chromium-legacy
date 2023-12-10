@@ -13,7 +13,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
+#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
@@ -177,6 +177,7 @@
 #include "ui/accessibility/ax_tree_combiner.h"
 #include "ui/base/ime/mojom/virtual_keyboard_types.mojom.h"
 #include "ui/base/pointer/pointer_device.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/color/color_provider_key.h"
 #include "ui/color/color_provider_manager.h"
@@ -219,7 +220,7 @@
 #endif
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(USE_STARSCAN)
-#include "base/allocator/partition_allocator/starscan/pcscan.h"
+#include "base/allocator/partition_allocator/src/partition_alloc/starscan/pcscan.h"
 #include "content/browser/starscan_load_observer.h"
 #endif
 
@@ -3782,7 +3783,7 @@ void WebContentsImpl::ExitFullscreenMode(bool will_cause_resize) {
     }
   }
 
-  current_fullscreen_frame_ = nullptr;
+  current_fullscreen_frame_id_ = GlobalRenderFrameHostId();
 
   observers_.NotifyObservers(
       &WebContentsObserver::DidToggleFullscreenModeForTab, IsFullscreen(),
@@ -3839,7 +3840,6 @@ void WebContentsImpl::FullscreenStateChanged(
     FullscreenFrameSetUpdated();
 }
 
-#if defined(USE_AURA)
 void WebContentsImpl::Maximize() {
   SetWindowShowState(ui::SHOW_STATE_MAXIMIZED);
 }
@@ -3853,9 +3853,10 @@ void WebContentsImpl::Restore() {
 }
 
 void WebContentsImpl::SetWindowShowState(ui::WindowShowState state) {
+#if defined(USE_AURA)
   aura::Window* window = GetTopLevelNativeWindow();
 
-  // TODO(isandrk, crbug.com/1466855): This API function currently works only on
+  // TODO(laurila, crbug.com/1466855): This API function currently works only on
   // Aura platforms (Win/Lin/CrOS/Fuchsia), make it also work on Mac.
   wm::SetWindowState(window, state);
 
@@ -3864,41 +3865,29 @@ void WebContentsImpl::SetWindowShowState(ui::WindowShowState state) {
           GetPrimaryMainFrame()->GetRenderWidgetHost()) {
     render_widget_host->SynchronizeVisualProperties();
   }
+#endif
 }
 
 ui::WindowShowState WebContentsImpl::GetWindowShowState() {
+#if defined(USE_AURA)
   aura::Window* window = GetTopLevelNativeWindow();
   return wm::GetWindowState(window);
-}
-#endif
-
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-bool WebContentsImpl::GetResizable() {
-  return resizable_;
-}
-#endif
-
-void WebContentsImpl::UpdateResizable(bool resizable) {
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
-  return;
 #else
-  if (resizable_ == resizable) {
-    return;
-  }
-
-  resizable_ = resizable;
-  if (RenderWidgetHost* render_widget_host =
-          GetPrimaryMainFrame()->GetRenderWidgetHost()) {
-    render_widget_host->SynchronizeVisualProperties();
-  }
+  // TODO(laurila, crbug.com/1466855): This API function currently works only on
+  // Aura platforms (Win/Lin/CrOS/Fuchsia), make it also work on Mac.
+  return ui::SHOW_STATE_DEFAULT;
 #endif
+}
+
+bool WebContentsImpl::GetResizable() {
+  return GetContentClient()->browser()->GetCanResize(&GetPrimaryPage());
 }
 
 void WebContentsImpl::FullscreenFrameSetUpdated() {
   OPTIONAL_TRACE_EVENT0("content",
                         "WebContentsImpl::FullscreenFrameSetUpdated");
   if (fullscreen_frames_.empty()) {
-    current_fullscreen_frame_ = nullptr;
+    current_fullscreen_frame_id_ = GlobalRenderFrameHostId();
     return;
   }
 
@@ -3910,9 +3899,10 @@ void WebContentsImpl::FullscreenFrameSetUpdated() {
 
   // If we have already notified observers about this frame then we should not
   // fire the observers again.
-  if (new_fullscreen_frame == current_fullscreen_frame_)
+  if (new_fullscreen_frame->GetGlobalId() == current_fullscreen_frame_id_) {
     return;
-  current_fullscreen_frame_ = new_fullscreen_frame;
+  }
+  current_fullscreen_frame_id_ = new_fullscreen_frame->GetGlobalId();
 
   observers_.NotifyObservers(&WebContentsObserver::DidAcquireFullscreen,
                              new_fullscreen_frame);
@@ -6186,6 +6176,15 @@ void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
       NotifyTitleUpdateForEntry(entry);
     }
   }
+
+  // TODO(laurila, crbug.com/1466855): Either reset or restore the settings
+  // based on if the page we're navigating to has an existing can_resize value.
+  // Until then any navigation resets the modified `resizable` value.
+  if (navigation_handle->IsInPrimaryMainFrame() &&
+      navigation_handle->HasCommitted()) {
+    GetContentClient()->browser()->SetCanResizeFromWebAPI(&GetPrimaryPage(),
+                                                          absl::nullopt);
+  }
 }
 
 void WebContentsImpl::DidFailLoadWithError(
@@ -7944,6 +7943,15 @@ void WebContentsImpl::DidStopLoading() {
                                   "WebContentsImpl Loading", this, "URL", url);
   SCOPED_UMA_HISTOGRAM_TIMER("WebContentsObserver.DidStopLoading");
   observers_.NotifyObservers(&WebContentsObserver::DidStopLoading);
+
+  GetPrimaryMainFrame()->ForEachRenderFrameHost(
+      [](RenderFrameHostImpl* render_frame_host) {
+        BrowserAccessibilityManager* manager =
+            render_frame_host->browser_accessibility_manager();
+        if (manager) {
+          manager->DidStopLoading();
+        }
+      });
 
   // TODO(avi): Remove. http://crbug.com/170921
   NotificationService::current()->Notify(
@@ -9828,6 +9836,13 @@ void WebContentsImpl::NotifyPageBecamePrimary(PageImpl& page) {
   observers_.NotifyObservers(&WebContentsObserver::PrimaryPageChanged, page);
 }
 
+bool WebContentsImpl::IsInPreviewMode() const {
+  if (delegate_) {
+    return delegate_->IsInPreviewMode();
+  }
+  return false;
+}
+
 int WebContentsImpl::GetOuterDelegateFrameTreeNodeId() {
   return node_.outer_contents_frame_tree_node_id();
 }
@@ -9969,15 +9984,19 @@ std::unique_ptr<PrerenderHandle> WebContentsImpl::StartPrerendering(
     PreloadingHoldbackStatus holdback_status_override,
     PreloadingAttempt* preloading_attempt,
     absl::optional<base::RepeatingCallback<bool(const GURL&)>>
-        url_match_predicate) {
+        url_match_predicate,
+    absl::optional<base::RepeatingCallback<void(NavigationHandle&)>>
+        prerender_navigation_handle_callback) {
   PrerenderAttributes attributes(
       prerendering_url, trigger_type, embedder_histogram_suffix,
-      content::Referrer(), /*eagerness=*/absl::nullopt,
+      /*target_hint=*/absl::nullopt, content::Referrer(),
+      /*eagerness=*/absl::nullopt,
       /*initiator_origin=*/absl::nullopt,
       content::ChildProcessHost::kInvalidUniqueID, GetWeakPtr(),
       /*initiator_frame_token=*/absl::nullopt,
       /*initiator_frame_tree_node_id=*/RenderFrameHost::kNoFrameTreeNodeId,
-      ukm::kInvalidSourceId, page_transition, url_match_predicate);
+      ukm::kInvalidSourceId, page_transition, std::move(url_match_predicate),
+      std::move(prerender_navigation_handle_callback));
   attributes.holdback_status_override = holdback_status_override;
 
   int frame_tree_node_id = GetPrerenderHostRegistry()->CreateAndStartHost(

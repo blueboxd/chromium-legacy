@@ -47,7 +47,6 @@
 #include "chrome/browser/ash/system/timezone_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/ui/ash/system_tray_client_impl.h"
@@ -604,6 +603,10 @@ void Preferences::RegisterProfilePrefs(
                                 false);
 
   registry->RegisterBooleanPref(::prefs::kHasEverRevokedMetricsConsent, true);
+
+  registry->RegisterBooleanPref(prefs::kShowHumanPresenceSensorScreenEnabled,
+                                true);
+  registry->RegisterListPref(prefs::kUserFeedbackWithLowLevelDebugDataAllowed);
 }
 
 void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {

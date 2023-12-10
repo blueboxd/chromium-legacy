@@ -57,10 +57,9 @@ class MockVideoCaptureControllerEventHandler
                void(const VideoCaptureControllerID&));
   MOCK_METHOD2(OnNewCropVersion,
                void(const VideoCaptureControllerID&, uint32_t crop_version));
-  MOCK_METHOD3(OnBufferReady,
+  MOCK_METHOD2(OnBufferReady,
                void(const VideoCaptureControllerID& id,
-                    const ReadyBuffer& fullsized_buffer,
-                    const std::vector<ReadyBuffer>& downscaled_buffers));
+                    const ReadyBuffer& fullsized_buffer));
   MOCK_METHOD2(OnFrameDropped,
                void(const VideoCaptureControllerID& id,
                     media::VideoCaptureFrameDropReason reason));
@@ -234,7 +233,8 @@ class VideoCaptureBrowserTest : public ContentBrowserTest,
         &mock_controller_event_handler_,
         base::BindOnce(
             &VideoCaptureBrowserTest::OnConnectClientToControllerAnswer,
-            base::Unretained(this), std::move(continuation)));
+            base::Unretained(this), std::move(continuation)),
+        /*browser_context=*/nullptr);
   }
 
   void OnConnectClientToControllerAnswer(
@@ -326,12 +326,11 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   EXPECT_CALL(mock_controller_event_handler_, DoOnNewBuffer(_, _, _))
       .Times(AtLeast(1));
-  EXPECT_CALL(mock_controller_event_handler_, OnBufferReady(_, _, _))
+  EXPECT_CALL(mock_controller_event_handler_, OnBufferReady(_, _))
       .WillRepeatedly(Invoke(
           [this, &received_frame_infos, &must_wait_for_gpu_decode_to_start,
            &finish_test_cb](const VideoCaptureControllerID& id,
-                            const ReadyBuffer& buffer,
-                            const std::vector<ReadyBuffer>& scaled_buffers) {
+                            const ReadyBuffer& buffer) {
             FrameInfo received_frame_info;
             received_frame_info.pixel_format = buffer.frame_info->pixel_format;
             received_frame_info.size = buffer.frame_info->coded_size;

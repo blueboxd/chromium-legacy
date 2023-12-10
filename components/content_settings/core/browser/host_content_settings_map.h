@@ -307,12 +307,14 @@ class HostContentSettingsMap : public content_settings::Observer,
                              ContentSettingsType type);
 
   // Updates the expiration to `lifetime + now()`, if `setting_to_match` is
-  // nullopt or if it matches the rule's value. Returns true if any setting was
-  // matched and updated.
-  bool RenewContentSetting(const GURL& primary_url,
-                           const GURL& secondary_url,
-                           ContentSettingsType type,
-                           absl::optional<ContentSetting> setting_to_match);
+  // nullopt or if it matches the rule's value. Returns the TimeDelta between
+  // now and the setting's old expiration time if any setting was matched and
+  // updated; nullopt otherwise.
+  absl::optional<base::TimeDelta> RenewContentSetting(
+      const GURL& primary_url,
+      const GURL& secondary_url,
+      ContentSettingsType type,
+      absl::optional<ContentSetting> setting_to_match);
 
   // Clears all host-specific settings for one content type.
   //
@@ -413,6 +415,8 @@ class HostContentSettingsMap : public content_settings::Observer,
 
   // Collect UMA data of exceptions.
   void RecordExceptionMetrics();
+  // Collect UMA data for 3PC exceptions.
+  void RecordThirdPartyCookieMetrics(const ContentSettingsForOneType& settings);
 
   // Adds content settings for |content_type| provided by |provider|, into
   // |settings|. If |incognito| is true, adds only the content settings which

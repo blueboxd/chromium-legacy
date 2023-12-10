@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -81,7 +82,7 @@ class WebFileHandlersFileLaunchBrowserTest
   }
 
  protected:
-  // Install the file path as am extension that's installed by default.
+  // Install the file path as an extension that's installed by default.
   const extensions::Extension* WriteToDirAndLoadDefaultInstalledExtension(
       const std::string& manifest) {
     WriteToExtensionDir(manifest);
@@ -123,7 +124,7 @@ class WebFileHandlersFileLaunchBrowserTest
 
   // Load an extension with a few extra files for testing multiple-clients.
   const extensions::Extension* WriteCustomDirForFileHandlingExtension(
-      const std::string& manifest,
+      std::string_view manifest,
       const base::flat_map<std::string, std::string>& files) {
     extension_dir_.WriteManifest(manifest);
     for (const auto& [name, content] : files) {
@@ -234,7 +235,9 @@ class WebFileHandlersFileLaunchBrowserTest
     views::NamedWidgetShownWaiter waiter(views::test::AnyWidgetTestPasskey{},
                                          "WebFileHandlersFileLaunchDialogView");
     // Set the checkbox to checked.
-    extensions::file_handlers::SetDefaultRememberSelectionForTesting(true);
+    // TODO: handle return value.
+    std::ignore =
+        extensions::file_handlers::SetDefaultRememberSelectionForTesting(true);
 
     // Run the first time.
     {
@@ -285,7 +288,9 @@ class WebFileHandlersFileLaunchBrowserTest
     views::NamedWidgetShownWaiter waiter(views::test::AnyWidgetTestPasskey{},
                                          "WebFileHandlersFileLaunchDialogView");
     // Set the checkbox to checked.
-    extensions::file_handlers::SetDefaultRememberSelectionForTesting(true);
+    // TODO: handle return value.
+    std::ignore =
+        extensions::file_handlers::SetDefaultRememberSelectionForTesting(true);
 
     // Launch for the first time.
     {
@@ -334,7 +339,9 @@ class WebFileHandlersFileLaunchBrowserTest
     views::NamedWidgetShownWaiter waiter(views::test::AnyWidgetTestPasskey{},
                                          "WebFileHandlersFileLaunchDialogView");
     // Set the checkbox to checked.
-    extensions::file_handlers::SetDefaultRememberSelectionForTesting(true);
+    // TODO: handle return value.
+    std::ignore =
+        extensions::file_handlers::SetDefaultRememberSelectionForTesting(true);
 
     // Launch for the first time.
     {
@@ -461,6 +468,7 @@ class WebFileHandlersFileLaunchBrowserTest
     return intent;
   }
 
+  // Set channel to the provided argument and clear extension features.
   void SetChannelAndResetFeatureList(version_info::Channel channel) {
     extensions::SetCurrentChannel(channel);
     feature_list_.Reset();
@@ -556,7 +564,6 @@ class WebFileHandlersFileLaunchOnStableChannelBrowserTest
     : public WebFileHandlersFileLaunchBrowserTest {
  public:
   WebFileHandlersFileLaunchOnStableChannelBrowserTest() {
-    // Set channel and extension features.
     SetChannelAndResetFeatureList(version_info::Channel::STABLE);
   }
 };
@@ -585,6 +592,8 @@ IN_PROC_BROWSER_TEST_F(WebFileHandlersFileLaunchOnStableChannelBrowserTest,
 
   // Web File Handlers are supported.
   ASSERT_TRUE(extensions::WebFileHandlers::SupportsWebFileHandlers(*extension));
+  ASSERT_TRUE(
+      extensions::WebFileHandlers::CanBypassPermissionDialog(*extension));
 
   // Reopen the file and ensure that it's available in `launchParams`.
   LaunchExtensionAndCatchResult(*extension);

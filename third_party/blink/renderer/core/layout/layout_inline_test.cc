@@ -178,10 +178,10 @@ TEST_F(LayoutInlineTest, RegionHitTest) {
   ASSERT_TRUE(lots_of_boxes->IsInLayoutNGInlineFormattingContext());
 
   const auto* div = To<LayoutBlockFlow>(lots_of_boxes->Parent());
-  NGInlineCursor cursor(*div);
+  InlineCursor cursor(*div);
   for (cursor.MoveToFirstLine(); cursor; cursor.MoveToNextLine()) {
     DCHECK(cursor.Current().IsLineBox());
-    NGInlineCursor line_cursor = cursor.CursorForDescendants();
+    InlineCursor line_cursor = cursor.CursorForDescendants();
     bool hit_outcome = lots_of_boxes->HitTestCulledInline(
         hit_result, location, hit_offset, line_cursor);
     EXPECT_FALSE(hit_outcome);
@@ -766,25 +766,23 @@ TEST_F(LayoutInlineTest, VisualOverflowRecalcLegacyLayout) {
   span_element->setAttribute(html_names::kStyleAttr,
                              AtomicString("outline: 50px solid red"));
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(PhysicalRect(-50, -50, 200, 120),
-            span->PhysicalVisualOverflowRect());
+  EXPECT_EQ(PhysicalRect(-50, -50, 200, 120), span->VisualOverflowRect());
 
   span_element->setAttribute(html_names::kStyleAttr, g_empty_atom);
   span2_element->setAttribute(html_names::kStyleAttr,
                               AtomicString("outline: 50px solid red"));
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(PhysicalRect(0, 0, 100, 20), span->PhysicalVisualOverflowRect());
+  EXPECT_EQ(PhysicalRect(0, 0, 100, 20), span->VisualOverflowRect());
 
   span2_element->setAttribute(html_names::kStyleAttr, g_empty_atom);
   span_element->setAttribute(html_names::kStyleAttr,
                              AtomicString("outline: 50px solid red"));
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(PhysicalRect(-50, -50, 200, 120),
-            span->PhysicalVisualOverflowRect());
+  EXPECT_EQ(PhysicalRect(-50, -50, 200, 120), span->VisualOverflowRect());
 
   span_element->setAttribute(html_names::kStyleAttr, g_empty_atom);
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(PhysicalRect(0, 0, 100, 20), span->PhysicalVisualOverflowRect());
+  EXPECT_EQ(PhysicalRect(0, 0, 100, 20), span->VisualOverflowRect());
 }
 
 TEST_F(LayoutInlineTest, VisualOverflowRecalcLayoutNG) {
@@ -812,25 +810,23 @@ TEST_F(LayoutInlineTest, VisualOverflowRecalcLayoutNG) {
   span_element->setAttribute(html_names::kStyleAttr,
                              AtomicString("outline: 50px solid red"));
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(PhysicalRect(-50, -50, 200, 120),
-            span->PhysicalVisualOverflowRect());
+  EXPECT_EQ(PhysicalRect(-50, -50, 200, 120), span->VisualOverflowRect());
 
   span_element->setAttribute(html_names::kStyleAttr, g_empty_atom);
   span2_element->setAttribute(html_names::kStyleAttr,
                               AtomicString("outline: 50px solid red"));
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(PhysicalRect(0, 0, 100, 20), span->PhysicalVisualOverflowRect());
+  EXPECT_EQ(PhysicalRect(0, 0, 100, 20), span->VisualOverflowRect());
 
   span2_element->setAttribute(html_names::kStyleAttr, g_empty_atom);
   span_element->setAttribute(html_names::kStyleAttr,
                              AtomicString("outline: 50px solid red"));
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(PhysicalRect(-50, -50, 200, 120),
-            span->PhysicalVisualOverflowRect());
+  EXPECT_EQ(PhysicalRect(-50, -50, 200, 120), span->VisualOverflowRect());
 
   span_element->setAttribute(html_names::kStyleAttr, g_empty_atom);
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(PhysicalRect(0, 0, 100, 20), span->PhysicalVisualOverflowRect());
+  EXPECT_EQ(PhysicalRect(0, 0, 100, 20), span->VisualOverflowRect());
 }
 
 TEST_F(LayoutInlineTest, VisualOverflowRecalcLegacyLayoutPositionRelative) {
@@ -854,8 +850,7 @@ TEST_F(LayoutInlineTest, VisualOverflowRecalcLegacyLayoutPositionRelative) {
   span_element->setAttribute(html_names::kStyleAttr,
                              AtomicString("outline: 50px solid red"));
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(PhysicalRect(-50, -50, 180, 120),
-            span->PhysicalVisualOverflowRect());
+  EXPECT_EQ(PhysicalRect(-50, -50, 180, 120), span->VisualOverflowRect());
 }
 
 }  // namespace blink

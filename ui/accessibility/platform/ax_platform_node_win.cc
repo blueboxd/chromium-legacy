@@ -6061,7 +6061,7 @@ HRESULT AXPlatformNodeWin::GetAnnotationTypesAttribute(
 
 absl::optional<LCID> AXPlatformNodeWin::GetCultureAttributeAsLCID() const {
   const std::u16string language =
-      GetInheritedString16Attribute(ax::mojom::StringAttribute::kLanguage);
+      base::UTF8ToUTF16(GetDelegate()->GetLanguage());
   const LCID lcid =
       LocaleNameToLCID(base::as_wcstr(language), LOCALE_ALLOW_NEUTRAL_NAMES);
   if (!lcid)
@@ -8235,7 +8235,9 @@ AXPlatformNodeWin::GetPatternProviderFactoryMethod(PATTERNID pattern_id) {
       break;
 
     case UIA_GridItemPatternId:
-      if (IsUIACellOrTableHeader(GetRole())) {
+      // Griditem pattern should not be exposed unless the
+      // the gridpattern role is exposed on an ancestor.
+      if (IsUIACellOrTableHeader(GetRole()) && GetUIATableAncestor()) {
         return &PatternProvider<IGridItemProvider>;
       }
       break;
@@ -8565,6 +8567,18 @@ void AXPlatformNodeWin::NotifyAPIObserverForPropertyRequest(
     if (uiautomation_id_requested)
       observer.OnUIAutomationIdRequested();
   }
+}
+
+AXPlatformNodeWin* AXPlatformNodeWin::GetUIATableAncestor() const {
+  AXPlatformNodeWin* parent = const_cast<AXPlatformNodeWin*>(this);
+  while (parent) {
+    if (IsUIATableLike(parent->GetRole())) {
+      return parent;
+    }
+    parent = parent->GetParentPlatformNodeWin();
+  }
+
+  return nullptr;
 }
 
 // static

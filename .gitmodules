@@ -333,6 +333,7 @@
 [submodule "third_party/harfbuzz-ng/src"]
 	path = third_party/harfbuzz-ng/src
 	url = https://chromium.googlesource.com/external/github.com/harfbuzz/harfbuzz.git
+	ignore = all
 [submodule "third_party/jszip/src"]
 	path = third_party/jszip/src
 	url = https://chromium.googlesource.com/external/github.com/Stuk/jszip.git
@@ -354,15 +355,14 @@
 	path = third_party/google_toolbox_for_mac/src
 	url = https://chromium.googlesource.com/external/github.com/google/google-toolbox-for-mac.git
 	gclient-condition = checkout_ios or checkout_mac
+[submodule "third_party/google-truth/src"]
+	path = third_party/google-truth/src
+	url = https://chromium.googlesource.com/external/github.com/google/truth.git
+	gclient-condition = checkout_android
 	ignore = all
 [submodule "third_party/googletest/src"]
 	path = third_party/googletest/src
 	url = https://chromium.googlesource.com/external/github.com/google/googletest.git
-	ignore = all
-[submodule "third_party/gnu_binutils"]
-	path = third_party/gnu_binutils
-	url = https://chromium.googlesource.com/native_client/deps/third_party/gnu_binutils.git
-	gclient-condition = checkout_nacl and checkout_win
 	ignore = all
 [submodule "third_party/gperf"]
 	path = third_party/gperf
@@ -538,20 +538,10 @@
 	url = https://chromium.googlesource.com/external/github.com/google/material-design-icons.git
 	gclient-condition = checkout_ios
 	ignore = all
-[submodule "third_party/mingw-w64/mingw/bin"]
-	path = third_party/mingw-w64/mingw/bin
-	url = https://chromium.googlesource.com/native_client/deps/third_party/mingw-w64/mingw/bin.git
-	gclient-condition = checkout_nacl and checkout_win
-	ignore = all
 [submodule "third_party/minigbm/src"]
 	path = third_party/minigbm/src
 	url = https://chromium.googlesource.com/chromiumos/platform/minigbm.git
 	gclient-condition = checkout_linux
-	ignore = all
-[submodule "third_party/nacl_sdk_binaries"]
-	path = third_party/nacl_sdk_binaries
-	url = https://chromium.googlesource.com/chromium/deps/nacl_sdk_binaries.git
-	gclient-condition = checkout_nacl and checkout_win
 	ignore = all
 [submodule "third_party/nasm"]
 	path = third_party/nasm
@@ -789,6 +779,11 @@
 	url = https://chrome-internal.googlesource.com/chrome/browser/media/engagement_internal.git
 	gclient-condition = checkout_src_internal
 	ignore = all
+[submodule "chrome/browser/nearby_sharing/internal"]
+	path = chrome/browser/nearby_sharing/internal
+	url = https://chrome-internal.googlesource.com/chrome/browser/nearby_sharing/internal.git
+	gclient-condition = checkout_src_internal
+	ignore = all
 [submodule "chrome/browser/resources/chromeos/quickoffice"]
 	path = chrome/browser/resources/chromeos/quickoffice
 	url = https://chrome-internal.googlesource.com/quickoffice/crx.git
@@ -987,6 +982,11 @@
 	path = third_party/khronos_glcts
 	url = https://chrome-internal.googlesource.com/chrome/deps/khronos_glcts.git
 	gclient-condition = checkout_src_internal
+	ignore = all
+[submodule "third_party/ml"]
+	path = third_party/ml
+	url = https://chrome-internal.googlesource.com/chrome/third_party/ml.git
+	gclient-condition = checkout_third_party_ml
 	ignore = all
 [submodule "third_party/widevine/cdm/chromeos"]
 	path = third_party/widevine/cdm/chromeos

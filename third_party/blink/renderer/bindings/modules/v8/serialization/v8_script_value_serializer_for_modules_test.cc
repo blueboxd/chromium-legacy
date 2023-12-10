@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_crypto_key.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_dom_file_system.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_stream_track.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_restriction_target.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_certificate.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -45,10 +46,11 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_source.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_video_capturer_source.h"
+#include "third_party/blink/renderer/modules/mediastream/restriction_target.h"
 #include "third_party/blink/renderer/modules/mediastream/test/transfer_test_utils.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate_generator.h"
-#include "third_party/blink/renderer/modules/webcodecs/allow_shared_buffer_source_util.h"
+#include "third_party/blink/renderer/modules/webcodecs/array_buffer_util.h"
 #include "third_party/blink/renderer/modules/webcodecs/audio_data.h"
 #include "third_party/blink/renderer/modules/webcodecs/audio_data_transfer_list.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
@@ -196,9 +198,8 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripRTCCertificate) {
 
   // Make a certificate with the existing key above.
   rtc::scoped_refptr<rtc::RTCCertificate> web_certificate =
-      certificate_generator->FromPEM(
-          WebString::FromUTF8(kEcdsaPrivateKey, sizeof(kEcdsaPrivateKey)),
-          WebString::FromUTF8(kEcdsaCertificate, sizeof(kEcdsaCertificate)));
+      certificate_generator->FromPEM(WebString::FromUTF8(kEcdsaPrivateKey),
+                                     WebString::FromUTF8(kEcdsaCertificate));
   ASSERT_TRUE(web_certificate);
   RTCCertificate* certificate =
       MakeGarbageCollected<RTCCertificate>(std::move(web_certificate));
@@ -1833,7 +1834,7 @@ TEST(V8ScriptValueSerializerForModulesTest,
   EXPECT_FALSE(blink_track->Ended());
 }
 
-#if !BUILDFLAG(IS_ANDROID)  // CropTarget is not exposed on Android.
+#if !BUILDFLAG(IS_ANDROID)  // SubCaptureTargets are not exposed on Android.
 TEST(V8ScriptValueSerializerForModulesTest, RoundTripCropTarget) {
   V8TestingScope scope;
 
@@ -1848,6 +1849,25 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCropTarget) {
       V8CropTarget::ToWrappable(scope.GetIsolate(), result);
   ASSERT_NE(new_crop_target, nullptr);
   EXPECT_EQ(new_crop_target->GetId(), crop_id);
+}
+
+TEST(V8ScriptValueSerializerForModulesTest, RoundTripRestrictionTarget) {
+  V8TestingScope scope;
+  ScopedElementCaptureForTest element_capture(true);
+
+  const String restriction_id("8e7e0c22-67a0-4c39-b4dc-a20433262f8e");
+
+  RestrictionTarget* const restriction_target =
+      MakeGarbageCollected<RestrictionTarget>(restriction_id);
+
+  v8::Local<v8::Value> wrapper =
+      ToV8(restriction_target, scope.GetScriptState());
+  v8::Local<v8::Value> result = RoundTripForModules(wrapper, scope);
+
+  RestrictionTarget* const new_restriction_target =
+      V8RestrictionTarget::ToWrappable(scope.GetIsolate(), result);
+  ASSERT_NE(new_restriction_target, nullptr);
+  EXPECT_EQ(new_restriction_target->GetId(), restriction_id);
 }
 #endif
 

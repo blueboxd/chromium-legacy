@@ -144,8 +144,6 @@ class ASH_EXPORT SessionStateAnimator {
     // called.
     virtual void OnAnimationAborted();
 
-    bool sequence_ended() const { return sequence_ended_; }
-
    private:
     // Destroys this and calls the callback if the contained animations
     // completed successfully.

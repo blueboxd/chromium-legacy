@@ -164,7 +164,7 @@ class FloatingWebUIHelpBubbleFactoryBrowser
                                ->handler()
                                ->GetWebContents();
     // Note: this checks all tabs for their WebContents.
-    if (chrome::FindBrowserWithWebContents(contents)) {
+    if (chrome::FindBrowserWithTab(contents)) {
       return false;
     }
 
@@ -258,7 +258,7 @@ void MaybeRegisterChromeFeaturePromos(
   registry.RegisterFeature(std::move(
       FeaturePromoSpecification::CreateForToastPromo(
           feature_engagement::kIPHAutofillVirtualCardCVCSuggestionFeature,
-          kAutofillCreditCardSuggestionEntryElementId,
+          kAutofillStandaloneCvcSuggestionElementId,
           IDS_AUTOFILL_VIRTUAL_CARD_STANDALONE_CVC_SUGGESTION_IPH_BUBBLE_LABEL,
           IDS_AUTOFILL_VIRTUAL_CARD_STANDALONE_CVC_SUGGESTION_IPH_BUBBLE_LABEL_SCREENREADER,
           FeaturePromoSpecification::AcceleratorInfo())
@@ -402,6 +402,13 @@ void MaybeRegisterChromeFeaturePromos(
       kToolbarMediaButtonElementId,
       IDS_GLOBAL_MEDIA_CONTROLS_CONTROL_CAST_SESSIONS_PROMO));
 
+  // kIPHGMCLocalMediaCastingFeature:
+  registry.RegisterFeature(FeaturePromoSpecification::CreateForToastPromo(
+      feature_engagement::kIPHGMCLocalMediaCastingFeature,
+      kToolbarMediaButtonElementId, IDS_GMC_LOCAL_MEDIA_CAST_SESSIONS_PROMO,
+      IDS_GMC_LOCAL_MEDIA_CAST_START_PROMO,
+      FeaturePromoSpecification::AcceleratorInfo()));
+
   // kIPHPasswordsAccountStorageFeature:
   registry.RegisterFeature(std::move(
       FeaturePromoSpecification::CreateForLegacyPromo(
@@ -532,6 +539,29 @@ void MaybeRegisterChromeFeaturePromos(
   registry.RegisterFeature(FeaturePromoSpecification::CreateForLegacyPromo(
       &feature_engagement::kIPHTabSearchFeature, kTabSearchButtonElementId,
       IDS_TAB_SEARCH_PROMO));
+
+  // Tracking Protection Offboarding IPH
+  registry.RegisterFeature(std::move(
+      FeaturePromoSpecification::CreateForCustomAction(
+          feature_engagement::kIPHTrackingProtectionOffboardingFeature,
+          kLocationIconElementId,
+          IDS_TRACKING_PROTECTION_OFFBOARDING_NOTICE_BODY,
+          IDS_TRACKING_PROTECTION_ONBOARDING_NOTICE_SETTINGS_BUTTON_LABEL,
+          base::BindRepeating(
+              [](ui::ElementContext ctx,
+                 user_education::FeaturePromoHandle promo_handle) {
+                auto* browser = chrome::FindBrowserWithUiElementContext(ctx);
+                if (!browser) {
+                  return;
+                }
+                chrome::ShowSettingsSubPage(browser,
+                                            chrome::kCookieSettingsSubPage);
+              }))
+          .SetBubbleTitleText(IDS_TRACKING_PROTECTION_OFFBOARDING_NOTICE_TITLE)
+          .SetPromoSubtype(
+              FeaturePromoSpecification::PromoSubtype::kLegalNotice)
+          .SetBubbleArrow(HelpBubbleArrow::kTopLeft)
+          .SetCustomActionIsDefault(false)));
 
   // Tracking Protection Onboarding IPH
   registry.RegisterFeature(std::move(

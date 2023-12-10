@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import * as fill_constants from '//components/autofill/ios/form_util/resources/fill_constants.js';
+import {isTextAreaElement} from '//components/autofill/ios/form_util/resources/fill_element_inference_util.js';
 
 /**
  * @fileoverview Installs Autofill management functions on the __gCrWeb object.
@@ -188,7 +189,7 @@ function controlElementInputListener_(evt) {
  *
  * @param {!FormData} data Autofill data to fill in.
  * @param {number} forceFillFieldID Identified field will always be
- *     filled even if non-empty. May be __gCrWeb.fill.RENDERER_ID_NOT_SET.
+ *     filled even if non-empty. May be RENDERER_ID_NOT_SET.
  * @return {string} JSON encoded list of renderer IDs of filled elements.
  */
 __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldID) {
@@ -328,8 +329,7 @@ __gCrWeb.autofill['clearAutofilledFields'] = function(
     }
 
     let value = null;
-    if (__gCrWeb.fill.isTextInput(element) ||
-        __gCrWeb.fill.isTextAreaElement(element)) {
+    if (__gCrWeb.fill.isTextInput(element) || isTextAreaElement(element)) {
       value = '';
     } else if (__gCrWeb.fill.isSelectElement(element)) {
       // Reset to the first index.
@@ -473,8 +473,7 @@ __gCrWeb.autofill.fillFormField = function(data, field) {
   }
 
   let filled = false;
-  if (__gCrWeb.fill.isTextInput(field) ||
-      __gCrWeb.fill.isTextAreaElement(field)) {
+  if (__gCrWeb.fill.isTextInput(field) || isTextAreaElement(field)) {
     let sanitizedValue = data['value'];
 
     if (__gCrWeb.fill.isTextInput(field)) {

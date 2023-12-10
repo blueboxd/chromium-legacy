@@ -11,13 +11,17 @@ import android.hardware.SensorManager;
 
 import androidx.annotation.GuardedBy;
 
+import org.jni_zero.CalledByNative;
+import org.jni_zero.CalledByNativeForTesting;
+import org.jni_zero.JNINamespace;
+import org.jni_zero.NativeMethods;
+
 import org.chromium.base.Log;
-import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeMethods;
 import org.chromium.device.mojom.ReportingMode;
 import org.chromium.device.mojom.SensorType;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 /**
@@ -312,6 +316,32 @@ public class PlatformSensor implements SensorEventListener {
                     updateSensorReading(timestamp, event.values[0], event.values[1],
                             event.values[2], event.values[3]);
             }
+        }
+    }
+
+    /**
+     * A testing method to let device::PlatformSensorAndroid simulates a OnSensorChanged call. The
+     * event with length |readingValuesLength| is created and filled with readings as (reading_index
+     * + 0.1).
+     */
+    @CalledByNativeForTesting
+    public void simulateSensorEventForTesting(int readingValuesLength) {
+        try {
+            Constructor<SensorEvent> sensorEventConstructor =
+                    SensorEvent.class.getDeclaredConstructor(Integer.TYPE);
+            sensorEventConstructor.setAccessible(true);
+            SensorEvent event = sensorEventConstructor.newInstance(readingValuesLength);
+            event.timestamp = 123L;
+            for (int i = 0; i < readingValuesLength; ++i) {
+                event.values[i] = (float) (i + 0.1);
+            }
+            onSensorChanged(event);
+        } catch (InvocationTargetException
+                | NoSuchMethodException
+                | InstantiationException
+                | IllegalAccessException e) {
+            Log.e(TAG, "Failed to create simulated SensorEvent.", e);
+            return;
         }
     }
 

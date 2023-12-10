@@ -22,6 +22,9 @@ namespace blink {
 
 struct ServiceWorkerRouterCondition;
 
+// TODO(crbug.com/1490445): set this value by discussing in spec proposal.
+static constexpr int kServiceWorkerRouterConditionMaxRecursionDepth = 10;
+
 struct ServiceWorkerRouterRequestCondition {
   // https://fetch.spec.whatwg.org/#concept-request-method
   // Technically, it can be an arbitrary string, but Chromium would set
@@ -52,8 +55,13 @@ struct ServiceWorkerRouterRunningStatusCondition {
   }
 };
 
-struct ServiceWorkerRouterOrCondition {
+struct ServiceWorkerRouterConditionObject {
   std::vector<ServiceWorkerRouterCondition> conditions;
+
+  bool operator==(const ServiceWorkerRouterConditionObject& other) const;
+};
+struct ServiceWorkerRouterOrCondition {
+  std::vector<ServiceWorkerRouterConditionObject> objects;
 
   bool operator==(const ServiceWorkerRouterOrCondition& other) const;
 };

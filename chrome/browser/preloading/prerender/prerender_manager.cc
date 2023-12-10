@@ -14,6 +14,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/page_load_metrics/observers/bookmark_navigation_handle_user_data.h"
 #include "chrome/browser/preloading/chrome_preloading.h"
 #include "chrome/browser/preloading/prefetch/search_prefetch/field_trial_settings.h"
 #include "chrome/browser/preloading/prefetch/search_prefetch/search_prefetch_service.h"
@@ -79,17 +80,6 @@ base::TimeDelta GetSearchPrerenderExpiryDuration() {
   return SearchPrefetchCachingLimit();
 }
 
-// TODO(https://crbug.com/1295170): This is a workaround. Remove this method
-// after the unification work is done.
-GURL RemoveParameterFromUrl(const GURL& url) {
-  std::string query = url.query();
-  base::ReplaceFirstSubstringAfterOffset(&query, /*start_offset=*/0, "&pf=cs",
-                                         "");
-  GURL::Replacements replacements;
-  replacements.SetQueryStr(query);
-  return url.ReplaceComponents(replacements);
-}
-
 void MarkPreloadingAttemptAsDuplicate(
     content::PreloadingAttempt* preloading_attempt) {
   CHECK(!preloading_attempt->ShouldHoldback());
@@ -103,6 +93,13 @@ content::PreloadingFailureReason ToPreloadingFailureReason(
       static_cast<int>(status) +
       static_cast<int>(content::PreloadingFailureReason::
                            kPreloadingFailureReasonContentEnd));
+}
+
+void AttachBookmarkBarNavigationHandleUserData(
+    content::NavigationHandle& navigation_handle) {
+  BookmarkNavigationHandleUserData::CreateForNavigationHandle(
+      navigation_handle,
+      BookmarkNavigationHandleUserData::InitiatorLocation::kBookmarkBar);
 }
 
 }  // namespace
@@ -175,47 +172,8 @@ class PrerenderManager::SearchPrerenderTask {
       return;
     }
 
-    if (prerender_utils::SearchPrefetchUpgradeToPrerenderIsEnabled()) {
-      search_prefetch_service->OnPrerenderedRequestUsed(
-          prerendered_canonical_search_url_,
-          web_contents.GetLastCommittedURL());
-      return;
-    }
-
-    // TODO(https://crbug.com/1295170): This rule is hard coded according to
-    // TemplateUrl, which is not good, and can be removed after the unification
-    // work is done.
-    const std::string prerender_key = "pf";
-
-    // Maybe the prerendering page has updated its URL. In this case, obtain the
-    // original URL with the ReplacedNavigationEntryData. The reason why we do
-    // not compare the URL with GetInitialPrerenderingUrl here is that the URL
-    // can be changed by other mechanisms, such as safe search.
-    if (const absl::optional<content::ReplacedNavigationEntryData>&
-            replaced_data = entry->GetReplacedEntryData()) {
-      const GURL& maybe_prerendering_url = replaced_data->first_committed_url;
-      std::string out_value;
-      bool key_exists = net::GetValueForKeyInQuery(maybe_prerendering_url,
-                                                   prerender_key, &out_value);
-      if (key_exists &&
-          !net::GetValueForKeyInQuery(web_contents.GetLastCommittedURL(),
-                                      prerender_key, &out_value)) {
-        search_prefetch_service->AddCacheEntryForPrerender(
-            web_contents.GetLastCommittedURL(),
-            replaced_data->first_committed_url);
-        return;
-      }
-    }
-
-    const GURL& activated_url = web_contents.GetLastCommittedURL();
-    std::string out_value;
-    bool key_exists =
-        net::GetValueForKeyInQuery(activated_url, prerender_key, &out_value);
-    if (key_exists) {
-      GURL new_url = RemoveParameterFromUrl(activated_url);
-      search_prefetch_service->AddCacheEntryForPrerender(new_url,
-                                                         activated_url);
-    }
+    search_prefetch_service->OnPrerenderedRequestUsed(
+        prerendered_canonical_search_url_, web_contents.GetLastCommittedURL());
   }
 
   void RecordTimestampOnDidStartNavigation(
@@ -365,11 +323,17 @@ PrerenderManager::StartPrerenderBookmark(
     bookmark_prerender_handle_.reset();
   }
 
+  base::RepeatingCallback<void(content::NavigationHandle&)>
+      prerender_navigation_handle_callback =
+          base::BindRepeating(&AttachBookmarkBarNavigationHandleUserData);
+
   bookmark_prerender_handle_ = web_contents()->StartPrerendering(
       prerendering_url, content::PrerenderTriggerType::kEmbedder,
       prerender_utils::kBookmarkBarMetricSuffix,
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_AUTO_BOOKMARK),
-      content::PreloadingHoldbackStatus::kUnspecified, preloading_attempt);
+      content::PreloadingHoldbackStatus::kUnspecified, preloading_attempt,
+      /*url_match_predicate=*/absl::nullopt,
+      std::move(prerender_navigation_handle_callback));
 
   return bookmark_prerender_handle_ ? bookmark_prerender_handle_->GetWeakPtr()
                                     : nullptr;
@@ -563,8 +527,6 @@ void PrerenderManager::StartPrerenderSearchResult(
     const GURL& canonical_search_url,
     const GURL& prerendering_url,
     base::WeakPtr<content::PreloadingAttempt> preloading_attempt) {
-  CHECK(prerender_utils::SearchPrefetchUpgradeToPrerenderIsEnabled());
-
   // If the caller does not want to prerender a new result, this does not need
   // to do anything.
   if (!ResetSearchPrerenderTaskIfNecessary(canonical_search_url,

@@ -115,11 +115,11 @@ export function getCaller() {
  *     it's the return of getCaller() function.
  * @param {string} message Pending reason including %s, %d, or %j markers. %j
  *     format an object as JSON.
- * @param {...*} var_args Values to be assigined to %x markers.
+ * @param {...*} _var_args Values to be assigined to %x markers.
  * @return {Object} Object which returns true for the expression: obj instanceof
  *     pending.
  */
-export function pending(caller, message, var_args) {
+export function pending(caller, message, ..._var_args) {
   // |index| is used to ignore caller and message arguments subsisting markers
   // (%s, %d and %j) within message with the remaining |arguments|.
   let index = 2;
@@ -219,6 +219,10 @@ export async function getBrowserWindows(expectedInitialCount = 0) {
 
 /**
  * Adds the given entries to the target volume(s).
+ *
+ * Note: passing 'local' as volume name will add entries to the "My
+ * Files/Downloads", instead of "My files".
+ *
  * @param {Array<string>} volumeNames Names of target volumes.
  * @param {Array<TestEntryInfo>} entries List of entries to be added.
  * @param {function(boolean)=} opt_callback Callback function to be passed the

@@ -6,11 +6,13 @@ import {TestRunner} from 'test_runner';
 import {AxeCoreTestRunner} from 'axe_core_test_runner';
 import {SourcesTestRunner} from 'sources_test_runner';
 
-import * as SourcesModule from 'devtools/panels/sources/sources.js';
+import * as ObjectUI from 'devtools/ui/legacy/components/object_ui/object_ui.js';
+import * as Sources from 'devtools/panels/sources/sources.js';
+import * as UI from 'devtools/ui/legacy/legacy.js';
 
 (async function() {
   await TestRunner.showPanel('sources');
-  await UI.viewManager.showView('sources.scopeChain');
+  await UI.ViewManager.ViewManager.instance().showView('sources.scopeChain');
 
   TestRunner.addResult('Testing accessibility in the scope pane.\n');
   await SourcesTestRunner.startDebuggerTestPromise();
@@ -27,16 +29,16 @@ import * as SourcesModule from 'devtools/panels/sources/sources.js';
   `);
   await SourcesTestRunner.waitUntilPausedPromise();
 
-  await TestRunner.addSnifferPromise(SourcesModule.ScopeChainSidebarPane.ScopeChainSidebarPane.prototype, 'sidebarPaneUpdatedForTest');
-  const scopePane = SourcesModule.ScopeChainSidebarPane.ScopeChainSidebarPane.instance();
-  await TestRunner.addSnifferPromise(ObjectUI.ObjectPropertyTreeElement, 'populateWithProperties');
+  await TestRunner.addSnifferPromise(Sources.ScopeChainSidebarPane.ScopeChainSidebarPane.prototype, 'sidebarPaneUpdatedForTest');
+  const scopePane = Sources.ScopeChainSidebarPane.ScopeChainSidebarPane.instance();
+  await TestRunner.addSnifferPromise(ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement, 'populateWithProperties');
   TestRunner.addResult(`Scope pane content: ${scopePane.contentElement.deepTextContent()}`);
   TestRunner.addResult(`Running the axe-core linter on the scope pane.`);
   await AxeCoreTestRunner.runValidation(scopePane.contentElement);
 
   TestRunner.addResult('Expanding the makeClosure closure.');
   scopePane.treeOutline.rootElement().childAt(1).expand();
-  await TestRunner.addSnifferPromise(ObjectUI.ObjectPropertyTreeElement, 'populateWithProperties');
+  await TestRunner.addSnifferPromise(ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement, 'populateWithProperties');
   TestRunner.addResult(`Scope pane content: ${scopePane.contentElement.deepTextContent()}`);
   TestRunner.addResult(`Running the axe-core linter on the scope pane.`);
   await AxeCoreTestRunner.runValidation(scopePane.contentElement);

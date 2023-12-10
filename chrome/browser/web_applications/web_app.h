@@ -24,7 +24,6 @@
 #include "chrome/browser/web_applications/scope_extension_info.h"
 #include "chrome/browser/web_applications/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
-#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/services/app_service/public/cpp/icon_info.h"
@@ -418,6 +417,13 @@ class WebApp {
 
   const absl::optional<GeneratedIconFix>& generated_icon_fix() const;
 
+  int supported_links_offer_ignore_count() const {
+    return supported_links_offer_ignore_count_;
+  }
+  int supported_links_offer_dismiss_count() const {
+    return supported_links_offer_dismiss_count_;
+  }
+
   // A Web App can be installed from multiple sources simultaneously. Installs
   // add a source to the app. Uninstalls remove a source from the app.
   void AddSource(WebAppManagement::Type source);
@@ -427,6 +433,8 @@ class WebApp {
   WebAppManagementTypes GetSources() const;
 
   bool IsSynced() const;
+  // Returns true if the app is preinstalled through PreinstalledWebAppManager.
+  // Does not include apps preloaded through the App Preload Service.
   bool IsPreinstalledApp() const;
   bool IsPolicyInstalledApp() const;
   bool IsSystemApp() const;
@@ -510,6 +518,8 @@ class WebApp {
   void SetIsolationData(IsolationData isolation_data);
   void SetIsUserSelectedAppForSupportedLinks(
       bool is_user_selected_app_for_capturing_links);
+  void SetSupportedLinksOfferIgnoreCount(int ignore_count);
+  void SetSupportedLinksOfferDismissCount(int dismiss_count);
 
   void AddPlaceholderInfoToManagementExternalConfigMap(
       WebAppManagement::Type source_type,
@@ -657,6 +667,9 @@ class WebApp {
   base::Time latest_install_time_;
 
   absl::optional<GeneratedIconFix> generated_icon_fix_;
+
+  int supported_links_offer_ignore_count_ = 0;
+  int supported_links_offer_dismiss_count_ = 0;
 
   // New fields must be added to:
   //  - |operator==|

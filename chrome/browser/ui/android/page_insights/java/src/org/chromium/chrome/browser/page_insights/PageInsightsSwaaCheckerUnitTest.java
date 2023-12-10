@@ -32,32 +32,26 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.LooperMode;
 
+import org.chromium.base.shared_preferences.SharedPreferencesManager;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
 
-/**
- * Unit tests for {@link PageInsightsSwaaChecker}.
- */
+/** Unit tests for {@link PageInsightsSwaaChecker}. */
 @LooperMode(LooperMode.Mode.PAUSED)
 @RunWith(BaseRobolectricTestRunner.class)
 public class PageInsightsSwaaCheckerUnitTest {
-    @Rule
-    public JniMocker mJniMocker = new JniMocker();
+    @Rule public JniMocker mJniMocker = new JniMocker();
 
-    @Mock
-    private PageInsightsSwaaChecker.Natives mPageInsightsSwaaCheckerJni;
+    @Mock private PageInsightsSwaaChecker.Natives mPageInsightsSwaaCheckerJni;
 
-    @Mock
-    private Profile mProfile;
+    @Mock private Profile mProfile;
 
-    @Mock
-    private Runnable mActivateCallback;
+    @Mock private Runnable mActivateCallback;
 
-    @Mock
-    private Handler mHandler;
+    @Mock private Handler mHandler;
 
     private SharedPreferencesManager mSharedPreferencesManager;
 
@@ -67,7 +61,7 @@ public class PageInsightsSwaaCheckerUnitTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mJniMocker.mock(PageInsightsSwaaCheckerJni.TEST_HOOKS, mPageInsightsSwaaCheckerJni);
-        mSharedPreferencesManager = SharedPreferencesManager.getInstance();
+        mSharedPreferencesManager = ChromeSharedPreferences.getInstance();
 
         mSwaaChecker = new PageInsightsSwaaChecker(mProfile, mActivateCallback);
         mHandler = spy(mSwaaChecker.getHandlerForTesting());

@@ -11,16 +11,18 @@ import android.net.NetworkInfo;
 
 import androidx.annotation.Nullable;
 
+import org.jni_zero.NativeMethods;
+
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ResettersForTesting;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.shared_preferences.SharedPreferencesManager;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.policy.PolicyServiceFactory;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.components.minidump_uploader.util.NetworkPermissionUtil;
 import org.chromium.components.policy.PolicyMap;
 import org.chromium.components.policy.PolicyService;
@@ -44,7 +46,7 @@ public class PrivacyPreferencesManagerImpl implements PrivacyPreferencesManager 
 
     PrivacyPreferencesManagerImpl(Context context) {
         mContext = context;
-        mPrefs = SharedPreferencesManager.getInstance();
+        mPrefs = ChromeSharedPreferences.getInstance();
         mNativeInitialized = false;
         // TODO(https://crbug.com/1320040). Clean up deprecated preference migration.
         migrateDeprecatedPreferences();
@@ -190,7 +192,8 @@ public class PrivacyPreferencesManagerImpl implements PrivacyPreferencesManager 
 
     @Override
     public boolean isUploadEnabledForTests() {
-        return CommandLine.getInstance().hasSwitch(ChromeSwitches.FORCE_CRASH_DUMP_UPLOAD);
+        CommandLine commandLine = CommandLine.getInstance();
+        return commandLine != null && commandLine.hasSwitch(ChromeSwitches.FORCE_CRASH_DUMP_UPLOAD);
     }
 
     @Override

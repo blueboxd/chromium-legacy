@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {MAX_STRING_LENGTH} from '//components/autofill/ios/form_util/resources/fill_constants.js';
+import * as fillConstants from '//components/autofill/ios/form_util/resources/fill_constants.js';
+import {findChildText} from '//components/autofill/ios/form_util/resources/fill_element_inference_util.js';
 
 /**
  * Maps elements using their unique ID
@@ -477,9 +478,9 @@ __gCrWeb.fill.getOptionStringsFromElement = function(selectElement, field) {
   for (let i = 0; i < options.length; ++i) {
     const option = options[i];
     field['option_values'].push(
-        option['value'].substring(0, MAX_STRING_LENGTH));
+        option['value'].substring(0, fillConstants.MAX_STRING_LENGTH));
     field['option_contents'].push(
-        option['text'].substring(0, MAX_STRING_LENGTH));
+        option['text'].substring(0, fillConstants.MAX_STRING_LENGTH));
   }
 };
 
@@ -567,7 +568,7 @@ function coalesceTextByIdList(element, attribute) {
         return e !== null;
       })
       .map(function(n) {
-        return __gCrWeb.fill.findChildText(n);
+        return findChildText(n);
       })
       .filter(function(s) {
         return s.length > 0;
@@ -657,10 +658,10 @@ __gCrWeb.fill.getUniqueID = function(element) {
     if (typeof element[uniqueID] !== 'undefined' && !isNaN(element[uniqueID])) {
       return element[uniqueID].toString();
     } else {
-      return __gCrWeb.fill.RENDERER_ID_NOT_SET;
+      return fillConstants.RENDERER_ID_NOT_SET;
     }
   } catch (e) {
-    return __gCrWeb.fill.RENDERER_ID_NOT_SET;
+    return fillConstants.RENDERER_ID_NOT_SET;
   }
 };
 

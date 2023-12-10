@@ -33,6 +33,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/trace_event/trace_event.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/presentation_time_recorder.h"
@@ -42,6 +43,8 @@
 namespace ash {
 
 namespace {
+
+OverviewController* g_instance = nullptr;
 
 // It can take up to two frames until the frame created in the UI thread that
 // triggered animation observer is drawn. Wait 50ms in attempt to let its draw
@@ -109,6 +112,8 @@ OverviewController::OverviewController()
   }
 
   Shell::Get()->activation_client()->AddObserver(this);
+  CHECK_EQ(g_instance, nullptr);
+  g_instance = this;
 }
 
 OverviewController::~OverviewController() {
@@ -126,6 +131,15 @@ OverviewController::~OverviewController() {
     overview_session_->Shutdown();
     overview_session_.reset();
   }
+
+  CHECK_EQ(g_instance, this);
+  g_instance = nullptr;
+}
+
+// static
+OverviewController* OverviewController::Get() {
+  CHECK(g_instance);
+  return g_instance;
 }
 
 bool OverviewController::StartOverview(OverviewStartAction action,
@@ -572,14 +586,15 @@ void OverviewController::OnStartingAnimationComplete(bool canceled) {
     overview_wallpaper_controller_->Blur(/*animate=*/true);
   }
 
-  for (auto& observer : observers_)
-    observer.OnOverviewModeStartingAnimationComplete(canceled);
-
   // Observers should not do anything which may cause overview to quit
   // explicitly (i.e. ToggleOverview()) or implicity (i.e. activation change).
   DCHECK(overview_session_);
   overview_session_->OnStartingAnimationComplete(canceled,
                                                  should_focus_overview_);
+  for (auto& observer : observers_) {
+    observer.OnOverviewModeStartingAnimationComplete(canceled);
+  }
+
   UnpauseOcclusionTracker(kOcclusionPauseDurationForStart);
   TRACE_EVENT_NESTABLE_ASYNC_END1("ui", "OverviewController::EnterOverview",
                                   this, "canceled", canceled);

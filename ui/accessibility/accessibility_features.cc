@@ -163,24 +163,6 @@ bool IsExperimentalAccessibilityGoogleTtsHighQualityVoicesEnabled() {
       ::features::kExperimentalAccessibilityGoogleTtsHighQualityVoices);
 }
 
-BASE_FEATURE(kExperimentalAccessibilityColorEnhancementSettings,
-             "ExperimentalAccessibilityColorEnhancementSettings",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-bool AreExperimentalAccessibilityColorEnhancementSettingsEnabled() {
-  return base::FeatureList::IsEnabled(
-      ::features::kExperimentalAccessibilityColorEnhancementSettings);
-}
-
-BASE_FEATURE(kAccessibilityChromeVoxPageMigration,
-             "AccessibilityChromeVoxPageMigration",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-bool IsAccessibilityChromeVoxPageMigrationEnabled() {
-  return base::FeatureList::IsEnabled(
-      ::features::kAccessibilityChromeVoxPageMigration);
-}
-
 BASE_FEATURE(kAccessibilityDictationKeyboardImprovements,
              "AccessibilityDictationKeyboardImprovements",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -188,15 +170,6 @@ BASE_FEATURE(kAccessibilityDictationKeyboardImprovements,
 bool IsAccessibilityDictationKeyboardImprovementsEnabled() {
   return base::FeatureList::IsEnabled(
       ::features::kAccessibilityDictationKeyboardImprovements);
-}
-
-BASE_FEATURE(kAccessibilitySelectToSpeakPrefsMigration,
-             "AccessibilitySelectToSpeakPrefsMigration",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-bool IsAccessibilitySelectToSpeakPrefsMigrationEnabled() {
-  return base::FeatureList::IsEnabled(
-      ::features::kAccessibilitySelectToSpeakPrefsMigration);
 }
 
 BASE_FEATURE(kAccessibilitySelectToSpeakHoverTextImprovements,
@@ -372,5 +345,17 @@ bool IsAccessibilityServiceEnabled() {
 }
 
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(IS_MAC)
+
+BASE_FEATURE(kAccessibilityRemoteUIApp,
+             "AccessibilityRemoteUIApp",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+bool IsAccessibilityRemoteUIAppEnabled() {
+  return base::FeatureList::IsEnabled(::features::kAccessibilityRemoteUIApp);
+}
+
+#endif  // BUILDFLAG(IS_MAC)
 
 }  // namespace features

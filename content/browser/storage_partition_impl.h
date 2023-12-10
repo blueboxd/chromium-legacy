@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/containers/flat_map.h"
+#include "base/dcheck_is_on.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
@@ -74,6 +75,10 @@ class BrowsingDataFilterBuilder;
 class KeepAliveURLLoaderService;
 class BucketManager;
 class CacheStorageControlWrapper;
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+class CdmStorageManager;
+class MediaLicenseManager;
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 class CookieDeprecationLabelManagerImpl;
 class CookieStoreManager;
 class DevToolsBackgroundServicesContextImpl;
@@ -85,9 +90,6 @@ class HostZoomLevelContext;
 class IndexedDBControlWrapper;
 class InterestGroupManagerImpl;
 class LockManager;
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-class MediaLicenseManager;
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 class PaymentAppContextImpl;
 class PrivateAggregationDataModel;
 class PrivateAggregationManager;
@@ -277,6 +279,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   FontAccessManager* GetFontAccessManager();
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   MediaLicenseManager* GetMediaLicenseManager();
+  CdmStorageManager* GetCdmStorageManager();
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
   storage::SharedStorageManager* GetSharedStorageManager() override;
@@ -353,8 +356,8 @@ class CONTENT_EXPORT StoragePartitionImpl
   void OnPrivateNetworkAccessPermissionRequired(
       const GURL& url,
       const net::IPAddress& ip_address,
-      const std::string& private_network_device_id,
-      const std::string& private_network_device_name,
+      const absl::optional<std::string>& private_network_device_id,
+      const absl::optional<std::string>& private_network_device_name,
       OnPrivateNetworkAccessPermissionRequiredCallback callback) override;
   void OnClearSiteData(
       const GURL& url,
@@ -458,6 +461,9 @@ class CONTENT_EXPORT StoragePartitionImpl
       mojo::PendingReceiver<blink::mojom::StorageArea> receiver);
 
   storage::QuotaManagerProxy* GetQuotaManagerProxy();
+
+  // Called by BrowserContextImpl prior to destruction.
+  void OnBrowserContextWillBeDestroyed();
 
   class URLLoaderNetworkContext {
    public:
@@ -566,7 +572,9 @@ class CONTENT_EXPORT StoragePartitionImpl
   // of distinguishing different in-memory partitions, but nothing is persisted
   // on to disk.
   //
-  // Initialize() must be called on the StoragePartitionImpl before using it.
+  // Initialize() must be called on the StoragePartitionImpl before using it,
+  // and OnBrowserContextWillBeDestroyed() must be called on it prior to
+  // `context` being destroyed.
   static std::unique_ptr<StoragePartitionImpl> Create(
       BrowserContext* context,
       const StoragePartitionConfig& config,
@@ -693,6 +701,10 @@ class CONTENT_EXPORT StoragePartitionImpl
       browsing_topics_site_data_manager_;
   std::unique_ptr<AggregationService> aggregation_service_;
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  std::unique_ptr<CdmStorageManager> cdm_storage_manager_;
+
+  // TODO(crbug.com/1454512): Remove MediaLicenseManager once migration has been
+  // completed.
   std::unique_ptr<MediaLicenseManager> media_license_manager_;
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
@@ -788,6 +800,10 @@ class CONTENT_EXPORT StoragePartitionImpl
       url_loader_network_observers_;
 
   int next_pending_trust_token_issuance_callback_key_ = 0;
+
+#if DCHECK_IS_ON()
+  bool on_browser_context_will_be_destroyed_called_ = false;
+#endif
 
   base::WeakPtrFactory<StoragePartitionImpl> weak_factory_{this};
 };

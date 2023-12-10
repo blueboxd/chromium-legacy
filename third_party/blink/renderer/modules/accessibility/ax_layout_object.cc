@@ -67,10 +67,10 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/list_marker.h"
+#include "third_party/blink/renderer/core/layout/list/layout_list_item.h"
+#include "third_party/blink/renderer/core/layout/list/list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_row.h"
@@ -553,7 +553,7 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
     // Require the ability to contain a caret -- this requirement is not
     // strictly necessary, and could be removed, but caused about 20 test
     // changes on each platform.
-    NGInlineCursor cursor(*block_flow);
+    InlineCursor cursor(*block_flow);
     if (cursor.HasRoot()) {
       return false;
     }
@@ -737,7 +737,7 @@ AXObject* AXLayoutObject::NextOnLine() const {
     return nullptr;
   }
 
-  NGInlineCursor cursor;
+  InlineCursor cursor;
   while (true) {
     // Try to get cursor for layout_object.
     cursor.MoveToIncludingCulledInline(*layout_object);
@@ -811,7 +811,7 @@ AXObject* AXLayoutObject::PreviousOnLine() const {
                                    ? PreviousSiblingIncludingIgnored()
                                    : nullptr;
   if (previous_sibling && previous_sibling->GetLayoutObject() &&
-      previous_sibling->GetLayoutObject()->IsLayoutNGOutsideListMarker()) {
+      previous_sibling->GetLayoutObject()->IsLayoutOutsideListMarker()) {
     // A list item should be preceded by a list marker on the same line.
     return GetDeepestAXChildInLayoutTree(previous_sibling, false);
   }
@@ -821,7 +821,7 @@ AXObject* AXLayoutObject::PreviousOnLine() const {
     return nullptr;
   }
 
-  NGInlineCursor cursor;
+  InlineCursor cursor;
   while (true) {
     // Try to get cursor for layout_object.
     cursor.MoveToIncludingCulledInline(*layout_object);
@@ -1040,11 +1040,11 @@ unsigned AXLayoutObject::ColumnCount() const {
   if (AriaRoleAttribute() != ax::mojom::blink::Role::kUnknown)
     return AXNodeObject::ColumnCount();
 
-  auto* table_section = FirstTableSection(GetLayoutObject());
-  if (!table_section)
-    return AXNodeObject::ColumnCount();
+  if (const auto* table = DynamicTo<LayoutNGTable>(GetLayoutObject())) {
+    return table->EffectiveColumnCount();
+  }
 
-  return table_section->NumEffectiveColumns();
+  return AXNodeObject::ColumnCount();
 }
 
 unsigned AXLayoutObject::RowCount() const {

@@ -6,18 +6,27 @@ package org.chromium.components.webapps.pwa_restore_ui;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
 
 import androidx.core.content.res.ResourcesCompat;
 
+import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 import org.chromium.components.webapps.R;
 import org.chromium.components.webapps.pwa_restore_ui.PwaRestoreProperties.ViewState;
+
+import java.util.List;
 
 /**
  * The view portion of the PWA Install bottom sheet.
@@ -28,6 +37,10 @@ import org.chromium.components.webapps.pwa_restore_ui.PwaRestoreProperties.ViewS
  */
 @SuppressLint("ClickableViewAccessibility")
 public class PwaRestoreBottomSheetView implements View.OnTouchListener {
+    private static final int APP_ICON_SIZE_DP = 32;
+    private static final int APP_ICON_CORNER_RADIUS_DP = 16;
+    private static final int APP_ICON_TEXT_SIZE_DP = 16;
+
     // The current context.
     private final Context mContext;
 
@@ -36,6 +49,9 @@ public class PwaRestoreBottomSheetView implements View.OnTouchListener {
 
     // The details of the bottom sheet.
     private View mContentView;
+
+    // The icon generator for the app icon placeholders.
+    private RoundedIconGenerator mIconGenerator;
 
     // The listener to notify when the Back button is clicked.
     private OnClickListener mBackButtonListener;
@@ -63,6 +79,16 @@ public class PwaRestoreBottomSheetView implements View.OnTouchListener {
         contentViewTitle.setCompoundDrawablesRelativeWithIntrinsicBounds(
                 mBackArrow, null, null, null);
         contentViewTitle.setOnTouchListener(this::onTouch);
+
+        int iconColor = mContext.getColor(R.color.default_favicon_background_color);
+        mIconGenerator =
+                new RoundedIconGenerator(
+                        mContext.getResources(),
+                        APP_ICON_SIZE_DP,
+                        APP_ICON_SIZE_DP,
+                        APP_ICON_CORNER_RADIUS_DP,
+                        iconColor,
+                        APP_ICON_TEXT_SIZE_DP);
     }
 
     public View getContentView() {
@@ -76,6 +102,56 @@ public class PwaRestoreBottomSheetView implements View.OnTouchListener {
     public void setDisplayedView(@ViewState int viewState) {
         mPreviewView.setVisibility(viewState == ViewState.VIEW_PWA_LIST ? View.GONE : View.VISIBLE);
         mContentView.setVisibility(viewState == ViewState.PREVIEW ? View.GONE : View.VISIBLE);
+    }
+
+    protected void setAppList(
+            List<PwaRestoreProperties.AppInfo> appList, String recentAppLabel, String oldAppLabel) {
+        LinearLayout scrollViewContent = getContentView().findViewById(R.id.scroll_view_content);
+
+        // Set the heading for the app list.
+        View label =
+                LayoutInflater.from(mContext).inflate(R.layout.pwa_restore_list_item_label, null);
+        ((TextView) label.findViewById(R.id.label_text)).setText(recentAppLabel);
+        scrollViewContent.addView(label);
+
+        // TODO(finnur): Replace with actual app icons.
+        Bitmap placeholder = mIconGenerator.generateIconForText("?");
+
+        int item = 0;
+        for (PwaRestoreProperties.AppInfo app : appList) {
+            View appView =
+                    LayoutInflater.from(mContext).inflate(R.layout.pwa_restore_list_item_app, null);
+
+            // Apply the right background to the item (first item has rounded corner on top, last
+            // item has rounded corners on bottom, and all items in between have no rounded
+            // corners).
+            if (item == 0) {
+                appView.setBackgroundResource(R.drawable.pwa_restore_app_item_background_top);
+            } else {
+                appView.setBackgroundResource(
+                        (item == appList.size() - 1)
+                                ? R.drawable.pwa_restore_app_item_background_bottom
+                                : R.drawable.pwa_restore_app_item_background_middle);
+            }
+            item += 1;
+
+            ((ImageView) appView.findViewById(R.id.app_icon)).setImageBitmap(placeholder);
+            ((TextView) appView.findViewById(R.id.app_name)).setText(app.appName());
+            scrollViewContent.addView(appView);
+
+            // Add a 2pt separator view as a separate item in the ScrollView so as to not affect the
+            // height of the app item view (or mess up the rounded corners).
+            View separator = new View(mContext);
+            separator.setLayoutParams(
+                    new LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            (int)
+                                    TypedValue.applyDimension(
+                                            TypedValue.COMPLEX_UNIT_DIP,
+                                            2,
+                                            mContext.getResources().getDisplayMetrics())));
+            scrollViewContent.addView(separator);
+        }
     }
 
     protected void setBackButtonListener(OnClickListener listener) {

@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "media/base/limits.h"
+#include "media/base/media_switches.h"
 #include "media/gpu/h265_decoder.h"
 
 namespace media {
@@ -159,6 +160,7 @@ void H265Decoder::SetStream(int32_t id, const DecoderBuffer& decoder_buffer) {
 
 void H265Decoder::Reset() {
   first_picture_ = true;
+  no_rasl_output_flag_ = true;
 
   curr_pic_ = nullptr;
   curr_nalu_ = nullptr;
@@ -359,19 +361,14 @@ H265Decoder::DecodeResult H265Decoder::Decode() {
           state_ = kTryPreprocessCurrentSlice;
           if (curr_slice_hdr_->irap_pic) {
             bool need_new_buffers = false;
-            bool color_space_changed = false;
             if (!ProcessPPS(curr_slice_hdr_->slice_pic_parameter_set_id,
-                            &need_new_buffers, &color_space_changed)) {
+                            &need_new_buffers)) {
               SET_ERROR_AND_RETURN();
             }
 
             if (need_new_buffers) {
               curr_pic_ = nullptr;
               return kConfigChange;
-            }
-            if (color_space_changed) {
-              curr_pic_ = nullptr;
-              return kColorSpaceChange;
             }
           }
         }
@@ -457,18 +454,13 @@ H265Decoder::DecodeResult H265Decoder::Decode() {
         // active stream.
         if (curr_pps_id_ == -1) {
           bool need_new_buffers = false;
-          bool color_space_changed = false;
-          if (!ProcessPPS(pps_id, &need_new_buffers, &color_space_changed)) {
+          if (!ProcessPPS(pps_id, &need_new_buffers)) {
             SET_ERROR_AND_RETURN();
           }
 
           if (need_new_buffers) {
             curr_nalu_.reset();
             return kConfigChange;
-          }
-          if (color_space_changed) {
-            curr_nalu_.reset();
-            return kColorSpaceChange;
           }
         }
 
@@ -571,9 +563,7 @@ size_t H265Decoder::GetNumReferenceFrames() const {
   return dpb_.max_num_pics();
 }
 
-bool H265Decoder::ProcessPPS(int pps_id,
-                             bool* need_new_buffers,
-                             bool* color_space_changed) {
+bool H265Decoder::ProcessPPS(int pps_id, bool* need_new_buffers) {
   DVLOG(4) << "Processing PPS id:" << pps_id;
 
   const H265PPS* pps = parser_.GetPPS(pps_id);
@@ -586,10 +576,6 @@ bool H265Decoder::ProcessPPS(int pps_id,
 
   if (need_new_buffers)
     *need_new_buffers = false;
-
-  if (color_space_changed) {
-    *color_space_changed = false;
-  }
 
   gfx::Size new_pic_size = sps->GetCodedSize();
   gfx::Rect new_visible_rect = sps->GetVisibleRect();
@@ -632,9 +618,15 @@ bool H265Decoder::ProcessPPS(int pps_id,
     new_color_space = container_color_space_;
   }
 
+  bool is_color_space_change = false;
+  if (base::FeatureList::IsEnabled(kAVDColorSpaceChanges)) {
+    is_color_space_change = new_color_space.IsSpecified() &&
+                            new_color_space != picture_color_space_;
+  }
+
   if (pic_size_ != new_pic_size || dpb_.max_num_pics() != sps->max_dpb_size ||
       profile_ != new_profile || bit_depth_ != new_bit_depth ||
-      chroma_sampling_ != new_chroma_sampling) {
+      chroma_sampling_ != new_chroma_sampling || is_color_space_change) {
     if (!Flush())
       return false;
     DVLOG(1) << "Codec profile: " << GetProfileName(new_profile)
@@ -652,16 +644,6 @@ bool H265Decoder::ProcessPPS(int pps_id,
     dpb_.set_max_num_pics(sps->max_dpb_size);
     if (need_new_buffers)
       *need_new_buffers = true;
-  }
-
-  if (new_color_space.IsSpecified() &&
-      new_color_space != picture_color_space_) {
-    if (!Flush()) {
-      return false;
-    }
-    DVLOG(1) << "Picture color space: " << new_color_space.ToString();
-    picture_color_space_ = new_color_space;
-    *color_space_changed = true;
   }
 
   return true;
@@ -708,8 +690,9 @@ void H265Decoder::CalcPicOutputFlags(const H265SliceHeader* slice_hdr) {
         (curr_nalu_->nal_unit_type >= H265NALU::BLA_W_LP &&
          curr_nalu_->nal_unit_type <= H265NALU::IDR_N_LP) ||
         curr_pic_->first_picture_;
+    no_rasl_output_flag_ = curr_pic_->no_rasl_output_flag_;
   } else {
-    curr_pic_->no_rasl_output_flag_ = false;
+    curr_pic_->no_rasl_output_flag_ = no_rasl_output_flag_;
   }
 
   // C.5.2.2
@@ -1058,6 +1041,7 @@ H265Decoder::H265Accelerator::Status H265Decoder::StartNewFrame(
     if (!PerformDpbOperations(sps)) {
       return H265Accelerator::Status::kFail;
     }
+
     curr_pic_->processed_ = true;
   }
 

@@ -2505,7 +2505,7 @@ class LayerTreeHostTestSetNeedsRedrawRect : public LayerTreeHostTest {
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
                                    LayerTreeHostImpl::FrameData* frame_data,
                                    DrawResult draw_result) override {
-    EXPECT_EQ(DRAW_SUCCESS, draw_result);
+    EXPECT_EQ(DrawResult::kSuccess, draw_result);
 
     gfx::Rect root_damage_rect;
     if (!frame_data->render_passes.empty())
@@ -2817,7 +2817,7 @@ class LayerTreeHostTestRasterColorSpaceChange : public LayerTreeHostTest {
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
                                    LayerTreeHostImpl::FrameData* frame_data,
                                    DrawResult draw_result) override {
-    EXPECT_EQ(DRAW_SUCCESS, draw_result);
+    EXPECT_EQ(DrawResult::kSuccess, draw_result);
 
     int source_frame = host_impl->active_tree()->source_frame_number();
     gfx::Rect expected_root_damage_rect;
@@ -2961,7 +2961,7 @@ class LayerTreeHostTestSetNeedsCommitWithForcedRedraw
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
                                    LayerTreeHostImpl::FrameData* frame_data,
                                    DrawResult draw_result) override {
-    EXPECT_EQ(DRAW_SUCCESS, draw_result);
+    EXPECT_EQ(DrawResult::kSuccess, draw_result);
 
     gfx::Rect root_damage_rect;
     if (!frame_data->render_passes.empty())
@@ -3057,7 +3057,7 @@ class LayerTreeHostTestUndrawnLayersDamageLater : public LayerTreeHostTest {
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
                                    LayerTreeHostImpl::FrameData* frame_data,
                                    DrawResult draw_result) override {
-    EXPECT_EQ(DRAW_SUCCESS, draw_result);
+    EXPECT_EQ(DrawResult::kSuccess, draw_result);
 
     gfx::Rect root_damage_rect;
     if (!frame_data->render_passes.empty())
@@ -3161,7 +3161,7 @@ class LayerTreeHostTestDamageWithScale : public LayerTreeHostTest {
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
                                    LayerTreeHostImpl::FrameData* frame_data,
                                    DrawResult draw_result) override {
-    EXPECT_EQ(DRAW_SUCCESS, draw_result);
+    EXPECT_EQ(DrawResult::kSuccess, draw_result);
 
     gfx::Rect root_damage_rect;
     if (!frame_data->render_passes.empty())
@@ -7998,7 +7998,7 @@ class LayerTreeHostTestPaintedDeviceScaleFactor : public LayerTreeHostTest {
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
                                    LayerTreeHostImpl::FrameData* frame_data,
                                    DrawResult draw_result) override {
-    EXPECT_EQ(DRAW_SUCCESS, draw_result);
+    EXPECT_EQ(DrawResult::kSuccess, draw_result);
     EXPECT_EQ(2.0f, host_impl->active_tree()->painted_device_scale_factor());
     EXPECT_EQ(1.0f, host_impl->active_tree()->device_scale_factor());
     return draw_result;
@@ -8047,7 +8047,7 @@ class LayerTreeHostTestLocalSurfaceId : public LayerTreeHostTest {
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
                                    LayerTreeHostImpl::FrameData* frame_data,
                                    DrawResult draw_result) override {
-    EXPECT_EQ(DRAW_SUCCESS, draw_result);
+    EXPECT_EQ(DrawResult::kSuccess, draw_result);
     EXPECT_EQ(GetCurrentLocalSurfaceId(),
               host_impl->active_tree()->local_surface_id_from_parent());
     return draw_result;
@@ -8072,7 +8072,7 @@ class LayerTreeHostTestLocalSurfaceIdSkipChildNum : public LayerTreeHostTest {
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
                                    LayerTreeHostImpl::FrameData* frame_data,
                                    DrawResult draw_result) override {
-    EXPECT_EQ(DRAW_SUCCESS, draw_result);
+    EXPECT_EQ(DrawResult::kSuccess, draw_result);
     // We should not be picking up the newer |child_local_surface_id_|.
     EXPECT_EQ(GetCurrentLocalSurfaceId(),
               host_impl->active_tree()->local_surface_id_from_parent());
@@ -8118,7 +8118,7 @@ class LayerTreeHostTestRequestNewLocalSurfaceId : public LayerTreeHostTest {
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
                                    LayerTreeHostImpl::FrameData* frame_data,
                                    DrawResult draw_result) override {
-    EXPECT_EQ(DRAW_SUCCESS, draw_result);
+    EXPECT_EQ(DrawResult::kSuccess, draw_result);
     EXPECT_EQ(GetCurrentLocalSurfaceId(),
               host_impl->active_tree()->local_surface_id_from_parent());
     return draw_result;
@@ -8234,7 +8234,7 @@ class LayerTreeHostTestSubmitFrameMetadata : public LayerTreeHostTest {
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
                                    LayerTreeHostImpl::FrameData* frame_data,
                                    DrawResult draw_result) override {
-    EXPECT_EQ(DRAW_SUCCESS, draw_result);
+    EXPECT_EQ(DrawResult::kSuccess, draw_result);
     EXPECT_EQ(0, num_swaps_);
     drawn_viewport_ = host_impl->active_tree()->GetDeviceViewport();
     return draw_result;
@@ -11081,6 +11081,32 @@ class LayerTreeHostTestDamagePropagatesFromViewTransitionSurface
   const gfx::Rect unrelated_layer_rect_ = gfx::Rect(40, 40, 10, 10);
 };
 MULTI_THREAD_TEST_F(LayerTreeHostTestDamagePropagatesFromViewTransitionSurface);
+
+class LayerTreeHostTestBlockOnCommitAfterInputEvent : public LayerTreeHostTest {
+ protected:
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+  void WillBeginMainFrame() override { ++main_frame_num_; }
+  void DidBeginMainFrame() override {
+    EXPECT_EQ(main_frame_num_ % 2 == 0,
+              layer_tree_host()->WaitedForCommitForTesting());
+  }
+  void DidCommit() override {
+    if (main_frame_num_ < 5) {
+      layer_tree_host()->SetNeedsCommit();
+      if (main_frame_num_ % 2) {
+        layer_tree_host()->proxy()->SetInputResponsePending();
+      }
+    } else {
+      EndTest();
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_{
+      features::kNonBlockingCommit};
+  uint32_t main_frame_num_ = 0u;
+};
+MULTI_THREAD_TEST_F(LayerTreeHostTestBlockOnCommitAfterInputEvent);
 
 class LayerTreeHostTestDetachInputDelegateAndRenderFrameObserver
     : public LayerTreeTest,

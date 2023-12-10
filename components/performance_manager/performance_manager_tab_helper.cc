@@ -102,6 +102,10 @@ PerformanceManagerTabHelper::PerformanceManagerTabHelper(
   if (web_contents->IsCurrentlyAudible()) {
     initial_property_flags.Put(PagePropertyFlag::kIsAudible);
   }
+  if (web_contents->HasPictureInPictureVideo() ||
+      web_contents->HasPictureInPictureDocument()) {
+    initial_property_flags.Put(PagePropertyFlag::kHasPictureInPicture);
+  }
 
   // Create the page node.
   std::unique_ptr<PageData> page = std::make_unique<PageData>();
@@ -114,7 +118,6 @@ PerformanceManagerTabHelper::PerformanceManagerTabHelper(
       PageNode::PageState::kActive);
   content::RenderFrameHost* main_rfh = web_contents->GetPrimaryMainFrame();
   DCHECK(main_rfh);
-  page->main_frame_tree_node_id = main_rfh->GetFrameTreeNodeId();
   primary_page_ = page.get();
   auto result = pages_.insert(std::move(page));
   DCHECK(result.second);
@@ -485,6 +488,14 @@ void PerformanceManagerTabHelper::DidUpdateFaviconURL(
   PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE, base::BindOnce(&PageNodeImpl::OnFaviconUpdated,
                                 base::Unretained(primary_page_node())));
+}
+
+void PerformanceManagerTabHelper::MediaPictureInPictureChanged(
+    bool is_picture_in_picture) {
+  PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE, base::BindOnce(&PageNodeImpl::SetHasPictureInPicture,
+                                base::Unretained(primary_page_node()),
+                                is_picture_in_picture));
 }
 
 void PerformanceManagerTabHelper::OnWebContentsFocused(

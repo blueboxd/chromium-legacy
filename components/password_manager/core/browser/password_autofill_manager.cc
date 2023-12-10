@@ -254,8 +254,13 @@ autofill::Suggestion CreateGenerationEntry() {
 
 // Entry for opting in to password account storage and then filling.
 autofill::Suggestion CreateEntryToOptInToAccountStorageThenFill() {
+  bool has_passkey_sync = false;
+#if !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_ANDROID)
+  has_passkey_sync =
+      base::FeatureList::IsEnabled(syncer::kSyncWebauthnCredentials);
+#endif
   autofill::Suggestion suggestion(l10n_util::GetStringUTF16(
-      base::FeatureList::IsEnabled(syncer::kSyncWebauthnCredentials)
+      has_passkey_sync
           ? IDS_PASSWORD_MANAGER_OPT_INTO_ACCOUNT_STORE_WITH_PASSKEYS
           : IDS_PASSWORD_MANAGER_OPT_INTO_ACCOUNT_STORE));
   suggestion.popup_item_id =
@@ -526,6 +531,12 @@ void PasswordAutofillManager::DidAcceptSuggestion(
 
   autofill_client_->HideAutofillPopup(
       autofill::PopupHidingReason::kAcceptSuggestion);
+}
+
+void PasswordAutofillManager::DidPerformButtonActionForSuggestion(
+    const autofill::Suggestion&) {
+  // Button actions do currently not exist for password entries.
+  NOTREACHED();
 }
 
 bool PasswordAutofillManager::GetDeletionConfirmationText(

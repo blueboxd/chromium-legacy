@@ -22,9 +22,10 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_decoder_support.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_audio_chunk.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
-#include "third_party/blink/renderer/modules/webcodecs/allow_shared_buffer_source_util.h"
+#include "third_party/blink/renderer/modules/webcodecs/array_buffer_util.h"
 #include "third_party/blink/renderer/modules/webcodecs/audio_data.h"
 #include "third_party/blink/renderer/modules/webcodecs/audio_decoder_broker.h"
+#include "third_party/blink/renderer/modules/webcodecs/decrypt_config_util.h"
 #include "third_party/blink/renderer/modules/webcodecs/encoded_audio_chunk.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -220,11 +221,21 @@ AudioDecoder::MakeMediaAudioDecoderConfig(const ConfigType& config,
           ? media::CHANNEL_LAYOUT_DISCRETE
           : media::GuessChannelLayout(config.numberOfChannels());
 
+  auto encryption_scheme = media::EncryptionScheme::kUnencrypted;
+  if (config.hasEncryptionScheme()) {
+    auto scheme = ToMediaEncryptionScheme(config.encryptionScheme());
+    if (!scheme) {
+      *js_error_message = "Unsupported encryption scheme";
+      return absl::nullopt;
+    }
+    encryption_scheme = scheme.value();
+  }
+
   // TODO(chcunningham): Add sample format to IDL.
   media::AudioDecoderConfig media_config;
   media_config.Initialize(
       audio_type->codec, media::kSampleFormatPlanarF32, channel_layout,
-      config.sampleRate(), extra_data, media::EncryptionScheme::kUnencrypted,
+      config.sampleRate(), extra_data, encryption_scheme,
       base::TimeDelta() /* seek preroll */, 0 /* codec delay */);
   if (!media_config.IsValidConfig()) {
     *js_error_message = "Unsupported config.";

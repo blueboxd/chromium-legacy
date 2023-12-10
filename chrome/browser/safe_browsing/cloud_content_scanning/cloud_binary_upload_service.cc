@@ -175,14 +175,17 @@ bool CanUseAccessToken(const BinaryUploadService::Request& request,
     return true;
   }
 
-  // In the unaffiliated case, we only return an access token for profile
-  // based policies.
-  if (base::FeatureList::IsEnabled(
-          enterprise_connectors::kEnableRelaxedAffiliationCheck)) {
-    return chrome::enterprise_util::IsProfileAffiliated(profile) ||
-           request.per_profile_request();
+  // The access token can always be included in affiliated use cases.
+  if (chrome::enterprise_util::IsProfileAffiliated(profile)) {
+    return true;
   }
-  return chrome::enterprise_util::IsProfileAffiliated(profile);
+
+  // This code being reached implies that the browser and profile are
+  // not affiliated. In that case, and only with the new relaxed affiliation
+  // logic, it's ok to attach the access token for profile requests.
+  return request.per_profile_request() &&
+         base::FeatureList::IsEnabled(
+             enterprise_connectors::kEnableRelaxedAffiliationCheck);
 }
 
 }  // namespace
@@ -526,7 +529,8 @@ void CloudBinaryUploadService::OnGetRequestData(Request::Id request_id,
   upload_request->set_access_token(request->access_token());
 
   WebUIInfoSingleton::GetInstance()->AddToDeepScanRequests(
-      request->per_profile_request(), request->content_analysis_request());
+      request->per_profile_request(), request->access_token(),
+      request->content_analysis_request());
 
   // |request| might have been deleted by the call to Start() in tests, so don't
   // dereference it afterwards.
@@ -634,7 +638,8 @@ void CloudBinaryUploadService::FinishRequest(
   // We add the request here in case we never actually uploaded anything, so
   // it wasn't added in OnGetRequestData
   WebUIInfoSingleton::GetInstance()->AddToDeepScanRequests(
-      request->per_profile_request(), request->content_analysis_request());
+      request->per_profile_request(), request->access_token(),
+      request->content_analysis_request());
   WebUIInfoSingleton::GetInstance()->AddToDeepScanResponses(
       active_tokens_[request->id()], ResultToString(result), response);
 

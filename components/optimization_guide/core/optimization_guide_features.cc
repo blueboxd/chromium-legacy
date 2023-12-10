@@ -500,14 +500,14 @@ size_t MaxConcurrentPageNavigationFetches() {
       "max_concurrent_page_navigation_fetches", 20);
 }
 
-int ActiveTabsHintsFetchRandomMinDelaySecs() {
-  return GetFieldTrialParamByFeatureAsInt(kRemoteOptimizationGuideFetching,
-                                          "fetch_random_min_delay_secs", 30);
+base::TimeDelta ActiveTabsHintsFetchRandomMinDelay() {
+  return base::Seconds(GetFieldTrialParamByFeatureAsInt(
+      kRemoteOptimizationGuideFetching, "fetch_random_min_delay_secs", 30));
 }
 
-int ActiveTabsHintsFetchRandomMaxDelaySecs() {
-  return GetFieldTrialParamByFeatureAsInt(kRemoteOptimizationGuideFetching,
-                                          "fetch_random_max_delay_secs", 60);
+base::TimeDelta ActiveTabsHintsFetchRandomMaxDelay() {
+  return base::Seconds(GetFieldTrialParamByFeatureAsInt(
+      kRemoteOptimizationGuideFetching, "fetch_random_max_delay_secs", 60));
 }
 
 base::TimeDelta StoredHostModelFeaturesFreshnessDuration() {
@@ -596,6 +596,10 @@ bool ShouldEnablePersonalizedMetadata(proto::RequestContext request_context) {
   return allowed_contexts.Has(request_context);
 }
 
+std::set<std::string> GetOAuthScopesForPersonalizedMetadata() {
+  return GetOauthScopesForFeature(kOptimizationGuidePersonalizedFetching);
+}
+
 bool ShouldOverrideOptimizationTargetDecisionForMetricsPurposes(
     proto::OptimizationTarget optimization_target) {
   if (optimization_target != proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD)
@@ -605,14 +609,14 @@ bool ShouldOverrideOptimizationTargetDecisionForMetricsPurposes(
       kOptimizationTargetPrediction, "painful_page_load_metrics_only", false);
 }
 
-int PredictionModelFetchRandomMinDelaySecs() {
-  return GetFieldTrialParamByFeatureAsInt(kOptimizationTargetPrediction,
-                                          "fetch_random_min_delay_secs", 30);
+base::TimeDelta PredictionModelFetchRandomMinDelay() {
+  return base::Seconds(GetFieldTrialParamByFeatureAsInt(
+      kOptimizationTargetPrediction, "fetch_random_min_delay_secs", 30));
 }
 
-int PredictionModelFetchRandomMaxDelaySecs() {
-  return GetFieldTrialParamByFeatureAsInt(kOptimizationTargetPrediction,
-                                          "fetch_random_max_delay_secs", 60);
+base::TimeDelta PredictionModelFetchRandomMaxDelay() {
+  return base::Seconds(GetFieldTrialParamByFeatureAsInt(
+      kOptimizationTargetPrediction, "fetch_random_max_delay_secs", 60));
 }
 
 base::TimeDelta PredictionModelFetchRetryDelay() {

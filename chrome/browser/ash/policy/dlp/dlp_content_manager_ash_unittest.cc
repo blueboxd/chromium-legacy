@@ -19,8 +19,6 @@
 #include "chrome/browser/chromeos/policy/dlp/dialogs/dlp_warn_dialog.h"
 #include "chrome/browser/chromeos/policy/dlp/dialogs/dlp_warn_notifier.h"
 #include "chrome/browser/chromeos/policy/dlp/dialogs/mock_dlp_warn_notifier.h"
-#include "chrome/browser/chromeos/policy/dlp/dlp_histogram_helper.h"
-#include "chrome/browser/chromeos/policy/dlp/dlp_policy_event.pb.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_reporting_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
@@ -33,6 +31,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/enterprise/data_controls/dlp_histogram_helper.h"
+#include "components/enterprise/data_controls/dlp_policy_event.pb.h"
 #include "components/reporting/client/mock_report_queue.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/render_process_host.h"
@@ -109,7 +109,8 @@ class DlpContentManagerAshTest : public testing::Test {
 
   std::unique_ptr<KeyedService> SetDlpRulesManager(
       content::BrowserContext* context) {
-    auto dlp_rules_manager = std::make_unique<MockDlpRulesManager>();
+    auto dlp_rules_manager = std::make_unique<MockDlpRulesManager>(
+        Profile::FromBrowserContext(context));
     mock_rules_manager_ = dlp_rules_manager.get();
     return dlp_rules_manager;
   }
@@ -132,14 +133,17 @@ class DlpContentManagerAshTest : public testing::Test {
                              std::string blocked_suffix,
                              std::string warned_suffix) {
     histogram_tester_.ExpectBucketCount(
-        GetDlpHistogramPrefix() + blocked_suffix, true, blocked_count);
+        data_controls::GetDlpHistogramPrefix() + blocked_suffix, true,
+        blocked_count);
     histogram_tester_.ExpectBucketCount(
-        GetDlpHistogramPrefix() + blocked_suffix, false,
+        data_controls::GetDlpHistogramPrefix() + blocked_suffix, false,
         total_count - blocked_count);
-    histogram_tester_.ExpectBucketCount(GetDlpHistogramPrefix() + warned_suffix,
-                                        true, warned_count);
-    histogram_tester_.ExpectBucketCount(GetDlpHistogramPrefix() + warned_suffix,
-                                        false, total_count - warned_count);
+    histogram_tester_.ExpectBucketCount(
+        data_controls::GetDlpHistogramPrefix() + warned_suffix, true,
+        warned_count);
+    histogram_tester_.ExpectBucketCount(
+        data_controls::GetDlpHistogramPrefix() + warned_suffix, false,
+        total_count - warned_count);
   }
 
  protected:
@@ -379,9 +383,13 @@ TEST_F(DlpContentManagerAshTest, PrivacyScreenEnforcement) {
   EXPECT_CALL(mock_privacy_screen_helper_, SetEnforced(true)).Times(1);
   helper_.ChangeConfidentiality(web_contents.get(), kPrivacyScreenEnforced);
   histogram_tester_.ExpectBucketCount(
-      GetDlpHistogramPrefix() + dlp::kPrivacyScreenEnforcedUMA, true, 1);
+      data_controls::GetDlpHistogramPrefix() +
+          data_controls::dlp::kPrivacyScreenEnforcedUMA,
+      true, 1);
   histogram_tester_.ExpectBucketCount(
-      GetDlpHistogramPrefix() + dlp::kPrivacyScreenEnforcedUMA, false, 0);
+      data_controls::GetDlpHistogramPrefix() +
+          data_controls::dlp::kPrivacyScreenEnforcedUMA,
+      false, 0);
   EXPECT_EQ(events_.size(), 1u);
   EXPECT_THAT(events_[0],
               IsDlpPolicyEvent(CreateDlpPolicyEvent(
@@ -396,9 +404,13 @@ TEST_F(DlpContentManagerAshTest, PrivacyScreenEnforcement) {
   helper_.ChangeVisibility(web_contents.get());
   task_environment_.FastForwardBy(helper_.GetPrivacyScreenOffDelay());
   histogram_tester_.ExpectBucketCount(
-      GetDlpHistogramPrefix() + dlp::kPrivacyScreenEnforcedUMA, true, 1);
+      data_controls::GetDlpHistogramPrefix() +
+          data_controls::dlp::kPrivacyScreenEnforcedUMA,
+      true, 1);
   histogram_tester_.ExpectBucketCount(
-      GetDlpHistogramPrefix() + dlp::kPrivacyScreenEnforcedUMA, false, 1);
+      data_controls::GetDlpHistogramPrefix() +
+          data_controls::dlp::kPrivacyScreenEnforcedUMA,
+      false, 1);
   EXPECT_EQ(events_.size(), 1u);
 
   testing::Mock::VerifyAndClearExpectations(&mock_privacy_screen_helper_);
@@ -408,9 +420,13 @@ TEST_F(DlpContentManagerAshTest, PrivacyScreenEnforcement) {
   web_contents->WasShown();
   helper_.ChangeVisibility(web_contents.get());
   histogram_tester_.ExpectBucketCount(
-      GetDlpHistogramPrefix() + dlp::kPrivacyScreenEnforcedUMA, true, 2);
+      data_controls::GetDlpHistogramPrefix() +
+          data_controls::dlp::kPrivacyScreenEnforcedUMA,
+      true, 2);
   histogram_tester_.ExpectBucketCount(
-      GetDlpHistogramPrefix() + dlp::kPrivacyScreenEnforcedUMA, false, 1);
+      data_controls::GetDlpHistogramPrefix() +
+          data_controls::dlp::kPrivacyScreenEnforcedUMA,
+      false, 1);
   EXPECT_EQ(events_.size(), 2u);
   EXPECT_THAT(events_[1],
               IsDlpPolicyEvent(CreateDlpPolicyEvent(
@@ -424,9 +440,13 @@ TEST_F(DlpContentManagerAshTest, PrivacyScreenEnforcement) {
   helper_.DestroyWebContents(web_contents.get());
   task_environment_.FastForwardBy(helper_.GetPrivacyScreenOffDelay());
   histogram_tester_.ExpectBucketCount(
-      GetDlpHistogramPrefix() + dlp::kPrivacyScreenEnforcedUMA, true, 2);
+      data_controls::GetDlpHistogramPrefix() +
+          data_controls::dlp::kPrivacyScreenEnforcedUMA,
+      true, 2);
   histogram_tester_.ExpectBucketCount(
-      GetDlpHistogramPrefix() + dlp::kPrivacyScreenEnforcedUMA, false, 2);
+      data_controls::GetDlpHistogramPrefix() +
+          data_controls::dlp::kPrivacyScreenEnforcedUMA,
+      false, 2);
   EXPECT_EQ(events_.size(), 2u);
 }
 
@@ -467,9 +487,13 @@ TEST_F(DlpContentManagerAshTest, PrivacyScreenReported) {
   helper_.DestroyWebContents(web_contents.get());
   task_environment_.FastForwardBy(helper_.GetPrivacyScreenOffDelay());
   histogram_tester_.ExpectBucketCount(
-      GetDlpHistogramPrefix() + dlp::kPrivacyScreenEnforcedUMA, true, 0);
+      data_controls::GetDlpHistogramPrefix() +
+          data_controls::dlp::kPrivacyScreenEnforcedUMA,
+      true, 0);
   histogram_tester_.ExpectBucketCount(
-      GetDlpHistogramPrefix() + dlp::kPrivacyScreenEnforcedUMA, false, 0);
+      data_controls::GetDlpHistogramPrefix() +
+          data_controls::dlp::kPrivacyScreenEnforcedUMA,
+      false, 0);
   EXPECT_EQ(events_.size(), 2u);
 }
 
@@ -616,20 +640,22 @@ TEST_F(DlpContentManagerAshTest, PrintingRestricted) {
   EXPECT_EQ(GetManager()->GetConfidentialRestrictions(web_contents.get()),
             kEmptyRestrictionSet);
   GetManager()->CheckPrintingRestriction(web_contents.get(), rfh_id, cb.Get());
-  VerifyHistogramCounts(/*blocked_count=*/0, /*warned_count=*/0,
-                        /*total_count=*/1,
-                        /*blocked_suffix=*/dlp::kPrintingBlockedUMA,
-                        /*warned_suffix=*/dlp::kPrintingWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/0, /*warned_count=*/0,
+      /*total_count=*/1,
+      /*blocked_suffix=*/data_controls::dlp::kPrintingBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kPrintingWarnedUMA);
 
   // Block restriction is enforced for web_contents: block.
   helper_.ChangeConfidentiality(web_contents.get(), kPrintingRestricted);
   EXPECT_EQ(GetManager()->GetConfidentialRestrictions(web_contents.get()),
             kPrintingRestricted);
   GetManager()->CheckPrintingRestriction(web_contents.get(), rfh_id, cb.Get());
-  VerifyHistogramCounts(/*blocked_count=*/1, /*warned_count=*/0,
-                        /*total_count=*/2,
-                        /*blocked_suffix=*/dlp::kPrintingBlockedUMA,
-                        /*warned_suffix=*/dlp::kPrintingWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/1, /*warned_count=*/0,
+      /*total_count=*/2,
+      /*blocked_suffix=*/data_controls::dlp::kPrintingBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kPrintingWarnedUMA);
 
   EXPECT_EQ(events_.size(), 1u);
   EXPECT_THAT(events_[0],
@@ -642,10 +668,11 @@ TEST_F(DlpContentManagerAshTest, PrintingRestricted) {
   EXPECT_EQ(GetManager()->GetConfidentialRestrictions(web_contents.get()),
             kEmptyRestrictionSet);
   GetManager()->CheckPrintingRestriction(web_contents.get(), rfh_id, cb.Get());
-  VerifyHistogramCounts(/*blocked_count=*/1, /*warned_count=*/0,
-                        /*total_count=*/3,
-                        /*blocked_suffix=*/dlp::kPrintingBlockedUMA,
-                        /*warned_suffix=*/dlp::kPrintingWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/1, /*warned_count=*/0,
+      /*total_count=*/3,
+      /*blocked_suffix=*/data_controls::dlp::kPrintingBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kPrintingWarnedUMA);
 }
 
 TEST_F(DlpContentManagerAshTest, PrintingWarnedProceeded) {
@@ -682,12 +709,15 @@ TEST_F(DlpContentManagerAshTest, PrintingWarnedProceeded) {
               IsDlpPolicyEvent(CreateDlpPolicyWarningProceededEvent(
                   kSrcPattern, DlpRulesManager::Restriction::kPrinting,
                   kRuleName, kRuleId)));
-  VerifyHistogramCounts(/*blocked_count=*/0, /*warned_count=*/1,
-                        /*total_count=*/1,
-                        /*blocked_suffix=*/dlp::kPrintingBlockedUMA,
-                        /*warned_suffix=*/dlp::kPrintingWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/0, /*warned_count=*/1,
+      /*total_count=*/1,
+      /*blocked_suffix=*/data_controls::dlp::kPrintingBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kPrintingWarnedUMA);
   histogram_tester_.ExpectBucketCount(
-      GetDlpHistogramPrefix() + dlp::kPrintingWarnProceededUMA, true, 1);
+      data_controls::GetDlpHistogramPrefix() +
+          data_controls::dlp::kPrintingWarnProceededUMA,
+      true, 1);
 
   // Check again: allow based on cached user's response - no dialog is shown.
   GetManager()->CheckPrintingRestriction(web_contents.get(), rfh_id, cb.Get());
@@ -697,14 +727,19 @@ TEST_F(DlpContentManagerAshTest, PrintingWarnedProceeded) {
               IsDlpPolicyEvent(CreateDlpPolicyWarningProceededEvent(
                   kSrcPattern, DlpRulesManager::Restriction::kPrinting,
                   kRuleName, kRuleId)));
-  VerifyHistogramCounts(/*blocked_count=*/0, /*warned_count=*/2,
-                        /*total_count=*/2,
-                        /*blocked_suffix=*/dlp::kPrintingBlockedUMA,
-                        /*warned_suffix=*/dlp::kPrintingWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/0, /*warned_count=*/2,
+      /*total_count=*/2,
+      /*blocked_suffix=*/data_controls::dlp::kPrintingBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kPrintingWarnedUMA);
   histogram_tester_.ExpectBucketCount(
-      GetDlpHistogramPrefix() + dlp::kPrintingWarnProceededUMA, true, 1);
+      data_controls::GetDlpHistogramPrefix() +
+          data_controls::dlp::kPrintingWarnProceededUMA,
+      true, 1);
   histogram_tester_.ExpectBucketCount(
-      GetDlpHistogramPrefix() + dlp::kPrintingWarnSilentProceededUMA, true, 1);
+      data_controls::GetDlpHistogramPrefix() +
+          data_controls::dlp::kPrintingWarnSilentProceededUMA,
+      true, 1);
 
   // Web contents are destroyed: allow, no dialog is shown.
   helper_.DestroyWebContents(web_contents.get());
@@ -713,10 +748,11 @@ TEST_F(DlpContentManagerAshTest, PrintingWarnedProceeded) {
   GetManager()->CheckPrintingRestriction(web_contents.get(), rfh_id, cb.Get());
 
   EXPECT_EQ(events_.size(), 3u);
-  VerifyHistogramCounts(/*blocked_count=*/0, /*warned_count=*/2,
-                        /*total_count=*/3,
-                        /*blocked_suffix=*/dlp::kPrintingBlockedUMA,
-                        /*warned_suffix=*/dlp::kPrintingWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/0, /*warned_count=*/2,
+      /*total_count=*/3,
+      /*blocked_suffix=*/data_controls::dlp::kPrintingBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kPrintingWarnedUMA);
 }
 
 TEST_F(DlpContentManagerAshTest, PrintingWarnedCancelled) {
@@ -751,12 +787,15 @@ TEST_F(DlpContentManagerAshTest, PrintingWarnedCancelled) {
               IsDlpPolicyEvent(CreateDlpPolicyEvent(
                   kSrcPattern, DlpRulesManager::Restriction::kPrinting,
                   kRuleName, kRuleId, DlpRulesManager::Level::kWarn)));
-  VerifyHistogramCounts(/*blocked_count=*/0, /*warned_count=*/1,
-                        /*total_count=*/1,
-                        /*blocked_suffix=*/dlp::kPrintingBlockedUMA,
-                        /*warned_suffix=*/dlp::kPrintingWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/0, /*warned_count=*/1,
+      /*total_count=*/1,
+      /*blocked_suffix=*/data_controls::dlp::kPrintingBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kPrintingWarnedUMA);
   histogram_tester_.ExpectBucketCount(
-      GetDlpHistogramPrefix() + dlp::kPrintingWarnProceededUMA, false, 1);
+      data_controls::GetDlpHistogramPrefix() +
+          data_controls::dlp::kPrintingWarnProceededUMA,
+      false, 1);
 
   // Check again: since the user previously cancelled, dialog is shown again.
   GetManager()->CheckPrintingRestriction(web_contents.get(), rfh_id, cb.Get());
@@ -765,12 +804,15 @@ TEST_F(DlpContentManagerAshTest, PrintingWarnedCancelled) {
               IsDlpPolicyEvent(CreateDlpPolicyEvent(
                   kSrcPattern, DlpRulesManager::Restriction::kPrinting,
                   kRuleName, kRuleId, DlpRulesManager::Level::kWarn)));
-  VerifyHistogramCounts(/*blocked_count=*/0, /*warned_count=*/2,
-                        /*total_count=*/2,
-                        /*blocked_suffix=*/dlp::kPrintingBlockedUMA,
-                        /*warned_suffix=*/dlp::kPrintingWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/0, /*warned_count=*/2,
+      /*total_count=*/2,
+      /*blocked_suffix=*/data_controls::dlp::kPrintingBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kPrintingWarnedUMA);
   histogram_tester_.ExpectBucketCount(
-      GetDlpHistogramPrefix() + dlp::kPrintingWarnProceededUMA, false, 2);
+      data_controls::GetDlpHistogramPrefix() +
+          data_controls::dlp::kPrintingWarnProceededUMA,
+      false, 2);
 
   // Web contents are destroyed: allow, no dialog is shown.
   helper_.DestroyWebContents(web_contents.get());
@@ -778,10 +820,11 @@ TEST_F(DlpContentManagerAshTest, PrintingWarnedCancelled) {
             kEmptyRestrictionSet);
   GetManager()->CheckPrintingRestriction(web_contents.get(), rfh_id, cb.Get());
   EXPECT_EQ(events_.size(), 2u);
-  VerifyHistogramCounts(/*blocked_count=*/0, /*warned_count=*/2,
-                        /*total_count=*/3,
-                        /*blocked_suffix=*/dlp::kPrintingBlockedUMA,
-                        /*warned_suffix=*/dlp::kPrintingWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/0, /*warned_count=*/2,
+      /*total_count=*/3,
+      /*blocked_suffix=*/data_controls::dlp::kPrintingBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kPrintingWarnedUMA);
 }
 
 TEST_F(DlpContentManagerAshTest, CaptureModeInitRestricted) {
@@ -803,19 +846,21 @@ TEST_F(DlpContentManagerAshTest, CaptureModeInitRestricted) {
 
   std::unique_ptr<content::WebContents> web_contents = CreateWebContents();
   GetManager()->CheckCaptureModeInitRestriction(cb.Get());
-  VerifyHistogramCounts(/*blocked_count=*/0, /*warned_count=*/0,
-                        /*total_count=*/1,
-                        /*blocked_suffix=*/dlp::kCaptureModeInitBlockedUMA,
-                        /*warned_suffix=*/dlp::kCaptureModeInitWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/0, /*warned_count=*/0,
+      /*total_count=*/1,
+      /*blocked_suffix=*/data_controls::dlp::kCaptureModeInitBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kCaptureModeInitWarnedUMA);
 
   helper_.ChangeConfidentiality(web_contents.get(), kScreenshotRestricted);
   EXPECT_EQ(GetManager()->GetConfidentialRestrictions(web_contents.get()),
             kScreenshotRestricted);
   GetManager()->CheckCaptureModeInitRestriction(cb.Get());
-  VerifyHistogramCounts(/*blocked_count=*/1, /*warned_count=*/0,
-                        /*total_count=*/2,
-                        /*blocked_suffix=*/dlp::kCaptureModeInitBlockedUMA,
-                        /*warned_suffix=*/dlp::kCaptureModeInitWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/1, /*warned_count=*/0,
+      /*total_count=*/2,
+      /*blocked_suffix=*/data_controls::dlp::kCaptureModeInitBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kCaptureModeInitWarnedUMA);
   EXPECT_EQ(events_.size(), 1u);
   EXPECT_THAT(events_[0],
               IsDlpPolicyEvent(CreateDlpPolicyEvent(
@@ -826,10 +871,11 @@ TEST_F(DlpContentManagerAshTest, CaptureModeInitRestricted) {
   EXPECT_EQ(GetManager()->GetConfidentialRestrictions(web_contents.get()),
             kEmptyRestrictionSet);
   GetManager()->CheckCaptureModeInitRestriction(cb.Get());
-  VerifyHistogramCounts(/*blocked_count=*/1, /*warned_count=*/0,
-                        /*total_count=*/3,
-                        /*blocked_suffix=*/dlp::kCaptureModeInitBlockedUMA,
-                        /*warned_suffix=*/dlp::kCaptureModeInitWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/1, /*warned_count=*/0,
+      /*total_count=*/3,
+      /*blocked_suffix=*/data_controls::dlp::kCaptureModeInitBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kCaptureModeInitWarnedUMA);
 }
 
 TEST_F(DlpContentManagerAshTest, CaptureModeInitWarnedContinued) {
@@ -855,12 +901,15 @@ TEST_F(DlpContentManagerAshTest, CaptureModeInitWarnedContinued) {
             kScreenshotWarned);
   GetManager()->CheckCaptureModeInitRestriction(cb.Get());
 
-  VerifyHistogramCounts(/*blocked_count=*/0, /*warned_count=*/1,
-                        /*total_count=*/1,
-                        /*blocked_suffix=*/dlp::kCaptureModeInitBlockedUMA,
-                        /*warned_suffix=*/dlp::kCaptureModeInitWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/0, /*warned_count=*/1,
+      /*total_count=*/1,
+      /*blocked_suffix=*/data_controls::dlp::kCaptureModeInitBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kCaptureModeInitWarnedUMA);
   histogram_tester_.ExpectBucketCount(
-      GetDlpHistogramPrefix() + dlp::kScreenshotWarnProceededUMA, true, 1);
+      data_controls::GetDlpHistogramPrefix() +
+          data_controls::dlp::kScreenshotWarnProceededUMA,
+      true, 1);
 
   EXPECT_EQ(events_.size(), 1u);
   EXPECT_THAT(events_[0],
@@ -870,15 +919,19 @@ TEST_F(DlpContentManagerAshTest, CaptureModeInitWarnedContinued) {
 
   // Check again: allow based on cached user's response - no dialog is shown.
   GetManager()->CheckCaptureModeInitRestriction(cb.Get());
-  VerifyHistogramCounts(/*blocked_count=*/0, /*warned_count=*/2,
-                        /*total_count=*/2,
-                        /*blocked_suffix=*/dlp::kCaptureModeInitBlockedUMA,
-                        /*warned_suffix=*/dlp::kCaptureModeInitWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/0, /*warned_count=*/2,
+      /*total_count=*/2,
+      /*blocked_suffix=*/data_controls::dlp::kCaptureModeInitBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kCaptureModeInitWarnedUMA);
   histogram_tester_.ExpectBucketCount(
-      GetDlpHistogramPrefix() + dlp::kScreenshotWarnProceededUMA, true, 1);
+      data_controls::GetDlpHistogramPrefix() +
+          data_controls::dlp::kScreenshotWarnProceededUMA,
+      true, 1);
   histogram_tester_.ExpectBucketCount(
-      GetDlpHistogramPrefix() + dlp::kScreenshotWarnSilentProceededUMA, true,
-      1);
+      data_controls::GetDlpHistogramPrefix() +
+          data_controls::dlp::kScreenshotWarnSilentProceededUMA,
+      true, 1);
   EXPECT_EQ(events_.size(), 1u);
 }
 
@@ -904,12 +957,15 @@ TEST_F(DlpContentManagerAshTest, CaptureModeInitWarnedCancelled) {
   EXPECT_EQ(GetManager()->GetConfidentialRestrictions(web_contents.get()),
             kScreenshotWarned);
   GetManager()->CheckCaptureModeInitRestriction(cb.Get());
-  VerifyHistogramCounts(/*blocked_count=*/0, /*warned_count=*/1,
-                        /*total_count=*/1,
-                        /*blocked_suffix=*/dlp::kCaptureModeInitBlockedUMA,
-                        /*warned_suffix=*/dlp::kCaptureModeInitWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/0, /*warned_count=*/1,
+      /*total_count=*/1,
+      /*blocked_suffix=*/data_controls::dlp::kCaptureModeInitBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kCaptureModeInitWarnedUMA);
   histogram_tester_.ExpectBucketCount(
-      GetDlpHistogramPrefix() + dlp::kScreenshotWarnProceededUMA, false, 1);
+      data_controls::GetDlpHistogramPrefix() +
+          data_controls::dlp::kScreenshotWarnProceededUMA,
+      false, 1);
   EXPECT_EQ(events_.size(), 1u);
   EXPECT_THAT(events_[0],
               IsDlpPolicyEvent(CreateDlpPolicyEvent(
@@ -918,12 +974,15 @@ TEST_F(DlpContentManagerAshTest, CaptureModeInitWarnedCancelled) {
 
   // Check again: since the user previously cancelled, dialog is shown again.
   GetManager()->CheckCaptureModeInitRestriction(cb.Get());
-  VerifyHistogramCounts(/*blocked_count=*/0, /*warned_count=*/2,
-                        /*total_count=*/2,
-                        /*blocked_suffix=*/dlp::kCaptureModeInitBlockedUMA,
-                        /*warned_suffix=*/dlp::kCaptureModeInitWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/0, /*warned_count=*/2,
+      /*total_count=*/2,
+      /*blocked_suffix=*/data_controls::dlp::kCaptureModeInitBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kCaptureModeInitWarnedUMA);
   histogram_tester_.ExpectBucketCount(
-      GetDlpHistogramPrefix() + dlp::kScreenshotWarnProceededUMA, false, 2);
+      data_controls::GetDlpHistogramPrefix() +
+          data_controls::dlp::kScreenshotWarnProceededUMA,
+      false, 2);
   EXPECT_EQ(events_.size(), 2u);
   EXPECT_THAT(events_[1],
               IsDlpPolicyEvent(CreateDlpPolicyEvent(
@@ -951,19 +1010,21 @@ TEST_F(DlpContentManagerAshTest, ScreenshotRestricted) {
   ScreenshotArea area = ScreenshotArea::CreateForAllRootWindows();
   std::unique_ptr<content::WebContents> web_contents = CreateWebContents();
   GetManager()->CheckScreenshotRestriction(area, cb.Get());
-  VerifyHistogramCounts(/*blocked_count=*/0, /*warned_count=*/0,
-                        /*total_count=*/1,
-                        /*blocked_suffix=*/dlp::kScreenshotBlockedUMA,
-                        /*warned_suffix=*/dlp::kScreenshotWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/0, /*warned_count=*/0,
+      /*total_count=*/1,
+      /*blocked_suffix=*/data_controls::dlp::kScreenshotBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kScreenshotWarnedUMA);
 
   helper_.ChangeConfidentiality(web_contents.get(), kScreenshotRestricted);
   EXPECT_EQ(GetManager()->GetConfidentialRestrictions(web_contents.get()),
             kScreenshotRestricted);
   GetManager()->CheckScreenshotRestriction(area, cb.Get());
-  VerifyHistogramCounts(/*blocked_count=*/1, /*warned_count=*/0,
-                        /*total_count=*/2,
-                        /*blocked_suffix=*/dlp::kScreenshotBlockedUMA,
-                        /*warned_suffix=*/dlp::kScreenshotWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/1, /*warned_count=*/0,
+      /*total_count=*/2,
+      /*blocked_suffix=*/data_controls::dlp::kScreenshotBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kScreenshotWarnedUMA);
 
   EXPECT_EQ(events_.size(), 1u);
   EXPECT_THAT(events_[0],
@@ -976,10 +1037,11 @@ TEST_F(DlpContentManagerAshTest, ScreenshotRestricted) {
   EXPECT_EQ(GetManager()->GetConfidentialRestrictions(web_contents.get()),
             kEmptyRestrictionSet);
   GetManager()->CheckScreenshotRestriction(area, cb.Get());
-  VerifyHistogramCounts(/*blocked_count=*/1, /*warned_count=*/0,
-                        /*total_count=*/3,
-                        /*blocked_suffix=*/dlp::kScreenshotBlockedUMA,
-                        /*warned_suffix=*/dlp::kScreenshotWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/1, /*warned_count=*/0,
+      /*total_count=*/3,
+      /*blocked_suffix=*/data_controls::dlp::kScreenshotBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kScreenshotWarnedUMA);
 }
 
 TEST_F(DlpContentManagerAshTest, ScreenshotWarnedContinued) {
@@ -1005,10 +1067,11 @@ TEST_F(DlpContentManagerAshTest, ScreenshotWarnedContinued) {
   EXPECT_EQ(GetManager()->GetConfidentialRestrictions(web_contents.get()),
             kScreenshotWarned);
   GetManager()->CheckScreenshotRestriction(area, cb.Get());
-  VerifyHistogramCounts(/*blocked_count=*/0, /*warned_count=*/1,
-                        /*total_count=*/1,
-                        /*blocked_suffix=*/dlp::kScreenshotBlockedUMA,
-                        /*warned_suffix=*/dlp::kScreenshotWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/0, /*warned_count=*/1,
+      /*total_count=*/1,
+      /*blocked_suffix=*/data_controls::dlp::kScreenshotBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kScreenshotWarnedUMA);
   EXPECT_EQ(events_.size(), 1u);
   EXPECT_THAT(events_[0],
               IsDlpPolicyEvent(CreateDlpPolicyEvent(
@@ -1017,12 +1080,15 @@ TEST_F(DlpContentManagerAshTest, ScreenshotWarnedContinued) {
 
   // Check again: allow based on cached user's response - no dialog is shown.
   GetManager()->CheckScreenshotRestriction(area, cb.Get());
-  VerifyHistogramCounts(/*blocked_count=*/0, /*warned_count=*/2,
-                        /*total_count=*/2,
-                        /*blocked_suffix=*/dlp::kScreenshotBlockedUMA,
-                        /*warned_suffix=*/dlp::kScreenshotWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/0, /*warned_count=*/2,
+      /*total_count=*/2,
+      /*blocked_suffix=*/data_controls::dlp::kScreenshotBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kScreenshotWarnedUMA);
   histogram_tester_.ExpectBucketCount(
-      GetDlpHistogramPrefix() + dlp::kScreenshotWarnProceededUMA, true, 1);
+      data_controls::GetDlpHistogramPrefix() +
+          data_controls::dlp::kScreenshotWarnProceededUMA,
+      true, 1);
   EXPECT_EQ(events_.size(), 1u);
 }
 
@@ -1049,12 +1115,15 @@ TEST_F(DlpContentManagerAshTest, ScreenshotWarnedCancelled) {
   EXPECT_EQ(GetManager()->GetConfidentialRestrictions(web_contents.get()),
             kScreenshotWarned);
   GetManager()->CheckScreenshotRestriction(area, cb.Get());
-  VerifyHistogramCounts(/*blocked_count=*/0, /*warned_count=*/1,
-                        /*total_count=*/1,
-                        /*blocked_suffix=*/dlp::kScreenshotBlockedUMA,
-                        /*warned_suffix=*/dlp::kScreenshotWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/0, /*warned_count=*/1,
+      /*total_count=*/1,
+      /*blocked_suffix=*/data_controls::dlp::kScreenshotBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kScreenshotWarnedUMA);
   histogram_tester_.ExpectBucketCount(
-      GetDlpHistogramPrefix() + dlp::kScreenshotWarnProceededUMA, false, 1);
+      data_controls::GetDlpHistogramPrefix() +
+          data_controls::dlp::kScreenshotWarnProceededUMA,
+      false, 1);
   EXPECT_EQ(events_.size(), 1u);
   EXPECT_THAT(events_[0],
               IsDlpPolicyEvent(CreateDlpPolicyEvent(
@@ -1063,12 +1132,15 @@ TEST_F(DlpContentManagerAshTest, ScreenshotWarnedCancelled) {
 
   // Check again: since the user previously cancelled, dialog is shown again.
   GetManager()->CheckScreenshotRestriction(area, cb.Get());
-  VerifyHistogramCounts(/*blocked_count=*/0, /*warned_count=*/2,
-                        /*total_count=*/2,
-                        /*blocked_suffix=*/dlp::kScreenshotBlockedUMA,
-                        /*warned_suffix=*/dlp::kScreenshotWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/0, /*warned_count=*/2,
+      /*total_count=*/2,
+      /*blocked_suffix=*/data_controls::dlp::kScreenshotBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kScreenshotWarnedUMA);
   histogram_tester_.ExpectBucketCount(
-      GetDlpHistogramPrefix() + dlp::kScreenshotWarnProceededUMA, false, 2);
+      data_controls::GetDlpHistogramPrefix() +
+          data_controls::dlp::kScreenshotWarnProceededUMA,
+      false, 2);
   EXPECT_EQ(events_.size(), 2u);
   EXPECT_THAT(events_[1],
               IsDlpPolicyEvent(CreateDlpPolicyEvent(
@@ -1102,20 +1174,22 @@ TEST_F(DlpContentManagerAshTest, ScreenShareRestricted) {
           web_contents->GetPrimaryMainFrame()->GetRoutingID()));
   GetManager()->CheckScreenShareRestriction(media_id, kApplicationName,
                                             cb.Get());
-  VerifyHistogramCounts(/*blocked_count=*/0, /*warned_count=*/0,
-                        /*total_count=*/1,
-                        /*blocked_suffix=*/dlp::kScreenShareBlockedUMA,
-                        /*warned_suffix=*/dlp::kScreenShareWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/0, /*warned_count=*/0,
+      /*total_count=*/1,
+      /*blocked_suffix=*/data_controls::dlp::kScreenShareBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kScreenShareWarnedUMA);
 
   helper_.ChangeConfidentiality(web_contents.get(), kScreenShareRestricted);
   EXPECT_EQ(GetManager()->GetConfidentialRestrictions(web_contents.get()),
             kScreenShareRestricted);
   GetManager()->CheckScreenShareRestriction(media_id, kApplicationName,
                                             cb.Get());
-  VerifyHistogramCounts(/*blocked_count=*/1, /*warned_count=*/0,
-                        /*total_count=*/2,
-                        /*blocked_suffix=*/dlp::kScreenShareBlockedUMA,
-                        /*warned_suffix=*/dlp::kScreenShareWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/1, /*warned_count=*/0,
+      /*total_count=*/2,
+      /*blocked_suffix=*/data_controls::dlp::kScreenShareBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kScreenShareWarnedUMA);
 
   EXPECT_EQ(events_.size(), 1u);
   EXPECT_THAT(events_[0],
@@ -1129,10 +1203,11 @@ TEST_F(DlpContentManagerAshTest, ScreenShareRestricted) {
             kEmptyRestrictionSet);
   GetManager()->CheckScreenShareRestriction(media_id, kApplicationName,
                                             cb.Get());
-  VerifyHistogramCounts(/*blocked_count=*/1, /*warned_count=*/0,
-                        /*total_count=*/3,
-                        /*blocked_suffix=*/dlp::kScreenShareBlockedUMA,
-                        /*warned_suffix=*/dlp::kScreenShareWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/1, /*warned_count=*/0,
+      /*total_count=*/3,
+      /*blocked_suffix=*/data_controls::dlp::kScreenShareBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kScreenShareWarnedUMA);
 }
 
 TEST_F(DlpContentManagerAshTest, ScreenShareWarnedContinued) {
@@ -1164,10 +1239,11 @@ TEST_F(DlpContentManagerAshTest, ScreenShareWarnedContinued) {
             kScreenShareWarned);
   GetManager()->CheckScreenShareRestriction(media_id, kApplicationName,
                                             cb.Get());
-  VerifyHistogramCounts(/*blocked_count=*/0, /*warned_count=*/1,
-                        /*total_count=*/1,
-                        /*blocked_suffix=*/dlp::kScreenShareBlockedUMA,
-                        /*warned_suffix=*/dlp::kScreenShareWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/0, /*warned_count=*/1,
+      /*total_count=*/1,
+      /*blocked_suffix=*/data_controls::dlp::kScreenShareBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kScreenShareWarnedUMA);
   EXPECT_EQ(events_.size(), 1u);
   EXPECT_THAT(events_[0],
               IsDlpPolicyEvent(CreateDlpPolicyEvent(
@@ -1177,12 +1253,15 @@ TEST_F(DlpContentManagerAshTest, ScreenShareWarnedContinued) {
   // Check again: allow based on cached user's response - no dialog is shown.
   GetManager()->CheckScreenShareRestriction(media_id, kApplicationName,
                                             cb.Get());
-  VerifyHistogramCounts(/*blocked_count=*/0, /*warned_count=*/2,
-                        /*total_count=*/2,
-                        /*blocked_suffix=*/dlp::kScreenShareBlockedUMA,
-                        /*warned_suffix=*/dlp::kScreenShareWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/0, /*warned_count=*/2,
+      /*total_count=*/2,
+      /*blocked_suffix=*/data_controls::dlp::kScreenShareBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kScreenShareWarnedUMA);
   histogram_tester_.ExpectBucketCount(
-      GetDlpHistogramPrefix() + dlp::kScreenShareWarnProceededUMA, true, 1);
+      data_controls::GetDlpHistogramPrefix() +
+          data_controls::dlp::kScreenShareWarnProceededUMA,
+      true, 1);
   EXPECT_EQ(events_.size(), 1u);
 }
 
@@ -1215,12 +1294,15 @@ TEST_F(DlpContentManagerAshTest, ScreenShareWarnedCancelled) {
             kScreenShareWarned);
   GetManager()->CheckScreenShareRestriction(media_id, kApplicationName,
                                             cb.Get());
-  VerifyHistogramCounts(/*blocked_count=*/0, /*warned_count=*/1,
-                        /*total_count=*/1,
-                        /*blocked_suffix=*/dlp::kScreenShareBlockedUMA,
-                        /*warned_suffix=*/dlp::kScreenShareWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/0, /*warned_count=*/1,
+      /*total_count=*/1,
+      /*blocked_suffix=*/data_controls::dlp::kScreenShareBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kScreenShareWarnedUMA);
   histogram_tester_.ExpectBucketCount(
-      GetDlpHistogramPrefix() + dlp::kScreenShareWarnProceededUMA, false, 1);
+      data_controls::GetDlpHistogramPrefix() +
+          data_controls::dlp::kScreenShareWarnProceededUMA,
+      false, 1);
   EXPECT_EQ(events_.size(), 1u);
   EXPECT_THAT(events_[0],
               IsDlpPolicyEvent(CreateDlpPolicyEvent(
@@ -1230,12 +1312,15 @@ TEST_F(DlpContentManagerAshTest, ScreenShareWarnedCancelled) {
   // Check again: since the user previously cancelled, dialog is shown again.
   GetManager()->CheckScreenShareRestriction(media_id, kApplicationName,
                                             cb.Get());
-  VerifyHistogramCounts(/*blocked_count=*/0, /*warned_count=*/2,
-                        /*total_count=*/2,
-                        /*blocked_suffix=*/dlp::kScreenShareBlockedUMA,
-                        /*warned_suffix=*/dlp::kScreenShareWarnedUMA);
+  VerifyHistogramCounts(
+      /*blocked_count=*/0, /*warned_count=*/2,
+      /*total_count=*/2,
+      /*blocked_suffix=*/data_controls::dlp::kScreenShareBlockedUMA,
+      /*warned_suffix=*/data_controls::dlp::kScreenShareWarnedUMA);
   histogram_tester_.ExpectBucketCount(
-      GetDlpHistogramPrefix() + dlp::kScreenShareWarnProceededUMA, false, 2);
+      data_controls::GetDlpHistogramPrefix() +
+          data_controls::dlp::kScreenShareWarnProceededUMA,
+      false, 2);
   EXPECT_EQ(events_.size(), 2u);
   EXPECT_THAT(events_[1],
               IsDlpPolicyEvent(CreateDlpPolicyEvent(

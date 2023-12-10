@@ -10,7 +10,6 @@
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/apps/app_service/package_id.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_almanac_connector.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_registry_cache.h"
@@ -19,9 +18,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/ash/components/system/fake_statistics_provider.h"
-#include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
+#include "components/services/app_service/public/cpp/package_id.h"
 #include "content/public/test/browser_task_environment.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -52,9 +51,8 @@ class PromiseAppServiceTest : public testing::Test,
     test_shared_loader_factory_ =
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             url_loader_factory_.get());
-    app_cache_ = &AppServiceProxyFactory::GetForProfile(profile_.get())
-                      ->AppRegistryCache();
-    service_ = std::make_unique<PromiseAppService>(profile_.get(), *app_cache_);
+    service_ = std::make_unique<PromiseAppService>(profile_.get(),
+                                                   proxy()->AppRegistryCache());
     service_->SetSkipApiKeyCheckForTesting(true);
   }
 
@@ -66,7 +64,9 @@ class PromiseAppServiceTest : public testing::Test,
     return service_->PromiseAppRegistryCache();
   }
 
-  AppRegistryCache* app_cache() { return app_cache_; }
+  AppServiceProxy* proxy() {
+    return AppServiceProxyFactory::GetForProfile(profile_.get());
+  }
 
   PromiseAppIconCache* icon_cache() { return service_->PromiseAppIconCache(); }
 
@@ -124,8 +124,8 @@ class PromiseAppServiceTest : public testing::Test,
  private:
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> wait_run_loop_;
-  std::unique_ptr<PromiseAppService> service_;
   std::unique_ptr<Profile> profile_;
+  std::unique_ptr<PromiseAppService> service_;
   std::unique_ptr<network::TestURLLoaderFactory> url_loader_factory_;
   base::ScopedObservation<PromiseAppRegistryCache,
                           PromiseAppRegistryCache::Observer>
@@ -133,7 +133,6 @@ class PromiseAppServiceTest : public testing::Test,
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   ash::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
-  raw_ptr<AppRegistryCache> app_cache_;
 
   // Tracks how many times we should expect OnPromiseAppUpdate to be called
   // before proceeding with a unit test.
@@ -141,14 +140,43 @@ class PromiseAppServiceTest : public testing::Test,
   int current_num_updates_;
 };
 
+TEST_F(PromiseAppServiceTest, AlmanacResponseUpdatesPromiseAppName) {
+  proto::PromiseAppResponse response;
+  response.set_package_id(kTestPackageId.ToString());
+  response.set_name("Name");
+  response.add_icons();
+  response.mutable_icons(0)->set_url("www.image");
+
+  url_loader_factory()->AddResponse(
+      PromiseAppAlmanacConnector::GetServerUrl().spec(),
+      response.SerializeAsString());
+
+  // We expect 2 Promise App Registry Cache updates in this test:
+  // The first update is when we initially register the promise app in the
+  // cache. The second update is when we take the app name provided by the
+  // Almanac API response and save it to the promise app object.
+  ExpectNumUpdates(/*num_updates=*/2);
+
+  // Add promise app to the cache, which will trigger an Almanac API call.
+  service()->OnPromiseApp(std::make_unique<PromiseApp>(kTestPackageId));
+
+  // Wait for all the updates to trigger.
+  WaitForPromiseAppUpdates();
+
+  const PromiseApp* promise_app_result = cache()->GetPromiseApp(kTestPackageId);
+  EXPECT_TRUE(promise_app_result->name.has_value());
+  EXPECT_EQ(promise_app_result->name.value(), "Name");
+}
+
 // Tests that icons can be successfully downloaded from the URLs provided by an
 // Almanac response.
-TEST_F(PromiseAppServiceTest, OnPromiseApp_AlmanacIconsDownloaded) {
+TEST_F(PromiseAppServiceTest, AlmanacIconsGetDownloadedThenAddedToIconCache) {
   std::string url = "http://image.test/test.png";
   std::string url_other = "http://image.test/second-test.png";
 
   proto::PromiseAppResponse response;
   response.set_package_id(kTestPackageId.ToString());
+  response.set_name("Name");
   response.add_icons();
   response.mutable_icons(0)->set_url(url);
   response.add_icons();
@@ -166,11 +194,13 @@ TEST_F(PromiseAppServiceTest, OnPromiseApp_AlmanacIconsDownloaded) {
   // Confirm there aren't any icons for the package yet.
   EXPECT_FALSE(icon_cache()->DoesPackageIdHaveIcons(kTestPackageId));
 
-  // We expect 2 Promise App Registry Cache updates in this test:
+  // We expect 3 Promise App Registry Cache updates in this test:
   // The first update is when we initially register the promise app in the
-  // cache. The second update is after we finish downloading all the icons for
-  // the promise app and mark the promise app as ready to be shown to the user.
-  ExpectNumUpdates(/*num_updates=*/2);
+  // cache. The second update is when we take the app name provided by the
+  // Almanac API response and save it to the promise app object. The third is
+  // after we finish downloading all the icons for the promise app and mark the
+  // promise app as ready to be shown to the user.
+  ExpectNumUpdates(/*num_updates=*/3);
   service()->OnPromiseApp(std::make_unique<PromiseApp>(kTestPackageId));
 
   // Wait for all the updates to trigger.
@@ -195,9 +225,10 @@ TEST_F(PromiseAppServiceTest, OnPromiseApp_AlmanacIconsDownloaded) {
 
 // Tests that we can deal with broken URLs/ failed icon downloads and avoid
 // updating the icon cache.
-TEST_F(PromiseAppServiceTest, OnPromiseApp_FailedIconDownload) {
+TEST_F(PromiseAppServiceTest, FailedIconDownloadsDoNotUpdateIconCache) {
   proto::PromiseAppResponse response;
   response.set_package_id(kTestPackageId.ToString());
+  response.set_name("Name");
   response.add_icons();
   response.mutable_icons(0)->set_url("broken-url");
 
@@ -209,9 +240,11 @@ TEST_F(PromiseAppServiceTest, OnPromiseApp_FailedIconDownload) {
   // Confirm there aren't any icons for the package yet.
   EXPECT_FALSE(icon_cache()->DoesPackageIdHaveIcons(kTestPackageId));
 
-  // We expect a Promise App Registry Cache update when we register the promise
-  // app in the cache.
-  ExpectNumUpdates(/*num_updates=*/1);
+  // We expect 2 Promise App Registry Cache updates in this test:
+  // The first update is when we initially register the promise app in the
+  // cache. The second update is when we take the app name provided by the
+  // Almanac API response and save it to the promise app object.
+  ExpectNumUpdates(/*num_updates=*/2);
   service()->OnPromiseApp(std::make_unique<PromiseApp>(kTestPackageId));
 
   // Wait for all the updates to trigger.
@@ -280,8 +313,8 @@ TEST_F(PromiseAppServiceTest, CompleteAppInstallationRemovesPromiseApp) {
 
   std::vector<apps::AppPtr> apps;
   apps.push_back(std::move(app));
-  app_cache()->OnApps(std::move(apps), app_type,
-                      /*should_notify_initialized=*/false);
+  proxy()->OnApps(std::move(apps), app_type,
+                  /*should_notify_initialized=*/false);
 
   // Confirm that the promise app is now absent from the Promise App Registry
   // and Promise App Icon Cache.
@@ -301,8 +334,8 @@ TEST_F(PromiseAppServiceTest,
   app->readiness = apps::Readiness::kReady;
   std::vector<apps::AppPtr> apps;
   apps.push_back(std::move(app));
-  app_cache()->OnApps(std::move(apps), app_type,
-                      /*should_notify_initialized=*/false);
+  proxy()->OnApps(std::move(apps), app_type,
+                  /*should_notify_initialized=*/false);
 
   // Attempt to register test promise app with a matching package ID.
   PromiseAppPtr promise_app = std::make_unique<PromiseApp>(package_id);
@@ -324,8 +357,8 @@ TEST_F(PromiseAppServiceTest, AllowPromiseAppsForReinstallingApps) {
   app->readiness = apps::Readiness::kUninstalledByUser;
   std::vector<apps::AppPtr> apps;
   apps.push_back(std::move(app));
-  app_cache()->OnApps(std::move(apps), app_type,
-                      /*should_notify_initialized=*/false);
+  proxy()->OnApps(std::move(apps), app_type,
+                  /*should_notify_initialized=*/false);
 
   // Register test promise app with a matching package ID.
   PromiseAppPtr promise_app = std::make_unique<PromiseApp>(package_id);

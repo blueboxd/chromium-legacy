@@ -33,8 +33,7 @@
 - (void)hideTryAgainOrCancelAlert;
 
 // Show and hide StoreKit.
-- (void)showStoreKitWithProductIdentifier:(NSString*)productIdentifer
-                            campaignToken:(NSString*)campaignToken;
+- (void)showStoreKitWithProductIdentifier:(NSString*)productIdentifer;
 - (void)hideStoreKit;
 
 // Show a snackbar with the given `message`, a button with label `buttonText`.

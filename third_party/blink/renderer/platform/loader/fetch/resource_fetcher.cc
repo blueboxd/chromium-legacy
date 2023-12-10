@@ -1233,9 +1233,9 @@ void ResourceFetcher::AttachWebBundleTokenIfNeeded(
 SubresourceWebBundleList*
 ResourceFetcher::GetOrCreateSubresourceWebBundleList() {
   if (subresource_web_bundles_)
-    return subresource_web_bundles_;
+    return subresource_web_bundles_.Get();
   subresource_web_bundles_ = MakeGarbageCollected<SubresourceWebBundleList>();
-  return subresource_web_bundles_;
+  return subresource_web_bundles_.Get();
 }
 
 ukm::MojoUkmRecorder* ResourceFetcher::UkmRecorder() {
@@ -1772,11 +1772,11 @@ void ResourceFetcher::PrintPreloadMismatch(Resource* resource,
                                      mojom::ConsoleMessageLevel::kWarning,
                                      builder.ToString());
 
-  TRACE_EVENT1(
-      "blink,blink.resource", "ResourceFetcher::PrintPreloadMismatch", "data",
-      CreateTracedValueForUnusedPreload(
-          resource->Url(), status,
-          resource->GetResourceRequest().GetDevToolsId().value_or(String())));
+  TRACE_EVENT1("blink,blink.resource", "ResourceFetcher::PrintPreloadMismatch",
+               "data",
+               CreateTracedValueForUnusedPreload(
+                   resource->Url(), status,
+                   resource->GetResourceRequest().GetDevToolsId()));
 }
 
 void ResourceFetcher::InsertAsPreloadIfNecessary(Resource* resource,
@@ -2211,11 +2211,11 @@ void ResourceFetcher::WarnUnusedPreloads() {
     console_logger_->AddConsoleMessage(
         mojom::blink::ConsoleMessageSource::kJavaScript,
         mojom::blink::ConsoleMessageLevel::kWarning, message);
-    TRACE_EVENT1(
-        "blink,blink.resource", "ResourceFetcher::WarnUnusedPreloads", "data",
-        CreateTracedValueForUnusedPreload(
-            resource->Url(), Resource::MatchStatus::kOk,
-            resource->GetResourceRequest().GetDevToolsId().value_or(String())));
+    TRACE_EVENT1("blink,blink.resource", "ResourceFetcher::WarnUnusedPreloads",
+                 "data",
+                 CreateTracedValueForUnusedPreload(
+                     resource->Url(), Resource::MatchStatus::kOk,
+                     resource->GetResourceRequest().GetDevToolsId()));
     UMA_HISTOGRAM_COUNTS_100("Renderer.Preload.UnusedResource",
                              static_cast<int>(resource->GetType()));
   }

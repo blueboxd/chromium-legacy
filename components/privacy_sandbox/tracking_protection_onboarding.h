@@ -9,6 +9,7 @@
 #include "base/observer_list.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/version_info/channel.h"
 
 class PrefService;
 
@@ -25,9 +26,11 @@ class TrackingProtectionOnboarding : public KeyedService {
     kIneligible = 0,
     kEligible = 1,
     kOnboarded = 2,
-    kMaxValue = kOnboarded,
+    kOffboarded = 3,
+    kMaxValue = kOffboarded,
   };
 
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.privacy_sandbox
   enum class NoticeAction {
     // Other action taken - notice dismissed due to other actions.
     kOther = 0,
@@ -42,16 +45,50 @@ class TrackingProtectionOnboarding : public KeyedService {
     kMaxValue = kClosed,
   };
 
+  enum class NoticeType {
+    kNone,
+    // The notice in question is an Onboarding Notice.
+    kOnboarding,
+    // The notice in question is an offboarding/rollback notice.
+    kOffboarding
+  };
+
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  // Enum value to indicate the state of onboarding on startup.
+  enum class OnboardingStartupState {
+    // User was ineligible on startup.
+    kIneligible = 0,
+    // User was eligible on startup but hasn't been onboarded yet on startup.
+    kEligibleWaitingToOnboard = 1,
+    // User was onboarded but has not yet acknowledged the notice on startup.
+    kOnboardedWaitingToAck = 2,
+    // User acknowledged with the GotIt button on startup.
+    kAckedGotIt = 3,
+    // User acknowledged with the Settings button on startup
+    kAckedSettings = 4,
+    // User acknowledged with the closed button on startup.
+    kAckedClosed = 5,
+    // User acknowledged with the learn more button (only on Clank) on startup.
+    kAckedLearnMore = 6,
+    // User acknowledged the notice by dismissing due to other actions on
+    // startup.
+    kAckedOther = 7,
+    kMaxValue = kAckedOther,
+  };
+
   class Observer {
    public:
-    // Fired when a profile is onboarded (shown the TrackingProtection
-    // onboarding notice)
-    virtual void OnTrackingProtectionOnboarded() {}
-    // Fired when the ShouldSHowNotice is updated (to True or False).
+    // Fired when a profile's tracking protection onboarding state is changed.
+    virtual void OnTrackingProtectionOnboardingUpdated(
+        OnboardingStatus onboarding_status) {}
+
+    // Fired when the ShouldShowNotice is updated (to True or False).
     virtual void OnShouldShowNoticeUpdated() {}
   };
 
-  explicit TrackingProtectionOnboarding(PrefService* pref_service);
+  TrackingProtectionOnboarding(PrefService* pref_service,
+                               version_info::Channel channel);
   ~TrackingProtectionOnboarding() override;
 
   virtual void AddObserver(Observer* observer);
@@ -65,15 +102,32 @@ class TrackingProtectionOnboarding : public KeyedService {
   // is no longer eligible for onboarding.
   void MaybeMarkIneligible();
 
+  // To be called by the Mode B experiment service in BETA, DEV and CANARY only
+  // to reset the user's prefs for testing.
+  void MaybeResetOnboardingPrefs();
+
   // Indicates the onboarding status for the user. Return value is the enum
   // defined above.
   OnboardingStatus GetOnboardingStatus() const;
 
+  // Returns whether the profile has been offboarded.
+  bool IsOffboarded() const;
+
   // To be Called by UI code when the user has been shown the notice.
-  void NoticeShown();
+  void NoticeShown(NoticeType notice_type);
 
   // To be called by UI code when the user has taken action on the notice.
-  void NoticeActionTaken(NoticeAction action);
+  void NoticeActionTaken(NoticeType notice_type, NoticeAction action);
+
+  // Called by UI code to determine what type of notice is required.
+  NoticeType GetRequiredNotice();
+
+  // To be called by UI code when the user has taken action on the onboarding
+  // notice.
+  void OnboardingNoticeActionTaken(NoticeAction action);
+
+  // To be Called by UI code when the user has been shown the onboarding notice.
+  void OnboardingNoticeShown();
 
   // Called by UI code to determine if we should show the onboarding notice to
   // the user.
@@ -87,6 +141,7 @@ class TrackingProtectionOnboarding : public KeyedService {
   base::ObserverList<Observer>::Unchecked observers_;
   raw_ptr<PrefService> pref_service_;
   PrefChangeRegistrar pref_change_registrar_;
+  const version_info::Channel channel_;
 };
 
 }  // namespace privacy_sandbox

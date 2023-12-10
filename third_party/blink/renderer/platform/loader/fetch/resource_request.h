@@ -298,8 +298,8 @@ class PLATFORM_EXPORT ResourceRequestHead {
   }
 
   // True if the request and any subsequent redirects should have the
-  // `http_names::kSecSharedStorageWritable` header attached and allow writing
-  // to shared storage via the response headers.
+  // `http_names::kSharedStorageWritable` header attached and allow writing to
+  // shared storage via the response headers.
   bool GetSharedStorageWritable() const { return shared_storage_writable_; }
   void SetSharedStorageWritable(bool shared_storage_writable) {
     shared_storage_writable_ = shared_storage_writable;
@@ -447,10 +447,8 @@ class PLATFORM_EXPORT ResourceRequestHead {
     devtools_accepted_stream_types_ = types;
   }
 
-  const absl::optional<String>& GetDevToolsId() const { return devtools_id_; }
-  void SetDevToolsId(const absl::optional<String>& devtools_id) {
-    devtools_id_ = devtools_id;
-  }
+  const String& GetDevToolsId() const { return devtools_id_; }
+  void SetDevToolsId(const String devtools_id) { devtools_id_ = devtools_id; }
 
   void SetRequestedWithHeader(const String& value) {
     requested_with_header_ = value;
@@ -617,7 +615,8 @@ class PLATFORM_EXPORT ResourceRequestHead {
     shared_dictionary_writer_enabled_ = shared_dictionary_writer_enabled;
   }
 
-  base::UnguessableToken GetServiceWorkerRaceNetworkRequestToken() const {
+  absl::optional<base::UnguessableToken>
+  GetServiceWorkerRaceNetworkRequestToken() const {
     return service_worker_race_network_request_token_;
   }
 
@@ -692,7 +691,7 @@ class PLATFORM_EXPORT ResourceRequestHead {
   bool is_automatic_upgrade_ = false;
 
   absl::optional<base::UnguessableToken> devtools_token_;
-  absl::optional<String> devtools_id_;
+  String devtools_id_;
   String requested_with_header_;
   String client_data_header_;
   String purpose_header_;
@@ -770,7 +769,8 @@ class PLATFORM_EXPORT ResourceRequestHead {
   // CompressionDictionaryTransport feature.
   bool shared_dictionary_writer_enabled_ = false;
 
-  base::UnguessableToken service_worker_race_network_request_token_;
+  absl::optional<base::UnguessableToken>
+      service_worker_race_network_request_token_;
 };
 
 class PLATFORM_EXPORT ResourceRequestBody {

@@ -5,13 +5,12 @@
 #include "extensions/components/native_app_window/native_app_window_views.h"
 
 #include "base/functional/bind.h"
-#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/app_window/app_window.h"
-#include "extensions/common/draggable_region.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/controls/webview/webview.h"
@@ -71,7 +70,7 @@ void NativeAppWindowViews::Init(
 
 NativeAppWindowViews::~NativeAppWindowViews() {
   web_view_->SetWebContents(nullptr);
-  CHECK(!IsInObserverList());
+  CHECK(!views::WidgetObserver::IsInObserverList());
 }
 
 void NativeAppWindowViews::OnCanHaveAlphaEnabledChanged() {
@@ -313,7 +312,7 @@ void NativeAppWindowViews::UpdateWindowTitle() {
 }
 
 void NativeAppWindowViews::UpdateDraggableRegions(
-    const std::vector<extensions::DraggableRegion>& regions) {
+    const std::vector<extensions::mojom::DraggableRegionPtr>& regions) {
   // Draggable region is not supported for non-frameless window.
   if (!frameless_)
     return;

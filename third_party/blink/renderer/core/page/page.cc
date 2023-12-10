@@ -74,12 +74,12 @@
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 #include "third_party/blink/renderer/core/page/scoped_browsing_context_group_pauser.h"
 #include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
-#include "third_party/blink/renderer/core/page/scrolling/overscroll_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 #include "third_party/blink/renderer/core/page/validation_message_client_impl.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/preferences/preference_overrides.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme_overlay_mobile.h"
@@ -212,9 +212,6 @@ Page::Page(base::PassKey<Page>,
       global_root_scroller_controller_(
           MakeGarbageCollected<TopDocumentRootScrollerController>(*this)),
       visual_viewport_(MakeGarbageCollected<VisualViewport>(*this)),
-      overscroll_controller_(
-          MakeGarbageCollected<OverscrollController>(GetVisualViewport(),
-                                                     GetChromeClient())),
       link_highlight_(MakeGarbageCollected<LinkHighlight>(*this)),
       plugin_data_(nullptr),
       // TODO(pdr): Initialize |validation_message_client_| lazily.
@@ -328,14 +325,6 @@ VisualViewport& Page::GetVisualViewport() {
 
 const VisualViewport& Page::GetVisualViewport() const {
   return *visual_viewport_;
-}
-
-OverscrollController& Page::GetOverscrollController() {
-  return *overscroll_controller_;
-}
-
-const OverscrollController& Page::GetOverscrollController() const {
-  return *overscroll_controller_;
 }
 
 LinkHighlight& Page::GetLinkHighlight() {
@@ -956,7 +945,6 @@ void Page::Trace(Visitor* visitor) const {
   visitor->Trace(console_message_storage_);
   visitor->Trace(global_root_scroller_controller_);
   visitor->Trace(visual_viewport_);
-  visitor->Trace(overscroll_controller_);
   visitor->Trace(link_highlight_);
   visitor->Trace(spatial_navigation_controller_);
   visitor->Trace(main_frame_);
@@ -1125,6 +1113,28 @@ void Page::SetMediaFeatureOverride(const AtomicString& media_feature,
 
 void Page::ClearMediaFeatureOverrides() {
   media_feature_overrides_.reset();
+  SettingsChanged(ChangeType::kMediaQuery);
+  SettingsChanged(ChangeType::kColorScheme);
+}
+
+void Page::SetPreferenceOverride(const AtomicString& media_feature,
+                                 const String& value) {
+  if (!preference_overrides_) {
+    if (value.empty()) {
+      return;
+    }
+    preference_overrides_ = std::make_unique<PreferenceOverrides>();
+  }
+  preference_overrides_->SetOverride(media_feature, value);
+  if (media_feature == "prefers-color-scheme") {
+    SettingsChanged(ChangeType::kColorScheme);
+  } else {
+    SettingsChanged(ChangeType::kMediaQuery);
+  }
+}
+
+void Page::ClearPreferenceOverrides() {
+  preference_overrides_.reset();
   SettingsChanged(ChangeType::kMediaQuery);
   SettingsChanged(ChangeType::kColorScheme);
 }

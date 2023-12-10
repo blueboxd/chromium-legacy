@@ -37,12 +37,13 @@ class NGLineWidthsTest : public RenderingTest {
     NGInlineLayoutAlgorithm algorithm(node, space, /*break_token*/ nullptr,
                                       /*column_spanner_path*/ nullptr,
                                       &context);
-    NGExclusionSpace exclusion_space(space.ExclusionSpace());
+    ExclusionSpace exclusion_space(space.GetExclusionSpace());
     NGLeadingFloats leading_floats;
     algorithm.PositionLeadingFloats(exclusion_space, leading_floats);
     const LayoutOpportunityVector& opportunities =
         exclusion_space.AllLayoutOpportunities(
-            {space.BfcOffset().line_offset, /*bfc_block_offset*/ LayoutUnit()},
+            {space.GetBfcOffset().line_offset,
+             /*bfc_block_offset*/ LayoutUnit()},
             space.AvailableSize().inline_size);
     NGLineWidths line_width;
     if (line_width.Set(node, opportunities)) {

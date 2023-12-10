@@ -11,7 +11,12 @@
 #include "ash/game_dashboard/game_dashboard_controller.h"
 #include "ash/game_dashboard/game_dashboard_main_menu_view.h"
 #include "ash/game_dashboard/game_dashboard_toolbar_view.h"
+#include "ash/game_dashboard/game_dashboard_utils.h"
 #include "ash/game_dashboard/game_dashboard_widget.h"
+#include "ash/public/cpp/app_types_util.h"
+#include "ash/public/cpp/arc_game_controls_flag.h"
+#include "ash/public/cpp/window_properties.h"
+#include "base/check.h"
 #include "base/check_op.h"
 #include "base/i18n/time_formatting.h"
 #include "chromeos/ui/frame/frame_header.h"
@@ -168,8 +173,18 @@ void GameDashboardContext::OnWindowBoundsChanged() {
   MaybeUpdateToolbarWidgetBounds();
 }
 
-void GameDashboardContext::SetGameDashboardButtonEnabled(bool enable) {
-  game_dashboard_button_->SetEnabled(enable);
+void GameDashboardContext::UpdateForGameControlsFlags() {
+  CHECK(IsArcWindow(game_window_));
+
+  const ArcGameControlsFlag flags =
+      game_window_->GetProperty(kArcGameControlsFlagsKey);
+  game_dashboard_button_->SetEnabled(
+      game_dashboard_utils::IsFlagSet(flags, ArcGameControlsFlag::kKnown) &&
+      !game_dashboard_utils::IsFlagSet(flags, ArcGameControlsFlag::kEdit));
+
+  if (toolbar_view_) {
+    toolbar_view_->UpdateViewForGameControls(flags);
+  }
 }
 
 void GameDashboardContext::ToggleMainMenu() {
@@ -287,17 +302,20 @@ void GameDashboardContext::OnWidgetDestroying(views::Widget* widget) {
   DCHECK(main_menu_view_);
   DCHECK_EQ(widget, main_menu_view_->GetWidget());
   main_menu_view_ = nullptr;
+  game_dashboard_button_->SetToggled(false);
 }
 
 void GameDashboardContext::CreateAndAddGameDashboardButtonWidget() {
   auto game_dashboard_button = std::make_unique<GameDashboardButton>(
       base::BindRepeating(&GameDashboardContext::OnGameDashboardButtonPressed,
                           weak_ptr_factory_.GetWeakPtr()));
-  game_dashboard_button->AddObserver(this);
   DCHECK(!game_dashboard_button_);
   game_dashboard_button_ = game_dashboard_button.get();
   game_dashboard_button_widget_ = CreateTransientChildWidget(
       game_window_, "GameDashboardButton", std::move(game_dashboard_button));
+  // Add observer after `game_dashboard_button_widget_` is created because the
+  // observation is to update `game_dashboard_button_widget_` bounds.
+  game_dashboard_button_->AddObserver(this);
   game_dashboard_button_input_monitor_ =
       std::make_unique<GameDashboardButtonInputMonitor>(this);
   game_dashboard_button_widget_->GetContentsView()->AddPreTargetHandler(

@@ -329,6 +329,7 @@
 <translation id="3619115746895587757">Cappuccino</translation>
 <translation id="3619593063686672873">Ei viimeaikaisia videoita</translation>
 <translation id="3634507049637220048">Verkko <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, järjestelmänvalvojan hallinnoima, lisätietoja</translation>
+<translation id="36451918667380448">Mobiilioperaattorin palvelu on lukittu. Pyydä tukea palveluntarjoajalta.</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> kohdetta siirretty</translation>
 <translation id="3658269352872031728"><ph name="SELECTED_FILE_COUNT" /> tiedostoa valittu.</translation>
 <translation id="3685122418104378273">Google Driven synkronointi on oletuksena pois käytöstä käyttäessäsi mobiilitiedonsiirtoa.</translation>
@@ -1014,6 +1015,7 @@
 <translation id="8698877009525468705">Tiedosto on luottamuksellinen, ja siihen sovelletaan järjestelmänvalvojakäytännön rajoituksia.</translation>
 <translation id="8712637175834984815">Ymmärretty</translation>
 <translation id="8713112442029511308">malta</translation>
+<translation id="8714138378966541668">Palveluntarjoajan lukitsema</translation>
 <translation id="8714406895390098252">Polkupyörä</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> valittiin.</translation>
 <translation id="872537912056138402">kroaatti</translation>

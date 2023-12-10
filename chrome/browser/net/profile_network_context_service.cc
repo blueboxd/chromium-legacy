@@ -41,9 +41,11 @@
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/pref_names.h"
 #include "components/certificate_transparency/pref_names.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/embedder_support/pref_names.h"
 #include "components/embedder_support/switches.h"
@@ -179,11 +181,11 @@ bool IsAmbientAuthAllowedForProfile(Profile* profile) {
           prefs::kAmbientAuthenticationInPrivateModesEnabled));
 
   if (profile->IsGuestSession()) {
-    return type == net::AmbientAuthAllowedProfileTypes::GUEST_AND_REGULAR ||
-           type == net::AmbientAuthAllowedProfileTypes::ALL;
+    return type == net::AmbientAuthAllowedProfileTypes::kGuestAndRegular ||
+           type == net::AmbientAuthAllowedProfileTypes::kAll;
   } else if (profile->IsIncognitoProfile()) {
-    return type == net::AmbientAuthAllowedProfileTypes::INCOGNITO_AND_REGULAR ||
-           type == net::AmbientAuthAllowedProfileTypes::ALL;
+    return type == net::AmbientAuthAllowedProfileTypes::kIncognitoAndRegular ||
+           type == net::AmbientAuthAllowedProfileTypes::kAll;
   }
 
   // Profile type not yet supported.
@@ -205,45 +207,6 @@ void UpdateAntiAbuseSettings(Profile* profile) {
       content_setting));
 }
 
-void UpdateCookieSettings(Profile* profile) {
-  ContentSettingsForOneType settings =
-      HostContentSettingsMapFactory::GetForProfile(profile)
-          ->GetSettingsForOneType(ContentSettingsType::COOKIES);
-  profile->ForEachLoadedStoragePartition(base::BindRepeating(
-      [](ContentSettingsForOneType settings,
-         content::StoragePartition* storage_partition) {
-        storage_partition->GetCookieManagerForBrowserProcess()
-            ->SetContentSettings(settings);
-      },
-      settings));
-}
-
-void UpdateLegacyCookieSettings(Profile* profile) {
-  ContentSettingsForOneType settings =
-      HostContentSettingsMapFactory::GetForProfile(profile)
-          ->GetSettingsForOneType(ContentSettingsType::LEGACY_COOKIE_ACCESS);
-  profile->ForEachLoadedStoragePartition(base::BindRepeating(
-      [](ContentSettingsForOneType settings,
-         content::StoragePartition* storage_partition) {
-        storage_partition->GetCookieManagerForBrowserProcess()
-            ->SetContentSettingsForLegacyCookieAccess(settings);
-      },
-      settings));
-}
-
-void Update3pcdSettings(Profile* profile) {
-  ContentSettingsForOneType settings =
-      HostContentSettingsMapFactory::GetForProfile(profile)
-          ->GetSettingsForOneType(ContentSettingsType::TPCD_SUPPORT);
-  profile->ForEachLoadedStoragePartition(base::BindRepeating(
-      [](ContentSettingsForOneType settings,
-         content::StoragePartition* storage_partition) {
-        storage_partition->GetCookieManagerForBrowserProcess()
-            ->SetContentSettingsFor3pcd(settings);
-      },
-      settings));
-}
-
 // `kPermissionStorageAccessAPI` enables feature: Storage Access API with
 // Prompts (https://chromestatus.com/feature/5085655327047680). StorageAccessAPI
 // is considered enabled when either feature is enabled (by different field
@@ -261,43 +224,32 @@ bool TopLevelStorageAccessAPIEnabled() {
              blink::features::kStorageAccessAPIForOriginExtension);
 }
 
-void UpdateStorageAccessSettings(Profile* profile) {
-  if (StorageAccessAPIEnabled()) {
-    ContentSettingsForOneType settings =
-        HostContentSettingsMapFactory::GetForProfile(profile)
-            ->GetSettingsForOneType(ContentSettingsType::STORAGE_ACCESS);
-
-    profile->ForEachLoadedStoragePartition(base::BindRepeating(
-        [](ContentSettingsForOneType settings,
-           content::StoragePartition* storage_partition) {
-          storage_partition->GetCookieManagerForBrowserProcess()
-              ->SetStorageAccessGrantSettings(settings, base::DoNothing());
-        },
-        settings));
+bool IsContentSettingsTypeEnabled(ContentSettingsType type) {
+  switch (type) {
+    case ContentSettingsType::STORAGE_ACCESS:
+      return StorageAccessAPIEnabled();
+    case ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS:
+      return TopLevelStorageAccessAPIEnabled();
+    default:
+      return content_settings::CookieSettings::GetContentSettingsTypes()
+          .contains(type);
   }
 }
 
-void UpdateAllStorageAccessSettings(Profile* profile) {
-  if (TopLevelStorageAccessAPIEnabled()) {
-    ContentSettingsForOneType top_level_settings =
-        HostContentSettingsMapFactory::GetForProfile(profile)
-            ->GetSettingsForOneType(
-                ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS);
-    ContentSettingsForOneType storage_access_settings =
-        HostContentSettingsMapFactory::GetForProfile(profile)
-            ->GetSettingsForOneType(ContentSettingsType::STORAGE_ACCESS);
-
-    profile->ForEachLoadedStoragePartition(base::BindRepeating(
-        [](ContentSettingsForOneType storage_access_settings,
-           ContentSettingsForOneType top_level_settings,
-           content::StoragePartition* storage_partition) {
-          storage_partition->GetCookieManagerForBrowserProcess()
-              ->SetAllStorageAccessSettings(storage_access_settings,
-                                            top_level_settings,
-                                            base::DoNothing());
-        },
-        storage_access_settings, top_level_settings));
+void UpdateCookieSettings(Profile* profile, ContentSettingsType type) {
+  if (!IsContentSettingsTypeEnabled(type)) {
+    return;
   }
+  ContentSettingsForOneType settings =
+      HostContentSettingsMapFactory::GetForProfile(profile)
+          ->GetSettingsForOneType(type);
+  profile->ForEachLoadedStoragePartition(base::BindRepeating(
+      [](ContentSettingsType type, const ContentSettingsForOneType& settings,
+         content::StoragePartition* storage_partition) {
+        storage_partition->GetCookieManagerForBrowserProcess()
+            ->SetContentSettings(type, settings, base::NullCallback());
+      },
+      type, std::move(settings)));
 }
 
 }  // namespace
@@ -423,7 +375,7 @@ void ProfileNetworkContextService::RegisterLocalStatePrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(
       prefs::kAmbientAuthenticationInPrivateModesEnabled,
-      static_cast<int>(net::AmbientAuthAllowedProfileTypes::REGULAR_ONLY));
+      static_cast<int>(net::AmbientAuthAllowedProfileTypes::kRegularOnly));
 
   // For information about whether to reset the HTTP Cache or not, defaults
   // to the empty string, which does not prompt a reset.
@@ -625,29 +577,13 @@ ProfileNetworkContextService::CreateCookieManagerParams(
 
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile);
-  out->settings = host_content_settings_map->GetSettingsForOneType(
-      ContentSettingsType::COOKIES);
-
-  out->settings_for_legacy_cookie_access =
-      host_content_settings_map->GetSettingsForOneType(
-          ContentSettingsType::LEGACY_COOKIE_ACCESS);
-
-  out->settings_for_3pcd = host_content_settings_map->GetSettingsForOneType(
-      ContentSettingsType::TPCD_SUPPORT);
-
-  out->settings_for_3pcd_metadata_grants = ContentSettingsForOneType();
-
-  if (StorageAccessAPIEnabled()) {
-    out->settings_for_storage_access =
-        host_content_settings_map->GetSettingsForOneType(
-            ContentSettingsType::STORAGE_ACCESS);
-  }
-
-  // TODO(crbug.com/1385156): Separate the two flags entirely.
-  if (TopLevelStorageAccessAPIEnabled()) {
-    out->settings_for_top_level_storage_access =
-        host_content_settings_map->GetSettingsForOneType(
-            ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS);
+  for (auto type :
+       content_settings::CookieSettings::GetContentSettingsTypes()) {
+    if (!IsContentSettingsTypeEnabled(type)) {
+      continue;
+    }
+    out->content_settings[type] =
+        host_content_settings_map->GetSettingsForOneType(type);
   }
 
   out->cookie_access_delegate_type =
@@ -1083,6 +1019,10 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
   }
 
   network_context_params->afp_block_list_experiment_enabled =
+      (base::FeatureList::IsEnabled(
+           features::
+               kEnableNetworkServiceResourceBlockListIfThirdPartyCookiesBlocked) &&
+       cookie_settings_->ShouldBlockThirdPartyCookies()) ||
       (!profile_->IsOffTheRecord() &&
        base::FeatureList::IsEnabled(
            features::kEnableNetworkServiceResourceBlockList)) ||
@@ -1107,29 +1047,19 @@ void ProfileNetworkContextService::OnContentSettingChanged(
     case ContentSettingsType::ANTI_ABUSE:
       UpdateAntiAbuseSettings(profile_);
       break;
-    case ContentSettingsType::COOKIES:
-      UpdateCookieSettings(profile_);
-      break;
-    case ContentSettingsType::LEGACY_COOKIE_ACCESS:
-      UpdateLegacyCookieSettings(profile_);
-      break;
-    case ContentSettingsType::TPCD_SUPPORT:
-      Update3pcdSettings(profile_);
-      break;
-    case ContentSettingsType::STORAGE_ACCESS:
-      UpdateStorageAccessSettings(profile_);
-      break;
-    case ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS:
-      UpdateAllStorageAccessSettings(profile_);
-      break;
     case ContentSettingsType::DEFAULT:
       UpdateAntiAbuseSettings(profile_);
-      UpdateCookieSettings(profile_);
-      UpdateLegacyCookieSettings(profile_);
-      Update3pcdSettings(profile_);
-      UpdateAllStorageAccessSettings(profile_);
+      for (auto type :
+           content_settings::CookieSettings::GetContentSettingsTypes()) {
+        UpdateCookieSettings(profile_, type);
+      }
       break;
     default:
+      if (content_settings::CookieSettings::GetContentSettingsTypes().contains(
+              content_type)) {
+        UpdateCookieSettings(profile_, content_type);
+        return;
+      }
       return;
   }
 }

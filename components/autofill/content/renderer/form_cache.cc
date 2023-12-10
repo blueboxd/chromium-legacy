@@ -14,6 +14,7 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -53,6 +54,8 @@ using blink::WebVector;
 
 namespace autofill {
 
+using form_util::ExtractOption;
+
 namespace {
 
 blink::FormElementPiiType MapTypePredictionToFormElementPiiType(
@@ -71,11 +74,19 @@ blink::FormElementPiiType MapTypePredictionToFormElementPiiType(
 
 // Determines whether the form is interesting enough to be sent to the browser
 // for further operations. This is the case if any of the below holds:
-// (1) At least one form field is autofillable.
+// (1) At least one form field is not-checkable. (See crbug.com/1489075.)
 // (2) At least one field has a non-empty autocomplete attribute.
 // (3) There is at least one iframe.
-bool IsFormInteresting(const FormData& form, bool has_autofillable_form_field) {
-  return has_autofillable_form_field || !form.child_frames.empty() ||
+// TODO(crbug.com/1489075): Should an element that IsCheckableElement() also be
+// IsAutofillableInputElement()?
+// TODO(crbug.com/1482526): Check FormFieldData::form_control_element instead of
+// calling IsCheckableElement(), and eliminate the `control_elements` parameter.
+bool IsFormInteresting(
+    const FormData& form,
+    base::span<const WebFormControlElement> control_elements) {
+  return !form.child_frames.empty() ||
+         base::ranges::any_of(control_elements,
+                              base::not_fn(&form_util::IsCheckableElement)) ||
          base::ranges::any_of(form.fields, base::not_fn(&std::string::empty),
                               &FormFieldData::autocomplete_attribute);
 }
@@ -154,11 +165,8 @@ FormCache::UpdateFormCacheResult FormCache::UpdateFormCache(
           form.child_frames.clear();
         }
 
-        bool has_autofillable_form_field =
-            HasAutofillableFormControl(control_elements);
-
         // Store only forms that contain iframes or fields.
-        if (IsFormInteresting(form, has_autofillable_form_field)) {
+        if (IsFormInteresting(form, control_elements)) {
           FormRendererId form_id = form.unique_renderer_id;
           DCHECK(extracted_forms_.find(form_id) == extracted_forms_.end());
           auto it = old_extracted_forms.find(form_id);
@@ -173,9 +181,8 @@ FormCache::UpdateFormCacheResult FormCache::UpdateFormCache(
         return true;
       };
 
-  constexpr form_util::ExtractMask extract_mask =
-      static_cast<form_util::ExtractMask>(form_util::EXTRACT_VALUE |
-                                          form_util::EXTRACT_OPTIONS);
+  constexpr DenseSet<ExtractOption> extract_options = {ExtractOption::kValue,
+                                                       ExtractOption::kOptions};
 
   WebDocument document = frame_->GetDocument();
   if (document.IsNull())
@@ -184,7 +191,7 @@ FormCache::UpdateFormCacheResult FormCache::UpdateFormCache(
   for (const WebFormElement& form_element : document.Forms()) {
     FormData form;
     if (!WebFormElementToFormData(form_element, WebFormControlElement(),
-                                  field_data_manager, extract_mask, &form,
+                                  field_data_manager, extract_options, &form,
                                   nullptr)) {
       continue;
     }
@@ -204,9 +211,9 @@ FormCache::UpdateFormCacheResult FormCache::UpdateFormCache(
       form_util::GetUnownedIframeElements(document);
 
   FormData synthetic_form;
-  if (!UnownedFormElementsToFormData(control_elements, iframe_elements, nullptr,
-                                     document, field_data_manager, extract_mask,
-                                     &synthetic_form, nullptr)) {
+  if (!UnownedFormElementsToFormData(
+          control_elements, iframe_elements, nullptr, document,
+          field_data_manager, extract_options, &synthetic_form, nullptr)) {
     PruneInitialValueCaches(observed_unique_renderer_ids);
     return r;
   }
@@ -249,7 +256,8 @@ void FormCache::ClearElement(WebFormControlElement& control_element,
     // Clearing the value in the focused node (above) can cause the selection
     // to be lost. We force the selection range to restore the text cursor.
     if (trigger_element == web_input_element) {
-      size_t length = web_input_element.Value().length();
+      auto length =
+          base::checked_cast<unsigned>(web_input_element.Value().length());
       web_input_element.SetSelectionRange(length, length);
     }
   } else if (form_util::IsTextAreaElement(control_element)) {
@@ -457,16 +465,6 @@ void FormCache::SetFieldsEligibleForManualFilling(
     const std::vector<FieldRendererId>& fields_eligible_for_manual_filling) {
   fields_eligible_for_manual_filling_ = base::flat_set<FieldRendererId>(
       std::move(fields_eligible_for_manual_filling));
-}
-
-bool FormCache::HasAutofillableFormControl(
-    const std::vector<WebFormControlElement>& control_elements) {
-  for (const WebFormControlElement& element : control_elements) {
-    if (!form_util::IsCheckableElement(element)) {
-      return true;
-    }
-  }
-  return false;
 }
 
 void FormCache::SaveInitialValues(

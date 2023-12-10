@@ -1401,7 +1401,7 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
     Result(const Result&) = delete;
     Result& operator=(const Result&) = delete;
 
-    bool manually_aborted = false;
+    bool aborted_by_script = false;
     absl::optional<InterestGroupKey> winning_group_id;
     absl::optional<blink::AdDescriptor> ad_descriptor;
     std::vector<blink::AdDescriptor> ad_component_descriptors;
@@ -1814,7 +1814,7 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
 
   void OnAuctionComplete(
       AuctionRunner* auction_runner,
-      bool manually_aborted,
+      bool aborted_by_script,
       absl::optional<InterestGroupKey> winning_group_key,
       absl::optional<blink::AdSize> requested_ad_size,
       absl::optional<blink::AdDescriptor> ad_descriptor,
@@ -1834,7 +1834,7 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
     }
 
     auction_complete_ = true;
-    result_.manually_aborted = manually_aborted;
+    result_.aborted_by_script = aborted_by_script;
     result_.winning_group_id = std::move(winning_group_key);
     result_.ad_descriptor = std::move(ad_descriptor);
     result_.ad_component_descriptors = std::move(ad_component_descriptors);
@@ -3361,7 +3361,7 @@ TEST_F(AuctionRunnerTest, Basic) {
       kBidder2SignalsJson);
 
   RunStandardAuction();
-  EXPECT_FALSE(result_.manually_aborted);
+  EXPECT_FALSE(result_.aborted_by_script);
   EXPECT_EQ(kBidder2Key, result_.winning_group_id);
   EXPECT_EQ(GURL("https://ad2.com/"), result_.ad_descriptor->url);
   EXPECT_EQ(std::vector<blink::AdDescriptor>{blink::AdDescriptor(
@@ -3555,7 +3555,7 @@ TEST_F(AuctionRunnerTest, BasicCurrencyRedact) {
       kBidder2SignalsJson);
 
   RunStandardAuction();
-  EXPECT_FALSE(result_.manually_aborted);
+  EXPECT_FALSE(result_.aborted_by_script);
   EXPECT_EQ(kBidder2Key, result_.winning_group_id);
   EXPECT_EQ(GURL("https://ad2.com/"), result_.ad_descriptor->url);
   EXPECT_THAT(result_.report_urls,
@@ -3591,7 +3591,7 @@ TEST_F(AuctionRunnerTest, BasicCurrencyRedact2) {
       std::string(kMinimumDecisionScript) + kBasicReportResult);
 
   RunStandardAuction(/*request_trusted_bidding_signals=*/false);
-  EXPECT_FALSE(result_.manually_aborted);
+  EXPECT_FALSE(result_.aborted_by_script);
   EXPECT_EQ(kBidder2Key, result_.winning_group_id);
   EXPECT_EQ(GURL("https://ad2.com/"), result_.ad_descriptor->url);
   EXPECT_THAT(
@@ -6767,7 +6767,7 @@ TEST_F(AuctionRunnerTest, PromiseCheckNoBidders) {
   EXPECT_THAT(result_.errors, testing::ElementsAre());
   EXPECT_FALSE(result_.winning_group_id);
   EXPECT_FALSE(result_.ad_descriptor);
-  EXPECT_TRUE(result_.manually_aborted);
+  EXPECT_TRUE(result_.aborted_by_script);
 }
 
 // An auction that passes auctionSignals via promises. This makes sure to
@@ -7298,7 +7298,7 @@ TEST_F(AuctionRunnerTest, PromiseSignalsResolveAfterAbort) {
 
   abortable_ad_auction_->Abort();
   auction_run_loop_->Run();
-  EXPECT_TRUE(result_.manually_aborted);
+  EXPECT_TRUE(result_.aborted_by_script);
 
   // Feed in sellerSignals. Nothing weird should happen.
   auction_run_loop_ = std::make_unique<base::RunLoop>();
@@ -7308,7 +7308,7 @@ TEST_F(AuctionRunnerTest, PromiseSignalsResolveAfterAbort) {
       MakeSellerSignals(/*use_promise=*/false, kSellerUrl).value());
   task_environment()->RunUntilIdle();
   EXPECT_FALSE(auction_run_loop_->AnyQuitCalled());
-  EXPECT_TRUE(result_.manually_aborted);
+  EXPECT_TRUE(result_.aborted_by_script);
 }
 
 TEST_F(AuctionRunnerTest, PromiseSignalsComponentAuction) {
@@ -7433,7 +7433,7 @@ TEST_F(AuctionRunnerTest, PromiseAndNetworkErrors) {
 }
 
 // Test what happens when a component auction has a network error on bidder
-// JS (kBidder2Url), then seller JS (kComponentSeller2Url(, then a promise
+// JS (kBidder2Url), then seller JS (kComponentSeller2Url), then a promise
 // coming in.
 //
 // See https://crbug.com/1488417
@@ -8055,7 +8055,7 @@ TEST_F(AuctionRunnerTest, AdditionalBidAliasesInterestGroup) {
       blink::mojom::AuctionAdConfigAuctionId::NewMainAuction(0));
   auction_run_loop_->Run();
 
-  EXPECT_FALSE(result_.manually_aborted);
+  EXPECT_FALSE(result_.aborted_by_script);
   EXPECT_THAT(result_.errors, testing::ElementsAre());
   EXPECT_EQ(kBidder1Key, result_.winning_group_id);
   EXPECT_EQ(GURL("https://additional.test/"), result_.ad_descriptor->url);
@@ -8207,9 +8207,6 @@ TEST_F(AuctionRunnerTest, AdditionalBidAliasesInterestGroup) {
         run_loop2.Quit();
       }));
   run_loop2.Run();
-
-  // Clear this before the page expires to avoid the dangling ptr error.
-  ad_auction_page_data_ = nullptr;
 }
 
 // An auction where the winning additional bid claims to be from an IG the user
@@ -8310,7 +8307,7 @@ TEST_F(AuctionRunnerTest, AdditionalBidDistinctFromInterestGroup) {
       blink::mojom::AuctionAdConfigAuctionId::NewMainAuction(0));
   auction_run_loop_->Run();
 
-  EXPECT_FALSE(result_.manually_aborted);
+  EXPECT_FALSE(result_.aborted_by_script);
   EXPECT_THAT(result_.errors, testing::ElementsAre());
   EXPECT_EQ(InterestGroupKey(kBidder1, kAdditionalBidName),
             result_.winning_group_id);
@@ -8449,9 +8446,6 @@ TEST_F(AuctionRunnerTest, AdditionalBidDistinctFromInterestGroup) {
         run_loop2.Quit();
       }));
   run_loop2.Run();
-
-  // Clear this before the page expires to avoid the dangling ptr error.
-  ad_auction_page_data_ = nullptr;
 }
 
 class AuctionRunnerDfssAdSlotTest : public AuctionRunnerTest {
@@ -8598,9 +8592,6 @@ TEST_F(AuctionRunnerDfssAdSlotTest,
   EXPECT_EQ(InterestGroupKey(kBidder2, kBidder2Name), result_.winning_group_id);
   EXPECT_EQ(GURL("https://ad2.com/"), result_.ad_descriptor->url);
   EXPECT_THAT(result_.errors, testing::ElementsAre());
-
-  // Clear this before the page expires to avoid the dangling ptr error.
-  ad_auction_page_data_ = nullptr;
 }
 
 // An auction that passes nullopt directFromSellerSignalsHeaderAdSlot via a
@@ -8654,9 +8645,6 @@ TEST_F(AuctionRunnerDfssAdSlotTest,
   EXPECT_EQ(InterestGroupKey(kBidder2, kBidder2Name), result_.winning_group_id);
   EXPECT_EQ(GURL("https://ad2.com/"), result_.ad_descriptor->url);
   EXPECT_THAT(result_.errors, testing::ElementsAre());
-
-  // Clear this before the page expires to avoid the dangling ptr error.
-  ad_auction_page_data_ = nullptr;
 }
 
 // An auction that passes directFromSellerSignalsHeaderAdSlot via a promise.
@@ -8722,9 +8710,6 @@ TEST_F(AuctionRunnerDfssAdSlotTest,
   EXPECT_EQ(InterestGroupKey(kBidder2, kBidder2Name), result_.winning_group_id);
   EXPECT_EQ(GURL("https://ad2.com/"), result_.ad_descriptor->url);
   EXPECT_THAT(result_.errors, testing::ElementsAre());
-
-  // Clear this before the page expires to avoid the dangling ptr error.
-  ad_auction_page_data_ = nullptr;
 }
 
 // An auction that passes directFromSellerSignalsHeaderAdSlot via a promise --
@@ -8787,9 +8772,6 @@ TEST_F(AuctionRunnerDfssAdSlotTest,
               "\"sellerSignals\": 3\n}"),
           testing::Eq("When looking for directFromSellerSignalsHeaderAdSlot "
                       "adSlot1, failed to find a matching response.")));
-
-  // Clear this before the page expires to avoid the dangling ptr error.
-  ad_auction_page_data_ = nullptr;
 }
 
 // An auction that passes directFromSellerSignalsHeaderAdSlot via a promise, but
@@ -9272,9 +9254,6 @@ TEST_F(AuctionRunnerTest, PromiseServerResponseResolveTwice) {
   task_environment()->RunUntilIdle();
   EXPECT_EQ("ResolvedAuctionAdResponsePromise updating non-promise",
             TakeBadMessage());
-
-  // Clear this before the page expires to avoid the dangling ptr error.
-  ad_auction_page_data_ = nullptr;
 }
 
 // Trying to update perBuyerCurrencies twice.
@@ -9467,9 +9446,6 @@ TEST_F(AuctionRunnerDfssAdSlotTest,
   task_environment()->RunUntilIdle();
   EXPECT_EQ("ResolvedDirectFromSellerSignalsHeaderAdSlot updating non-promise",
             TakeBadMessage());
-
-  // Clear this before the page expires to avoid the dangling ptr error.
-  ad_auction_page_data_ = nullptr;
 }
 
 class AuctionRunnerDfssAdSlotDisabledTest : public AuctionRunnerTest {
@@ -13426,7 +13402,7 @@ TEST_F(AuctionRunnerTest, Abort) {
   StartAuction(kSellerUrl, std::move(bidders));
   abortable_ad_auction_->Abort();
   auction_run_loop_->Run();
-  EXPECT_TRUE(result_.manually_aborted);
+  EXPECT_TRUE(result_.aborted_by_script);
   EXPECT_FALSE(result_.winning_group_id.has_value());
   EXPECT_THAT(result_.errors, testing::ElementsAre());
   EXPECT_THAT(result_.interest_groups_that_bid,
@@ -13455,7 +13431,7 @@ TEST_F(AuctionRunnerTest, AbortLate) {
   dont_reset_auction_runner_ = true;
   RunAuctionAndWait(kSellerUrl, std::move(bidders));
   EXPECT_EQ(kBidder1Name, result_.winning_group_id->name);
-  EXPECT_FALSE(result_.manually_aborted);
+  EXPECT_FALSE(result_.aborted_by_script);
   EXPECT_THAT(result_.errors, testing::ElementsAre());
   abortable_ad_auction_->Abort();
   task_environment()->RunUntilIdle();
@@ -14028,7 +14004,7 @@ TEST_F(AuctionRunnerTest, PrivateAggregationRequestForEventContributionEvents) {
   // Bidder 2 won the auction.
   RunStandardAuction(/*request_trusted_bidding_signals=*/false);
   EXPECT_THAT(result_.errors, testing::UnorderedElementsAre());
-  EXPECT_FALSE(result_.manually_aborted);
+  EXPECT_FALSE(result_.aborted_by_script);
   EXPECT_EQ(kBidder2Key, result_.winning_group_id);
   EXPECT_EQ(GURL("https://ad2.com/"), result_.ad_descriptor->url);
 
@@ -14186,7 +14162,7 @@ TEST_F(AuctionRunnerTest,
     // kBidder2 was rejected by seller, so kBidder1 won the auction.
     RunStandardAuction(/*request_trusted_bidding_signals=*/false);
     EXPECT_THAT(result_.errors, testing::UnorderedElementsAre());
-    EXPECT_FALSE(result_.manually_aborted);
+    EXPECT_FALSE(result_.aborted_by_script);
     EXPECT_EQ(kBidder1Key, result_.winning_group_id);
     EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_descriptor->url);
 
@@ -14347,7 +14323,7 @@ TEST_F(AuctionRunnerTest,
     // kBidder2 won the auction.
     RunStandardAuction(/*request_trusted_bidding_signals=*/false);
     EXPECT_THAT(result_.errors, testing::UnorderedElementsAre());
-    EXPECT_FALSE(result_.manually_aborted);
+    EXPECT_FALSE(result_.aborted_by_script);
     EXPECT_EQ(kBidder2Key, result_.winning_group_id);
     EXPECT_EQ(GURL("https://ad2.com/"), result_.ad_descriptor->url);
 
@@ -14503,7 +14479,7 @@ TEST_F(AuctionRunnerTest,
   // kBidder2 was rejected by seller, so kBidder1 won the auction.
   RunStandardAuction(/*request_trusted_bidding_signals=*/false);
   EXPECT_THAT(result_.errors, testing::UnorderedElementsAre());
-  EXPECT_FALSE(result_.manually_aborted);
+  EXPECT_FALSE(result_.aborted_by_script);
   EXPECT_EQ(kBidder1Key, result_.winning_group_id);
   EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_descriptor->url);
 
@@ -14626,7 +14602,7 @@ TEST_F(AuctionRunnerTest,
 
   RunStandardAuction(/*request_trusted_bidding_signals=*/false);
   EXPECT_THAT(result_.errors, testing::UnorderedElementsAre());
-  EXPECT_FALSE(result_.manually_aborted);
+  EXPECT_FALSE(result_.aborted_by_script);
   EXPECT_EQ(kBidder1Key, result_.winning_group_id);
   EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_descriptor->url);
 
@@ -16054,7 +16030,7 @@ TEST_P(CostRoundingTest, AdCostPassed) {
   // Only one bidder, to keep things simple.
   interest_group_buyers_ = {{kBidder1}};
   RunStandardAuction(/*request_trusted_bidding_signals=*/false);
-  EXPECT_FALSE(result_.manually_aborted);
+  EXPECT_FALSE(result_.aborted_by_script);
   EXPECT_EQ(kBidder1Key, result_.winning_group_id);
   EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_descriptor->url);
 
@@ -16100,7 +16076,7 @@ TEST_P(CostRoundingTest, AdCostRounded) {
   // Only one bidder, to keep things simple.
   interest_group_buyers_ = {{kBidder1}};
   RunStandardAuction(/*request_trusted_bidding_signals=*/false);
-  EXPECT_FALSE(result_.manually_aborted);
+  EXPECT_FALSE(result_.aborted_by_script);
   EXPECT_EQ(kBidder1Key, result_.winning_group_id);
   EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_descriptor->url);
 
@@ -16165,7 +16141,7 @@ TEST_P(CostRoundingTest, AdCostExponentTruncated) {
   // Only one bidder, to keep things simple.
   interest_group_buyers_ = {{kBidder1}};
   RunStandardAuction(/*request_trusted_bidding_signals=*/false);
-  EXPECT_FALSE(result_.manually_aborted);
+  EXPECT_FALSE(result_.aborted_by_script);
   EXPECT_EQ(kBidder1Key, result_.winning_group_id);
   EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_descriptor->url);
 
@@ -16231,7 +16207,7 @@ TEST_F(AuctionRunnerTest, ModelingSignalsPassed) {
   int num_correct = 0;
   for (int i = 0; i < kNumRuns; i++) {
     RunStandardAuction(/*request_trusted_bidding_signals=*/false);
-    EXPECT_FALSE(result_.manually_aborted);
+    EXPECT_FALSE(result_.aborted_by_script);
     EXPECT_EQ(kBidder1Key, result_.winning_group_id);
     EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_descriptor->url);
 
@@ -16283,7 +16259,7 @@ TEST_F(AuctionRunnerTest, ModelingSignalsNotPresent) {
                                          kSellerScript);
 
   RunStandardAuction(/*request_trusted_bidding_signals=*/false);
-  EXPECT_FALSE(result_.manually_aborted);
+  EXPECT_FALSE(result_.aborted_by_script);
   EXPECT_EQ(kBidder1Key, result_.winning_group_id);
   EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_descriptor->url);
 
@@ -16356,7 +16332,7 @@ TEST_F(AuctionRunnerTest, JoinCountPassedToReportWin) {
     StartAuction(kSellerUrl, std::move(bidders));
     auction_run_loop_->Run();
 
-    EXPECT_FALSE(result_.manually_aborted);
+    EXPECT_FALSE(result_.aborted_by_script);
     EXPECT_EQ(kBidder1Key, result_.winning_group_id);
     EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_descriptor->url);
 
@@ -16432,7 +16408,7 @@ TEST_F(AuctionRunnerTest, RecencyPassedReportWin) {
   for (int i = 0; i < kNumRuns; i++) {
     between_join_run_auction_delay_ = kRecency;
     RunStandardAuction(/*request_trusted_bidding_signals=*/false);
-    EXPECT_FALSE(result_.manually_aborted);
+    EXPECT_FALSE(result_.aborted_by_script);
     EXPECT_EQ(kBidder1Key, result_.winning_group_id);
     EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_descriptor->url);
 
@@ -16494,7 +16470,7 @@ TEST_F(AuctionRunnerTest, RecencyPassedGenerateBid) {
 
   between_join_run_auction_delay_ = kRecency;
   RunStandardAuction(/*request_trusted_bidding_signals=*/false);
-  EXPECT_FALSE(result_.manually_aborted);
+  EXPECT_FALSE(result_.aborted_by_script);
   EXPECT_EQ(kBidder1Key, result_.winning_group_id);
   EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_descriptor->url);
 }
@@ -16544,7 +16520,7 @@ TEST_F(AuctionRunnerPassRecencyToGenerateBidDisabledTest, NotPassed) {
                                          kSellerScript);
 
   RunStandardAuction(/*request_trusted_bidding_signals=*/false);
-  EXPECT_FALSE(result_.manually_aborted);
+  EXPECT_FALSE(result_.aborted_by_script);
   EXPECT_EQ(kBidder1Key, result_.winning_group_id);
   EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_descriptor->url);
 }
@@ -16583,7 +16559,7 @@ TEST_P(BidRoundingTest, BidRounded) {
   // Only one bidder, to keep things simple.
   interest_group_buyers_ = {{kBidder1}};
   RunStandardAuction(/*request_trusted_bidding_signals=*/false);
-  EXPECT_FALSE(result_.manually_aborted);
+  EXPECT_FALSE(result_.aborted_by_script);
   EXPECT_EQ(kBidder1Key, result_.winning_group_id);
   EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_descriptor->url);
 
@@ -16652,7 +16628,7 @@ TEST_P(BidRoundingTest, HighestScoringOtherBidRounded) {
                                          kSellerScript);
 
   RunStandardAuction(/*request_trusted_bidding_signals=*/false);
-  EXPECT_FALSE(result_.manually_aborted);
+  EXPECT_FALSE(result_.aborted_by_script);
   EXPECT_EQ(kBidder2Key, result_.winning_group_id);
   EXPECT_EQ(GURL("https://ad2.com/"), result_.ad_descriptor->url);
 
@@ -16735,7 +16711,7 @@ TEST_P(ScoreRoundingTest, ScoreRounded) {
   // Only one bidder, to keep things simple.
   interest_group_buyers_ = {{kBidder1}};
   RunStandardAuction(/*request_trusted_bidding_signals=*/false);
-  EXPECT_FALSE(result_.manually_aborted);
+  EXPECT_FALSE(result_.aborted_by_script);
   EXPECT_EQ(kBidder1Key, result_.winning_group_id);
   EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_descriptor->url);
 
@@ -19904,7 +19880,7 @@ TEST_P(AuctionRunnerKAnonTest, FailureHandling) {
   // Run the auction, and simulate it being interrupted by navigating away.
   StartAuction(kSellerUrl, bidders);
   task_environment()->RunUntilIdle();
-  auction_runner_->FailAuction(/*manually_aborted=*/false);
+  auction_runner_->FailAuction(/*aborted_by_script=*/false);
 
   EXPECT_THAT(result_.errors, testing::ElementsAre());
 
@@ -20253,9 +20229,6 @@ TEST_P(AuctionRunnerKAnonTest, AdditionalBidBuyerReporting) {
               testing::UnorderedElementsAre(
                   "https://reporting.example.com/40",
                   "https://contextual.test/?additionalPseudoIG"));
-
-  // Clear this before the page expires to avoid the dangling ptr error.
-  ad_auction_page_data_ = nullptr;
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -20449,9 +20422,6 @@ TEST_F(AuctionRunnerTest, ServerResponseLogsErrors) {
     hist.ExpectUniqueSample("Ads.InterestGroup.ServerAuction.Result",
                             test_case.result, 1);
   }
-
-  // Clear this before the page expires to avoid the dangling ptr error.
-  ad_auction_page_data_ = nullptr;
 }
 
 }  // namespace

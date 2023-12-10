@@ -78,6 +78,8 @@ config("skia_config") {
     "SK_DISABLE_LEGACY_GRDIRECTCONTEXT_BOOLS",
     "SK_DISABLE_LEGACY_GL_GRDIRECTCONTEXT_FACTORIES",
     "SK_DISABLE_LEGACY_PNG_WRITEBUFFER",
+    "SK_SLUG_DISABLE_LEGACY_DESERIALIZE",
+    "SK_DISABLE_LEGACY_VK_GRDIRECTCONTEXT_FACTORIES",
   ]
 
   include_dirs = [
@@ -926,7 +928,7 @@ source_set("test_fonts") {
       "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
     ]
   }
-  if (is_mac) {
+  if (is_apple) {
     public = [ "ext/test_fonts.h" ]
     sources = [ "ext/test_fonts_mac.mm" ]
     deps += [ "//base" ]

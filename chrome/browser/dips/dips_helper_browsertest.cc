@@ -58,19 +58,6 @@ using testing::Pair;
 using testing::Optional;
 using testing::Pair;
 
-namespace {
-
-// Histogram names
-constexpr char kTimeToInteraction[] =
-    "Privacy.DIPS.TimeFromStorageToInteraction.Block3PC";
-constexpr char kTimeToStorage[] =
-    "Privacy.DIPS.TimeFromInteractionToStorage.Block3PC";
-#if !BUILDFLAG(IS_ANDROID)
-constexpr char kTimeToInteraction_OTR_Block3PC[] =
-    "Privacy.DIPS.TimeFromStorageToInteraction.OffTheRecord_Block3PC";
-#endif
-}  // namespace
-
 class DIPSTabHelperBrowserTest : public PlatformBrowserTest,
                                  public testing::WithParamInterface<bool> {
  protected:
@@ -422,216 +409,6 @@ IN_PROC_BROWSER_TEST_P(DIPSTabHelperBrowserTest, MultipleSiteStoragesRecorded) {
   EXPECT_EQ(absl::make_optional(time), state_2->site_storage_times->first);
   EXPECT_EQ(absl::make_optional(time + base::Seconds(10)),
             state_2->site_storage_times->second);
-}
-
-IN_PROC_BROWSER_TEST_P(DIPSTabHelperBrowserTest, Histograms_StorageThenClick) {
-  base::HistogramTester histograms;
-  GURL url = embedded_test_server()->GetURL("b.test", "/set-cookie?foo=bar");
-  base::Time time = base::Time::FromDoubleT(1);
-  content::WebContents* web_contents = GetActiveWebContents();
-
-  SetDIPSTime(time);
-  // Navigating to this URL sets a cookie.
-  ASSERT_TRUE(NavigateToURLAndWaitForCookieWrite(url));
-  // Wait until we can click.
-  content::WaitForHitTestData(web_contents->GetPrimaryMainFrame());
-  WaitOnStorage(GetDipsService(web_contents));
-
-  histograms.ExpectTotalCount(kTimeToInteraction, 0);
-  histograms.ExpectTotalCount(kTimeToStorage, 0);
-
-  SetDIPSTime(time + base::Seconds(10));
-  UserActivationObserver observer(web_contents,
-                                  web_contents->GetPrimaryMainFrame());
-  SimulateMouseClick(web_contents, 0, blink::WebMouseEvent::Button::kLeft);
-  observer.Wait();
-  WaitOnStorage(GetDipsService(web_contents));
-
-  histograms.ExpectTotalCount(kTimeToInteraction, 1);
-  histograms.ExpectTotalCount(kTimeToStorage, 0);
-  histograms.ExpectUniqueTimeSample(kTimeToInteraction, base::Seconds(10), 1);
-}
-
-IN_PROC_BROWSER_TEST_P(DIPSTabHelperBrowserTest,
-                       Histograms_StorageThenClick_Incognito) {
-// TODO(crbug.com/1380410): Enable this test on Android once the logic to
-// create an Incognito browser without regard to platform is public.
-#if !BUILDFLAG(IS_ANDROID)
-  base::HistogramTester histograms;
-  GURL url = embedded_test_server()->GetURL("b.test", "/set-cookie?foo=bar");
-  base::Time time = base::Time::FromDoubleT(1);
-  Browser* browser = CreateIncognitoBrowser();
-  content::WebContents* web_contents =
-      browser->tab_strip_model()->GetActiveWebContents();
-  // Make our helper methods use the incognito WebContents.
-  OverrideActiveWebContents(web_contents);
-  DIPSWebContentsObserver::FromWebContents(web_contents)
-      ->SetClockForTesting(test_clock());
-  SetDIPSTime(time);
-  // Navigating to this URL sets a cookie.
-  ASSERT_TRUE(NavigateToURLAndWaitForCookieWrite(url));
-  // Wait until we can click.
-  content::WaitForHitTestData(web_contents->GetPrimaryMainFrame());
-  WaitOnStorage(GetDipsService(web_contents));
-
-  histograms.ExpectTotalCount(kTimeToInteraction, 0);
-  histograms.ExpectTotalCount(kTimeToInteraction_OTR_Block3PC, 0);
-  histograms.ExpectTotalCount(kTimeToStorage, 0);
-
-  SetDIPSTime(time + base::Seconds(10));
-  UserActivationObserver observer(web_contents,
-                                  web_contents->GetPrimaryMainFrame());
-  SimulateMouseClick(web_contents, 0, blink::WebMouseEvent::Button::kLeft);
-  observer.Wait();
-  WaitOnStorage(GetDipsService(web_contents));
-
-  histograms.ExpectTotalCount(kTimeToInteraction, 0);
-  // Incognito Mode defaults to blocking third-party cookies.
-  histograms.ExpectTotalCount(kTimeToInteraction_OTR_Block3PC, 1);
-  histograms.ExpectTotalCount(kTimeToStorage, 0);
-  histograms.ExpectUniqueTimeSample(kTimeToInteraction_OTR_Block3PC,
-                                    base::Seconds(10), 1);
-#endif
-}
-
-IN_PROC_BROWSER_TEST_P(DIPSTabHelperBrowserTest, Histograms_ClickThenStorage) {
-  base::HistogramTester histograms;
-  base::Time time = base::Time::FromDoubleT(1);
-  content::WebContents* web_contents = GetActiveWebContents();
-
-  ASSERT_TRUE(content::NavigateToURL(
-      web_contents, embedded_test_server()->GetURL("b.test", "/title1.html")));
-  content::RenderFrameHost* frame = web_contents->GetPrimaryMainFrame();
-  content::WaitForHitTestData(frame);  // wait until we can click.
-  SetDIPSTime(time);
-  UserActivationObserver click_observer(web_contents, frame);
-  SimulateMouseClick(web_contents, 0, blink::WebMouseEvent::Button::kLeft);
-  click_observer.Wait();
-  WaitOnStorage(GetDipsService(web_contents));
-
-  histograms.ExpectTotalCount(kTimeToInteraction, 0);
-  histograms.ExpectTotalCount(kTimeToStorage, 0);
-
-  // Write a cookie now that the click has been handled.
-  SetDIPSTime(time + base::Seconds(10));
-  FrameCookieAccessObserver cookie_observer(web_contents, frame,
-                                            CookieAccessDetails::Type::kChange);
-  ASSERT_TRUE(content::ExecJs(frame, "document.cookie = 'foo=bar';",
-                              content::EXECUTE_SCRIPT_NO_USER_GESTURE));
-  cookie_observer.Wait();
-  WaitOnStorage(GetDipsService(web_contents));
-
-  histograms.ExpectTotalCount(kTimeToInteraction, 0);
-  histograms.ExpectTotalCount(kTimeToStorage, 1);
-  histograms.ExpectUniqueTimeSample(kTimeToStorage, base::Seconds(10), 1);
-}
-
-IN_PROC_BROWSER_TEST_P(DIPSTabHelperBrowserTest,
-                       Histograms_MultipleStoragesThenClick) {
-  base::HistogramTester histograms;
-  GURL url = embedded_test_server()->GetURL("b.test", "/set-cookie?foo=bar");
-  base::Time time = base::Time::FromDoubleT(1);
-  content::WebContents* web_contents = GetActiveWebContents();
-
-  SetDIPSTime(time);
-  // Navigating to this URL sets a cookie.
-  ASSERT_TRUE(NavigateToURLAndWaitForCookieWrite(url));
-  WaitOnStorage(GetDipsService(web_contents));
-
-  // Navigate to the URL, setting the cookie again.
-  SetDIPSTime(time + base::Seconds(3));
-  ASSERT_TRUE(NavigateToURLAndWaitForCookieWrite(url));
-  content::RenderFrameHost* frame = web_contents->GetPrimaryMainFrame();
-  // Wait until we can click.
-  content::WaitForHitTestData(frame);
-  WaitOnStorage(GetDipsService(web_contents));
-
-  // Verify both cookie writes were recorded.
-  absl::optional<StateValue> state =
-      GetDIPSState(GetDipsService(web_contents), url);
-  ASSERT_TRUE(state.has_value());
-  EXPECT_NE(state->site_storage_times->first,
-            state->site_storage_times->second);
-  EXPECT_EQ(absl::make_optional(time), state->site_storage_times->first);
-  EXPECT_EQ(absl::make_optional(time + base::Seconds(3)),
-            state->site_storage_times->second);
-  EXPECT_FALSE(state->user_interaction_times.has_value());
-
-  histograms.ExpectTotalCount(kTimeToInteraction, 0);
-  histograms.ExpectTotalCount(kTimeToStorage, 0);
-
-  SetDIPSTime(time + base::Seconds(10));
-  UserActivationObserver observer(web_contents, frame);
-  SimulateMouseClick(web_contents, 0, blink::WebMouseEvent::Button::kLeft);
-  observer.Wait();
-  WaitOnStorage(GetDipsService(web_contents));
-
-  histograms.ExpectTotalCount(kTimeToInteraction, 1);
-  histograms.ExpectTotalCount(kTimeToStorage, 0);
-  // Unlike for TimeToStorage metrics, we want to know the time from the
-  // first site storage, not the most recent, so the reported time delta
-  // should be 10 seconds (not 7).
-  histograms.ExpectUniqueTimeSample(kTimeToInteraction, base::Seconds(10), 1);
-}
-
-IN_PROC_BROWSER_TEST_P(DIPSTabHelperBrowserTest,
-                       Histograms_MultipleClicksThenStorage) {
-  base::HistogramTester histograms;
-  GURL url = embedded_test_server()->GetURL("b.test", "/title1.html");
-  base::Time time = base::Time::FromDoubleT(1);
-  content::WebContents* web_contents = GetActiveWebContents();
-
-  ASSERT_TRUE(content::NavigateToURL(web_contents, url));
-  content::RenderFrameHost* frame = web_contents->GetPrimaryMainFrame();
-  content::WaitForHitTestData(frame);  // Wait until we can click.
-
-  // Click once.
-  SetDIPSTime(time);
-  UserActivationObserver click_observer1(web_contents, frame);
-  SimulateMouseClick(web_contents, 0, blink::WebMouseEvent::Button::kLeft);
-  click_observer1.Wait();
-  WaitOnStorage(GetDipsService(web_contents));
-
-  // Click a second time.
-  SetDIPSTime(time + DIPSBounceDetector::kTimestampUpdateInterval +
-              base::Seconds(3));
-  UserActivationObserver click_observer_2(web_contents, frame);
-  SimulateMouseClick(web_contents, 0, blink::WebMouseEvent::Button::kLeft);
-  click_observer_2.Wait();
-  WaitOnStorage(GetDipsService(web_contents));
-
-  // Verify both clicks were recorded.
-  absl::optional<StateValue> state =
-      GetDIPSState(GetDipsService(web_contents), url);
-  ASSERT_TRUE(state.has_value());
-  EXPECT_NE(state->user_interaction_times->first,
-            state->user_interaction_times->second);
-  EXPECT_EQ(absl::make_optional(time), state->user_interaction_times->first);
-  EXPECT_EQ(
-      absl::make_optional(time + DIPSBounceDetector::kTimestampUpdateInterval +
-                          base::Seconds(3)),
-      state->user_interaction_times->second);
-  EXPECT_FALSE(state->site_storage_times.has_value());
-
-  histograms.ExpectTotalCount(kTimeToInteraction, 0);
-  histograms.ExpectTotalCount(kTimeToStorage, 0);
-
-  // Write a cookie now that both clicks have been handled.
-  SetDIPSTime(time + DIPSBounceDetector::kTimestampUpdateInterval +
-              base::Seconds(10));
-  FrameCookieAccessObserver cookie_observer(web_contents, frame,
-                                            CookieAccessDetails::Type::kChange);
-  ASSERT_TRUE(content::ExecJs(frame, "document.cookie = 'foo=bar';",
-                              content::EXECUTE_SCRIPT_NO_USER_GESTURE));
-  cookie_observer.Wait();
-  WaitOnStorage(GetDipsService(web_contents));
-
-  histograms.ExpectTotalCount(kTimeToInteraction, 0);
-  histograms.ExpectTotalCount(kTimeToStorage, 1);
-  // Unlike for TimeToInteraction metrics, we want to know the time from the
-  // most recent user interaction, not the first, so the reported time delta
-  // should be 7 seconds (not 10).
-  histograms.ExpectUniqueTimeSample(kTimeToStorage, base::Seconds(7), 1);
 }
 
 IN_PROC_BROWSER_TEST_P(DIPSTabHelperBrowserTest,
@@ -1019,8 +796,13 @@ IN_PROC_BROWSER_TEST_P(DIPSTabHelperBrowserTest, SitesInOpenTabsAreExempt) {
                   .has_value());
 }
 
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_SitesInDestroyedTabsAreNotExempt DISABLED_SitesInDestroyedTabsAreNotExempt
+#else
+#define MAYBE_SitesInDestroyedTabsAreNotExempt SitesInDestroyedTabsAreNotExempt
+#endif
 IN_PROC_BROWSER_TEST_P(DIPSTabHelperBrowserTest,
-                       SitesInDestroyedTabsAreNotExempt) {
+                       MAYBE_SitesInDestroyedTabsAreNotExempt) {
   content::WebContents* web_contents = GetActiveWebContents();
   DIPSService* dips_service = DIPSServiceFactory::GetForBrowserContext(
       web_contents->GetBrowserContext());

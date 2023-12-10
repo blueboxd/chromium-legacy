@@ -78,9 +78,6 @@ extern const char kBatterySaverDialogShown[];
 // The user has opened the high efficiency page action chip
 extern const char kHighEfficiencyDialogShown[];
 
-// The user clicked on the performance menu item
-extern const char kPerformanceMenuItemActivated[];
-
 // Extensions menu is opened when any extension has access to the current site.
 extern const char kExtensionsMenuOpenedWhileExtensionHasAccess[];
 
@@ -199,6 +196,9 @@ extern const char kShareToolbarItemUsed[];
 // The user has met a condition that makes the default browser video promo
 // eligible to be displayed.
 extern const char kDefaultBrowserVideoPromoConditionsMet[];
+
+// The user has triggered the Lens button in the Omnibox keyboard.
+extern const char kLensButtonKeyboardUsed[];
 
 #endif  // BUILDFLAG(IS_IOS)
 

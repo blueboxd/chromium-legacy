@@ -42,6 +42,7 @@
 #include "chrome/browser/printing/prefs_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/crosapi/mojom/local_printer.mojom.h"
 #include "chromeos/printing/ppd_provider.h"
@@ -277,7 +278,8 @@ mojom::LocalDestinationInfoPtr LocalPrinterAsh::PrinterToMojom(
   return mojom::LocalDestinationInfo::New(
       printer.id(), printer.display_name(), printer.description(),
       printer.source() == chromeos::Printer::SRC_POLICY,
-      printer.uri().GetNormalized(/*always_print_port=*/true));
+      printer.uri().GetNormalized(/*always_print_port=*/true),
+      StatusToMojom(printer.printer_status()));
 }
 
 // static
@@ -402,7 +404,7 @@ void LocalPrinterAsh::OnServerPrintersChanged(
 }
 
 void LocalPrinterAsh::OnLocalPrintersUpdated() {
-  CHECK(ash::features::IsLocalPrinterObservingEnabled());
+  CHECK(base::FeatureList::IsEnabled(::features::kLocalPrinterObserving));
 
   Profile* profile = GetProfile();
   DCHECK(profile);
@@ -701,7 +703,7 @@ void LocalPrinterAsh::AddPrintJobObserver(
 void LocalPrinterAsh::AddLocalPrintersObserver(
     mojo::PendingRemote<mojom::LocalPrintersObserver> remote,
     AddLocalPrintersObserverCallback callback) {
-  CHECK(ash::features::IsLocalPrinterObservingEnabled());
+  CHECK(base::FeatureList::IsEnabled(::features::kLocalPrinterObserving));
 
   Profile* profile = GetProfile();
   DCHECK(profile);

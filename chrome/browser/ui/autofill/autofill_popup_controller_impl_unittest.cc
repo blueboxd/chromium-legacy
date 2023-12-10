@@ -40,6 +40,7 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/weak_document_ptr.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/input/native_web_keyboard_event.h"
 #include "content/public/test/navigation_simulator.h"
@@ -71,19 +72,21 @@
 #include "chrome/browser/autofill/mock_password_accessory_controller.h"
 #endif
 
+namespace autofill {
+namespace {
+
 using base::ASCIIToUTF16;
 using base::WeakPtr;
 using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::Eq;
+using ::testing::Field;
 using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::NiceMock;
+using ::testing::Optional;
 using ::testing::Return;
 using ::testing::StrictMock;
-
-namespace autofill {
-namespace {
 
 class MockAutofillDriver : public ContentAutofillDriver {
  public:
@@ -121,6 +124,10 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
               DidAcceptSuggestion,
               (const Suggestion&, int, AutofillSuggestionTriggerSource),
               (override));
+  MOCK_METHOD(void,
+              DidPerformButtonActionForSuggestion,
+              (const Suggestion&),
+              (override));
 };
 
 class MockAutofillPopupView : public AutofillPopupView {
@@ -144,6 +151,10 @@ class MockAutofillPopupView : public AutofillPopupView {
               CreateSubPopupView,
               (base::WeakPtr<AutofillPopupController>),
               (override));
+  MOCK_METHOD(std::optional<AutofillClient::PopupScreenLocation>,
+              GetPopupScreenLocation,
+              (),
+              (const override));
 
   base::WeakPtr<AutofillPopupView> GetWeakPtr() override {
     return weak_ptr_factory_.GetWeakPtr();
@@ -186,6 +197,7 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
   using AutofillPopupControllerImpl::GetSuggestionLabelsAt;
   using AutofillPopupControllerImpl::GetSuggestionMainTextAt;
   using AutofillPopupControllerImpl::GetWeakPtr;
+  using AutofillPopupControllerImpl::PerformButtonActionForSuggestion;
   using AutofillPopupControllerImpl::RemoveSuggestion;
   using AutofillPopupControllerImpl::SelectSuggestion;
   MOCK_METHOD(void, OnSuggestionsChanged, (), (override));
@@ -472,7 +484,7 @@ TEST_F(AutofillPopupControllerImplTest,
                   {Suggestion(u"main text", PopupItemId::kAutocompleteEntry)});
   test::GenerateTestAutofillPopup(&manager().external_delegate());
 
-  EXPECT_CALL(*&client().popup_view(),
+  EXPECT_CALL(client().popup_view(),
               AxAnnounce(Eq(u"Entry main text has been deleted")));
   EXPECT_TRUE(client().popup_controller(manager()).RemoveSuggestion(0));
 }
@@ -937,7 +949,28 @@ TEST_F(AutofillPopupControllerImplTest, EventsAreDelegatedToChildrenAndView) {
   EXPECT_CALL(client().popup_view(), HandleKeyPressEvent).Times(1);
   EXPECT_FALSE(client().popup_controller(manager()).HandleKeyPressEvent(event));
 }
+
+// Tests that the controller forwards calls to perform a button action (such as
+// clicking a close button on a suggestion) to its delegate.
+TEST_F(AutofillPopupControllerImplTest, ButtonActionsAreSentToDelegate) {
+  ShowSuggestions(manager(), {PopupItemId::kCompose});
+  EXPECT_CALL(manager().external_delegate(),
+              DidPerformButtonActionForSuggestion);
+  client().popup_controller(manager()).PerformButtonActionForSuggestion(0);
+}
 #endif
+
+// Tests that the popup controller queries the view for its screen location.
+TEST_F(AutofillPopupControllerImplTest, GetPopupScreenLocationCallsView) {
+  ShowSuggestions(manager(), {PopupItemId::kCompose});
+
+  using PopupScreenLocation = AutofillClient::PopupScreenLocation;
+  constexpr gfx::Rect kSampleRect = gfx::Rect(123, 234);
+  EXPECT_CALL(client().popup_view(), GetPopupScreenLocation)
+      .WillOnce(Return(PopupScreenLocation{.bounds = kSampleRect}));
+  EXPECT_THAT(client().popup_controller(manager()).GetPopupScreenLocation(),
+              Optional(Field(&PopupScreenLocation::bounds, kSampleRect)));
+}
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 class MockAxTreeManager : public ui::AXTreeManager {
@@ -1082,20 +1115,24 @@ class AutofillPopupControllerImplTestHidingLogic
   void SetUp() override {
     AutofillPopupControllerImplTest::SetUp();
     sub_frame_ = CreateAndNavigateChildFrame(
-        main_frame(), GURL("https://bar.com"), "sub_frame");
+                     main_frame(), GURL("https://bar.com"), "sub_frame")
+                     ->GetWeakDocumentPtr();
   }
 
   void TearDown() override {
-    sub_frame_ = nullptr;
     AutofillPopupControllerImplTest::TearDown();
   }
 
   BrowserAutofillManagerWithMockDelegate& sub_manager() {
-    return manager(sub_frame_);
+    return manager(sub_frame());
   }
 
- protected:
-  raw_ptr<content::RenderFrameHost> sub_frame_ = nullptr;
+  content::RenderFrameHost* sub_frame() {
+    return sub_frame_.AsRenderFrameHostIfValid();
+  }
+
+ private:
+  content::WeakDocumentPtr sub_frame_;
 };
 
 // Tests that if the popup is shown in the *main frame*, destruction of the
@@ -1105,7 +1142,7 @@ TEST_F(AutofillPopupControllerImplTestHidingLogic,
   ShowSuggestions(manager(), {PopupItemId::kAddressEntry});
   test::GenerateTestAutofillPopup(&manager().external_delegate());
   EXPECT_CALL(client().popup_controller(manager()), Hide).Times(0);
-  content::RenderFrameHostTester::For(sub_frame_.ExtractAsDangling())->Detach();
+  content::RenderFrameHostTester::For(sub_frame())->Detach();
   // Verify and clear before TearDown() closes the popup.
   Mock::VerifyAndClearExpectations(&client().popup_controller(manager()));
 }
@@ -1117,7 +1154,7 @@ TEST_F(AutofillPopupControllerImplTestHidingLogic,
   ShowSuggestions(manager(), {PopupItemId::kAddressEntry});
   test::GenerateTestAutofillPopup(&manager().external_delegate());
   EXPECT_CALL(client().popup_controller(manager()), Hide).Times(0);
-  NavigateAndCommitFrame(sub_frame_, GURL("https://bar.com/"));
+  NavigateAndCommitFrame(sub_frame(), GURL("https://bar.com/"));
   // Verify and clear before TearDown() closes the popup.
   Mock::VerifyAndClearExpectations(&client().popup_controller(manager()));
 }
@@ -1161,7 +1198,13 @@ TEST_F(AutofillPopupControllerImplTestHidingLogic,
   test::GenerateTestAutofillPopup(&sub_manager().external_delegate());
   EXPECT_CALL(client().popup_controller(sub_manager()),
               Hide(PopupHidingReason::kNavigation));
-  NavigateAndCommitFrame(sub_frame_, GURL("https://bar.com/"));
+  if (sub_frame()->ShouldChangeRenderFrameHostOnSameSiteNavigation()) {
+    // If the RenderFrameHost changes, a RenderFrameDeleted will fire after
+    // navigation, also triggering a `Hide()` call.
+    EXPECT_CALL(client().popup_controller(sub_manager()),
+                Hide(PopupHidingReason::kRendererEvent));
+  }
+  NavigateAndCommitFrame(sub_frame(), GURL("https://bar.com/"));
 }
 
 // Tests that if the popup is shown in the *sub frame*, a navigation in the

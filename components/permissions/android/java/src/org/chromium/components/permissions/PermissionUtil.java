@@ -9,9 +9,9 @@ import android.os.Build;
 
 import androidx.core.app.NotificationManagerCompat;
 
-import org.chromium.base.BuildInfo;
+import org.jni_zero.CalledByNative;
+
 import org.chromium.base.ContextUtils;
-import org.chromium.base.annotations.CalledByNative;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.location.LocationUtils;
 import org.chromium.ui.base.WindowAndroid;
@@ -42,7 +42,7 @@ public class PermissionUtil {
             android.Manifest.permission.RECORD_AUDIO};
     /** The required android permissions associated with posting notifications post-Android T. */
     private static final String[] NOTIFICATION_PERMISSIONS_POST_T = {
-            "android.permission.POST_NOTIFICATIONS"};
+            android.Manifest.permission.POST_NOTIFICATIONS};
 
     /** Signifies there are no permissions associated. */
     private static final String[] EMPTY_PERMISSIONS = {};
@@ -86,7 +86,7 @@ public class PermissionUtil {
             case ContentSettingsType.AR:
                 return Arrays.copyOf(CAMERA_PERMISSIONS, CAMERA_PERMISSIONS.length);
             case ContentSettingsType.NOTIFICATIONS:
-                if (BuildInfo.isAtLeastT()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     return Arrays.copyOf(NOTIFICATION_PERMISSIONS_POST_T,
                             NOTIFICATION_PERMISSIONS_POST_T.length);
                 }

@@ -50,6 +50,7 @@
 #include "components/variations/service/variations_field_trial_creator.h"
 #include "components/variations/service/variations_service.h"
 #include "components/variations/service/variations_service_client.h"
+#include "components/variations/variations_safe_seed_store_local_state.h"
 #include "components/variations/variations_switches.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/login_delegate.h"
@@ -298,6 +299,10 @@ std::unique_ptr<PrefService> CreateLocalState() {
   return pref_service_factory.Create(pref_registry);
 }
 
+bool AreIsolatedWebAppsEnabled() {
+  return base::FeatureList::IsEnabled(features::kIsolatedWebApps);
+}
+
 }  // namespace
 
 std::string GetShellLanguage() {
@@ -396,6 +401,11 @@ bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
   return false;
 }
 
+bool ShellContentBrowserClient::AreIsolatedWebAppsEnabled(
+    BrowserContext* browser_context) {
+  return ::content::AreIsolatedWebAppsEnabled();
+}
+
 void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
@@ -428,6 +438,12 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
     }
   }
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+
+  if (command_line->GetSwitchValueASCII(switches::kProcessType) ==
+          switches::kRendererProcess &&
+      ::content::AreIsolatedWebAppsEnabled()) {
+    command_line->AppendSwitch(switches::kEnableIsolatedWebAppsInRenderer);
+  }
 }
 
 device::GeolocationManager* ShellContentBrowserClient::GetGeolocationManager() {
@@ -760,7 +776,7 @@ void ShellContentBrowserClient::GetHyphenationDictionary(
     base::OnceCallback<void(const base::FilePath&)> callback) {
   // If we have the source tree, return the dictionary files in the tree.
   base::FilePath dir;
-  if (base::PathService::Get(base::DIR_SOURCE_ROOT, &dir)) {
+  if (base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &dir)) {
     dir = dir.AppendASCII("third_party")
               .AppendASCII("hyphenation-patterns")
               .AppendASCII("hyb");
@@ -814,7 +830,9 @@ void ShellContentBrowserClient::SetUpFieldTrials() {
       &variations_service_client,
       std::make_unique<variations::VariationsSeedStore>(
           GetSharedState().local_state.get(), std::move(initial_seed),
-          /*signature_verification_enabled=*/true),
+          /*signature_verification_enabled=*/true,
+          std::make_unique<variations::VariationsSafeSeedStoreLocalState>(
+              GetSharedState().local_state.get())),
       variations::UIStringOverrider());
 
   variations::SafeSeedManager safe_seed_manager(

@@ -86,14 +86,10 @@ class VerdictCacheManager : public history::HistoryServiceObserver,
   // Looks up |content_settings_| to find the cached verdict response. If
   // verdict is not available or is expired, return VERDICT_TYPE_UNSPECIFIED.
   // Otherwise, the most matching theat info will be copied to out_threat_info.
-  // |out_is_verdict_from_past_initialization| represents whether the verdict
-  // was set before the current VerdictCacheManager instance was initialized,
-  // and is used only for logging. The parameter is only set if the unexpired
-  // cache entry was found. Can be called on any thread.
+  // Can be called on any thread.
   RTLookupResponse::ThreatInfo::VerdictType GetCachedRealTimeUrlVerdict(
       const GURL& url,
-      RTLookupResponse::ThreatInfo* out_threat_info,
-      absl::optional<bool>* out_is_verdict_from_past_initialization);
+      RTLookupResponse::ThreatInfo* out_threat_info);
 
   safe_browsing::ClientSideDetectionType
   GetCachedRealTimeUrlClientSideDetectionType(const GURL& url);
@@ -113,14 +109,10 @@ class VerdictCacheManager : public history::HistoryServiceObserver,
       const V5::Duration& cache_duration);
 
   // Searches the hash-prefix real-time cache object for the requested
-  // |hash_prefixes|. |skip_logging| specifies whether metric logging should be
-  // skipped when this function is called.
-  // TODO(crbug.com/1432308): [Also TODO(thefrog)] Remove |skip_logging|
-  // parameter after investigation is complete.
+  // |hash_prefixes|.
   std::unordered_map<std::string, std::vector<V5::FullHash>>
   GetCachedHashPrefixRealTimeLookupResults(
-      const std::set<std::string>& hash_prefixes,
-      bool skip_logging);
+      const std::set<std::string>& hash_prefixes);
 
   // Overridden from history::HistoryServiceObserver.
   void OnURLsDeleted(history::HistoryService* history_service,
@@ -261,9 +253,6 @@ class VerdictCacheManager : public history::HistoryServiceObserver,
       std::make_unique<HashRealTimeCache>();
 
   bool is_shut_down_ = false;
-
-  // Represents the time the VerdictCacheManager object was constructed.
-  base::Time time_initialized_;
 
   base::WeakPtrFactory<VerdictCacheManager> weak_factory_{this};
 

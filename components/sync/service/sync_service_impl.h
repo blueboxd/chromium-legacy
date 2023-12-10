@@ -7,7 +7,6 @@
 
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -120,9 +119,6 @@ class SyncServiceImpl : public SyncService,
   GoogleServiceAuthError GetAuthError() const override;
   base::Time GetAuthErrorTime() const override;
   bool RequiresClientUpgrade() const override;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  bool IsSyncFeatureDisabledViaDashboard() const override;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<SyncSetupInProgressHandle> GetSetupInProgressHandle()
       override;
   bool IsSetupInProgress() const override;
@@ -153,6 +149,9 @@ class SyncServiceImpl : public SyncService,
   void GetAllNodesForDebugging(
       base::OnceCallback<void(base::Value::List)> callback) override;
   ModelTypeDownloadStatus GetDownloadStatusFor(ModelType type) const override;
+  void RecordReasonIfWaitingForUpdates(
+      ModelType type,
+      const std::string& histogram_name) const override;
   void GetTypesWithUnsyncedData(
       base::OnceCallback<void(ModelTypeSet)> callback) const override;
   void GetLocalDataDescriptions(
@@ -213,9 +212,6 @@ class SyncServiceImpl : public SyncService,
   // KeyedService implementation.  This must be called exactly
   // once (before this object is destroyed).
   void Shutdown() override;
-
-  // Records the reason if the `type` is waiting for updates to be downloaded.
-  void RecordReasonIfWaitingForUpdates(ModelType type);
 
   // Returns whether or not the underlying sync engine has made any
   // local changes to items that have not yet been synced with the
@@ -397,11 +393,11 @@ class SyncServiceImpl : public SyncService,
   void OnDownloadStatusRecorderFinished();
 
   // Returns current download status for `type`. Records a histogram if the data
-  // type is waiting for updates and `record_waiting_for_updates_metrics` is set
-  // to true.
+  // type is waiting for updates and `waiting_for_updates_histogram_name` is not
+  // empty.
   ModelTypeDownloadStatus GetDownloadStatusForImpl(
       ModelType type,
-      bool record_waiting_for_updates_metrics) const;
+      const std::string& waiting_for_updates_histogram_name) const;
 
   // This profile's SyncClient, which abstracts away non-Sync dependencies and
   // the Sync API component factory.

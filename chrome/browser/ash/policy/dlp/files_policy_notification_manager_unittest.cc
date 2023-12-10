@@ -20,18 +20,17 @@
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/file_manager/volume_manager_factory.h"
 #include "chrome/browser/ash/policy/dlp/dialogs/files_policy_dialog.h"
-#include "chrome/browser/ash/policy/dlp/files_policy_warn_settings.h"
 #include "chrome/browser/ash/policy/dlp/test/files_policy_notification_manager_test_utils.h"
 #include "chrome/browser/chromeos/policy/dlp/dialogs/policy_dialog_base.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_confidential_file.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_files_utils.h"
-#include "chrome/browser/chromeos/policy/dlp/dlp_histogram_helper.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/ash/components/disks/disk_mount_manager.h"
 #include "chromeos/ash/components/disks/fake_disk_mount_manager.h"
+#include "components/enterprise/data_controls/dlp_histogram_helper.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/test/browser_task_environment.h"
 #include "storage/browser/file_system/file_system_url.h"
@@ -115,8 +114,8 @@ FilesPolicyDialog::BlockReason ConvertPolicy(
     case file_manager::io_task::PolicyErrorType::kEnterpriseConnectors:
       // We don't have elements to identify a specific enterprise connectors
       // block reason from a PolicyErrorType. For testing purposes, we simply
-      // return one among the existing reasons.
-      return FilesPolicyDialog::BlockReason::kEnterpriseConnectorsUnknown;
+      // return a generic reason.
+      return FilesPolicyDialog::BlockReason::kEnterpriseConnectors;
     case file_manager::io_task::PolicyErrorType::kDlpWarningTimeout:
       NOTREACHED_NORETURN();
   }
@@ -276,14 +275,15 @@ TEST_F(FilesPolicyNotificationManagerTest, NotificationIdsAreUnique) {
   EXPECT_TRUE(display_service_tester.GetNotification(notification_id_2));
   EXPECT_TRUE(display_service_tester.GetNotification(notification_id_3));
 
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  data_controls::GetDlpHistogramPrefix() +
+                  std::string(data_controls::dlp::kFileActionBlockedUMA)),
+              base::BucketsAre(base::Bucket(dlp::FileAction::kUpload, 2),
+                               base::Bucket(dlp::FileAction::kOpen, 1)));
   EXPECT_THAT(
-      histogram_tester.GetAllSamples(GetDlpHistogramPrefix() +
-                                     std::string(dlp::kFileActionBlockedUMA)),
-      base::BucketsAre(base::Bucket(dlp::FileAction::kUpload, 2),
-                       base::Bucket(dlp::FileAction::kOpen, 1)));
-  EXPECT_THAT(histogram_tester.GetAllSamples(GetDlpHistogramPrefix() +
-                                             dlp::kFilesBlockedCountUMA),
-              testing::ElementsAre(base::Bucket(2, 1), base::Bucket(3, 2)));
+      histogram_tester.GetAllSamples(data_controls::GetDlpHistogramPrefix() +
+                                     data_controls::dlp::kFilesBlockedCountUMA),
+      testing::ElementsAre(base::Bucket(2, 1), base::Bucket(3, 2)));
 }
 
 class FPNMIOTaskTest : public FilesPolicyNotificationManagerTest {
@@ -295,13 +295,14 @@ class FPNMIOTaskTest : public FilesPolicyNotificationManagerTest {
       FilesPolicyDialog::FilesPolicyDialog::BlockReason block_reason,
       file_manager::io_task::IOTaskId task_id,
       std::vector<base::FilePath> blocked_files,
-      dlp::FileAction action) {
-    if (block_reason ==
-        FilesPolicyDialog::FilesPolicyDialog::BlockReason::kDlp) {
+      dlp::FileAction action,
+      absl::optional<FilesPolicyDialog::Info> dialog_info = absl::nullopt) {
+    if (block_reason == FilesPolicyDialog::BlockReason::kDlp) {
       fpnm_->ShowDlpBlockedFiles(task_id, std::move(blocked_files), action);
     } else {
-      fpnm_->AddConnectorsBlockedFiles(task_id, std::move(blocked_files),
-                                       action, block_reason);
+      EXPECT_TRUE(dialog_info.has_value());
+      fpnm_->SetConnectorsBlockedFiles(task_id, action, block_reason,
+                                       std::move(dialog_info.value()));
     }
   }
 
@@ -314,16 +315,21 @@ class FPNMIOTaskTest : public FilesPolicyNotificationManagerTest {
       file_manager::io_task::IOTaskId task_id,
       std::vector<base::FilePath> warned_files,
       dlp::FileAction action,
-      FilesPolicyWarnSettings warn_settings = FilesPolicyWarnSettings()) {
+      absl::optional<FilesPolicyDialog::Info> dialog_info = absl::nullopt) {
     switch (policy) {
       case Policy::kDlp:
         fpnm_->ShowDlpWarning(std::move(cb), task_id, std::move(warned_files),
                               DlpFileDestination(), action);
         break;
       case Policy::kEnterpriseConnectors:
-        fpnm_->ShowConnectorsWarning(std::move(cb), task_id,
-                                     std::move(warned_files), action,
-                                     std::move(warn_settings));
+        if (!dialog_info.has_value()) {
+          dialog_info = FilesPolicyDialog::Info::Warn(
+              FilesPolicyDialog::BlockReason::
+                  kEnterpriseConnectorsSensitiveData,
+              warned_files);
+        }
+        fpnm_->ShowConnectorsWarning(std::move(cb), task_id, action,
+                                     std::move(dialog_info.value()));
         break;
     }
   }
@@ -349,12 +355,13 @@ TEST_F(FPNMIOTaskTest, ShowBlockedNotifications_ShowsWhenHasBlockedFiles) {
   auto notification = display_service_tester.GetNotification(notification_id);
   ASSERT_TRUE(notification.has_value());
 
-  EXPECT_THAT(
-      histogram_tester_.GetAllSamples(GetDlpHistogramPrefix() +
-                                      std::string(dlp::kFileActionBlockedUMA)),
-      base::BucketsAre(base::Bucket(dlp::FileAction::kCopy, 1)));
-  EXPECT_THAT(histogram_tester_.GetAllSamples(GetDlpHistogramPrefix() +
-                                              dlp::kFilesBlockedCountUMA),
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  data_controls::GetDlpHistogramPrefix() +
+                  std::string(data_controls::dlp::kFileActionBlockedUMA)),
+              base::BucketsAre(base::Bucket(dlp::FileAction::kCopy, 1)));
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  data_controls::GetDlpHistogramPrefix() +
+                  data_controls::dlp::kFilesBlockedCountUMA),
               testing::ElementsAre(base::Bucket(2, 1)));
 }
 
@@ -394,12 +401,13 @@ TEST_F(FPNMIOTaskTest, OnErrorItemDismissedClearsInfoForTrackedTask) {
   fpnm_->OnErrorItemDismissed(task_id);
   EXPECT_FALSE(fpnm_->HasIOTask(task_id));
 
-  EXPECT_THAT(
-      histogram_tester_.GetAllSamples(GetDlpHistogramPrefix() +
-                                      std::string(dlp::kFileActionBlockedUMA)),
-      base::BucketsAre(base::Bucket(dlp::FileAction::kCopy, 1)));
-  EXPECT_THAT(histogram_tester_.GetAllSamples(GetDlpHistogramPrefix() +
-                                              dlp::kFilesBlockedCountUMA),
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  data_controls::GetDlpHistogramPrefix() +
+                  std::string(data_controls::dlp::kFileActionBlockedUMA)),
+              base::BucketsAre(base::Bucket(dlp::FileAction::kCopy, 1)));
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  data_controls::GetDlpHistogramPrefix() +
+                  data_controls::dlp::kFilesBlockedCountUMA),
               testing::ElementsAre(base::Bucket(2, 1)));
 }
 
@@ -410,6 +418,118 @@ TEST_F(FPNMIOTaskTest, OnErrorItemDismissedIgnoresNonTrackedTask) {
   EXPECT_FALSE(fpnm_->HasIOTask(task_id));
   fpnm_->OnErrorItemDismissed(task_id);
   EXPECT_FALSE(fpnm_->HasIOTask(task_id));
+}
+
+// Tests that if custom settings are provided, the notification shows the review
+// button even for a single warned file.
+TEST_F(FPNMIOTaskTest,
+       EnterpriseConnectors_PausedShowsWarningNotification_SingleFile_Review) {
+  NotificationDisplayServiceTester display_service_tester(profile_.get());
+  const std::string notification_id = "notification_id";
+  EXPECT_FALSE(display_service_tester.GetNotification(notification_id));
+
+  file_manager::io_task::IOTaskId task_id = 1;
+  file_manager::io_task::OperationType type =
+      file_manager::io_task::OperationType::kCopy;
+  auto src_file_path = AddCopyOrMoveIOTask(task_id, /*is_copy=*/true);
+  ASSERT_FALSE(src_file_path.empty());
+  EXPECT_TRUE(fpnm_->HasIOTask(task_id));
+
+  auto dialog_info = FilesPolicyDialog::Info::Warn(
+      FilesPolicyDialog::BlockReason::kEnterpriseConnectorsSensitiveData,
+      {base::FilePath(kFile1)});
+  dialog_info.SetMessage(u"Custom message");
+  dialog_info.SetLearnMoreURL(GURL("https://example.com"));
+  AddWarnedFiles(Policy::kEnterpriseConnectors, base::DoNothing(), task_id,
+                 {base::FilePath(kFile1)}, dlp::FileAction::kCopy, dialog_info);
+
+  EXPECT_TRUE(fpnm_->HasWarningTimerForTesting(task_id));
+
+  // Only the task_id field is important.
+  file_manager::io_task::ProgressStatus status;
+  status.task_id = task_id;
+  status.state = file_manager::io_task::State::kPaused;
+  status.type = type;
+  status.sources.emplace_back(
+      CreateFileSystemURL(kTestStorageKey, src_file_path.value()),
+      absl::nullopt);
+  status.pause_params.policy_params = file_manager::io_task::PolicyPauseParams(
+      Policy::kEnterpriseConnectors, /*warning_files_count=*/1);
+
+  fpnm_->ShowFilesPolicyNotification(notification_id, status);
+  auto notification = display_service_tester.GetNotification(notification_id);
+  ASSERT_TRUE(notification.has_value());
+  EXPECT_EQ(notification->title(), GetWarningTitle(dlp::FileAction::kCopy));
+  EXPECT_EQ(notification->message(),
+            base::ReplaceStringPlaceholders(
+                l10n_util::GetPluralStringFUTF16(
+                    IDS_POLICY_DLP_FILES_WARN_MESSAGE, 1),
+                src_file_path.BaseName().LossyDisplayName(),
+                /*offset=*/nullptr));
+  EXPECT_EQ(notification->buttons()[0].title,
+            l10n_util::GetStringUTF16(IDS_POLICY_DLP_WARN_CANCEL_BUTTON));
+  EXPECT_EQ(notification->buttons()[1].title,
+            l10n_util::GetStringUTF16(IDS_POLICY_DLP_FILES_REVIEW_BUTTON));
+
+  EXPECT_TRUE(notification->never_timeout());
+}
+
+// Tests that if custom settings are provided, the notification shows the review
+// button even for a single blocked file.
+TEST_F(FPNMIOTaskTest,
+       EnterpriseConnectors_ErrorShowsBlockNotification_SingleFile_Review) {
+  NotificationDisplayServiceTester display_service_tester(profile_.get());
+  const std::string notification_id = "notification_id";
+  EXPECT_FALSE(display_service_tester.GetNotification(notification_id));
+
+  file_manager::io_task::IOTaskId task_id = 1;
+  file_manager::io_task::OperationType type =
+      file_manager::io_task::OperationType::kCopy;
+  auto src_file_path = AddCopyOrMoveIOTask(task_id, /*is_copy=*/true);
+  ASSERT_FALSE(src_file_path.empty());
+  EXPECT_TRUE(fpnm_->HasIOTask(task_id));
+
+  const std::vector<base::FilePath> files = {base::FilePath(kFile1)};
+  auto dialog_info = FilesPolicyDialog::Info::Error(
+      FilesPolicyDialog::BlockReason::kEnterpriseConnectorsSensitiveData,
+      files);
+  dialog_info.SetMessage(u"Custom message");
+  dialog_info.SetLearnMoreURL(GURL("https://example.com"));
+  AddBlockedFiles(
+      FilesPolicyDialog::BlockReason::kEnterpriseConnectorsSensitiveData,
+      task_id, std::move(files), dlp::FileAction::kCopy,
+      std::move(dialog_info));
+
+  // Only the task_id field is important.
+  file_manager::io_task::ProgressStatus status;
+  status.task_id = task_id;
+  status.state = file_manager::io_task::State::kError;
+  status.type = type;
+  status.sources.emplace_back(
+      CreateFileSystemURL(kTestStorageKey, src_file_path.value()),
+      absl::nullopt);
+  status.policy_error.emplace(
+      file_manager::io_task::PolicyErrorType::kEnterpriseConnectors,
+      /*blocked_files=*/1);
+
+  fpnm_->ShowFilesPolicyNotification(notification_id, status);
+  auto notification = display_service_tester.GetNotification(notification_id);
+  ASSERT_TRUE(notification.has_value());
+  EXPECT_EQ(notification->title(),
+            l10n_util::GetPluralStringFUTF16(
+                IDS_POLICY_DLP_FILES_COPY_BLOCKED_TITLE, 1));
+  EXPECT_EQ(notification->message(),
+            base::ReplaceStringPlaceholders(
+                l10n_util::GetPluralStringFUTF16(
+                    IDS_POLICY_DLP_FILES_CONTENT_BLOCK_MESSAGE, 1),
+                src_file_path.BaseName().LossyDisplayName(),
+                /*offset=*/nullptr));
+  EXPECT_EQ(notification->buttons()[0].title,
+            l10n_util::GetStringUTF16(IDS_POLICY_DLP_FILES_DISMISS_BUTTON));
+  EXPECT_EQ(notification->buttons()[1].title,
+            l10n_util::GetStringUTF16(IDS_POLICY_DLP_FILES_REVIEW_BUTTON));
+
+  EXPECT_TRUE(notification->never_timeout());
 }
 
 class FilesPolicyNotificationManagerDlpAndConnectorsWarningTest
@@ -713,11 +833,12 @@ INSTANTIATE_TEST_SUITE_P(
     FilesPolicyNotificationManagerDlpAndConnectorsBlockTest,
     ::testing::Values(
         FilesPolicyDialog::BlockReason::kDlp,
+        FilesPolicyDialog::BlockReason::kEnterpriseConnectorsUnknownScanResult,
         FilesPolicyDialog::BlockReason::kEnterpriseConnectorsSensitiveData,
         FilesPolicyDialog::BlockReason::kEnterpriseConnectorsMalware,
         FilesPolicyDialog::BlockReason::kEnterpriseConnectorsEncryptedFile,
         FilesPolicyDialog::BlockReason::kEnterpriseConnectorsLargeFile,
-        FilesPolicyDialog::BlockReason::kEnterpriseConnectorsUnknown));
+        FilesPolicyDialog::BlockReason::kEnterpriseConnectors));
 
 // ShowDlpBlockedFiles/AddConnectorsBlockedFiles updates IO task info.
 TEST_P(FilesPolicyNotificationManagerDlpAndConnectorsBlockTest,
@@ -739,9 +860,10 @@ TEST_P(FilesPolicyNotificationManagerDlpAndConnectorsBlockTest,
   ASSERT_FALSE(src_file_path.empty());
   EXPECT_TRUE(fpnm_->HasIOTask(task_id));
 
-  AddBlockedFiles(GetBlockReason(), task_id,
-                  std::vector<base::FilePath>{src_file_path},
-                  dlp::FileAction::kCopy);
+  const std::vector<base::FilePath> paths = {src_file_path};
+  auto dialog_info = FilesPolicyDialog::Info::Error(GetBlockReason(), paths);
+  AddBlockedFiles(GetBlockReason(), task_id, paths, dlp::FileAction::kCopy,
+                  dialog_info);
 
   // Task in progress.
   EXPECT_CALL(
@@ -765,19 +887,23 @@ TEST_P(FilesPolicyNotificationManagerDlpAndConnectorsBlockTest,
   // Task is not removed after completion.
   EXPECT_TRUE(fpnm_->HasIOTask(task_id));
 
-  std::map<DlpConfidentialFile, FilesPolicyDialog::BlockReason>
-      expected_blocked_files{
-          {DlpConfidentialFile(src_file_path), GetBlockReason()}};
-  EXPECT_EQ(fpnm_->GetIOTaskBlockedFilesForTesting(task_id),
-            expected_blocked_files);
+  std::map<FilesPolicyDialog::BlockReason, FilesPolicyDialog::Info>
+      expected_dialog_info_map;
+  auto confidential_files =
+      std::vector<DlpConfidentialFile>(paths.begin(), paths.end());
+  expected_dialog_info_map.insert({GetBlockReason(), dialog_info});
+
+  EXPECT_EQ(fpnm_->GetIOTaskDialogInfoMapForTesting(task_id),
+            expected_dialog_info_map);
 
   if (GetBlockReason() == FilesPolicyDialog::BlockReason::kDlp) {
-    EXPECT_THAT(
-        histogram_tester_.GetAllSamples(
-            GetDlpHistogramPrefix() + std::string(dlp::kFileActionBlockedUMA)),
-        base::BucketsAre(base::Bucket(dlp::FileAction::kCopy, 1)));
-    EXPECT_THAT(histogram_tester_.GetAllSamples(GetDlpHistogramPrefix() +
-                                                dlp::kFilesBlockedCountUMA),
+    EXPECT_THAT(histogram_tester_.GetAllSamples(
+                    data_controls::GetDlpHistogramPrefix() +
+                    std::string(data_controls::dlp::kFileActionBlockedUMA)),
+                base::BucketsAre(base::Bucket(dlp::FileAction::kCopy, 1)));
+    EXPECT_THAT(histogram_tester_.GetAllSamples(
+                    data_controls::GetDlpHistogramPrefix() +
+                    data_controls::dlp::kFilesBlockedCountUMA),
                 testing::ElementsAre(base::Bucket(1, 1)));
   }
 }
@@ -798,23 +924,30 @@ TEST_P(FilesPolicyNotificationManagerDlpAndConnectorsBlockTest,
   fpnm_ = std::make_unique<FilesPolicyNotificationManager>(profile_);
   ASSERT_FALSE(fpnm_->HasIOTask(task_id));
 
-  AddBlockedFiles(GetBlockReason(), task_id, {base::FilePath(src_file_path)},
-                  dlp::FileAction::kCopy);
+  const std::vector<base::FilePath> paths = {src_file_path};
+  auto dialog_info = FilesPolicyDialog::Info::Error(GetBlockReason(), paths);
+  AddBlockedFiles(GetBlockReason(), task_id, paths, dlp::FileAction::kCopy,
+                  dialog_info);
 
   EXPECT_TRUE(fpnm_->HasIOTask(task_id));
-  std::map<DlpConfidentialFile, FilesPolicyDialog::BlockReason>
-      expected_blocked_files{
-          {DlpConfidentialFile(src_file_path), GetBlockReason()}};
-  EXPECT_EQ(fpnm_->GetIOTaskBlockedFilesForTesting(task_id),
-            expected_blocked_files);
+
+  std::map<FilesPolicyDialog::BlockReason, FilesPolicyDialog::Info>
+      expected_dialog_info_map;
+  auto confidential_files =
+      std::vector<DlpConfidentialFile>(paths.begin(), paths.end());
+  expected_dialog_info_map.insert({GetBlockReason(), dialog_info});
+
+  EXPECT_EQ(fpnm_->GetIOTaskDialogInfoMapForTesting(task_id),
+            expected_dialog_info_map);
 
   if (GetBlockReason() == FilesPolicyDialog::BlockReason::kDlp) {
-    EXPECT_THAT(
-        histogram_tester_.GetAllSamples(
-            GetDlpHistogramPrefix() + std::string(dlp::kFileActionBlockedUMA)),
-        base::BucketsAre(base::Bucket(dlp::FileAction::kCopy, 1)));
-    EXPECT_THAT(histogram_tester_.GetAllSamples(GetDlpHistogramPrefix() +
-                                                dlp::kFilesBlockedCountUMA),
+    EXPECT_THAT(histogram_tester_.GetAllSamples(
+                    data_controls::GetDlpHistogramPrefix() +
+                    std::string(data_controls::dlp::kFileActionBlockedUMA)),
+                base::BucketsAre(base::Bucket(dlp::FileAction::kCopy, 1)));
+    EXPECT_THAT(histogram_tester_.GetAllSamples(
+                    data_controls::GetDlpHistogramPrefix() +
+                    data_controls::dlp::kFilesBlockedCountUMA),
                 testing::ElementsAre(base::Bucket(1, 1)));
   }
 }
@@ -973,8 +1106,13 @@ TEST_P(FPNMErrorStatusNotification, ErrorShowsBlockNotification_Single) {
   auto src_file_path = AddCopyOrMoveIOTask(task_id, is_copy);
   ASSERT_FALSE(src_file_path.empty());
   EXPECT_TRUE(fpnm_->HasIOTask(task_id));
-  AddBlockedFiles(ConvertPolicy(policy), task_id, {base::FilePath(kFile1)},
-                  is_copy ? dlp::FileAction::kCopy : dlp::FileAction::kMove);
+
+  const std::vector<base::FilePath> files = {base::FilePath(kFile1)};
+  auto dialog_info =
+      FilesPolicyDialog::Info::Error(ConvertPolicy(policy), files);
+  AddBlockedFiles(ConvertPolicy(policy), task_id, std::move(files),
+                  is_copy ? dlp::FileAction::kCopy : dlp::FileAction::kMove,
+                  std::move(dialog_info));
 
   // Only the task_id field is important.
   file_manager::io_task::ProgressStatus status;
@@ -1005,11 +1143,13 @@ TEST_P(FPNMErrorStatusNotification, ErrorShowsBlockNotification_Single) {
   if (policy == file_manager::io_task::PolicyErrorType::kDlp) {
     EXPECT_THAT(
         histogram_tester_.GetAllSamples(
-            GetDlpHistogramPrefix() + std::string(dlp::kFileActionBlockedUMA)),
+            data_controls::GetDlpHistogramPrefix() +
+            std::string(data_controls::dlp::kFileActionBlockedUMA)),
         base::BucketsAre(base::Bucket(
             is_copy ? dlp::FileAction::kCopy : dlp::FileAction::kMove, 1)));
-    EXPECT_THAT(histogram_tester_.GetAllSamples(GetDlpHistogramPrefix() +
-                                                dlp::kFilesBlockedCountUMA),
+    EXPECT_THAT(histogram_tester_.GetAllSamples(
+                    data_controls::GetDlpHistogramPrefix() +
+                    data_controls::dlp::kFilesBlockedCountUMA),
                 testing::ElementsAre(base::Bucket(1, 1)));
   }
 }
@@ -1024,9 +1164,14 @@ TEST_P(FPNMErrorStatusNotification, ErrorShowsBlockNotification_Multi) {
   bool is_copy = type == file_manager::io_task::OperationType::kCopy;
   ASSERT_FALSE(AddCopyOrMoveIOTask(task_id, is_copy).empty());
   EXPECT_TRUE(fpnm_->HasIOTask(task_id));
-  AddBlockedFiles(ConvertPolicy(policy), task_id,
-                  {base::FilePath(kFile1), base::FilePath(kFile2)},
-                  is_copy ? dlp::FileAction::kCopy : dlp::FileAction::kMove);
+
+  const std::vector<base::FilePath> files = {base::FilePath(kFile1),
+                                             base::FilePath(kFile2)};
+  auto dialog_info =
+      FilesPolicyDialog::Info::Error(ConvertPolicy(policy), files);
+  AddBlockedFiles(ConvertPolicy(policy), task_id, std::move(files),
+                  is_copy ? dlp::FileAction::kCopy : dlp::FileAction::kMove,
+                  std::move(dialog_info));
 
   // Only the task_id field is important.
   file_manager::io_task::ProgressStatus status;
@@ -1063,11 +1208,13 @@ TEST_P(FPNMErrorStatusNotification, ErrorShowsBlockNotification_Multi) {
   if (policy == file_manager::io_task::PolicyErrorType::kDlp) {
     EXPECT_THAT(
         histogram_tester_.GetAllSamples(
-            GetDlpHistogramPrefix() + std::string(dlp::kFileActionBlockedUMA)),
+            data_controls::GetDlpHistogramPrefix() +
+            std::string(data_controls::dlp::kFileActionBlockedUMA)),
         base::BucketsAre(base::Bucket(
             is_copy ? dlp::FileAction::kCopy : dlp::FileAction::kMove, 1)));
-    EXPECT_THAT(histogram_tester_.GetAllSamples(GetDlpHistogramPrefix() +
-                                                dlp::kFilesBlockedCountUMA),
+    EXPECT_THAT(histogram_tester_.GetAllSamples(
+                    data_controls::GetDlpHistogramPrefix() +
+                    data_controls::dlp::kFilesBlockedCountUMA),
                 testing::ElementsAre(base::Bucket(2, 1)));
   }
 }
@@ -1189,12 +1336,13 @@ TEST_P(FPNMShowBlockTest, ShowDlpBlockNotification_Single) {
   EXPECT_EQ(notification->buttons()[1].title,
             l10n_util::GetStringUTF16(IDS_LEARN_MORE));
 
-  EXPECT_THAT(
-      histogram_tester_.GetAllSamples(GetDlpHistogramPrefix() +
-                                      std::string(dlp::kFileActionBlockedUMA)),
-      base::BucketsAre(base::Bucket(action, 1)));
-  EXPECT_THAT(histogram_tester_.GetAllSamples(GetDlpHistogramPrefix() +
-                                              dlp::kFilesBlockedCountUMA),
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  data_controls::GetDlpHistogramPrefix() +
+                  std::string(data_controls::dlp::kFileActionBlockedUMA)),
+              base::BucketsAre(base::Bucket(action, 1)));
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  data_controls::GetDlpHistogramPrefix() +
+                  data_controls::dlp::kFilesBlockedCountUMA),
               testing::ElementsAre(base::Bucket(1, 1)));
 }
 
@@ -1221,12 +1369,13 @@ TEST_P(FPNMShowBlockTest, ShowDlpBlockNotification_Multi) {
   EXPECT_EQ(notification->buttons()[1].title,
             l10n_util::GetStringUTF16(IDS_POLICY_DLP_FILES_REVIEW_BUTTON));
 
-  EXPECT_THAT(
-      histogram_tester_.GetAllSamples(GetDlpHistogramPrefix() +
-                                      std::string(dlp::kFileActionBlockedUMA)),
-      base::BucketsAre(base::Bucket(action, 1)));
-  EXPECT_THAT(histogram_tester_.GetAllSamples(GetDlpHistogramPrefix() +
-                                              dlp::kFilesBlockedCountUMA),
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  data_controls::GetDlpHistogramPrefix() +
+                  std::string(data_controls::dlp::kFileActionBlockedUMA)),
+              base::BucketsAre(base::Bucket(action, 1)));
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  data_controls::GetDlpHistogramPrefix() +
+                  data_controls::dlp::kFilesBlockedCountUMA),
               testing::ElementsAre(base::Bucket(3, 1)));
 }
 

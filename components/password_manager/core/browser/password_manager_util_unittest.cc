@@ -151,14 +151,6 @@ class MockAutofillClient : public autofill::AutofillClient {
               (PaymentsRpcResult),
               (override));
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-  MOCK_METHOD(std::vector<std::string>,
-              GetAllowedMerchantsForVirtualCards,
-              (),
-              (override));
-  MOCK_METHOD(std::vector<std::string>,
-              GetAllowedBinRangesForVirtualCards,
-              (),
-              (override));
   MOCK_METHOD(void,
               ShowLocalCardMigrationDialog,
               (base::OnceClosure),
@@ -179,7 +171,14 @@ class MockAutofillClient : public autofill::AutofillClient {
               (override));
   MOCK_METHOD(void,
               ConfirmSaveIbanLocally,
-              (const autofill::Iban&, bool, LocalSaveIbanPromptCallback),
+              (const autofill::Iban&, bool, SaveIbanPromptCallback),
+              (override));
+  MOCK_METHOD(void,
+              ConfirmUploadIbanToCloud,
+              (const autofill::Iban&,
+               const autofill::LegalMessageLines& legal_message_lines,
+               bool,
+               SaveIbanPromptCallback),
               (override));
   MOCK_METHOD(void,
               ShowWebauthnOfferDialog,
@@ -285,7 +284,7 @@ class MockAutofillClient : public autofill::AutofillClient {
   MOCK_METHOD(bool, IsPasswordManagerEnabled, (), (override));
   MOCK_METHOD(void,
               DidFillOrPreviewForm,
-              (autofill::mojom::AutofillActionPersistence action_persistence,
+              (autofill::mojom::ActionPersistence action_persistence,
                autofill::AutofillTriggerSource trigger_source,
                bool is_refill),
               (override));
@@ -927,19 +926,6 @@ TEST(PasswordManagerUtil, ConstructGURLWithScheme) {
       {"example", GURL("https://example")}};
   for (const auto& test_case : test_cases) {
     EXPECT_EQ(test_case.second, ConstructGURLWithScheme(test_case.first));
-  }
-}
-
-TEST(PasswordManagerUtil, IsValidPasswordURL) {
-  std::vector<std::pair<GURL, bool>> test_cases = {
-      {GURL("noscheme.com"), false},
-      {GURL("https://;/valid"), true},
-      {GURL("https://^/invalid"), false},
-      {GURL("scheme://unsupported"), false},
-      {GURL("http://example.com"), true},
-      {GURL("https://test.com/login"), true}};
-  for (const auto& test_case : test_cases) {
-    EXPECT_EQ(test_case.second, IsValidPasswordURL(test_case.first));
   }
 }
 

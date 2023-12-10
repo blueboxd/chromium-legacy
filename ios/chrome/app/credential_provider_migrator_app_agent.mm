@@ -9,8 +9,8 @@
 #import "components/password_manager/core/browser/password_form.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/browser/credential_provider/model/credential_provider_migrator.h"
-#import "ios/chrome/browser/passwords/ios_chrome_account_password_store_factory.h"
-#import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_account_password_store_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser/browser_provider.h"
@@ -49,7 +49,7 @@
       defaultStore == password_manager::PasswordForm::Store::kAccountStore
           ? IOSChromeAccountPasswordStoreFactory::GetForBrowserState(
                 browserState, ServiceAccessType::IMPLICIT_ACCESS)
-          : IOSChromePasswordStoreFactory::GetForBrowserState(
+          : IOSChromeProfilePasswordStoreFactory::GetForBrowserState(
                 browserState, ServiceAccessType::IMPLICIT_ACCESS);
   NSUserDefaults* userDefaults = app_group::GetGroupUserDefaults();
   self.migrator =

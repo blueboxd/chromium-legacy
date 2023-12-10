@@ -226,9 +226,7 @@ class MEDIA_GPU_EXPORT H265Decoder final : public AcceleratedVideoDecoder {
   };
 
   // Process H265 stream structures.
-  bool ProcessPPS(int pps_id,
-                  bool* need_new_buffers,
-                  bool* color_space_changed);
+  bool ProcessPPS(int pps_id, bool* need_new_buffers);
 
   // Process current slice header to discover if we need to start a new picture,
   // finishing up the current one.
@@ -320,6 +318,10 @@ class MEDIA_GPU_EXPORT H265Decoder final : public AcceleratedVideoDecoder {
   // Used to identify first picture in decoding order or first picture that
   // follows an EOS NALU.
   bool first_picture_ = true;
+
+  // Used to keep NoRaslOutputFlag state since last IRAP, to decide if we
+  // drop a RASL picture.
+  bool no_rasl_output_flag_ = true;
 
   // Global state values, needed in decoding. See spec.
   scoped_refptr<H265Picture> prev_tid0_pic_;

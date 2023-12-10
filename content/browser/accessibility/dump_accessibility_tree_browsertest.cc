@@ -1962,21 +1962,6 @@ IN_PROC_BROWSER_TEST_P(
       "form-validation-message-removed-after-error-corrected.html"));
 }
 
-// TODO(https://crbug.com/1461931): Flaky on the following platforms.
-#if BUILDFLAG(IS_LINUX) || (BUILDFLAG(IS_WIN) && defined(ADDRESS_SANITIZER))
-#define MAYBE_AccessibilityFormValidationMessageAfterHideTimeout \
-  DISABLED_AccessibilityFormValidationMessageAfterHideTimeout
-#else
-#define MAYBE_AccessibilityFormValidationMessageAfterHideTimeout \
-  AccessibilityFormValidationMessageAfterHideTimeout
-#endif  // BUILDFLAG(IS_LINUX)
-IN_PROC_BROWSER_TEST_P(
-    DumpAccessibilityTreeTest,
-    MAYBE_AccessibilityFormValidationMessageAfterHideTimeout) {
-  RunHtmlTest(
-      FILE_PATH_LITERAL("form-validation-message-after-hide-timeout.html"));
-}
-
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityFrameset) {
   RunHtmlTest(FILE_PATH_LITERAL("frameset.html"));
 }
@@ -2209,13 +2194,8 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("iframe-with-region-role.html"));
 }
 
-// TODO(crbug.com/1475950): Test always fails on some Linux builds, not others.
-#if BUILDFLAG(IS_LINUX)
-#define MAYBE_AccessibilityImg DISABLED_AccessibilityImg
-#else
-#define MAYBE_AccessibilityImg AccessibilityImg
-#endif
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, MAYBE_AccessibilityImg) {
+// TODO(crbug.com/1475950): Fix and reenable the test.
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DISABLED_AccessibilityImg) {
   RunHtmlTest(FILE_PATH_LITERAL("img.html"));
 }
 
@@ -2556,8 +2536,15 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityId) {
   RunHtmlTest(FILE_PATH_LITERAL("id.html"));
 }
 
+// Flaky on Android - crbug.com/1488592
+#if BUILDFLAG(IS_ANDROID)
+#define MAYBE_AccessibilityImgFormFormControls \
+  DISABLED_AccessibilityImgFormFormControls
+#else
+#define MAYBE_AccessibilityImgFormFormControls AccessibilityImgFormFormControls
+#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityImgFormFormControls) {
+                       MAYBE_AccessibilityImgFormFormControls) {
   RunFormControlsTest(FILE_PATH_LITERAL("img-form.html"));
 }
 
@@ -3053,8 +3040,8 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("select-follows-focus-multiselect.html"));
 }
 
-// Flaky on Android - crbug.com/1286650
-#if BUILDFLAG(IS_ANDROID)
+// Flaky on Android and Fuchsia - crbug.com/1286650, crbug.com/1491059
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
 #define MAYBE_AccessibilitySelectList DISABLED_AccessibilitySelectList
 #else
 #define MAYBE_AccessibilitySelectList AccessibilitySelectList
@@ -3577,10 +3564,8 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, XmlInIframeCrash) {
   RunRegressionTest(FILE_PATH_LITERAL("xml-in-iframe-crash.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       RelationPointsToInvalidNodesCrash) {
-  RunRegressionTest(
-      FILE_PATH_LITERAL("relation-points-to-invalid-nodes-crash.html"));
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, ActivedescendantCrash) {
+  RunRegressionTest(FILE_PATH_LITERAL("activedescendant-crash.html"));
 }
 
 // TODO(crbug.com/1191098): Test is flaky on all platforms.

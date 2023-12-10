@@ -368,18 +368,6 @@ class AutotestPrivateGetArcPackageFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
-class AutotestPrivateGetCryptohomeRecoveryDataFunction
-    : public ExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getCryptohomeRecoveryData",
-                             AUTOTESTPRIVATE_GETCRYPTOHOMERECOVERYDATA)
- private:
-  ~AutotestPrivateGetCryptohomeRecoveryDataFunction() override;
-  ResponseAction Run() override;
-  void RunWithContext(const std::string& auth_token,
-                      std::unique_ptr<ash::UserContext> context);
-};
-
 class AutotestPrivateWaitForSystemWebAppsInstallFunction
     : public ExtensionFunction {
  public:
@@ -714,24 +702,6 @@ class AutotestPrivateRefreshRemoteCommandsFunction : public ExtensionFunction {
  private:
   ~AutotestPrivateRefreshRemoteCommandsFunction() override;
   ResponseAction Run() override;
-};
-
-class AutotestPrivateBootstrapMachineLearningServiceFunction
-    : public ExtensionFunction {
- public:
-  AutotestPrivateBootstrapMachineLearningServiceFunction();
-  DECLARE_EXTENSION_FUNCTION("autotestPrivate.bootstrapMachineLearningService",
-                             AUTOTESTPRIVATE_BOOTSTRAPMACHINELEARNINGSERVICE)
-
- private:
-  ~AutotestPrivateBootstrapMachineLearningServiceFunction() override;
-  ResponseAction Run() override;
-
-  // Callbacks for a basic Mojo call to MachineLearningService.LoadModel.
-  void ModelLoaded(chromeos::machine_learning::mojom::LoadModelResult result);
-  void OnMojoDisconnect();
-
-  mojo::Remote<chromeos::machine_learning::mojom::Model> model_;
 };
 
 class AutotestPrivateLoadSmartDimComponentFunction : public ExtensionFunction {

@@ -10,6 +10,7 @@
 #include "components/autofill/core/browser/contact_info_sync_util.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/sync/base/features.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/model/client_tag_based_model_type_processor.h"
 #include "components/sync/model/in_memory_metadata_change_list.h"
 #include "components/sync/model/sync_metadata_store_change_list.h"
@@ -80,7 +81,6 @@ absl::optional<syncer::ModelError> ContactInfoSyncBridge::MergeFullSyncData(
                                                std::move(entity_data))) {
     return error;
   }
-  web_data_backend_->NotifyThatSyncHasStarted(syncer::CONTACT_INFO);
   return absl::nullopt;
 }
 
@@ -132,7 +132,8 @@ ContactInfoSyncBridge::ApplyIncrementalSyncChanges(
   // Since such false positives are fine, and since AutofillTable's API
   // currently doesn't provide a way to detect such cases, we don't distinguish.
   if (!entity_changes.empty())
-    web_data_backend_->NotifyOfMultipleAutofillChanges();
+    web_data_backend_->NotifyOnAutofillChangedBySync(syncer::CONTACT_INFO);
+
   return absl::nullopt;
 }
 
@@ -221,7 +222,7 @@ void ContactInfoSyncBridge::ApplyDisableSyncChanges(
   }
   web_data_backend_->CommitChanges();
   // False positives can occur here if there were no profiles to begin with.
-  web_data_backend_->NotifyOfMultipleAutofillChanges();
+  web_data_backend_->NotifyOnAutofillChangedBySync(syncer::CONTACT_INFO);
 }
 
 sync_pb::EntitySpecifics

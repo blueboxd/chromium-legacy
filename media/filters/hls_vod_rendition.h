@@ -29,8 +29,8 @@ class MEDIA_EXPORT HlsVodRendition : public HlsRendition {
   void CheckState(base::TimeDelta media_time,
                   double playback_rate,
                   ManifestDemuxer::DelayCallback time_remaining_cb) override;
-  bool Seek(base::TimeDelta seek_time) override;
-  void CancelPendingNetworkRequests() override;
+  ManifestDemuxer::SeekResponse Seek(base::TimeDelta seek_time) override;
+  void StartWaitingForSeek() override;
   void Stop() override;
 
  private:
@@ -72,7 +72,7 @@ class MEDIA_EXPORT HlsVodRendition : public HlsRendition {
                      base::TimeDelta fetch_required_time,
                      size_t segment_index,
                      base::TimeTicks net_req_start,
-                     HlsDataSourceStreamManager::ReadResult result);
+                     HlsDataSourceProvider::ReadResult result);
 
   // `ManifestDemuxerEngineHost` owns the `HlsRenditionHost` which in
   // turn owns |this|, so it's safe to keep these as raw ptrs. |host_| is needed
@@ -103,6 +103,8 @@ class MEDIA_EXPORT HlsVodRendition : public HlsRendition {
 
   // Fetch segments in order always.
   std::vector<SegmentInfo>::iterator fetch_queue_;
+
+  bool set_stream_end_ = false;
 
   bool is_stopped_for_shutdown_ = false;
 

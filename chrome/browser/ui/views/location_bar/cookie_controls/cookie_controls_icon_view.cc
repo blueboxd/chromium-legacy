@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/location_bar/cookie_controls/cookie_controls_icon_view.h"
 
 #include <memory>
+#include <optional>
 
 #include "base/check_is_test.h"
 #include "base/metrics/user_metrics.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/browser/ui/cookie_controls_controller.h"
+#include "components/content_settings/core/common/cookie_blocking_3pcd_status.h"
 #include "components/content_settings/core/common/cookie_controls_breakage_confidence_level.h"
 #include "components/content_settings/core/common/cookie_controls_status.h"
 #include "components/feature_engagement/public/event_constants.h"
@@ -123,7 +125,9 @@ void CookieControlsIconView::UpdateImpl() {
               profile->IsOffTheRecord() ? CookieSettingsFactory::GetForProfile(
                                               profile->GetOriginalProfile())
                                         : nullptr,
-              HostContentSettingsMapFactory::GetForProfile(profile));
+              HostContentSettingsMapFactory::GetForProfile(profile),
+              TrackingProtectionSettingsFactory::GetForProfile(
+                  profile->GetOriginalProfile()));
       controller_observation_.Observe(controller_.get());
     }
     controller_->Update(web_contents);
@@ -135,58 +139,73 @@ bool CookieControlsIconView::MaybeShowIPH() {
   CHECK(browser_->window());
   // Need to make element visible or calls to show IPH will fail.
   SetVisible(true);
-  // IPH for UB on high-confidence site.
-  if (confidence_ == CookieControlsBreakageConfidenceLevel::kHigh) {
-    user_education::FeaturePromoParams params(
-        feature_engagement::kIPHCookieControlsFeature);
-    params.close_callback = base::BindOnce(&CookieControlsIconView::OnIPHClosed,
-                                           weak_ptr_factory_.GetWeakPtr());
-    if (browser_->window()->MaybeShowFeaturePromo(std::move(params))) {
-      SetHighlighted(true);
-      return true;
-    }
-  }
 
-  auto* const web_contents = delegate()->GetWebContentsForPageActionIconView();
-  if (!web_contents) {
+  const base::Feature* feature = nullptr;
+  if (blocking_status_ != CookieBlocking3pcdStatus::kNotIn3pcd) {
+    // Only show the reminder IPH if cookies are blocked on the current site.
+    if (status_ != CookieControlsStatus::kEnabled) {
+      return false;
+    }
+    // UB reminder IPH in 3PCD experiment.
+    feature = &feature_engagement::kIPH3pcdUserBypassFeature;
+  } else if (confidence_ == CookieControlsBreakageConfidenceLevel::kHigh) {
+    // UB IPH on high-confidence site.
+    feature = &feature_engagement::kIPHCookieControlsFeature;
+  } else {
+    // In all other cases return without trying to show IPH.
     return false;
   }
-  Profile* const profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  // IPH for UB in 3PCD experiment.
-  if (TrackingProtectionSettingsFactory::GetForProfile(profile)
-          ->IsTrackingProtection3pcdEnabled()) {
-    user_education::FeaturePromoParams params(
-        feature_engagement::kIPH3pcdUserBypassFeature);
-    params.close_callback = base::BindOnce(&CookieControlsIconView::OnIPHClosed,
-                                           weak_ptr_factory_.GetWeakPtr());
-    if (browser_->window()->MaybeShowFeaturePromo(std::move(params))) {
-      SetHighlighted(true);
-      return true;
-    }
+
+  CHECK(feature);
+  user_education::FeaturePromoParams params(*feature);
+  params.close_callback = base::BindOnce(&CookieControlsIconView::OnIPHClosed,
+                                         weak_ptr_factory_.GetWeakPtr());
+  if (!browser_->window()->MaybeShowFeaturePromo(std::move(params))) {
+    return false;
   }
-  return false;
+  SetHighlighted(true);
+  return true;
 }
 
 void CookieControlsIconView::OnIPHClosed() {
   SetHighlighted(false);
 }
 
+void CookieControlsIconView::SetLabelAndTooltip() {
+  auto icon_label = GetLabelForStatus().value_or(IDS_COOKIE_CONTROLS_TOOLTIP);
+  if (blocking_status_ != CookieBlocking3pcdStatus::kNotIn3pcd) {
+    // Set the accessible description to whatever the 3PC blocking state is.
+    SetAccessibleDescription(l10n_util::GetStringUTF16(icon_label));
+    // Don't show "Tracking Protection" if the label is visible.
+    if (!label()->GetVisible()) {
+      icon_label = IDS_TRACKING_PROTECTION_PAGE_ACTION_LABEL;
+    }
+  }
+  SetTooltipText(l10n_util::GetStringUTF16(icon_label));
+  SetLabel(l10n_util::GetStringUTF16(icon_label));
+}
+
 void CookieControlsIconView::UpdateVisibilityAndAnimate(
     bool confidence_changed) {
-  UpdateIconImage();
-  bool should_show = ShouldBeVisible();
-  if (should_show) {
+  bool should_be_visible = ShouldBeVisible();
+  if (should_be_visible) {
     // TODO(crbug.com/1446230): Don't animate when the LHS toggle is used.
     if (!GetAssociatedBubble() && (!GetVisible() || confidence_changed)) {
       if (!MaybeShowIPH() &&
           confidence_ == CookieControlsBreakageConfidenceLevel::kHigh) {
         auto label = GetLabelForStatus();
+        if (blocking_status_ != CookieBlocking3pcdStatus::kNotIn3pcd &&
+            status_ == CookieControlsStatus::kEnabled) {
+          label = IDS_TRACKING_PROTECTION_PAGE_ACTION_SITE_NOT_WORKING_LABEL;
+        }
         AnimateIn(label);
+// VoiceOver on Mac already announces this text.
+#if !BUILDFLAG(IS_MAC)
         if (label.has_value()) {
           GetViewAccessibility().AnnounceText(
               l10n_util::GetStringUTF16(label.value()));
         }
+#endif
         if (controller_) {
           controller_->OnEntryPointAnimated();
         } else {
@@ -199,11 +218,13 @@ void CookieControlsIconView::UpdateVisibilityAndAnimate(
     UnpauseAnimation();
     ResetSlideAnimation(false);
   }
-  SetVisible(should_show);
-  SetLabel(l10n_util::GetStringUTF16(
-      GetLabelForStatus().value_or(IDS_COOKIE_CONTROLS_TOOLTIP)));
-  SetTooltipText(l10n_util::GetStringUTF16(
-      GetLabelForStatus().value_or(IDS_COOKIE_CONTROLS_TOOLTIP)));
+  UpdateIconImage();
+  SetVisible(should_be_visible);
+  // The icon label should never change in response to confidence,
+  // other than to animate the label (handled above).
+  if (!confidence_changed) {
+    SetLabelAndTooltip();
+  }
 }
 
 absl::optional<int> CookieControlsIconView::GetLabelForStatus() const {
@@ -223,9 +244,11 @@ absl::optional<int> CookieControlsIconView::GetLabelForStatus() const {
 void CookieControlsIconView::OnStatusChanged(
     CookieControlsStatus status,
     CookieControlsEnforcement enforcement,
+    CookieBlocking3pcdStatus blocking_status,
     base::Time expiration) {
-  if (status_ != status) {
+  if (status_ != status || blocking_status_ != blocking_status) {
     status_ = status;
+    blocking_status_ = blocking_status;
     UpdateVisibilityAndAnimate();
   }
 }

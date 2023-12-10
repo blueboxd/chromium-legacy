@@ -5,9 +5,9 @@
 #ifndef BASE_ALLOCATOR_PARTITION_ALLOC_FEATURES_H_
 #define BASE_ALLOCATOR_PARTITION_ALLOC_FEATURES_H_
 
-#include "base/allocator/partition_allocator/partition_alloc_base/time/time.h"
-#include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
-#include "base/allocator/partition_allocator/partition_root.h"
+#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/time/time.h"
+#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
+#include "base/allocator/partition_allocator/src/partition_alloc/partition_root.h"
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
@@ -67,10 +67,8 @@ BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocPCScanBrowserOnly);
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocPCScanRendererOnly);
 
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocLargeThreadCacheSize);
-extern const BASE_EXPORT base::FeatureParam<int>
-    kPartitionAllocLargeThreadCacheSizeValue;
-extern const BASE_EXPORT base::FeatureParam<int>
-    kPartitionAllocLargeThreadCacheSizeValueForLowRAMAndroid;
+BASE_EXPORT int GetPartitionAllocLargeThreadCacheSizeValue();
+BASE_EXPORT int GetPartitionAllocLargeThreadCacheSizeValueForLowRAMAndroid();
 
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocLargeEmptySlotSpanRing);
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
@@ -191,7 +189,7 @@ BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocSortActiveSlotSpans);
 BASE_EXPORT BASE_DECLARE_FEATURE(kPageAllocatorRetryOnCommitFailure);
 #endif
 
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
 extern const base::FeatureParam<bool>
     kPartialLowEndModeExcludePartitionAllocSupport;
 #endif
@@ -202,9 +200,8 @@ inline constexpr base::StringPiece kRendererLiveBRPSyntheticTrialName =
     "BackupRefPtrRendererLive";
 
 BASE_EXPORT BASE_DECLARE_FEATURE(kEnableConfigurableThreadCacheMultiplier);
-extern const BASE_EXPORT base::FeatureParam<double> kThreadCacheMultiplier;
-extern const BASE_EXPORT base::FeatureParam<double>
-    kThreadCacheMultiplierForAndroid;
+BASE_EXPORT double GetThreadCacheMultiplier();
+BASE_EXPORT double GetThreadCacheMultiplierForAndroid();
 
 BASE_EXPORT BASE_DECLARE_FEATURE(kEnableConfigurableThreadCachePurgeInterval);
 extern const partition_alloc::internal::base::TimeDelta
@@ -216,10 +213,7 @@ GetThreadCacheDefaultPurgeInterval();
 
 BASE_EXPORT BASE_DECLARE_FEATURE(
     kEnableConfigurableThreadCacheMinCachedMemoryForPurging);
-extern const BASE_EXPORT base::FeatureParam<int>
-    kThreadCacheMinCachedMemoryForPurgingBytes;
-
-BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocDisableBRPInBufferPartition);
+BASE_EXPORT int GetThreadCacheMinCachedMemoryForPurgingBytes();
 
 }  // namespace features
 }  // namespace base

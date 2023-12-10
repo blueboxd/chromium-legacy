@@ -1964,10 +1964,6 @@ inline constexpr char kDownloadDefaultDirectory[] =
 // upgrade a unsafe location to a safe location.
 inline constexpr char kDownloadDirUpgraded[] = "download.directory_upgrade";
 
-// base::Time value indicating the last timestamp when a download is completed.
-inline constexpr char kDownloadLastCompleteTime[] =
-    "download.last_complete_time";
-
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
     BUILDFLAG(IS_MAC)
 inline constexpr char kOpenPdfDownloadInSystemReader[] =
@@ -2706,9 +2702,12 @@ inline constexpr char kRebootAfterUpdate[] =
 // An any-api scoped refresh token for enterprise-enrolled devices.  Allows
 // for connection to Google APIs when the user isn't logged in.  Currently used
 // for for getting a cloudprint scoped token to allow printing in Guest mode,
-// Public Accounts and kiosks.
-inline constexpr char kDeviceRobotAnyApiRefreshToken[] =
+// Public Accounts and kiosks. The versions are used to distinguish different
+// token formats.
+inline constexpr char kDeviceRobotAnyApiRefreshTokenV1[] =
     "device_robot_refresh_token.any-api";
+inline constexpr char kDeviceRobotAnyApiRefreshTokenV2[] =
+    "device_robot_refresh_token_v2.any-api";
 
 // Device requisition for enterprise enrollment.
 inline constexpr char kDeviceEnrollmentRequisition[] =
@@ -2725,8 +2724,10 @@ inline constexpr char kDeviceEnrollmentAutoStart[] = "enrollment.auto_start";
 inline constexpr char kDeviceEnrollmentCanExit[] = "enrollment.can_exit";
 
 // DM token fetched from the DM server during enrollment. Stored for Active
-// Directory devices only.
-inline constexpr char kDeviceDMToken[] = "device_dm_token";
+// Directory devices only. The versions are used to distinguish different token
+// formats.
+inline constexpr char kDeviceDMTokenV1[] = "device_dm_token";
+inline constexpr char kDeviceDMTokenV2[] = "device_dm_token_v2";
 
 // Key name of a dictionary in local state to store cached multiprofle user
 // behavior policy value.
@@ -2947,6 +2948,13 @@ inline constexpr char kKioskTroubleshootingToolsEnabled[] =
 // browser window.
 inline constexpr char kNewWindowsInKioskAllowed[] =
     "new_windows_in_kiosk_allowed";
+
+// A boolean pref which determines whether a remote admin can start a CRD
+// connection through the 'start crd session' remote command.
+inline constexpr char
+    kRemoteAccessHostAllowEnterpriseRemoteSupportConnections[] =
+        "enterprise_remote_support_connections_allowed";
+
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 // *************** SERVICE PREFS ***************
@@ -3897,6 +3905,10 @@ inline constexpr char kCompressionDictionaryTransportEnabled[] =
 // Boolean that specifies whether Zstd Content-Encoding is enabled.
 inline constexpr char kZstdContentEncodingEnabled[] =
     "net.zstd_content_encoding_enabled";
+
+// Boolean that specifies whether IPv6 reachability check override is enabled.
+inline constexpr char kIPv6ReachabilityOverrideEnabled[] =
+    "net.ipv6_reachability_override_enabled";
 
 }  // namespace prefs
 

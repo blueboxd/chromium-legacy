@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <utility>
 
-#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/locale_update_controller.h"
@@ -37,7 +36,6 @@
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/login/demo_mode/demo_components.h"
 #include "chrome/browser/ash/login/demo_mode/demo_mode_dimensions.h"
-#include "chrome/browser/ash/login/demo_mode/demo_mode_window_closer.h"
 #include "chrome/browser/ash/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
@@ -128,11 +126,6 @@ std::string GetSwitchOrDefault(const base::StringPiece& switch_string,
     return command_line->GetSwitchValueASCII(switch_string);
   }
   return default_value;
-}
-
-std::string GetHighlightsAppId() {
-  return GetSwitchOrDefault(switches::kDemoModeHighlightsApp,
-                            extension_misc::kHighlightsAppId);
 }
 
 // If the current locale is not the default one, ensure it is reverted to the
@@ -609,11 +602,6 @@ void DemoSession::OnSessionStateChanged() {
       // Register the device with in the A/A experiment
       RegisterDemoModeAAExperiment();
 
-      // Create the window closer.
-      // TODO(b/302583338) Remove this when the issue with GMSCore gets fixed.
-      if (ash::features::IsDemoModeGMSCoreWindowCloserEnabled()) {
-        window_closer_ = std::make_unique<DemoModeWindowCloser>();
-      }
       break;
     default:
       break;
@@ -638,8 +626,11 @@ void LaunchDemoSystemWebApp() {
 }
 
 void DemoSession::OnDemoAppComponentLoaded() {
-  SYSLOG(INFO) << "Demo mode app component version"
-               << components_->app_component_version().value_or("");
+  const auto& app_component_version = components_->app_component_version();
+  SYSLOG(INFO) << "Demo mode app component version: "
+               << (app_component_version.has_value()
+                       ? app_component_version.value().GetString()
+                       : "");
   auto error = components_->app_component_error().value_or(
       component_updater::CrOSComponentManager::Error::NOT_FOUND);
 
@@ -678,9 +669,9 @@ void DemoSession::ConfigureAndStartSplashScreen() {
   base::FilePath fallback_path = components_->resources_component_path()
                                      .Append(kSplashScreensPath)
                                      .Append("en-US.jpg");
-
-  SYSLOG(INFO) << "Demo mode resources version"
-               << components_->resources_component_version().value_or("");
+  const auto& version = components_->resources_component_version();
+  SYSLOG(INFO) << "Demo mode resources version: "
+               << (version.has_value() ? version.value().GetString() : "");
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},

@@ -4,7 +4,6 @@
 
 #include <memory>
 #include <string>
-#include <tuple>
 #include <vector>
 
 #include "base/command_line.h"
@@ -203,6 +202,10 @@ void NavigationFinishedWaiter::DidFinishNavigation(
   run_loop_.Quit();
 }
 
+enum class LocalWebApprovalSupport {
+  kSupported,
+  kNotSupported
+};
 }  // namespace
 
 class SupervisedUserNavigationThrottleTestBase
@@ -287,6 +290,12 @@ class SupervisedUserNavigationThrottleTest
       : SupervisedUserNavigationThrottleTestBase(
             supervised_user::SupervisionMixin::SignInMode::kSupervised) {}
   ~SupervisedUserNavigationThrottleTest() override = default;
+
+  // TODO(crbug.com/1491942): This fails with the field trial testing config.
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch("disable-field-trial-config");
+  }
 };
 
 // Tests that prerendering fails in supervised user mode.
@@ -409,9 +418,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
 
 class SupervisedUserIframeFilterTest
     : public SupervisedUserNavigationThrottleTest,
-      public testing::WithParamInterface<
-          std::tuple</* local_web_approvals_enabled */ bool,
-                     /* local_web_approvals_preferred */ bool>> {
+      public testing::WithParamInterface<LocalWebApprovalSupport> {
  protected:
   SupervisedUserIframeFilterTest() { InitFeatures(); }
 
@@ -433,7 +440,6 @@ class SupervisedUserIframeFilterTest
   void WaitForNavigationFinished(int frame_id, const GURL& url);
   void InitFeatures();
   bool IsLocalWebApprovalsEnabled() const;
-  bool IsLocalWebApprovalsPreferred() const;
 
   supervised_user::PermissionRequestCreatorMock* permission_creator() {
     return permission_creator_;
@@ -543,7 +549,6 @@ bool SupervisedUserIframeFilterTest::IsLocalApprovalsButtonBeingShown(
 
 void SupervisedUserIframeFilterTest::CheckPreferredApprovalButton(
     int frame_id) {
-  if (supervised_user::IsLocalWebApprovalThePreferredButton()) {
     std::string command =
         "document.getElementById('local-approvals-button').classList.contains("
         "'primary-button') &&"
@@ -554,18 +559,6 @@ void SupervisedUserIframeFilterTest::CheckPreferredApprovalButton(
         " !document.getElementById('remote-approvals-button').classList."
         "contains('primary-button');";
     ASSERT_TRUE(RunCommandAndGetBooleanFromFrame(frame_id, command));
-  } else {
-    std::string command =
-        "document.getElementById('remote-approvals-button').classList."
-        "contains('primary-button') &&"
-        " !document.getElementById('remote-approvals-button').classList."
-        "contains('secondary-button') &&"
-        " document.getElementById('local-approvals-button').classList.contains("
-        "'secondary-button') &&"
-        " !document.getElementById('local-approvals-button').classList."
-        "contains('primary-button');";
-    ASSERT_TRUE(RunCommandAndGetBooleanFromFrame(frame_id, command));
-  }
 }
 
 bool SupervisedUserIframeFilterTest::IsLocalApprovalsInsteadButtonBeingShown(
@@ -619,39 +612,25 @@ bool SupervisedUserIframeFilterTest::RunCommandAndGetBooleanFromFrame(
 }
 
 void SupervisedUserIframeFilterTest::InitFeatures() {
-  std::vector<base::test::FeatureRefAndParams> enabled_features_and_params;
+  std::vector<base::test::FeatureRef> enabled_features;
   std::vector<base::test::FeatureRef> disabled_features;
   if (IsLocalWebApprovalsEnabled()) {
-    base::FieldTrialParams params;
-    params["preferred_button"] =
-        supervised_user::kLocalWebApprovalsPreferredButtonLocal;
-    enabled_features_and_params.emplace_back(
-        supervised_user::kLocalWebApprovals, params);
+    enabled_features.push_back(supervised_user::kLocalWebApprovals);
   } else {
     disabled_features.push_back(supervised_user::kLocalWebApprovals);
   }
-  scoped_feature_list_.InitWithFeaturesAndParameters(
-      enabled_features_and_params, disabled_features);
+  scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
 }
 
 bool SupervisedUserIframeFilterTest::IsLocalWebApprovalsEnabled() const {
-  return std::get<0>(GetParam());
-}
-
-bool SupervisedUserIframeFilterTest::IsLocalWebApprovalsPreferred() const {
-  return std::get<1>(GetParam());
+  return GetParam() == LocalWebApprovalSupport::kSupported;
 }
 
 INSTANTIATE_TEST_SUITE_P(
     LocalWebApprovalsEnabled,
     SupervisedUserIframeFilterTest,
-    testing::Values(
-        std::make_tuple(/* local_web_approvals_enabled */ true,
-                        /* local_web_approvals_preferred */ true),
-        std::make_tuple(/* local_web_approvals_enabled */ true,
-                        /* local_web_approvals_preferred */ false),
-        std::make_tuple(/* local_web_approvals_enabled */ false,
-                        /* local_web_approvals_preferred */ false)));
+    testing::Values(LocalWebApprovalSupport::kSupported,
+                    LocalWebApprovalSupport::kNotSupported));
 
 IN_PROC_BROWSER_TEST_P(SupervisedUserIframeFilterTest, BlockSubFrame) {
   base::HistogramTester histogram_tester;
@@ -942,13 +921,8 @@ void SupervisedUserNarrowWidthIframeFilterTest::SetUp() {
 INSTANTIATE_TEST_SUITE_P(
     LocalWebApprovalsEnabledNarrowWidth,
     SupervisedUserNarrowWidthIframeFilterTest,
-    testing::Values(
-        std::make_tuple(/* local_web_approvals_enabled */ true,
-                        /* local_web_approvals_preferred */ true),
-        std::make_tuple(/* local_web_approvals_enabled */ true,
-                        /* local_web_approvals_preferred */ false),
-        std::make_tuple(/* local_web_approvals_enabled */ false,
-                        /* local_web_approvals_preferred */ false)));
+    testing::Values(LocalWebApprovalSupport::kSupported,
+                    LocalWebApprovalSupport::kNotSupported));
 
 IN_PROC_BROWSER_TEST_P(SupervisedUserNarrowWidthIframeFilterTest,
                        NarrowWidthWindow) {
@@ -1029,11 +1003,7 @@ using ChromeOSLocalWebApprovalsTest = SupervisedUserIframeFilterTest;
 INSTANTIATE_TEST_SUITE_P(
     ,
     ChromeOSLocalWebApprovalsTest,
-    testing::Values(
-        std::make_tuple(/* local_web_approvals_enabled */ true,
-                        /* local_web_approvals_preferred */ true),
-        std::make_tuple(/* local_web_approvals_enabled */ true,
-                        /* local_web_approvals_preferred */ false)));
+    testing::Values(LocalWebApprovalSupport::kSupported));
 
 IN_PROC_BROWSER_TEST_P(ChromeOSLocalWebApprovalsTest,
                        StartLocalWebApprovalsFromMainFrame) {

@@ -403,14 +403,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 // B2  A2
 //     |
 //     C3
-// TODO(crbug.com/1012185): Flaky timeouts on Linux and Mac.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
-#define MAYBE_UnloadHandlerSubframes DISABLED_UnloadHandlerSubframes
-#else
-#define MAYBE_UnloadHandlerSubframes UnloadHandlerSubframes
-#endif
-IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
-                       MAYBE_UnloadHandlerSubframes) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, UnloadHandlerSubframes) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c(b),c(a(c))),d)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -912,15 +905,18 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   // 1) Navigate to a(b(c(b)))
   EXPECT_TRUE(NavigateToURL(shell(), initial_url));
   FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
-  RenderFrameHostImpl* rfh_a = root->current_frame_host();
-  RenderFrameHostImpl* rfh_b1 = rfh_a->child_at(0)->current_frame_host();
-  RenderFrameHostImpl* rfh_c = rfh_b1->child_at(0)->current_frame_host();
-  RenderFrameHostImpl* rfh_b2 = rfh_c->child_at(0)->current_frame_host();
+  RenderFrameHostImplWrapper rfh_a(root->current_frame_host());
+  RenderFrameHostImplWrapper rfh_b1(rfh_a->child_at(0)->current_frame_host());
+  RenderFrameHostImplWrapper rfh_c(rfh_b1->child_at(0)->current_frame_host());
+  RenderFrameHostImplWrapper rfh_b2(rfh_c->child_at(0)->current_frame_host());
 
   // 2) Add unload handlers on B1, B2 and C.
   UnloadPrint(rfh_b1->frame_tree_node(), "B1");
+  rfh_b1->DisableUnloadTimerForTesting();
   UnloadPrint(rfh_b2->frame_tree_node(), "B2");
+  rfh_b2->DisableUnloadTimerForTesting();
   UnloadPrint(rfh_c->frame_tree_node(), "C");
+  rfh_c->DisableUnloadTimerForTesting();
 
   DOMMessageQueue dom_message_queue(web_contents());
   RenderProcessHostWatcher shutdown_B(

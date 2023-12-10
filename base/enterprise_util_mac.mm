@@ -191,8 +191,7 @@ MacDeviceManagementStateNew IsDeviceRegisteredWithManagementNew() {
 
 DeviceUserDomainJoinState AreDeviceAndUserJoinedToDomain() {
   static DeviceUserDomainJoinState state = [] {
-    DeviceUserDomainJoinState state{.device_joined = false,
-                                    .user_joined = false};
+    DeviceUserDomainJoinState state{false, false};
 
     @autoreleasepool {
       ODSession* session = [ODSession defaultSession];
@@ -201,23 +200,27 @@ DeviceUserDomainJoinState AreDeviceAndUserJoinedToDomain() {
         return state;
       }
 
-      // Machines that are domain-joined have nodes under "/LDAPv3" or "/Active
-      // Directory". See https://stackoverflow.com/questions/32470557/ and
-      // https://stackoverflow.com/questions/69093499/, respectively, for
-      // examples.
       NSError* error = nil;
-      NSArray<NSString*>* node_names = [session nodeNamesAndReturnError:&error];
-      if (!node_names) {
+
+      NSArray<NSString*>* all_node_names =
+          [session nodeNamesAndReturnError:&error];
+      if (!all_node_names) {
         DLOG(WARNING) << "ODSession failed to give node names: "
                       << error.localizedDescription.UTF8String;
         return state;
       }
 
-      for (NSString* node_name in node_names) {
-        if ([node_name hasPrefix:@"/LDAPv3"] ||
-            [node_name hasPrefix:@"/Active Directory"]) {
-          state.device_joined = true;
-        }
+      NSUInteger num_nodes = all_node_names.count;
+      if (num_nodes < 3) {
+        DLOG(WARNING) << "ODSession returned too few node names: "
+                      << all_node_names.description.UTF8String;
+        return state;
+      }
+
+      if (num_nodes > 3) {
+        // Non-enterprise machines have:"/Search", "/Search/Contacts",
+        // "/Local/Default". Everything else would be enterprise management.
+        state.device_joined = true;
       }
 
       ODNode* node = [ODNode nodeWithSession:session

@@ -550,6 +550,7 @@ FieldTypeGroup GroupTypeOfServerFieldType(ServerFieldType field_type) {
     case FIELD_WITH_DEFAULT_VALUE:
     case MERCHANT_EMAIL_SIGNUP:
     case MERCHANT_PROMO_CODE:
+    case ONE_TIME_CODE:
       return FieldTypeGroup::kNoGroup;
 
     case USERNAME:
@@ -563,7 +564,6 @@ FieldTypeGroup GroupTypeOfServerFieldType(ServerFieldType field_type) {
     case PRICE:
     case SEARCH_TERM:
     case NUMERIC_QUANTITY:
-    case ONE_TIME_CODE:
       return FieldTypeGroup::kUnfillable;
 
     case UNKNOWN_TYPE:
@@ -647,7 +647,7 @@ FieldTypeGroup GroupTypeOfHtmlFieldType(HtmlFieldType field_type) {
       return FieldTypeGroup::kNoGroup;
 
     case HtmlFieldType::kIban:
-      return FieldTypeGroup::kNoGroup;
+      return FieldTypeGroup::kIban;
 
     case HtmlFieldType::kUnspecified:
     case HtmlFieldType::kUnrecognized:
@@ -787,12 +787,14 @@ ServerFieldType HtmlFieldTypeToBestCorrespondingServerFieldType(
     case HtmlFieldType::kOneTimeCode:
       return ONE_TIME_CODE;
 
+    case HtmlFieldType::kIban:
+      return IBAN_VALUE;
+
     // These types aren't stored; they're transient.
     case HtmlFieldType::kUpiVpa:
     case HtmlFieldType::kTransactionAmount:
     case HtmlFieldType::kTransactionCurrency:
     case HtmlFieldType::kMerchantPromoCode:
-    case HtmlFieldType::kIban:
       return UNKNOWN_TYPE;
 
     case HtmlFieldType::kUnrecognized:

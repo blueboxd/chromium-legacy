@@ -218,12 +218,6 @@ struct CTPolicy {
   array<string> excluded_legacy_spkis;
 };
 
-// Some of the fields below point to sqlite databases. On Android, when the
-// network service is sandboxed, those paths are also tracked by a sqlite
-// SandboxedVFSDelegate so that the browser knows which paths are safe to open
-// databases in. Any new sqlite databases used here will need to similarly
-// update the list of paths the browser can open in a sandboxed network service
-// on Android.
 struct NetworkContextFilePaths {
   // Points to the shared dictionary directory containing the sqlite database
   // file named "db" for metadata and the disk cache directory named "cache".
@@ -444,7 +438,8 @@ struct NetworkContextParams {
   pending_remote<ProxyErrorClient>? proxy_error_client;
 
   // Broker used by the network service sandbox to create sockets in
-  // the browser. Set when the sandbox is enabled.
+  // the browser. Set when the sandbox is enabled on Windows.
+  [EnableIf=is_win]
   pending_remote<SocketBroker>? socket_broker;
 
   // A service to fetch blind-signed auth tokens for IP protection. If this
@@ -913,6 +908,9 @@ struct BlindSignedAuthToken {
   mojo_base.mojom.Time expiration;
 };
 
+// The proxy layer to fetch batches of tokens for.
+enum IpProtectionProxyLayer {kProxyA, kProxyB};
+
 // A source for new BlindSignedAuthTokens.
 interface IpProtectionConfigGetter {
   // Try to get a batch of new tokens.
@@ -924,7 +922,7 @@ interface IpProtectionConfigGetter {
   //
   // It is forbidden for two calls to this method to be outstanding at the same
   // time.
-  TryGetAuthTokens(uint32 batch_size) =>
+  TryGetAuthTokens(uint32 batch_size, IpProtectionProxyLayer proxy_layer) =>
     (array<BlindSignedAuthToken>? bsa_tokens,
      mojo_base.mojom.Time? try_again_after);
 
@@ -1091,8 +1089,14 @@ interface NetworkContext {
 
   // Clears all entries from the HTTP Auth cache that were between |start_time|
   // and |end_time|, with |start_time| being inclusive and |end_time| exclusive.
+  //
+  // If a non-null |filter| is specified, ClearHttpAuthCache will clear only
+  // AuthCache entries for URLs matching the filter. Filtering by both origins
+  // and domains is supported. If |filter| is non-null, you must provide either
+  // |filter.origins| or |filter.domains|, or both to define the filtering.
   ClearHttpAuthCache(mojo_base.mojom.Time start_time,
-                     mojo_base.mojom.Time end_time) => ();
+                     mojo_base.mojom.Time end_time,
+                     ClearDataFilter? filter) => ();
 
   // Clears entries from the Preflight Cache according to the specified filter.
   // Clear browsing history supports time ranges for the last 1hr, 24hr, 7d, 4w,

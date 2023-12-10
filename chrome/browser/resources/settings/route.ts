@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 
 import {pageVisibility} from './page_visibility.js';
@@ -18,7 +18,7 @@ function addPrivacyChildRoutes(r: Partial<SettingsRoutes>) {
   r.CLEAR_BROWSER_DATA.isNavigableDialog = true;
 
   if (loadTimeData.getBoolean('enableSafetyHub')) {
-    r.SAFETY_HUB = r.PRIVACY.createChild('/safetyHub');
+    r.SAFETY_HUB = r.PRIVACY.createChild('/safetyCheck');
   } else {
     r.SAFETY_CHECK = r.PRIVACY.createSection('/safetyCheck', 'safetyCheck');
   }
@@ -133,6 +133,8 @@ function addPrivacyChildRoutes(r: Partial<SettingsRoutes>) {
   r.SITE_SETTINGS_WINDOW_MANAGEMENT =
       r.SITE_SETTINGS.createChild('windowManagement');
   r.SITE_SETTINGS_FILE_SYSTEM_WRITE = r.SITE_SETTINGS.createChild('filesystem');
+  r.SITE_SETTINGS_FILE_SYSTEM_WRITE_DETAILS =
+      r.SITE_SETTINGS_FILE_SYSTEM_WRITE.createChild('siteDetails');
   r.SITE_SETTINGS_LOCAL_FONTS = r.SITE_SETTINGS.createChild('localFonts');
 
   if (loadTimeData.getBoolean('enablePermissionStorageAccessApi')) {

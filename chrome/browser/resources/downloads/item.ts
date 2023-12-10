@@ -22,7 +22,7 @@ import {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button
 import {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.js';
 import {FocusRowMixin} from 'chrome://resources/cr_elements/focus_row_mixin.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {mojoString16ToString} from 'chrome://resources/js/mojo_type_util.js';
 import {sanitizeInnerHtml} from 'chrome://resources/js/parse_html_subset.js';
@@ -103,6 +103,12 @@ export class DownloadsItemElement extends DownloadsItemElementBase {
       controlRemoveFromListAriaLabel_: {
         type: String,
         computed: 'computeControlRemoveFromListAriaLabel_(data.fileName)',
+      },
+
+      iconAriaLabel_: {
+        type: String,
+        computed: 'computeIconAriaLabel_(' +
+            'displayType_, improvedDownloadWarningsUx_)',
       },
 
       isActive_: {
@@ -208,6 +214,7 @@ export class DownloadsItemElement extends DownloadsItemElementBase {
   data: MojomData;
   private mojoHandler_: PageHandlerInterface|null = null;
   private controlledBy_: string;
+  private iconAriaLabel_: string;
   private isActive_: boolean;
   private isDangerous_: boolean;
   private isReviewable_: boolean;
@@ -482,6 +489,26 @@ export class DownloadsItemElement extends DownloadsItemElementBase {
         }
     }
 
+    return '';
+  }
+
+  private computeIconAriaHidden_(): string {
+    return (this.iconAriaLabel_ === '').toString();
+  }
+
+  private computeIconAriaLabel_(): string {
+    if (this.improvedDownloadWarningsUx_) {
+      switch (this.displayType_) {
+        case DisplayType.DANGEROUS:
+          return this.i18n('accessibleLabelDangerous');
+        case DisplayType.INSECURE:
+          return this.i18n('accessibleLabelInsecure');
+        case DisplayType.UNVERIFIED:
+          return this.i18n('accessibleLabelUnverified');
+        case DisplayType.SUSPICIOUS:
+          return this.i18n('accessibleLabelSuspicious');
+      }
+    }
     return '';
   }
 

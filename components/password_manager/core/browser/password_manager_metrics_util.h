@@ -15,6 +15,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_generation_util.h"
+#include "components/device_reauth/device_reauth_metrics_util.h"
 #include "components/password_manager/core/browser/features/password_manager_features_util.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -226,18 +227,6 @@ enum AccessPasswordInSettingsEvent {
   ACCESS_PASSWORD_COPIED = 1,
   ACCESS_PASSWORD_EDITED = 2,
   ACCESS_PASSWORD_COUNT
-};
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused. Needs to stay in sync with
-// "PasswordManager.ReauthResult" in enums.xml.
-// Metrics: PasswordManager.ReauthToAccessPasswordInSettings
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.password_manager
-enum class ReauthResult {
-  kSuccess = 0,
-  kFailure = 1,
-  kSkipped = 2,
-  kMaxValue = kSkipped,
 };
 
 // Specifies the type of PasswordFormManagers and derived classes to distinguish
@@ -723,20 +712,13 @@ void LogGeneralUIDismissalReason(UIDismissalReason reason);
 
 // Log the |reason| a user dismissed the save password bubble. If
 // |user_state| is set, the |reason| is also logged to a separate
-// user-state-specific histogram. If the submission is detected on a cleared
-// change password form, dismissal reason is also recorded in a histogram
-// specific for this type of submission.
+// user-state-specific histogram.
 void LogSaveUIDismissalReason(
     UIDismissalReason reason,
-    autofill::mojom::SubmissionIndicatorEvent submission_event,
     absl::optional<features_util::PasswordAccountStorageUserState> user_state);
 
-// Log the |reason| a user dismissed the update password bubble. If the
-// submission is detected on a cleared change password form, dismissal reason is
-// also recorded in a histogram specific for this type of submission.
-void LogUpdateUIDismissalReason(
-    UIDismissalReason reason,
-    autofill::mojom::SubmissionIndicatorEvent submission_event);
+// Log the |reason| a user dismissed the update password bubble.
+void LogUpdateUIDismissalReason(UIDismissalReason reason);
 
 // Log the |reason| a user dismissed the move password bubble.
 void LogMoveUIDismissalReason(
@@ -809,7 +791,7 @@ void LogDownloadedBlocklistedEntriesCountFromAccountStoreAfterUnlock(
     int blocklist_entries_count);
 
 // Logs the result of a re-auth challenge in the password settings.
-void LogPasswordSettingsReauthResult(ReauthResult result);
+void LogPasswordSettingsReauthResult(device_reauth::ReauthResult result);
 
 // Log a return value of LoginDatabase::DeleteUndecryptableLogins method.
 void LogDeleteUndecryptableLoginsReturnValue(

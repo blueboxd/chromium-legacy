@@ -31,6 +31,7 @@
 #include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
 #include "media/capture/video/video_capture_device_client.h"
 #include "media/capture/video/video_capture_metrics.h"
+#include "services/video_capture/public/mojom/video_effects_manager.mojom.h"
 
 #if !BUILDFLAG(IS_ANDROID)
 #include "content/browser/compositor/image_transport_factory.h"
@@ -422,8 +423,7 @@ void VideoCaptureController::OnNewBuffer(
 }
 
 void VideoCaptureController::OnFrameReadyInBuffer(
-    media::ReadyFrameInBuffer frame,
-    std::vector<media::ReadyFrameInBuffer> scaled_frames) {
+    media::ReadyFrameInBuffer frame) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_NE(frame.buffer_id, media::VideoCaptureBufferPool::kInvalidId);
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
@@ -436,41 +436,19 @@ void VideoCaptureController::OnFrameReadyInBuffer(
       frame.buffer_id, frame.frame_feedback_id, std::move(frame.frame_info),
       &frame_context);
 
-  std::vector<BufferContext*> scaled_frame_contexts;
-  scaled_frame_contexts.reserve(scaled_frames.size());
-  std::vector<ReadyBuffer> scaled_frame_ready_buffers;
-  scaled_frame_ready_buffers.reserve(scaled_frames.size());
-  for (auto& scaled_frame : scaled_frames) {
-    BufferContext* scaled_frame_context;
-    scaled_frame_ready_buffers.push_back(MakeReadyBufferAndSetContextFeedbackId(
-        scaled_frame.buffer_id, scaled_frame.frame_feedback_id,
-        std::move(scaled_frame.frame_info), &scaled_frame_context));
-    scaled_frame_contexts.push_back(scaled_frame_context);
-  }
-
   if (state_ != blink::VIDEO_CAPTURE_STATE_ERROR) {
     // Inform all active clients of the frames.
     for (const auto& client : controller_clients_) {
       if (client->session_closed || client->paused)
         continue;
       MakeClientUseBufferContext(frame_context, client.get());
-      for (auto* scaled_frame_context : scaled_frame_contexts) {
-        MakeClientUseBufferContext(scaled_frame_context, client.get());
-      }
       client->event_handler->OnBufferReady(client->controller_id,
-                                           frame_ready_buffer,
-                                           scaled_frame_ready_buffers);
+                                           frame_ready_buffer);
     }
     // Transfer buffer read permissions to any contexts that now have consumers.
     if (frame_context->HasConsumers()) {
       frame_context->set_read_permission(
           std::move(frame.buffer_read_permission));
-    }
-    for (size_t i = 0; i < scaled_frames.size(); ++i) {
-      if (!scaled_frame_contexts[i]->HasConsumers())
-        continue;
-      scaled_frame_contexts[i]->set_read_permission(
-          std::move(scaled_frames[i].buffer_read_permission));
     }
   }
 
@@ -675,7 +653,9 @@ void VideoCaptureController::OnDeviceConnectionLost() {
 void VideoCaptureController::CreateAndStartDeviceAsync(
     const media::VideoCaptureParams& params,
     VideoCaptureDeviceLaunchObserver* observer,
-    base::OnceClosure done_cb) {
+    base::OnceClosure done_cb,
+    mojo::PendingRemote<video_capture::mojom::VideoEffectsManager>
+        video_effects_manager) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
                "VideoCaptureController::CreateAndStartDeviceAsync");
@@ -690,7 +670,7 @@ void VideoCaptureController::CreateAndStartDeviceAsync(
       device_id_, stream_type_, params, GetWeakPtrForIOThread(),
       base::BindOnce(&VideoCaptureController::OnDeviceConnectionLost,
                      GetWeakPtrForIOThread()),
-      this, std::move(done_cb));
+      this, std::move(done_cb), std::move(video_effects_manager));
 }
 
 void VideoCaptureController::ReleaseDeviceAsync(base::OnceClosure done_cb) {
@@ -759,7 +739,8 @@ void VideoCaptureController::Resume() {
 void VideoCaptureController::Crop(
     const base::Token& crop_id,
     uint32_t crop_version,
-    base::OnceCallback<void(media::mojom::CropRequestResult)> callback) {
+    base::OnceCallback<void(media::mojom::ApplySubCaptureTargetResult)>
+        callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(launched_device_);
 
@@ -768,7 +749,8 @@ void VideoCaptureController::Crop(
   was_crop_ever_called_ = true;
 
   if (controller_clients_.size() != 1) {
-    std::move(callback).Run(media::mojom::CropRequestResult::kNotImplemented);
+    std::move(callback).Run(
+        media::mojom::ApplySubCaptureTargetResult::kNotImplemented);
     return;
   }
 

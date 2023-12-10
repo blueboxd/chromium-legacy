@@ -50,6 +50,7 @@ import chromedriver
 import websocket_connection
 import webelement
 import webshadowroot
+from websocket_connection import WebSocketConnection
 sys.path.remove(_CLIENT_DIR)
 
 sys.path.insert(1, _SERVER_DIR)
@@ -4176,6 +4177,196 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
     result = self._driver.ExecuteAsyncScript(register_uv_script)
     self.assertEqual("OK", result['status'])
 
+  def testCreateVirtualSensorWithInvalidSensorName(self):
+    self.assertRaisesRegex(chromedriver.InvalidArgument,
+                           "invalid argument: 'type' must be a string",
+                           self._driver.CreateVirtualSensor, 42)
+
+  def testUpdateVirtualSensorWithInvalidSensorName(self):
+    self.assertRaisesRegex(
+        chromedriver.InvalidArgument,
+        "invalid argument: Unexpected type invalid_sensor in 'type' field",
+        self._driver.UpdateVirtualSensor, 'invalid_sensor', {
+            'x': 1.0,
+            'y': 2.0,
+            'z': 3.0
+        })
+
+  def testUpdateVirtualSensorWithoutIlluminanceValue(self):
+    self.assertRaisesRegex(chromedriver.InvalidArgument,
+                           "invalid argument: Could not parse illuminance",
+                           self._driver.UpdateVirtualSensor, 'ambient-light',
+                           {'invalid_value_key': 1.0})
+
+  def testUpdateVirtualSensorWithoutXYZValues(self):
+    self.assertRaisesRegex(chromedriver.InvalidArgument,
+                           "invalid argument: Could not parse XYZ fields",
+                           self._driver.UpdateVirtualSensor, 'accelerometer', {
+                               'y': 2.0,
+                               'z': 3.0
+                           })
+    self.assertRaisesRegex(chromedriver.InvalidArgument,
+                           "invalid argument: Could not parse XYZ fields",
+                           self._driver.UpdateVirtualSensor, 'accelerometer', {
+                               'x': 1.0,
+                               'z': 3.0
+                           })
+    self.assertRaisesRegex(chromedriver.InvalidArgument,
+                           "invalid argument: Could not parse XYZ fields",
+                           self._driver.UpdateVirtualSensor, 'accelerometer', {
+                               'x': 1.0,
+                               'y': 2.0
+                           })
+
+  def testUpdateVirtualSensorWithoutXYZWValues(self):
+    self.assertRaisesRegex(chromedriver.InvalidArgument,
+                           "invalid argument: Could not parse quaternion",
+                           self._driver.UpdateVirtualSensor,
+                           'absolute-orientation', {
+                               'y': 2.0,
+                               'z': 3.0,
+                               'w': 4.0
+                           })
+    self.assertRaisesRegex(chromedriver.InvalidArgument,
+                           "invalid argument: Could not parse quaternion",
+                           self._driver.UpdateVirtualSensor,
+                           'absolute-orientation', {
+                               'x': 1.0,
+                               'z': 3.0,
+                               'w': 4.0
+                           })
+    self.assertRaisesRegex(chromedriver.InvalidArgument,
+                           "invalid argument: Could not parse quaternion",
+                           self._driver.UpdateVirtualSensor,
+                           'absolute-orientation', {
+                               'x': 1.0,
+                               'y': 2.0,
+                               'w': 4.0
+                           })
+    self.assertRaisesRegex(chromedriver.InvalidArgument,
+                           "invalid argument: Could not parse quaternion",
+                           self._driver.UpdateVirtualSensor,
+                           'absolute-orientation', {
+                               'x': 1.0,
+                               'y': 2.0,
+                               'z': 3.0
+                           })
+
+  def testRemoveVirtualSensorWithInvalidSensorName(self):
+    self.assertRaisesRegex(
+        chromedriver.InvalidArgument,
+        "invalid argument: Invalid sensor type: invalid_sensor",
+        self._driver.RemoveVirtualSensor, 'invalid_sensor')
+
+  def testGetVirtualSensorInformationWithInvalidSensorName(self):
+    self.assertRaisesRegex(
+        chromedriver.InvalidArgument,
+        "invalid argument: Invalid sensor type: invalid_sensor",
+        self._driver.GetVirtualSensorInformation, 'invalid_sensor')
+
+  def testGetVirtualSensorInformationWithNotOverriddenType(self):
+    self.assertRaisesRegex(
+        chromedriver.InvalidArgument,
+        "This sensor type is not being overridden with a virtual sensor",
+        self._driver.GetVirtualSensorInformation, 'accelerometer')
+
+  def testCreateAlreadyOverriddenVirtualSensor(self):
+    self._driver.CreateVirtualSensor('accelerometer')
+    self._driver.Load(
+        self.GetHttpsUrlForFile('/chromedriver/sensors_test.html'))
+    self.assertRaisesRegex(chromedriver.InvalidArgument,
+                           'The specified sensor type is already overridden',
+                           self._driver.CreateVirtualSensor, 'accelerometer')
+
+  def testCreateVirtualSensorNotConnected(self):
+    self._driver.CreateVirtualSensor('accelerometer', {'connected': False})
+    self._driver.Load(
+        self.GetHttpsUrlForFile('/chromedriver/sensors_test.html'))
+
+    self._driver.ExecuteScript('startSensor()')
+    self.assertTrue(
+        self.WaitForCondition(lambda: self._driver.ExecuteScript(
+            'return sensorErrorEvent !== undefined')))
+
+    error_name = self._driver.ExecuteScript(
+        'return sensorErrorEvent.error.name')
+    self.assertEqual('NotReadableError', error_name)
+
+  def testCreateVirtualSensorWithMinimumFrequency(self):
+    self._driver.CreateVirtualSensor('accelerometer',
+                                     {'minSamplingFrequency': 6})
+    self._driver.Load(
+        self.GetHttpsUrlForFile('/chromedriver/sensors_test.html'))
+
+    self._driver.ExecuteScript('startSensor()')
+    self.assertTrue(
+        self.WaitForCondition(
+            lambda: self._driver.ExecuteScript('return sensor.activated')))
+
+    info = self._driver.GetVirtualSensorInformation('accelerometer')
+    self.assertEqual(6.0, info['requestedSamplingFrequency'])
+
+  def testCreateVirtualSensorWithMaximumFrequency(self):
+    self._driver.CreateVirtualSensor('accelerometer',
+                                     {'maxSamplingFrequency': 3})
+    self._driver.Load(
+        self.GetHttpsUrlForFile('/chromedriver/sensors_test.html'))
+
+    self._driver.ExecuteScript('startSensor()')
+    self.assertTrue(
+        self.WaitForCondition(
+            lambda: self._driver.ExecuteScript('return sensor.activated')))
+
+    info = self._driver.GetVirtualSensorInformation('accelerometer')
+    self.assertEqual(3.0, info['requestedSamplingFrequency'])
+
+  def testGetVirtualSensorInformation(self):
+    self._driver.CreateVirtualSensor('accelerometer')
+    self._driver.Load(
+        self.GetHttpsUrlForFile('/chromedriver/sensors_test.html'))
+
+    info = self._driver.GetVirtualSensorInformation('accelerometer')
+    self.assertEqual(0.0, info['requestedSamplingFrequency'])
+
+    self._driver.ExecuteScript('startSensor()')
+    self.assertTrue(
+        self.WaitForCondition(
+            lambda: self._driver.ExecuteScript('return sensor.activated')))
+
+    info = self._driver.GetVirtualSensorInformation('accelerometer')
+    self.assertLess(0.0, info['requestedSamplingFrequency'])
+
+  def testUpdateVirtualSensor(self):
+    testedSensor = 'accelerometer'
+
+    self._driver.CreateVirtualSensor(testedSensor)
+    self._driver.Load(
+        self.GetHttpsUrlForFile('/chromedriver/sensors_test.html'))
+
+    self._driver.ExecuteScript('startSensor()')
+
+    reading = {'x': 1.0, 'y': 2.0, 'z': 3.0}
+
+    self._driver.UpdateVirtualSensor(testedSensor, reading)
+
+    self.assertTrue(
+        self.WaitForCondition(
+            lambda: self._driver.ExecuteScript('return sensor.hasReading')))
+
+    sensor = self._driver.ExecuteScript('return sensor')
+    self.assertEqual(reading['x'], sensor['x'])
+    self.assertEqual(reading['y'], sensor['y'])
+    self.assertEqual(reading['z'], sensor['z'])
+
+    self._driver.RemoveVirtualSensor(testedSensor)
+
+  def testUpdateVirtualSensorWitNotOverriddenType(self):
+    self.assertRaisesRegex(
+        chromedriver.InvalidArgument,
+        "This sensor type is not being overridden with a virtual sensor",
+        self._driver.UpdateVirtualSensor, 'ambient-light', {'illuminance': 42})
+
+
 # Tests in the following class are expected to be moved to ChromeDriverTest
 # class when we no longer support the legacy mode.
 class ChromeDriverW3cTest(ChromeDriverBaseTestWithWebServer):
@@ -6199,6 +6390,83 @@ class HeadlessChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertRaises(chromedriver.InvalidArgument,
                       self._driver.PrintPDF, {'pageRanges': ['x-y']})
 
+class PureBidiTest(ChromeDriverBaseTestWithWebServer):
+
+  def setUp(self):
+    super().setUp()
+    self._connections = []
+
+  def tearDown(self):
+    for conn in self._connections:
+      conn.Close()
+    super().tearDown()
+
+  def createUnboundWebSocketConnection(self):
+    server_url = _CHROMEDRIVER_SERVER_URL
+    conn = WebSocketConnection(server_url)
+    conn.SetTimeout(5 * 60) # 5 minutes
+    self._connections.append(conn)
+    return conn
+
+  def testSessionStatus(self):
+    conn = self.createUnboundWebSocketConnection()
+    cmd_id = conn.SendCommand({
+      'method': 'session.status',
+      'params': {}
+    })
+    status = conn.WaitForResponse(cmd_id)
+    self.assertEqual('success', status['type'])
+    self.assertEqual(False, status['result']['ready'])
+    self.assertEqual('ChromeDriver does not yet support BiDi-only sessions.',
+                     status['result']['message'])
+
+  def testSessionNew(self):
+    conn = self.createUnboundWebSocketConnection()
+    cmd_id = conn.SendCommand({
+      'method': 'session.new',
+      'params': {
+          'capabilities': {}
+      }
+    })
+    status = conn.WaitForResponse(cmd_id)
+    self.assertEqual('error', status['type'])
+    self.assertEqual('session not created', status['error'])
+    self.assertEqual(''.join([
+        'session not created: ',
+        'ChromeDriver does not yet support BiDi-only sessions.']),
+        status['message'])
+
+  def testUnknownStaticCommand(self):
+    conn = self.createUnboundWebSocketConnection()
+    cmd_id = conn.SendCommand({
+      'method': 'abracadabra',
+      'params': {}
+    })
+    status = conn.WaitForResponse(cmd_id)
+    self.assertEqual('error', status['type'])
+    self.assertEqual('unknown command', status['error'])
+    self.assertEqual('unknown command: abracadabra', status['message'])
+
+  def testStaticCommandWithoutMethod(self):
+    conn = self.createUnboundWebSocketConnection()
+    cmd_id = conn.SendCommand({
+      'params': {}
+    })
+    status = conn.WaitForResponse(cmd_id)
+    self.assertEqual('error', status['type'])
+    self.assertEqual('invalid argument', status['error'])
+    self.assertRegex(status['message'], 'no\\s+method')
+
+  def testStaticCommandWithoutParams(self):
+    conn = self.createUnboundWebSocketConnection()
+    cmd_id = conn.SendCommand({
+        'method': 'session.status'
+    })
+    status = conn.WaitForResponse(cmd_id)
+    self.assertEqual('error', status['type'])
+    self.assertEqual('invalid argument', status['error'])
+    self.assertRegex(status['message'], 'no\\s+params')
+
 class BidiTest(ChromeDriverBaseTestWithWebServer):
 
   def setUp(self):
@@ -6215,6 +6483,14 @@ class BidiTest(ChromeDriverBaseTestWithWebServer):
     if driver is None:
       driver = self._driver
     conn = driver.CreateWebSocketConnection()
+    conn.SetTimeout(5 * 60) # 5 minutes
+    self._connections.append(conn)
+    return conn
+
+  def createWebSocketConnectionIPv6(self, driver=None):
+    if driver is None:
+      driver = self._driver
+    conn = driver.CreateWebSocketConnectionIPv6()
     conn.SetTimeout(5 * 60) # 5 minutes
     self._connections.append(conn)
     return conn
@@ -6361,15 +6637,27 @@ class BidiTest(ChromeDriverBaseTestWithWebServer):
           'context': context_id
       }
     })
-    conn.WaitForResponse(cmd_id)
+    response = conn.WaitForResponse(cmd_id)
+    self.assertEqual('success', response['type'])
 
     with self.assertRaises(chromedriver.WebSocketConnectionClosedException):
       # BiDi messages cannot have negative "id".
       # Wait indefinitely until time out.
       conn.WaitForResponse(-1)
 
+  def testConnectionIsClosedIfSessionIsDestroyed(self):
+    driver = self.CreateDriver(web_socket_url=True)
+    conn = self.createWebSocketConnection(driver)
+    driver.Quit()
+
+    with self.assertRaises(chromedriver.WebSocketConnectionClosedException):
+      # BiDi messages cannot have negative "id".
+      # Wait indefinitely until time out.
+      conn.WaitForResponse(-1)
+
+
   def testCmdIdCheatAndBrowserClosing(self):
-    # Browser closing mechanism should not rely on command it
+    # Browser closing mechanism should not rely on command id
     conn = self.createWebSocketConnection()
     context_id = self.getContextId(conn, 0)
     cmd_id1 = None
@@ -6444,6 +6732,28 @@ class BidiTest(ChromeDriverBaseTestWithWebServer):
     context_id = self.getContextId(conn1, 0)
     self.assertIsNotNone(context_id)
     conn2 = self.createWebSocketConnection()
+    # Pre-check: make sure that the implementation does not use the same socket
+    self.assertNotEqual(conn1, conn2)
+
+    cmd_id1 = self.postEvaluate(conn1, '77', context_id = context_id)
+    cmd_id2 = self.postEvaluate(conn2, '23', context_id = context_id)
+    cmd_id3 = self.postEvaluate(conn1, '41', context_id = context_id)
+    cmd_id4 = self.postEvaluate(conn2, '98', context_id = context_id)
+
+    resp = conn1.WaitForResponse(cmd_id1)
+    self.assertEqual(77, resp['result']['result']['value'])
+    resp = conn1.WaitForResponse(cmd_id3)
+    self.assertEqual(41, resp['result']['result']['value'])
+    resp = conn2.WaitForResponse(cmd_id4)
+    self.assertEqual(98, resp['result']['result']['value'])
+    resp = conn2.WaitForResponse(cmd_id2)
+    self.assertEqual(23, resp['result']['result']['value'])
+
+  def testMultipleConnectionsDifferentIPs(self):
+    conn1 = self.createWebSocketConnection()
+    context_id = self.getContextId(conn1, 0)
+    self.assertIsNotNone(context_id)
+    conn2 = self.createWebSocketConnectionIPv6()
     # Pre-check: make sure that the implementation does not use the same socket
     self.assertNotEqual(conn1, conn2)
 

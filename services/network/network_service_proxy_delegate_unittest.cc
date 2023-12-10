@@ -14,12 +14,14 @@
 #include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "net/base/proxy_server.h"
+#include "net/base/proxy_chain.h"
 #include "net/base/proxy_string_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/ip_protection_proxy_list_manager.h"
+#include "services/network/ip_protection_token_cache_manager.h"
 #include "services/network/masked_domain_list/network_service_proxy_allow_list.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -36,17 +38,10 @@ constexpr char kWebsocketUrl[] = "ws://example.com";
 
 class MockIpProtectionConfigCache : public IpProtectionConfigCache {
  public:
-  bool IsAuthTokenAvailable() override { return auth_token_.has_value(); }
-  bool IsProxyListAvailable() override { return proxy_list_.has_value(); }
-  const std::vector<std::string>& ProxyList() override { return *proxy_list_; }
-  void RequestRefreshProxyList() override {
-    if (on_force_refresh_proxy_list_) {
-      std::move(on_force_refresh_proxy_list_).Run();
-    }
-  }
+  bool AreAuthTokensAvailable() override { return auth_token_.has_value(); }
   void InvalidateTryAgainAfterTime() override {}
-  absl::optional<network::mojom::BlindSignedAuthTokenPtr> GetAuthToken()
-      override {
+  absl::optional<network::mojom::BlindSignedAuthTokenPtr> GetAuthToken(
+      network::mojom::IpProtectionProxyLayer proxy_layer) override {
     return std::move(auth_token_);
   }
 
@@ -55,6 +50,38 @@ class MockIpProtectionConfigCache : public IpProtectionConfigCache {
   void SetNextAuthToken(
       absl::optional<network::mojom::BlindSignedAuthTokenPtr> auth_token) {
     auth_token_ = std::move(auth_token);
+  }
+
+  void SetUp() override { NOTREACHED_NORETURN(); }
+
+  void SetIpProtectionProxyListManagerForTesting(
+      std::unique_ptr<IpProtectionProxyListManager> ipp_proxy_list_manager)
+      override {
+    NOTREACHED_NORETURN();
+  }
+
+  IpProtectionTokenCacheManager* GetIpProtectionTokenCacheManagerForTesting(
+      network::mojom::IpProtectionProxyLayer proxy_layer) override {
+    NOTREACHED_NORETURN();
+  }
+
+  void SetIpProtectionTokenCacheManagerForTesting(
+      network::mojom::IpProtectionProxyLayer proxy_layer,
+      std::unique_ptr<IpProtectionTokenCacheManager> ipp_token_cache_manager)
+      override {
+    NOTREACHED_NORETURN();
+  }
+
+  const std::vector<std::string>& GetProxyList() override {
+    return *proxy_list_;
+  }
+
+  bool IsProxyListAvailable() override { return proxy_list_.has_value(); }
+
+  void RequestRefreshProxyList() override {
+    if (on_force_refresh_proxy_list_) {
+      std::move(on_force_refresh_proxy_list_).Run();
+    }
   }
 
   // Set the proxy list returned from `ProxyList()`.
@@ -201,8 +228,9 @@ TEST_F(NetworkServiceProxyDelegateTest, AddsHeadersToTunnelRequest) {
   auto delegate = CreateDelegate(std::move(config));
 
   net::HttpRequestHeaders headers;
-  auto proxy_server = net::PacResultElementToProxyServer("HTTPS proxy");
-  delegate->OnBeforeTunnelRequest(proxy_server, &headers);
+  auto proxy_chain =
+      net::ProxyChain(net::PacResultElementToProxyServer("HTTPS proxy"));
+  delegate->OnBeforeTunnelRequest(proxy_chain, /*chain_index=*/0, &headers);
 
   EXPECT_THAT(headers, Contain("connect", "baz"));
 }
@@ -218,9 +246,9 @@ TEST_F(NetworkServiceProxyDelegateTest, AddsTokenToTunnelRequest) {
   delegate->SetIpProtectionConfigCache(std::move(ipp_config_cache));
 
   net::HttpRequestHeaders headers;
-  auto proxy_server = net::ProxyServer::FromSchemeHostAndPort(
+  auto proxy_chain = net::ProxyChain::FromSchemeHostAndPort(
       net::ProxyServer::SCHEME_HTTPS, "proxy", absl::nullopt);
-  delegate->OnBeforeTunnelRequest(proxy_server, &headers);
+  delegate->OnBeforeTunnelRequest(proxy_chain, /*chain_index=*/0, &headers);
 
   std::string encoded_token;
   base::Base64Encode("a-token", &encoded_token);
@@ -238,8 +266,9 @@ TEST_F(NetworkServiceProxyDelegateTest, NoTokenIfNotIpProtection) {
   delegate->SetIpProtectionConfigCache(std::move(ipp_config_cache));
 
   net::HttpRequestHeaders headers;
-  auto proxy_server = net::PacResultElementToProxyServer("HTTPS proxy");
-  delegate->OnBeforeTunnelRequest(proxy_server, &headers);
+  auto proxy_chain =
+      net::ProxyChain(net::PacResultElementToProxyServer("HTTPS proxy"));
+  delegate->OnBeforeTunnelRequest(proxy_chain, /*chain_index=*/0, &headers);
 
   std::string value;
   EXPECT_FALSE(headers.GetHeader("Authorization", &value));
@@ -712,6 +741,7 @@ TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxy_NoAuthToken) {
       NetworkServiceProxyAllowList::CreateForTesting(first_party_map);
   auto delegate =
       CreateDelegate(std::move(config), &network_service_proxy_allow_list);
+
   auto ipp_config_cache = std::make_unique<MockIpProtectionConfigCache>();
   ipp_config_cache->SetProxyList({"proxy"});
   // No token is added to the cache, so the result will be direct.
@@ -812,6 +842,7 @@ TEST_F(NetworkServiceProxyDelegateTest,
        OnResolveProxyIpProtectionDisabledByConfig) {
   auto config = mojom::CustomProxyConfig::New();
   auto delegate = CreateDelegate(std::move(config));
+
   auto ipp_config_cache = std::make_unique<MockIpProtectionConfigCache>();
   ipp_config_cache->SetNextAuthToken(MakeAuthToken("a-token"));
   ipp_config_cache->SetProxyList({"ippro-1", "ippro-2"});
@@ -897,23 +928,25 @@ TEST_F(NetworkServiceProxyDelegateTest, InitialConfigUsedForProxy) {
 }
 
 TEST_F(NetworkServiceProxyDelegateTest, OnFallbackObserved) {
-  net::ProxyServer proxy(net::ProxyServer::SCHEME_HTTP,
-                         net::HostPortPair("proxy.com", 80));
+  net::ProxyChain proxy_chain(net::ProxyServer::SCHEME_HTTP,
+                              net::HostPortPair("proxy.com", 80));
 
   auto config = mojom::CustomProxyConfig::New();
   config->rules.ParseFromString("http=foo");
   auto delegate = CreateDelegate(std::move(config));
 
   EXPECT_FALSE(TestObserver()->FallbackArgs());
-  delegate->OnFallback(proxy, net::ERR_FAILED);
+  delegate->OnFallback(proxy_chain, net::ERR_FAILED);
   RunUntilIdle();
   ASSERT_TRUE(TestObserver()->FallbackArgs());
-  EXPECT_EQ(TestObserver()->FallbackArgs()->first, proxy);
+  // TODO(crbug.com/1491092): When Observer supports chain, test that it
+  // receives the full chain and chain index.
+  EXPECT_EQ(TestObserver()->FallbackArgs()->first, proxy_chain.proxy_server());
   EXPECT_EQ(TestObserver()->FallbackArgs()->second, net::ERR_FAILED);
 }
 
 TEST_F(NetworkServiceProxyDelegateTest, OnFallback_IpProtection) {
-  auto proxy = net::ProxyServer::FromSchemeHostAndPort(
+  auto proxy_chain = net::ProxyChain::FromSchemeHostAndPort(
       net::ProxyServer::SCHEME_HTTPS, "proxy.com", absl::nullopt);
   bool force_refresh_called = false;
 
@@ -926,13 +959,13 @@ TEST_F(NetworkServiceProxyDelegateTest, OnFallback_IpProtection) {
   ipp_config_cache->SetProxyList({"proxy.com"});
   delegate->SetIpProtectionConfigCache(std::move(ipp_config_cache));
 
-  delegate->OnFallback(proxy, net::ERR_FAILED);
+  delegate->OnFallback(proxy_chain, net::ERR_FAILED);
   EXPECT_TRUE(force_refresh_called);
 }
 
 TEST_F(NetworkServiceProxyDelegateTest, OnTunnelHeadersReceivedObserved) {
-  net::ProxyServer proxy(net::ProxyServer::SCHEME_HTTP,
-                         net::HostPortPair("proxy.com", 80));
+  net::ProxyChain proxy_chain(net::ProxyServer::SCHEME_HTTP,
+                              net::HostPortPair("proxy.com", 80));
   scoped_refptr<net::HttpResponseHeaders> headers =
       base::MakeRefCounted<net::HttpResponseHeaders>(
           "HTTP/1.1 200\nHello: World\n\n");
@@ -942,10 +975,14 @@ TEST_F(NetworkServiceProxyDelegateTest, OnTunnelHeadersReceivedObserved) {
   auto delegate = CreateDelegate(std::move(config));
 
   EXPECT_FALSE(TestObserver()->HeadersReceivedArgs());
-  EXPECT_EQ(net::OK, delegate->OnTunnelHeadersReceived(proxy, *headers));
+  EXPECT_EQ(net::OK, delegate->OnTunnelHeadersReceived(
+                         proxy_chain, /*chain_index=*/0, *headers));
   RunUntilIdle();
   ASSERT_TRUE(TestObserver()->HeadersReceivedArgs());
-  EXPECT_EQ(TestObserver()->HeadersReceivedArgs()->first, proxy);
+  // TODO(crbug.com/1491092): When Observer supports chain, test that it
+  // receives the full chain and chain index.
+  EXPECT_EQ(TestObserver()->HeadersReceivedArgs()->first,
+            proxy_chain.proxy_server());
   // Compare raw header strings since the headers pointer is copied.
   EXPECT_EQ(TestObserver()->HeadersReceivedArgs()->second->raw_headers(),
             headers->raw_headers());

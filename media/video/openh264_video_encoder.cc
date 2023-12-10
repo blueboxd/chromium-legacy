@@ -21,7 +21,7 @@ namespace media {
 
 namespace {
 
-EProfileIdc ToOpenH264Profile(media::VideoCodecProfile profile) {
+EProfileIdc ToOpenH264Profile(VideoCodecProfile profile) {
   switch (profile) {
     case media::H264PROFILE_BASELINE:
       return PRO_BASELINE;
@@ -34,7 +34,7 @@ EProfileIdc ToOpenH264Profile(media::VideoCodecProfile profile) {
   }
 }
 
-void SetUpOpenH264Params(media::VideoCodecProfile profile,
+void SetUpOpenH264Params(VideoCodecProfile profile,
                          const VideoEncoder::Options& options,
                          const VideoColorSpace& itu_cs,
                          SEncParamExt* params) {
@@ -42,7 +42,9 @@ void SetUpOpenH264Params(media::VideoCodecProfile profile,
   params->bEnableFrameSkip = false;
   params->iPaddingFlag = 0;
   params->iComplexityMode = MEDIUM_COMPLEXITY;
-  params->iUsageType = CAMERA_VIDEO_REAL_TIME;
+  params->iUsageType = options.content_hint == VideoEncoder::ContentHint::Screen
+                           ? SCREEN_CONTENT_REAL_TIME
+                           : CAMERA_VIDEO_REAL_TIME;
   params->bEnableDenoise = false;
   params->eSpsPpsIdStrategy = SPS_LISTING;
   params->iMultipleThreadIdc = threads;
@@ -57,7 +59,13 @@ void SetUpOpenH264Params(media::VideoCodecProfile profile,
   if (options.bitrate.has_value()) {
     auto& bitrate = options.bitrate.value();
     params->iRCMode = RC_BITRATE_MODE;
-    params->iTargetBitrate = base::saturated_cast<int>(bitrate.target_bps());
+    if (bitrate.target_bps() != 0) {
+      params->iTargetBitrate = base::saturated_cast<int>(bitrate.target_bps());
+    } else {
+      params->iTargetBitrate =
+          base::saturated_cast<int>(GetDefaultVideoEncodeBitrate(
+              options.frame_size, options.framerate.value_or(30)));
+    }
   } else {
     params->iRCMode = RC_OFF_MODE;
   }

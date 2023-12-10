@@ -19,6 +19,7 @@
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/floss/exported_callback_manager.h"
 #include "device/bluetooth/floss/floss_dbus_client.h"
+#include "device/bluetooth/floss/floss_version.h"
 
 namespace dbus {
 class PropertySet;
@@ -122,6 +123,9 @@ class DEVICE_BLUETOOTH_EXPORT FlossManagerClient
                                  bool enabled,
                                  ResponseCallback<Void> callback);
 
+  // Gets Floss API version.
+  virtual base::Version GetFlossApiVersion() const;
+
   // Invoke D-Bus API to enable or disable LL privacy.
   virtual void SetLLPrivacy(ResponseCallback<bool> callback, const bool enable);
 
@@ -133,7 +137,11 @@ class DEVICE_BLUETOOTH_EXPORT FlossManagerClient
   void Init(dbus::Bus* bus,
             const std::string& service_name,
             const int adapter_index,
+            base::Version version,
             base::OnceClosure on_ready) override;
+
+  // Whether the manager client has been initialized successfully.
+  bool IsInitialized() const { return init_; }
 
  protected:
   friend class FlossManagerClientTest;
@@ -153,6 +161,12 @@ class DEVICE_BLUETOOTH_EXPORT FlossManagerClient
                        int retry,
                        int retry_wait_ms,
                        absl::optional<ResponseCallback<bool>> cb);
+
+  // Make actual D-Bus call to retrieve Floss API version from daemon.
+  void DoGetFlossApiVersion();
+
+  // Checks if it is safe to use the API exported by the Floss daemon.
+  bool IsCompatibleFlossApi();
 
   // Handle response to |GetDefaultAdapter| DBus method call.
   void HandleGetDefaultAdapter(DBusResult<int32_t> response);
@@ -183,6 +197,9 @@ class DEVICE_BLUETOOTH_EXPORT FlossManagerClient
 
   // Completion of |SetFlossEnabled|.
   void CompleteSetFlossEnabled(DBusResult<bool> ret);
+
+  // Handles response to |DoGetFlossApiVersion|.
+  void HandleGetFlossApiVersion(DBusResult<uint32_t> response);
 
   // Get active adapters and register for callbacks with manager object.
   void RegisterWithManager();
@@ -223,6 +240,9 @@ class DEVICE_BLUETOOTH_EXPORT FlossManagerClient
 
   // List of observers interested in event notifications from this client.
   base::ObserverList<Observer> observers_;
+
+  // Whether the manager client has been initialized successfully.
+  bool init_ = false;
 
  private:
   // Handle response to SetAdapterEnabled

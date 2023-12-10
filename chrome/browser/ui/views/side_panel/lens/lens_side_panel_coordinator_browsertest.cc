@@ -470,16 +470,14 @@ class SearchImageWithSidePanelCompanionEnabled
     ASSERT_TRUE(embedded_test_server()->Start());
 
     // This test covers when the companion and standalone features are enabled,
-    // but image search on companion is disabled and Lens is set to be
-    // contextual.
+    // but image search on companion is disabled.
     base::test::ScopedFeatureList features;
     features.InitWithFeaturesAndParameters(
         {{lens::features::kLensStandalone,
           {{lens::features::kHomepageURLForLens.name,
             GetLensImageSearchURL().spec()}}},
          {companion::features::internal::kSidePanelCompanion,
-          {{"open-companion-for-image-search", "false"},
-           {"open-contextual-lens-panel", "true"}}},
+          {{"open-companion-for-image-search", "false"}}},
          {lens::features::kEnableImageSearchSidePanelFor3PDse, {{}}}},
         {});
     InProcessBrowserTest::SetUp();

@@ -1721,7 +1721,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Prerender.Experimental.ActivationIPCDelay" units="ms"
-    expires_after="2024-01-28">
+    expires_after="2024-03-31">
   <owner>lingqi@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>
@@ -1973,16 +1973,15 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
-    name="Prerender.Experimental.ReceivedPrerendersPerPrimaryPageChangedCount{PrerenderTriggerType}{EagernessCategory}"
+    name="Prerender.Experimental.ReceivedPrerendersPerPrimaryPageChangedCount2{PrerenderTriggerType}{EagernessCategory}"
     units="count" expires_after="2024-03-03">
   <owner>taiyo@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>
-    Records the number of eventually received speculation rules prerender
-    triggers with eagerness per primary page changed, classified with their
-    eagerness. This is coutend via started_prerenders_ on PrerendererImpl and
-    recorded when primary page is changed and
-    PrerendererImpl::CancelStartedPrerenders is called.
+    Records the number of received speculation rules prerender triggers with
+    eagerness per primary page changed, classified with their eagerness. This is
+    coutend per PrerendererImpl::MaybePrerender and recorded when primary page
+    is changed and PrerendererImpl::CancelStartedPrerenders is called.
 
     Note that this metric only records where PrerenderTriggerType is
     SpeculationRule and SpeculationRuleFromIsolatedWorld.
@@ -1995,18 +1994,6 @@ chromium-metrics-reviews@google.com.
     <variant name=".NonEager"/>
     <variant name=".Total"/>
   </token>
-</histogram>
-
-<histogram
-    name="Prerender.Experimental.ResourceLoadingBlockedByClientByType{PrerenderTriggerType}"
-    enum="RequestDestination" expires_after="2023-12-03">
-  <owner>lingqi@chromium.org</owner>
-  <owner>chrome-prerendering@google.com</owner>
-  <summary>
-    Recorded by RecordBlockedByClientResourceType when prerender is cancelled
-    due to the restriction that client blocks a resource loading.
-  </summary>
-  <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
 </histogram>
 
 <histogram

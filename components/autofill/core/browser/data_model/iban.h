@@ -116,24 +116,28 @@ class Iban : public AutofillDataModel {
   void set_record_type(RecordType record_type) { record_type_ = record_type; }
 
   const std::u16string& prefix() const { return prefix_; }
-  void set_prefix(const std::u16string& prefix) { prefix_ = prefix; }
+  void set_prefix(std::u16string prefix);
   const std::u16string& suffix() const { return suffix_; }
-  void set_suffix(const std::u16string& suffix) { suffix_ = suffix; }
+  void set_suffix(std::u16string suffix);
   int length() const { return length_; }
-  void set_length(int length) { length_ = length; }
+  void set_length(int length);
 
   // For local IBANs, checks on `IsValid(value_)`. Always returns true for
   // server-based IBANs because server-based IBANs don't store the full `value`.
   bool IsValid();
 
-  // Converts value (E.g., CH12 1234 1234 1234 1234) of IBAN to a partially
-  // masked text formatted by the following rules:
+  // Construct an IBAN identifier from `prefix_`, `suffix_`, `length_` (and
+  // `value_` if it's a local-based IBAN) by the following rules:
   // 1. Always reveal the first and the last four characters.
   // 2. Mask the remaining digits if `is_value_masked` is true, otherwise,
-  //    display the digits.
+  //    display the digits. `is_value_masked` is true only for local IBANs
+  //    because revealing a server IBAN needs an additional retrieval step from
+  //    the GPay server.
   // 3. The identifier string will be arranged in groups of four with a space
   //    between each group.
   //
+  // Note: The condition "is_value_masked" being false will not function
+  //       properly for IBANs with the "kServerIban" record type.
   // Here are some examples:
   // BE71 0961 2345 6769 will be shown as: BE71 **** **** 6769.
   // CH56 0483 5012 3456 7800 9 will be shown as: CH56 **** **** **** *800 9.
@@ -145,6 +149,10 @@ class Iban : public AutofillDataModel {
   // (e.g., '-' and ' ').
   // TODO(crbug.com/1422672): Cleanup and use value().
   std::u16string GetStrippedValue() const;
+
+  // Returns true if the `prefix_`, `suffix_` and `length_` of the given `iban`
+  // matches this IBAN.
+  bool MatchesPrefixSuffixAndLength(const Iban& iban) const;
 
  private:
   // To distinguish between local IBANs, utilize the Guid as the identifier. For

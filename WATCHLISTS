@@ -984,8 +984,15 @@
       'filepath': 'dbus/',
     },
     'desktop_in_product_help': {
-      'filepath': 'chrome/browser/ui/in_product_help|'\
-                  'chrome/browser/ui/views/in_product_help',
+      'filepath': 'components/feature_engagement/|'\
+                  'components/user_education/|'\
+                  'chrome/browser/resources/internals/user_education/|'\
+                  'chrome/browser/resources/whats_new/|'\
+                  'chrome/browser/user_education/|'\
+                  'chrome/browser/ui/user_education/|'\
+                  'chrome/browser/ui/views/user_education/|'\
+                  'chrome/browser/ui/webui/internals/user_education/|'\
+                  'chrome/browser/ui/webui/whats_new/',
     },
     'device_bluetooth': {
       'filepath': 'device/.*bluetooth'
@@ -1033,6 +1040,11 @@
     'download_bubble': {
       'filepath': 'chrome/browser/download/bubble/|' \
                   'chrome/browser/ui/views/download/bubble/'
+    },
+    'download_status_updater_chromeos': {
+      'filepath': 'chrome/browser/ash/crosapi/download_status_updater|' \
+                  'chrome/browser/download/download_status_updater_lacros|' \
+                  'chrome/browser/lacros/download_status_updater'
     },
     'downloads_ui': {
       'filepath': 'chrome/browser/resources/downloads/|' \
@@ -1524,6 +1536,11 @@
                   'chrome/browser/ui/webui/nearby_internals/|'\
                   'chrome/browser/ui/webui/nearby_share/|'\
                   'chrome/services/sharing/'
+    },
+    'nearby_presence': {
+      'filepath': 'chrome/browser/ash/nearby/|'\
+                  'chromeos/ash/components/nearby/presence/|'\
+                  'chromeos/ash/services/nearby/'
     },
     'net': {
       'filepath': 'net/',
@@ -2526,7 +2543,6 @@
                                 'dschulze@chromium.org',
                                 'fmalita+watch@chromium.org',
                                 'fserb+watch@chromium.org',
-                                'pdr+graphicswatchlist@chromium.org',
                                 'schenney@chromium.org'],
     'blink_preloadScanner': ['yoavweiss@chromium.org'],
     'blink_prerender': ['gavinp+prerender@chromium.org',
@@ -2565,7 +2581,6 @@
                                    'bokan@chromium.org'],
     'blink_w3ctests': ['blink-reviews-w3ctests@chromium.org'],
     'blink_webp': ['jzern@chromium.org',
-                   'skal@google.com',
                    'urvang@chromium.org',
                    'mbarowsky+watch-blink-webp@chromium.org'],
     'blink_websockets': ['yhirano+watch@chromium.org',
@@ -2734,7 +2749,9 @@
                    'pnevase@microsoft.com'],
     'data_decoder': ['mbarowsky+watch-data-decoder@chromium.org'],
     'dbus': ['hashimoto+watch@chromium.org'],
-    'desktop_in_product_help': ['collinbaker+watch@chromium.org'],
+    'desktop_in_product_help': ['dfried+watch@chromium.org',
+                                'mickeyburks+watch@chromium.org',
+                                'estalin+watch@chromium.org'],
     'device_bluetooth': ['mattreynolds+watch@chromium.org'],
     'device_chooser': ['mattreynolds+watch@chromium.org',
                        'odejesush+watch@chromium.org'],
@@ -2763,6 +2780,7 @@
     'download': ['dtrainor+watch@chromium.org'],
     'download_bubble': ['xinghuilu+watch@chromium.org',
                         'drubery+watch@chromium.org'],
+    'download_status_updater_chromeos': ['cros-system-ui-productivity-eng+reviews@google.com'],
     'downloads_ui': ['dtrainor+watch@chromium.org',
                      'drubery+watch@chromium.org'],
     'drive_resource_metadata': ['hashimoto+watch@chromium.org'],
@@ -2873,7 +2891,6 @@
                'marpan@chromium.org',
                'mbonadei@chromium.org'],
     'libwebp': ['jzern@chromium.org',
-                'skal@google.com',
                 'urvang@chromium.org'],
     'libxml_xslt': ['dominicc+watchlist@chromium.org'],
     'linux_sandboxing': ['mpdenton+watch@chromium.org',
@@ -2940,6 +2957,12 @@
                'pushi+watch-nearby@google.com',
                'suetfei+watch-nearby@google.com',
                'xlythe+watch-nearby@google.com'],
+    'nearby_presence': ['ajayramamurthy+watch-presence@google.com',
+                        'akingsb+watch-presence@google.com',
+                        'crisrael+watch-presence@google.com',
+                        'hansberry+watch-presence@chromium.org',
+                        'julietlevesque+watch-presence@google.com',
+                        'polner+watch-presence@google.com'],
     'net': ['net-reviews@chromium.org'],
     'net_base': ['bnc+watch@chromium.org'],
     'net_http2': ['bnc+watch@chromium.org'],

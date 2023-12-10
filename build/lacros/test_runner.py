@@ -14,7 +14,7 @@ Example usages
   ./build/lacros/test_runner.py test out/lacros/url_unittests
   ./build/lacros/test_runner.py test out/lacros/browser_tests
 
-  The commands above run url_unittests and browser_tests respecitively, and more
+  The commands above run url_unittests and browser_tests respectively, and more
   specifically, url_unitests is executed directly while browser_tests is
   executed with the latest version of prebuilt ash-chrome, and the behavior is
   controlled by |_TARGETS_REQUIRE_ASH_CHROME|, and it's worth noting that the
@@ -117,7 +117,6 @@ _TARGETS_REQUIRE_MOJO_CROSAPI = [
     # serially.
     'interactive_ui_tests',
     'lacros_chrome_browsertests',
-    'lacros_chrome_browsertests_run_in_series'
 ]
 
 # Default test filter file for each target. These filter files will be
@@ -574,6 +573,7 @@ lacros_version_skew_tests_v92.0.4515.130/test_ash_chrome
         '--disable-lacros-keep-alive',
         '--disable-login-lacros-opening',
         '--enable-field-trial-config',
+        '--enable-logging=stderr',
         '--enable-features=LacrosSupport,LacrosPrimary,LacrosOnly',
         '--ash-ready-file-path=%s' % ash_ready_file,
         '--wayland-server-socket=%s' % ash_wayland_socket_name,

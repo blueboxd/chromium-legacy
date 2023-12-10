@@ -329,6 +329,7 @@
 <translation id="3619115746895587757">Капучына</translation>
 <translation id="3619593063686672873">Няма нядаўніх відэа</translation>
 <translation id="3634507049637220048">Сетка <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, знаходзіцца пад кіраваннем адміністратара, падрабязныя звесткі</translation>
+<translation id="36451918667380448">Вы не можаце змяніць аператара мабільнай сеткі. Па дапамогу звяртайцеся да свайго аператара.</translation>
 <translation id="3645233063072417428">Перамешчана элементаў: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="3658269352872031728">Выбрана файлаў: <ph name="SELECTED_FILE_COUNT" /></translation>
 <translation id="3685122418104378273">Пры выкарыстанні мабільнай перадачы даных са стандартнымі наладамі сінхранізацыя з Google Дыскам выключана.</translation>
@@ -1014,6 +1015,7 @@
 <translation id="8698877009525468705">Гэты файл з'яўляецца канфідэнцыяльным, і на яго распаўсюджваюцца абмежаванні зададзенай адміністратарам палітыкі.</translation>
 <translation id="8712637175834984815">Зразумела</translation>
 <translation id="8713112442029511308">Мальтыйская</translation>
+<translation id="8714138378966541668">Заблакіравана аператарам</translation>
 <translation id="8714406895390098252">Веласіпед</translation>
 <translation id="8719721339511222681">Выбрана: <ph name="ENTRY_NAME" />.</translation>
 <translation id="872537912056138402">Харвацкая</translation>

@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind.h"
 #include "chrome/browser/ash/accessibility/accessibility_test_utils.h"
 #include "chrome/browser/ash/accessibility/dictation_test_utils.h"
 #include "chrome/browser/ash/accessibility/magnification_manager.h"
@@ -54,6 +55,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/accessibility_features.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/ime/ash/component_extension_ime_manager.h"
 #include "ui/base/ime/ash/extension_ime_util.h"
 #include "ui/base/ime/ash/input_method_manager.h"
@@ -449,9 +451,7 @@ class AccessibilityManagerTest : public MixinBasedInProcessBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     scoped_feature_list_.InitWithFeatures(
-        {features::kOnDeviceSpeechRecognition,
-         ::features::kExperimentalAccessibilityColorEnhancementSettings},
-        {});
+        {features::kOnDeviceSpeechRecognition}, {});
     MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
   }
 
@@ -1973,6 +1973,37 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerWithAccessibilityServiceOOBETest,
   SetMagnifierEnabled(false);
 }
 
+class AccessibilityManagerWithManifestV3Test : public AccessibilityManagerTest {
+ public:
+  AccessibilityManagerWithManifestV3Test() = default;
+  AccessibilityManagerWithManifestV3Test(
+      const AccessibilityManagerWithManifestV3Test&) = delete;
+  AccessibilityManagerWithManifestV3Test& operator=(
+      const AccessibilityManagerWithManifestV3Test&) = delete;
+  ~AccessibilityManagerWithManifestV3Test() override = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(
+        ::switches::kEnableExperimentalAccessibilityManifestV3);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(AccessibilityManagerWithManifestV3Test, DoesNotCrash) {
+  SetSpokenFeedbackEnabled(true);
+  SetSelectToSpeakEnabled(true);
+  SetSwitchAccessEnabled(true);
+  SetAutoclickEnabled(true);
+  SetDictationEnabled(true);
+  SetMagnifierEnabled(true);
+
+  SetSpokenFeedbackEnabled(false);
+  SetSelectToSpeakEnabled(false);
+  SetSwitchAccessEnabled(false);
+  SetAutoclickEnabled(false);
+  SetDictationEnabled(false);
+  SetMagnifierEnabled(false);
+}
+
 enum class DictationKeyboardShortcutType { kKey, kKeyboardCombo };
 
 class AccessibilityManagerDictationKeyboardImprovementsTest
@@ -2091,7 +2122,11 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerDictationKeyboardImprovementsTest,
   DictationTestUtils utils =
       DictationTestUtils(speech::SpeechRecognitionType::kNetwork,
                          DictationTestUtils::EditableType::kInput);
-  utils.EnableDictation(browser());
+  utils.EnableDictation(
+      /*profile=*/AccessibilityManager::Get()->profile(),
+      /*navigate_to_url=*/base::BindLambdaForTesting([this](const GURL& url) {
+        ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+      }));
 
   // If Dictation is already enabled, then pressing the Dictation key should
   // toggle Dictation on/off normally.

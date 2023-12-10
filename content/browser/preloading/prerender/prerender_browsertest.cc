@@ -37,6 +37,9 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/browser/back_forward_cache_test_util.h"
 #include "content/browser/portal/portal.h"
+#include "content/browser/preloading/prefetch/prefetch_features.h"
+#include "content/browser/preloading/prefetch/prefetch_service.h"
+#include "content/browser/preloading/prefetch/prefetch_test_utils.h"
 #include "content/browser/preloading/preloading.h"
 #include "content/browser/preloading/preloading_attempt_impl.h"
 #include "content/browser/preloading/preloading_data_impl.h"
@@ -64,8 +67,6 @@
 #include "content/public/browser/document_user_data.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/prerender_web_contents_delegate.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -399,6 +400,10 @@ class PrerenderBrowserTest : public ContentBrowserTest,
     prerender_helper_->AddPrerenderAsync(prerendering_url);
   }
 
+  void AddPrefetchAsync(const GURL& prefetch_url) {
+    prerender_helper_->AddPrefetchAsync(prefetch_url);
+  }
+
   void AddMultiplePrerenderAsync(const std::vector<GURL>& prerendering_urls) {
     prerender_helper_->AddPrerendersAsync(prerendering_urls, absl::nullopt,
                                           std::string());
@@ -415,6 +420,29 @@ class PrerenderBrowserTest : public ContentBrowserTest,
       blink::mojom::SpeculationEagerness eagerness) {
     prerender_helper_->AddPrerendersAsync({prerendering_url}, eagerness,
                                           std::string());
+  }
+
+  std::unique_ptr<PrerenderHandle> AddEmbedderTriggeredPrerender(
+      const GURL& prerendering_url,
+      PreloadingAttempt* preloading_attempt = nullptr) {
+    std::unique_ptr<PrerenderHandle> handle =
+        AddEmbedderTriggeredPrerenderAsync(prerendering_url,
+                                           preloading_attempt);
+    EXPECT_TRUE(handle);
+    test::PrerenderTestHelper::WaitForPrerenderLoadCompletion(*web_contents(),
+                                                              prerendering_url);
+    return handle;
+  }
+
+  std::unique_ptr<PrerenderHandle> AddEmbedderTriggeredPrerenderAsync(
+      const GURL& prerendering_url,
+      PreloadingAttempt* preloading_attempt = nullptr) {
+    return web_contents_impl()->StartPrerendering(
+        prerendering_url, PrerenderTriggerType::kEmbedder,
+        "EmbedderSuffixForTest",
+        ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                  ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
+        PreloadingHoldbackStatus::kUnspecified, preloading_attempt);
   }
 
   bool AddTestUtilJS(RenderFrameHost* host) {
@@ -526,15 +554,38 @@ class PrerenderBrowserTest : public ContentBrowserTest,
     return *prediction_ukm_entry_builder_;
   }
 
+  void ExpectPreloadingAttemptUkm(
+      const std::vector<UkmEntry>& expected_attempt_entries) {
+    auto attempt_entries = test_ukm_recorder()->GetEntries(
+        Preloading_Attempt::kEntryName, test::kPreloadingAttemptUkmMetrics);
+    EXPECT_EQ(attempt_entries.size(), expected_attempt_entries.size());
+    EXPECT_THAT(attempt_entries,
+                testing::UnorderedElementsAreArray(expected_attempt_entries))
+        << test::ActualVsExpectedUkmEntriesToString(attempt_entries,
+                                                    expected_attempt_entries);
+  }
+
   void ExpectPreloadingAttemptPreviousPrimaryPageUkm(
-      const UkmEntry& attempt_expected_entry) {
-    auto attempt_ukm_entries = test_ukm_recorder()->GetEntries(
+      const UkmEntry& expected_attempt_entry) {
+    auto attempt_entries = test_ukm_recorder()->GetEntries(
         Preloading_Attempt_PreviousPrimaryPage::kEntryName,
         test::kPreloadingAttemptUkmMetrics);
-    ASSERT_EQ(attempt_ukm_entries.size(), 1u);
-    EXPECT_EQ(attempt_ukm_entries[0], attempt_expected_entry)
-        << test::ActualVsExpectedUkmEntryToString(attempt_ukm_entries[0],
-                                                  attempt_expected_entry);
+    ASSERT_EQ(attempt_entries.size(), 1u);
+    EXPECT_EQ(attempt_entries[0], expected_attempt_entry)
+        << test::ActualVsExpectedUkmEntryToString(attempt_entries[0],
+                                                  expected_attempt_entry);
+  }
+
+  void ExpectPreloadingPredictionUkm(
+      const std::vector<UkmEntry>& expected_prediction_entries) {
+    auto prediction_entries =
+        test_ukm_recorder()->GetEntries(Preloading_Prediction::kEntryName,
+                                        test::kPreloadingPredictionUkmMetrics);
+    EXPECT_EQ(prediction_entries.size(), expected_prediction_entries.size());
+    EXPECT_THAT(prediction_entries,
+                testing::UnorderedElementsAreArray(expected_prediction_entries))
+        << test::ActualVsExpectedUkmEntriesToString(
+               prediction_entries, expected_prediction_entries);
   }
 
   void TestHostPrerenderingState(const GURL& prerender_url) {
@@ -678,6 +729,22 @@ class PrerenderBrowserTest : public ContentBrowserTest,
 
   const base::HistogramTester& histogram_tester() { return histogram_tester_; }
 
+  std::string GetBodyTextContent() {
+    base::RunLoop loop;
+    base::Value result;
+    web_contents()->GetPrimaryMainFrame()->ExecuteJavaScriptForTests(
+        base::UTF8ToUTF16(std::string("document.body.textContent.trim()")),
+        base::BindOnce(
+            [](base::RunLoop* loop, base::Value* result, base::Value value) {
+              *result = std::move(value);
+              loop->QuitClosure().Run();
+            },
+            &loop, &result));
+    loop.Run();
+    CHECK(result.is_string());
+    return result.GetString();
+  }
+
   // Stores all the navigation_ids for all navigations. This is used to check
   // that we record UKMs for correct SourceIds.
   std::vector<int64_t> navigation_ids_;
@@ -776,26 +843,19 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SpeculationRulesPrerender) {
     EXPECT_EQ(activation_id, prediction_ukm_entries.back().source_id);
     EXPECT_EQ(activation_id, attempt_ukm_entries.back().source_id);
 
-    UkmEntry attempt_expected_entry = attempt_ukm_entry_builder().BuildEntry(
+    ExpectPreloadingAttemptUkm({attempt_ukm_entry_builder().BuildEntry(
         activation_id, PreloadingType::kPrerender,
         PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
         PreloadingTriggeringOutcome::kSuccess,
         PreloadingFailureReason::kUnspecified,
         /*accurate=*/true,
         /*ready_time=*/kMockElapsedTime,
-        blink::mojom::SpeculationEagerness::kEager);
+        blink::mojom::SpeculationEagerness::kEager)});
 
-    UkmEntry prediction_expected_entry =
-        prediction_ukm_entry_builder().BuildEntry(ukm_source_id,
-                                                  /*confidence=*/100,
-                                                  /*accurate_prediction=*/true);
-
-    EXPECT_EQ(attempt_ukm_entries[0], attempt_expected_entry)
-        << test::ActualVsExpectedUkmEntryToString(attempt_ukm_entries[0],
-                                                  attempt_expected_entry);
-    EXPECT_EQ(prediction_ukm_entries[0], prediction_expected_entry)
-        << test::ActualVsExpectedUkmEntryToString(prediction_ukm_entries[1],
-                                                  prediction_expected_entry);
+    ExpectPreloadingPredictionUkm({prediction_ukm_entry_builder().BuildEntry(
+        ukm_source_id,
+        /*confidence=*/100,
+        /*accurate_prediction=*/true)});
   }
 
   // Collect metrics we recorded the renderer processes.
@@ -803,6 +863,140 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SpeculationRulesPrerender) {
   histogram_tester().ExpectTotalCount(
       "Prerender.Experimental.ActivationIPCDelay", 1u);
 }
+
+enum class PrerenderingResult { kSuccess, kFailed };
+enum class BodySize { kSmall, kLarge };
+
+class PrerenderAndPrefetchBrowserTest
+    : public PrerenderBrowserTest,
+      public testing::WithParamInterface<
+          std::tuple<PrerenderingResult, BodySize, PrefetchReusableForTests>> {
+ private:
+  void SetUp() override {
+    switch (std::get<2>(GetParam())) {
+      case PrefetchReusableForTests::kDisabled:
+        sub_feature_list_.InitAndDisableFeature(features::kPrefetchReusable);
+        break;
+      case PrefetchReusableForTests::kEnabled:
+        // Set the limit to the size of `/find_in_long_page.html` - 1, to check
+        // that exceeding the limit by 1 byte disallows reuse.
+        sub_feature_list_.InitWithFeaturesAndParameters(
+            {{features::kPrefetchReusable,
+              {{features::kPrefetchReusableBodySizeLimit.name, "112262"}}}},
+            {});
+        break;
+    }
+    PrerenderBrowserTest::SetUp();
+  }
+
+  void TearDown() override {
+    PrerenderBrowserTest::TearDown();
+    sub_feature_list_.Reset();
+  }
+
+  base::test::ScopedFeatureList sub_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(PrerenderAndPrefetchBrowserTest,
+                       SpeculationRulesPrefetchThenPrerender) {
+  const GURL kInitialUrl = GetUrl("/empty.html");
+  const GURL kPrerenderingUrl =
+      std::get<1>(GetParam()) == BodySize::kSmall
+          ? GetUrl("/simple_page.html?prerender")
+          : GetUrl("/find_in_long_page.html?prerender");
+
+  // Navigate to an initial page.
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+  ASSERT_EQ(web_contents()->GetLastCommittedURL(), kInitialUrl);
+
+  // Start prefetching `kPrerenderingUrl` and wait for its completion.
+  PrefetchService* prefetch_service = PrefetchService::GetFromFrameTreeNodeId(
+      current_frame_host()->GetFrameTreeNodeId());
+  ASSERT_TRUE(prefetch_service);
+  base::RunLoop run_loop;
+  prefetch_service->SetOnPrefetchResponseCompletedForTesting(
+      base::BindRepeating(
+          [](base::RunLoop* run_loop, const GURL& url,
+             base::WeakPtr<PrefetchContainer> prefetch_container) {
+            CHECK(prefetch_container);
+            CHECK_EQ(prefetch_container->GetURL(), url);
+            run_loop->Quit();
+          },
+          &run_loop, kPrerenderingUrl));
+  ASSERT_EQ(GetRequestCount(kPrerenderingUrl), 0);
+  AddPrefetchAsync(kPrerenderingUrl);
+  run_loop.Run();
+  ASSERT_EQ(GetRequestCount(kPrerenderingUrl), 1);
+
+  // Start prerendering `kPrerenderingUrl`.
+  int host_id = AddPrerender(kPrerenderingUrl);
+  ASSERT_NE(host_id, RenderFrameHost::kNoFrameTreeNodeId);
+  WaitForPrerenderLoadCompletion(host_id);
+  ASSERT_EQ(GetRequestCount(kPrerenderingUrl), 1);
+
+  switch (std::get<0>(GetParam())) {
+    case PrerenderingResult::kSuccess:
+      EXPECT_TRUE(HasHostForUrl(kPrerenderingUrl));
+      break;
+    case PrerenderingResult::kFailed:
+      // Cancel prerendered page.
+      ASSERT_TRUE(web_contents_impl()->CancelPrerendering(
+          FrameTreeNode::GloballyFindByID(host_id),
+          PrerenderFinalStatus::kCancelAllHostsForTesting));
+      EXPECT_FALSE(HasHostForUrl(kPrerenderingUrl));
+      break;
+  }
+
+  // Start main navigation.
+  NavigationHandleObserver activation_observer(web_contents(),
+                                               kPrerenderingUrl);
+  NavigatePrimaryPage(kPrerenderingUrl);
+
+  switch (std::get<0>(GetParam())) {
+    case PrerenderingResult::kSuccess:
+      // Main navigation activates the prerendered page even for the large page.
+      ExpectFinalStatusForSpeculationRule(PrerenderFinalStatus::kActivated);
+      EXPECT_EQ(GetRequestCount(kPrerenderingUrl), 1);
+      break;
+    case PrerenderingResult::kFailed:
+      // Main navigation shouldn't activate prerendered page (because it's
+      // canceled).
+      ExpectFinalStatusForSpeculationRule(
+          PrerenderFinalStatus::kCancelAllHostsForTesting);
+
+      if (std::get<1>(GetParam()) == BodySize::kSmall &&
+          std::get<2>(GetParam()) == PrefetchReusableForTests::kEnabled) {
+        // The prefetched result should be still used for navigation for small
+        // body, because it fits within PrefetchDataPipeTee buffer limit.
+        EXPECT_EQ(GetRequestCount(kPrerenderingUrl), 1);
+      } else {
+        // The prefetched result can't be used for navigation for large body
+        // due to PrefetchDataPipeTee buffer limit.
+        EXPECT_EQ(GetRequestCount(kPrerenderingUrl), 2);
+      }
+      break;
+  }
+
+  switch (std::get<1>(GetParam())) {
+    case BodySize::kSmall:
+      EXPECT_EQ(GetBodyTextContent(), "Basic html test.");
+      break;
+
+    case BodySize::kLarge:
+      //  `document.body.textContent.trim().length` for
+      //  `/find_in_long_page.html`
+      EXPECT_EQ(GetBodyTextContent().size(), 102076u);
+      break;
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    PrerenderAndPrefetchBrowserTest,
+    testing::Combine(testing::Values(PrerenderingResult::kSuccess,
+                                     PrerenderingResult::kFailed),
+                     testing::Values(BodySize::kSmall, BodySize::kLarge),
+                     testing::ValuesIn(PrefetchReusableValuesForTests())));
 
 // Tests that the speculationrules-triggered prerender would be destroyed after
 // its initiator navigates away.
@@ -822,39 +1016,20 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SpeculationInitiatorNavigateAway) {
   // The prerender host should be destroyed.
   EXPECT_FALSE(HasHostForUrl(kPrerenderingUrl));
 
-  {
-    // Cross-check that in case where the navigation happens to a different
-    // page, we log the correct metrics.
-    ukm::SourceId ukm_source_id = PrimaryPageSourceId();
-    auto attempt_ukm_entries = test_ukm_recorder()->GetEntries(
-        Preloading_Attempt::kEntryName, test::kPreloadingAttemptUkmMetrics);
-    auto prediction_ukm_entries =
-        test_ukm_recorder()->GetEntries(Preloading_Prediction::kEntryName,
-                                        test::kPreloadingPredictionUkmMetrics);
-    EXPECT_EQ(prediction_ukm_entries.size(), 1u);
-    EXPECT_EQ(attempt_ukm_entries.size(), 1u);
-
-    UkmEntry attempt_expected_entry = attempt_ukm_entry_builder().BuildEntry(
-        ukm_source_id, PreloadingType::kPrerender,
-        PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
-        PreloadingTriggeringOutcome::kReady,
-        PreloadingFailureReason::kUnspecified,
-        /*accurate=*/false,
-        /*ready_time=*/kMockElapsedTime,
-        blink::mojom::SpeculationEagerness::kEager);
-
-    UkmEntry prediction_expected_entry =
-        prediction_ukm_entry_builder().BuildEntry(
-            ukm_source_id, /*confidence=*/100,
-            /*accurate_prediction=*/false);
-
-    EXPECT_EQ(attempt_ukm_entries[0], attempt_expected_entry)
-        << test::ActualVsExpectedUkmEntryToString(attempt_ukm_entries[0],
-                                                  attempt_expected_entry);
-    EXPECT_EQ(prediction_ukm_entries[0], prediction_expected_entry)
-        << test::ActualVsExpectedUkmEntryToString(prediction_ukm_entries[1],
-                                                  prediction_expected_entry);
-  }
+  // Cross-check that in case where the navigation happens to a different page,
+  // we log the correct metrics.
+  ukm::SourceId ukm_source_id = PrimaryPageSourceId();
+  ExpectPreloadingAttemptUkm({attempt_ukm_entry_builder().BuildEntry(
+      ukm_source_id, PreloadingType::kPrerender,
+      PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
+      PreloadingTriggeringOutcome::kReady,
+      PreloadingFailureReason::kUnspecified,
+      /*accurate=*/false,
+      /*ready_time=*/kMockElapsedTime,
+      blink::mojom::SpeculationEagerness::kEager)});
+  ExpectPreloadingPredictionUkm({prediction_ukm_entry_builder().BuildEntry(
+      ukm_source_id, /*confidence=*/100,
+      /*accurate_prediction=*/false)});
 }
 
 // Tests that clicking a link can activate a prerender.
@@ -968,25 +1143,15 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
   ExpectFinalStatusForSpeculationRule(PrerenderFinalStatus::kActivated);
 
-  {
-    ukm::SourceId ukm_source_id = activation_observer.next_page_ukm_source_id();
-    auto attempt_ukm_entries = test_ukm_recorder()->GetEntries(
-        Preloading_Attempt::kEntryName, test::kPreloadingAttemptUkmMetrics);
-    ASSERT_EQ(attempt_ukm_entries.size(), 1u);
-
-    UkmEntry attempt_expected_entry = attempt_ukm_entry_builder().BuildEntry(
-        ukm_source_id, PreloadingType::kPrerender,
-        PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
-        PreloadingTriggeringOutcome::kSuccess,
-        PreloadingFailureReason::kUnspecified,
-        /*accurate=*/true,
-        /*ready_time=*/kMockElapsedTime,
-        blink::mojom::SpeculationEagerness::kEager);
-
-    EXPECT_EQ(attempt_ukm_entries[0], attempt_expected_entry)
-        << test::ActualVsExpectedUkmEntryToString(attempt_ukm_entries[0],
-                                                  attempt_expected_entry);
-  }
+  ukm::SourceId ukm_source_id = activation_observer.next_page_ukm_source_id();
+  ExpectPreloadingAttemptUkm({attempt_ukm_entry_builder().BuildEntry(
+      ukm_source_id, PreloadingType::kPrerender,
+      PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
+      PreloadingTriggeringOutcome::kSuccess,
+      PreloadingFailureReason::kUnspecified,
+      /*accurate=*/true,
+      /*ready_time=*/kMockElapsedTime,
+      blink::mojom::SpeculationEagerness::kEager)});
 
   // The navigation occurred in a new WebContents, so the original WebContents
   // should still be showing the initial trigger page.
@@ -1082,25 +1247,15 @@ IN_PROC_BROWSER_TEST_F(
 
   ExpectFinalStatusForSpeculationRule(PrerenderFinalStatus::kActivated);
 
-  {
-    ukm::SourceId ukm_source_id = activation_observer.next_page_ukm_source_id();
-    auto attempt_ukm_entries = test_ukm_recorder()->GetEntries(
-        Preloading_Attempt::kEntryName, test::kPreloadingAttemptUkmMetrics);
-    ASSERT_EQ(attempt_ukm_entries.size(), 1u);
-
-    UkmEntry attempt_expected_entry = attempt_ukm_entry_builder().BuildEntry(
-        ukm_source_id, PreloadingType::kPrerender,
-        PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
-        PreloadingTriggeringOutcome::kSuccess,
-        PreloadingFailureReason::kUnspecified,
-        /*accurate=*/true,
-        /*ready_time=*/kMockElapsedTime,
-        blink::mojom::SpeculationEagerness::kEager);
-
-    EXPECT_EQ(attempt_ukm_entries[0], attempt_expected_entry)
-        << test::ActualVsExpectedUkmEntryToString(attempt_ukm_entries[0],
-                                                  attempt_expected_entry);
-  }
+  ukm::SourceId ukm_source_id = activation_observer.next_page_ukm_source_id();
+  ExpectPreloadingAttemptUkm({attempt_ukm_entry_builder().BuildEntry(
+      ukm_source_id, PreloadingType::kPrerender,
+      PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
+      PreloadingTriggeringOutcome::kSuccess,
+      PreloadingFailureReason::kUnspecified,
+      /*accurate=*/true,
+      /*ready_time=*/kMockElapsedTime,
+      blink::mojom::SpeculationEagerness::kEager)});
 
   // The navigation occurred in a new WebContents, so the original WebContents
   // should still be showing the initial trigger page.
@@ -1369,35 +1524,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCancelledOn205Page) {
       PrerenderFinalStatus::kNavigationBadHttpStatus);
 }
 
-// Tests that prerender will be cancelled if client blocks resource loading.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ResourceLoadIsBlocked) {
-  GURL initial_url = GetUrl("/empty.html");
-  GURL prerendering_url = GetUrl("/page_with_image.html");
-  GURL image_resource_url(GetUrl("/blank.jpg"));
-
-  // Intercept resource loading and block it.
-  std::unique_ptr<URLLoaderInterceptor> url_interceptor =
-      URLLoaderInterceptor::SetupRequestFailForURL(image_resource_url,
-                                                   net::ERR_BLOCKED_BY_CLIENT);
-
-  // Navigate to an initial page.
-  ASSERT_TRUE(NavigateToURL(shell(), initial_url));
-  test::PrerenderHostObserver host_observer(*web_contents_impl(),
-                                            prerendering_url);
-
-  // Start a prerender and it should fail due to kResourceLoadBlockedByClient.
-  AddPrerenderAsync(prerendering_url);
-  host_observer.WaitForDestroyed();
-
-  ExpectFinalStatusForSpeculationRule(
-      PrerenderFinalStatus::kResourceLoadBlockedByClient);
-
-  histogram_tester().ExpectUniqueSample(
-      "Prerender.Experimental.ResourceLoadingBlockedByClientByType."
-      "SpeculationRule",
-      network::mojom::RequestDestination::kImage, 1);
-}
-
 namespace {
 
 // Tests that an iframe navigation whose response has either 204 or 205 doesn't
@@ -1525,25 +1651,15 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, CancelOnAuthRequested) {
   const GURL kNavigatedURL = GetUrl("/title2.html");
   ASSERT_TRUE(NavigateToURL(shell(), kNavigatedURL));
 
-  {
-    // Cross-check that Preloading.Attempt logs the correct failure reason.
-    ukm::SourceId ukm_source_id = PrimaryPageSourceId();
-    auto attempt_ukm_entries = test_ukm_recorder()->GetEntries(
-        Preloading_Attempt::kEntryName, test::kPreloadingAttemptUkmMetrics);
-
-    UkmEntry attempt_expected_entry = attempt_ukm_entry_builder().BuildEntry(
-        ukm_source_id, PreloadingType::kPrerender,
-        PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
-        PreloadingTriggeringOutcome::kFailure,
-        ToPreloadingFailureReason(PrerenderFinalStatus::kLoginAuthRequested),
-        /*accurate=*/false,
-        /*ready_time=*/absl::nullopt,
-        blink::mojom::SpeculationEagerness::kEager);
-
-    EXPECT_EQ(attempt_ukm_entries[0], attempt_expected_entry)
-        << test::ActualVsExpectedUkmEntryToString(attempt_ukm_entries[0],
-                                                  attempt_expected_entry);
-  }
+  // Cross-check that Preloading.Attempt logs the correct failure reason.
+  ExpectPreloadingAttemptUkm({attempt_ukm_entry_builder().BuildEntry(
+      PrimaryPageSourceId(), PreloadingType::kPrerender,
+      PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
+      PreloadingTriggeringOutcome::kFailure,
+      ToPreloadingFailureReason(PrerenderFinalStatus::kLoginAuthRequested),
+      /*accurate=*/false,
+      /*ready_time=*/absl::nullopt,
+      blink::mojom::SpeculationEagerness::kEager)});
 
   // Cancellation must have occurred due to authentication request.
   ExpectFinalStatusForSpeculationRule(
@@ -1650,6 +1766,8 @@ IN_PROC_BROWSER_TEST_F(
   if (base::FeatureList::IsEnabled(features::kPrerender2NewLimitAndScheduler)) {
     GTEST_SKIP();
   }
+
+  ScopedPrerenderContentBrowserClient prerender_content_browser_client;
 
   // Navigate to an initial page.
   const GURL kInitialUrl = GetUrl("/title1.html");
@@ -2051,27 +2169,17 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SameOriginRedirection) {
   EXPECT_EQ(kRedirectedUrl,
             activation_redirect_chain_observer.redirect_chain()[0]);
 
-  {
-    // Cross-check that in case redirection when the prerender navigates and
-    // user ends up navigating to the redirected URL. accurate_triggering is
-    // true.
-    ukm::SourceId ukm_source_id = activation_observer.next_page_ukm_source_id();
-    auto attempt_ukm_entries = test_ukm_recorder()->GetEntries(
-        Preloading_Attempt::kEntryName, test::kPreloadingAttemptUkmMetrics);
-
-    UkmEntry attempt_expected_entry = attempt_ukm_entry_builder().BuildEntry(
-        ukm_source_id, PreloadingType::kPrerender,
-        PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
-        PreloadingTriggeringOutcome::kSuccess,
-        PreloadingFailureReason::kUnspecified,
-        /*accurate=*/true,
-        /*ready_time=*/kMockElapsedTime,
-        blink::mojom::SpeculationEagerness::kEager);
-
-    EXPECT_EQ(attempt_ukm_entries[0], attempt_expected_entry)
-        << test::ActualVsExpectedUkmEntryToString(attempt_ukm_entries[0],
-                                                  attempt_expected_entry);
-  }
+  // Cross-check that in case redirection when the prerender navigates and user
+  // ends up navigating to the redirected URL. accurate_triggering is true.
+  ukm::SourceId ukm_source_id = activation_observer.next_page_ukm_source_id();
+  ExpectPreloadingAttemptUkm({attempt_ukm_entry_builder().BuildEntry(
+      ukm_source_id, PreloadingType::kPrerender,
+      PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
+      PreloadingTriggeringOutcome::kSuccess,
+      PreloadingFailureReason::kUnspecified,
+      /*accurate=*/true,
+      /*ready_time=*/kMockElapsedTime,
+      blink::mojom::SpeculationEagerness::kEager)});
 }
 
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, CrossSiteRedirection) {
@@ -2387,6 +2495,78 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SessionHistoryAfterActivation) {
   }
 }
 
+class PrerenderOopsifBrowserTest : public PrerenderBrowserTest {
+ public:
+  PrerenderOopsifBrowserTest() {
+    feature_list_.InitWithFeaturesAndParameters(
+        {{blink::features::kIsolateSandboxedIframes,
+          {{"grouping", "per-origin"}}}},
+        {/* disabled_features */});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Test for crbug.com/1470312.
+// Prior to the CL that introduced this test, if IsolatedSandboxedIframes are
+// enabled, and an isolated frame sends the parent a postMessage, then the
+// proxies were attached to the active page and not the prerendered  mainframe.
+// These were proxies that were created on demand when processing the
+// postMessage. (to ensure the recipient can reply to the sender frame, or to a
+// frame that the sender could reach). This led to a CHECK failure in
+// ~BrowsingContextInstance(). This test verifies that problem has been
+// resolved.
+IN_PROC_BROWSER_TEST_F(PrerenderOopsifBrowserTest,
+                       OopsifSrcdocSandboxIframeWithPostmessage) {
+  // Navigate to an initial page.
+  const GURL kInitialUrl =
+      GetUrl("/prerender/cross_origin_prerender.html?initial");
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+  EXPECT_TRUE(AddTestUtilJS(current_frame_host()));
+
+  // Start a prerender.
+  const GURL kPrerenderingUrl =
+      GetUrl("/prerender/cross_origin_srcdoc_sandboxed_postmessage.html");
+  int host_id = AddPrerender(kPrerenderingUrl);
+  RenderFrameHost* prerender_frame_host = GetPrerenderedMainFrameHost(host_id);
+  EXPECT_TRUE(AddTestUtilJS(prerender_frame_host));
+  // Create a srcdoc iframe in the prerendered page.
+  EXPECT_TRUE(ExecJs(prerender_frame_host, "createSrcdoc();"));
+  base::RunLoop().RunUntilIdle();
+
+  // Load another same-origin iframe to ensure loading the srcdoc iframe
+  // starts and then it's deferred until activation.
+  const GURL kSameOriginSubframeUrl =
+      GetUrl("/prerender/cross_origin_prerender.html");
+  ASSERT_EQ("LOADED",
+            EvalJs(prerender_frame_host,
+                   JsReplace("add_iframe($1)", kSameOriginSubframeUrl)));
+
+  // Activate.
+  NavigatePrimaryPage(kPrerenderingUrl);
+  ASSERT_EQ(web_contents()->GetLastCommittedURL(), kPrerenderingUrl);
+
+  // Verify postMessage from srcdoc to mainframe completed.
+  RenderFrameHostImpl* main_frame =
+      static_cast<RenderFrameHostImpl*>(web_contents()->GetPrimaryMainFrame());
+  EXPECT_TRUE(ExecJs(
+      main_frame,
+      "Promise.all([child_response_promise, prerender_handler_promise]);"));
+
+  // OOPSIFs only process-isolate if the parent gets site isolation, which in
+  // this case doesn't happen on Android.
+  if (AreAllSitesIsolatedForTesting()) {
+    RenderFrameHostImpl* sandboxed_render_frame_host =
+        main_frame->child_at(0)->current_frame_host();
+    EXPECT_TRUE(sandboxed_render_frame_host->GetSiteInstance()
+                    ->GetSiteInfo()
+                    .is_sandboxed());
+    ASSERT_NE(main_frame->GetProcess(),
+              sandboxed_render_frame_host->GetProcess());
+  }
+}
+
 // Makes sure that cross-origin subframe navigations are deferred during
 // prerendering.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
@@ -2557,21 +2737,6 @@ class PrerenderMainFrameNavigationBrowserTest
     kSameSiteCrossOriginWithOptIn,
     kCrossSite,
   };
-
-  // TODO(nhiroki): Move this to PrerenderTestHelper.
-  std::unique_ptr<PrerenderHandle> AddEmbedderTriggeredPrerender(
-      const GURL& url) {
-    std::unique_ptr<PrerenderHandle> handle =
-        web_contents_impl()->StartPrerendering(
-            url, PrerenderTriggerType::kEmbedder, "EmbedderSuffixForTest",
-            ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
-                                      ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-            PreloadingHoldbackStatus::kUnspecified, nullptr);
-    EXPECT_TRUE(handle);
-    test::PrerenderTestHelper::WaitForPrerenderLoadCompletion(*web_contents(),
-                                                              url);
-    return handle;
-  }
 
   void NavigatePrimaryPageFromAddressBar(const GURL& url) {
     web_contents()->OpenURL(OpenURLParams(
@@ -4117,12 +4282,7 @@ void PrerenderBrowserTest::TestCancelOnlyEmbedderTriggeredPrerenderWhenTimeout(
                                             kPrerenderUrl2);
   // Start prerendering by embedder.
   std::unique_ptr<PrerenderHandle> prerender_handle =
-      web_contents_impl()->StartPrerendering(
-          kPrerenderUrl2, PrerenderTriggerType::kEmbedder,
-          "EmbedderSuffixForTest",
-          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
-                                    ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-          PreloadingHoldbackStatus::kUnspecified, nullptr);
+      AddEmbedderTriggeredPrerenderAsync(kPrerenderUrl2);
 
   PrerenderHostRegistry* registry =
       web_contents_impl()->GetPrerenderHostRegistry();
@@ -5146,27 +5306,16 @@ IN_PROC_BROWSER_TEST_F(PrerenderLowMemoryBrowserTest, NoPrerender) {
 
   // Navigate primary page to flush the metrics.
   NavigatePrimaryPage(kPrerenderingUrl);
-  {
-    // Cross-check that in case of low memory the eligibility reason points to
-    // kLowMemory.
-    ukm::SourceId ukm_source_id = PrimaryPageSourceId();
-    auto attempt_ukm_entries = test_ukm_recorder()->GetEntries(
-        Preloading_Attempt::kEntryName, test::kPreloadingAttemptUkmMetrics);
-
-    UkmEntry attempt_expected_entry = attempt_ukm_entry_builder().BuildEntry(
-        ukm_source_id, PreloadingType::kPrerender,
-        PreloadingEligibility::kLowMemory,
-        PreloadingHoldbackStatus::kUnspecified,
-        PreloadingTriggeringOutcome::kUnspecified,
-        PreloadingFailureReason::kUnspecified,
-        /*accurate=*/true,
-        /*ready_time=*/absl::nullopt,
-        blink::mojom::SpeculationEagerness::kEager);
-
-    EXPECT_EQ(attempt_ukm_entries[0], attempt_expected_entry)
-        << test::ActualVsExpectedUkmEntryToString(attempt_ukm_entries[0],
-                                                  attempt_expected_entry);
-  }
+  // Cross-check that in case of low memory the eligibility reason points to
+  // kLowMemory.
+  ExpectPreloadingAttemptUkm({attempt_ukm_entry_builder().BuildEntry(
+      PrimaryPageSourceId(), PreloadingType::kPrerender,
+      PreloadingEligibility::kLowMemory, PreloadingHoldbackStatus::kUnspecified,
+      PreloadingTriggeringOutcome::kUnspecified,
+      PreloadingFailureReason::kUnspecified,
+      /*accurate=*/true,
+      /*ready_time=*/absl::nullopt,
+      blink::mojom::SpeculationEagerness::kEager)});
 }
 
 class PrerenderSequentialPrerenderingBrowserTest : public PrerenderBrowserTest {
@@ -5464,39 +5613,25 @@ IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
       "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
       PrerenderFinalStatus::kActivatedBeforeStarted, 1);
 
-  {
-    ukm::SourceId ukm_source_id = PrimaryPageSourceId();
-
-    auto ukm_entries = test_ukm_recorder()->GetEntries(
-        Preloading_Attempt::kEntryName, test::kPreloadingAttemptUkmMetrics);
-    EXPECT_EQ(ukm_entries.size(), 2u);
-
-    std::vector<UkmEntry> expected_entries = {
-        attempt_ukm_entry_builder().BuildEntry(
-            ukm_source_id, PreloadingType::kPrerender,
-            PreloadingEligibility::kEligible,
-            PreloadingHoldbackStatus::kAllowed,
-            PreloadingTriggeringOutcome::kRunning,
-            PreloadingFailureReason::kUnspecified,
-            /*accurate=*/false,
-            /*ready_time=*/absl::nullopt,
-            blink::mojom::SpeculationEagerness::kEager),
-        attempt_ukm_entry_builder().BuildEntry(
-            ukm_source_id, PreloadingType::kPrerender,
-            PreloadingEligibility::kEligible,
-            PreloadingHoldbackStatus::kAllowed,
-            PreloadingTriggeringOutcome::kTriggeredButPending,
-            PreloadingFailureReason::kUnspecified,
-            /*accurate=*/true,
-            /*ready_time=*/absl::nullopt,
-            blink::mojom::SpeculationEagerness::kEager),
-    };
-
-    EXPECT_THAT(ukm_entries,
-                testing::UnorderedElementsAreArray(expected_entries))
-        << test::ActualVsExpectedUkmEntriesToString(ukm_entries,
-                                                    expected_entries);
-  }
+  ukm::SourceId ukm_source_id = PrimaryPageSourceId();
+  ExpectPreloadingAttemptUkm({
+      attempt_ukm_entry_builder().BuildEntry(
+          ukm_source_id, PreloadingType::kPrerender,
+          PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
+          PreloadingTriggeringOutcome::kRunning,
+          PreloadingFailureReason::kUnspecified,
+          /*accurate=*/false,
+          /*ready_time=*/absl::nullopt,
+          blink::mojom::SpeculationEagerness::kEager),
+      attempt_ukm_entry_builder().BuildEntry(
+          ukm_source_id, PreloadingType::kPrerender,
+          PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
+          PreloadingTriggeringOutcome::kTriggeredButPending,
+          PreloadingFailureReason::kUnspecified,
+          /*accurate=*/true,
+          /*ready_time=*/absl::nullopt,
+          blink::mojom::SpeculationEagerness::kEager),
+  });
 }
 
 // Test that if the 5 URLs are specified in the speculation rule while only 4
@@ -5563,15 +5698,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
   // Start prerendering by embedder triggered prerendering; this should start
   // immediately instead of being enqueued.
   std::unique_ptr<PrerenderHandle> prerender_handle =
-      web_contents_impl()->StartPrerendering(
-          kEmbedderPrerender, PrerenderTriggerType::kEmbedder,
-          "EmbedderSuffixForTest",
-          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
-                                    ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-          PreloadingHoldbackStatus::kUnspecified, nullptr);
-
+      AddEmbedderTriggeredPrerender(kEmbedderPrerender);
   EXPECT_TRUE(prerender_handle);
-  WaitForPrerenderLoadCompletion(kEmbedderPrerender);
 
   // Confirm that embedder triggered prerender does not affect the pending
   // prerender triggered by speculation rules.
@@ -5617,12 +5745,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
   // Start prerendering by embedder triggered prerendering. This should be
   // blocked because b.test is in embedder_blocked_hosts.
   std::unique_ptr<PrerenderHandle> prerender_handle =
-      web_contents_impl()->StartPrerendering(
-          kEmbedderPrerender, PrerenderTriggerType::kEmbedder,
-          "EmbedderSuffixForTest",
-          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
-                                    ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-          PreloadingHoldbackStatus::kUnspecified, nullptr);
+      AddEmbedderTriggeredPrerenderAsync(kEmbedderPrerender);
 
   EXPECT_FALSE(prerender_handle);
   EXPECT_EQ(GetHostForUrl(kEmbedderPrerender),
@@ -5817,39 +5940,25 @@ IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
   // prerender2 should start right after the activation but get destroyed by the
   // change of the primary page soon, so it should result in the kRunning
   // outcome.
-  {
-    ukm::SourceId ukm_source_id = activation_observer.next_page_ukm_source_id();
-
-    auto ukm_entries = test_ukm_recorder()->GetEntries(
-        Preloading_Attempt::kEntryName, test::kPreloadingAttemptUkmMetrics);
-    EXPECT_EQ(ukm_entries.size(), 2u);
-
-    std::vector<UkmEntry> expected_entries = {
-        attempt_ukm_entry_builder().BuildEntry(
-            ukm_source_id, PreloadingType::kPrerender,
-            PreloadingEligibility::kEligible,
-            PreloadingHoldbackStatus::kAllowed,
-            PreloadingTriggeringOutcome::kSuccess,
-            PreloadingFailureReason::kUnspecified,
-            /*accurate=*/true,
-            /*ready_time=*/kMockElapsedTime,
-            blink::mojom::SpeculationEagerness::kEager),
-        attempt_ukm_entry_builder().BuildEntry(
-            ukm_source_id, PreloadingType::kPrerender,
-            PreloadingEligibility::kEligible,
-            PreloadingHoldbackStatus::kAllowed,
-            PreloadingTriggeringOutcome::kTriggeredButPending,
-            PreloadingFailureReason::kUnspecified,
-            /*accurate=*/false,
-            /*ready_time=*/absl::nullopt,
-            blink::mojom::SpeculationEagerness::kEager),
-    };
-
-    EXPECT_THAT(ukm_entries,
-                testing::UnorderedElementsAreArray(expected_entries))
-        << test::ActualVsExpectedUkmEntriesToString(ukm_entries,
-                                                    expected_entries);
-  }
+  ukm::SourceId ukm_source_id = activation_observer.next_page_ukm_source_id();
+  ExpectPreloadingAttemptUkm({
+      attempt_ukm_entry_builder().BuildEntry(
+          ukm_source_id, PreloadingType::kPrerender,
+          PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
+          PreloadingTriggeringOutcome::kSuccess,
+          PreloadingFailureReason::kUnspecified,
+          /*accurate=*/true,
+          /*ready_time=*/kMockElapsedTime,
+          blink::mojom::SpeculationEagerness::kEager),
+      attempt_ukm_entry_builder().BuildEntry(
+          ukm_source_id, PreloadingType::kPrerender,
+          PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
+          PreloadingTriggeringOutcome::kTriggeredButPending,
+          PreloadingFailureReason::kUnspecified,
+          /*accurate=*/false,
+          /*ready_time=*/absl::nullopt,
+          blink::mojom::SpeculationEagerness::kEager),
+  });
 }
 
 // Test that when the running prerender is destroyed due to the activation of
@@ -5891,48 +6000,33 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(web_contents()->GetLastCommittedURL(), kPrerender1);
   EXPECT_TRUE(prerender1_observer.was_activated());
 
-  {
-    ukm::SourceId ukm_source_id = activation_observer.next_page_ukm_source_id();
-
-    auto ukm_entries = test_ukm_recorder()->GetEntries(
-        Preloading_Attempt::kEntryName, test::kPreloadingAttemptUkmMetrics);
-    EXPECT_EQ(ukm_entries.size(), 3u);
-
-    std::vector<UkmEntry> expected_entries = {
-        attempt_ukm_entry_builder().BuildEntry(
-            ukm_source_id, PreloadingType::kPrerender,
-            PreloadingEligibility::kEligible,
-            PreloadingHoldbackStatus::kAllowed,
-            PreloadingTriggeringOutcome::kSuccess,
-            PreloadingFailureReason::kUnspecified,
-            /*accurate=*/true,
-            /*ready_time=*/kMockElapsedTime,
-            blink::mojom::SpeculationEagerness::kEager),
-        attempt_ukm_entry_builder().BuildEntry(
-            ukm_source_id, PreloadingType::kPrerender,
-            PreloadingEligibility::kEligible,
-            PreloadingHoldbackStatus::kAllowed,
-            PreloadingTriggeringOutcome::kRunning,
-            PreloadingFailureReason::kUnspecified,
-            /*accurate=*/false,
-            /*ready_time=*/absl::nullopt,
-            blink::mojom::SpeculationEagerness::kEager),
-        attempt_ukm_entry_builder().BuildEntry(
-            ukm_source_id, PreloadingType::kPrerender,
-            PreloadingEligibility::kEligible,
-            PreloadingHoldbackStatus::kAllowed,
-            PreloadingTriggeringOutcome::kTriggeredButPending,
-            PreloadingFailureReason::kUnspecified,
-            /*accurate=*/false,
-            /*ready_time=*/absl::nullopt,
-            blink::mojom::SpeculationEagerness::kEager),
-    };
-
-    EXPECT_THAT(ukm_entries,
-                testing::UnorderedElementsAreArray(expected_entries))
-        << test::ActualVsExpectedUkmEntriesToString(ukm_entries,
-                                                    expected_entries);
-  }
+  ukm::SourceId ukm_source_id = activation_observer.next_page_ukm_source_id();
+  ExpectPreloadingAttemptUkm({
+      attempt_ukm_entry_builder().BuildEntry(
+          ukm_source_id, PreloadingType::kPrerender,
+          PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
+          PreloadingTriggeringOutcome::kSuccess,
+          PreloadingFailureReason::kUnspecified,
+          /*accurate=*/true,
+          /*ready_time=*/kMockElapsedTime,
+          blink::mojom::SpeculationEagerness::kEager),
+      attempt_ukm_entry_builder().BuildEntry(
+          ukm_source_id, PreloadingType::kPrerender,
+          PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
+          PreloadingTriggeringOutcome::kRunning,
+          PreloadingFailureReason::kUnspecified,
+          /*accurate=*/false,
+          /*ready_time=*/absl::nullopt,
+          blink::mojom::SpeculationEagerness::kEager),
+      attempt_ukm_entry_builder().BuildEntry(
+          ukm_source_id, PreloadingType::kPrerender,
+          PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
+          PreloadingTriggeringOutcome::kTriggeredButPending,
+          PreloadingFailureReason::kUnspecified,
+          /*accurate=*/false,
+          /*ready_time=*/absl::nullopt,
+          blink::mojom::SpeculationEagerness::kEager),
+  });
 }
 
 // Test that all the prerender hosts except the one to be activated are
@@ -5998,57 +6092,41 @@ IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
   // 4. Pending.
   // We activated the first prerender, so all the other prerender hosts should
   // be cancelled with each corresponding status.
-  {
-    ukm::SourceId ukm_source_id = activation_observer.next_page_ukm_source_id();
-
-    auto ukm_entries = test_ukm_recorder()->GetEntries(
-        Preloading_Attempt::kEntryName, test::kPreloadingAttemptUkmMetrics);
-    EXPECT_EQ(ukm_entries.size(), 4u);
-
-    std::vector<UkmEntry> expected_entries = {
-        attempt_ukm_entry_builder().BuildEntry(
-            ukm_source_id, PreloadingType::kPrerender,
-            PreloadingEligibility::kEligible,
-            PreloadingHoldbackStatus::kAllowed,
-            PreloadingTriggeringOutcome::kSuccess,
-            PreloadingFailureReason::kUnspecified,
-            /*accurate=*/true,
-            /*ready_time=*/kMockElapsedTime,
-            blink::mojom::SpeculationEagerness::kEager),
-        attempt_ukm_entry_builder().BuildEntry(
-            ukm_source_id, PreloadingType::kPrerender,
-            PreloadingEligibility::kEligible,
-            PreloadingHoldbackStatus::kAllowed,
-            PreloadingTriggeringOutcome::kReady,
-            PreloadingFailureReason::kUnspecified,
-            /*accurate=*/false,
-            /*ready_time=*/kMockElapsedTime,
-            blink::mojom::SpeculationEagerness::kEager),
-        attempt_ukm_entry_builder().BuildEntry(
-            ukm_source_id, PreloadingType::kPrerender,
-            PreloadingEligibility::kEligible,
-            PreloadingHoldbackStatus::kAllowed,
-            PreloadingTriggeringOutcome::kRunning,
-            PreloadingFailureReason::kUnspecified,
-            /*accurate=*/false,
-            /*ready_time=*/absl::nullopt,
-            blink::mojom::SpeculationEagerness::kEager),
-        attempt_ukm_entry_builder().BuildEntry(
-            ukm_source_id, PreloadingType::kPrerender,
-            PreloadingEligibility::kEligible,
-            PreloadingHoldbackStatus::kAllowed,
-            PreloadingTriggeringOutcome::kTriggeredButPending,
-            PreloadingFailureReason::kUnspecified,
-            /*accurate=*/false,
-            /*ready_time=*/absl::nullopt,
-            blink::mojom::SpeculationEagerness::kEager),
-    };
-
-    EXPECT_THAT(ukm_entries,
-                testing::UnorderedElementsAreArray(expected_entries))
-        << test::ActualVsExpectedUkmEntriesToString(ukm_entries,
-                                                    expected_entries);
-  }
+  ukm::SourceId ukm_source_id = activation_observer.next_page_ukm_source_id();
+  ExpectPreloadingAttemptUkm({
+      attempt_ukm_entry_builder().BuildEntry(
+          ukm_source_id, PreloadingType::kPrerender,
+          PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
+          PreloadingTriggeringOutcome::kSuccess,
+          PreloadingFailureReason::kUnspecified,
+          /*accurate=*/true,
+          /*ready_time=*/kMockElapsedTime,
+          blink::mojom::SpeculationEagerness::kEager),
+      attempt_ukm_entry_builder().BuildEntry(
+          ukm_source_id, PreloadingType::kPrerender,
+          PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
+          PreloadingTriggeringOutcome::kReady,
+          PreloadingFailureReason::kUnspecified,
+          /*accurate=*/false,
+          /*ready_time=*/kMockElapsedTime,
+          blink::mojom::SpeculationEagerness::kEager),
+      attempt_ukm_entry_builder().BuildEntry(
+          ukm_source_id, PreloadingType::kPrerender,
+          PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
+          PreloadingTriggeringOutcome::kRunning,
+          PreloadingFailureReason::kUnspecified,
+          /*accurate=*/false,
+          /*ready_time=*/absl::nullopt,
+          blink::mojom::SpeculationEagerness::kEager),
+      attempt_ukm_entry_builder().BuildEntry(
+          ukm_source_id, PreloadingType::kPrerender,
+          PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
+          PreloadingTriggeringOutcome::kTriggeredButPending,
+          PreloadingFailureReason::kUnspecified,
+          /*accurate=*/false,
+          /*ready_time=*/absl::nullopt,
+          blink::mojom::SpeculationEagerness::kEager),
+  });
 }
 
 // Tests that prerendering in a new tab multiple times and activating one of
@@ -6438,12 +6516,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, EmbedderPrerenderToNonHttpUrl) {
 
   // Start prerendering by embedder triggered prerendering.
   std::unique_ptr<PrerenderHandle> prerender_handle =
-      web_contents_impl()->StartPrerendering(
-          kPrerenderUrl, PrerenderTriggerType::kEmbedder,
-          "EmbedderSuffixForTest",
-          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
-                                    ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-          PreloadingHoldbackStatus::kUnspecified, nullptr);
+      AddEmbedderTriggeredPrerenderAsync(kPrerenderUrl);
 
   // Both the creation of PrerenderHandle and PrerenderHost should fail.
   EXPECT_FALSE(prerender_handle);
@@ -8110,13 +8183,14 @@ IN_PROC_BROWSER_TEST_F(PrerenderEagernessBrowserTest, kConservative) {
 // test.
 #if !BUILDFLAG(IS_FUCHSIA) && !BUILDFLAG(IS_IOS)
 // Tests the metrics
-// Prerender.Experimental.ReceivedPrerendersPerPrimaryPageChangedCount correctly
-// records the number of prerenders by each category per primary page changed.
+// Prerender.Experimental.ReceivedPrerendersPerPrimaryPageChangedCount2
+// correctly records the number of prerenders by each category per primary page
+// changed.
 IN_PROC_BROWSER_TEST_F(PrerenderEagernessBrowserTest,
-                       EligibleTriggersPerPrimaryPageChangedCount) {
+                       ReceivedPrerendersPerPrimaryPageChangedCount) {
   auto GetAllSamples = [&](const std::string& eagerness_category) {
     return histogram_tester().GetAllSamples(
-        "Prerender.Experimental.ReceivedPrerendersPerPrimaryPageChangedCount."
+        "Prerender.Experimental.ReceivedPrerendersPerPrimaryPageChangedCount2."
         "SpeculationRule." +
         eagerness_category);
   };
@@ -8769,12 +8843,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, StartByEmbeddersMultipleTimes) {
   // Start prerendering by embedder triggered prerendering; this should be
   // trigger successfully.
   std::unique_ptr<PrerenderHandle> prerender_handle1 =
-      web_contents_impl()->StartPrerendering(
-          kFirstPrerenderingUrl, PrerenderTriggerType::kEmbedder,
-          "EmbedderSuffixForTest",
-          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
-                                    ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-          PreloadingHoldbackStatus::kUnspecified, nullptr);
+      AddEmbedderTriggeredPrerenderAsync(kFirstPrerenderingUrl);
   EXPECT_TRUE(prerender_handle1);
 
   histogram_tester().ExpectBucketCount(
@@ -8785,12 +8854,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, StartByEmbeddersMultipleTimes) {
   // Start prerendering by embedder triggered prerendering; this should be
   // trigger successfully.
   std::unique_ptr<PrerenderHandle> prerender_handle2 =
-      web_contents_impl()->StartPrerendering(
-          kSecondPrerenderingUrl, PrerenderTriggerType::kEmbedder,
-          "EmbedderSuffixForTest",
-          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
-                                    ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-          PreloadingHoldbackStatus::kUnspecified, nullptr);
+      AddEmbedderTriggeredPrerenderAsync(kSecondPrerenderingUrl);
   EXPECT_TRUE(prerender_handle2);
 
   histogram_tester().ExpectBucketCount(
@@ -8801,12 +8865,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, StartByEmbeddersMultipleTimes) {
   // Start prerendering by embedder triggered prerendering; this should hit the
   // limit.
   std::unique_ptr<PrerenderHandle> prerender_handle3 =
-      web_contents_impl()->StartPrerendering(
-          kThirdPrerenderingUrl, PrerenderTriggerType::kEmbedder,
-          "EmbedderSuffixForTest",
-          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
-                                    ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-          PreloadingHoldbackStatus::kUnspecified, nullptr);
+      AddEmbedderTriggeredPrerenderAsync(kThirdPrerenderingUrl);
   EXPECT_FALSE(prerender_handle3);
 
   histogram_tester().ExpectBucketCount(
@@ -8844,23 +8903,13 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   // Start the first embedder triggered prerendering; this should be triggered
   // successfully.
   std::unique_ptr<PrerenderHandle> prerender_handle1 =
-      web_contents_impl()->StartPrerendering(
-          kEmbedderPrerenderingUrl1, PrerenderTriggerType::kEmbedder,
-          "EmbedderSuffixForTest",
-          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
-                                    ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-          PreloadingHoldbackStatus::kUnspecified, nullptr);
+      AddEmbedderTriggeredPrerenderAsync(kEmbedderPrerenderingUrl1);
   EXPECT_TRUE(prerender_handle1);
 
   // Start the second embedder triggered prerendering; this should be triggered
   // successfully.
   std::unique_ptr<PrerenderHandle> prerender_handle2 =
-      web_contents_impl()->StartPrerendering(
-          kEmbedderPrerenderingUrl2, PrerenderTriggerType::kEmbedder,
-          "EmbedderSuffixForTest",
-          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
-                                    ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-          PreloadingHoldbackStatus::kUnspecified, nullptr);
+      AddEmbedderTriggeredPrerenderAsync(kEmbedderPrerenderingUrl2);
   EXPECT_TRUE(prerender_handle2);
 
   histogram_tester().ExpectBucketCount(
@@ -8870,12 +8919,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
   // Start the third embedder triggered prerendering; this should hit the limit.
   std::unique_ptr<PrerenderHandle> prerender_handle3 =
-      web_contents_impl()->StartPrerendering(
-          kEmbedderPrerenderingUrl3, PrerenderTriggerType::kEmbedder,
-          "EmbedderSuffixForTest",
-          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
-                                    ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-          PreloadingHoldbackStatus::kUnspecified, nullptr);
+      AddEmbedderTriggeredPrerenderAsync(kEmbedderPrerenderingUrl3);
   EXPECT_FALSE(prerender_handle3);
 
   histogram_tester().ExpectBucketCount(
@@ -8886,12 +8930,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   // Cancel the second embedder triggered prerendering and start a new one;
   // this should succeed as one of the prerenders is freed.
   prerender_handle2.reset();
-  prerender_handle3 = web_contents_impl()->StartPrerendering(
-      kEmbedderPrerenderingUrl3, PrerenderTriggerType::kEmbedder,
-      "EmbedderSuffixForTest",
-      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
-                                ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-      PreloadingHoldbackStatus::kUnspecified, nullptr);
+  prerender_handle3 =
+      AddEmbedderTriggeredPrerenderAsync(kEmbedderPrerenderingUrl3);
   EXPECT_TRUE(prerender_handle3);
 }
 
@@ -9113,12 +9153,7 @@ IN_PROC_BROWSER_TEST_F(MultiplePrerendersBrowserTest,
   // Start an embedder triggered prerendering; this should be triggered
   // successfully because its limitation is independent from speculation rules.
   std::unique_ptr<PrerenderHandle> prerender_handle =
-      web_contents_impl()->StartPrerendering(
-          kEmbedderTriggeredPrerenderingUrl, PrerenderTriggerType::kEmbedder,
-          "EmbedderSuffixForTest",
-          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
-                                    ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-          PreloadingHoldbackStatus::kUnspecified, nullptr);
+      AddEmbedderTriggeredPrerenderAsync(kEmbedderTriggeredPrerenderingUrl);
   EXPECT_TRUE(prerender_handle);
 }
 
@@ -9184,29 +9219,18 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SkipCrossSitePrerender) {
   ExpectFinalStatusForSpeculationRule(
       PrerenderFinalStatus::kCrossSiteNavigationInInitialNavigation);
 
+  // Cross-check that in case of cross-origin navigation the eligibility
+  // reason points to kCrossOrigin.
   ASSERT_TRUE(NavigateToURL(shell(), kPrerenderingUrl));
-  {
-    // Cross-check that in case of cross-origin navigation the eligibility
-    // reason points to kCrossOrigin.
-    ukm::SourceId ukm_source_id = PrimaryPageSourceId();
-    auto attempt_ukm_entries = test_ukm_recorder()->GetEntries(
-        Preloading_Attempt::kEntryName, test::kPreloadingAttemptUkmMetrics);
-    EXPECT_EQ(attempt_ukm_entries.size(), 1u);
-
-    UkmEntry attempt_expected_entry = attempt_ukm_entry_builder().BuildEntry(
-        ukm_source_id, PreloadingType::kPrerender,
-        PreloadingEligibility::kCrossOrigin,
-        PreloadingHoldbackStatus::kUnspecified,
-        PreloadingTriggeringOutcome::kUnspecified,
-        PreloadingFailureReason::kUnspecified,
-        /*accurate=*/true,
-        /*ready_time=*/absl::nullopt,
-        blink::mojom::SpeculationEagerness::kEager);
-
-    EXPECT_EQ(attempt_ukm_entries[0], attempt_expected_entry)
-        << test::ActualVsExpectedUkmEntryToString(attempt_ukm_entries[0],
-                                                  attempt_expected_entry);
-  }
+  ExpectPreloadingAttemptUkm({attempt_ukm_entry_builder().BuildEntry(
+      PrimaryPageSourceId(), PreloadingType::kPrerender,
+      PreloadingEligibility::kCrossOrigin,
+      PreloadingHoldbackStatus::kUnspecified,
+      PreloadingTriggeringOutcome::kUnspecified,
+      PreloadingFailureReason::kUnspecified,
+      /*accurate=*/true,
+      /*ready_time=*/absl::nullopt,
+      blink::mojom::SpeculationEagerness::kEager)});
 }
 
 // Tests that same-site cross-origin navigation by speculation rules is not
@@ -9461,27 +9485,18 @@ IN_PROC_BROWSER_TEST_F(PrerenderSameSiteCrossOriginBrowserTest,
   EXPECT_EQ(GetRequestCount(kPrerenderingUrl), 1);
   EXPECT_EQ(GetRequestCount(kRedirectedUrl), 1);
 
-  {
-    // Cross-check that in case redirection when the prerender navigates and
-    // user ends up navigating to the redirected URL. accurate_triggering is
-    // true.
-    ukm::SourceId ukm_source_id = activation_observer.next_page_ukm_source_id();
-    auto attempt_ukm_entries = test_ukm_recorder()->GetEntries(
-        Preloading_Attempt::kEntryName, test::kPreloadingAttemptUkmMetrics);
-
-    UkmEntry attempt_expected_entry = attempt_ukm_entry_builder().BuildEntry(
-        ukm_source_id, PreloadingType::kPrerender,
-        PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
-        PreloadingTriggeringOutcome::kSuccess,
-        PreloadingFailureReason::kUnspecified,
-        /*accurate=*/true,
-        /*ready_time=*/kMockElapsedTime,
-        blink::mojom::SpeculationEagerness::kEager);
-
-    EXPECT_EQ(attempt_ukm_entries[0], attempt_expected_entry)
-        << test::ActualVsExpectedUkmEntryToString(attempt_ukm_entries[0],
-                                                  attempt_expected_entry);
-  }
+  // Cross-check that in case redirection when the prerender navigates and
+  // user ends up navigating to the redirected URL. accurate_triggering is
+  // true.
+  ukm::SourceId ukm_source_id = activation_observer.next_page_ukm_source_id();
+  ExpectPreloadingAttemptUkm({attempt_ukm_entry_builder().BuildEntry(
+      ukm_source_id, PreloadingType::kPrerender,
+      PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
+      PreloadingTriggeringOutcome::kSuccess,
+      PreloadingFailureReason::kUnspecified,
+      /*accurate=*/true,
+      /*ready_time=*/kMockElapsedTime,
+      blink::mojom::SpeculationEagerness::kEager)});
 }
 
 // Tests that multiple same-site cross-origin redirections by speculation rules
@@ -9537,27 +9552,17 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(GetRequestCount(kRedirectedUrl), 1);
   EXPECT_EQ(GetRequestCount(kRedirectedUrl2), 1);
 
-  {
-    // Cross-check that in case redirection when the prerender navigates and
-    // user ends up navigating to the redirected URL. accurate_triggering is
-    // true.
-    ukm::SourceId ukm_source_id = activation_observer.next_page_ukm_source_id();
-    auto attempt_ukm_entries = test_ukm_recorder()->GetEntries(
-        Preloading_Attempt::kEntryName, test::kPreloadingAttemptUkmMetrics);
-
-    UkmEntry attempt_expected_entry = attempt_ukm_entry_builder().BuildEntry(
-        ukm_source_id, PreloadingType::kPrerender,
-        PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
-        PreloadingTriggeringOutcome::kSuccess,
-        PreloadingFailureReason::kUnspecified,
-        /*accurate=*/true,
-        /*ready_time=*/kMockElapsedTime,
-        blink::mojom::SpeculationEagerness::kEager);
-
-    EXPECT_EQ(attempt_ukm_entries[0], attempt_expected_entry)
-        << test::ActualVsExpectedUkmEntryToString(attempt_ukm_entries[0],
-                                                  attempt_expected_entry);
-  }
+  // Cross-check that in case redirection when the prerender navigates and user
+  // ends up navigating to the redirected URL. accurate_triggering is true.
+  ukm::SourceId ukm_source_id = activation_observer.next_page_ukm_source_id();
+  ExpectPreloadingAttemptUkm({attempt_ukm_entry_builder().BuildEntry(
+      ukm_source_id, PreloadingType::kPrerender,
+      PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kAllowed,
+      PreloadingTriggeringOutcome::kSuccess,
+      PreloadingFailureReason::kUnspecified,
+      /*accurate=*/true,
+      /*ready_time=*/kMockElapsedTime,
+      blink::mojom::SpeculationEagerness::kEager)});
 }
 
 void PrerenderBrowserTest::TestEmbedderTriggerWithUnsupportedScheme(
@@ -9578,12 +9583,7 @@ void PrerenderBrowserTest::TestEmbedderTriggerWithUnsupportedScheme(
 
   // Start prerendering by embedder triggered prerendering.
   std::unique_ptr<PrerenderHandle> prerender_handle =
-      web_contents_impl()->StartPrerendering(
-          prerendering_url, PrerenderTriggerType::kEmbedder,
-          "EmbedderSuffixForTest",
-          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
-                                    ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-          PreloadingHoldbackStatus::kUnspecified, preloading_attempt);
+      AddEmbedderTriggeredPrerenderAsync(prerendering_url, preloading_attempt);
   EXPECT_FALSE(prerender_handle);
 
   histogram_tester().ExpectUniqueSample(
@@ -9595,28 +9595,18 @@ void PrerenderBrowserTest::TestEmbedderTriggerWithUnsupportedScheme(
   const GURL navigated_url = GetUrl("/empty.html?navigated");
   ASSERT_TRUE(NavigateToURL(shell(), navigated_url));
 
-  {
-    ukm::SourceId ukm_source_id = PrimaryPageSourceId();
-    auto attempt_ukm_entry_builder =
-        std::make_unique<test::PreloadingAttemptUkmEntryBuilder>(
-            preloading_predictor);
-    UkmEntry attempt_expected_entry = attempt_ukm_entry_builder->BuildEntry(
-        ukm_source_id, PreloadingType::kPrerender,
-        PreloadingEligibility::kHttpOrHttpsOnly,
-        PreloadingHoldbackStatus::kUnspecified,
-        PreloadingTriggeringOutcome::kUnspecified,
-        PreloadingFailureReason::kUnspecified,
-        /*accurate=*/false,
-        /*ready_time=*/absl::nullopt,
-        /*eagerness=*/absl::nullopt);
-
-    auto attempt_ukm_entries = test_ukm_recorder()->GetEntries(
-        Preloading_Attempt::kEntryName, test::kPreloadingAttemptUkmMetrics);
-    ASSERT_EQ(attempt_ukm_entries.size(), 1u);
-    EXPECT_EQ(attempt_ukm_entries[0], attempt_expected_entry)
-        << test::ActualVsExpectedUkmEntryToString(attempt_ukm_entries[0],
-                                                  attempt_expected_entry);
-  }
+  auto attempt_ukm_entry_builder =
+      std::make_unique<test::PreloadingAttemptUkmEntryBuilder>(
+          preloading_predictor);
+  ExpectPreloadingAttemptUkm({attempt_ukm_entry_builder->BuildEntry(
+      PrimaryPageSourceId(), PreloadingType::kPrerender,
+      PreloadingEligibility::kHttpOrHttpsOnly,
+      PreloadingHoldbackStatus::kUnspecified,
+      PreloadingTriggeringOutcome::kUnspecified,
+      PreloadingFailureReason::kUnspecified,
+      /*accurate=*/false,
+      /*ready_time=*/absl::nullopt,
+      /*eagerness=*/absl::nullopt)});
 }
 
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
@@ -9649,15 +9639,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
   // Start prerendering by embedder triggered prerendering.
   std::unique_ptr<PrerenderHandle> prerender_handle =
-      web_contents_impl()->StartPrerendering(
-          prerender_initial_url, PrerenderTriggerType::kEmbedder,
-          "EmbedderSuffixForTest",
-          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
-                                    ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-          PreloadingHoldbackStatus::kUnspecified, nullptr);
-  EXPECT_TRUE(prerender_handle);
-  test::PrerenderTestHelper::WaitForPrerenderLoadCompletion(
-      *shell()->web_contents(), prerender_initial_url);
+      AddEmbedderTriggeredPrerender(prerender_initial_url);
   ASSERT_EQ(3u, redirect_chain_observer.redirect_chain().size());
 
   // Prerender is not canceled.
@@ -9703,15 +9685,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // Start prerendering by embedder triggered prerendering.
   std::unique_ptr<PrerenderHandle> prerender_handle =
-      web_contents_impl()->StartPrerendering(
-          prerendering_initial_url, PrerenderTriggerType::kEmbedder,
-          "EmbedderSuffixForTest",
-          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
-                                    ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-          PreloadingHoldbackStatus::kUnspecified, nullptr);
-  EXPECT_TRUE(prerender_handle);
-  test::PrerenderTestHelper::WaitForPrerenderLoadCompletion(
-      *shell()->web_contents(), prerendering_initial_url);
+      AddEmbedderTriggeredPrerender(prerendering_initial_url);
 
   histogram_tester().ExpectUniqueSample(
       "Prerender.Experimental.PrerenderHostFinalStatus.Embedder_"
@@ -10758,25 +10732,17 @@ IN_PROC_BROWSER_TEST_F(PrerenderSpeculationRulesHoldbackBrowserTest,
   NavigationHandleObserver activation_observer(web_contents(),
                                                kPrerenderingUrl);
   NavigatePrimaryPage(kPrerenderingUrl);
-  {
-    // Cross-check that PreloadingHoldbackStatus is correctly set.
-    ukm::SourceId ukm_source_id = activation_observer.next_page_ukm_source_id();
-    auto attempt_ukm_entries = test_ukm_recorder()->GetEntries(
-        Preloading_Attempt::kEntryName, test::kPreloadingAttemptUkmMetrics);
 
-    UkmEntry attempt_expected_entry = attempt_ukm_entry_builder().BuildEntry(
-        ukm_source_id, PreloadingType::kPrerender,
-        PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kHoldback,
-        PreloadingTriggeringOutcome::kUnspecified,
-        PreloadingFailureReason::kUnspecified,
-        /*accurate=*/true,
-        /*ready_time=*/absl::nullopt,
-        blink::mojom::SpeculationEagerness::kEager);
-
-    EXPECT_EQ(attempt_ukm_entries[0], attempt_expected_entry)
-        << test::ActualVsExpectedUkmEntryToString(attempt_ukm_entries[0],
-                                                  attempt_expected_entry);
-  }
+  // Cross-check that PreloadingHoldbackStatus is correctly set.
+  ukm::SourceId ukm_source_id = activation_observer.next_page_ukm_source_id();
+  ExpectPreloadingAttemptUkm({attempt_ukm_entry_builder().BuildEntry(
+      ukm_source_id, PreloadingType::kPrerender,
+      PreloadingEligibility::kEligible, PreloadingHoldbackStatus::kHoldback,
+      PreloadingTriggeringOutcome::kUnspecified,
+      PreloadingFailureReason::kUnspecified,
+      /*accurate=*/true,
+      /*ready_time=*/absl::nullopt,
+      blink::mojom::SpeculationEagerness::kEager)});
 }
 
 class PrerenderFencedFrameBrowserTest : public PrerenderBrowserTest {
@@ -11768,8 +11734,10 @@ INSTANTIATE_TEST_SUITE_P(All,
 // Other tests in `PrerenderSessionHistoryBrowserTest` explicitly trigger the
 // prediction and the navigation. For this test, we actually simulate the back
 // button press events.
+// TODO(https://crbug.com/1059468): Flaky on ChromeOS.
+// TODO(https://crbug.com/1493726): Also flaky on other platforms after r1208618
 IN_PROC_BROWSER_TEST_P(PrerenderSessionHistoryBrowserTest,
-                       BackButtonNavigation) {
+                       DISABLED_BackButtonNavigation) {
   const GURL url1 = GetUrl("/title1.html");
   const GURL url2 = GetCrossSiteUrl("/title2.html");
   PerformInitialNavigations(web_contents_impl(), url1, url2);
@@ -11781,14 +11749,18 @@ IN_PROC_BROWSER_TEST_P(PrerenderSessionHistoryBrowserTest,
   NavigationControllerImpl& controller = web_contents_impl()->GetController();
   ASSERT_TRUE(controller.CanGoBack());
   TestNavigationObserver back_observer(web_contents_impl());
+  InputEventAckWaiter mouse_down_waiter(
+      web_contents_impl()->GetPrimaryMainFrame()->GetRenderWidgetHost(),
+      blink::WebInputEvent::Type::kMouseDown);
   const gfx::Point click_location(50, 50);
   SimulateMouseEvent(web_contents_impl(),
                      blink::WebInputEvent::Type::kMouseDown,
                      blink::WebMouseEvent::Button::kBack, click_location);
-  WaitForHttpCacheQueryCompletion(web_contents_impl());
   // The mouse up triggers the navigation. We wait until after the cache query
   // to send the mouse up to ensure the navigation happens after the browser
   // decides whether to prerender.
+  mouse_down_waiter.Wait();
+  WaitForHttpCacheQueryCompletion(web_contents_impl());
   SimulateMouseEvent(web_contents_impl(), blink::WebInputEvent::Type::kMouseUp,
                      blink::WebMouseEvent::Button::kBack, click_location);
   back_observer.Wait();

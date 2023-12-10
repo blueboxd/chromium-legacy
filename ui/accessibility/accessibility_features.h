@@ -125,33 +125,12 @@ AX_BASE_EXPORT BASE_DECLARE_FEATURE(
 AX_BASE_EXPORT bool
 IsExperimentalAccessibilityGoogleTtsHighQualityVoicesEnabled();
 
-// Enables the experimental color enhancements settings.
-AX_BASE_EXPORT BASE_DECLARE_FEATURE(
-    kExperimentalAccessibilityColorEnhancementSettings);
-
-// Returns true if the experimental color enhancements settings are enabled.
-AX_BASE_EXPORT bool
-AreExperimentalAccessibilityColorEnhancementSettingsEnabled();
-
-// Enables ChromeVox settings page migration from extension options page to
-// Chrome OS settings page.
-AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilityChromeVoxPageMigration);
-
-// Returns true if ChromeVox settings page migration is enabled.
-AX_BASE_EXPORT bool IsAccessibilityChromeVoxPageMigrationEnabled();
-
 // Enables Dictation keyboard improvements.
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(
     kAccessibilityDictationKeyboardImprovements);
 
 // Returns true if Dictation keyboard improvements are enabled.
 AX_BASE_EXPORT bool IsAccessibilityDictationKeyboardImprovementsEnabled();
-
-// Enables AccessibilitySelectToSpeakPrefsMigration.
-AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilitySelectToSpeakPrefsMigration);
-
-// Returns true if AccessibilitySelectToSpeakPrefsMigration enabled.
-AX_BASE_EXPORT bool IsAccessibilitySelectToSpeakPrefsMigrationEnabled();
 
 // Enables AccessibilitySelectToSpeakHoverTextImprovements.
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(
@@ -284,6 +263,22 @@ AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilityService);
 AX_BASE_EXPORT bool IsAccessibilityServiceEnabled();
 
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(IS_MAC)
+// Enables the NSAccessibilityRemoteUIElement's RemoteUIApp. We need to set
+// NSAccessibilityRemoteUIElement's RemoteUIApp to YES, which is to fix some
+// a11y bugs in PWA Mac.
+// It is a temporary feature flag, and will be removed once browser with this
+// feature enabled can run stably. The reason we're so careful is because a
+// previous CL that enabling NSAccessibilityRemoteUIElement's RemoteUIApp caused
+// chromium to hang. With the feature flag, once chromium encounters a bug due
+// to this we can urgently disable it. See https://crbug.com/1491329
+AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilityRemoteUIApp);
+
+// Returns true if the NSAccessibilityRemoteUIElement's RemoteUIApp is enabled.
+AX_BASE_EXPORT bool IsAccessibilityRemoteUIAppEnabled();
+
+#endif  // BUILDFLAG(IS_MAC)
 
 }  // namespace features
 

@@ -8,6 +8,7 @@
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/touch_to_fill/password_generation/android/touch_to_fill_password_generation_bridge.h"
 #include "chrome/browser/touch_to_fill/password_generation/android/touch_to_fill_password_generation_delegate.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 
 class TouchToFillPasswordGenerationBridgeImpl
@@ -21,13 +22,14 @@ class TouchToFillPasswordGenerationBridgeImpl
   ~TouchToFillPasswordGenerationBridgeImpl() override;
 
   bool Show(content::WebContents* web_contents,
+            PrefService* pref_service,
             TouchToFillPasswordGenerationDelegate* delegate,
             std::u16string password,
             std::string account) override;
 
   void Hide() override;
 
-  void OnDismissed(JNIEnv* env) override;
+  void OnDismissed(JNIEnv* env, bool generated_password_accepted) override;
 
   void OnGeneratedPasswordAccepted(
       JNIEnv* env,

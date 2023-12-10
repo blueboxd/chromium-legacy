@@ -45,8 +45,7 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
   bool IsEmbeddedThroughFrameContainingSVGDocument() const;
 
   void IntrinsicSizingInfoChanged();
-  void UnscaledIntrinsicSizingInfo(IntrinsicSizingInfo&,
-                                   bool use_correct_viewbox = true) const;
+  void UnscaledIntrinsicSizingInfo(IntrinsicSizingInfo&) const;
   // This is a special case for SVG documents with percentage dimensions which
   // would normally not change under zoom. See: https://crbug.com/222786.
   double LogicalSizeScaleFactorForPercentageLengths() const;
@@ -123,7 +122,7 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
 
  private:
   OverflowClipAxes ComputeOverflowClipAxes() const override;
-  LayoutRect ComputeContentsVisualOverflow() const;
+  PhysicalRect ComputeContentsVisualOverflow() const;
 
   LayoutObjectChildList* VirtualChildren() override {
     NOT_DESTROYED();

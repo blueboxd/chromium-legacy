@@ -37,8 +37,6 @@ class DedupeInstallUrlsCommandTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
 
-    PreinstalledWebAppManager::BypassOfflineManifestRequirementForTesting();
-
     fake_web_contents_manager_ = static_cast<FakeWebContentsManager*>(
         &provider().web_contents_manager());
 

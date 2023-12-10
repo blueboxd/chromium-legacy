@@ -11,6 +11,7 @@
 #include <tuple>
 #include <utility>
 
+#include "base/containers/span.h"
 #include "base/pickle.h"
 
 namespace ui {
@@ -28,6 +29,29 @@ bool SkipString16(base::PickleIterator* iter) {
 
 }  // namespace
 
+void ReadCustomDataTypes(base::span<const uint8_t> data,
+                         std::vector<std::u16string>* types) {
+  base::Pickle pickle(data);
+  base::PickleIterator iter(pickle);
+
+  uint32_t size = 0;
+  if (!iter.ReadUInt32(&size))
+    return;
+
+  // Keep track of the original elements in the types vector. On failure, we
+  // truncate the vector to the original size since we want to ignore corrupt
+  // custom data pickles.
+  size_t original_size = types->size();
+
+  for (uint32_t i = 0; i < size; ++i) {
+    types->push_back(std::u16string());
+    if (!iter.ReadString16(&types->back()) || !SkipString16(&iter)) {
+      types->resize(original_size);
+      return;
+    }
+  }
+}
+
 void ReadCustomDataTypes(const void* data,
                          size_t data_length,
                          std::vector<std::u16string>* types) {
@@ -35,8 +59,9 @@ void ReadCustomDataTypes(const void* data,
   base::PickleIterator iter(pickle);
 
   uint32_t size = 0;
-  if (!iter.ReadUInt32(&size))
+  if (!iter.ReadUInt32(&size)) {
     return;
+  }
 
   // Keep track of the original elements in the types vector. On failure, we
   // truncate the vector to the original size since we want to ignore corrupt
@@ -60,20 +85,77 @@ void ReadCustomDataForType(const void* data,
   base::PickleIterator iter(pickle);
 
   uint32_t size = 0;
-  if (!iter.ReadUInt32(&size))
+  if (!iter.ReadUInt32(&size)) {
     return;
+  }
 
   for (uint32_t i = 0; i < size; ++i) {
     std::u16string deserialized_type;
-    if (!iter.ReadString16(&deserialized_type))
+    if (!iter.ReadString16(&deserialized_type)) {
       return;
+    }
     if (deserialized_type == type) {
       std::ignore = iter.ReadString16(result);
       return;
     }
-    if (!SkipString16(&iter))
+    if (!SkipString16(&iter)) {
       return;
+    }
   }
+}
+
+absl::optional<std::u16string> ReadCustomDataForType(
+    base::span<const uint8_t> data,
+    std::u16string_view type) {
+  base::Pickle pickle(data);
+  base::PickleIterator iter(pickle);
+
+  uint32_t size = 0;
+  if (!iter.ReadUInt32(&size))
+    return absl::nullopt;
+
+  for (uint32_t i = 0; i < size; ++i) {
+    std::u16string deserialized_type;
+    if (!iter.ReadString16(&deserialized_type)) {
+      return absl::nullopt;
+    }
+    if (deserialized_type == type) {
+      std::u16string result;
+      if (iter.ReadString16(&result)) {
+        return std::move(result);
+      }
+      return absl::nullopt;
+    }
+    if (!SkipString16(&iter)) {
+      return absl::nullopt;
+    }
+  }
+  return absl::nullopt;
+}
+
+absl::optional<std::unordered_map<std::u16string, std::u16string>>
+ReadCustomDataIntoMap(base::span<const uint8_t> data) {
+  base::Pickle pickle(data);
+  base::PickleIterator iter(pickle);
+
+  uint32_t size = 0;
+  if (!iter.ReadUInt32(&size)) {
+    return absl::nullopt;
+  }
+
+  std::unordered_map<std::u16string, std::u16string> result;
+  for (uint32_t i = 0; i < size; ++i) {
+    std::u16string custom_type;
+    if (!iter.ReadString16(&custom_type)) {
+      return absl::nullopt;
+    }
+    std::u16string custom_data;
+    if (!iter.ReadString16(&custom_data)) {
+      return absl::nullopt;
+    }
+    result.insert({std::move(custom_type), std::move(custom_data)});
+  }
+  return std::move(result);
 }
 
 void ReadCustomDataIntoMap(
@@ -84,8 +166,9 @@ void ReadCustomDataIntoMap(
   base::PickleIterator iter(pickle);
 
   uint32_t size = 0;
-  if (!iter.ReadUInt32(&size))
+  if (!iter.ReadUInt32(&size)) {
     return;
+  }
 
   for (uint32_t i = 0; i < size; ++i) {
     std::u16string type;

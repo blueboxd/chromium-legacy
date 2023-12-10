@@ -329,6 +329,7 @@
 <translation id="3619115746895587757">कैपुचिनो</translation>
 <translation id="3619593063686672873">हाल ही का कोई वीडियो नहीं मिला</translation>
 <translation id="3634507049637220048"><ph name="NETWORK_COUNT" /> में से <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, आपका एडमिन प्रबंधित करता है, जानकारी</translation>
+<translation id="36451918667380448">मोबाइल नेटवर्क की सेवा देने वाली कंपनी की सर्विस लॉक है. सहायता के लिए अपने प्रोवाइडर से संपर्क करें.</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> आइटम भेजे गए.</translation>
 <translation id="3658269352872031728"><ph name="SELECTED_FILE_COUNT" /> फ़ाइलें चुनी गईं</translation>
 <translation id="3685122418104378273">मोबाइल डेटा का उपयोग करते समय, Google डिस्‍क समन्‍वयन डिफ़ॉल्‍ट रूप से अक्षम रहता है.</translation>
@@ -1014,6 +1015,7 @@
 <translation id="8698877009525468705">यह फ़ाइल गोपनीय है और एडमिन की नीति के तहत, इस पर पाबंदियां लगाई गई हैं.</translation>
 <translation id="8712637175834984815">समझ लिया</translation>
 <translation id="8713112442029511308">माल्टीज़</translation>
+<translation id="8714138378966541668">मोबाइल और इंटरनेट सेवा देने वाली कंपनी ने लॉक किया है</translation>
 <translation id="8714406895390098252">साइकिल</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> को चुना गया.</translation>
 <translation id="872537912056138402">क्रोएशियाई</translation>

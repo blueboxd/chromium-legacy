@@ -22,6 +22,11 @@ bool WebAXContext::HasActiveDocument() const {
   return private_->HasActiveDocument();
 }
 
+bool WebAXContext::HasAXObjectCache() const {
+  CHECK(HasActiveDocument());
+  return private_->GetDocument()->ExistingAXObjectCache();
+}
+
 const ui::AXMode& WebAXContext::GetAXMode() const {
   DCHECK(!private_->GetAXMode().is_mode_off());
   return private_->GetAXMode();
@@ -69,6 +74,7 @@ bool WebAXContext::SerializeEntireTree(size_t max_node_count,
                                        base::TimeDelta timeout,
                                        ui::AXTreeUpdate* response) {
   CHECK(HasActiveDocument());
+  CHECK(HasAXObjectCache());
   CHECK(private_->GetDocument()->ExistingAXObjectCache());
 
   UpdateAXForAllDocuments();

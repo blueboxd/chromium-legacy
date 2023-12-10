@@ -34,6 +34,7 @@
 #import "components/infobars/core/infobar_manager.h"
 #import "components/keyed_service/core/service_access_type.h"
 #import "components/password_manager/core/common/password_manager_pref_names.h"
+#import "components/plus_addresses/plus_address_service.h"
 #import "components/security_state/ios/security_state_utils.h"
 #import "components/sync/service/sync_service.h"
 #import "components/translate/core/browser/translate_manager.h"
@@ -47,13 +48,14 @@
 #import "ios/chrome/browser/autofill/strike_database_factory.h"
 #import "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/infobars/infobar_utils.h"
-#import "ios/chrome/browser/passwords/password_tab_helper.h"
+#import "ios/chrome/browser/passwords/model/password_tab_helper.h"
+#import "ios/chrome/browser/plus_addresses/model/plus_address_service_factory.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
-#import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
+#import "ios/chrome/browser/translate/model/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/autofill/card_expiration_date_fix_flow_view_bridge.h"
 #import "ios/chrome/browser/ui/autofill/card_name_fix_flow_view_bridge.h"
 #import "ios/chrome/browser/ui/autofill/create_card_unmask_prompt_view_bridge.h"
@@ -354,10 +356,10 @@ void ChromeAutofillClientIOS::ConfirmSaveAddressProfile(
     SaveAddressProfilePromptOptions options,
     AddressProfileSavePromptCallback callback) {
   // TODO(crbug.com/1167062): Respect SaveAddressProfilePromptOptions.
-  for (size_t i = 0; i < infobar_manager_->infobar_count(); ++i) {
+  for (auto* infobar : infobar_manager_->infobars()) {
     AutofillSaveUpdateAddressProfileDelegateIOS* existing_delegate =
         AutofillSaveUpdateAddressProfileDelegateIOS::FromInfobarDelegate(
-            infobar_manager_->infobar_at(i)->delegate());
+            infobar->delegate());
 
     if (existing_delegate) {
       if (existing_delegate->is_infobar_visible()) {
@@ -375,7 +377,7 @@ void ChromeAutofillClientIOS::ConfirmSaveAddressProfile(
         // saved data is shown to user. In both the cases, the original prompt
         // is replaced by the new one provided that the modal view of the
         // original infobar is not visible to the user.
-        infobar_manager_->RemoveInfoBar(infobar_manager_->infobar_at(i));
+        infobar_manager_->RemoveInfoBar(infobar);
         break;
       }
     }
@@ -432,6 +434,11 @@ void ChromeAutofillClientIOS::ShowAutofillPopup(
   [bridge_ showAutofillPopup:open_args.suggestions popupDelegate:delegate];
 }
 
+plus_addresses::PlusAddressService*
+ChromeAutofillClientIOS::GetPlusAddressService() {
+  return PlusAddressServiceFactory::GetForBrowserState(browser_state_);
+}
+
 void ChromeAutofillClientIOS::UpdateAutofillPopupDataListValues(
     const std::vector<std::u16string>& values,
     const std::vector<std::u16string>& labels) {
@@ -474,7 +481,7 @@ bool ChromeAutofillClientIOS::IsPasswordManagerEnabled() {
 }
 
 void ChromeAutofillClientIOS::DidFillOrPreviewForm(
-    mojom::AutofillActionPersistence action_persistence,
+    mojom::ActionPersistence action_persistence,
     AutofillTriggerSource trigger_source,
     bool is_refill) {}
 

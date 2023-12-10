@@ -18,6 +18,7 @@
 #include "base/threading/sequence_bound.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "base/types/expected.h"
 #include "content/browser/interest_group/auction_process_manager.h"
 #include "content/browser/interest_group/bidding_and_auction_serializer.h"
 #include "content/browser/interest_group/bidding_and_auction_server_key_fetcher.h"
@@ -369,9 +370,9 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
 
   void GetBiddingAndAuctionServerKey(
       network::mojom::URLLoaderFactory* loader,
-      blink::mojom::AdAuctionCoordinator coordinator,
-      base::OnceCallback<void(absl::optional<BiddingAndAuctionServerKey>)>
-          callback);
+      absl::optional<url::Origin> coordinator,
+      base::OnceCallback<void(
+          base::expected<BiddingAndAuctionServerKey, std::string>)> callback);
 
   InterestGroupPermissionsChecker& permissions_checker_for_testing() {
     return permissions_checker_;
@@ -449,14 +450,18 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
       const url::Origin& owner,
       std::vector<std::string> left_interest_group_names);
 
-  // For a given owner, gets interest group keys along with their update urls.
+  // Gets a list of `InterestGroupUpdateParameter` for all interest groups
+  // associated with the provided owner.
+  //
   // `groups_limit` sets a limit on the maximum number of interest group keys
   // that may be returned.
+  //
+  // To be called only by `update_manager_`.
   void GetInterestGroupsForUpdate(
       const url::Origin& owner,
       int groups_limit,
-      base::OnceCallback<void(
-          std::vector<std::pair<blink::InterestGroupKey, GURL>>)> callback);
+      base::OnceCallback<void(std::vector<InterestGroupUpdateParameter>)>
+          callback);
 
   // Updates the interest group of the same name based on the information in
   // the provided group. This does not update the interest group expiration

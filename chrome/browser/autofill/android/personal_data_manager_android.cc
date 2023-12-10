@@ -295,44 +295,34 @@ PersonalDataManagerAndroid::GetProfileLabelsToSuggest(
 }
 
 base::android::ScopedJavaLocalRef<jstring>
-PersonalDataManagerAndroid::GetShippingAddressLabelWithCountryForPaymentRequest(
+PersonalDataManagerAndroid::GetShippingAddressLabelForPaymentRequest(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& unused_obj,
-    const base::android::JavaParamRef<jobject>& jprofile) {
-  return GetShippingAddressLabelForPaymentRequest(
-      env, jprofile, true /* include_country_in_label */);
-}
-
-base::android::ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::
-    GetShippingAddressLabelWithoutCountryForPaymentRequest(
-        JNIEnv* env,
-        const base::android::JavaParamRef<jobject>& unused_obj,
-        const base::android::JavaParamRef<jobject>& jprofile) {
-  return GetShippingAddressLabelForPaymentRequest(
-      env, jprofile, false /* include_country_in_label */);
-}
-
-base::android::ScopedJavaLocalRef<jstring>
-PersonalDataManagerAndroid::GetBillingAddressLabelForPaymentRequest(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& unused_obj,
-    const base::android::JavaParamRef<jobject>& jprofile) {
-  // The company name and country are not included in the billing address label.
+    const base::android::JavaParamRef<jobject>& jprofile,
+    const JavaParamRef<jstring>& jguid,
+    bool include_country_in_label) {
+  // The full name is not included in the label for shipping address. It is
+  // added separately instead.
   static constexpr ServerFieldType kLabelFields[] = {
-      NAME_FULL,          ADDRESS_HOME_LINE1,
-      ADDRESS_HOME_LINE2, ADDRESS_HOME_DEPENDENT_LOCALITY,
-      ADDRESS_HOME_CITY,  ADDRESS_HOME_STATE,
-      ADDRESS_HOME_ZIP,   ADDRESS_HOME_SORTING_CODE,
+      COMPANY_NAME,         ADDRESS_HOME_LINE1,
+      ADDRESS_HOME_LINE2,   ADDRESS_HOME_DEPENDENT_LOCALITY,
+      ADDRESS_HOME_CITY,    ADDRESS_HOME_STATE,
+      ADDRESS_HOME_ZIP,     ADDRESS_HOME_SORTING_CODE,
+      ADDRESS_HOME_COUNTRY,
   };
+  size_t kLabelFields_size = std::size(kLabelFields);
+  if (!include_country_in_label)
+    --kLabelFields_size;
 
-  // TODO(crbug.com/1484006): Check if existing profile needs to be passed.
   AutofillProfile profile = AutofillProfile::CreateFromJavaObject(
-      jprofile, /*existing_profile=*/nullptr,
+      jprofile,
+      personal_data_manager_->GetProfileByGUID(
+          ConvertJavaStringToUTF8(env, jguid)),
       g_browser_process->GetApplicationLocale());
 
   return ConvertUTF16ToJavaString(
       env, profile.ConstructInferredLabel(
-               kLabelFields, std::size(kLabelFields), std::size(kLabelFields),
+               kLabelFields, kLabelFields_size, kLabelFields_size,
                g_browser_process->GetApplicationLocale()));
 }
 
@@ -580,7 +570,7 @@ jlong PersonalDataManagerAndroid::GetDateNDaysAgoForTesting(
 void PersonalDataManagerAndroid::ClearServerDataForTesting(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& unused_obj) {
-  personal_data_manager_->ClearAllServerData();
+  personal_data_manager_->ClearAllServerDataForTesting();  // IN-TEST
   personal_data_manager_->NotifyPersonalDataObserver();
 }
 
@@ -673,35 +663,6 @@ ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileLabels(
       g_browser_process->GetApplicationLocale(), &labels);
 
   return base::android::ToJavaArrayOfStrings(env, labels);
-}
-
-base::android::ScopedJavaLocalRef<jstring>
-PersonalDataManagerAndroid::GetShippingAddressLabelForPaymentRequest(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jprofile,
-    bool include_country_in_label) {
-  // The full name is not included in the label for shipping address. It is
-  // added separately instead.
-  static constexpr ServerFieldType kLabelFields[] = {
-      COMPANY_NAME,         ADDRESS_HOME_LINE1,
-      ADDRESS_HOME_LINE2,   ADDRESS_HOME_DEPENDENT_LOCALITY,
-      ADDRESS_HOME_CITY,    ADDRESS_HOME_STATE,
-      ADDRESS_HOME_ZIP,     ADDRESS_HOME_SORTING_CODE,
-      ADDRESS_HOME_COUNTRY,
-  };
-  size_t kLabelFields_size = std::size(kLabelFields);
-  if (!include_country_in_label)
-    --kLabelFields_size;
-
-  // TODO(crbug.com/1484006): Check if existing profile needs to be passed.
-  AutofillProfile profile = AutofillProfile::CreateFromJavaObject(
-      jprofile, /*existing_profile=*/nullptr,
-      g_browser_process->GetApplicationLocale());
-
-  return ConvertUTF16ToJavaString(
-      env, profile.ConstructInferredLabel(
-               kLabelFields, kLabelFields_size, kLabelFields_size,
-               g_browser_process->GetApplicationLocale()));
 }
 
 // Returns whether the Autofill feature is managed.

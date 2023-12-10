@@ -17,6 +17,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
+#include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
 #include "components/exo/buffer.h"
@@ -1609,7 +1610,7 @@ void Surface::AppendContentsToFrame(const gfx::PointF& origin,
 
     if (device_scale_factor.has_value()) {
       msk.ApplyTransform(
-          gfx::Transform::MakeScale(device_scale_factor.has_value()));
+          gfx::Transform::MakeScale(device_scale_factor.value()));
     }
   }
 

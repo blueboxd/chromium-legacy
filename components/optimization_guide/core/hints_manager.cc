@@ -50,7 +50,6 @@
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "google_apis/gaia/gaia_constants.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source.h"
@@ -66,12 +65,9 @@ namespace {
 // startup will have a newer version than it.
 constexpr char kManualConfigComponentVersion[] = "0.0.0";
 
-// Provides a random time delta in seconds between |kFetchRandomMinDelay| and
-// |kFetchRandomMaxDelay|.
 base::TimeDelta RandomFetchDelay() {
-  return base::Seconds(
-      base::RandInt(features::ActiveTabsHintsFetchRandomMinDelaySecs(),
-                    features::ActiveTabsHintsFetchRandomMaxDelaySecs()));
+  return base::RandTimeDelta(features::ActiveTabsHintsFetchRandomMinDelay(),
+                             features::ActiveTabsHintsFetchRandomMaxDelay());
 }
 
 void MaybeRunUpdateClosure(base::OnceClosure update_closure) {
@@ -310,8 +306,6 @@ bool ShouldContextResponsePopulateHintCache(
       return false;
     case proto::RequestContext::CONTEXT_PAGE_INSIGHTS_HUB:
       return false;
-    case proto::RequestContext::CONTEXT_NON_PERSONALIZED_PAGE_INSIGHTS_HUB:
-      return false;
   }
   NOTREACHED();
   return false;
@@ -335,6 +329,7 @@ HintsManager::HintsManager(
           GetPendingOptimizationHintsComponentVersionFromPref(pref_service)),
       is_off_the_record_(is_off_the_record),
       application_locale_(application_locale),
+      oauth_scopes_(features::GetOAuthScopesForPersonalizedMetadata()),
       pref_service_(pref_service),
       hint_cache_(
           std::make_unique<HintCache>(hint_store,
@@ -1111,11 +1106,11 @@ void HintsManager::CanApplyOptimizationOnDemand(
                              urls_to_fetch.vector(), hosts_to_fetch.vector(),
                              optimization_guide_logger_);
 
-  if (features::ShouldEnablePersonalizedMetadata(request_context)) {
+  if (features::ShouldEnablePersonalizedMetadata(request_context) &&
+      !oauth_scopes_.empty()) {
     // Request the token before fetching the hints.
     RequestAccessToken(
-        identity_manager_,
-        {GaiaConstants::kOptimizationGuideServiceGetHintsOAuth2Scope},
+        identity_manager_, oauth_scopes_,
         base::BindOnce(&HintsManager::FetchOptimizationGuideServiceBatchHints,
                        weak_ptr_factory_.GetWeakPtr(), hosts_to_fetch,
                        urls_to_fetch, optimization_types, request_context,

@@ -62,9 +62,16 @@ class AnchorPositionScrollData
     bool scroll_containers_include_viewport = false;
   };
 
-  Element* OwnerElement() const { return owner_; }
+  Element* OwnerElement() const { return owner_.Get(); }
 
-  bool HasTranslation() const { return scroll_container_ids_.size(); }
+  bool NeedsScrollAdjustment() const { return scroll_container_ids_.size(); }
+  bool NeedsScrollAdjustmentInX() const {
+    return needs_scroll_adjustment_in_x_;
+  }
+  bool NeedsScrollAdjustmentInY() const {
+    return needs_scroll_adjustment_in_y_;
+  }
+
   gfx::Vector2dF AccumulatedScrollOffset() const {
     return accumulated_scroll_offset_;
   }
@@ -140,6 +147,8 @@ class AnchorPositionScrollData
   gfx::Vector2dF additional_bounds_scroll_offset_;
 
   bool is_affected_by_viewport_scrolling_ = false;
+  bool needs_scroll_adjustment_in_x_ = false;
+  bool needs_scroll_adjustment_in_y_ = false;
 };
 
 template <>

@@ -16,7 +16,6 @@ namespace features {
 // alongside the definition of their values in the .cc file.
 
 // Alphabetical:
-BASE_DECLARE_FEATURE(kWebViewAppsPackageNamesServerSideAllowlist);
 BASE_DECLARE_FEATURE(kWebViewBrotliSupport);
 BASE_DECLARE_FEATURE(kWebViewCheckReturnResources);
 BASE_DECLARE_FEATURE(kWebViewConnectionlessSafeBrowsing);
@@ -41,6 +40,7 @@ BASE_DECLARE_FEATURE(kWebViewSupervisedUserSiteBlock);
 BASE_DECLARE_FEATURE(kWebViewSuppressDifferentOriginSubframeJSDialogs);
 BASE_DECLARE_FEATURE(kWebViewTestFeature);
 BASE_DECLARE_FEATURE(kWebViewUseMetricsUploadService);
+BASE_DECLARE_FEATURE(kWebViewUseMetricsUploadServiceOnlySdkRuntime);
 BASE_DECLARE_FEATURE(kWebViewPropagateNetworkSignals);
 BASE_DECLARE_FEATURE(kWebViewUnreducedProductVersion);
 BASE_DECLARE_FEATURE(kWebViewWideColorGamutSupport);

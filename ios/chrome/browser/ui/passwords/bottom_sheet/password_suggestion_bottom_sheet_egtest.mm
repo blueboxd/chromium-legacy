@@ -8,15 +8,15 @@
 #import "base/test/ios/wait_util.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "ios/chrome/browser/metrics/metrics_app_interface.h"
-#import "ios/chrome/browser/passwords/password_manager_app_interface.h"
+#import "ios/chrome/browser/passwords/model/password_manager_app_interface.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/passwords/bottom_sheet/password_suggestion_bottom_sheet_app_interface.h"
-#import "ios/chrome/browser/ui/passwords/bottom_sheet/password_suggestion_bottom_sheet_constants.h"
 #import "ios/chrome/browser/ui/settings/password/password_manager_egtest_utils.h"
 #import "ios/chrome/browser/ui/settings/password/password_manager_ui_features.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings_app_interface.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
+#import "ios/chrome/common/ui/confirmation_alert/constants.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -624,9 +624,9 @@ id<GREYMatcher> NavigationBarEditButton() {
       performAction:grey_tap()];
 
   // Scroll to the last password.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kPasswordSuggestionBottomSheetTableViewId)]
+  [[EarlGrey selectElementWithMatcher:
+                 grey_accessibilityID(
+                     kConfirmationAlertUnderTitleViewAccessibilityIdentifier)]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
 
   [ChromeEarlGrey

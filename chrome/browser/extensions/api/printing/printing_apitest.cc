@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
+#include "base/containers/fixed_flat_map.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -33,6 +36,7 @@
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
 #include "base/feature_list.h"
+#include "chrome/browser/printing/print_backend_service_manager.h"
 #include "chrome/browser/printing/print_backend_service_test_impl.h"
 #include "chrome/services/printing/public/mojom/print_backend_service.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -50,6 +54,23 @@ constexpr int kVerticalDpi = 400;
 constexpr int kMediaSizeWidth = 210000;
 constexpr int kMediaSizeHeight = 297000;
 constexpr char kMediaSizeVendorId[] = "iso_a4_210x297mm";
+
+// Enum used to initialize the parameterized test with different types of
+// extensions.
+enum class ExtensionType {
+  kChromeApp,
+  kExtensionMV2,
+  kExtensionMV3,
+};
+
+// Mapping of the different extension types used in the test to the specific
+// manifest file names to create an extension of that type. The actual location
+// of these files is at //chrome/test/data/extensions/api_test/printing/.
+static constexpr auto kManifestFileNames =
+    base::MakeFixedFlatMap<ExtensionType, const char*>(
+        {{ExtensionType::kChromeApp, "manifest_chrome_app.json"},
+         {ExtensionType::kExtensionMV2, "manifest_extension.json"},
+         {ExtensionType::kExtensionMV3, "manifest_v3_extension.json"}});
 
 std::unique_ptr<KeyedService> BuildTestCupsPrintJobManager(
     content::BrowserContext* context) {
@@ -81,7 +102,7 @@ ConstructPrinterCapabilities() {
 }  // namespace
 
 class PrintingApiTest : public ExtensionApiTest,
-                        public testing::WithParamInterface<bool> {
+                        public testing::WithParamInterface<ExtensionType> {
  public:
   PrintingApiTest() = default;
   ~PrintingApiTest() override = default;
@@ -90,28 +111,42 @@ class PrintingApiTest : public ExtensionApiTest,
   PrintingApiTest& operator=(const PrintingApiTest&) = delete;
 
  protected:
-  void SetUpOnMainThread() override {
+  void SetUp() override {
+    ExtensionApiTest::SetUp();
+    printing::PrintBackend::SetPrintBackendForTesting(
+        test_print_backend_.get());
+  }
+
+  void TearDown() override {
+    printing::PrintBackend::SetPrintBackendForTesting(nullptr);
+    ExtensionApiTest::TearDown();
+  }
+
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
     if (base::FeatureList::IsEnabled(
             printing::features::kEnableOopPrintDrivers)) {
       print_backend_service_ =
           printing::PrintBackendServiceTestImpl::LaunchForTesting(
               test_remote_, test_print_backend_.get(), /*sandboxed=*/true);
     }
-#endif
-    ExtensionApiTest::SetUpOnMainThread();
   }
 
+  void TearDownOnMainThread() override {
+    print_backend_service_.reset();
+    printing::PrintBackendServiceManager::GetInstance().ResetForTesting();
+    ExtensionApiTest::TearDownOnMainThread();
+  }
+#endif
+
   void SetUpInProcessBrowserTestFixture() override {
+    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
     create_services_subscription_ =
         BrowserContextDependencyManager::GetInstance()
             ->RegisterCreateServicesCallbackForTesting(base::BindRepeating(
                 &PrintingApiTest::OnWillCreateBrowserContextServices,
                 base::Unretained(this)));
-    test_print_backend_ = base::MakeRefCounted<printing::TestPrintBackend>();
-    printing::PrintBackend::SetPrintBackendForTesting(
-        test_print_backend_.get());
-    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
   }
 
   ash::TestCupsPrintJobManager* GetPrintJobManager() {
@@ -153,12 +188,11 @@ class PrintingApiTest : public ExtensionApiTest,
                           dir.UnpackedPath(), /*recursive=*/false);
       base::CopyFile(
           test_data_dir_.AppendASCII("printing")
-              .AppendASCII(IsChromeApp() ? "manifest_chrome_app.json"
-                                         : "manifest_extension.json"),
+              .AppendASCII(kManifestFileNames.at(GetExtensionType())),
           dir.UnpackedPath().AppendASCII(extensions::kManifestFilename));
     }
 
-    auto run_options = IsChromeApp()
+    auto run_options = GetExtensionType() == ExtensionType::kChromeApp
                            ? RunOptions{.custom_arg = html_test_page,
                                         .launch_as_platform_app = true}
                            : RunOptions({.extension_url = html_test_page});
@@ -166,7 +200,7 @@ class PrintingApiTest : public ExtensionApiTest,
   }
 
  private:
-  bool IsChromeApp() const { return GetParam(); }
+  ExtensionType GetExtensionType() const { return GetParam(); }
 
   void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
     ash::CupsPrintJobManagerFactory::GetInstance()->SetTestingFactory(
@@ -182,8 +216,11 @@ class PrintingApiTest : public ExtensionApiTest,
 
   base::CallbackListSubscription create_services_subscription_;
 
-  scoped_refptr<printing::TestPrintBackend> test_print_backend_;
+  scoped_refptr<printing::TestPrintBackend> test_print_backend_ =
+      base::MakeRefCounted<printing::TestPrintBackend>();
 };
+
+using PrintingPromiseApiTest = PrintingApiTest;
 
 IN_PROC_BROWSER_TEST_P(PrintingApiTest, GetPrinters) {
   chromeos::Printer printer = chromeos::Printer(kId);
@@ -221,6 +258,21 @@ IN_PROC_BROWSER_TEST_P(PrintingApiTest, SubmitJob) {
   RunTest("submit_job.html");
 }
 
+// As above, but tests using promise based API calls.
+IN_PROC_BROWSER_TEST_P(PrintingPromiseApiTest, SubmitJob) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  AddAvailablePrinter(kId, ConstructPrinterCapabilities());
+  PrintingAPIHandler* handler = PrintingAPIHandler::Get(browser()->profile());
+  handler->SetPrintJobControllerForTesting(
+      std::make_unique<FakePrintJobControllerAsh>(GetPrintJobManager(),
+                                                  GetPrintersManager()));
+  base::AutoReset<bool> skip_confirmation_dialog_reset(
+      PrintJobSubmitter::SkipConfirmationDialogForTesting());
+
+  RunTest("submit_job_promise.html");
+}
+
 // Verifies that:
 // a) Cancel job request works smoothly.
 // b) OnJobStatusChanged() events are dispatched correctly.
@@ -238,7 +290,16 @@ IN_PROC_BROWSER_TEST_P(PrintingApiTest, CancelJob) {
   RunTest("cancel_job.html");
 }
 
-// |true| for Chrome App, |false| for Extension.
-INSTANTIATE_TEST_SUITE_P(/**/, PrintingApiTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(/**/,
+                         PrintingApiTest,
+                         testing::Values(ExtensionType::kChromeApp,
+                                         ExtensionType::kExtensionMV2,
+                                         ExtensionType::kExtensionMV3));
+
+// We only run the promise based tests for MV3 extensions as promise based API
+// calls are only exposed to MV3.
+INSTANTIATE_TEST_SUITE_P(/**/,
+                         PrintingPromiseApiTest,
+                         testing::Values(ExtensionType::kExtensionMV3));
 
 }  // namespace extensions

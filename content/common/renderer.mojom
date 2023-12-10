@@ -41,6 +41,9 @@ struct UpdateSystemColorInfoParams {
   // renderer's ColorProviders.
   map<SystemThemeColor, uint32> colors;
 
+  // Accent color used by the system. Currently only set on ChromeOS.
+  uint32? accent_color;
+
   // Maps used to reconstruct ColorProvider instances in the renderer.
   map<color.mojom.RendererColorId, skia.mojom.SkColor> light_colors;
   map<color.mojom.RendererColorId, skia.mojom.SkColor> dark_colors;
@@ -156,6 +159,11 @@ interface Renderer {
   // agents, not both.
   // This is called at most once, prior to committing a navigation.
   SetIsCrossOriginIsolated(bool value);
+
+  // Sets whether `--disable-web-security` has been set.
+  //
+  // This is called at most once on process startup.
+  SetIsWebSecurityDisabled(bool value);
 
   // Set whether this renderer process is allowed to use Isolated Context APIs.
   // Similarly to the `SetIsCrossOriginIsolated()` method above, this flag is

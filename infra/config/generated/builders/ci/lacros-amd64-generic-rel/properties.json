@@ -7,7 +7,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "lacros-amd64-generic-rel",
-              "project": "chromium-m119"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-chromiumos-archive",
@@ -19,13 +19,10 @@
                 ],
                 "build_config": "Release",
                 "config": "chromium",
-                "cros_boards_with_qemu_images": [
-                  "amd64-generic"
-                ],
                 "target_arch": "intel",
                 "target_bits": 64,
                 "target_cros_boards": [
-                  "eve"
+                  "amd64-generic"
                 ],
                 "target_platform": "chromeos"
               },
@@ -34,7 +31,10 @@
                   "checkout_lacros_sdk",
                   "chromeos"
                 ],
-                "config": "chromium"
+                "config": "chromium_no_telemetry_dependencies"
+              },
+              "skylab_upload_location": {
+                "gs_bucket": "chromium-ci-skylab"
               }
             }
           }
@@ -44,7 +44,7 @@
         {
           "bucket": "ci",
           "builder": "lacros-amd64-generic-rel",
-          "project": "chromium-m119"
+          "project": "chromium"
         }
       ],
       "mirroring_builder_group_and_names": [
@@ -71,6 +71,6 @@
   "builder_group": "chromium.chromiumos",
   "recipe": "chromium",
   "sheriff_rotations": [
-    "chrome_browser_release"
+    "chromium"
   ]
 }

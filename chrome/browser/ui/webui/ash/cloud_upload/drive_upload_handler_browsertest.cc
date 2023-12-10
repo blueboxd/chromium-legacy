@@ -52,7 +52,7 @@ namespace {
 base::FilePath GetTestFilePath(const std::string& file_name) {
   // Get the path to file manager's test data directory.
   base::FilePath source_dir;
-  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_dir));
+  CHECK(base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &source_dir));
   base::FilePath test_data_dir = source_dir.AppendASCII("chrome")
                                      .AppendASCII("test")
                                      .AppendASCII("data")
@@ -292,6 +292,13 @@ class DriveUploadHandlerTest
   // Overrides `fail_sync_`
   base::RepeatingClosure on_transfer_complete_callback_;
 
+  std::unique_ptr<ash::cloud_upload::CloudOpenMetrics> cloud_open_metrics_ =
+      std::make_unique<CloudOpenMetrics>(CloudProvider::kGoogleDrive);
+  base::SafeRef<CloudOpenMetrics> cloud_open_metrics_ref_ =
+      cloud_open_metrics_->GetSafeRef();
+
+  base::HistogramTester histogram_;
+
  private:
   // IOTaskController::Observer:
   void OnIOTaskStatus(
@@ -399,7 +406,8 @@ IN_PROC_BROWSER_TEST_F(DriveUploadHandlerTest, UploadFromMyFiles) {
   DriveUploadHandler::Upload(
       profile(), source_file_url,
       base::BindOnce(&DriveUploadHandlerTest::OnUploadDone,
-                     base::Unretained(this)));
+                     base::Unretained(this)),
+      cloud_open_metrics_ref_);
   Wait();
 
   // Check that the source file has been moved to Drive.
@@ -408,6 +416,9 @@ IN_PROC_BROWSER_TEST_F(DriveUploadHandlerTest, UploadFromMyFiles) {
     EXPECT_FALSE(base::PathExists(my_files_dir_.AppendASCII(test_file_name)));
     CheckPathExistsOnDrive(observed_relative_drive_path());
   }
+
+  histogram_.ExpectUniqueSample(kGoogleDriveUploadResultMetricName,
+                                OfficeFilesUploadResult::kSuccess, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(DriveUploadHandlerTest, UploadFromReadOnlyFileSystem) {
@@ -425,7 +436,8 @@ IN_PROC_BROWSER_TEST_F(DriveUploadHandlerTest, UploadFromReadOnlyFileSystem) {
   DriveUploadHandler::Upload(
       profile(), source_file_url,
       base::BindOnce(&DriveUploadHandlerTest::OnUploadDone,
-                     base::Unretained(this)));
+                     base::Unretained(this)),
+      cloud_open_metrics_ref_);
   Wait();
 
   // Check that the source file has been copied to Drive.
@@ -434,6 +446,9 @@ IN_PROC_BROWSER_TEST_F(DriveUploadHandlerTest, UploadFromReadOnlyFileSystem) {
     EXPECT_TRUE(base::PathExists(read_only_dir_.AppendASCII(test_file_name)));
     CheckPathExistsOnDrive(observed_relative_drive_path());
   }
+
+  histogram_.ExpectUniqueSample(kGoogleDriveUploadResultMetricName,
+                                OfficeFilesUploadResult::kSuccess, 1);
 }
 
 // Test that when the sync to Drive fails, the file is not moved to Drive.
@@ -453,7 +468,8 @@ IN_PROC_BROWSER_TEST_F(DriveUploadHandlerTest, UploadFails) {
   DriveUploadHandler::Upload(
       profile(), source_file_url,
       base::BindOnce(&DriveUploadHandlerTest::OnUploadDone,
-                     base::Unretained(this)));
+                     base::Unretained(this)),
+      cloud_open_metrics_ref_);
   Wait();
 
   // Check that the source file has not been moved to Drive.
@@ -462,6 +478,9 @@ IN_PROC_BROWSER_TEST_F(DriveUploadHandlerTest, UploadFails) {
     EXPECT_TRUE(base::PathExists(my_files_dir_.AppendASCII(test_file_name)));
     CheckPathNotFoundOnDrive(observed_relative_drive_path());
   }
+
+  histogram_.ExpectUniqueSample(kGoogleDriveUploadResultMetricName,
+                                OfficeFilesUploadResult::kSyncError, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(DriveUploadHandlerTest, UploadFromMyFilesNoConnection) {
@@ -481,7 +500,8 @@ IN_PROC_BROWSER_TEST_F(DriveUploadHandlerTest, UploadFromMyFilesNoConnection) {
   base::MockCallback<DriveUploadHandler::UploadCallback> upload_callback;
   EXPECT_CALL(upload_callback, Run(absl::optional<GURL>(absl::nullopt), _))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
-  DriveUploadHandler::Upload(profile(), source_file_url, upload_callback.Get());
+  DriveUploadHandler::Upload(profile(), source_file_url, upload_callback.Get(),
+                             cloud_open_metrics_ref_);
   run_loop.Run();
 
   // Check that the source file has not been moved to Drive.
@@ -490,6 +510,9 @@ IN_PROC_BROWSER_TEST_F(DriveUploadHandlerTest, UploadFromMyFilesNoConnection) {
     EXPECT_TRUE(base::PathExists(my_files_dir_.AppendASCII(test_file_name)));
     CheckPathNotFoundOnDrive(observed_relative_drive_path());
   }
+
+  histogram_.ExpectUniqueSample(kGoogleDriveUploadResultMetricName,
+                                OfficeFilesUploadResult::kNoConnection, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(DriveUploadHandlerTest,
@@ -512,8 +535,12 @@ IN_PROC_BROWSER_TEST_F(DriveUploadHandlerTest,
   base::MockCallback<DriveUploadHandler::UploadCallback> upload_callback;
   EXPECT_CALL(upload_callback, Run(absl::optional<GURL>(absl::nullopt), _))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
-  DriveUploadHandler::Upload(profile(), source_file_url, upload_callback.Get());
+  DriveUploadHandler::Upload(profile(), source_file_url, upload_callback.Get(),
+                             cloud_open_metrics_ref_);
   run_loop.Run();
+
+  histogram_.ExpectUniqueSample(kGoogleDriveUploadResultMetricName,
+                                OfficeFilesUploadResult::kNoConnection, 1);
 }
 
 }  // namespace ash::cloud_upload

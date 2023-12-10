@@ -92,7 +92,7 @@ BASE_FEATURE(kV8ExperimentalRegexpEngine,
 BASE_FEATURE(kV8Turbofan, "V8Turbofan", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables Turbofan's new compiler IR Turboshaft.
-BASE_FEATURE(kV8Turboshaft, "V8Turboshaft", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kV8Turboshaft, "V8Turboshaft", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables Maglev compiler. Note that this only sets the V8 flag when
 // manually overridden; otherwise it defers to whatever the V8 default is.
@@ -208,11 +208,6 @@ BASE_FEATURE(kJavaScriptRabGsab,
              "JavaScriptRabGsab",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables the well-formed JavaScript strings proposal.
-BASE_FEATURE(kJavaScriptStringIsWellFormed,
-             "JavaScriptStringIsWellFormed",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables the JavaScript RegExp Unicode set notation proposal.
 BASE_FEATURE(kJavaScriptRegExpUnicodeSets,
              "JavaScriptRegExpUnicodeSets",
@@ -256,4 +251,8 @@ BASE_FEATURE(kWebAssemblyInlining,
              "WebAssemblyInlining",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enable the generic wasm-to-js wrapper.
+BASE_FEATURE(kWebAssemblyGenericWrapper,
+             "WebAssemblyGenericWrapper",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 }  // namespace features

@@ -25,7 +25,7 @@ import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render
 import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import {CrToggleElement} from 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {assert} from 'chrome://resources/js/assert.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {ContainerInfo, GuestId} from '../guest_os/guest_os_browser_proxy.js';
@@ -39,7 +39,7 @@ type HtmlElementWithData<T extends HTMLElement = HTMLElement> = T&{
   'dataContainerId': GuestId,
 };
 
-interface CrostiniPortForwardingElement {
+export interface CrostiniPortForwardingElement {
   $: {
     errorToast: CrToastElement,
     removeAllPortsMenu: CrLazyRenderElement<CrActionMenuElement>,
@@ -49,7 +49,7 @@ interface CrostiniPortForwardingElement {
 const CrostiniPortForwardingBase =
     PrefsMixin(WebUiListenerMixin(PolymerElement));
 
-class CrostiniPortForwardingElement extends CrostiniPortForwardingBase {
+export class CrostiniPortForwardingElement extends CrostiniPortForwardingBase {
   static get is() {
     return 'settings-crostini-port-forwarding';
   }

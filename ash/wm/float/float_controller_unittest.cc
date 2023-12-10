@@ -44,7 +44,6 @@
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/clock.h"
 #include "chromeos/ui/base/window_state_type.h"
@@ -52,7 +51,6 @@
 #include "chromeos/ui/frame/header_view.h"
 #include "chromeos/ui/frame/immersive/immersive_fullscreen_controller.h"
 #include "chromeos/ui/wm/constants.h"
-#include "chromeos/ui/wm/features.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window_observer.h"
@@ -142,15 +140,6 @@ class WindowFloatTest : public AshTestBase {
     CHECK(WindowState::Get(floated_window.get())->IsFloated());
     return floated_window;
   }
-
-  void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {chromeos::wm::features::kWindowLayoutMenu}, {});
-    AshTestBase::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Test float/unfloat window.
@@ -568,7 +557,7 @@ TEST_F(WindowFloatTest, FloatWindowWithDeskRemovalUndo) {
   auto* float_controller = Shell::Get()->float_controller();
   ASSERT_EQ(float_controller->FindDeskOfFloatedWindow(window.get()), desk_2);
   EnterOverview();
-  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  ASSERT_TRUE(OverviewController::Get()->InOverviewSession());
   RemoveDesk(desk_2, DeskCloseType::kCloseAllWindowsAndWait);
   ASSERT_TRUE(desk_2->is_desk_being_removed());
   // During desk removal, float window should be hidden.
@@ -647,7 +636,7 @@ TEST_F(WindowFloatTest, MoveFloatWindowBetweenDesks) {
   std::unique_ptr<aura::Window> window_2(CreateFloatedWindow());
   // Move back to `desk_1`.
   ActivateDesk(desk_1);
-  auto* overview_controller = Shell::Get()->overview_controller();
+  auto* overview_controller = OverviewController::Get();
   EnterOverview();
   auto* overview_session = overview_controller->overview_session();
   // The window should exist on the grid of the first display.
@@ -692,7 +681,7 @@ TEST_F(WindowFloatTest, MoveFloatWindowBetweenDesksOnDifferentDisplay) {
   std::unique_ptr<aura::Window> window_2(CreateFloatedWindow());
   // Move back to `desk_1`.
   ActivateDesk(desk_1);
-  auto* overview_controller = Shell::Get()->overview_controller();
+  auto* overview_controller = OverviewController::Get();
   EnterOverview();
   auto* overview_session = overview_controller->overview_session();
   // Get root for displays.
@@ -793,7 +782,7 @@ TEST_F(WindowFloatTest, FloatWindowShouldNotBlockKeyboardEvents) {
   // Move to `desk_2`.
   ActivateDesk(desk_2);
   // Going into overview mode from keyboard shortcut.
-  auto* overview_controller = Shell::Get()->overview_controller();
+  auto* overview_controller = OverviewController::Get();
   ASSERT_FALSE(overview_controller->InOverviewSession());
   PressAndReleaseKey(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE);
   // Verify we are in overview mode.
@@ -868,7 +857,7 @@ TEST_F(WindowFloatTest, FloatWindowUpdatedOnOverview) {
   NewDesk();
   ASSERT_EQ(desks_controller->desks().size(), 2u);
   EnterOverview();
-  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  ASSERT_TRUE(OverviewController::Get()->InOverviewSession());
   RemoveDesk(desk_1, DeskCloseType::kCombineDesks);
   ASSERT_EQ(desks_controller->desks().size(), 1u);
   // Floated window should be appended to overview items.
@@ -989,8 +978,7 @@ TEST_F(WindowFloatMetricsTest, FloatWindowMovedToAnotherDeskCountPerSession) {
   auto* desks_controller = DesksController::Get();
   auto* desk_2 = desks_controller->desks()[1].get();
   EnterOverview();
-  auto* overview_session =
-      Shell::Get()->overview_controller()->overview_session();
+  auto* overview_session = OverviewController::Get()->overview_session();
   // The window should exist on the grid of the first display.
   auto* overview_item =
       overview_session->GetOverviewItemForWindow(window_1.get());
@@ -2172,14 +2160,14 @@ TEST_F(TabletWindowFloatSplitviewTest, FloatToSnapped) {
   // extended and users can pick a second app from there.
   const WindowSnapWMEvent snap_left(WM_EVENT_SNAP_PRIMARY);
   WindowState::Get(window.get())->OnWMEvent(&snap_left);
-  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  ASSERT_TRUE(OverviewController::Get()->InOverviewSession());
   ASSERT_TRUE(split_view_controller->InSplitViewMode());
 
   // Float the window so we can snap it again. Assert that we are no longer in
   // overview or splitview.
   PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
   ASSERT_TRUE(WindowState::Get(window.get())->IsFloated());
-  ASSERT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  ASSERT_FALSE(OverviewController::Get()->InOverviewSession());
   ASSERT_FALSE(split_view_controller->InSplitViewMode());
 
   // Create a second window.
@@ -2189,7 +2177,7 @@ TEST_F(TabletWindowFloatSplitviewTest, FloatToSnapped) {
   // Tests that when we snap `window` now, `other_window` will get snapped to
   // the opposite side.
   WindowState::Get(window.get())->OnWMEvent(&snap_left);
-  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
   EXPECT_TRUE(split_view_controller->BothSnapped());
   EXPECT_EQ(split_view_controller->primary_window(), window.get());
   EXPECT_EQ(split_view_controller->secondary_window(), other_window.get());
@@ -2199,7 +2187,7 @@ TEST_F(TabletWindowFloatSplitviewTest, FloatToSnapped) {
   ToggleOverview();
   wm::ActivateWindow(window.get());
   PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
-  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
   EXPECT_FALSE(split_view_controller->InSplitViewMode());
 
   // Tests that when we partial-snap `other_window` now, activating `window`

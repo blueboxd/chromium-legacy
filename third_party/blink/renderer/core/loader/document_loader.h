@@ -54,7 +54,7 @@
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom-shared.h"
 #include "third_party/blink/public/mojom/page/page.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/page_state/page_state.mojom-blink.h"
-#include "third_party/blink/public/mojom/runtime_feature_state/runtime_feature_state.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/runtime_feature_state/runtime_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker_mode.mojom-blink.h"
 #include "third_party/blink/public/mojom/timing/resource_timing.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
@@ -152,7 +152,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   static bool WillLoadUrlAsEmpty(const KURL&);
 
-  LocalFrame* GetFrame() const { return frame_; }
+  LocalFrame* GetFrame() const { return frame_.Get(); }
 
   void DetachFromFrame(bool flush_microtask_queue);
 
@@ -196,7 +196,9 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // same number of time than BlockParser().
   void BlockParser() override;
   void ResumeParser() override;
-  bool HasBeenLoadedAsWebArchive() const override { return archive_; }
+  bool HasBeenLoadedAsWebArchive() const override {
+    return archive_ != nullptr;
+  }
   WebArchiveInfo GetArchiveInfo() const override;
   bool LastNavigationHadTransientUserActivation() const override {
     return last_navigation_had_transient_user_activation_;
@@ -272,7 +274,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
     navigation_type_ = navigation_type;
   }
 
-  HistoryItem* GetHistoryItem() const { return history_item_; }
+  HistoryItem* GetHistoryItem() const { return history_item_.Get(); }
 
   void StartLoading();
   void StopLoading();
@@ -325,6 +327,8 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   void DispatchLinkHeaderPreloads(const ViewportDescription*,
                                   PreloadHelper::LoadLinksFromHeaderMode);
+  void DispatchLcppFontPreloads(const ViewportDescription*,
+                                PreloadHelper::LoadLinksFromHeaderMode);
 
   void LoadFailed(const ResourceError&);
 
@@ -771,7 +775,8 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   const base::TickClock* clock_;
 
-  const Vector<OriginTrialFeature> initiator_origin_trial_features_;
+  const Vector<mojom::blink::OriginTrialFeature>
+      initiator_origin_trial_features_;
 
   const Vector<String> force_enabled_origin_trials_;
 
@@ -827,7 +832,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   // Runtime feature state override is applied to the document. They are applied
   // before JavaScript context creation (i.e. CreateParserPostCommit).
-  const base::flat_map<mojom::blink::RuntimeFeatureState, bool>
+  const base::flat_map<mojom::blink::RuntimeFeature, bool>
       modified_runtime_features_;
 };
 

@@ -53,6 +53,8 @@
 #include "net/base/mock_network_change_notifier.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_anonymization_key.h"
+#include "net/base/network_change_notifier.h"
+#include "net/base/network_interfaces.h"
 #include "net/base/schemeful_site.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config.h"
@@ -14300,6 +14302,69 @@ TEST_F(HostResolverManagerTest,
 TEST_F(HostResolverManagerTest,
        IPv4AddressLiteralInIPv6OnlyNetworkBadAddressSync) {
   IPv4AddressLiteralInIPv6OnlyNetworkBadAddressTest(false);
+}
+
+class HostResolverManagerIPv6ReachabilityOverrideTest
+    : public HostResolverManagerDnsTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  static constexpr const char kTargetHost[] = "host.test";
+
+  HostResolverManagerIPv6ReachabilityOverrideTest() {
+    std::map<std::string, std::string> field_trial_params;
+    if (GetParam()) {
+      feature_list_.InitAndEnableFeature(
+          features::kEnableIPv6ReachabilityOverride);
+    } else {
+      feature_list_.InitAndDisableFeature(
+          features::kEnableIPv6ReachabilityOverride);
+    }
+  }
+
+ protected:
+  void SetUp() override {
+    HostResolverManagerDnsTest::SetUp();
+    // Make the global reachiability probe failed.
+    CreateResolverWithLimitsAndParams(kMaxJobs, DefaultParams(proc_),
+                                      /*ipv6_reachable=*/false,
+                                      /*check_ipv6_on_wifi=*/true);
+    ChangeDnsConfig(CreateValidDnsConfig());
+    // Wait until ongoing probe tasks finish.
+    RunUntilIdle();
+
+    // This rule is used when only A record is queried.
+    proc_->AddRule(kTargetHost, ADDRESS_FAMILY_IPV4, "192.0.2.1",
+                   HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6);
+    // This rule is used when A and AAAA records are queried.
+    proc_->AddRule(kTargetHost, ADDRESS_FAMILY_UNSPECIFIED,
+                   "192.0.2.1,2001:db8::1");
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         HostResolverManagerIPv6ReachabilityOverrideTest,
+                         testing::Bool());
+
+TEST_P(HostResolverManagerIPv6ReachabilityOverrideTest, Request) {
+  proc_->SignalMultiple(1u);
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      url::SchemeHostPort(url::kHttpScheme, kTargetHost, 80),
+      NetworkAnonymizationKey(), NetLogWithSource(), absl::nullopt,
+      resolve_context_.get(), resolve_context_->host_cache()));
+  EXPECT_THAT(response.result_error(), IsOk());
+
+  if (GetParam()) {
+    EXPECT_THAT(
+        response.request()->GetAddressResults()->endpoints(),
+        testing::UnorderedElementsAre(CreateExpected("192.0.2.1", 80),
+                                      CreateExpected("2001:db8::1", 80)));
+  } else {
+    EXPECT_THAT(response.request()->GetAddressResults()->endpoints(),
+                testing::UnorderedElementsAre(CreateExpected("192.0.2.1", 80)));
+  }
 }
 
 }  // namespace net

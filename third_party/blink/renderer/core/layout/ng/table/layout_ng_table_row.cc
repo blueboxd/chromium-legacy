@@ -26,11 +26,6 @@ LayoutNGTableRow* LayoutNGTableRow::CreateAnonymousWithParent(
   return new_row;
 }
 
-bool LayoutNGTableRow::IsEmpty() const {
-  NOT_DESTROYED();
-  return !FirstChild();
-}
-
 LayoutNGTableCell* LayoutNGTableRow::FirstCell() const {
   NOT_DESTROYED();
   return To<LayoutNGTableCell>(FirstChild());
@@ -118,6 +113,12 @@ void LayoutNGTableRow::RemoveChild(LayoutObject* child) {
   NOT_DESTROYED();
   if (LayoutNGTable* table = Table())
     table->TableGridStructureChanged();
+  // Invalidate background in case this doesn't need layout which would
+  // trigger the invalidation, e.g. when the last child is removed.
+  if (StyleRef().HasBackground()) {
+    SetBackgroundNeedsFullPaintInvalidation();
+  }
+
   LayoutBlock::RemoveChild(child);
 }
 
@@ -151,15 +152,6 @@ LayoutBlock* LayoutNGTableRow::StickyContainer() const {
   NOT_DESTROYED();
   return Table();
 }
-
-#if DCHECK_IS_ON()
-void LayoutNGTableRow::AddVisualOverflowFromBlockChildren() {
-  NOT_DESTROYED();
-  // This is computed in |NGPhysicalBoxFragment::ComputeSelfInkOverflow| and
-  // that we should not reach here.
-  NOTREACHED();
-}
-#endif
 
 PositionWithAffinity LayoutNGTableRow::PositionForPoint(
     const PhysicalOffset& offset) const {

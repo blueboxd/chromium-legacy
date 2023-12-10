@@ -6,11 +6,11 @@
 
 #include "base/notreached.h"
 #include "base/values.h"
-#include "chrome/browser/manta/manta_service.h"
 #include "chrome/browser/manta/manta_service_factory.h"
-#include "chrome/browser/manta/manta_status.h"
 #include "chromeos/ash/services/orca/public/mojom/orca_service.mojom.h"
 #include "components/manta/features.h"
+#include "components/manta/manta_service.h"
+#include "components/manta/manta_status.h"
 
 namespace ash::input_method {
 
@@ -46,6 +46,7 @@ orca::mojom::TextQueryErrorCode ConvertErrorCode(
   switch (status_code) {
     case manta::MantaStatusCode::kGenericError:
     case manta::MantaStatusCode::kMalformedResponse:
+    case manta::MantaStatusCode::kNoIdentityManager:
       return orca::mojom::TextQueryErrorCode::kUnknown;
     case manta::MantaStatusCode::kInvalidInput:
       return orca::mojom::TextQueryErrorCode::kInvalidArgument;

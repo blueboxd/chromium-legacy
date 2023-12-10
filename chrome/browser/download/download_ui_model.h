@@ -143,7 +143,7 @@ class DownloadUIModel {
         // Link text length.
         size_t length = 0;
         // Action to perform when the link is clicked.
-        DownloadCommands::Command command = DownloadCommands::Command::MAX;
+        DownloadCommands::Command command;
       };
 
       // The entire label string with link, i.e. "Learn why Chrome blocks some
@@ -623,12 +623,12 @@ class DownloadUIModel {
   // specialize certain strings.
   virtual bool IsEncryptedArchive() const;
 
+  // Returns whether the download is triggered by an extension.
+  virtual bool IsExtensionDownload() const;
+
  protected:
   // Returns the MIME type of the download.
   virtual std::string GetMimeType() const;
-
-  // Returns whether the download is triggered by an extension.
-  virtual bool IsExtensionDownload() const;
 
   raw_ptr<Delegate> delegate_ = nullptr;
 

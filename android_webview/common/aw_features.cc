@@ -11,14 +11,6 @@ namespace features {
 
 // Alphabetical:
 
-// Enables package name logging for the most popular WebView embedders that are
-// on a dynamically generated allowlist.
-// The filtering for package names will be done on the server side using this
-// flag
-BASE_FEATURE(kWebViewAppsPackageNamesServerSideAllowlist,
-             "WebViewAppsPackageNamesServerSideAllowlist",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enable brotli compression support in WebView.
 BASE_FEATURE(kWebViewBrotliSupport,
              "WebViewBrotliSupport",
@@ -148,6 +140,12 @@ BASE_FEATURE(kWebViewTestFeature,
 // of sending it directly to GMS-core.
 BASE_FEATURE(kWebViewUseMetricsUploadService,
              "WebViewUseMetricsUploadService",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Use WebView's nonembedded MetricsUploadService to upload UMA metrics instead
+// of sending it directly to GMS-core when running within the SDK Runtime.
+BASE_FEATURE(kWebViewUseMetricsUploadServiceOnlySdkRuntime,
+             "WebViewUseMetricsUploadServiceOnlySdkRuntime",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Propagate Android's network notification signals to networking stack

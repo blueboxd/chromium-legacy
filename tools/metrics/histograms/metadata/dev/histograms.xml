@@ -262,6 +262,28 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="DevTools.IsSameOriginDebuggerAttachedInAnotherRenderer"
+    enum="Boolean" expires_after="2024-01-28">
+  <owner>bashi@chromium.org</owner>
+  <owner>blink-network-stack@google.com</owner>
+  <summary>
+    Records whether a DevTools debugger is already attached in another outermost
+    renderer. Recorded at the first pause of a DevTools debugger after the
+    debugger is associated with a particular renderer channel.
+  </summary>
+</histogram>
+
+<histogram name="DevTools.IsSameOriginDebuggerPausedInAnotherRenderer"
+    enum="Boolean" expires_after="2024-01-28">
+  <owner>bashi@chromium.org</owner>
+  <owner>blink-network-stack@google.com</owner>
+  <summary>
+    Records whether a DevTools debugger is already paused in another outermost
+    renderer. Recorded at the first pause of a DevTools debugger after the
+    debugger is associated with a particular renderer channel.
+  </summary>
+</histogram>
+
 <histogram name="DevTools.IssueCreated" enum="DevToolsIssueCreated"
     expires_after="2024-02-12">
   <owner>yangguo@chromium.org</owner>
@@ -580,6 +602,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     Measures the time a trace is loading. Starts when recording is stopped or
     file/url load was started. Stops after the first render of the flamechart.
+  </summary>
+</histogram>
+
+<histogram name="DevTools.VisualLogging.ProcessingTime" units="ms"
+    expires_after="2024-12-01">
+  <owner>dsv@chromium.org</owner>
+  <owner>hablich@chromium.org</owner>
+  <summary>
+    Clock time elapsed to process changes in DOM and log Visual Elements
+    impressions.
   </summary>
 </histogram>
 

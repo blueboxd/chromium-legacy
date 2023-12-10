@@ -19,6 +19,10 @@ import androidx.annotation.Nullable;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import org.jni_zero.CalledByNative;
+import org.jni_zero.JNINamespace;
+import org.jni_zero.NativeMethods;
+
 import org.chromium.android_webview.common.AwFeatures;
 import org.chromium.android_webview.common.AwSwitches;
 import org.chromium.android_webview.common.Lifetime;
@@ -44,9 +48,6 @@ import org.chromium.base.PowerMonitor;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TimeUtils;
-import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
@@ -202,6 +203,14 @@ public final class AwBrowserProcess {
                 }
             });
         }
+
+        PostTask.postTask(
+                TaskTraits.BEST_EFFORT,
+                () -> {
+                    RecordHistogram.recordSparseHistogram(
+                            "Android.PlayServices.Version",
+                            PlatformServiceBridge.getInstance().getGmsVersionCode());
+                });
     }
 
     public static void setWebViewPackageName(String webViewPackageName) {
@@ -537,7 +546,13 @@ public final class AwBrowserProcess {
         boolean useDefaultUploadQos = AwFeatureMap.isEnabled(
                 AwFeatures.WEBVIEW_UMA_UPLOAD_QUALITY_OF_SERVICE_SET_TO_DEFAULT);
 
-        if (AwFeatureMap.isEnabled(AwFeatures.WEBVIEW_USE_METRICS_UPLOAD_SERVICE)) {
+        boolean metricServiceEnabledOnlySdkRuntime =
+                ContextUtils.isSdkSandboxProcess()
+                        && AwFeatureMap.isEnabled(
+                                AwFeatures.WEBVIEW_USE_METRICS_UPLOAD_SERVICE_ONLY_SDK_RUNTIME);
+
+        if (metricServiceEnabledOnlySdkRuntime
+                || AwFeatureMap.isEnabled(AwFeatures.WEBVIEW_USE_METRICS_UPLOAD_SERVICE)) {
             boolean isAsync = AwFeatureMap.isEnabled(
                     AndroidMetricsFeatures.ANDROID_METRICS_ASYNC_METRIC_LOGGING);
             AwMetricsLogUploader uploader = new AwMetricsLogUploader(isAsync, useDefaultUploadQos);

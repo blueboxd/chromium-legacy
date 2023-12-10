@@ -7,6 +7,7 @@ import 'chrome://shortcut-customization/js/input_key.js';
 import 'chrome://webui-test/mojo_webui_test_support.js';
 
 import {IronIconElement} from '//resources/polymer/v3_0/iron-icon/iron-icon.js';
+import {strictQuery} from 'chrome://resources/ash/common/typescript_utils/strict_query.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {AcceleratorLookupManager} from 'chrome://shortcut-customization/js/accelerator_lookup_manager.js';
 import {InputKeyElement, KeyInputState} from 'chrome://shortcut-customization/js/input_key.js';
@@ -108,7 +109,7 @@ suite('inputKeyTest', function() {
     assertEquals('shortcut-customization-keys:launcher', iconElement.icon);
     const iconDescriptionElement = inputKeyElement.shadowRoot!.querySelector(
                                        '#icon-description') as HTMLDivElement;
-    assertEquals('meta launcher', iconDescriptionElement.textContent);
+    assertEquals('launcher', iconDescriptionElement.textContent);
   });
 
   test('MetaKeyShowSearchIcon', async () => {
@@ -129,7 +130,7 @@ suite('inputKeyTest', function() {
 
     const iconDescriptionElement = inputKeyElement.shadowRoot!.querySelector(
                                        '#icon-description') as HTMLDivElement;
-    assertEquals('meta search', iconDescriptionElement.textContent);
+    assertEquals('search', iconDescriptionElement.textContent);
   });
 
   test('LwinKeyAsSearchModifier', async () => {
@@ -158,5 +159,27 @@ suite('inputKeyTest', function() {
 
     // other keys should keep their original state.
     assertEquals(KeyInputState.ALPHANUMERIC_SELECTED, inputKeyElement.keyState);
+  });
+
+  test('AriaHiddenForSelectedKeys', async () => {
+    inputKeyElement = initInputKeyElement();
+    inputKeyElement.key = 'a';
+    inputKeyElement.keyState = KeyInputState.ALPHANUMERIC_SELECTED;
+
+    const keyElement =
+        strictQuery('#key-text', inputKeyElement.shadowRoot, HTMLSpanElement);
+    assertTrue(!!keyElement);
+    assertEquals('false', keyElement.ariaHidden);
+  });
+
+  test('AriaHiddenForUnselectedKeys', async () => {
+    inputKeyElement = initInputKeyElement();
+    inputKeyElement.key = 'a';
+    inputKeyElement.keyState = KeyInputState.NOT_SELECTED;
+
+    const keyElement =
+        strictQuery('#key-text', inputKeyElement.shadowRoot, HTMLSpanElement);
+    assertTrue(!!keyElement);
+    assertEquals('true', keyElement.ariaHidden);
   });
 });

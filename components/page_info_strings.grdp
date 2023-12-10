@@ -274,6 +274,9 @@
       <message name="IDS_PAGE_INFO_COOKIES_TOOLTIP" desc="A tooltip that appears when the user hovers over the 'Cookies and site data' button. Options on the next screen include: Block third-party cookies, Manage cookies and site data, and See related sites.">
         Options for cookies and site data
       </message>
+      <message name="IDS_PAGE_INFO_TRACKING_PROTECTION_COOKIES_TOOLTIP" desc="A tooltip that appears when the user hovers over the 'Tracking Protection' button. Options on the next screen include: Block third-party cookies, and Manage on-device site data.">
+        Options for tracking protections and on-device site data
+      </message>
     </if>
 
     <!-- Permission values -->
@@ -720,11 +723,23 @@
   <message name="IDS_PAGE_INFO_TRACKING_PROTECTION_SITE_INFO_BUTTON_NAME" desc="A button in the Page Info bubble (which shows when you click the lock icon) that expands to another bubble detailing the user's Tracking protection settings.">
     Tracking Protection
   </message>
+  <message name="IDS_PAGE_INFO_TRACKING_PROTECTION_SITE_INFO_BUTTON_LABEL_ALLOWED" desc="The label for the Tracking Protection button in the Page Info bubble (which shows when you click the site info icon) detailing that third party cookies are allowed.">
+    Third-party cookies allowed
+  </message>
+  <message name="IDS_PAGE_INFO_TRACKING_PROTECTION_SITE_INFO_BUTTON_LABEL_BLOCKED" desc="The label for the Tracking Protection button in the Page Info bubble (which shows when you click the site info icon) detailing that third party cookies are blocked.">
+    Third-party cookies blocked
+  </message>
+  <message name="IDS_PAGE_INFO_TRACKING_PROTECTION_SITE_INFO_BUTTON_LABEL_LIMITED" desc="The label for the Tracking Protection button in the Page Info bubble (which shows when you click the site info icon) detailing that third party cookies are limited.">
+    Third-party cookies limited
+  </message>
   <message name="IDS_PAGE_INFO_SUB_PAGE_VIEW_TRACKING_PROTECTION_HEADER" desc="The header label of Tracking Protection subview page.">
     Tracking Protection
   </message>
   <message name="IDS_PAGE_INFO_COOKIES_DESCRIPTION" desc="The description of cookies in Cookies Subpage with placeholder for link to settings.">
     Cookies and other site data are used to remember you, for example to sign you in or to personalize ads. To manage cookies for all sites, see <ph name="SETTINGS">$1<ex>Settings</ex></ph>.
+  </message>
+  <message name="IDS_PAGE_INFO_TRACKING_PROTECTION_SITE_GRANT_DESCRIPTION" desc="Description text for the Tracking Protection subpage in the page info bubble for when a site has a TPCD grant. Contains a link to the Tracking Protection settings page.">
+   Chrome limits most sites from using third-party cookies. But third-party cookies are allowed on this site because it relies on them to provide basic services. Visit settings to <ph name="LINK">$1<ex>manage your tracking protections</ex></ph>.
   </message>
   <message name="IDS_PAGE_INFO_TRACKING_PROTECTION_DESCRIPTION" desc="Description text for the Tracking Protection subpage in the page info bubble. Contains a link to the Tracking Protection settings page.">
     Chrome limits most sites from using third-party cookies to track you as you browse. Visit settings to <ph name="LINK">$1<ex>manage your tracking protections</ex></ph>.
@@ -747,6 +762,15 @@
   <message name="IDS_PAGE_INFO_BLOCK_THIRD_PARTY_COOKIES_MANAGED_BY_SETTINGS_TOOLTIP" desc="The tooltip on the blocking third-party cookies icon in cookies subpage if blocking is explicitly set by user in cookies settings.">
     Managed by cookies settings
   </message>
+  <message name="IDS_PAGE_INFO_TRACKING_PROTECTION_COOKIES_ALLOWED" desc="The label detailing that third party cookies are allowed. This text will be shown on the blocking third-party cookies toggle when the toggle isn't active.">
+    Allowed
+  </message>
+  <message name="IDS_PAGE_INFO_TRACKING_PROTECTION_COOKIES_LIMITED" desc="The label detailing that third party cookies are limited. This text will be shown on the blocking third-party cookies toggle when the toggle is active.">
+    Limited
+  </message>
+  <message name="IDS_PAGE_INFO_TRACKING_PROTECTION_COOKIES_BLOCKED" desc="The label detailing that third party cookies are blocked. This text will be shown on the blocking third-party cookies toggle if the user has chosen to block all third party cookies.">
+    Blocked
+  </message>
   <message name="IDS_PAGE_INFO_COOKIES_BLOCKED_SITES_COUNT" desc="The label of the count for sites that have blocked access to cookies on the page. This text will be shown on the blocking third-party cookies toggle.">
     {NUM_COOKIES, plural, =0 {No sites blocked} =1 {1 site blocked} other {# sites blocked}}
   </message>
@@ -758,6 +782,9 @@
   </message>
    <message name="IDS_PAGE_INFO_COOKIES_DIALOG_BUTTON_TITLE" desc="The title on the button opening cookies in use dialog in cookies subpage.">
     Manage cookies and site data
+  </message>
+   <message name="IDS_PAGE_INFO_TRACKING_PROTECTION_COOKIES_DIALOG_BUTTON_TITLE" desc="Title of the button on the Tracking Protection subpage that opens the 'Cookies and site data' dialog.">
+    Manage on-device site data
   </message>
   <message name="IDS_PAGE_INFO_COOKIES_DIALOG_BUTTON_TOOLTIP" desc="A tooltip that appears when the user hovers over the 'Manage cookies and site data' button. The following screen shows cookies and other forms of site data used by the site the user is viewing.">
     Review a list of cookies and site data in a new window
@@ -882,6 +909,9 @@
   </message>
   <message name="IDS_PAGE_INFO_COOKIES_PERMANENT_ALLOWED_DESCRIPTION" desc="Descriptive text in the page info bubble after the user has allowed third-party cookies on a site explaining the trade-off of their decision.">
     This means that most site features should work, but you have less protection
+  </message>
+  <message name="IDS_PAGE_INFO_TRACKING_PROTECTION_COOKIES_PERMANENT_ALLOWED_DESCRIPTION" desc="Descriptive text in the page info Tracking Protection subpage if the user is visiting a site on their third-party cookies allow list.">
+    This means site features should work as expected, but you may have less browsing protection.
   </message>
   <message name="IDS_PAGE_INFO_COOKIES_THIRD_PARTY_COOKIES_ALLOWED_TOGGLE_A11Y" desc="Accessible name in the page info bubble, for the third-party cookies toggle, if third party cookies are allowed indicating how many third-party sites were allowed to access cookies.">
     {NUM_COOKIES, plural,

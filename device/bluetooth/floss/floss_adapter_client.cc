@@ -34,7 +34,11 @@ void HandleExported(const std::string& method_name,
 constexpr char FlossAdapterClient::kErrorUnknownAdapter[] =
     "org.chromium.Error.UnknownAdapter";
 constexpr char FlossAdapterClient::kExportedCallbacksPath[] =
-    "/org/chromium/bluetooth/adapterclient";
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    "/org/chromium/bluetooth/adapter/callback/lacros";
+#else
+    "/org/chromium/bluetooth/adapter/callback";
+#endif
 static uint32_t callback_path_index_ = 0;
 
 void FlossAdapterClient::SetName(ResponseCallback<Void> callback,
@@ -202,6 +206,7 @@ void FlossAdapterClient::RemoveSdpRecord(ResponseCallback<bool> callback,
 void FlossAdapterClient::Init(dbus::Bus* bus,
                               const std::string& service_name,
                               const int adapter_index,
+                              base::Version version,
                               base::OnceClosure on_ready) {
   bus_ = bus;
   adapter_path_ = GenerateAdapterPath(adapter_index);
@@ -209,6 +214,7 @@ void FlossAdapterClient::Init(dbus::Bus* bus,
   exported_callback_path_ =
       kExportedCallbacksPath + base::NumberToString(callback_path_index_);
   callback_path_index_++;
+  version_ = version;
 
   dbus::ObjectProxy* object_proxy =
       bus_->GetObjectProxy(service_name_, adapter_path_);

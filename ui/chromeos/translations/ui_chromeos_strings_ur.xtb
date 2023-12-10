@@ -329,6 +329,7 @@
 <translation id="3619115746895587757">کیپو چینو</translation>
 <translation id="3619593063686672873">حالیہ کوئی ویڈیو نہیں ہے</translation>
 <translation id="3634507049637220048"><ph name="NETWORK_COUNT" /> میں سے نیٹ ورک <ph name="NETWORK_INDEX" />، <ph name="NETWORK_NAME" />، <ph name="CONNECTION_STATUS" />، آپ کے منتظم کے زیر انتظام ہے، تفصیلات</translation>
+<translation id="36451918667380448">موبائل نیٹ ورک فراہم کنندہ مقفل ہے۔ مدد کے لیے اپنے فراہم کنندہ سے رابطہ کریں۔</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> آئٹمز منتقل کیے گئے۔</translation>
 <translation id="3658269352872031728"><ph name="SELECTED_FILE_COUNT" /> فائلیں منتخب کی گئیں</translation>
 <translation id="3685122418104378273">‏موبائل ڈیٹا استعمال کرتے وقت، Google Drive کی مطابقت پذیری بطور ڈیفالٹ غیر فعال کر دی جاتی ہے۔</translation>
@@ -1014,6 +1015,7 @@
 <translation id="8698877009525468705">یہ فائل رازدارانہ ہے اور منتظم کی پالیسی کی طرف سے پابندیوں کے ساتھ مشروط ہے۔</translation>
 <translation id="8712637175834984815">سمجھ آ گئی</translation>
 <translation id="8713112442029511308">مالٹیز</translation>
+<translation id="8714138378966541668">فراہم کنندہ نے لاک کیا</translation>
 <translation id="8714406895390098252">سائیکل</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> منتخب کیا گیا۔</translation>
 <translation id="872537912056138402">کراتی</translation>

@@ -53,6 +53,7 @@ namespace autofill {
 
 namespace {
 
+using ::autofill::FormControlType;
 using ::autofill::features::kAutofillLabelAffixRemoval;
 using ::autofill::mojom::SubmissionIndicatorEvent;
 using ::autofill::mojom::SubmissionSource;
@@ -107,6 +108,7 @@ struct ManualOverride {
   const std::vector<ServerFieldType> field_types;
 };
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 // Creates the override specification passed as a parameter to
 // `features::kAutofillOverridePredictions`.
 std::string CreateManualOverridePrediction(
@@ -129,6 +131,7 @@ std::string CreateManualOverridePrediction(
   }
   return base::JoinString(override_specs, "-");
 }
+#endif
 
 // Matches any protobuf `actual` whose serialization is equal to the
 // string-serialization of the protobuf `expected`.
@@ -172,10 +175,12 @@ Matcher<FieldPrediction> EqualsPrediction(ServerFieldType type) {
   return Property("type", &FieldPrediction::type, type);
 }
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 Matcher<FieldPrediction> EqualsPrediction(ServerFieldType type,
                                           FieldPrediction::Source source) {
   return EqualsPrediction(CreateFieldPrediction(type, source));
 }
+#endif
 
 }  // namespace
 
@@ -254,22 +259,23 @@ INSTANTIATE_TEST_SUITE_P(FormStructureTest,
                          ::testing::ValuesIn(kAllPatternSources));
 
 TEST_F(FormStructureTestImpl, FieldCount) {
-  CheckFormStructureTestData({{{.description_for_logging = "FieldCount",
-                                .fields = {{.role = ServerFieldType::USERNAME},
-                                           {.label = u"Password",
-                                            .name = u"password",
-                                            .form_control_type = "password"},
-                                           {.label = u"Submit",
-                                            .name = u"",
-                                            .form_control_type = "submit"},
-                                           {.label = u"address1",
-                                            .name = u"address1",
-                                            .should_autocomplete = false}}},
-                               {
-                                   .determine_heuristic_type = true,
-                                   .field_count = 4,
-                               },
-                               {}}});
+  CheckFormStructureTestData(
+      {{{.description_for_logging = "FieldCount",
+         .fields = {{.role = ServerFieldType::USERNAME},
+                    {.label = u"Password",
+                     .name = u"password",
+                     .form_control_type = FormControlType::kInputPassword},
+                    {.label = u"Submit",
+                     .name = u"",
+                     .form_control_type = FormControlType::kInputText},
+                    {.label = u"address1",
+                     .name = u"address1",
+                     .should_autocomplete = false}}},
+        {
+            .determine_heuristic_type = true,
+            .field_count = 4,
+        },
+        {}}});
 }
 
 TEST_F(FormStructureTestImpl, AutofillCount) {
@@ -278,14 +284,14 @@ TEST_F(FormStructureTestImpl, AutofillCount) {
          .fields = {{.role = ServerFieldType::USERNAME},
                     {.label = u"Password",
                      .name = u"password",
-                     .form_control_type = "password"},
+                     .form_control_type = FormControlType::kInputPassword},
                     {.role = ServerFieldType::EMAIL_ADDRESS},
                     {.role = ServerFieldType::ADDRESS_HOME_CITY},
                     {.role = ServerFieldType::ADDRESS_HOME_STATE,
-                     .form_control_type = "select-one"},
+                     .form_control_type = FormControlType::kSelectOne},
                     {.label = u"Submit",
                      .name = u"",
-                     .form_control_type = "submit"}}},
+                     .form_control_type = FormControlType::kInputText}}},
         {
             .determine_heuristic_type = true,
             .autofill_count = 3,
@@ -293,19 +299,20 @@ TEST_F(FormStructureTestImpl, AutofillCount) {
         {}},
 
        {{.description_for_logging = "AutofillCountWithNonFillableField",
-         .fields =
-             {{.role = ServerFieldType::USERNAME},
-              {.label = u"Password",
-               .name = u"password",
-               .form_control_type = "password"},
-              {.role = ServerFieldType::EMAIL_ADDRESS},
-              {.role = ServerFieldType::ADDRESS_HOME_CITY},
-              {.role = ServerFieldType::ADDRESS_HOME_STATE,
-               .form_control_type = "select-one"},
-              {.label = u"Submit", .name = u"", .form_control_type = "submit"},
-              {.label = u"address1",
-               .name = u"address1",
-               .should_autocomplete = false}}},
+         .fields = {{.role = ServerFieldType::USERNAME},
+                    {.label = u"Password",
+                     .name = u"password",
+                     .form_control_type = FormControlType::kInputPassword},
+                    {.role = ServerFieldType::EMAIL_ADDRESS},
+                    {.role = ServerFieldType::ADDRESS_HOME_CITY},
+                    {.role = ServerFieldType::ADDRESS_HOME_STATE,
+                     .form_control_type = FormControlType::kSelectOne},
+                    {.label = u"Submit",
+                     .name = u"",
+                     .form_control_type = FormControlType::kInputText},
+                    {.label = u"address1",
+                     .name = u"address1",
+                     .should_autocomplete = false}}},
         {
             .determine_heuristic_type = true,
             .autofill_count = 4,
@@ -608,9 +615,12 @@ TEST_F(FormStructureTestImpl, ShouldBeParsed_BadScheme) {
   std::unique_ptr<FormStructure> form_structure;
   FormData form;
   form.fields = {
-      CreateTestFormField("Name", "name", "", "text", "name"),
-      CreateTestFormField("Email", "email", "", "text", "email"),
-      CreateTestFormField("Address", "address", "", "text", "address-line1")};
+      CreateTestFormField("Name", "name", "", FormControlType::kInputText,
+                          "name"),
+      CreateTestFormField("Email", "email", "", FormControlType::kInputText,
+                          "email"),
+      CreateTestFormField("Address", "address", "", FormControlType::kInputText,
+                          "address-line1")};
 
   // Baseline, HTTP should work.
   form.url = GURL("http://wwww.foo.com/myform");
@@ -667,9 +677,10 @@ TEST_F(FormStructureTestImpl, ShouldBeParsed_TwoFields_HasAutocomplete) {
   std::unique_ptr<FormStructure> form_structure;
   FormData form;
   form.url = GURL("http://www.foo.com/");
-  form.fields = {
-      CreateTestFormField("Name", "name", "", "text", "name"),
-      CreateTestFormField("Address", "Address", "", "select-one", "")};
+  form.fields = {CreateTestFormField("Name", "name", "",
+                                     FormControlType::kInputText, "name"),
+                 CreateTestFormField("Address", "Address", "",
+                                     FormControlType::kSelectOne, "")};
   form_structure = std::make_unique<FormStructure>(form);
   EXPECT_TRUE(form_structure->ShouldBeParsed());
 }
@@ -705,7 +716,7 @@ TEST_F(FormStructureTestImpl, DetermineHeuristicTypes_AutocompleteFalse) {
               {.role = ServerFieldType::ADDRESS_HOME_STATE,
                .autocomplete_attribute = "false",
                .parsed_autocomplete = ParseAutocompleteAttribute("false"),
-               .form_control_type = "select-one"}}},
+               .form_control_type = FormControlType::kSelectOne}}},
         {
             .determine_heuristic_type = true,
             .should_be_parsed = true,
@@ -728,7 +739,7 @@ TEST_F(FormStructureTestImpl, HeuristicsContactInfo) {
                     {.role = ServerFieldType::ADDRESS_HOME_ZIP},
                     {.label = u"Submit",
                      .name = u"",
-                     .form_control_type = "submit"}}},
+                     .form_control_type = FormControlType::kInputText}}},
         {
             .determine_heuristic_type = true,
             .field_count = 9,
@@ -794,7 +805,7 @@ TEST_F(FormStructureTestImpl, StripCommonNamePrefix) {
                .name = u"ctl01$ctl00$ShippingAddressCreditPhone$phone"},
               {.label = u"Submit",
                .name = u"ctl01$ctl00$ShippingAddressCreditPhone$submit",
-               .form_control_type = "submit"}}},
+               .form_control_type = FormControlType::kInputText}}},
         {.determine_heuristic_type = true,
          .is_autofillable = true,
          .field_count = 5,
@@ -840,7 +851,7 @@ TEST_F(FormStructureTestImpl, IsCompleteCreditCardForm_Full) {
                     {.label = u"Verification", .name = u"verification"},
                     {.label = u"Submit",
                      .name = u"submit",
-                     .form_control_type = "submit"}}},
+                     .form_control_type = FormControlType::kInputText}}},
         {.determine_heuristic_type = true,
          .is_complete_credit_card_form = true},
         {}}});
@@ -1015,9 +1026,10 @@ TEST_F(FormStructureTestImpl,
   FormData form;
   form.url = GURL("http://www.foo.com/");
   // Set a valid autocomplete attribute to the first field.
-  form.fields = {
-      CreateTestFormField("First Name", "firstname", "", "text", "given-name"),
-      CreateTestFormField("Last Name", "lastname", "", "text", "")};
+  form.fields = {CreateTestFormField("First Name", "firstname", "",
+                                     FormControlType::kInputText, "given-name"),
+                 CreateTestFormField("Last Name", "lastname", "",
+                                     FormControlType::kInputText, "")};
   EXPECT_FALSE(FormShouldRunHeuristics(form));
   EXPECT_TRUE(FormShouldBeQueried(form));
 
@@ -1075,10 +1087,14 @@ TEST_F(FormStructureTestImpl, PromoCodeHeuristics_SmallForm) {
 TEST_F(FormStructureTestImpl, PasswordFormShouldBeQueried) {
   FormData form;
   form.url = GURL("http://www.foo.com/");
-  form.fields = {CreateTestFormField("First Name", "firstname", "", "text"),
-                 CreateTestFormField("Last Name", "lastname", "", "text"),
-                 CreateTestFormField("Email", "email", "", "text", "username"),
-                 CreateTestFormField("Password", "Password", "", "password")};
+  form.fields = {CreateTestFormField("First Name", "firstname", "",
+                                     FormControlType::kInputText),
+                 CreateTestFormField("Last Name", "lastname", "",
+                                     FormControlType::kInputText),
+                 CreateTestFormField("Email", "email", "",
+                                     FormControlType::kInputText, "username"),
+                 CreateTestFormField("Password", "Password", "",
+                                     FormControlType::kInputPassword)};
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
                                          nullptr);
@@ -1103,26 +1119,34 @@ TEST_F(FormStructureTestImpl, HeuristicsAutocompleteAttributeWithSections) {
   form.fields = {
       // Some fields will have no section specified.  These fall into the
       // default section.
-      CreateTestFormField("", "", "", "text", "email"),
+      CreateTestFormField("", "", "", FormControlType::kInputText, "email"),
       // We allow arbitrary section names.
-      CreateTestFormField("", "", "", "text", "section-foo email"),
+      CreateTestFormField("", "", "", FormControlType::kInputText,
+                          "section-foo email"),
       // "shipping" and "billing" are special section tokens that don't require
       // the "section-" prefix.
-      CreateTestFormField("", "", "", "text", "shipping email"),
-      CreateTestFormField("", "", "", "text", "billing email"),
+      CreateTestFormField("", "", "", FormControlType::kInputText,
+                          "shipping email"),
+      CreateTestFormField("", "", "", FormControlType::kInputText,
+                          "billing email"),
       // "shipping" and "billing" can be combined with other section names.
-      CreateTestFormField("", "", "", "text", "section-foo shipping email"),
-      CreateTestFormField("", "", "", "text", "section-foo billing email"),
+      CreateTestFormField("", "", "", FormControlType::kInputText,
+                          "section-foo shipping email"),
+      CreateTestFormField("", "", "", FormControlType::kInputText,
+                          "section-foo billing email"),
       // We don't do anything clever to try to coalesce sections; it's up to
       // site authors to avoid typos.
-      CreateTestFormField("", "", "", "text", "section--foo email"),
+      CreateTestFormField("", "", "", FormControlType::kInputText,
+                          "section--foo email"),
       // "shipping email" and "section--shipping" email should be parsed as
       // different sections.  This is only an interesting test due to how we
       // implement implicit section names from attributes like "shipping email";
       // see the implementation for more details.
-      CreateTestFormField("", "", "", "text", "section--shipping email"),
+      CreateTestFormField("", "", "", FormControlType::kInputText,
+                          "section--shipping email"),
       // Credit card fields are implicitly in one, separate credit card section.
-      CreateTestFormField("", "", "", "text", "section-foo cc-number")};
+      CreateTestFormField("", "", "", FormControlType::kInputText,
+                          "section-foo cc-number")};
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
                                          nullptr);
@@ -1150,14 +1174,19 @@ TEST_F(FormStructureTestImpl,
   form.fields = {
       // Some fields will have no section specified.  These fall into the
       // default section.
-      CreateTestFormField("", "", "", "text", "email"),
+      CreateTestFormField("", "", "", FormControlType::kInputText, "email"),
       // Specifying "section-" is equivalent to not specifying a section.
-      CreateTestFormField("", "", "", "text", "section- email"),
+      CreateTestFormField("", "", "", FormControlType::kInputText,
+                          "section- email"),
       // Invalid tokens should prevent us from setting a section name.
-      CreateTestFormField("", "", "", "text", "garbage section-foo email"),
-      CreateTestFormField("", "", "", "text", "garbage section-bar email"),
-      CreateTestFormField("", "", "", "text", "garbage shipping email"),
-      CreateTestFormField("", "", "", "text", "garbage billing email")};
+      CreateTestFormField("", "", "", FormControlType::kInputText,
+                          "garbage section-foo email"),
+      CreateTestFormField("", "", "", FormControlType::kInputText,
+                          "garbage section-bar email"),
+      CreateTestFormField("", "", "", FormControlType::kInputText,
+                          "garbage shipping email"),
+      CreateTestFormField("", "", "", FormControlType::kInputText,
+                          "garbage billing email")};
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
                                          nullptr);
@@ -1181,9 +1210,10 @@ TEST_F(FormStructureTestImpl,
        HeuristicsAutocompleteAttributeWithSectionsRepeated) {
   FormData form;
   form.url = GURL("http://www.foo.com/");
-  form.fields = {
-      CreateTestFormField("", "", "", "text", "section-foo email"),
-      CreateTestFormField("", "", "", "text", "section-foo address-line1")};
+  form.fields = {CreateTestFormField("", "", "", FormControlType::kInputText,
+                                     "section-foo email"),
+                 CreateTestFormField("", "", "", FormControlType::kInputText,
+                                     "section-foo address-line1")};
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
                                          nullptr);
@@ -1217,10 +1247,14 @@ TEST_F(FormStructureTestImpl,
 
   FormData form;
   form.url = GURL("http://www.foo.com/");
-  form.fields = {CreateTestFormField("", "one", "", "text", "address-line1"),
-                 CreateTestFormField("", "", "", "text", "section-foo email"),
-                 CreateTestFormField("", "", "", "text", "name"),
-                 CreateTestFormField("", "two", "", "text", "address-line1")};
+  form.fields = {
+      CreateTestFormField("", "one", "", FormControlType::kInputText,
+                          "address-line1"),
+      CreateTestFormField("", "", "", FormControlType::kInputText,
+                          "section-foo email"),
+      CreateTestFormField("", "", "", FormControlType::kInputText, "name"),
+      CreateTestFormField("", "two", "", FormControlType::kInputText,
+                          "address-line1")};
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
                                          nullptr);
@@ -3063,11 +3097,16 @@ TEST_F(FormStructureTestImpl,
   form.url = GURL("http://www.foo.com/");
   form.is_form_tag = true;
   form.fields = {
-      CreateTestFormField("First Name", "firstname", "", "", "given-name"),
-      CreateTestFormField("Last Name", "lastname", "", "", "family-name"),
-      CreateTestFormField("Email", "email", "", "email", "email"),
-      CreateTestFormField("username", "username", "", "text", "email"),
-      CreateTestFormField("password", "password", "", "password", "email")};
+      CreateTestFormField("First Name", "firstname", "",
+                          FormControlType::kInputText, "given-name"),
+      CreateTestFormField("Last Name", "lastname", "",
+                          FormControlType::kInputText, "family-name"),
+      CreateTestFormField("Email", "email", "", FormControlType::kInputEmail,
+                          "email"),
+      CreateTestFormField("username", "username", "",
+                          FormControlType::kInputText, "email"),
+      CreateTestFormField("password", "password", "",
+                          FormControlType::kInputPassword, "email")};
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_FIRST});
   test::InitializePossibleTypesAndValidities(
@@ -3130,12 +3169,12 @@ TEST_F(FormStructureTestImpl,
   AutofillUploadContents::Field* upload_firstname_field = upload.add_field();
   test::FillUploadField(upload_firstname_field,
                         *form_structure->field(0)->GetFieldSignature(),
-                        "firstname", "", "given-name", 3U);
+                        "firstname", "text", "given-name", 3U);
 
   AutofillUploadContents::Field* upload_lastname_field = upload.add_field();
   test::FillUploadField(upload_lastname_field,
                         *form_structure->field(1)->GetFieldSignature(),
-                        "lastname", "", "family-name", 5U);
+                        "lastname", "text", "family-name", 5U);
 
   AutofillUploadContents::Field* upload_email_field = upload.add_field();
   test::FillUploadField(upload_email_field,
@@ -3171,9 +3210,12 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithAutocomplete) {
   form.url = GURL("http://www.foo.com/");
   form.is_form_tag = true;
   form.fields = {
-      CreateTestFormField("First Name", "firstname", "", "text", "given-name"),
-      CreateTestFormField("Last Name", "lastname", "", "text", "family-name"),
-      CreateTestFormField("Email", "email", "", "email", "email")};
+      CreateTestFormField("First Name", "firstname", "",
+                          FormControlType::kInputText, "given-name"),
+      CreateTestFormField("Last Name", "lastname", "",
+                          FormControlType::kInputText, "family-name"),
+      CreateTestFormField("Email", "email", "", FormControlType::kInputEmail,
+                          "email")};
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_FIRST});
   test::InitializePossibleTypesAndValidities(
@@ -3233,8 +3275,9 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequestWithPropertiesMask) {
   form.url = GURL("http://www.foo.com/");
   form.is_form_tag = true;
 
-  form.fields.push_back(
-      CreateTestFormField("First Name", "firstname", "", "text", "given-name"));
+  form.fields.push_back(CreateTestFormField("First Name", "firstname", "",
+                                            FormControlType::kInputText,
+                                            "given-name"));
   form.fields.back().name_attribute = form.fields.back().name;
   form.fields.back().id_attribute = u"first_name";
   form.fields.back().css_classes = u"class1 class2";
@@ -3242,8 +3285,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequestWithPropertiesMask) {
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_FIRST});
 
-  form.fields.push_back(
-      CreateTestFormField("Last Name", "lastname", "", "text", "family-name"));
+  form.fields.push_back(CreateTestFormField(
+      "Last Name", "lastname", "", FormControlType::kInputText, "family-name"));
   form.fields.back().name_attribute = form.fields.back().name;
   form.fields.back().id_attribute = u"last_name";
   form.fields.back().css_classes = u"class1 class2";
@@ -3252,8 +3295,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequestWithPropertiesMask) {
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_LAST});
 
-  form.fields.push_back(
-      CreateTestFormField("Email", "email", "", "email", "email"));
+  form.fields.push_back(CreateTestFormField(
+      "Email", "email", "", FormControlType::kInputEmail, "email"));
   form.fields.back().name_attribute = form.fields.back().name;
   form.fields.back().id_attribute = u"e-mail";
   form.fields.back().css_classes = u"class1 class2";
@@ -3637,18 +3680,19 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequestPartialMetadata) {
 
   // Some fields don't have "name" or "autocomplete" attributes, and some have
   // neither.
-  form.fields.push_back(CreateTestFormField("", "", "", "text"));
+  form.fields.push_back(
+      CreateTestFormField("", "", "", FormControlType::kInputText));
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_FIRST});
 
-  form.fields.push_back(
-      CreateTestFormField("Last Name", "lastname", "", "text", "family-name"));
+  form.fields.push_back(CreateTestFormField(
+      "Last Name", "lastname", "", FormControlType::kInputText, "family-name"));
   form.fields.back().name_attribute = form.fields.back().name;
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_LAST});
 
-  form.fields.push_back(
-      CreateTestFormField("Email", "lastname", "", "email", "email"));
+  form.fields.push_back(CreateTestFormField(
+      "Email", "lastname", "", FormControlType::kInputEmail, "email"));
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
 
@@ -3707,24 +3751,25 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_DisabledMetadata) {
   form.url = GURL("http://www.foo.com/");
   form.is_form_tag = true;
 
-  form.fields.push_back(
-      CreateTestFormField("First Name", "firstname", "", "text", "given-name"));
+  form.fields.push_back(CreateTestFormField("First Name", "firstname", "",
+                                            FormControlType::kInputText,
+                                            "given-name"));
   form.fields.back().name_attribute = form.fields.back().name;
   form.fields.back().id_attribute = u"first_name";
   form.fields.back().css_classes = u"class1 class2";
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_FIRST});
 
-  form.fields.push_back(
-      CreateTestFormField("Last Name", "lastname", "", "text", "family-name"));
+  form.fields.push_back(CreateTestFormField(
+      "Last Name", "lastname", "", FormControlType::kInputText, "family-name"));
   form.fields.back().name_attribute = form.fields.back().name;
   form.fields.back().id_attribute = u"last_name";
   form.fields.back().css_classes = u"class1 class2";
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_LAST});
 
-  form.fields.push_back(
-      CreateTestFormField("Email", "email", "", "email", "email"));
+  form.fields.push_back(CreateTestFormField(
+      "Email", "email", "", FormControlType::kInputEmail, "email"));
   form.fields.back().name_attribute = form.fields.back().name;
   form.fields.back().id_attribute = u"e-mail";
   form.fields.back().css_classes = u"class1 class2";
@@ -4494,15 +4539,10 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_RichMetadata) {
                                          RandomizedEncoder::FIELD_NAME,
                                          field.name_attribute));
     }
-    if (FormControlTypeToString(field.form_control_type).empty()) {
-      EXPECT_FALSE(metadata.has_type());
-    } else {
-      EXPECT_EQ(
-          metadata.type().encoded_bits(),
-          encoder.Encode(form_signature, field_signature,
-                         RandomizedEncoder::FIELD_CONTROL_TYPE,
-                         FormControlTypeToString(field.form_control_type)));
-    }
+    EXPECT_EQ(metadata.type().encoded_bits(),
+              encoder.Encode(form_signature, field_signature,
+                             RandomizedEncoder::FIELD_CONTROL_TYPE,
+                             FormControlTypeToString(field.form_control_type)));
     if (field.label.empty()) {
       EXPECT_FALSE(metadata.has_label());
     } else {
@@ -5062,10 +5102,11 @@ TEST_F(FormStructureTestImpl, ParseQueryResponse_ServerPredictionIsOverride) {
   form_data.url = GURL("http://foo.com");
   form_data.fields = {
       // Just some field with an autocomplete attribute.
-      CreateTestFormField("some field", "some_field", "", "text", "name"),
+      CreateTestFormField("some field", "some_field", "",
+                          FormControlType::kInputText, "name"),
       // Some other field with the same autocomplete attribute.
-      CreateTestFormField("some other field", "some_other_field", "", "text",
-                          "name")};
+      CreateTestFormField("some other field", "some_other_field", "",
+                          FormControlType::kInputText, "name")};
 
   // Setup the query response with an override for the name field to be a first
   // name.
@@ -5244,9 +5285,12 @@ TEST_F(FormStructureTestImpl, ParseQueryResponse_TooManyTypes) {
   FormData form_data;
   form_data.url = GURL("http://foo.com");
   form_data.fields = {
-      CreateTestFormField("First Name", "fname", "", "text"),
-      CreateTestFormField("Last Name", "lname", "", "text"),
-      CreateTestFormField("email", "email", "", "text", "address-level2")};
+      CreateTestFormField("First Name", "fname", "",
+                          FormControlType::kInputText),
+      CreateTestFormField("Last Name", "lname", "",
+                          FormControlType::kInputText),
+      CreateTestFormField("email", "email", "", FormControlType::kInputText,
+                          "address-level2")};
   FormStructure form(form_data);
   form.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr, nullptr);
 
@@ -5304,9 +5348,12 @@ TEST_F(FormStructureTestImpl, ParseQueryResponse_UnknownType) {
   FormData form_data;
   form_data.url = GURL("http://foo.com");
   form_data.fields = {
-      CreateTestFormField("First Name", "fname", "", "text"),
-      CreateTestFormField("Last Name", "lname", "", "text"),
-      CreateTestFormField("email", "email", "", "text", "address-level2")};
+      CreateTestFormField("First Name", "fname", "",
+                          FormControlType::kInputText),
+      CreateTestFormField("Last Name", "lname", "",
+                          FormControlType::kInputText),
+      CreateTestFormField("email", "email", "", FormControlType::kInputText,
+                          "address-level2")};
   FormStructure form(form_data);
   form.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr, nullptr);
 
@@ -5651,9 +5698,10 @@ TEST_F(FormStructureTestImpl, ParseApiQueryResponse) {
 // predictions override server predictions.
 TEST_F(FormStructureTestImpl, ParseApiQueryResponseWithManualOverrides) {
   // Make form.
-  FormFieldData field1 = CreateTestFormField("name", "name", "", "text");
-  FormFieldData field2 =
-      CreateTestFormField("password", "password", "", "text");
+  FormFieldData field1 =
+      CreateTestFormField("name", "name", "", FormControlType::kInputText);
+  FormFieldData field2 = CreateTestFormField("password", "password", "",
+                                             FormControlType::kInputText);
   FormData form;
   form.fields = {field1, field2};
   form.url = GURL("http://foo.com");
@@ -5706,8 +5754,10 @@ TEST_F(FormStructureTestImpl, ParseApiQueryResponseWithManualOverrides) {
 TEST_F(FormStructureTestImpl,
        ParseApiQueryResponseWithManualOverridesAndNoServerPredictions) {
   // Make form.
-  FormFieldData field1 = CreateTestFormField("name", "name", "", "text");
-  FormFieldData field2 = CreateTestFormField("name", "name", "", "text");
+  FormFieldData field1 =
+      CreateTestFormField("name", "name", "", FormControlType::kInputText);
+  FormFieldData field2 =
+      CreateTestFormField("name", "name", "", FormControlType::kInputText);
 
   const FieldSignature kFieldSignature =
       CalculateFieldSignatureForField(field1);
@@ -5762,9 +5812,12 @@ TEST_F(FormStructureTestImpl,
 TEST_F(FormStructureTestImpl,
        ParseApiQueryResponseWithManualOverridesAndPassthroughInLastPosition) {
   // Make form.
-  FormFieldData field1 = CreateTestFormField("name", "name", "", "text");
-  FormFieldData field2 = CreateTestFormField("name", "name", "", "text");
-  FormFieldData field3 = CreateTestFormField("name", "name", "", "text");
+  FormFieldData field1 =
+      CreateTestFormField("name", "name", "", FormControlType::kInputText);
+  FormFieldData field2 =
+      CreateTestFormField("name", "name", "", FormControlType::kInputText);
+  FormFieldData field3 =
+      CreateTestFormField("name", "name", "", FormControlType::kInputText);
 
   const FieldSignature kFieldSignature =
       CalculateFieldSignatureForField(field1);
@@ -5835,10 +5888,14 @@ TEST_F(FormStructureTestImpl,
 TEST_F(FormStructureTestImpl,
        ParseApiQueryResponseWithManualOverridesAndPassthroughInMiddlePosition) {
   // Make form.
-  FormFieldData field1 = CreateTestFormField("name", "name", "", "text");
-  FormFieldData field2 = CreateTestFormField("name", "name", "", "text");
-  FormFieldData field3 = CreateTestFormField("name", "name", "", "text");
-  FormFieldData field4 = CreateTestFormField("name", "name", "", "text");
+  FormFieldData field1 =
+      CreateTestFormField("name", "name", "", FormControlType::kInputText);
+  FormFieldData field2 =
+      CreateTestFormField("name", "name", "", FormControlType::kInputText);
+  FormFieldData field3 =
+      CreateTestFormField("name", "name", "", FormControlType::kInputText);
+  FormFieldData field4 =
+      CreateTestFormField("name", "name", "", FormControlType::kInputText);
 
   const FieldSignature kFieldSignature =
       CalculateFieldSignatureForField(field1);
@@ -5912,8 +5969,8 @@ TEST_F(FormStructureTestImpl,
        ParseApiQueryResponseWhenCannotParseProtoFromString) {
   FormData form;
   form.url = GURL("http://foo.com");
-  form.fields = {
-      CreateTestFormField("emailaddress", "emailaddress", "", "email")};
+  form.fields = {CreateTestFormField("emailaddress", "emailaddress", "",
+                                     FormControlType::kInputEmail)};
 
   // Add form to the vector needed by the response parsing function.
   FormStructure form_structure(form);
@@ -5938,8 +5995,8 @@ TEST_F(FormStructureTestImpl,
 TEST_F(FormStructureTestImpl, ParseApiQueryResponseWhenPayloadNotBase64) {
   FormData form;
   form.url = GURL("http://foo.com");
-  form.fields = {
-      CreateTestFormField("emailaddress", "emailaddress", "", "email")};
+  form.fields = {CreateTestFormField("emailaddress", "emailaddress", "",
+                                     FormControlType::kInputEmail)};
 
   // Add form to the vector needed by the response parsing function.
   FormStructure form_structure(form);
@@ -5975,9 +6032,11 @@ TEST_F(FormStructureTestImpl, ParseApiQueryResponseWhenPayloadNotBase64) {
 TEST_F(FormStructureTestImpl, ParseQueryResponse_AuthorDefinedTypes) {
   FormData form;
   form.url = GURL("http://foo.com");
-  form.fields = {CreateTestFormField("email", "email", "", "text", "email"),
-                 CreateTestFormField("password", "password", "", "password",
-                                     "new-password")};
+  form.fields = {
+      CreateTestFormField("email", "email", "", FormControlType::kInputText,
+                          "email"),
+      CreateTestFormField("password", "password", "",
+                          FormControlType::kInputPassword, "new-password")};
   FormStructure form_structure(form);
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
@@ -6221,9 +6280,11 @@ TEST_F(FormStructureTestImpl, ParseQueryResponse_RankEqualSignatures) {
   FormFieldData field;
   form_data.url = GURL("http://foo.com");
   form_data.fields = {
-      CreateTestFormField("First Name", "name", "", "text"),
-      CreateTestFormField("Last Name", "name", "", "text"),
-      CreateTestFormField("email", "email", "", "text", "address-level2")};
+      CreateTestFormField("First Name", "name", "",
+                          FormControlType::kInputText),
+      CreateTestFormField("Last Name", "name", "", FormControlType::kInputText),
+      CreateTestFormField("email", "email", "", FormControlType::kInputText,
+                          "address-level2")};
 
   ASSERT_EQ(CalculateFieldSignatureForField(form_data.fields[0]),
             CalculateFieldSignatureForField(form_data.fields[1]));
@@ -6259,9 +6320,11 @@ TEST_F(FormStructureTestImpl,
   FormData form_data;
   form_data.url = GURL("http://foo.com");
   form_data.fields = {
-      CreateTestFormField("First Name", "name", "", "text"),
-      CreateTestFormField("Last Name", "name", "", "text"),
-      CreateTestFormField("email", "email", "", "text", "address-level2")};
+      CreateTestFormField("First Name", "name", "",
+                          FormControlType::kInputText),
+      CreateTestFormField("Last Name", "name", "", FormControlType::kInputText),
+      CreateTestFormField("email", "email", "", FormControlType::kInputText,
+                          "address-level2")};
 
   ASSERT_EQ(CalculateFieldSignatureForField(form_data.fields[0]),
             CalculateFieldSignatureForField(form_data.fields[1]));
@@ -6442,19 +6505,22 @@ TEST_F(FormStructureTestImpl, NoSplitByRecurringPhoneFieldType) {
   FormData form;
   form.url = GURL("http://foo.com");
   form.fields = {
-      CreateTestFormField("Full Name", "fullName", "", "text", "",
+      CreateTestFormField("Full Name", "fullName", "",
+                          FormControlType::kInputText, "", kFieldMaxLength),
+      CreateTestFormField("Phone", "phone", "", FormControlType::kInputText, "",
                           kFieldMaxLength),
-      CreateTestFormField("Phone", "phone", "", "text", "", kFieldMaxLength),
-      CreateTestFormField("Mobile Number", "mobileNumber", "", "text", "",
-                          kFieldMaxLength),
-      CreateTestFormField("Full Name", "fullName", "", "text",
+      CreateTestFormField("Mobile Number", "mobileNumber", "",
+                          FormControlType::kInputText, "", kFieldMaxLength),
+      CreateTestFormField("Full Name", "fullName", "",
+                          FormControlType::kInputText,
                           "section-blue billing name", kFieldMaxLength),
-      CreateTestFormField("Phone", "phone", "", "text",
+      CreateTestFormField("Phone", "phone", "", FormControlType::kInputText,
                           "section-blue billing tel", kFieldMaxLength),
-      CreateTestFormField("Mobile Number", "mobileNumber", "", "text",
+      CreateTestFormField("Mobile Number", "mobileNumber", "",
+                          FormControlType::kInputText,
                           "section-blue billing tel", kFieldMaxLength),
-      CreateTestFormField("Country", "country", "", "text", "",
-                          kFieldMaxLength)};
+      CreateTestFormField("Country", "country", "", FormControlType::kInputText,
+                          "", kFieldMaxLength)};
   FormStructure form_structure(form);
   test_api(form_structure)
       .SetFieldTypes({NAME_FULL, PHONE_HOME_NUMBER, PHONE_HOME_NUMBER,
@@ -6485,13 +6551,18 @@ TEST_F(FormStructureTestImpl, NoSplitAdjacentNameFieldType) {
 
   FormData form;
   form.url = GURL("http://foo.com");
-  form.fields = {
-      CreateTestFormField("First Name", "firstname", "", "text"),
-      CreateTestFormField("Last Name", "lastname", "", "text"),
-      CreateTestFormField("Phonetic First Name", "firstname", "", "text"),
-      CreateTestFormField("Phonetic Last Name", "lastname", "", "text"),
-      CreateTestFormField("Country", "country", "", "text"),
-      CreateTestFormField("First Name", "firstname", "", "text")};
+  form.fields = {CreateTestFormField("First Name", "firstname", "",
+                                     FormControlType::kInputText),
+                 CreateTestFormField("Last Name", "lastname", "",
+                                     FormControlType::kInputText),
+                 CreateTestFormField("Phonetic First Name", "firstname", "",
+                                     FormControlType::kInputText),
+                 CreateTestFormField("Phonetic Last Name", "lastname", "",
+                                     FormControlType::kInputText),
+                 CreateTestFormField("Country", "country", "",
+                                     FormControlType::kInputText),
+                 CreateTestFormField("First Name", "firstname", "",
+                                     FormControlType::kInputText)};
   FormStructure form_structure(form);
   test_api(form_structure)
       .SetFieldTypes({NAME_FIRST, NAME_LAST, NAME_FIRST, NAME_LAST,
@@ -6519,14 +6590,16 @@ TEST_F(FormStructureTestImpl, SplitByRecurringFieldType) {
   FormData form;
   form.url = GURL("http://foo.com");
   form.fields = {
-      CreateTestFormField("Full Name", "fullName", "", "text",
+      CreateTestFormField("Full Name", "fullName", "",
+                          FormControlType::kInputText,
                           "section-blue shipping name", kFieldMaxLength),
-      CreateTestFormField("Country", "country", "", "text",
+      CreateTestFormField("Country", "country", "", FormControlType::kInputText,
                           "section-blue shipping country", kFieldMaxLength),
-      CreateTestFormField("Full Name", "fullName", "", "text",
+      CreateTestFormField("Full Name", "fullName", "",
+                          FormControlType::kInputText,
                           "section-blue shipping name", kFieldMaxLength),
-      CreateTestFormField("Country", "country", "", "text", "",
-                          kFieldMaxLength)};
+      CreateTestFormField("Country", "country", "", FormControlType::kInputText,
+                          "", kFieldMaxLength)};
   FormStructure form_structure(form);
   test_api(form_structure)
       .SetFieldTypes(
@@ -6557,14 +6630,15 @@ TEST_F(FormStructureTestImpl,
   FormData form;
   form.url = GURL("http://foo.com");
   form.fields = {
-      CreateTestFormField("Full Name", "fullName", "", "text",
+      CreateTestFormField("Full Name", "fullName", "",
+                          FormControlType::kInputText,
                           "section-blue shipping name", kFieldMaxLength),
-      CreateTestFormField("Country", "country", "", "text",
+      CreateTestFormField("Country", "country", "", FormControlType::kInputText,
                           "section-blue billing country", kFieldMaxLength),
-      CreateTestFormField("Full Name", "fullName", "", "text", "",
-                          kFieldMaxLength),
-      CreateTestFormField("Country", "country", "", "text", "",
-                          kFieldMaxLength)};
+      CreateTestFormField("Full Name", "fullName", "",
+                          FormControlType::kInputText, "", kFieldMaxLength),
+      CreateTestFormField("Country", "country", "", FormControlType::kInputText,
+                          "", kFieldMaxLength)};
   FormStructure form_structure(form);
   test_api(form_structure)
       .SetFieldTypes(
@@ -6593,12 +6667,16 @@ TEST_F(FormStructureTestImpl, SplitByNewAutocompleteSectionName) {
   FormData form;
   form.url = GURL("http://foo.com");
   form.fields = {
-      CreateTestFormField("Full Name", "fullName", "", "text",
+      CreateTestFormField("Full Name", "fullName", "",
+                          FormControlType::kInputText,
                           "section-blue shipping name", kFieldMaxLength),
-      CreateTestFormField("City", "city", "", "text", "", kFieldMaxLength),
-      CreateTestFormField("Full Name", "fullName", "", "text",
+      CreateTestFormField("City", "city", "", FormControlType::kInputText, "",
+                          kFieldMaxLength),
+      CreateTestFormField("Full Name", "fullName", "",
+                          FormControlType::kInputText,
                           "section-blue billing name", kFieldMaxLength),
-      CreateTestFormField("City", "city", "", "text", "", kFieldMaxLength)};
+      CreateTestFormField("City", "city", "", FormControlType::kInputText, "",
+                          kFieldMaxLength)};
   FormStructure form_structure(form);
   test_api(form_structure)
       .SetFieldTypes(
@@ -6629,13 +6707,15 @@ TEST_F(
   FormData form;
   form.url = GURL("http://foo.com");
   form.fields = {
-      CreateTestFormField("Full Name", "fullName", "", "text", "",
-                          kFieldMaxLength),
-      CreateTestFormField("Country", "country", "", "text",
+      CreateTestFormField("Full Name", "fullName", "",
+                          FormControlType::kInputText, "", kFieldMaxLength),
+      CreateTestFormField("Country", "country", "", FormControlType::kInputText,
                           "section-blue shipping country", kFieldMaxLength),
-      CreateTestFormField("Full Name", "fullName", "", "text",
+      CreateTestFormField("Full Name", "fullName", "",
+                          FormControlType::kInputText,
                           "section-blue billing name", kFieldMaxLength),
-      CreateTestFormField("City", "city", "", "text", "", kFieldMaxLength)};
+      CreateTestFormField("City", "city", "", FormControlType::kInputText, "",
+                          kFieldMaxLength)};
   FormStructure form_structure(form);
   test_api(form_structure)
       .SetFieldTypes(
@@ -6664,9 +6744,9 @@ TEST_F(FormStructureTestImpl, FromEmptyAutocompleteSectionToDefinedOne) {
   FormData form;
   form.url = GURL("http://foo.com");
   form.fields = {
-      CreateTestFormField("Full Name", "fullName", "", "text", "",
-                          kFieldMaxLength),
-      CreateTestFormField("Country", "country", "", "text",
+      CreateTestFormField("Full Name", "fullName", "",
+                          FormControlType::kInputText, "", kFieldMaxLength),
+      CreateTestFormField("Country", "country", "", FormControlType::kInputText,
                           "section-blue shipping country", kFieldMaxLength)};
   FormStructure form_structure(form);
   test_api(form_structure).SetFieldTypes({NAME_FULL, ADDRESS_HOME_COUNTRY});
@@ -6692,12 +6772,14 @@ TEST_F(FormStructureTestImpl,
 
   FormData form;
   form.url = GURL("http://foo.com");
-  form.fields.push_back(CreateTestFormField("Full Name", "fullName", "", "text",
-                                            "", kFieldMaxLength));
-  form.fields.push_back(
-      CreateTestFormField("Phone", "phone", "", "text", "", kFieldMaxLength));
+  form.fields.push_back(CreateTestFormField("Full Name", "fullName", "",
+                                            FormControlType::kInputText, "",
+                                            kFieldMaxLength));
+  form.fields.push_back(CreateTestFormField(
+      "Phone", "phone", "", FormControlType::kInputText, "", kFieldMaxLength));
   form.fields.back().is_focusable = false;  // hidden
-  form.fields.push_back(CreateTestFormField("Full Name", "fullName", "", "text",
+  form.fields.push_back(CreateTestFormField("Full Name", "fullName", "",
+                                            FormControlType::kInputText,
                                             "shipping name", kFieldMaxLength));
   FormStructure form_structure(form);
   test_api(form_structure)
@@ -6955,6 +7037,55 @@ TEST_F(FormStructureTestImpl, GetFormTypes_AutocompleteUnrecognized) {
   FormStructure form_structure(form);
   EXPECT_THAT(form_structure.GetFormTypes(),
               UnorderedElementsAre(FormType::kUnknownFormType));
+}
+
+// By default, the single field email heuristics are off. Although applying
+// heuristics in this case appears to have been intended behavior, the rollout
+// must be managed with care. This test is intended to ensure the default
+// experience does not change unintentionally.
+TEST_F(FormStructureTestImpl, SingleFieldEmailHeuristicsDefaultBehavior) {
+  FormData form = test::GetFormData({.fields = {{.role = EMAIL_ADDRESS}}});
+
+  // The form has too few fields; it should not run heuristics, falling back to
+  // the single field parsing.
+  EXPECT_FALSE(FormShouldRunHeuristics(form));
+  EXPECT_TRUE(FormShouldRunHeuristicsForSingleFieldForms(form));
+
+  {
+    FormStructure form_structure(form);
+    form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                           nullptr);
+    ASSERT_EQ(1U, form_structure.field_count());
+    ASSERT_EQ(0U, form_structure.autofill_count());
+    EXPECT_EQ(UNKNOWN_TYPE, form_structure.field(0)->heuristic_type());
+    EXPECT_FALSE(form_structure.IsAutofillable());
+  }
+}
+
+// When the single field email heuristics feature is enabled, a single field
+// email form should be parsed accordingly.
+TEST_F(FormStructureTestImpl, SingleFieldEmailHeuristicsEnabled) {
+  base::test::ScopedFeatureList enabled{
+      features::kAutofillEnableEmailHeuristicOnlyAddressForms};
+
+  FormData form = test::GetFormData({.fields = {{.role = EMAIL_ADDRESS}}});
+
+  // The form has too few fields; it should not run heuristics, falling back to
+  // the single field parsing.
+  EXPECT_FALSE(FormShouldRunHeuristics(form));
+  EXPECT_TRUE(FormShouldRunHeuristicsForSingleFieldForms(form));
+
+  {
+    FormStructure form_structure(form);
+    form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                           nullptr);
+    ASSERT_EQ(1U, form_structure.field_count());
+    // However, because the email field is in a form and matches the heuristics,
+    // it should be autofillable when the feature is enabled.
+    ASSERT_EQ(1U, form_structure.autofill_count());
+    EXPECT_EQ(EMAIL_ADDRESS, form_structure.field(0)->heuristic_type());
+    EXPECT_TRUE(form_structure.IsAutofillable());
+  }
 }
 
 }  // namespace autofill

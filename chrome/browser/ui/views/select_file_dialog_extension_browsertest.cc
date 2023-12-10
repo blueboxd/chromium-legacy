@@ -563,7 +563,8 @@ IN_PROC_BROWSER_TEST_P(SelectFileDialogExtensionBrowserTest, FileInputElement) {
 
   // Start the embedded test server.
   base::FilePath source_dir;
-  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_dir));
+  ASSERT_TRUE(
+      base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &source_dir));
   auto test_data_dir = source_dir.AppendASCII("chrome")
                            .AppendASCII("test")
                            .AppendASCII("data")
@@ -781,7 +782,8 @@ class SelectFileDialogExtensionPolicyTest
   std::unique_ptr<KeyedService> SetDlpRulesManager(
       content::BrowserContext* context) {
     auto dlp_rules_manager =
-        std::make_unique<testing::NiceMock<policy::MockDlpRulesManager>>();
+        std::make_unique<testing::NiceMock<policy::MockDlpRulesManager>>(
+            Profile::FromBrowserContext(context));
     rules_manager_ = dlp_rules_manager.get();
 
     mock_files_controller_ = std::make_unique<MockFilesController>(

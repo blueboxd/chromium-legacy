@@ -7,7 +7,9 @@ import {SourcesTestRunner} from 'sources_test_runner';
 import {SDKTestRunner} from 'sdk_test_runner';
 
 import * as SDK from 'devtools/core/sdk/sdk.js';
-import * as SourcesModule from 'devtools/panels/sources/sources.js';
+import * as Sources from 'devtools/panels/sources/sources.js';
+import * as UI from 'devtools/ui/legacy/legacy.js';
+import * as Workspace from 'devtools/models/workspace/workspace.js';
 
 (async function() {
   TestRunner.addResult(`Tests scripts panel file selectors.\n`);
@@ -20,10 +22,10 @@ import * as SourcesModule from 'devtools/panels/sources/sources.js';
 
   var subframe = TestRunner.mainFrame().childFrames[0];
 
-  var sourcesNavigatorView = new SourcesModule.SourcesNavigator.NetworkNavigatorView();
-  sourcesNavigatorView.show(UI.inspectorView.element);
-  var contentScriptsNavigatorView = new SourcesModule.SourcesNavigator.ContentScriptsNavigatorView();
-  contentScriptsNavigatorView.show(UI.inspectorView.element);
+  var sourcesNavigatorView = new Sources.SourcesNavigator.NetworkNavigatorView();
+  sourcesNavigatorView.show(UI.InspectorView.InspectorView.instance().element);
+  var contentScriptsNavigatorView = new Sources.SourcesNavigator.ContentScriptsNavigatorView();
+  contentScriptsNavigatorView.show(UI.InspectorView.InspectorView.instance().element);
 
   var uiSourceCodes = [];
   async function addUISourceCode(url, isContentScript, frame) {
@@ -50,14 +52,14 @@ import * as SourcesModule from 'devtools/panels/sources/sources.js';
   function waitForUISourceCodeAdded(url) {
     var fulfill;
     var promise = new Promise(x => fulfill = x);
-    Workspace.workspace.addEventListener(
+    Workspace.Workspace.WorkspaceImpl.instance().addEventListener(
         Workspace.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
     return promise;
 
     function uiSourceCodeAdded(event) {
       if (event.data.url() !== url)
         return;
-      Workspace.workspace.removeEventListener(
+      Workspace.Workspace.WorkspaceImpl.instance().removeEventListener(
           Workspace.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
       fulfill(event.data);
     }

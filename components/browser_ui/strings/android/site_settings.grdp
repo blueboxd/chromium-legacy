@@ -16,9 +16,6 @@
   <message name="IDS_ALL_SITES" desc='Title of the "All sites" settings screen that allows the user to see permissions for all websites. [CHAR_LIMIT=32]'>
     All sites
   </message>
-  <message name="IDS_ADS_PERMISSION_TITLE" desc="Title for the ads permission [CHAR_LIMIT=32]">
-    Ads
-  </message>
   <message name="IDS_ANTI_ABUSE_PERMISSION_TITLE" desc="Title for the anti-abuse permission [CHAR_LIMIT=32]">
     Auto-verify
   </message>
@@ -126,6 +123,12 @@
   </message>
   <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ALLOWED_RECOMMENDED" desc="Summary text explaining that a permission is allowed, which is the recommended setting.">
     Allowed (recommended)
+  </message>
+  <message name="IDS_WEBSITE_SETTINGS_SITE_ALLOWED" desc="Summary text explaining that a permission is allowed for a site, e.g. google.com allowed.">
+    <ph name="SITE_NAME">%1$s<ex>google.com</ex></ph> allowed
+  </message>
+  <message name="IDS_WEBSITE_SETTINGS_SITE_BLOCKED" desc="Summary text explaining that a permission is blocked for a site, e.g. google.com blocked.">
+    <ph name="SITE_NAME">%1$s<ex>google.com</ex></ph> blocked
   </message>
   <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ASK" desc="Summary text explaining that Chrome will ask the user before allowing a site to use a certain permission, e.g. JavaScript: ask first.">
     Ask first
@@ -284,32 +287,32 @@
 
   <!-- Site settings Clear Data Dialog and other ways of resetting permissions -->
 
-  <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_TITLE" desc="Title of the confirmation dialog when the user ask to clear all data for an origin">
-    Clear site data?
+  <message name="IDS_WEBSTORAGE_DELETE_DATA_DIALOG_TITLE" desc="Title of the confirmation dialog when the user ask to delete all data for an origin">
+    Delete site data?
   </message>
-  <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_OK_BUTTON" desc="Button confirming site data cleanup [CHAR_LIMIT=20]">
-    Clear
+  <message name="IDS_WEBSTORAGE_DELETE_DATA_DIALOG_OK_BUTTON" desc="Button confirming site data cleanup [CHAR_LIMIT=20]">
+    Delete
   </message>
-  <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_MESSAGE_SINGLE" desc="Text of the confirmation dialog when the user asks to clear all data (and app) for a single origin">
-    This will clear all data and cookies stored by <ph name="ORIGIN">%1$s<ex>google.com</ex></ph>.
+  <message name="IDS_WEBSTORAGE_DELETE_DATA_DIALOG_MESSAGE_SINGLE" desc="Text of the confirmation dialog when the user asks to delete all data (and app) for a single origin">
+    This will delete all data and cookies stored by <ph name="ORIGIN">%1$s<ex>google.com</ex></ph>.
   </message>
-  <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_MESSAGE_SINGLE_WITH_APP" desc="Text of the confirmation dialog when the user asks to clear all data (and app) for a single origin, when there's an app associated with it.">
-    This will clear all data and cookies stored by <ph name="ORIGIN">%1$s<ex>google.com</ex></ph> or by its app on your Home screen.
+  <message name="IDS_WEBSTORAGE_DELETE_DATA_DIALOG_MESSAGE_SINGLE_WITH_APP" desc="Text of the confirmation dialog when the user asks to delete all data (and app) for a single origin, when there's an app associated with it.">
+    This will delete all data and cookies stored by <ph name="ORIGIN">%1$s<ex>google.com</ex></ph> or by its app on your Home screen.
   </message>
-  <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_MESSAGE_GROUP" desc="Text of the confirmation dialog when the user asks to clear all data (and app) for a group of sites">
-    This action will clear all data and cookies for <ph name="ORIGIN">%1$s<ex>google.com</ex></ph> and all sites under it
+  <message name="IDS_WEBSTORAGE_DELETE_DATA_DIALOG_MESSAGE_GROUP" desc="Text of the confirmation dialog when the user asks to delete all data (and app) for a group of sites">
+    This action will delete all data and cookies for <ph name="ORIGIN">%1$s<ex>google.com</ex></ph> and all sites under it
   </message>
-  <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_MESSAGE_GROUP_WITH_APP" desc="Text of the confirmation dialog when the user asks to clear all data (and app) for a group of sites, when there's an app associated with it.">
-    This action will clear all data and cookies stored by all sites under <ph name="ORIGIN">%1$s<ex>google.com</ex></ph> or by its app on your Home screen
+  <message name="IDS_WEBSTORAGE_DELETE_DATA_DIALOG_MESSAGE_GROUP_WITH_APP" desc="Text of the confirmation dialog when the user asks to delete all data (and app) for a group of sites, when there's an app associated with it.">
+    This action will delete all data and cookies stored by all sites under <ph name="ORIGIN">%1$s<ex>google.com</ex></ph> or by its app on your Home screen
   </message>
-  <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_OFFLINE_MESSAGE" desc="Text of the confirmation dialog, explaining that all offline data will be cleared (when clearing a site/sites).">
-    Any offline data will be cleared
+  <message name="IDS_WEBSTORAGE_DELETE_DATA_DIALOG_OFFLINE_MESSAGE" desc="Text of the confirmation dialog, explaining that all offline data will be deleted (when clearing a site/sites).">
+    Any offline data will be deleted
   </message>
-  <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_MESSAGE" desc="Text of the confirmation dialog when the user ask to clear all data for multiple origins">
-    This will clear <ph name="DATASIZE">%1$s<ex>1 GB</ex></ph> of data and cookies stored by sites.
+  <message name="IDS_WEBSTORAGE_DELETE_DATA_DIALOG_MESSAGE" desc="Text of the confirmation dialog when the user ask to delete all data for multiple origins">
+    This will delete <ph name="DATASIZE">%1$s<ex>1 GB</ex></ph> of data and cookies stored by sites.
   </message>
-  <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_MESSAGE_WITH_APP" desc="Text of the confirmation dialog when the user ask to clear all data for multiple origins, some of which have an app associated with them.">
-    This will clear <ph name="DATASIZE">%1$s<ex>1 GB</ex></ph> of data and cookies stored by sites or by apps on your Home screen.
+  <message name="IDS_WEBSTORAGE_DELETE_DATA_DIALOG_MESSAGE_WITH_APP" desc="Text of the confirmation dialog when the user ask to delete all data for multiple origins, some of which have an app associated with them.">
+    This will delete <ph name="DATASIZE">%1$s<ex>1 GB</ex></ph> of data and cookies stored by sites or by apps on your Home screen.
   </message>
   <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_SIGN_OUT_MESSAGE" desc="Text of the confirmation dialog, explaining that the user will be signed out of the site being cleared.">
     You may be signed out of this site
@@ -361,9 +364,6 @@
 
   <message name="IDS_INTRUSIVE_ADS_INFORMATION" desc="The extra information at the top of the Site Details page when the site tends to show intrusive ads">
     This site shows intrusive or misleading ads
-  </message>
-  <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ADS_BLOCKED" desc="A setting that, if turned on, will block intrusive or misleading ads on sites that have a history of showing such ads.">
-    Block ads on sites that show intrusive or misleading ads
   </message>
   <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ADS_BLOCKED_LIST" desc="Summary text explaining that the Ads permission is set to block ads on some sites. To be shown in the list of permission categories.">
     Blocked on some sites
@@ -494,9 +494,6 @@
   <message name="IDS_WEBSITE_SETTINGS_CATEGORY_COOKIE_BLOCK_ADDITION" desc="Additional text used to explain the block cookies option in settings">
     Features on many sites may not work
   </message>
-  <message name="IDS_WEBSITE_SETTINGS_CATEGORY_COOKIE_ALLOWED" desc="Summary text explaining that sites are allowed to use cookies and that it is the recommended setting.">
-    Allow sites to save and read cookie data (recommended)
-  </message>
   <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_DESCRIPTION_COOKIES_ALLOW" desc="The description for the allow Cookies for website dialog.">
     Allow cookies for a specific site.
   </message>
@@ -506,7 +503,7 @@
 
   <!-- Site data page -->
   <message name="IDS_WEBSITE_SETTINGS_SITE_DATA_PAGE_DESCRIPTION" desc="A paragraph that appear beneath the page title: 'On-device site data'. It defines what on-device site data is. What is 'On-device site data'? When you interact with a site, that site can remember things about what you do. For example, you might place a pair of shoes in a shopping cart, close down your browser, and find those same shoes in your shopping cart when you visit the same site a week later. Sometimes that info is saved in the Cloud. Sometimes that info is saved on the user's device. There are several ways a site can save info to the user's device—for example, with cookies (text files saved to your device), small JavaScript databases, and even Chrome's new ad settings that are part of the Privacy Sandbox project (see details below). This page introduces the concept of on-device site data, allows the user to see which sites are using it, and allows the user to delete all saved data or just data from specific sites.  **** CONTEXT PRIVACY SANDBOX **** Chrome’s Privacy Sandbox initiative 1) deprecates third-party cookies in Chrome, 2) supports free and open content on the web (by finding better ways to support ads online), 3) while providing stronger privacy protections for users. You can see a high-level description of this public project at www.privacysanbox.com.">
-    A site you visit can save info about what you’re doing so that it works as you would expect — for example, to keep you signed in to a site or to save items in your shopping cart. Often sites save this info temporarily on your device.
+    A site you visit can save info about what you’re doing so that it works as expected — for example, to keep you signed in to a site or to save items in your shopping cart. Often sites save this info temporarily on your device.
   </message>
   <message name="IDS_WEBSITE_SETTINGS_SITE_DATA_PAGE_TOGGLE_SUB_LABEL_ALLOW" desc="A description of the 'On-device site data' setting. This text also reflects the state of the setting (on).">
     Sites can save data on your device

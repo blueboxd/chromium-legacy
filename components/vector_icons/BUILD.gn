@@ -168,6 +168,7 @@ aggregate_vector_icons("components_vector_icons") {
     "photo.icon",
     "photo_chrome_refresh.icon",
     "photo_off_chrome_refresh.icon",
+    "picture_in_picture.icon",
     "picture_in_picture_alt.icon",
     "play_arrow.icon",
     "play_arrow_chrome_refresh.icon",
@@ -261,6 +262,7 @@ aggregate_vector_icons("components_vector_icons") {
       "google_chrome/google_super_g.icon",
       "google_chrome/page_insights.icon",
       "google_chrome/page_insights_color.icon",
+      "google_chrome/pen_spark.icon",
     ]
   }
 }

@@ -13,13 +13,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
-#include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/password_manager/profile_password_store_factory.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 #include "chrome/browser/webauthn/passkey_model_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -155,8 +156,7 @@ class WebAuthnAutofillIntegrationTest : public CertVerifierBrowserTest {
 
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
-        {device::kWebAuthnListSyncedPasskeys, syncer::kSyncWebauthnCredentials,
-         device::kWebAuthnNewPasskeyUI},
+        {syncer::kSyncWebauthnCredentials, device::kWebAuthnNewPasskeyUI},
         /*disabled_features=*/{});
     ASSERT_TRUE(https_server_.InitializeAndListen());
 
@@ -186,8 +186,8 @@ class WebAuthnAutofillIntegrationTest : public CertVerifierBrowserTest {
     // Save a credential to the password store. This will let us wait on the
     // popup to appear after aborting the request.
     password_manager::PasswordStoreInterface* password_store =
-        PasswordStoreFactory::GetForProfile(browser()->profile(),
-                                            ServiceAccessType::EXPLICIT_ACCESS)
+        ProfilePasswordStoreFactory::GetForProfile(
+            browser()->profile(), ServiceAccessType::EXPLICIT_ACCESS)
             .get();
     password_manager::PasswordForm signin_form;
     GURL url = https_server_.GetURL(kRpId, "/");
@@ -482,6 +482,84 @@ IN_PROC_BROWSER_TEST_F(WebAuthnDevtoolsAutofillIntegrationTest, GPMPasskeys) {
             l10n_util::GetStringFUTF16(IDS_PASSWORD_MANAGER_PASSKEY_FROM_PHONE,
                                        kPhoneName));
   EXPECT_EQ(webauthn_entry.icon, "globeIcon");
+
+  // Click the credential.
+  popup_controller->AcceptSuggestion(
+      suggestion_index, base::TimeTicks::Now() + base::Milliseconds(500));
+  std::string result;
+  ASSERT_TRUE(message_queue.WaitForMessage(&result));
+  EXPECT_EQ(result, "\"webauthn: OK\"");
+
+  // The tracker outlives the test. Clean up the device_info to avoid flakiness.
+  tracker->Remove(&device_info);
+}
+
+// Tests that downloading passkeys from sync during a conditional UI also
+// updates the autofill popup with the newly downloaded credentials.
+IN_PROC_BROWSER_TEST_F(WebAuthnDevtoolsAutofillIntegrationTest,
+                       GPMPasskeys_UpdatePasskeys) {
+  // Have the virtual device masquerade as a phone.
+  virtual_device_factory_->SetTransport(device::FidoTransportProtocol::kHybrid);
+
+  // Make sure input events cannot close the autofill popup.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  autofill::ChromeAutofillClient* autofill_client =
+      autofill::ChromeAutofillClient::FromWebContentsForTesting(web_contents);
+  autofill_client->KeepPopupOpenForTesting();
+
+  // Execute the Conditional UI request.
+  content::DOMMessageQueue message_queue(web_contents);
+  content::ExecuteScriptAsync(web_contents, kConditionalUIRequest);
+
+  // Interact with the username field until the popup shows up. This has the
+  // effect of waiting for the browser to send the renderer the password
+  // information, and waiting for the UI to render.
+  base::WeakPtr<autofill::AutofillPopupController> popup_controller;
+  while (!popup_controller) {
+    content::SimulateMouseClickOrTapElementWithId(web_contents, "username");
+    popup_controller = autofill_client->popup_controller_for_testing();
+  }
+
+  // There should be no webauthn suggestions.
+  auto suggestions = popup_controller->GetSuggestions();
+  for (const auto& suggestion : suggestions) {
+    ASSERT_NE(suggestion.popup_item_id,
+              autofill::PopupItemId::kWebauthnCredential);
+  }
+
+  // Simulate the user opting in to sync by injecting a phone and a passkey.
+  syncer::DeviceInfo device_info = CreateDeviceInfo();
+  auto* tracker = static_cast<syncer::FakeDeviceInfoTracker*>(
+      DeviceInfoSyncServiceFactory::GetForProfile(browser()->profile())
+          ->GetDeviceInfoTracker());
+  tracker->Add(&device_info);
+
+  // Inject a GPM passkey.
+  PasskeyModelFactory::GetForProfile(browser()->profile())
+      ->AddNewPasskeyForTesting(CreatePasskey());
+
+  // The newly added passkey should be added to the popup. The request needs
+  // time to restart, poll the popup until the new entry shows up.
+  absl::optional<autofill::Suggestion> webauthn_entry;
+  size_t suggestion_index;
+  while (!webauthn_entry) {
+    content::SimulateMouseClickOrTapElementWithId(web_contents, "username");
+    popup_controller = autofill_client->popup_controller_for_testing();
+    suggestions = popup_controller->GetSuggestions();
+    for (size_t i = 0; i < suggestions.size(); ++i) {
+      if (suggestions[i].popup_item_id ==
+          autofill::PopupItemId::kWebauthnCredential) {
+        webauthn_entry = suggestions[i];
+        suggestion_index = i;
+      }
+    }
+  }
+  EXPECT_EQ(webauthn_entry->main_text.value, u"flandre");
+  EXPECT_EQ(webauthn_entry->labels.at(0).at(0).value,
+            l10n_util::GetStringFUTF16(IDS_PASSWORD_MANAGER_PASSKEY_FROM_PHONE,
+                                       kPhoneName));
+  EXPECT_EQ(webauthn_entry->icon, "globeIcon");
 
   // Click the credential.
   popup_controller->AcceptSuggestion(

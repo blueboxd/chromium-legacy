@@ -23,8 +23,6 @@ class CORE_EXPORT LayoutNGTableRow : public LayoutBlock {
 
   static LayoutNGTableRow* CreateAnonymousWithParent(const LayoutObject&);
 
-  bool IsEmpty() const;
-
   LayoutNGTableCell* FirstCell() const;
   LayoutNGTableCell* LastCell() const;
   LayoutNGTableRow* NextRow() const;
@@ -72,10 +70,6 @@ class CORE_EXPORT LayoutNGTableRow : public LayoutBlock {
     NOT_DESTROYED();
     return false;
   }
-
-#if DCHECK_IS_ON()
-  void AddVisualOverflowFromBlockChildren() override;
-#endif
 
   bool VisualRectRespectsVisibility() const final {
     NOT_DESTROYED();

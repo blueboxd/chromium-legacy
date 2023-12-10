@@ -4,6 +4,8 @@
 
 # Defines the configuration of Goma.
 
+import("//build/toolchain/siso.gni")
+
 declare_args() {
   # Set to true to enable distributed compilation using Goma.
   use_goma = false
@@ -19,7 +21,7 @@ if (use_goma && goma_dir == "") {
 assert(!is_win || !use_goma || is_clang,
        "cl.exe does not work on goma, use clang")
 
-if (use_goma) {
+if (use_goma && current_toolchain == default_toolchain) {
   if (host_os == "win") {
     print("The gn arg use_goma=true will be deprecated by EOY 2023. " +
           "Please use `use_remoteexec=true` instead. See " +
@@ -37,4 +39,6 @@ if (use_goma) {
           "https://chromium.googlesource.com/chromium/src/+/main/docs/" +
           "linux/build_instructions.md#use-reclient for setup instructions.")
   }
+  assert(!use_siso,
+         "Siso does not support Goma. Use use_remoteexec=true instead.")
 }

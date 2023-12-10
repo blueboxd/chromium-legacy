@@ -369,6 +369,18 @@ chromium-metrics-reviews@google.com.
   <summary>Number of minutes until Secure cookie expires when set.</summary>
 </histogram>
 
+<histogram name="Cookie.FirstPartyPartitioned.HasCrossSiteAncestor"
+    enum="BooleanPresent" expires_after="2024-03-03">
+  <owner>selya@google.com</owner>
+  <owner>src/net/cookies/OWNERS</owner>
+  <summary>
+    This histogram records the presence/absence of a cross-site ancestor when a
+    first-party Partitioned cookie is accessed. This metric is recorded each
+    time the IncludeForRequestURL method is called on a CanonicalCookie that is
+    first-party partitioned.
+  </summary>
+</histogram>
+
 <histogram name="Cookie.FirstPartySets.ComponentSetsNonfatalErrors"
     units="sets" expires_after="M124">
   <owner>cfredric@chromium.org</owner>
@@ -667,7 +679,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Cookie.NumKeys" units="keys" expires_after="2024-01-28">
+<histogram name="Cookie.NumKeys" units="keys" expires_after="2024-03-31">
   <owner>cfredric@chromium.org</owner>
   <owner>kaustubhag@chromium.org</owner>
   <summary>
@@ -722,7 +734,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.PartitionedCookieCount.{NonceType}" units="cookies"
-    expires_after="2023-10-22">
+    expires_after="2024-02-25">
   <owner>dylancutler@google.com</owner>
   <owner>src/net/cookies/OWNERS</owner>
   <summary>

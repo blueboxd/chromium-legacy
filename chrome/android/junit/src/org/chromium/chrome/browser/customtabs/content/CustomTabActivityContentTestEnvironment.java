@@ -28,12 +28,12 @@ import org.chromium.base.UserDataHost;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WarmupManager;
-import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.app.tab_activity_glue.ReparentingTask;
 import org.chromium.chrome.browser.app.tabmodel.CustomTabsTabModelOrchestrator;
 import org.chromium.chrome.browser.browserservices.intents.ColorProvider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
+import org.chromium.chrome.browser.content.WebContentsFactory;
 import org.chromium.chrome.browser.customtabs.CloseButtonNavigator;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
 import org.chromium.chrome.browser.customtabs.CustomTabIncognitoManager;
@@ -75,7 +75,6 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
 
     public final Intent mIntent = new Intent();
 
-    // clang-format off
     @Mock public CustomTabDelegateFactory customTabDelegateFactory;
     @Mock public ChromeActivity activity;
     @Mock public CustomTabsConnection connection;
@@ -103,7 +102,6 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
     @Mock public CustomTabIncognitoManager customTabIncognitoManager;
     @Mock public TabModelInitializer tabModelInitializer;
     @Mock public WebContents webContents;
-    // clang-format on
     public AsyncTabParamsManager realAsyncTabParamsManager =
             AsyncTabParamsManagerFactory.createAsyncTabParamsManager();
 
@@ -166,7 +164,6 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
                 PasswordChangeSuccessTrackerBridge.EXTRA_MANUAL_CHANGE_USERNAME_KEY, username);
     }
 
-    // clang-format off
     public CustomTabActivityTabController createTabController() {
         return new CustomTabActivityTabController(activity, () -> customTabDelegateFactory,
                 connection, intentDataProvider, activityTabProvider, tabObserverRegistrar,
@@ -177,7 +174,6 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
                 () -> activity.getSavedInstanceState(), activity.getWindowAndroid(),
                 tabModelInitializer);
     }
-    // clang-format on
 
     public CustomTabActivityNavigationController createNavigationController(
             CustomTabActivityTabController tabController) {

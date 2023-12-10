@@ -22,7 +22,8 @@ import sys
 
 _DISALLOW_NON_BLINK_MOJOM = (
     # network::mojom::Foo is allowed to use as non-blink mojom type.
-    '(?!network::)(\w+::)?mojom::(?!blink).+',
+    # mojom::RendererContentSettingsPtr is allowed.
+    '(?!network::)(\w+::)?mojom::(?!RendererContentSettingsPtr)(?!blink).+',
     'Using non-blink mojom types, consider using "::mojom::blink::Foo" instead '
     'of "::mojom::Foo" unless you have clear reasons not to do so.',
     'Warning')
@@ -150,7 +151,7 @@ _CONFIG = [
             'logging::GetVlogLevel',
             'logging::SetLogItems',
 
-            # //base/allocator/partition_allocator/partition_alloc_constants.h
+            # //base/allocator/partition_allocator/src/partition_alloc/partition_alloc_constants.h
             'partition_alloc::internal::kAlignment',
 
             # //base/task/bind_post_task.h
@@ -708,11 +709,11 @@ _CONFIG = [
             # serialization. Please keep alphabetized.
             'ui::CanHaveInlineTextBoxChildren',
             'ui::IsCellOrTableHeader',
-            'ui::IsChildTreeOwner',
             'ui::IsClickable',
             'ui::IsComboBox',
             'ui::IsContainerWithSelectableChildren',
             'ui::IsDialog',
+            'ui::IsEmbeddingElement',
             'ui::IsHeading',
             'ui::IsPlainContentElement',
             'ui::IsLandmark',
@@ -1794,6 +1795,14 @@ _CONFIG = [
             'third_party/blink/renderer/core/view_transition/view_transition_style_tracker.h'
         ],
         'allowed': ['viz::ViewTransitionElementResourceId'],
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/core/view_transition/',
+        ],
+        'allowed': [
+            'base::flat_map',
+        ],
     },
     {
         'paths': [

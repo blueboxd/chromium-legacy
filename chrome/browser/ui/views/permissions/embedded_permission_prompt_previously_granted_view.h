@@ -19,8 +19,7 @@ class EmbeddedPermissionPromptPreviouslyGrantedView
  public:
   EmbeddedPermissionPromptPreviouslyGrantedView(
       Browser* browser,
-      base::WeakPtr<permissions::PermissionPrompt::Delegate> delegate,
-      bool is_permission_allowed);
+      base::WeakPtr<permissions::PermissionPrompt::Delegate> delegate);
   EmbeddedPermissionPromptPreviouslyGrantedView(
       const EmbeddedPermissionPromptPreviouslyGrantedView&) = delete;
   EmbeddedPermissionPromptPreviouslyGrantedView& operator=(
@@ -32,8 +31,9 @@ class EmbeddedPermissionPromptPreviouslyGrantedView
   void RunButtonCallback(int type) override;
 
  protected:
-  std::vector<RequestLineConfiguration> GetRequestLinesConfiguration() override;
-  std::vector<ButtonConfiguration> GetButtonsConfiguration() override;
+  std::vector<RequestLineConfiguration> GetRequestLinesConfiguration()
+      const override;
+  std::vector<ButtonConfiguration> GetButtonsConfiguration() const override;
 
  private:
   std::u16string GetMessageText() const;

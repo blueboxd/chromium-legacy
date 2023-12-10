@@ -4,20 +4,18 @@
 
 #include "chrome/browser/performance_manager/policies/oom_score_policy_chromeos.h"
 
-#include "chrome/browser/performance_manager/test_support/page_discarding_utils.h"  // For GraphTestHarnessWithMockDiscarder
-#include "components/performance_manager/test_support/mock_graphs.h"  // For TestProcessNodeImpl
-#include "content/public/common/content_constants.h"  // For kLowestRendererOomScore
+#include "chrome/browser/performance_manager/test_support/page_discarding_utils.h"
+#include "components/performance_manager/test_support/mock_graphs.h"
+#include "content/public/common/content_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace performance_manager {
-namespace policies {
+namespace performance_manager::policies {
 
 class MockOomScorePolicyChromeOS : public OomScorePolicyChromeOS {
  public:
-  // Overrides OnPassedToGraph to avoid starting the timer.
-  void OnPassedToGraph(Graph* graph) override { graph_ = graph; }
-
-  void AssignOomScores() { OomScorePolicyChromeOS::AssignOomScores(); }
+  void HandlePageNodeEvents() {
+    OomScorePolicyChromeOS::HandlePageNodeEvents();
+  }
 
   int GetCachedOomScore(base::ProcessId pid) {
     return OomScorePolicyChromeOS::GetCachedOomScore(pid);
@@ -95,7 +93,7 @@ TEST_F(OomScorePolicyChromeOSTest, DistributeOomScores) {
   main_frame_node3->SetIsCurrent(false);
   AdvanceClock(base::Minutes(30));
 
-  policy()->AssignOomScores();
+  policy()->HandlePageNodeEvents();
 
   const int kMiddleRendererOomScore =
       (content::kHighestRendererOomScore + content::kLowestRendererOomScore) /
@@ -154,7 +152,7 @@ TEST_F(OomScorePolicyChromeOSTest, DistributeOomScoresWithPriority) {
   main_frame_node3->SetIsCurrent(false);
   AdvanceClock(base::Minutes(30));
 
-  policy()->AssignOomScores();
+  policy()->HandlePageNodeEvents();
 
   const int kMiddleRendererOomScore =
       (content::kHighestRendererOomScore + content::kLowestRendererOomScore) /
@@ -239,7 +237,7 @@ TEST_F(OomScorePolicyChromeOSTest, DistributeOomScoresSharedPid) {
   main_frame_node4->SetIsCurrent(false);
   AdvanceClock(base::Minutes(30));
 
-  policy()->AssignOomScores();
+  policy()->HandlePageNodeEvents();
 
   const int kMiddleRendererOomScore =
       (content::kHighestRendererOomScore + content::kLowestRendererOomScore) /
@@ -251,5 +249,5 @@ TEST_F(OomScorePolicyChromeOSTest, DistributeOomScoresSharedPid) {
   ASSERT_EQ(policy()->GetCachedOomScore(process_node2->process_id()),
             content::kLowestRendererOomScore);
 }
-}  // namespace policies
-}  // namespace performance_manager
+
+}  // namespace performance_manager::policies

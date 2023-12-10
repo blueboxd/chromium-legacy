@@ -1354,10 +1354,6 @@ class WebContents : public PageNavigator,
   // This sends the available title bar area bounds to the renderer process.
   virtual void UpdateWindowControlsOverlay(const gfx::Rect& bounding_rect) = 0;
 
-  // Intermediate function sending widget's `can_resize` to blink to update
-  // `resizable` CSS @media feature.
-  virtual void UpdateResizable(bool resizable) = 0;
-
   // Returns the Window Control Overlay rectangle. Only applies to an
   // outermost main frame's widget. Other widgets always returns an empty rect.
   virtual gfx::Rect GetWindowsControlsOverlayRect() const = 0;
@@ -1411,6 +1407,9 @@ class WebContents : public PageNavigator,
   // ignore some parameter mismatches. Note that if the mismatched prerender URL
   // will be activated due to the predicate returning true, the last committed
   // URL in the prerendered RenderFrameHost will be activated.
+  // `prerender_navigation_handle_callback` allows embedders to attach their own
+  // NavigationHandleUserData when prerender starts, and the user data can be
+  // used for identifying the types of embedder for metrics logging.
   virtual std::unique_ptr<PrerenderHandle> StartPrerendering(
       const GURL& prerendering_url,
       PrerenderTriggerType trigger_type,
@@ -1419,7 +1418,9 @@ class WebContents : public PageNavigator,
       PreloadingHoldbackStatus holdback_status_override,
       PreloadingAttempt* preloading_attempt,
       absl::optional<base::RepeatingCallback<bool(const GURL&)>>
-          url_match_predicate = absl::nullopt) = 0;
+          url_match_predicate = absl::nullopt,
+      absl::optional<base::RepeatingCallback<void(NavigationHandle&)>>
+          prerender_navigation_handle_callback = absl::nullopt) = 0;
 
   // May be called when the embedder believes that it is likely that the user
   // will perform a back navigation due to the trigger indicated by `predictor`

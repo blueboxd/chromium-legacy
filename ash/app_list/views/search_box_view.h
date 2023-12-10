@@ -14,8 +14,8 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/search/search_box_model.h"
 #include "ash/app_list/model/search/search_box_model_observer.h"
-#include "ash/app_list/views/launcher_search_iph_view.h"
 #include "ash/ash_export.h"
+#include "ash/assistant/ui/main_stage/launcher_search_iph_view.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/search_box/search_box_view_base.h"
 #include "base/memory/raw_ptr.h"
@@ -92,6 +92,7 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   void UpdateSearchBoxBorder() override;
   void OnSearchBoxActiveChanged(bool active) override;
   void UpdateSearchBoxFocusPaint() override;
+  void OnAfterUserAction(views::Textfield* sender) override;
 
   // AppListModelProvider::Observer:
   void OnActiveAppListModelsChanged(AppListModel* model,
@@ -110,7 +111,6 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   // LauncherSearchIphView::Delegate:
   void RunLauncherSearchQuery(const std::u16string& query) override;
   void OpenAssistantPage() override;
-  void OpenSearchBoxIphUrl() override;
 
   // Shows the category filter menu that allows users to enable/disable specific
   // search categories.

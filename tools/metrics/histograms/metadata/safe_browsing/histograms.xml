@@ -586,7 +586,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.EsbPromotionFlow.IphShown"
-    enum="SafeBrowsingReferralMethod" expires_after="2024-01-26">
+    enum="SafeBrowsingReferralMethod" expires_after="2024-03-31">
   <owner>awado@google.com</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -889,6 +889,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="SafeBrowsing.ExtensionTelemetry.WebSocketRequestDataSentOrReceived"
+    enum="BooleanSentOrReceived" expires_after="2023-12-06">
+  <owner>thefrog@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Logged when a web socket throttle triggers sending web request data to the
+    extension telemetry service. Logged also when that data is received.
+  </summary>
+</histogram>
+
 <histogram name="SafeBrowsing.ExtensionTelemetry.{Result}UploadDuration"
     units="ms" expires_after="2024-03-05">
   <owner>anunoy@chromium.org</owner>
@@ -1095,7 +1106,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="SafeBrowsing.HPRT.BackoffState" enum="BooleanEnabled"
+<histogram name="SafeBrowsing.HPRT.BackoffReportErrorReason"
+    enum="BackoffReportErrorReason" expires_after="2024-04-12">
+  <owner>xinghuilu@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Logs the reason when the backoff operator reports an error during
+    hash-prefix real-time lookup. This histogram is useful to track how much
+    missing OHTTP key contributes to backoff mode.
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.HPRT.BackoffState" enum="BooleanBackoff"
     expires_after="2024-02-04">
   <owner>thefrog@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
@@ -1131,6 +1153,26 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="SafeBrowsing.HPRT.CacheDuration.InitialOnSet" units="ms"
+    expires_after="2024-04-16">
+  <owner>thefrog@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Logs the cache duration that an item will have for a hash-prefix real-time
+    lookup. Logged when the item is added to the cache.
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.HPRT.CacheDuration.RemainingOnHit" units="ms"
+    expires_after="2024-04-16">
+  <owner>thefrog@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Logs the remaining cache duration that an item has for a hash-prefix
+    real-time lookup. Logged when there is a cache hit for the item.
+  </summary>
+</histogram>
+
 <histogram name="SafeBrowsing.HPRT.CacheHit" enum="BooleanCacheHit"
     expires_after="2024-02-04">
   <owner>thefrog@chromium.org</owner>
@@ -1154,19 +1196,6 @@ chromium-metrics-reviews@google.com.
     lookups local cache. It indicates that as a result of the cache, there was
     no need to send a request to Safe Browsing servers. This is logged each time
     a lookup occurs, when the cache is searched.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.HPRT.CacheHitAllPrefixesIfNoQueryParams"
-    enum="BooleanCacheHit" expires_after="2024-02-25">
-  <owner>thefrog@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    Records whether all hash prefixes would be found in the hash-prefix
-    real-time lookups local cache if the URL were to have its query parameters
-    removed. It indicates that as a result of the cache, there would be no need
-    to send a request to Safe Browsing servers. This is logged each time a
-    lookup occurs, after the cache is searched.
   </summary>
 </histogram>
 
@@ -1274,17 +1303,6 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="SafeBrowsing.HPRT.Network.Result"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2024-02-04">
-  <owner>thefrog@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    Response or error codes from SafeBrowsing hash-prefix real-time lookups.
-    Logged on each resource check for which a lookup request is sent to the
-    server.
-  </summary>
-</histogram>
-
 <histogram name="SafeBrowsing.HPRT.Network.Result.WhenEnteringBackoff"
     enum="CombinedHttpResponseAndNetErrorCode" expires_after="2024-03-17">
   <owner>thefrog@chromium.org</owner>
@@ -1307,8 +1325,28 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="SafeBrowsing.HPRT.Network.{ResponseSource}Result"
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2024-02-04">
+  <owner>thefrog@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Response or error codes from SafeBrowsing hash-prefix real-time lookups that
+    are obtained from {ResponseSource}. Logged on each resource check for which
+    a lookup request is sent to the server. Not logged if the response is not
+    from {ResponseSource}.
+  </summary>
+  <token key="ResponseSource">
+    <variant name=""
+        summary="aggregated OHTTP handler callback or direct fetch"/>
+    <variant name="InnerResponse"
+        summary="inner OHTTP response (Safe Browsing)"/>
+    <variant name="NetError" summary="internal OHTTP handler net error"/>
+    <variant name="OuterResponse" summary="outer OHTTP response (proxy)"/>
+  </token>
+</histogram>
+
 <histogram name="SafeBrowsing.HPRT.OhttpKeyService.BackoffState"
-    enum="BooleanEnabled" expires_after="2024-02-04">
+    enum="BooleanBackoff" expires_after="2024-02-04">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1382,17 +1420,26 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="SafeBrowsing.HPRT.ThreatInfoSize" units="verdicts"
-    expires_after="2024-02-04">
+<histogram name="SafeBrowsing.HPRT.ThreatInfoSize{SourceDetails}"
+    units="verdicts" expires_after="2024-02-04">
   <owner>thefrog@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Logs the number of unsafe threat type verdicts received in the check
     response (including cached results) that are relevant to hash-prefix
-    real-time checks. Logged each time a lookup request completes without errors
-    or when the request does not need to be sent because all the results are in
-    the local cache.
+    real-time checks. {SourceDetails}
   </summary>
+  <token key="SourceDetails">
+    <variant name=""
+        summary="Logged each time a lookup request completes without errors
+                 or when the request does not need to be sent because all the
+                 results are in the local cache."/>
+    <variant name=".LocalCache"
+        summary="Logged each time a lookup request does not need to be sent
+                 because all the results are in the local cache."/>
+    <variant name=".NetworkRequest"
+        summary="Logged each time a lookup request completes without errors."/>
+  </token>
 </histogram>
 
 <histogram name="SafeBrowsing.HPRTExperiment.Redirects.AllChecksEligible"
@@ -1963,7 +2010,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="SafeBrowsing.RT.Backoff.State" enum="BooleanEnabled"
+<histogram name="SafeBrowsing.RT.Backoff.State" enum="BooleanBackoff"
     expires_after="2024-02-11">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
@@ -2064,16 +2111,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="SafeBrowsing.RT.GetCacheResultIsFromPastSession"
-    enum="Boolean" expires_after="2024-03-17">
-  <owner>thefrog@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    If the real-time URL cache lookup had a cache hit, logs whether the cache
-    entry was defined in a previous browser session rather than the current one.
-  </summary>
-</histogram>
-
 <histogram name="SafeBrowsing.RT.GetToken.Time" units="ms"
     expires_after="2024-02-20">
   <owner>xinghuilu@chromium.org</owner>
@@ -2097,7 +2134,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.RT.HasTokenInRequest" enum="BooleanHasToken"
-    expires_after="2023-10-08">
+    expires_after="2024-10-12">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2295,7 +2332,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.RT.Response.VerdictType.{UserPopulation}"
-    enum="SafeBrowsingRTLookupResponseVerdictType" expires_after="2023-10-06">
+    enum="SafeBrowsingRTLookupResponseVerdictType" expires_after="2024-04-09">
   <owner>zackhan@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2476,17 +2513,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     HTTP Response code returned by the server when trying to fetch the OAuth
     token for a tailored security service query.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.TailoredSecurityUnconsentedMessageDismissReason"
-    enum="MessageDismissReason" expires_after="2023-11-11">
-  <owner>jacastro@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    Logs the specific reason a message was dismissed when a signed-in,
-    non-syncing user changes their account tailored security setting and
-    dismisses the corresponding message.
   </summary>
 </histogram>
 
@@ -3011,6 +3037,26 @@ failing to fetch the updates which puts users' security at risk. -->
   <summary>
     Track return status from V4 update attempts. The buckets of this histogram
     overlap, so the counts cannot be used as percentages.
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.WebApiHandshakeCheck.Skipped"
+    enum="BooleanSkipped" expires_after="2023-12-06">
+  <owner>thefrog@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Logged when a web API handshake decides whether to skip its associated Safe
+    Browsing check.
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.WebSocketCheck.Skipped" enum="BooleanSkipped"
+    expires_after="2023-12-06">
+  <owner>thefrog@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Logged when a web socket throttle decides whether to skip its associated
+    Safe Browsing check.
   </summary>
 </histogram>
 

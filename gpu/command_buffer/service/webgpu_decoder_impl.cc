@@ -23,6 +23,7 @@
 #include "base/memory/raw_ref.h"
 #include "base/numerics/checked_math.h"
 #include "base/power_monitor/power_monitor.h"
+#include "base/strings/string_split.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
@@ -78,6 +79,15 @@ constexpr wgpu::TextureUsage kAllowedReadableMailboxTextureUsages =
 constexpr wgpu::TextureUsage kAllowedMailboxTextureUsages =
     kAllowedWritableMailboxTextureUsages | kAllowedReadableMailboxTextureUsages;
 
+// List of feature names, delimited by ,
+// The FeatureParam may be overridden via Finch config, or via the command line
+// For example:
+//   --enable-field-trial-config \
+//   --force-fieldtrial-params=WebGPU.Enabled:UnsafeFeatures/timestamp-query%2Cshader-f16
+// Note that the comma should be URL-encoded.
+const base::FeatureParam<std::string> kRuntimeUnsafeFeatures{
+    &features::kWebGPUService, "UnsafeFeatures", ""};
+
 template <typename T1, typename T2>
 void ChainStruct(T1& head, T2* struct_to_chain) {
   DCHECK(struct_to_chain->nextInChain == nullptr);
@@ -131,6 +141,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
     return nullptr;
   }
   Capabilities GetCapabilities() override { return {}; }
+  GLCapabilities GetGLCapabilities() override { return {}; }
   void RestoreGlobalState() const override { NOTREACHED(); }
   void ClearAllAttributes() const override { NOTREACHED(); }
   void RestoreAllAttributes() const override { NOTREACHED(); }
@@ -418,6 +429,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   std::unique_ptr<DawnServiceMemoryTransferService> memory_transfer_service_;
 
   bool enable_unsafe_webgpu_ = false;
+  bool enable_webgpu_developer_features_ = false;
   WebGPUAdapterName use_webgpu_adapter_ = WebGPUAdapterName::kDefault;
   WebGPUPowerPreference use_webgpu_power_preference_ =
       WebGPUPowerPreference::kNone;
@@ -425,6 +437,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   bool force_webgpu_compat_ = false;
   std::vector<std::string> require_enabled_toggles_;
   std::vector<std::string> require_disabled_toggles_;
+  base::flat_set<std::string> runtime_unsafe_features_;
   bool allow_unsafe_apis_;
   bool tiered_adapter_limits_;
 
@@ -1056,11 +1069,18 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
       wire_serializer_(new DawnServiceSerializer(client)),
       isolation_key_provider_(isolation_key_provider) {
   enable_unsafe_webgpu_ = gpu_preferences.enable_unsafe_webgpu;
+  enable_webgpu_developer_features_ =
+      gpu_preferences.enable_webgpu_developer_features;
   use_webgpu_adapter_ = gpu_preferences.use_webgpu_adapter;
   use_webgpu_power_preference_ = gpu_preferences.use_webgpu_power_preference;
   force_webgpu_compat_ = gpu_preferences.force_webgpu_compat;
   require_enabled_toggles_ = gpu_preferences.enabled_dawn_features_list;
   require_disabled_toggles_ = gpu_preferences.disabled_dawn_features_list;
+  for (std::string f :
+       base::SplitString(kRuntimeUnsafeFeatures.Get(), ",",
+                         base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    runtime_unsafe_features_.insert(std::move(f));
+  }
 
   // Only allow unsafe APIs if the allow_unsafe_apis toggle is explicitly
   // enabled.
@@ -1153,8 +1173,8 @@ ContextResult WebGPUDecoderImpl::Initialize(
 bool WebGPUDecoderImpl::IsFeatureExposed(wgpu::FeatureName feature) const {
   switch (feature) {
     case wgpu::FeatureName::TimestampQuery:
-    case wgpu::FeatureName::TimestampQueryInsidePasses:
-    case wgpu::FeatureName::PipelineStatisticsQuery:
+    case wgpu::FeatureName::ChromiumExperimentalTimestampQueryInsidePasses:
+    case wgpu::FeatureName::ChromiumExperimentalPipelineStatisticsQuery:
     case wgpu::FeatureName::ChromiumExperimentalDp4a:
     case wgpu::FeatureName::ChromiumExperimentalReadWriteStorageTexture:
     case wgpu::FeatureName::ChromiumExperimentalSubgroups:
@@ -1170,8 +1190,19 @@ bool WebGPUDecoderImpl::IsFeatureExposed(wgpu::FeatureName feature) const {
     case wgpu::FeatureName::TextureCompressionASTC:
     case wgpu::FeatureName::IndirectFirstInstance:
     case wgpu::FeatureName::RG11B10UfloatRenderable:
-    case wgpu::FeatureName::BGRA8UnormStorage:
+    case wgpu::FeatureName::BGRA8UnormStorage: {
+      if (runtime_unsafe_features_.empty()) {
+        // Likely case when no features are blocked.
+        return true;
+      }
+
+      auto* info =
+          dawn_instance_->GetFeatureInfo(static_cast<WGPUFeatureName>(feature));
+      if (info == nullptr || runtime_unsafe_features_.contains(info->name)) {
+        return allow_unsafe_apis_;
+      }
       return true;
+    }
     default:
       return false;
   }
@@ -1277,13 +1308,8 @@ void WebGPUDecoderImpl::RequestDeviceImpl(
 
   std::vector<wgpu::FeatureName> required_features;
 
-#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
   if (desc.requiredFeatureCount) {
     size_t requiredFeatureCount = desc.requiredFeatureCount;
-#else
-  if (desc.requiredFeaturesCount) {
-    size_t requiredFeatureCount = desc.requiredFeaturesCount;
-#endif
     required_features = {
         desc.requiredFeatures,
         desc.requiredFeatures + requiredFeatureCount,
@@ -1320,13 +1346,9 @@ void WebGPUDecoderImpl::RequestDeviceImpl(
 #endif
 
   desc.requiredFeatures = required_features.data();
-#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
   desc.requiredFeatureCount = required_features.size();
-#else
-  desc.requiredFeaturesCount = required_features.size();
-#endif
 
-  // If a new toggle is added here, ForceDawnTogglesForWebGPU() which collects
+  // If a new toggle is added here, GetDawnTogglesForWebGPU() which collects
   // info for about:gpu should be updated as well.
   wgpu::DawnTogglesDescriptor dawn_device_toggles;
   std::vector<const char*> require_device_enabled_toggles;
@@ -1336,6 +1358,11 @@ void WebGPUDecoderImpl::RequestDeviceImpl(
   // is secure), unless --enable-unsafe-webgpu is used.
   if (!enable_unsafe_webgpu_) {
     require_device_enabled_toggles.push_back("disallow_spirv");
+  }
+  // Enable timestamp quantization by default for privacy, unless
+  // --enable-webgpu-developer-features is used.
+  if (!enable_webgpu_developer_features_) {
+    require_device_enabled_toggles.push_back("timestamp_quantization");
   }
   // Disable the blob cache if we don't have an isolation key.
   if (isolation_key_->empty()) {
@@ -1349,21 +1376,11 @@ void WebGPUDecoderImpl::RequestDeviceImpl(
     require_device_disabled_toggles.push_back(toggles.c_str());
   }
   dawn_device_toggles.enabledToggles = require_device_enabled_toggles.data();
-#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
   dawn_device_toggles.enabledToggleCount =
       require_device_enabled_toggles.size();
-#else
-  dawn_device_toggles.enabledTogglesCount =
-      require_device_enabled_toggles.size();
-#endif
   dawn_device_toggles.disabledToggles = require_device_disabled_toggles.data();
-#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
   dawn_device_toggles.disabledToggleCount =
       require_device_disabled_toggles.size();
-#else
-  dawn_device_toggles.disabledTogglesCount =
-      require_device_disabled_toggles.size();
-#endif
   ChainStruct(desc, &dawn_device_toggles);
 
   // Dawn caching isolation key information needs to be passed per device. If an
@@ -1431,15 +1448,9 @@ struct WGPUDeviceDescriptorDeepCopy : WGPUDeviceDescriptor {
       label = device_label_.c_str();
     }
     if (desc.requiredFeatures) {
-#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
       required_features_ = std::vector<WGPUFeatureName>(
           desc.requiredFeatures,
           desc.requiredFeatures + desc.requiredFeatureCount);
-#else
-      required_features_ = std::vector<WGPUFeatureName>(
-          desc.requiredFeatures,
-          desc.requiredFeatures + desc.requiredFeaturesCount);
-#endif
       requiredFeatures = required_features_.data();
     }
     if (desc.requiredLimits) {
@@ -1554,22 +1565,12 @@ wgpu::Adapter WebGPUDecoderImpl::CreatePreferredAdapter(
     require_adapter_disabled_toggles.push_back(toggles.c_str());
   }
   dawn_adapter_toggles.enabledToggles = require_adapter_enabled_toggles.data();
-#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
   dawn_adapter_toggles.enabledToggleCount =
       require_adapter_enabled_toggles.size();
-#else
-  dawn_adapter_toggles.enabledTogglesCount =
-      require_adapter_enabled_toggles.size();
-#endif
   dawn_adapter_toggles.disabledToggles =
       require_adapter_disabled_toggles.data();
-#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
   dawn_adapter_toggles.disabledToggleCount =
       require_adapter_disabled_toggles.size();
-#else
-  dawn_adapter_toggles.disabledTogglesCount =
-      require_adapter_disabled_toggles.size();
-#endif
   ChainStruct(adapter_options, &dawn_adapter_toggles);
 
 #if BUILDFLAG(IS_WIN)

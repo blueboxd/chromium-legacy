@@ -144,6 +144,12 @@ void DecoderTemplate<Traits>::configure(const ConfigType* config,
   absl::optional<MediaConfigType> media_config =
       MakeMediaConfig(*config, &js_error_message);
 
+  // Audio/VideoDecoder don't yet support encryption.
+  if (media_config && media_config->is_encrypted()) {
+    js_error_message = "Encrypted content is not supported";
+    media_config = absl::nullopt;
+  }
+
   MarkCodecActive();
 
   state_ = V8CodecState(V8CodecState::Enum::kConfigured);
@@ -567,13 +573,8 @@ void DecoderTemplate<Traits>::Shutdown(DOMException* exception) {
   num_pending_decodes_ = 0;
   ScheduleDequeueEvent();
 
-  // Fire the error callback if necessary. Per spec, this is a queued task.
   if (exception) {
-    main_thread_task_runner_->PostTask(
-        FROM_HERE,
-        WTF::BindOnce(&V8WebCodecsErrorCallback::InvokeAndReportException,
-                      WrapPersistent(error_cb), nullptr,
-                      WrapPersistent(exception)));
+    error_cb->InvokeAndReportException(nullptr, exception);
   }
 }
 

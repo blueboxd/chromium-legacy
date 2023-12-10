@@ -16,8 +16,9 @@
 #include "chrome/browser/ash/arc/input_overlay/actions/action.h"
 #include "chrome/browser/ash/arc/input_overlay/touch_injector.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/action_view.h"
-#include "chrome/browser/ash/arc/input_overlay/ui/button_label_list.h"
+#include "chrome/browser/ash/arc/input_overlay/ui/action_view_list_item.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/button_options_menu.h"
+#include "chrome/browser/ash/arc/input_overlay/ui/delete_edit_shortcut.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/edit_finish_view.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/editing_list.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/educational_view.h"
@@ -35,6 +36,7 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/view.h"
+#include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/transient_window_manager.h"
 #include "ui/wm/core/window_util.h"
@@ -46,11 +48,11 @@ namespace {
 constexpr int kMenuEntrySideMargin = 24;
 constexpr int kNudgeVerticalAlign = 8;
 
-constexpr char kButtonLabelList[] = "GameControlsButtonLabelList";
 constexpr char kButtonOptionsMenu[] = "GameControlsButtonOptionsMenu";
 constexpr char kEditingList[] = "GameControlsEditingList";
 constexpr char kInputMapping[] = "GameControlsInputMapping";
 constexpr char kEduationNudge[] = "GameControlsEducationNudge";
+constexpr char kDeleteEditShortcut[] = "DeleteEditShortcut";
 
 std::unique_ptr<views::Widget> CreateTransientWidget(
     aura::Window* parent_window,
@@ -490,9 +492,9 @@ void DisplayOverlayController::SetDisplayMode(DisplayMode mode) {
           input_mapping_widget_->ShowInactive();
         }
 
-        auto* input_mapping_view = static_cast<InputMappingView*>(
-            input_mapping_widget_->GetContentsView());
-        input_mapping_view->SetDisplayMode(mode);
+        if (auto* input_mapping = GetInputMapping()) {
+          input_mapping->SetDisplayMode(mode);
+        }
         auto* input_mapping_window = input_mapping_widget_->GetNativeWindow();
         input_mapping_window->SetEventTargetingPolicy(
             aura::EventTargetingPolicy::kNone);
@@ -513,9 +515,9 @@ void DisplayOverlayController::SetDisplayMode(DisplayMode mode) {
       // to show up in `kEdit` mode.
       input_mapping_widget_->ShowInactive();
 
-      auto* input_mapping_view = static_cast<InputMappingView*>(
-          input_mapping_widget_->GetContentsView());
-      input_mapping_view->SetDisplayMode(mode);
+      if (auto* input_mapping = GetInputMapping()) {
+        input_mapping->SetDisplayMode(mode);
+      }
       auto* input_mapping_window = input_mapping_widget_->GetNativeWindow();
       input_mapping_window->SetEventTargetingPolicy(
           aura::EventTargetingPolicy::kTargetAndDescendants);
@@ -681,9 +683,8 @@ void DisplayOverlayController::AddButtonOptionsMenuWidget(Action* action) {
   }
 
   if (button_options_widget_) {
-    auto* menu = static_cast<ButtonOptionsMenu*>(
-        button_options_widget_->GetContentsView());
-    if (menu->action() == action) {
+    auto* menu = GetButtonOptionsMenu();
+    if (menu && menu->action() == action) {
       return;
     }
     RemoveButtonOptionsMenuWidget();
@@ -702,25 +703,16 @@ void DisplayOverlayController::AddButtonOptionsMenuWidget(Action* action) {
 void DisplayOverlayController::RemoveButtonOptionsMenuWidget() {
   if (button_options_widget_) {
     // Check if related action is already deleted.
-    auto* menu_action = static_cast<ButtonOptionsMenu*>(
-                            button_options_widget_->GetContentsView())
-                            ->action();
-    if (IsActiveAction(menu_action)) {
-      RemoveActionNewState(menu_action);
+    if (auto* menu = GetButtonOptionsMenu()) {
+      auto* menu_action = menu->action();
+      if (IsActiveAction(menu_action)) {
+        RemoveActionNewState(menu_action);
+      }
     }
 
     button_options_widget_->Close();
     button_options_widget_.reset();
-
-    RemoveButtonLabelListWidget();
   }
-}
-
-void DisplayOverlayController::OnButtonOptionsMenuButtonLabelPressed(
-    Action* action) {
-  DCHECK(button_options_widget_);
-  button_options_widget_->Hide();
-  AddButtonLabelListWidget(action);
 }
 
 void DisplayOverlayController::SetButtonOptionsMenuWidgetVisibility(
@@ -730,49 +722,13 @@ void DisplayOverlayController::SetButtonOptionsMenuWidgetVisibility(
   }
 
   if (is_visible) {
-    UpdateButtonOptionsMenuWidgetBounds(
-        static_cast<ButtonOptionsMenu*>(
-            button_options_widget_->GetContentsView())
-            ->action());
+    if (auto* menu = GetButtonOptionsMenu()) {
+      UpdateButtonOptionsMenuWidgetBounds(menu->action());
+    }
     button_options_widget_->ShowInactive();
   } else {
     button_options_widget_->Hide();
   }
-}
-
-void DisplayOverlayController::AddButtonLabelListWidget(Action* action) {
-  if (button_label_list_widget_) {
-    return;
-  }
-
-  button_label_list_widget_ = CreateTransientWidget(
-      touch_injector_->window(), /*widget_name=*/kButtonLabelList,
-      /*accept_events=*/true, /*is_floating=*/true);
-  auto* view = button_label_list_widget_->SetContentsView(
-      std::make_unique<ButtonLabelList>(this, action));
-  auto* window = button_label_list_widget_->GetNativeWindow();
-  window->parent()->StackChildAtTop(window);
-  UpdateWidgetBoundsInRootWindow(
-      button_label_list_widget_.get(),
-      gfx::Rect(action->action_view()->CalculateAttachViewPositionInRootWindow(
-                    CalculateAvailableBounds(
-                        touch_injector_->window()->GetRootWindow()),
-                    touch_injector_->content_bounds().origin(), view),
-                view->GetPreferredSize()));
-  button_label_list_widget_->ShowInactive();
-}
-
-void DisplayOverlayController::RemoveButtonLabelListWidget() {
-  if (!button_label_list_widget_) {
-    return;
-  }
-  button_label_list_widget_->Close();
-  button_label_list_widget_.reset();
-}
-
-void DisplayOverlayController::OnButtonLabelListBackButtonPressed() {
-  RemoveButtonLabelListWidget();
-  button_options_widget_->ShowInactive();
 }
 
 void DisplayOverlayController::AddNudgeWidget(views::View* anchor_view,
@@ -807,13 +763,43 @@ void DisplayOverlayController::RemoveNudgeWidget(views::Widget* widget) {
   }
 }
 
+void DisplayOverlayController::AddDeleteEditShortcutWidget(
+    ActionViewListItem* anchor_view) {
+  if (delete_edit_shortcut_widget_) {
+    if (auto* shortcut = views::AsViewClass<DeleteEditShortcut>(
+            delete_edit_shortcut_widget_->GetContentsView());
+        shortcut->anchor_view() != anchor_view) {
+      shortcut->UpdateAnchorView(anchor_view);
+    }
+    return;
+  }
+
+  delete_edit_shortcut_widget_ = CreateTransientWidget(
+      touch_injector_->window(), /*widget_name=*/kDeleteEditShortcut,
+      /*accept_events=*/true, /*is_floating=*/true);
+  delete_edit_shortcut_widget_->SetContentsView(
+      std::make_unique<DeleteEditShortcut>(this, anchor_view));
+
+  auto* window = delete_edit_shortcut_widget_->GetNativeWindow();
+  window->parent()->StackChildAtTop(window);
+  delete_edit_shortcut_widget_->Show();
+}
+
+void DisplayOverlayController::RemoveDeleteEditShortcutWidget() {
+  if (delete_edit_shortcut_widget_) {
+    delete_edit_shortcut_widget_->Close();
+    delete_edit_shortcut_widget_.reset();
+  }
+}
+
 void DisplayOverlayController::MayShowEduNudgeForEditingTip() {
   if (GetActiveActionsSize() != 1u) {
     return;
   }
   DCHECK(editing_list_widget_);
-  static_cast<EditingList*>(editing_list_widget_->GetContentsView())
-      ->ShowEduNudgeForEditingTip();
+  if (auto* editing_list = GetEditingList()) {
+    editing_list->ShowEduNudgeForEditingTip();
+  }
 }
 
 void DisplayOverlayController::UpdateButtonOptionsMenuWidgetBounds(
@@ -822,15 +808,16 @@ void DisplayOverlayController::UpdateButtonOptionsMenuWidgetBounds(
     return;
   }
 
-  auto* menu =
-      static_cast<ArrowContainer*>(button_options_widget_->GetContentsView());
-  UpdateWidgetBoundsInRootWindow(
-      button_options_widget_.get(),
-      gfx::Rect(action->action_view()->CalculateAttachViewPositionInRootWindow(
-                    CalculateAvailableBounds(
-                        touch_injector_->window()->GetRootWindow()),
-                    touch_injector_->content_bounds().origin(), menu),
-                menu->GetPreferredSize()));
+  if (auto* menu = GetButtonOptionsMenu()) {
+    UpdateWidgetBoundsInRootWindow(
+        button_options_widget_.get(),
+        gfx::Rect(
+            action->action_view()->CalculateAttachViewPositionInRootWindow(
+                CalculateAvailableBounds(
+                    touch_injector_->window()->GetRootWindow()),
+                touch_injector_->content_bounds().origin(), menu),
+            menu->GetPreferredSize()));
+  }
 }
 
 void DisplayOverlayController::UpdateInputMappingWidgetBounds() {
@@ -850,8 +837,9 @@ void DisplayOverlayController::UpdateEditingListWidgetBounds() {
     return;
   }
 
-  static_cast<EditingList*>(editing_list_widget_->GetContentsView())
-      ->UpdateWidget();
+  if (auto* editing_list = GetEditingList()) {
+    editing_list->UpdateWidget();
+  }
 }
 
 void DisplayOverlayController::UpdateWidgetBoundsInRootWindow(
@@ -1088,8 +1076,8 @@ void DisplayOverlayController::UpdateForBoundsChanged() {
     UpdateEditingListWidgetBounds();
 
     // Remove the floating window attached the ActionView.
-    RemoveButtonLabelListWidget();
     RemoveButtonOptionsMenuWidget();
+    RemoveDeleteEditShortcutWidget();
   } else {
     // Overlay widget is null for test.
     if (!GetOverlayWidget()) {
@@ -1124,9 +1112,6 @@ void DisplayOverlayController::AddInputMappingWidget() {
       /*accept_events=*/false, /*is_floating=*/false);
   input_mapping_widget_->SetContentsView(
       std::make_unique<InputMappingView>(this));
-  auto* window = input_mapping_widget_->GetNativeWindow();
-  window->parent()->StackChildAtBottom(window);
-
   UpdateInputMappingWidgetBounds();
 }
 
@@ -1135,6 +1120,15 @@ void DisplayOverlayController::RemoveInputMappingWidget() {
     input_mapping_widget_->Close();
     input_mapping_widget_.reset();
   }
+}
+
+InputMappingView* DisplayOverlayController::GetInputMapping() {
+  if (!input_mapping_widget_) {
+    return nullptr;
+  }
+
+  return views::AsViewClass<InputMappingView>(
+      input_mapping_widget_->GetContentsView());
 }
 
 void DisplayOverlayController::AddEditingListWidget() {
@@ -1162,6 +1156,24 @@ void DisplayOverlayController::RemoveEditingListWidget() {
                           /*turn_on=*/false);
     UpdateEventRewriteCapability();
   }
+}
+
+EditingList* DisplayOverlayController::GetEditingList() {
+  if (!editing_list_widget_) {
+    return nullptr;
+  }
+
+  return views::AsViewClass<EditingList>(
+      editing_list_widget_->GetContentsView());
+}
+
+ButtonOptionsMenu* DisplayOverlayController::GetButtonOptionsMenu() {
+  if (!button_options_widget_) {
+    return nullptr;
+  }
+
+  return views::AsViewClass<ButtonOptionsMenu>(
+      button_options_widget_->GetContentsView());
 }
 
 void DisplayOverlayController::UpdateEventRewriteCapability() {

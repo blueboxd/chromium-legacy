@@ -15,7 +15,6 @@
 #include "base/cancelable_callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/scoped_window_event_targeting_blocker.h"
 #include "ui/aura/window_observer.h"
 
@@ -60,7 +59,8 @@ class ASH_EXPORT OverviewItem : public OverviewItemBase,
   OverviewItem(aura::Window* window,
                OverviewSession* overview_session,
                OverviewGrid* overview_grid,
-               WindowDestructionDelegate* delegate);
+               WindowDestructionDelegate* delegate,
+               bool eligible_for_shadow_config);
 
   OverviewItem(const OverviewItem&) = delete;
   OverviewItem& operator=(const OverviewItem&) = delete;
@@ -72,12 +72,16 @@ class ASH_EXPORT OverviewItem : public OverviewItemBase,
   // If the window item represents a minimized window, update its contents view.
   void UpdateItemContentViewForMinimizedWindow();
 
+  // Updates the rounded corners on `this` only.
+  void UpdateRoundedCorners();
+
   OverviewAnimationType GetExitOverviewAnimationType() const;
   OverviewAnimationType GetExitTransformAnimationType() const;
 
   // OverviewItemBase:
   aura::Window* GetWindow() override;
   std::vector<aura::Window*> GetWindows() override;
+  bool HasVisibleOnAllDesksWindow() override;
   bool Contains(const aura::Window* target) const override;
   OverviewItem* GetLeafItemForWindow(aura::Window* window) override;
   void RestoreWindow(bool reset_transform, bool animate) override;
@@ -85,16 +89,15 @@ class ASH_EXPORT OverviewItem : public OverviewItemBase,
                  OverviewAnimationType animation_type) override;
   gfx::Transform ComputeTargetTransform(
       const gfx::RectF& target_bounds) override;
-  float GetItemScale(const gfx::Size& size) override;
+  float GetItemScale(int height) override;
   void ScaleUpSelectedItem(OverviewAnimationType animation_type) override;
   void EnsureVisible() override;
   gfx::RectF GetTargetBoundsInScreen() const override;
-  gfx::RectF GetWindowTargetBoundsWithInsets() const override;
+  gfx::RectF GetTargetBoundsWithInsets() const override;
   gfx::RectF GetTransformedBounds() const override;
   OverviewFocusableView* GetFocusableView() const override;
   views::View* GetBackDropView() const override;
   void UpdateRoundedCornersAndShadow() override;
-  void SetShadowBounds(absl::optional<gfx::RectF> bounds_in_screen) override;
   void SetOpacity(float opacity) override;
   float GetOpacity() const override;
   void PrepareForOverview() override;
@@ -109,7 +112,6 @@ class ASH_EXPORT OverviewItem : public OverviewItemBase,
   void OnOverviewItemContinuousScroll(const gfx::Transform& target_transform,
                                       float scroll_ratio) override;
   void SetVisibleDuringItemDragging(bool visible, bool animate) override;
-  void UpdateShadowTypeForDrag(bool is_dragging) override;
   void UpdateCannotSnapWarningVisibility(bool animate) override;
   void HideCannotSnapWarning(bool animate) override;
   void OnMovingItemToAnotherDesk() override;
@@ -215,6 +217,12 @@ class ASH_EXPORT OverviewItem : public OverviewItemBase,
   // a window layer for display on another monitor.
   bool in_bounds_update_ = false;
 
+  // If true, `shadow_` is eligible to be created, false otherwise. The shadow
+  // should not be created if `this` is hosted by an `OverviewGroupItem`
+  // together with another `OverviewItem` (the group-level shadow will be
+  // installed instead).
+  const bool eligible_for_shadow_config_;
+
   // The view associated with |item_widget_|. Contains a title, close button and
   // maybe a backdrop. Forwards certain events to |this|.
   raw_ptr<OverviewItemView, DanglingUntriaged | ExperimentalAsh>
@@ -227,16 +235,6 @@ class ASH_EXPORT OverviewItem : public OverviewItemBase,
   // windows in the future, combine these.
   std::unique_ptr<DragWindowController> item_mirror_for_dragging_;
   std::unique_ptr<DragWindowController> window_mirror_for_dragging_;
-
-  // True if the windows are still alive so they can have a closing animation.
-  // These windows should not be used in calculations for
-  // OverviewGrid::PositionWindows.
-  bool animating_to_close_ = false;
-
-  // True if this overview item is currently being dragged around.
-  bool is_being_dragged_ = false;
-
-  bool prepared_for_overview_ = false;
 
   // Disable animations on the contained window while it is being managed by the
   // overview item.

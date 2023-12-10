@@ -16,6 +16,10 @@
 
 class Profile;
 
+namespace ash::cloud_upload {
+class CloudOpenMetrics;
+}
+
 namespace storage {
 class FileSystemURL;
 }
@@ -34,26 +38,6 @@ constexpr char kActionIdWebDriveOfficeExcel[] = "open-web-drive-office-excel";
 constexpr char kActionIdWebDriveOfficePowerPoint[] =
     "open-web-drive-office-powerpoint";
 constexpr char kActionIdOpenInOffice[] = "open-in-office";
-constexpr char kActionIdOpenWeb[] = "OPEN_WEB";
-
-constexpr char kDriveErrorMetricName[] = "FileBrowser.OfficeFiles.Errors.Drive";
-constexpr char kOneDriveErrorMetricName[] =
-    "FileBrowser.OfficeFiles.Errors.OneDrive";
-
-// List of UMA enum values for Office File Handler task results for Drive. The
-// enum values must be kept in sync with OfficeDriveOpenErrors in
-// tools/metrics/histograms/enums.xml.
-enum class OfficeDriveOpenErrors {
-  kOffline = 0,
-  kDriveFsInterface = 1,
-  kTimeout = 2,
-  kNoMetadata = 3,
-  kInvalidAlternateUrl = 4,
-  kDriveAlternateUrl = 5,
-  kUnexpectedAlternateUrl = 6,
-  kSuccess = 7,
-  kMaxValue = kSuccess,
-};
 
 // UMA metric name that tracks the result of using a MS Office file outside
 // of Drive.
@@ -125,14 +109,16 @@ bool ExecuteWebDriveOfficeTask(
     Profile* profile,
     const TaskDescriptor& task,
     const std::vector<storage::FileSystemURL>& file_urls,
-    gfx::NativeWindow modal_parent);
+    gfx::NativeWindow modal_parent,
+    std::unique_ptr<ash::cloud_upload::CloudOpenMetrics> cloud_open_metrics);
 
 // Open files with Office365.
 bool ExecuteOpenInOfficeTask(
     Profile* profile,
     const TaskDescriptor& task,
     const std::vector<storage::FileSystemURL>& file_urls,
-    gfx::NativeWindow modal_parent);
+    gfx::NativeWindow modal_parent,
+    std::unique_ptr<ash::cloud_upload::CloudOpenMetrics> cloud_open_metrics);
 
 // Executes QuickOffice file handler for each element of |file_urls|.
 void LaunchQuickOffice(Profile* profile,
@@ -147,16 +133,19 @@ void OnDialogChoiceReceived(
     const TaskDescriptor& task,
     const std::vector<storage::FileSystemURL>& file_urls,
     gfx::NativeWindow modal_parent,
+    std::unique_ptr<ash::cloud_upload::CloudOpenMetrics> cloud_open_metrics,
     const std::string& choice,
     ash::office_fallback::FallbackReason fallback_reason);
 
 // Shows a new dialog for users to choose what to do next. Returns True
 // if a new dialog has been effectively created.
-bool GetUserFallbackChoice(Profile* profile,
-                           const TaskDescriptor& task,
-                           const std::vector<storage::FileSystemURL>& file_urls,
-                           gfx::NativeWindow modal_parent,
-                           ash::office_fallback::FallbackReason failure_reason);
+bool GetUserFallbackChoice(
+    Profile* profile,
+    const TaskDescriptor& task,
+    const std::vector<storage::FileSystemURL>& file_urls,
+    gfx::NativeWindow modal_parent,
+    ash::office_fallback::FallbackReason failure_reason,
+    std::unique_ptr<ash::cloud_upload::CloudOpenMetrics> cloud_open_metrics);
 
 bool IsWebDriveOfficeTask(const TaskDescriptor& task);
 

@@ -252,7 +252,7 @@ void LayoutInline::UpdateShouldCreateBoxFragment() {
   }
 }
 
-LayoutRect LayoutInline::LocalCaretRect(
+PhysicalRect LayoutInline::LocalCaretRect(
     int,
     LayoutUnit* extra_width_to_end_of_line) const {
   NOT_DESTROYED();
@@ -263,25 +263,35 @@ LayoutRect LayoutInline::LocalCaretRect(
     //   </LayoutText></LayoutInline>
     // FIXME: need to figure out how to make this return a valid rect, note that
     // there are no line boxes created in the above case.
-    return LayoutRect();
+    return PhysicalRect();
   }
 
   if (extra_width_to_end_of_line)
     *extra_width_to_end_of_line = LayoutUnit();
 
-  LayoutRect caret_rect =
-      LocalCaretRectForEmptyElement(BorderAndPaddingWidth(), LayoutUnit());
+  LayoutUnit inline_size = RuntimeEnabledFeatures::EmptyCaretInVerticalEnabled()
+                               ? BorderAndPaddingLogicalWidth()
+                               : BorderAndPaddingWidth();
+  DeprecatedLayoutRect caret_rect =
+      LocalCaretRectForEmptyElement(inline_size, LayoutUnit());
 
   if (IsInLayoutNGInlineFormattingContext()) {
-    NGInlineCursor cursor;
+    InlineCursor cursor;
     cursor.MoveTo(*this);
     if (cursor) {
+      if (RuntimeEnabledFeatures::EmptyCaretInVerticalEnabled()) {
+        caret_rect = WritingModeConverter(
+                         {StyleRef().GetWritingMode(), TextDirection::kLtr},
+                         cursor.CurrentItem()->Size())
+                         .ToPhysical(LogicalRect(caret_rect))
+                         .ToLayoutRect();
+      }
       caret_rect.MoveBy(
           cursor.Current().OffsetInContainerFragment().ToLayoutPoint());
     }
   }
 
-  return caret_rect;
+  return PhysicalRect(caret_rect);
 }
 
 void LayoutInline::AddChild(LayoutObject* new_child,
@@ -405,12 +415,12 @@ void LayoutInline::CollectLineBoxRects(
     const PhysicalRectCollector& yield) const {
   NOT_DESTROYED();
   if (!IsInLayoutNGInlineFormattingContext()) {
-    // NGInlineCursor::MoveToIncludingCulledInline() below would fail DCHECKs in
+    // InlineCursor::MoveToIncludingCulledInline() below would fail DCHECKs in
     // this situation, so just bail. This is most likely not a good situation to
     // be in, though. See crbug.com/1448357
     return;
   }
-  NGInlineCursor cursor;
+  InlineCursor cursor;
   cursor.MoveToIncludingCulledInline(*this);
   for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
     yield(cursor.CurrentRectInBlockFlow());
@@ -481,7 +491,7 @@ absl::optional<PhysicalOffset> LayoutInline::FirstLineBoxTopLeftInternal()
     const {
   NOT_DESTROYED();
   if (IsInLayoutNGInlineFormattingContext()) {
-    NGInlineCursor cursor;
+    InlineCursor cursor;
     cursor.MoveToIncludingCulledInline(*this);
     if (!cursor)
       return absl::nullopt;
@@ -594,7 +604,7 @@ bool LayoutInline::NodeAtPoint(HitTestResult& result,
     // PaintLayer::HitTestContents() without going through any ancestor, in
     // which case the element must have self painting layer.
     DCHECK(HasSelfPaintingLayer());
-    NGInlineCursor cursor;
+    InlineCursor cursor;
     cursor.MoveTo(*this);
     if (!cursor)
       return false;
@@ -637,7 +647,7 @@ bool LayoutInline::NodeAtPoint(HitTestResult& result,
 bool LayoutInline::HitTestCulledInline(HitTestResult& result,
                                        const HitTestLocation& hit_test_location,
                                        const PhysicalOffset& accumulated_offset,
-                                       const NGInlineCursor& parent_cursor) {
+                                       const InlineCursor& parent_cursor) {
   NOT_DESTROYED();
   if (!VisibleToHitTestRequest(result.GetHitTestRequest()))
     return false;
@@ -651,7 +661,7 @@ bool LayoutInline::HitTestCulledInline(HitTestResult& result,
   // Iterate fragments for |this|, including culled inline, but only that are
   // descendants of |parent_cursor|.
   DCHECK(IsDescendantOf(parent_cursor.GetLayoutBlockFlow()));
-  NGInlineCursor cursor(parent_cursor);
+  InlineCursor cursor(parent_cursor);
   cursor.MoveToIncludingCulledInline(*this);
   for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
     // Block-in-inline is inline in the box tree, and may appear as a child of
@@ -694,7 +704,7 @@ PhysicalRect LayoutInline::PhysicalLinesBoundingBox() const {
   NOT_DESTROYED();
 
   if (IsInLayoutNGInlineFormattingContext()) {
-    NGInlineCursor cursor;
+    InlineCursor cursor;
     cursor.MoveToIncludingCulledInline(*this);
     PhysicalRect bounding_box;
     for (; cursor; cursor.MoveToNextForSameLayoutObject())
@@ -708,7 +718,7 @@ PhysicalRect LayoutInline::LinesVisualOverflowBoundingBox() const {
   NOT_DESTROYED();
   if (IsInLayoutNGInlineFormattingContext()) {
     PhysicalRect result;
-    NGInlineCursor cursor;
+    InlineCursor cursor;
     cursor.MoveToIncludingCulledInline(*this);
     for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
       PhysicalRect child_rect = cursor.Current().InkOverflow();
@@ -722,7 +732,7 @@ PhysicalRect LayoutInline::LinesVisualOverflowBoundingBox() const {
 
 PhysicalRect LayoutInline::VisualRectInDocument(VisualRectFlags flags) const {
   NOT_DESTROYED();
-  PhysicalRect rect = PhysicalVisualOverflowRect();
+  PhysicalRect rect = VisualOverflowRect();
   MapToVisualRectInAncestorSpace(View(), rect, flags);
   return rect;
 }
@@ -735,7 +745,7 @@ PhysicalRect LayoutInline::LocalVisualRectIgnoringVisibility() const {
   return PhysicalRect();
 }
 
-PhysicalRect LayoutInline::PhysicalVisualOverflowRect() const {
+PhysicalRect LayoutInline::VisualOverflowRect() const {
   NOT_DESTROYED();
   PhysicalRect overflow_rect = LinesVisualOverflowBoundingBox();
   const ComputedStyle& style = StyleRef();
@@ -803,17 +813,19 @@ bool LayoutInline::MapToVisualRectInAncestorSpaceInternal(
 
 PhysicalOffset LayoutInline::OffsetFromContainerInternal(
     const LayoutObject* container,
-    bool ignore_scroll_offset) const {
+    MapCoordinatesFlags mode) const {
   NOT_DESTROYED();
   DCHECK_EQ(container, Container());
 
   PhysicalOffset offset;
-  if (IsStickyPositioned()) {
+  if (IsStickyPositioned() && !(mode & kIgnoreStickyOffset)) {
     offset += StickyPositionOffset();
   }
 
-  if (container->IsScrollContainer())
-    offset += OffsetFromScrollableContainer(container, ignore_scroll_offset);
+  if (container->IsScrollContainer()) {
+    offset +=
+        OffsetFromScrollableContainer(container, mode & kIgnoreScrollOffset);
+  }
 
   return offset;
 }
@@ -961,7 +973,7 @@ void LayoutInline::InvalidateDisplayItemClients(
     if (!ShouldCreateBoxFragment())
       return;
 #if DCHECK_IS_ON()
-    NGInlineCursor cursor;
+    InlineCursor cursor;
     for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject())
       DCHECK_EQ(cursor.Current().GetDisplayItemClient(), this);
 #endif

@@ -64,7 +64,6 @@
 #include "net/third_party/quiche/src/quiche/quic/core/crypto/proof_verifier.h"
 #include "net/third_party/quiche/src/quiche/quic/core/crypto/quic_client_session_cache.h"
 #include "net/third_party/quiche/src/quiche/quic/core/crypto/quic_random.h"
-#include "net/third_party/quiche/src/quiche/quic/core/http/quic_client_push_promise_index.h"
 #include "net/third_party/quiche/src/quiche/quic/core/quic_clock.h"
 #include "net/third_party/quiche/src/quiche/quic/core/quic_connection.h"
 #include "net/third_party/quiche/src/quiche/quic/core/quic_utils.h"
@@ -1447,6 +1446,15 @@ void QuicStreamFactory::FinishConnectAndConfigureSocket(
     return;
   }
 
+  if (base::FeatureList::IsEnabled(net::features::kReceiveEcn)) {
+    rv = socket->SetRecvEcn();
+    if (rv != OK) {
+      OnFinishConnectAndConfigureSocketError(
+          std::move(callback), CREATION_ERROR_SETTING_RECEIVE_ECN, rv);
+      return;
+    }
+  }
+
   // Set a buffer large enough to contain the initial CWND's worth of packet
   // to work around the problem with CHLO packets being sent out with the
   // wrong encryption level, when the send buffer is full.
@@ -1529,6 +1537,14 @@ int QuicStreamFactory::ConfigureSocket(DatagramClientSocket* socket,
   if (rv != OK && rv != ERR_NOT_IMPLEMENTED) {
     HistogramCreateSessionFailure(CREATION_ERROR_SETTING_DO_NOT_FRAGMENT);
     return rv;
+  }
+
+  if (base::FeatureList::IsEnabled(net::features::kReceiveEcn)) {
+    rv = socket->SetRecvEcn();
+    if (rv != OK) {
+      HistogramCreateSessionFailure(CREATION_ERROR_SETTING_RECEIVE_ECN);
+      return rv;
+    }
   }
 
   // Set a buffer large enough to contain the initial CWND's worth of packet
@@ -2024,9 +2040,8 @@ bool QuicStreamFactory::CreateSessionHelper(
       params_.max_migrations_to_non_default_network_on_path_degrading,
       yield_after_packets_, yield_after_duration_, cert_verify_flags, config,
       std::move(crypto_config_handle), dns_resolution_start_time,
-      dns_resolution_end_time,
-      std::make_unique<quic::QuicClientPushPromiseIndex>(), tick_clock_,
-      task_runner_, std::move(socket_performance_watcher), endpoint_result,
+      dns_resolution_end_time, tick_clock_, task_runner_,
+      std::move(socket_performance_watcher), endpoint_result,
       net_log.net_log());
 
   all_sessions_[*session] = key;  // owning pointer

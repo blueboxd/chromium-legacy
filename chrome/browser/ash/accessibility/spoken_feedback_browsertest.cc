@@ -39,6 +39,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/accessibility/accessibility_feature_browsertest.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/accessibility/automation_test_utils.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
@@ -96,20 +97,14 @@ LoggedInSpokenFeedbackTest::~LoggedInSpokenFeedbackTest() = default;
 
 void LoggedInSpokenFeedbackTest::SetUpInProcessBrowserTestFixture() {
   AccessibilityManager::SetBrailleControllerForTest(&braille_controller_);
-  ash_starter_ = std::make_unique<::test::AshBrowserTestStarter>();
-  if (ash_starter_->HasLacrosArgument()) {
-    ASSERT_TRUE(ash_starter_->PrepareEnvironmentForLacros());
-  }
+  AccessibilityFeatureBrowserTest::SetUpInProcessBrowserTestFixture();
 }
 
 void LoggedInSpokenFeedbackTest::SetUpOnMainThread() {
   InProcessBrowserTest::SetUpOnMainThread();
   event_generator_ = std::make_unique<ui::test::EventGenerator>(
       Shell::Get()->GetPrimaryRootWindow());
-  CHECK(ash_starter_);
-  if (ash_starter_->HasLacrosArgument()) {
-    ash_starter_->StartLacros(this);
-  }
+  AccessibilityFeatureBrowserTest::SetUpOnMainThread();
 }
 
 void LoggedInSpokenFeedbackTest::TearDownOnMainThread() {
@@ -207,8 +202,7 @@ bool LoggedInSpokenFeedbackTest::PerformAcceleratorAction(
 
 void LoggedInSpokenFeedbackTest::RunJSForChromeVox(const std::string& script) {
   extensions::BackgroundScriptExecutor::ExecuteScriptAsync(
-      AccessibilityManager::Get()->profile(),
-      extension_misc::kChromeVoxExtensionId, script,
+      GetProfile(), extension_misc::kChromeVoxExtensionId, script,
       extensions::browsertest_util::ScriptUserActivation::kDontActivate);
 }
 
@@ -218,16 +212,14 @@ void LoggedInSpokenFeedbackTest::DisableEarcons() {
   // (http://crbug.com/396507). Work around this by just telling
   // ChromeVox to not ever play earcons (prerecorded sound effects).
   extensions::browsertest_util::ExecuteScriptInBackgroundPageNoWait(
-      AccessibilityManager::Get()->profile(),
-      extension_misc::kChromeVoxExtensionId,
+      GetProfile(), extension_misc::kChromeVoxExtensionId,
       "ChromeVox.earcons.playEarcon = function() {};");
 }
 
 void LoggedInSpokenFeedbackTest::ImportJSModuleForChromeVox(std::string name,
                                                             std::string path) {
   extensions::browsertest_util::ExecuteScriptInBackgroundPageDeprecated(
-      AccessibilityManager::Get()->profile(),
-      extension_misc::kChromeVoxExtensionId,
+      GetProfile(), extension_misc::kChromeVoxExtensionId,
       "import('" + path +
           "').then(mod => {"
           "globalThis." +
@@ -267,26 +259,9 @@ void LoggedInSpokenFeedbackTest::ExecuteCommandHandlerCommand(
     std::string command) {
   ImportJSModuleForChromeVox(
       "CommandHandlerInterface",
-      "/chromevox/background/command_handler_interface.js");
+      "/chromevox/background/input/command_handler_interface.js");
   RunJSForChromeVox("CommandHandlerInterface.instance.onCommand('" + command +
                     "');");
-}
-
-void LoggedInSpokenFeedbackTest::NavigateToUrl(const GURL& url) {
-  CHECK(ash_starter_);
-  if (ash_starter_->HasLacrosArgument()) {
-    crosapi::BrowserManager::Get()->OpenUrl(
-        url, crosapi::mojom::OpenUrlFrom::kUnspecified,
-        crosapi::mojom::OpenUrlParams::WindowOpenDisposition::
-            kNewForegroundTab);
-  } else {
-    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
-  }
-}
-
-bool LoggedInSpokenFeedbackTest::IsLacrosRunning() const {
-  CHECK(ash_starter_);
-  return ash_starter_->HasLacrosArgument();
 }
 
 // Flaky test, crbug.com/1081563
@@ -620,10 +595,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ShelfIconFocusForward) {
   // pinned apps in user preference will be removed.
   EnableChromeVox();
   sm_.Call([controller, title]() {
-    controller->InsertAppItem(
+    controller->CreateAppItem(
         std::make_unique<AppShortcutShelfItemController>(ShelfID("FakeApp")),
-        STATUS_CLOSED, controller->shelf_model()->item_count(), TYPE_PINNED_APP,
-        base::ASCIIToUTF16(title));
+        STATUS_CLOSED, /*pinned=*/true, base::ASCIIToUTF16(title));
   });
 
   // Focus on the shelf.
@@ -718,17 +692,15 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, SpeakingTextUnderMouseForShelfItem) {
   sm_.Call([this]() {
     // Add three Shelf buttons. Wait for the change on ShelfModel to reach ash.
     ChromeShelfController* controller = ChromeShelfController::instance();
-    const int base_index = controller->shelf_model()->item_count();
     const std::string title("MockApp");
     const std::string id("FakeApp");
     const int insert_app_num = 3;
     for (int i = 0; i < insert_app_num; i++) {
       std::string app_title = title + base::NumberToString(i);
       std::string app_id = id + base::NumberToString(i);
-      controller->InsertAppItem(
+      controller->CreateAppItem(
           std::make_unique<AppShortcutShelfItemController>(ShelfID(app_id)),
-          STATUS_CLOSED, base_index + i, TYPE_PINNED_APP,
-          base::ASCIIToUTF16(app_title));
+          STATUS_CLOSED, /*pinned=*/true, base::ASCIIToUTF16(app_title));
     }
 
     // Enable the function of speaking text under mouse.
@@ -813,11 +785,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
 
   std::vector<apps::AppPtr> apps;
   apps.push_back(std::move(app));
-  apps::AppServiceProxyFactory::GetForProfile(
-      AccessibilityManager::Get()->profile())
-      ->AppRegistryCache()
-      .OnApps(std::move(apps), apps::AppType::kBuiltIn,
-              false /* should_notify_initialized */);
+  apps::AppServiceProxyFactory::GetForProfile(GetProfile())
+      ->OnApps(std::move(apps), apps::AppType::kBuiltIn,
+               false /* should_notify_initialized */);
 
   // Create and add a test app to the shelf model.
   ShelfItem item;
@@ -900,11 +870,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
   app->readiness = apps::Readiness::kDisabledByPolicy;
   std::vector<apps::AppPtr> apps;
   apps.push_back(std::move(app));
-  apps::AppServiceProxyFactory::GetForProfile(
-      AccessibilityManager::Get()->profile())
-      ->AppRegistryCache()
-      .OnApps(std::move(apps), apps::AppType::kBuiltIn,
-              false /* should_notify_initialized */);
+  apps::AppServiceProxyFactory::GetForProfile(GetProfile())
+      ->OnApps(std::move(apps), apps::AppType::kBuiltIn,
+               false /* should_notify_initialized */);
 
   // Create and add a test app to the shelf model.
   ShelfItem item;

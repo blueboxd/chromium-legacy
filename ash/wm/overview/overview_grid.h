@@ -230,8 +230,9 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // from shelf.
   void SetVisibleDuringWindowDragging(bool visible, bool animate);
 
-  // Returns true if |window| is the placeholder window from the drop target.
-  bool IsDropTargetWindow(aura::Window* window) const;
+  // Returns true if the `item` is the placeholder for the
+  // `drop_target_widget_`.
+  bool IsDropTargetItem(OverviewItemBase* item) const;
 
   // Returns the overview item that accociates with |drop_target_widget_|.
   // Returns nullptr if overview does not have the drop target.
@@ -310,13 +311,13 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
                               bool for_drop);
 
   // Updates the drag details for LegacyDeskBarView to end the drag and move the
-  // window of |drag_item| to another desk if it was dropped on a mini_view of
-  // a desk that is different than that of the active desk or if dropped on the
-  // new desk button. Returns true if the window was successfully moved to
-  // another desk.
+  // window(s) represented by the `dragged_item` to another desk if it was
+  // dropped on a mini_view of a desk that is different than that of the active
+  // desk or if dropped on the new desk button. Returns true if the window(s)
+  // were successfully moved to another desk.
   bool MaybeDropItemOnDeskMiniViewOrNewDeskButton(
       const gfx::Point& screen_location,
-      OverviewItemBase* drag_item);
+      OverviewItemBase* dragged_item);
 
   // Transforms `desks_bar_view_` from zero state to expanded state. Called when
   // a normal drag starts to enable user dragging a window and dropping it to
@@ -379,6 +380,10 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // Refreshes the bounds of `no_windows_widget_`, animating if `animate` is
   // true.
   void RefreshNoWindowsWidgetBounds(bool animate);
+
+  // Refreshes this grid's bounds. This will set bounds and update the overview
+  // item positions depending on the current split view state.
+  void RefreshGridBounds(bool animate);
 
   // Updates bounds, tooltips and a11y focus, as well as handles animations on
   // `save_desk_button_container_widget_`.
@@ -643,8 +648,7 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // Records the presentation time of scrolling the grid in overview mode.
   std::unique_ptr<ui::PresentationTimeRecorder> presentation_time_recorder_;
 
-  // Pointer to the window that is being dragged from the shelf, if there is
-  // one.
+  // Window that is being dragged from the shelf or during tab dragging.
   raw_ptr<aura::Window, ExperimentalAsh> dragged_window_ = nullptr;
 
   // The widget that contains the view for all saved desks.

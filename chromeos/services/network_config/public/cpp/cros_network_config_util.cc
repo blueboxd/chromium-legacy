@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
-#include "ash/constants/ash_features.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/onc/onc_constants.h"
 
@@ -265,12 +264,8 @@ bool NetworkTypeMatchesType(mojom::NetworkType network_type,
     case mojom::NetworkType::kAll:
       return true;
     case mojom::NetworkType::kMobile:
-      if (base::FeatureList::IsEnabled(ash::features::kInstantHotspotRebrand)) {
-        return network_type == mojom::NetworkType::kCellular;
-      } else {
-        return network_type == mojom::NetworkType::kCellular ||
-               network_type == mojom::NetworkType::kTether;
-      }
+      return network_type == mojom::NetworkType::kCellular ||
+             network_type == mojom::NetworkType::kTether;
     case mojom::NetworkType::kWireless:
       return network_type == mojom::NetworkType::kCellular ||
              network_type == mojom::NetworkType::kTether ||
@@ -344,8 +339,12 @@ base::Value::Dict CustomApnListToOnc(const std::string& network_guid,
 
 std::vector<mojom::ApnType> OncApnTypesToMojo(
     const std::vector<std::string>& apn_types) {
-  DCHECK(!apn_types.empty());
   std::vector<mojom::ApnType> apn_types_result;
+  if (apn_types.empty()) {
+    NET_LOG(ERROR) << "APN types is empty";
+    return apn_types_result;
+  }
+
   apn_types_result.reserve(apn_types.size());
   for (const std::string& apn_type : apn_types) {
     if (apn_type == ::onc::cellular_apn::kApnTypeDefault) {
@@ -354,6 +353,10 @@ std::vector<mojom::ApnType> OncApnTypesToMojo(
     }
     if (apn_type == ::onc::cellular_apn::kApnTypeAttach) {
       apn_types_result.push_back(mojom::ApnType::kAttach);
+      continue;
+    }
+    if (apn_type == ::onc::cellular_apn::kApnTypeTether) {
+      apn_types_result.push_back(mojom::ApnType::kTether);
       continue;
     }
 

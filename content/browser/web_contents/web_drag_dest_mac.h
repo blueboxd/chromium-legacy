@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "content/browser/web_contents/web_contents_view_drag_security_info.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/common/drop_data.h"
@@ -103,14 +104,17 @@ CONTENT_EXPORT
     GetRenderWidgetHostAtPoint:(const gfx::PointF&)viewPoint
                  transformedPt:(gfx::PointF*)transformedPt;
 
-// Sets |dragStartProcessID_| and |dragStartViewID_|.
-- (void)setDragStartTrackersForProcess:(int)processID;
-- (void)resetDragStartTrackers;
+// Called to indicate that the owning WebContents has initiated a drag.
+- (void)initiateDragWithRenderWidgetHost:(content::RenderWidgetHostImpl*)rwhi
+                                dropData:(const content::DropData&)dropData;
 
-// Returns whether |targetRWH| is a valid RenderWidgetHost to be dragging
-// over. This enforces that same-page, cross-site drags are not allowed. See
-// https://crbug.com/666858.
-- (bool)isValidDragTarget:(content::RenderWidgetHostImpl*)targetRWH;
+// Called to indicate that, if the owning WebContents has initiated a drag, that
+// drag has ended.
+- (void)endDrag;
+
+- (content::WebContentsViewDragSecurityInfo)dragSecurityInfo;
+- (void)setDragSecurityInfo:
+    (content::WebContentsViewDragSecurityInfo)dragSecurityInfo;
 
 @end
 

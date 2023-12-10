@@ -44,10 +44,6 @@ BASE_DECLARE_FEATURE(kGPayAppDynamicUpdate);
 // credential store APIs, or if it can only rely on the user-profile database.
 BASE_DECLARE_FEATURE(kSecurePaymentConfirmationUseCredentialStoreAPIs);
 
-// Enables using webauthn extensions through the secure payment confirmation
-// API.
-BASE_DECLARE_FEATURE(kSecurePaymentConfirmationExtensions);
-
 #if !BUILDFLAG(IS_ANDROID)
 // Desktop only, if enabled PaymentHandler will use the new minimal header UX.
 // See https://crbug.com/1385136.
@@ -62,10 +58,6 @@ BASE_DECLARE_FEATURE(kPaymentHandlerWindowInTaskManager);
 // will always be refetched for every Payment Request, in order to potentially
 // refresh the icon for the app.
 BASE_DECLARE_FEATURE(kPaymentHandlerAlwaysRefreshIcon);
-
-// If enabled, the payment method manifest fetch for Payment Handler must go via
-// a Link header with rel="payment-method-manifest".
-BASE_DECLARE_FEATURE(kPaymentHandlerRequireLinkHeader);
 
 }  // namespace features
 }  // namespace payments

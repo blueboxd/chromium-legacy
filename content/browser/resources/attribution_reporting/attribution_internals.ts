@@ -7,10 +7,13 @@ import './attribution_internals_table.js';
 
 import {Origin} from 'chrome://resources/mojo/url/mojom/origin.mojom-webui.js';
 
+import {AggregatableResult} from './aggregatable_result.mojom-webui.js';
 import {AttributionSupport, TriggerVerification} from './attribution.mojom-webui.js';
-import {Factory, HandlerInterface, HandlerRemote, ObserverInterface, ObserverReceiver, ReportID, WebUIDebugReport, WebUIOsRegistration, WebUIRegistration, WebUIReport, WebUISource, WebUISource_Attributability, WebUISourceRegistration, WebUITrigger, WebUITrigger_Status} from './attribution_internals.mojom-webui.js';
+import {Factory, HandlerInterface, HandlerRemote, ObserverInterface, ObserverReceiver, ReportID, WebUIDebugReport, WebUIOsRegistration, WebUIRegistration, WebUIReport, WebUISource, WebUISource_Attributability, WebUISourceRegistration, WebUITrigger} from './attribution_internals.mojom-webui.js';
 import {AttributionInternalsTableElement} from './attribution_internals_table.js';
 import {OsRegistrationResult, RegistrationType} from './attribution_reporting.mojom-webui.js';
+import {EventLevelResult} from './event_level_result.mojom-webui.js';
+import {EventReportWindows} from './registration.mojom-webui.js';
 import {SourceType} from './source_type.mojom-webui.js';
 import {StoreSourceResult} from './store_source_result.mojom-webui.js';
 import {Column, TableModel} from './table_model.js';
@@ -82,7 +85,8 @@ class CodeColumn<T> extends ValueColumn<T, string> {
 class ListColumn<T, V> extends ValueColumn<T, V[]> {
   constructor(
       header: string, getValue: (p: T) => V[],
-      private readonly flatten: boolean = false) {
+      private readonly flatten: boolean = false,
+      private readonly renderItem: (p: V) => string = (p) => `${p}`) {
     super(header, getValue, /*comparable=*/ false);
   }
 
@@ -93,7 +97,7 @@ class ListColumn<T, V> extends ValueColumn<T, V[]> {
     }
 
     if (this.flatten && values.length === 1) {
-      td.innerText = `${values[0]}`;
+      td.innerText = this.renderItem(values[0]!);
       return;
     }
 
@@ -101,7 +105,7 @@ class ListColumn<T, V> extends ValueColumn<T, V[]> {
 
     values.forEach(value => {
       const li = td.ownerDocument.createElement('li');
-      li.innerText = `${value}`;
+      li.innerText = this.renderItem(value);
       ul.appendChild(li);
     });
 
@@ -232,7 +236,9 @@ class Source {
   reportingOrigin: string;
   sourceTime: Date;
   expiryTime: Date;
+  eventReportWindows: Date[];
   aggregatableReportWindowTime: Date;
+  maxEventLevelReports: bigint;
   sourceType: string;
   filterData: string;
   aggregationKeys: string;
@@ -251,8 +257,11 @@ class Source {
     this.reportingOrigin = originToText(mojo.reportingOrigin);
     this.sourceTime = new Date(mojo.sourceTime);
     this.expiryTime = new Date(mojo.expiryTime);
+    this.eventReportWindows =
+        windowsAbsoluteTime(mojo.eventReportWindows, this.sourceTime);
     this.aggregatableReportWindowTime =
         new Date(mojo.aggregatableReportWindowTime);
+    this.maxEventLevelReports = BigInt(mojo.maxEventLevelReports);
     this.sourceType = sourceTypeText[mojo.sourceType];
     this.priority = mojo.priority;
     this.filterData = JSON.stringify(mojo.filterData, null, ' ');
@@ -263,6 +272,23 @@ class Source {
     this.aggregatableBudgetConsumed = mojo.aggregatableBudgetConsumed;
     this.aggregatableDedupKeys = mojo.aggregatableDedupKeys;
     this.status = attributabilityText[mojo.attributability];
+  }
+}
+
+const EVENT_REPORT_WINDOWS_COLS: Array<Column<Source>> = [
+  new DateColumn<Source>('Start Time', e => e.eventReportWindows[0]!),
+  new ListColumn<Source, Date>(
+      'End Times', e => e.eventReportWindows.slice(1), /*flatten=*/ false,
+      (v) => v.toLocaleString()),
+];
+
+class EventReportWindowsColumn implements Column<Source> {
+  renderHeader(th: HTMLElement) {
+    th.innerText = 'Event Report Windows';
+  }
+
+  render(td: HTMLElement, row: Source) {
+    renderDL(td, row, EVENT_REPORT_WINDOWS_COLS);
   }
 }
 
@@ -284,9 +310,12 @@ class SourceTableModel extends TableModel<Source> {
           new DateColumn<Source>(
               'Source Registration Time', (e) => e.sourceTime),
           new DateColumn<Source>('Expiry Time', (e) => e.expiryTime),
+          new EventReportWindowsColumn(),
           new DateColumn<Source>(
               'Aggregatable Report Window Time',
               (e) => e.aggregatableReportWindowTime),
+          new ValueColumn<Source, bigint>(
+              'Max Event Level Reports', (e) => e.maxEventLevelReports),
           new ValueColumn<Source, string>('Source Type', (e) => e.sourceType),
           new ValueColumn<Source, bigint>('Priority', (e) => e.priority),
           new CodeColumn<Source>('Filter Data', (e) => e.filterData),
@@ -381,14 +410,14 @@ class RegistrationTableModel<T extends Registration> extends TableModel<T> {
 
 
 class Trigger extends Registration {
-  readonly eventLevelStatus: string;
-  readonly aggregatableStatus: string;
+  readonly eventLevelResult: string;
+  readonly aggregatableResult: string;
   readonly verifications: TriggerVerification[];
 
   constructor(mojo: WebUITrigger) {
     super(mojo.registration);
-    this.eventLevelStatus = triggerStatusText[mojo.eventLevelStatus];
-    this.aggregatableStatus = triggerStatusText[mojo.aggregatableStatus];
+    this.eventLevelResult = eventLevelResultText[mojo.eventLevelResult];
+    this.aggregatableResult = aggregatableResultText[mojo.aggregatableResult];
     this.verifications = mojo.verifications;
   }
 }
@@ -415,9 +444,9 @@ class TriggerTableModel extends RegistrationTableModel<Trigger> {
   constructor() {
     super('Destination', [
       new ValueColumn<Trigger, string>(
-          'Event-Level Status', (e) => e.eventLevelStatus),
+          'Event-Level Result', (e) => e.eventLevelResult),
       new ValueColumn<Trigger, string>(
-          'Aggregatable Status', (e) => e.aggregatableStatus),
+          'Aggregatable Result', (e) => e.aggregatableResult),
       new ReportVerificationColumn(),
     ]);
   }
@@ -865,6 +894,18 @@ function originToText(origin: Origin): string {
   return result;
 }
 
+function windowsAbsoluteTime(
+    eventReportWindows: EventReportWindows, sourceTime: Date): Date[] {
+  const dates: Date[] = [new Date(
+      sourceTime.getTime() +
+      (Number(eventReportWindows.startTime.microseconds) / 1000))];
+  for (const endTime of eventReportWindows.endTimes) {
+    dates.push(
+        new Date(sourceTime.getTime() + (Number(endTime.microseconds) / 1000)));
+  }
+  return dates;
+}
+
 const sourceTypeText: Readonly<Record<SourceType, string>> = {
   [SourceType.kNavigation]: 'Navigation',
   [SourceType.kEvent]: 'Event',
@@ -904,40 +945,71 @@ const sourceRegistrationStatusText:
           'Rejected: channel capacity exceeds max allowed',
       [StoreSourceResult.kReportingOriginsPerSiteLimitReached]:
           'Rejected: reached reporting origins per site limit',
-      [StoreSourceResult.kEventReportWindowsInvalidStartTime]:
-          'Rejected: report windows start time is greater than default end time',
-      [StoreSourceResult.kReportingOriginsPerSiteLimitReached]:
-          'Rejected: reached reporting origins per site limit',
     };
 
-const triggerStatusText: Readonly<Record<WebUITrigger_Status, string>> = {
-  [WebUITrigger_Status.kSuccess]: 'Success: Report stored',
-  [WebUITrigger_Status.kInternalError]: 'Failure: Internal error',
-  [WebUITrigger_Status.kNoMatchingSources]: 'Failure: No matching sources',
-  [WebUITrigger_Status.kNoMatchingSourceFilterData]:
-      'Failure: No matching source filter data',
-  [WebUITrigger_Status.kNoReportCapacityForDestinationSite]:
+const commonResult = {
+  success: 'Success: Report stored',
+  internalError: 'Failure: Internal error',
+  noMatchingImpressions: 'Failure: No matching sources',
+  noMatchingSourceFilterData: 'Failure: No matching source filter data',
+  deduplicated: 'Failure: Deduplicated against an earlier report',
+  noCapacityForConversionDestination:
       'Failure: No report capacity for destination site',
-  [WebUITrigger_Status.kExcessiveAttributions]:
-      'Failure: Excessive attributions',
-  [WebUITrigger_Status.kExcessiveReportingOrigins]:
-      'Failure: Excessive reporting origins',
-  [WebUITrigger_Status.kDeduplicated]:
-      'Failure: Deduplicated against an earlier report',
-  [WebUITrigger_Status.kReportWindowNotStarted]:
+  excessiveAttributions: 'Failure: Excessive attributions',
+  excessiveReportingOrigins: 'Failure: Excessive reporting origins',
+  reportWindowPassed: 'Failure: Report window has passed',
+  excessiveReports: 'Failure: Excessive reports',
+  prohibitedByBrowserPolicy: 'Failure: Prohibited by browser policy',
+};
+
+const eventLevelResultText: Readonly<Record<EventLevelResult, string>> = {
+  [EventLevelResult.kSuccess]: commonResult.success,
+  [EventLevelResult.kSuccessDroppedLowerPriority]: commonResult.success,
+  [EventLevelResult.kInternalError]: commonResult.internalError,
+  [EventLevelResult.kNoMatchingImpressions]: commonResult.noMatchingImpressions,
+  [EventLevelResult.kNoMatchingSourceFilterData]:
+      commonResult.noMatchingSourceFilterData,
+  [EventLevelResult.kNoCapacityForConversionDestination]:
+      commonResult.noCapacityForConversionDestination,
+  [EventLevelResult.kExcessiveAttributions]: commonResult.excessiveAttributions,
+  [EventLevelResult.kExcessiveReportingOrigins]:
+      commonResult.excessiveReportingOrigins,
+  [EventLevelResult.kDeduplicated]: commonResult.deduplicated,
+  [EventLevelResult.kReportWindowNotStarted]:
       'Failure: Report window has not started',
-  [WebUITrigger_Status.kReportWindowPassed]:
-      'Failure: Report window has passed',
-  [WebUITrigger_Status.kLowPriority]: 'Failure: Priority too low',
-  [WebUITrigger_Status.kNoised]: 'Failure: Noised',
-  [WebUITrigger_Status.kNoHistograms]: 'Failure: No source histograms',
-  [WebUITrigger_Status.kInsufficientBudget]: 'Failure: Insufficient budget',
-  [WebUITrigger_Status.kNotRegistered]: 'Failure: No aggregatable data present',
-  [WebUITrigger_Status.kProhibitedByBrowserPolicy]:
-      'Failure: Prohibited by browser policy',
-  [WebUITrigger_Status.kNoMatchingConfigurations]:
-      'Rejected: no matching event-level configurations',
-  [WebUITrigger_Status.kExcessiveReports]: 'Failure: Excessive reports',
+  [EventLevelResult.kReportWindowPassed]: commonResult.reportWindowPassed,
+  [EventLevelResult.kPriorityTooLow]: 'Failure: Priority too low',
+  [EventLevelResult.kNeverAttributedSource]: 'Failure: Noised',
+  [EventLevelResult.kFalselyAttributedSource]: 'Failure: Noised',
+  [EventLevelResult.kNotRegistered]: 'Failure: No event-level data present',
+  [EventLevelResult.kProhibitedByBrowserPolicy]:
+      commonResult.prohibitedByBrowserPolicy,
+  [EventLevelResult.kNoMatchingConfigurations]:
+      'Failure: no matching event-level configurations',
+  [EventLevelResult.kExcessiveReports]: commonResult.excessiveReports,
+};
+
+const aggregatableResultText: Readonly<Record<AggregatableResult, string>> = {
+  [AggregatableResult.kSuccess]: commonResult.success,
+  [AggregatableResult.kInternalError]: commonResult.internalError,
+  [AggregatableResult.kNoMatchingImpressions]:
+      commonResult.noMatchingImpressions,
+  [AggregatableResult.kNoMatchingSourceFilterData]:
+      commonResult.noMatchingSourceFilterData,
+  [AggregatableResult.kNoCapacityForConversionDestination]:
+      commonResult.noCapacityForConversionDestination,
+  [AggregatableResult.kExcessiveAttributions]:
+      commonResult.excessiveAttributions,
+  [AggregatableResult.kExcessiveReportingOrigins]:
+      commonResult.excessiveReportingOrigins,
+  [AggregatableResult.kDeduplicated]: commonResult.deduplicated,
+  [AggregatableResult.kReportWindowPassed]: commonResult.reportWindowPassed,
+  [AggregatableResult.kNoHistograms]: 'Failure: No source histograms',
+  [AggregatableResult.kInsufficientBudget]: 'Failure: Insufficient budget',
+  [AggregatableResult.kNotRegistered]: 'Failure: No aggregatable data present',
+  [AggregatableResult.kProhibitedByBrowserPolicy]:
+      commonResult.prohibitedByBrowserPolicy,
+  [AggregatableResult.kExcessiveReports]: commonResult.excessiveReports,
 };
 
 const attributionSupportText: Readonly<Record<AttributionSupport, string>> = {

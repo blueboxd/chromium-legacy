@@ -49,6 +49,10 @@ class MockReadAnythingUntrustedPageHandler
   MOCK_METHOD(void, OnCollapseSelection, (), (override));
   MOCK_METHOD(void, OnCopy, (), (override));
   MOCK_METHOD(void,
+              EnablePDFContentAccessibility,
+              (const ui::AXTreeID& ax_tree_id),
+              (override));
+  MOCK_METHOD(void,
               OnLineSpaceChange,
               (read_anything::mojom::LineSpacing line_spacing),
               (override));
@@ -176,8 +180,11 @@ class ReadAnythingAppControllerTest : public ChromeRenderViewTest {
     OnActiveAXTreeIDChanged(tree_id, GURL::EmptyGURL());
   }
 
-  void OnActiveAXTreeIDChanged(const ui::AXTreeID& tree_id, const GURL& url) {
-    controller_->OnActiveAXTreeIDChanged(tree_id, ukm::kInvalidSourceId, url);
+  void OnActiveAXTreeIDChanged(const ui::AXTreeID& tree_id,
+                               const GURL& url,
+                               bool force_update_state = false) {
+    controller_->OnActiveAXTreeIDChanged(tree_id, ukm::kInvalidSourceId, url,
+                                         force_update_state);
   }
 
   void OnAXTreeDistilled(const std::vector<ui::AXNodeID>& content_node_ids) {
@@ -279,7 +286,7 @@ class ReadAnythingAppControllerTest : public ChromeRenderViewTest {
     return controller_->model_.ContainsTree(tree_id);
   }
 
-  ui::AXTreeID ActiveTreeId() { return controller_->model_.active_tree_id(); }
+  ui::AXTreeID ActiveTreeId() { return controller_->model_.GetActiveTreeId(); }
 
   size_t GetNextSentence(const std::u16string& text, size_t maxTextLength) {
     return controller_->GetNextSentence(text, maxTextLength);
@@ -293,14 +300,13 @@ class ReadAnythingAppControllerTest : public ChromeRenderViewTest {
   }
 
   ui::AXTreeID tree_id_;
-  raw_ptr<MockAXTreeDistiller, ExperimentalRenderer> distiller_ = nullptr;
+  raw_ptr<MockAXTreeDistiller, DanglingUntriaged> distiller_ = nullptr;
   testing::StrictMock<MockReadAnythingUntrustedPageHandler> page_handler_;
 
  private:
   // ReadAnythingAppController constructor and destructor are private so it's
   // not accessible by std::make_unique.
-  raw_ptr<ReadAnythingAppController, ExperimentalRenderer> controller_ =
-      nullptr;
+  raw_ptr<ReadAnythingAppController, DanglingUntriaged> controller_ = nullptr;
 };
 
 TEST_F(ReadAnythingAppControllerTest, Theme) {
@@ -1443,15 +1449,11 @@ TEST_F(ReadAnythingAppControllerTest, Selection_IgnoredNode) {
   AccessibilityEventReceived({update_2});
   OnAXTreeDistilled({});
 
-  // We want to check that no crash occurs in this case. These node ids and
-  // offset are incorrect, they should be 2, 3, 0, and 5 (5 is the length of the
-  // world "Hello"). But because we don't have an AXTreeManager in the test,
-  // AXSelection::ToUnignoredSelection() exits early without calculating the
-  // actual ignored selection.
-  EXPECT_EQ(2, StartNodeId());
-  EXPECT_EQ(4, EndNodeId());
-  EXPECT_EQ(0, StartOffset());
-  EXPECT_EQ(0, EndOffset());
+  EXPECT_EQ(0, StartNodeId());
+  EXPECT_EQ(0, EndNodeId());
+  EXPECT_EQ(-1, StartOffset());
+  EXPECT_EQ(-1, EndOffset());
+  EXPECT_EQ(false, HasSelection());
 }
 
 TEST_F(ReadAnythingAppControllerTest, Selection_IsCollapsed) {
@@ -1557,4 +1559,32 @@ TEST_F(ReadAnythingAppControllerTest,
        GetLanguageCodeForSpeech_ReturnsCorrectLanguageCode) {
   SetLanguageCode("es");
   ASSERT_EQ(LanguageCodeForSpeech(), "es");
+}
+
+TEST_F(ReadAnythingAppControllerTest, AccessibilityEventReceived_PDFHandling) {
+  // Call OnActiveAXTreeIDChanged() to set is_pdf_ state.
+  GURL pdf_url("http://www.google.com/foo/bar.pdf");
+  OnActiveAXTreeIDChanged(tree_id_, pdf_url, true);
+
+  // Send update for main web contentes.
+  ui::AXTreeID pdf_web_contents_tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  ui::AXTreeUpdate update;
+  SetUpdateTreeID(&update);
+  update.nodes.resize(1);
+  update.nodes[0].id = 1;
+  update.nodes[0].AddChildTreeId(pdf_web_contents_tree_id);
+  AccessibilityEventReceived({update});
+
+  // Send update for pdf web contents.
+  ui::AXTreeUpdate pdf_web_contents_update;
+  pdf_web_contents_update.nodes.resize(1);
+  pdf_web_contents_update.root_id = 1;
+  pdf_web_contents_update.nodes[0].id = 1;
+  SetUpdateTreeID(&pdf_web_contents_update, pdf_web_contents_tree_id);
+  AccessibilityEventReceived({pdf_web_contents_update});
+
+  EXPECT_CALL(page_handler_,
+              EnablePDFContentAccessibility(pdf_web_contents_tree_id))
+      .Times(1);
+  Mock::VerifyAndClearExpectations(distiller_);
 }

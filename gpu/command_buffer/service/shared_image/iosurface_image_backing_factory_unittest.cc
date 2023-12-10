@@ -180,7 +180,6 @@ class IOSurfaceImageBackingFactoryDawnTest
 
   wgpu::Device CreateDevice() {
     dawn::native::Instance instance;
-    instance.DiscoverDefaultPhysicalDevices();
 
     wgpu::RequestAdapterOptions adapter_options;
     std::vector<const char*> adapter_enabled_toggles;
@@ -196,11 +195,7 @@ class IOSurfaceImageBackingFactoryDawnTest
 
     wgpu::DawnTogglesDescriptor adapter_toggles_desc;
     adapter_toggles_desc.enabledToggles = adapter_enabled_toggles.data();
-#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
     adapter_toggles_desc.enabledToggleCount = adapter_enabled_toggles.size();
-#else
-    adapter_toggles_desc.enabledTogglesCount = adapter_enabled_toggles.size();
-#endif
     adapter_options.nextInChain = &adapter_toggles_desc;
 
     std::vector<dawn::native::Adapter> adapters =
@@ -224,11 +219,7 @@ class IOSurfaceImageBackingFactoryDawnTest
     // internal methods that would need specific usages.
     features.push_back(wgpu::FeatureName::DawnInternalUsages);
     wgpu::DeviceDescriptor device_descriptor;
-#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
     device_descriptor.requiredFeatureCount = features.size();
-#else
-    device_descriptor.requiredFeaturesCount = features.size();
-#endif
     device_descriptor.requiredFeatures = features.data();
 
     wgpu::Device device = adapter.CreateDevice(&device_descriptor);
@@ -625,11 +616,8 @@ class IOSurfaceImageBackingFactoryParameterizedTestBase
 
     auto format = get_format();
     // Dawn does not support BGRA_1010102.
-    // TODO(crbug.com/1442381): Remove early return for multiplane once YUV
-    // support is added.
     if (gr_context_type == GrContextType::kGraphiteDawn &&
-        (format == viz::SinglePlaneFormat::kBGRA_1010102 ||
-         format.is_multi_plane())) {
+        format == viz::SinglePlaneFormat::kBGRA_1010102) {
       GTEST_SKIP();
     }
 
@@ -753,7 +741,7 @@ TEST_P(IOSurfaceImageBackingFactoryScanoutTest, Basic) {
     EXPECT_EQ(color_space, dawn_representation->color_space());
 
     auto dawn_scoped_access = dawn_representation->BeginScopedAccess(
-        wgpu::TextureUsage::RenderAttachment,
+        wgpu::TextureUsage::TextureBinding,
         SharedImageRepresentation::AllowUnclearedAccess::kYes);
     ASSERT_TRUE(dawn_scoped_access);
 
@@ -770,6 +758,12 @@ TEST_P(IOSurfaceImageBackingFactoryScanoutTest, Basic) {
   if (format == viz::SinglePlaneFormat::kBGRA_1010102 ||
       format == viz::MultiPlaneFormat::kP010) {
     // Producing SkSurface for these formats fails for some reason.
+    return;
+  }
+
+  // TODO(crbug.com/1450879): Enable once multi-planar rendering lands for Dawn.
+  if (get_gr_context_type() == GrContextType::kGraphiteDawn &&
+      format.is_multi_plane()) {
     return;
   }
 
@@ -1223,7 +1217,7 @@ TEST_P(IOSurfaceImageBackingFactoryGMBTest, Basic) {
     EXPECT_EQ(color_space, dawn_representation->color_space());
 
     auto dawn_scoped_access = dawn_representation->BeginScopedAccess(
-        wgpu::TextureUsage::RenderAttachment,
+        wgpu::TextureUsage::TextureBinding,
         SharedImageRepresentation::AllowUnclearedAccess::kYes);
     ASSERT_TRUE(dawn_scoped_access);
 
@@ -1281,6 +1275,12 @@ TEST_P(IOSurfaceImageBackingFactoryGMBTest, Basic) {
   // TODO(crbug.com/1442381): Check supported formats for graphite and update.
   if (format == viz::SinglePlaneFormat::kBGRA_1010102 ||
       format == viz::MultiPlaneFormat::kP010) {
+    return;
+  }
+
+  // TODO(crbug.com/1450879): Enable once multi-planar rendering lands for Dawn.
+  if (get_gr_context_type() == GrContextType::kGraphiteDawn &&
+      format.is_multi_plane()) {
     return;
   }
 

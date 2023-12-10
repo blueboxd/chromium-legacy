@@ -188,8 +188,7 @@ TEST_F(ContactInfoSyncBridgeTest, MergeFullSyncData) {
   EXPECT_CALL(mock_processor(), Put).Times(0);
   EXPECT_CALL(mock_processor(), Delete).Times(0);
   EXPECT_CALL(backend(), CommitChanges);
-  EXPECT_CALL(backend(), NotifyOfMultipleAutofillChanges);
-  EXPECT_CALL(backend(), NotifyThatSyncHasStarted(syncer::CONTACT_INFO));
+  EXPECT_CALL(backend(), NotifyOnAutofillChangedBySync(syncer::CONTACT_INFO));
 
   EXPECT_TRUE(StartSyncing({remote1, remote2}));
 
@@ -218,7 +217,7 @@ TEST_F(ContactInfoSyncBridgeTest, ApplyIncrementalSyncChanges) {
   EXPECT_CALL(mock_processor(), Delete).Times(0);
   EXPECT_CALL(mock_processor(), Put).Times(0);
   EXPECT_CALL(backend(), CommitChanges());
-  EXPECT_CALL(backend(), NotifyOfMultipleAutofillChanges);
+  EXPECT_CALL(backend(), NotifyOnAutofillChangedBySync(syncer::CONTACT_INFO));
 
   // `ApplyIncrementalSyncChanges()` returns an error if it fails.
   EXPECT_FALSE(bridge().ApplyIncrementalSyncChanges(
@@ -315,7 +314,7 @@ TEST_F(ContactInfoSyncBridgeTest, ApplyDisableSyncChanges) {
   ASSERT_THAT(GetAllDataFromTable(), ElementsAre(remote));
 
   EXPECT_CALL(backend(), CommitChanges());
-  EXPECT_CALL(backend(), NotifyOfMultipleAutofillChanges);
+  EXPECT_CALL(backend(), NotifyOnAutofillChangedBySync(syncer::CONTACT_INFO));
 
   bridge().ApplyDisableSyncChanges(bridge().CreateMetadataChangeList());
 

@@ -445,7 +445,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[AutofillCreditCardEditTableViewController alloc]
            initWithCreditCard:*creditCards[indexPath.item]
           personalDataManager:_personalDataManager];
-  controller.dispatcher = self.dispatcher;
+  [self configureHandlersForRootViewController:controller];
   [self.navigationController pushViewController:controller animated:YES];
 }
 
@@ -580,12 +580,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - Getters and Setter
 
 - (BOOL)isAutofillCreditCardEnabled {
-  return autofill::prefs::IsAutofillCreditCardEnabled(
+  return autofill::prefs::IsAutofillPaymentMethodsEnabled(
       _browser->GetBrowserState()->GetPrefs());
 }
 
 - (void)setAutofillCreditCardEnabled:(BOOL)isEnabled {
-  return autofill::prefs::SetAutofillCreditCardEnabled(
+  return autofill::prefs::SetAutofillPaymentMethodsEnabled(
       _browser->GetBrowserState()->GetPrefs(), isEnabled);
 }
 

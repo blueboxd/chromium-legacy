@@ -7,17 +7,20 @@
 #include <algorithm>
 #include <set>
 
-#include "base/process/memory.h"  // For AdjustOOMScore
+#include "base/process/memory.h"
 #include "components/performance_manager/public/graph/frame_node.h"
 #include "components/performance_manager/public/graph/process_node.h"
-#include "content/public/common/content_constants.h"  // For kLowestRendererOomScore
+#include "content/public/common/content_constants.h"
 
-namespace performance_manager {
-namespace policies {
+namespace performance_manager::policies {
 
 namespace {
 
-constexpr base::TimeDelta kOomScoreAssignmentInterval = base::Seconds(10);
+// TODO(crbug/1489325): oom_score_adj of some processes could be out-of-dated.
+// Override OnIsFocusedChanged to update the oom_score_adj of the focused tab
+// to make it harder to be killed by the Linux oom killer.
+constexpr base::TimeDelta kOomScoresAssignmentMinimalInterval =
+    base::Seconds(10);
 
 }  // namespace
 
@@ -27,24 +30,49 @@ OomScorePolicyChromeOS::~OomScorePolicyChromeOS() = default;
 void OomScorePolicyChromeOS::OnPassedToGraph(Graph* graph) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   graph_ = graph;
-  timer_.Start(FROM_HERE, kOomScoreAssignmentInterval,
-               base::BindRepeating(&OomScorePolicyChromeOS::AssignOomScores,
-                                   weak_factory_.GetWeakPtr()));
+  graph->AddPageNodeObserver(this);
 }
 
 void OomScorePolicyChromeOS::OnTakenFromGraph(Graph* graph) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  graph->RemovePageNodeObserver(this);
   graph_ = nullptr;
-  timer_.Stop();
 }
 
-void OomScorePolicyChromeOS::AssignOomScores() {
+void OomScorePolicyChromeOS::OnPageNodeAdded(const PageNode* page_node) {
+  HandlePageNodeEventsThrottled();
+}
+
+void OomScorePolicyChromeOS::OnBeforePageNodeRemoved(
+    const PageNode* page_node) {
+  HandlePageNodeEventsThrottled();
+}
+
+void OomScorePolicyChromeOS::OnIsVisibleChanged(const PageNode* page_node) {
+  HandlePageNodeEventsThrottled();
+}
+
+void OomScorePolicyChromeOS::OnTypeChanged(const PageNode* page_node,
+                                           PageType previous_type) {
+  HandlePageNodeEventsThrottled();
+}
+
+void OomScorePolicyChromeOS::HandlePageNodeEventsThrottled() {
+  base::TimeTicks now = base::TimeTicks::Now();
+  if (now - last_oom_scores_assignment_ > kOomScoresAssignmentMinimalInterval) {
+    last_oom_scores_assignment_ = now;
+    HandlePageNodeEvents();
+  }
+}
+
+void OomScorePolicyChromeOS::HandlePageNodeEvents() {
   PageDiscardingHelper* discarding_helper =
       PageDiscardingHelper::GetFromGraph(graph_);
 
   std::vector<const PageNode*> page_nodes = graph_->GetAllPageNodes();
 
   std::vector<PageNodeSortProxy> candidates;
+
   for (const auto* page_node : page_nodes) {
     PageDiscardingHelper::CanDiscardResult can_discard_result =
         discarding_helper->CanDiscard(
@@ -53,9 +81,11 @@ void OomScorePolicyChromeOS::AssignOomScores() {
         (can_discard_result == PageDiscardingHelper::CanDiscardResult::kMarked);
     bool is_protected = (can_discard_result ==
                          PageDiscardingHelper::CanDiscardResult::kProtected);
-    candidates.emplace_back(page_node, is_marked, is_protected,
+    bool is_visible = page_node->IsVisible();
+    candidates.emplace_back(page_node, is_marked, is_visible, is_protected,
                             page_node->GetTimeSinceLastVisibilityChange());
   }
+
   // Sorts with descending importance.
   std::sort(candidates.begin(), candidates.end(),
             [](const PageNodeSortProxy& lhs, const PageNodeSortProxy& rhs) {
@@ -70,7 +100,7 @@ OomScorePolicyChromeOS::DistributeOomScore(
     const std::vector<PageNodeSortProxy>& candidates) {
   ProcessScoreMap score_map;
 
-  std::vector<base::ProcessId> pids = GetUniqueSortedPids(candidates);
+  std::vector<base::ProcessId> pids = GetUniquePids(candidates);
 
   const int pid_count = pids.size();
   if (pid_count == 0) {
@@ -106,7 +136,7 @@ OomScorePolicyChromeOS::DistributeOomScore(
   return score_map;
 }
 
-std::vector<base::ProcessId> OomScorePolicyChromeOS::GetUniqueSortedPids(
+std::vector<base::ProcessId> OomScorePolicyChromeOS::GetUniquePids(
     const std::vector<PageNodeSortProxy>& candidates) {
   std::vector<base::ProcessId> pids;
 
@@ -139,5 +169,4 @@ int OomScorePolicyChromeOS::GetCachedOomScore(base::ProcessHandle pid) {
   return it->second;
 }
 
-}  // namespace policies
-}  // namespace performance_manager
+}  // namespace performance_manager::policies

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_DRIVER_ROUTER_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_DRIVER_ROUTER_H_
 
+#include <optional>
 #include <string>
 
 #include "base/containers/flat_map.h"
@@ -15,7 +16,6 @@
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace autofill {
@@ -147,11 +147,8 @@ class AutofillDriverRouter {
   // the parent frame).
   void UnregisterDriver(AutofillDriver* driver, bool driver_is_dying);
 
-  // Routing of events called by the renderer:
-  void SetFormToBeProbablySubmitted(
-      AutofillDriver* source,
-      absl::optional<FormData> form,
-      void (*callback)(AutofillDriver* target, const FormData* optional_form));
+  // Events called by the renderer, passed to the browser:
+  // Keep in alphabetic order.
   void FormsSeen(
       AutofillDriver* source,
       std::vector<FormData> updated_forms,
@@ -205,12 +202,14 @@ class AutofillDriverRouter {
                        const FormFieldData& field,
                        const gfx::RectF& bounding_box,
                        AutofillSuggestionTriggerSource trigger_source));
-  void HidePopup(AutofillDriver* source,
-                 void (*callback)(AutofillDriver* target));
-  void FocusNoLongerOnForm(AutofillDriver* source,
-                           bool had_interacted_form,
-                           void (*callback)(AutofillDriver* target,
-                                            bool had_interacted_form));
+  void DidEndTextFieldEditing(AutofillDriver* source,
+                              void (*callback)(AutofillDriver* target));
+  void DidFillAutofillFormData(AutofillDriver* source,
+                               FormData form,
+                               base::TimeTicks timestamp,
+                               void (*callback)(AutofillDriver* target,
+                                                const FormData& form,
+                                                base::TimeTicks timestamp));
   void FocusOnFormField(
       AutofillDriver* source,
       FormData form,
@@ -221,18 +220,12 @@ class AutofillDriverRouter {
                        const FormFieldData& field,
                        const gfx::RectF& bounding_box),
       void (*focus_no_longer_on_form)(AutofillDriver* target));
-  void DidFillAutofillFormData(AutofillDriver* source,
-                               FormData form,
-                               base::TimeTicks timestamp,
-                               void (*callback)(AutofillDriver* target,
-                                                const FormData& form,
-                                                base::TimeTicks timestamp));
-  void DidEndTextFieldEditing(AutofillDriver* source,
-                              void (*callback)(AutofillDriver* target));
-  void SelectOrSelectListFieldOptionsDidChange(
-      AutofillDriver* source,
-      FormData form,
-      void (*callback)(AutofillDriver* target, const FormData& form));
+  void FocusNoLongerOnForm(AutofillDriver* source,
+                           bool had_interacted_form,
+                           void (*callback)(AutofillDriver* target,
+                                            bool had_interacted_form));
+  void HidePopup(AutofillDriver* source,
+                 void (*callback)(AutofillDriver* target));
   void JavaScriptChangedAutofilledValue(
       AutofillDriver* source,
       FormData form,
@@ -242,38 +235,46 @@ class AutofillDriverRouter {
                        const FormData& form,
                        const FormFieldData& field,
                        const std::u16string& old_value));
-
-  // Event called when the context menu is opened on a field.
-  void OnContextMenuShownInField(
+  void SelectOrSelectListFieldOptionsDidChange(
       AutofillDriver* source,
-      const FormGlobalId& form_global_id,
-      const FieldGlobalId& field_global_id,
-      void (*callback)(AutofillDriver* target,
-                       const FormGlobalId& form_global_id,
-                       const FieldGlobalId& field_global_id));
-
-  // Routing of events called by the browser:
-  std::vector<FieldGlobalId> ApplyAutofillAction(
+      FormData form,
+      void (*callback)(AutofillDriver* target, const FormData& form));
+  void SetFormToBeProbablySubmitted(
       AutofillDriver* source,
-      mojom::AutofillActionType action_type,
-      mojom::AutofillActionPersistence action_persistence,
+      std::optional<FormData> form,
+      void (*callback)(AutofillDriver* target, const FormData* optional_form));
+
+  // Events called by the browser, passed to the renderer:
+  // Keep in alphabetic order.
+  std::vector<FieldGlobalId> ApplyFormAction(
+      AutofillDriver* source,
+      mojom::ActionType action_type,
+      mojom::ActionPersistence action_persistence,
       const FormData& data,
       const url::Origin& triggered_origin,
       const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map,
       void (*callback)(AutofillDriver* target,
-                       mojom::AutofillActionType action_type,
-                       mojom::AutofillActionPersistence action_persistence,
+                       mojom::ActionType action_type,
+                       mojom::ActionPersistence action_persistence,
                        const FormData& form));
-  void SendAutofillTypePredictionsToRenderer(
+  void ApplyFieldAction(
       AutofillDriver* source,
-      const std::vector<FormDataPredictions>& type_predictions,
+      mojom::ActionPersistence action_persistence,
+      const FieldGlobalId& field,
+      const std::u16string& value,
       void (*callback)(AutofillDriver* target,
-                       const std::vector<FormDataPredictions>& predictions));
-  void SendFieldsEligibleForManualFillingToRenderer(
+                       mojom::ActionPersistence action_persistence,
+                       const FieldRendererId& field,
+                       const std::u16string& value));
+  void ExtractForm(
       AutofillDriver* source,
-      const std::vector<FieldGlobalId>& fields,
+      FormGlobalId form,
+      base::OnceCallback<void(const std::optional<FormData>&)>
+          response_callback,
       void (*callback)(AutofillDriver* target,
-                       const std::vector<FieldRendererId>& fields));
+                       const FormRendererId& form,
+                       base::OnceCallback<void(const std::optional<FormData>&)>
+                           response_callback));
   void RendererShouldAcceptDataListSuggestion(
       AutofillDriver* source,
       const FieldGlobalId& field,
@@ -287,27 +288,6 @@ class AutofillDriverRouter {
   void RendererShouldClearPreviewedForm(
       AutofillDriver* source,
       void (*callback)(AutofillDriver* target));
-  void RendererShouldTriggerSuggestions(
-      AutofillDriver* source,
-      const FieldGlobalId& field,
-      AutofillSuggestionTriggerSource trigger_source,
-      void (*callback)(AutofillDriver* target,
-                       const FieldRendererId& field,
-                       AutofillSuggestionTriggerSource trigger_source));
-  void RendererShouldFillFieldWithValue(
-      AutofillDriver* source,
-      const FieldGlobalId& field,
-      const std::u16string& value,
-      void (*callback)(AutofillDriver* target,
-                       const FieldRendererId& field,
-                       const std::u16string& value));
-  void RendererShouldPreviewFieldWithValue(
-      AutofillDriver* source,
-      const FieldGlobalId& field,
-      const std::u16string& value,
-      void (*callback)(AutofillDriver* target,
-                       const FieldRendererId& field,
-                       const std::u16string& value));
   void RendererShouldSetSuggestionAvailability(
       AutofillDriver* source,
       const FieldGlobalId& field,
@@ -315,6 +295,32 @@ class AutofillDriverRouter {
       void (*callback)(AutofillDriver* target,
                        const FieldRendererId& field,
                        const mojom::AutofillState state));
+  void RendererShouldTriggerSuggestions(
+      AutofillDriver* source,
+      const FieldGlobalId& field,
+      AutofillSuggestionTriggerSource trigger_source,
+      void (*callback)(AutofillDriver* target,
+                       const FieldRendererId& field,
+                       AutofillSuggestionTriggerSource trigger_source));
+  void SendAutofillTypePredictionsToRenderer(
+      AutofillDriver* source,
+      const std::vector<FormDataPredictions>& type_predictions,
+      void (*callback)(AutofillDriver* target,
+                       const std::vector<FormDataPredictions>& predictions));
+  void SendFieldsEligibleForManualFillingToRenderer(
+      AutofillDriver* source,
+      const std::vector<FieldGlobalId>& fields,
+      void (*callback)(AutofillDriver* target,
+                       const std::vector<FieldRendererId>& fields));
+
+  // Event called by the browser, passed to the browser:
+  void OnContextMenuShownInField(
+      AutofillDriver* source,
+      const FormGlobalId& form_global_id,
+      const FieldGlobalId& field_global_id,
+      void (*callback)(AutofillDriver* target,
+                       const FormGlobalId& form_global_id,
+                       const FieldGlobalId& field_global_id));
 
   // Returns the underlying renderer forms of `browser_form`.
   // Note that this function is intended for use outside of the `autofill`
@@ -328,8 +334,8 @@ class AutofillDriverRouter {
   // Does not invalidate any forms in the FormForest.
   AutofillDriver* DriverOfFrame(LocalFrameToken frame);
 
-  // Calls AutofillDriver::TriggerFormExtraction() for all drivers in
-  // |form_forest_| except for |exception|.
+  // Calls AutofillDriver::TriggerFormExtractionInDriverFrame() for all
+  // drivers in |form_forest_| except for |exception|.
   void TriggerFormExtractionExcept(AutofillDriver* exception);
 
   // The forest of forms. See its documentation for the usage protocol.

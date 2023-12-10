@@ -52,6 +52,7 @@
 #include "components/variations/pref_names.h"
 #include "components/variations/service/safe_seed_manager.h"
 #include "components/variations/service/variations_service.h"
+#include "components/variations/variations_safe_seed_store_local_state.h"
 #include "components/variations/variations_switches.h"
 #include "content/public/common/content_switch_dependent_feature_overrides.h"
 #include "net/base/features.h"
@@ -101,14 +102,6 @@ const char* const kPersistentPrefsAllowlist[] = {
     // determine if the seed is expired.
     variations::prefs::kVariationsLastFetchTime,
     variations::prefs::kVariationsSeedDate,
-
-    // A dictionary that caches 'AppPackageNameLoggingRule' object which decides
-    // whether the app package name should be recorded in UMA or not.
-    prefs::kMetricsAppPackageNameLoggingRule,
-
-    // The last time the apps package name allowlist was queried from the
-    // component update service, regardless if it was successful or not.
-    prefs::kAppPackageNameLoggingRuleLastUpdateTime,
 
     // The state of the previous background tracing session.
     tracing::kBackgroundTracingSessionState,
@@ -240,6 +233,8 @@ void AwFeatureListCreator::SetUpFieldTrials() {
   auto seed_store = std::make_unique<variations::VariationsSeedStore>(
       local_state_.get(), /*initial_seed=*/std::move(seed),
       /*signature_verification_enabled=*/g_signature_verification_enabled,
+      std::make_unique<variations::VariationsSafeSeedStoreLocalState>(
+          local_state_.get()),
       /*use_first_run_prefs=*/false);
 
   if (!seed_date.is_null())

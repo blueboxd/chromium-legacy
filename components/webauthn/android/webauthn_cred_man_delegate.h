@@ -6,6 +6,7 @@
 #define COMPONENTS_WEBAUTHN_ANDROID_WEBAUTHN_CRED_MAN_DELEGATE_H_
 
 #include "base/functional/callback.h"
+#include "base/types/strong_alias.h"
 
 namespace content {
 class WebContents;
@@ -17,6 +18,8 @@ namespace webauthn {
 // only.
 class WebAuthnCredManDelegate {
  public:
+  using RequestPasswords = base::StrongAlias<class RequestPasswordsTag, bool>;
+
   enum State {
     kNotReady,
     kNoPasskeys,
@@ -34,51 +37,53 @@ class WebAuthnCredManDelegate {
   WebAuthnCredManDelegate(const WebAuthnCredManDelegate&) = delete;
   WebAuthnCredManDelegate& operator=(const WebAuthnCredManDelegate&) = delete;
 
-  ~WebAuthnCredManDelegate();
+  virtual ~WebAuthnCredManDelegate();
 
   // Called when a Web Authentication Conditional UI request is received. This
   // caches the callback that will complete the request after user
   // interaction.
-  void OnCredManConditionalRequestPending(
+  virtual void OnCredManConditionalRequestPending(
       bool has_results,
       base::RepeatingCallback<void(bool)> show_cred_man_ui_callback);
 
   // Called when the CredMan UI is closed.
-  void OnCredManUiClosed(bool success);
+  virtual void OnCredManUiClosed(bool success);
 
   // Called when the user focuses a webauthn login form. This will trigger
   // CredMan UI.
-  void TriggerCredManUi();
+  // If |request_passwords|, the UI will also include passwords if there are
+  // any.
+  virtual void TriggerCredManUi(RequestPasswords request_passwords);
 
   // Returns whether there are passkeys in the Android Credential Manager UI.
   // Returns `kNotReady` if Credential Manager has not replied yet.
-  State HasPasskeys();
+  virtual State HasPasskeys();
 
   // Clears the cached `show_cred_man_ui_callback_` and `has_results_`.
-  void CleanUpConditionalRequest();
+  virtual void CleanUpConditionalRequest();
 
   // The setter for `request_completion_callback_`. Classes can set
   // `request_completion_callback_` to be notified about when CredMan UI is
   // closed (i.e. to show / hide keyboard).
-  void SetRequestCompletionCallback(
+  virtual void SetRequestCompletionCallback(
       base::RepeatingCallback<void(bool)> callback);
 
   // The setter for `filling_callback_`.  Classes should use this method before
   // `FillUsernameAndPassword`.
-  void SetFillingCallback(
+  virtual void SetFillingCallback(
       base::OnceCallback<void(const std::u16string&, const std::u16string&)>
           filling_callback);
 
   // If a password credential is received from CredMan UI, this method will be
   // called. A password credential can be filled only once.
-  void FillUsernameAndPassword(const std::u16string& username,
-                               const std::u16string& password);
+  virtual void FillUsernameAndPassword(const std::u16string& username,
+                                       const std::u16string& password);
 
   static CredManEnabledMode CredManMode();
 
 #if defined(UNIT_TEST)
-  static void override_android_version_for_testing(bool should_override) {
-    override_android_version_for_testing_ = should_override;
+  static void override_cred_man_support_for_testing(int support) {
+    cred_man_support_ = support;
   }
 #endif
 
@@ -89,10 +94,7 @@ class WebAuthnCredManDelegate {
   base::OnceCallback<void(const std::u16string&, const std::u16string&)>
       filling_callback_;
 
-  // This bool is required to override android version check in
-  // `IsCredManEnabled` because UNIT_TEST cannot be evaluated in the cc file for
-  // tests. It should be `false` for non-tests!
-  static bool override_android_version_for_testing_;
+  static std::optional<int> cred_man_support_;
 };
 
 }  // namespace webauthn

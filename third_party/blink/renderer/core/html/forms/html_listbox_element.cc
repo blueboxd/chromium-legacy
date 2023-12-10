@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_listbox_element.h"
 
 #include "third_party/blink/renderer/core/dom/popover_data.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
 
 namespace blink {
 
@@ -15,7 +16,7 @@ HTMLListboxElement::HTMLListboxElement(Document& document)
 
 Node::InsertionNotificationRequest HTMLListboxElement::InsertedInto(
     ContainerNode& parent) {
-  if (IsA<HTMLSelectListElement>(parent)) {
+  if (OwnerSelectList()) {
     EnsurePopoverData()->setType(PopoverValueType::kAuto);
   }
   return HTMLElement::InsertedInto(parent);
@@ -30,10 +31,19 @@ void HTMLListboxElement::RemovedFrom(ContainerNode& insertion_point) {
   UpdatePopoverAttribute(FastGetAttribute(html_names::kPopoverAttr));
 }
 
-// static
-bool HTMLListboxElement::IsSelectlistAssociated(const Element* node) {
-  return IsA<HTMLListboxElement>(node) &&
-         IsA<HTMLSelectListElement>(node->parentNode());
+HTMLSelectListElement* HTMLListboxElement::OwnerSelectList() const {
+  if (auto* selectlist = DynamicTo<HTMLSelectListElement>(parentNode())) {
+    return selectlist;
+  }
+  if (auto* shadowroot = DynamicTo<ShadowRoot>(GetTreeScope())) {
+    if (auto* selectlist =
+            DynamicTo<HTMLSelectListElement>(shadowroot->host())) {
+      CHECK(shadowroot->IsUserAgent());
+      CHECK_EQ(ShadowPseudoId(), "-internal-selectlist-listbox");
+      return selectlist;
+    }
+  }
+  return nullptr;
 }
 
 }  // namespace blink

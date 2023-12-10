@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
+import org.chromium.chrome.browser.signin.SyncConsentActivityLauncherImpl;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
@@ -82,7 +83,9 @@ import java.util.Locale;
 public class FeedSurfaceMediator
         implements FeedSurfaceScrollDelegate, TouchEnabledDelegate, TemplateUrlServiceObserver,
                    ListMenu.Delegate, IdentityManager.Observer, OptionChangedListener {
-    private static final int INTEREST_FEED_HEADER_POSITION = 0;
+
+    // Position of the in-feed header for the for-you and supervised-user feed.
+    private static final int PRIMARY_FEED_HEADER_POSITION = 0;
 
     private class FeedSurfaceHeaderSelectedCallback implements OnSectionHeaderSelectedListener {
         @Override
@@ -123,8 +126,8 @@ public class FeedSurfaceMediator
      * TODO(huayinz): Update content and visibility through a ModelChangeProcessor.
      */
     private class FeedSignInPromo extends SignInPromo {
-        FeedSignInPromo(SigninManager signinManager) {
-            super(signinManager);
+        FeedSignInPromo(SigninManager signinManager, SyncPromoController syncPromoController) {
+            super(signinManager, syncPromoController);
             maybeUpdateSignInPromo();
         }
 
@@ -148,9 +151,11 @@ public class FeedSurfaceMediator
             // blocking the UI thread for several seconds if the accounts cache is not populated
             // yet.
             if (isVisible()) {
-                mSyncPromoController.setUpSyncPromoView(mProfileDataCache,
-                        mCoordinator.getSigninPromoView().findViewById(
-                                R.id.signin_promo_view_container),
+                mSyncPromoController.setUpSyncPromoView(
+                        mProfileDataCache,
+                        mCoordinator
+                                .getSigninPromoView()
+                                .findViewById(R.id.signin_promo_view_container),
                         this::onDismissPromo);
             }
         }
@@ -503,9 +508,13 @@ public class FeedSurfaceMediator
         boolean suggestionsVisible = isSuggestionsVisible();
 
         @StreamKind
-        int streamKind = mCoordinator.isPrimaryAccountSupervised() ? StreamKind.SUPERVISED_USER
-                                                                   : StreamKind.FOR_YOU;
-        addHeaderAndStream(getInterestFeedHeaderText(suggestionsVisible),
+        int streamKind =
+                mCoordinator.shouldDisplaySupervisedFeed()
+                        ? StreamKind.SUPERVISED_USER
+                        : StreamKind.FOR_YOU;
+
+        addHeaderAndStream(
+                getInterestFeedHeaderText(suggestionsVisible, streamKind),
                 mCoordinator.createFeedStream(streamKind, new StreamsMediatorImpl()));
         setHeaderIndicatorState(suggestionsVisible);
 
@@ -782,13 +791,16 @@ public class FeedSurfaceMediator
      */
     private boolean shouldShowSigninPromo() {
         SyncPromoController.resetNTPSyncPromoLimitsIfHiddenForTooLong();
-        if (!SignInPromo.shouldCreatePromo()
-                || !SyncPromoController.canShowSyncPromo(
-                        SigninAccessPoint.NTP_CONTENT_SUGGESTIONS)) {
+        SyncPromoController promoController =
+                new SyncPromoController(
+                        mProfile,
+                        SigninAccessPoint.NTP_CONTENT_SUGGESTIONS,
+                        SyncConsentActivityLauncherImpl.get());
+        if (!SignInPromo.shouldCreatePromo() || !promoController.canShowSyncPromo()) {
             return false;
         }
         if (mSignInPromo == null) {
-            mSignInPromo = new FeedSignInPromo(mSigninManager);
+            mSignInPromo = new FeedSignInPromo(mSigninManager, promoController);
             mSignInPromo.setCanShowPersonalizedSuggestions(isSuggestionsVisible());
         }
         return mSignInPromo.isVisible();
@@ -840,10 +852,11 @@ public class FeedSurfaceMediator
         }
         mSectionHeaderModel.set(SectionHeaderListProperties.IS_TAB_MODE_KEY, isTabMode);
 
-        // If not in tab mode, make sure we are on the for-you feed.
+        // If not in tab mode, make sure we are on the for-you or the supervised-user feed.
         if (!isTabMode) {
-            mSectionHeaderModel.set(SectionHeaderListProperties.CURRENT_TAB_INDEX_KEY,
-                    getTabIdForSection(StreamKind.FOR_YOU));
+            mSectionHeaderModel.set(
+                    SectionHeaderListProperties.CURRENT_TAB_INDEX_KEY,
+                    PRIMARY_FEED_HEADER_POSITION);
         }
 
         boolean isGoogleSearchEngine = mTemplateUrlService.isDefaultSearchEngineGoogle();
@@ -892,10 +905,13 @@ public class FeedSurfaceMediator
         }
 
         boolean suggestionsVisible = isSuggestionsVisible();
-        mSectionHeaderModel.get(SectionHeaderListProperties.SECTION_HEADERS_KEY)
-                .get(INTEREST_FEED_HEADER_POSITION)
-                .set(SectionHeaderProperties.HEADER_TEXT_KEY,
-                        getInterestFeedHeaderText(suggestionsVisible));
+        mSectionHeaderModel
+                .get(SectionHeaderListProperties.SECTION_HEADERS_KEY)
+                .get(PRIMARY_FEED_HEADER_POSITION)
+                .set(
+                        SectionHeaderProperties.HEADER_TEXT_KEY,
+                        getInterestFeedHeaderText(
+                                suggestionsVisible, mTabToStreamMap.get(0).getStreamKind()));
 
         setHeaderIndicatorState(suggestionsVisible);
 
@@ -959,25 +975,38 @@ public class FeedSurfaceMediator
                            : FeedUserActionType.TAPPED_TURN_OFF);
     }
 
-    /** Returns the interest feed header text based on the selected default search engine */
-    private String getInterestFeedHeaderText(boolean isExpanded) {
+    /**
+     * Returns the interest feed header text based on the type of user (supervised or
+     * non-supervised) and the selected default search engine
+     */
+    private String getInterestFeedHeaderText(boolean isExpanded, @StreamKind int streamKind) {
         Resources res = mContext.getResources();
         final boolean isDefaultSearchEngineGoogle =
                 mTemplateUrlService.isDefaultSearchEngineGoogle();
-        final int sectionHeaderStringId;
+
+        if (streamKind == StreamKind.SUPERVISED_USER) {
+            if (isDefaultSearchEngineGoogle) {
+                return isExpanded
+                        ? res.getString(R.string.supervised_user_ntp_discover_on)
+                        : res.getString(R.string.supervised_user_ntp_discover_off);
+            } else {
+                return isExpanded
+                        ? res.getString(R.string.supervised_user_ntp_discover_on_branded)
+                        : res.getString(R.string.supervised_user_ntp_discover_off_branded);
+            }
+        }
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_FEED)
                 && FeedServiceBridge.isSignedIn() && isExpanded) {
-            sectionHeaderStringId = R.string.ntp_discover_on;
+            return res.getString(R.string.ntp_discover_on);
         } else if (isDefaultSearchEngineGoogle) {
-            sectionHeaderStringId =
-                    isExpanded ? R.string.ntp_discover_on : R.string.ntp_discover_off;
-        } else {
-            sectionHeaderStringId = isExpanded ? R.string.ntp_discover_on_branded
-                                               : R.string.ntp_discover_off_branded;
+            return isExpanded
+                    ? res.getString(R.string.ntp_discover_on)
+                    : res.getString(R.string.ntp_discover_off);
         }
-
-        return res.getString(sectionHeaderStringId);
+        return isExpanded
+                ? res.getString(R.string.ntp_discover_on_branded)
+                : res.getString(R.string.ntp_discover_off_branded);
     }
 
     private ModelList buildMenuItems() {

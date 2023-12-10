@@ -2,47 +2,24 @@
   .body {
     margin: 16px var(--mwb-list-item-horizontal-margin);
   }
-
-  .button-container {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-    margin: 8px 0;
-  }
 </style>
 
 <div class="body">
   <tab-organization-not-started
-      hidden="[[!isState_(tabOrganizationStateEnum_.NOT_STARTED, state_)]]"
+      hidden="[[!isState_(tabOrganizationStateEnum_.kNotStarted, state_)]]"
       on-organize-tabs-click="onOrganizeTabsClick_">
   </tab-organization-not-started>
-  <div id="in-progress"
-      hidden="[[!isState_(tabOrganizationStateEnum_.IN_PROGRESS, state_)]]">
-    Placeholder: In Progress
-    <cr-button class="action-button" on-click="onCycleStateClicked_">
-      Set state to success
-    </cr-button>
-  </div>
-  <div id="success"
-      hidden="[[!isState_(tabOrganizationStateEnum_.SUCCESS, state_)]]">
-    Placeholder: Success
-    <cr-button class="action-button" on-click="onCycleStateClicked_">
-      Set state to failure
-    </cr-button>
-    <div class="button-container">
-      <cr-button class="tonal-button" on-click="onDismissClicked_">
-        $i18n{dismiss}
-      </cr-button>
-      <cr-button class="action-button" on-click="onCreateGroupClicked_">
-        $i18n{createGroup}
-      </cr-button>
-    </div>
-  </div>
-  <div id="failure"
-      hidden="[[!isState_(tabOrganizationStateEnum_.FAILURE, state_)]]">
-    Placeholder: Failure
-    <cr-button class="action-button" on-click="onCycleStateClicked_">
-      Set state to not started
-    </cr-button>
-  </div>
+  <tab-organization-in-progress
+      hidden="[[!isState_(tabOrganizationStateEnum_.kInProgress, state_)]]">
+  </tab-organization-in-progress>
+  <tab-organization-results
+      hidden="[[!isState_(tabOrganizationStateEnum_.kSuccess, state_)]]"
+      name="[[name_]]"
+      tabs="[[tabs_]]"
+      on-create-group-click="onCreateGroupClick_">
+  </tab-organization-results>
+  <tab-organization-failure
+      hidden="[[!isState_(tabOrganizationStateEnum_.kFailure, state_)]]"
+      error="[[error_]]">
+  </tab-organization-failure>
 </div>

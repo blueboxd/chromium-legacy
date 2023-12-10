@@ -47,13 +47,13 @@ const char kStartUrl[] = "https://example.com/start";
 
 base::FilePath GetFullPathToImage(bool valid) {
   base::FilePath test_data_dir;
-  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
+  CHECK(base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &test_data_dir));
   return test_data_dir.Append(valid ? kIconPath : kIconBadPath);
 }
 
 void PopulateIcon(web_app::WebAppInstallInfo* web_app_info,
                   const std::string& icon_url_str) {
-  IconsMap icons_map;
+  web_app::IconsMap icons_map;
   const GURL icon_url(icon_url_str);
   std::vector<SkBitmap> bmp = {web_app::CreateSquareIcon(32, SK_ColorWHITE)};
   icons_map.emplace(icon_url, bmp);

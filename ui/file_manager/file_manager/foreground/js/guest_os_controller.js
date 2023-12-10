@@ -34,7 +34,7 @@ export class GuestOsController {
     /** @private @const */
     this.directoryTree_ = directoryTree;
 
-    /** @private @const {!VolumeManager} */
+    /** @private @const @type {!VolumeManager} */
     this.volumeManager_ = volumeManager;
 
     chrome.fileManagerPrivate.onMountableGuestsChanged.addListener(
@@ -64,6 +64,8 @@ export class GuestOsController {
     for (const uiEntryKey of state.uiEntries) {
       const uiEntry = getEntry(state, uiEntryKey);
       if (uiEntry && 'guest_id' in uiEntry &&
+          // @ts-ignore: error TS2345: Argument of type 'unknown' is not
+          // assignable to parameter of type 'number'.
           !newGuestIdSet.has(uiEntry.guest_id)) {
         store.dispatch(removeUiEntry({key: uiEntryKey}));
       }
@@ -84,7 +86,7 @@ export class GuestOsController {
       return navigationModelItem;
     });
 
-    if (!util.isFilesAppExperimental()) {
+    if (!util.isNewDirectoryTreeEnabled()) {
       this.directoryTree_.dataModel.guestOsPlaceholders =
           newGuestOsPlaceholders;
       // Redraw the tree to ensure any newly added/removed roots are

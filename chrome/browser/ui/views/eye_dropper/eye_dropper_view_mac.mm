@@ -9,10 +9,12 @@
 
 #include <memory>
 
-#include "chrome/browser/ui/views/eye_dropper/eye_dropper_view.h"
+#include "components/eye_dropper/eye_dropper_view.h"
 #include "content/public/browser/render_frame_host.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/ui_base_features.h"
+
+using EyeDropperView = eye_dropper::EyeDropperView;
 
 EyeDropperViewMac::EyeDropperViewMac(content::EyeDropperListener* listener)
     : listener_(listener), weak_ptr_factory_(this) {

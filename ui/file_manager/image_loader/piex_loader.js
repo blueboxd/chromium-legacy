@@ -1,6 +1,7 @@
 // Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+// @ts-nocheck
 
 /**
  * Declares the piex-wasm Module interface. The Module has many interfaces
@@ -112,43 +113,46 @@ function piexModuleFailed() {
 let PiexPreviewImageData;
 
 /**
- * @param {!PiexPreviewImageData} data The extracted preview image data.
- * @constructor
  * @struct
  */
-function PiexLoaderResponse(data) {
+class PiexLoaderResponse {
   /**
-   * @public {!ArrayBuffer}
-   * @const
+   * @param {!PiexPreviewImageData} data The extracted preview image data.
    */
-  this.thumbnail = data.thumbnail;
+  constructor(data) {
+    /**
+     * @type {!ArrayBuffer}
+     * @const
+     */
+    this.thumbnail = data.thumbnail;
 
-  /**
-   * @public {string}
-   * @const
-   */
-  this.mimeType = data.mimeType || 'image/jpeg';
+    /**
+     * @type {string}
+     * @const
+     */
+    this.mimeType = data.mimeType || 'image/jpeg';
 
-  /**
-   * JEITA EXIF image orientation being an integer in [1..8].
-   * @public {number}
-   * @const
-   */
-  this.orientation = data.orientation;
+    /**
+     * JEITA EXIF image orientation being an integer in [1..8].
+     * @type {number}
+     * @const
+     */
+    this.orientation = data.orientation;
 
-  /**
-   * JEITA EXIF image color space: 'sRgb' or 'adobeRgb'.
-   * @public {string}
-   * @const
-   */
-  this.colorSpace = data.colorSpace;
+    /**
+     * JEITA EXIF image color space: 'sRgb' or 'adobeRgb'.
+     * @type {string}
+     * @const
+     */
+    this.colorSpace = data.colorSpace;
 
-  /**
-   * JSON encoded RAW image photographic details.
-   * @public {?string}
-   * @const
-   */
-  this.ifd = data.ifd || null;
+    /**
+     * JSON encoded RAW image photographic details.
+     * @type {?string}
+     * @const
+     */
+    this.ifd = data.ifd || null;
+  }
 }
 
 /**

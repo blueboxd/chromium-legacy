@@ -57,11 +57,15 @@ class IpProtectionConfigGetterInterceptor
         token_(std::move(token)),
         expiration_(expiration),
         should_intercept_(should_intercept) {
-    getter_->receivers_for_testing().SwapImplForTesting(receiver_id_, this);
+    auto* old_impl =
+        getter_->receivers_for_testing().SwapImplForTesting(receiver_id_, this);
+    // We should only ever be replacing `getter` as the impl.
+    CHECK_EQ(getter, old_impl);
   }
 
   ~IpProtectionConfigGetterInterceptor() override {
-    getter_->receivers_for_testing().SwapImplForTesting(receiver_id_, getter_);
+    std::ignore = getter_->receivers_for_testing().SwapImplForTesting(
+        receiver_id_, getter_);
   }
 
   network::mojom::IpProtectionConfigGetter* GetForwardingInterface() override {
@@ -69,6 +73,7 @@ class IpProtectionConfigGetterInterceptor
   }
 
   void TryGetAuthTokens(uint32_t batch_size,
+                        network::mojom::IpProtectionProxyLayer proxy_layer,
                         TryGetAuthTokensCallback callback) override {
     if (should_intercept_) {
       // NOTE: We'll ignore batch size and just return one token.
@@ -79,7 +84,8 @@ class IpProtectionConfigGetterInterceptor
       std::move(callback).Run(std::move(tokens), base::Time());
       return;
     }
-    GetForwardingInterface()->TryGetAuthTokens(batch_size, std::move(callback));
+    GetForwardingInterface()->TryGetAuthTokens(batch_size, proxy_layer,
+                                               std::move(callback));
   }
 
   void EnableInterception() { should_intercept_ = true; }

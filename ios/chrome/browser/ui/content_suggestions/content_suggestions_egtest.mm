@@ -14,6 +14,7 @@
 #import "components/strings/grit/components_strings.h"
 #import "components/sync/base/features.h"
 #import "ios/chrome/browser/ntp/features.h"
+#import "ios/chrome/browser/ntp/home/features.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
@@ -21,7 +22,6 @@
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/new_tab_page_app_interface.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/constants.h"
@@ -30,6 +30,7 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/common/ui/confirmation_alert/constants.h"
 #import "ios/chrome/common/ui/promo_style/constants.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -597,6 +598,8 @@ void TapMoreButtonIfVisible() {
   [[EarlGrey selectElementWithMatcher:syncView] assertWithMatcher:grey_nil()];
 }
 
+// Tests that the "All Set" module is shown after completing all Set Up List
+// Hero Cell modules in the Magic Stack.
 - (void)testMagicStackSetUpListCompleteAllItems {
   [self prepareToTestSetUpListInMagicStack];
 
@@ -621,7 +624,7 @@ void TapMoreButtonIfVisible() {
     return error == nil;
   };
   GREYAssert(
-      base::test::ios::WaitUntilConditionOrTimeout(base::Seconds(1), condition),
+      base::test::ios::WaitUntilConditionOrTimeout(base::Seconds(2), condition),
       @"Timeout waiting for Autofill Set Up List Item expired.");
   // Tap the autofill item.
   TapView(set_up_list::kAutofillItemID);
@@ -644,7 +647,7 @@ void TapMoreButtonIfVisible() {
     return error == nil;
   };
   GREYAssert(
-      base::test::ios::WaitUntilConditionOrTimeout(base::Seconds(1), condition),
+      base::test::ios::WaitUntilConditionOrTimeout(base::Seconds(2), condition),
       @"Timeout waiting for Sign in Set Up List Item expired.");
 
   // Tap the signin item.

@@ -14,6 +14,7 @@
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_util.h"
 #include "ui/compositor/layer.h"
 
 namespace ash {
@@ -50,18 +51,28 @@ SplitViewOverviewSession::SplitViewOverviewSession(aura::Window* window)
     : window_(window) {
   CHECK(window);
   window_observation_.Observe(window);
-  auto* window_state = WindowState::Get(window);
-  CHECK(window_state && window_state->IsSnapped());
-  window_state->AddObserver(this);
+  WindowState::Get(window)->AddObserver(this);
 
-  if (IsSnapGroupEnabledInClamshellMode()) {
-    auto_snap_controller_ =
-        std::make_unique<AutoSnapController>(window->GetRootWindow());
+  if (window_util::IsFasterSplitScreenOrSnapGroupArm1Enabled()) {
+    auto_snap_controller_ = std::make_unique<AutoSnapController>(
+        window->GetRootWindow(), /*is_activation_observer=*/false);
   }
 }
 
 SplitViewOverviewSession::~SplitViewOverviewSession() {
   WindowState::Get(window_)->RemoveObserver(this);
+}
+
+void SplitViewOverviewSession::Init(
+    absl::optional<OverviewStartAction> action,
+    absl::optional<OverviewEnterExitType> type) {
+  if (!IsInOverviewSession()) {
+    // Overview may already be in session, if a window was dragged to split view
+    // from overview in clamshell mode.
+    Shell::Get()->overview_controller()->StartOverview(
+        action.value_or(OverviewStartAction::kSplitView),
+        type.value_or(OverviewEnterExitType::kNormal));
+  }
 }
 
 chromeos::WindowStateType SplitViewOverviewSession::GetWindowStateType() const {

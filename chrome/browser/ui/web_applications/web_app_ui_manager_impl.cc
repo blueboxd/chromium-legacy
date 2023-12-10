@@ -12,6 +12,7 @@
 
 #include "base/check.h"
 #include "base/check_op.h"
+#include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
@@ -26,7 +27,6 @@
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/commands/launch_web_app_command.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
+#include "chrome/browser/ui/web_applications/web_app_dialogs.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics.h"
 #include "chrome/browser/ui/web_applications/web_app_run_on_os_login_notification.h"
@@ -59,6 +60,13 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
+
+#if !BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/apps/link_capturing/enable_link_capturing_infobar_delegate.h"
+#include "chrome/browser/infobars/confirm_infobar_creator.h"
+#include "components/infobars/content/content_infobar_manager.h"
+#include "components/infobars/core/infobar.h"
+#endif  // !BUILDFLAG(IS_CHROMEOS)
 
 #if !BUILDFLAG(IS_MAC)
 #include "ui/aura/window.h"
@@ -260,7 +268,7 @@ bool WebAppUiManagerImpl::IsAppInQuickLaunchBar(
 
 bool WebAppUiManagerImpl::IsInAppWindow(content::WebContents* web_contents,
                                         const webapps::AppId* app_id) const {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  Browser* browser = chrome::FindBrowserWithTab(web_contents);
   if (app_id) {
     return AppBrowserController::IsForWebApp(browser, *app_id);
   }
@@ -304,8 +312,8 @@ void WebAppUiManagerImpl::ShowWebAppFileLaunchDialog(
     const std::vector<base::FilePath>& file_paths,
     const webapps::AppId& app_id,
     WebAppLaunchAcceptanceCallback launch_callback) {
-  chrome::ShowWebAppFileLaunchDialog(file_paths, profile_, app_id,
-                                     std::move(launch_callback));
+  ::web_app::ShowWebAppFileLaunchDialog(file_paths, profile_, app_id,
+                                        std::move(launch_callback));
 }
 
 void WebAppUiManagerImpl::ShowWebAppIdentityUpdateDialog(
@@ -318,7 +326,7 @@ void WebAppUiManagerImpl::ShowWebAppIdentityUpdateDialog(
     const SkBitmap& new_icon,
     content::WebContents* web_contents,
     web_app::AppIdentityDialogCallback callback) {
-  chrome::ShowWebAppIdentityUpdateDialog(
+  ::web_app::ShowWebAppIdentityUpdateDialog(
       app_id, title_change, icon_change, old_title, new_title, old_icon,
       new_icon, web_contents, std::move(callback));
 }
@@ -397,7 +405,7 @@ content::WebContents* WebAppUiManagerImpl::CreateNewTab() {
 
 bool WebAppUiManagerImpl::IsWebContentsActiveTabInBrowser(
     content::WebContents* web_contents) {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  Browser* browser = chrome::FindBrowserWithTab(web_contents);
   return browser &&
          browser->tab_strip_model() &&
          browser->tab_strip_model()->GetActiveWebContents() == web_contents;
@@ -460,6 +468,25 @@ void WebAppUiManagerImpl::PresentUserUninstallDialog(
                      parent_window, std::move(parent_window_tracker),
                      std::move(uninstall_complete_callback),
                      std::move(uninstall_scheduled_callback)));
+}
+
+void WebAppUiManagerImpl::LaunchIsolatedWebAppInstaller(
+    const base::FilePath& bundle_path) {
+  ::web_app::LaunchIsolatedWebAppInstaller(profile_, bundle_path);
+}
+
+void WebAppUiManagerImpl::MaybeCreateEnableSupportedLinksInfobar(
+    content::WebContents* web_contents,
+    const std::string& launch_name) {
+#if !BUILDFLAG(IS_CHROMEOS)
+  std::unique_ptr<apps::EnableLinkCapturingInfoBarDelegate> delegate =
+      apps::EnableLinkCapturingInfoBarDelegate::MaybeCreate(web_contents,
+                                                            launch_name);
+  if (delegate) {
+    infobars::ContentInfoBarManager::FromWebContents(web_contents)
+        ->AddInfoBar(CreateConfirmInfoBar(std::move(delegate)));
+  }
+#endif  // !BUILDFLAG(IS_CHROMEOS)
 }
 
 void WebAppUiManagerImpl::OnBrowserAdded(Browser* browser) {
@@ -539,7 +566,7 @@ void WebAppUiManagerImpl::OnIconsReadForUninstall(
     return;
   }
 
-  chrome::ShowWebAppUninstallDialog(
+  ShowWebAppUninstallDialog(
       profile_, app_id, uninstall_source, parent_window,
       std::move(icon_bitmaps),
       base::BindOnce(&WebAppUiManagerImpl::ScheduleUninstallIfUserRequested,

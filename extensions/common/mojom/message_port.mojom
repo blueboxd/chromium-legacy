@@ -1,0 +1,42 @@
+// Copyright 2023 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module extensions.mojom;
+
+// The serialization format of the message.
+enum SerializationFormat {
+  kStructuredCloned,
+  kJson
+};
+
+// The type of messaging channel.
+enum ChannelType {
+  // A message channel associated with `runtime.sendMessage()` or
+  // `tabs.sendMessage()`.
+  kSendMessage,
+  // A message channel associated with `extension.sendRequest()`.
+  kSendRequest,
+  // A longer-lived message channel associated with `runtime.connect()`
+  // or `tabs.connect()`.
+  kConnect,
+  // A native message channel. Note that unlike above, both one-time and
+  // long-lived native message channels use the same type (because they don't
+  // have associated channel names).
+  kNative
+};
+
+// Type of the messaging source or destination - i.e., the type of the
+// component which talks to a messaging channel.
+enum MessagingEndpointType {
+  // An extension.
+  kExtension,
+  // A web page or a hosted app.
+  kWebPage,
+  // A content script.
+  kContentScript,
+  // A user script.
+  kUserScript,
+  // A native application.
+  kNativeApp
+};

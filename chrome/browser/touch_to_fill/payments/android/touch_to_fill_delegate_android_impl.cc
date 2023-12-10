@@ -7,7 +7,6 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/fast_checkout/fast_checkout_features.h"
-#include "components/autofill/content/browser/content_autofill_client.h"
 #include "components/autofill/core/browser/autofill_browser_util.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_suggestion_generator.h"
@@ -18,7 +17,6 @@
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/ui/fast_checkout_client.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
-#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_internals/log_message.h"
 #include "components/autofill/core/common/autofill_internals/logging_scope.h"
@@ -240,16 +238,14 @@ void TouchToFillDelegateAndroidImpl::SuggestionSelected(std::string unique_id,
 
   if (is_virtual) {
     manager_->FillOrPreviewVirtualCardInformation(
-        mojom::AutofillActionPersistence::kFill, unique_id, query_form_,
-        query_field_,
+        mojom::ActionPersistence::kFill, unique_id, query_form_, query_field_,
         {.trigger_source = AutofillTriggerSource::kTouchToFillCreditCard});
   } else {
     PersonalDataManager* pdm = manager_->client().GetPersonalDataManager();
     DCHECK(pdm);
     CreditCard* card = pdm->GetCreditCardByGUID(unique_id);
     manager_->FillOrPreviewCreditCardForm(
-        mojom::AutofillActionPersistence::kFill, query_form_, query_field_,
-        card,
+        mojom::ActionPersistence::kFill, query_form_, query_field_, card,
         {.trigger_source = AutofillTriggerSource::kTouchToFillCreditCard});
   }
 }

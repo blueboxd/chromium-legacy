@@ -296,7 +296,7 @@ std::wstring GetAppCohortKey(const std::string& app_id) {
 }
 
 std::wstring GetAppCohortKey(const std::wstring& app_id) {
-  return base::StrCat({COHORT_KEY, app_id});
+  return base::StrCat({GetAppClientStateKey(app_id), L"\\", kRegKeyCohort});
 }
 
 std::wstring GetAppCommandKey(const std::wstring& app_id,
@@ -762,6 +762,11 @@ bool EnableProcessHeapMetadataProtection() {
 }
 
 absl::optional<base::ScopedTempDir> CreateSecureTempDir() {
+  // This function uses `base::CreateNewTempDirectory` and then a
+  // `base::ScopedTempDir` as owner, instead of just
+  // `base::ScopedTempDir::CreateUniqueTempDir`, because the former allows
+  // setting a more recognizable prefix of `COMPANY_SHORTNAME_STRING` on the
+  // temp directory.
   base::FilePath temp_dir;
   if (!base::CreateNewTempDirectory(FILE_PATH_LITERAL(COMPANY_SHORTNAME_STRING),
                                     &temp_dir)) {
@@ -1072,7 +1077,7 @@ absl::optional<std::wstring> GetRegKeyContents(const std::wstring& reg_key) {
   return base::ASCIIToWide(output);
 }
 
-std::string GetTextForSystemError(int error) {
+std::wstring GetTextForSystemError(int error) {
   if (static_cast<HRESULT>(error & 0xFFFF0000) ==
       MAKE_HRESULT(SEVERITY_ERROR, FACILITY_WIN32, 0)) {
     error = HRESULT_CODE(error);
@@ -1095,8 +1100,9 @@ std::string GetTextForSystemError(int error) {
       reinterpret_cast<wchar_t*>(&system_allocated_buffer), 0, nullptr);
   base::win::ScopedLocalAllocTyped<wchar_t> free_buffer(
       system_allocated_buffer);
-  return chars_written > 0 ? base::WideToUTF8(system_allocated_buffer)
-                           : base::StringPrintf("Unknown error %#x", error);
+  return chars_written > 0
+             ? system_allocated_buffer
+             : base::ASCIIToWide(base::StringPrintf("%#x", error));
 }
 
 }  // namespace updater

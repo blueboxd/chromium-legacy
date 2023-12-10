@@ -17,6 +17,7 @@
 <translation id="1591119736686995611">የChromium ትር ፍርግርግን ይከፍታል።</translation>
 <translation id="1617663976202781617">ከChromium ስምረት የመጣ ውሂብ</translation>
 <translation id="1647558790457890304">የChromium ቅንብሮች</translation>
+<translation id="164952285225495380">ይህ ጥቅል አስቀድሞ Chromium ላይ ክትትል ተደርጎበታል።</translation>
 <translation id="1722370509450468186">የይለፍ ቃልዎ በመለያዎ (<ph name="EMAIL" />) ላይ ይቀመጣል።</translation>
 <translation id="1736662517232558588">የChromium ውሂብ ጸድቷል</translation>
 <translation id="1791845338122684020">የእርስዎን Chromium የታሪክ ገፅ ይከፍታል።</translation>
@@ -94,7 +95,6 @@
 <translation id="4736424910885271643">የእርስዎ መለያ በ<ph name="HOSTED_DOMAIN" /> የሚተዳደር ነው፣ ስለሆነም የእርስዎ የChromium ውሂብ ከዚህ መሣሪያ ይጸዳል</translation>
 <translation id="4790638144988730920">በGoogle መለያዎ ውስጥ የChromium ውሂብን መጠቀምዎን ይቀጥሉ።</translation>
 <translation id="4828317641996116749">Chromium ሁሉንም የይለፍ ቃላት ማረጋገጥ አልቻለም። ቆይተው እንደገና ይሞክሩ።</translation>
-<translation id="4935539884203837577">Chromium ያስገቧቸውን የመከታተያ ቁጥሮች ማወቅ እና ከChromium ሌሎች የሸመታ ተሞክሮዎችን በማገዝ ወቅት ጥቅሎችዎን በአዲስ የትር ገጽ ላይ መከታተል ይችላል።</translation>
 <translation id="4985291216379576555">ከመስመር ውጭ፣ Chromium ዝማኔዎች ካሉ መፈተሽ አልቻለም</translation>
 <translation id="4996471330284142407">ከመቼውም ጊዜ በበለጠ ቀላል፣ ደህንነቱ በተጠበቀ እና ፈጣን በሆነ Chromium አማካኝነት ተጨማሪ ነገሮችን ያከናውኑ።</translation>
 <translation id="4999538639245140991">በ<ph name="SIGNOUT_MANAGED_DOMAIN" /> ከሚተዳደር መለያ ዘግተው እየወጡ ስለሆነ የእርስዎ Chromium ውሂብ ከዚህ መሣሪያ ላይ ይሰረዛል። የእርስዎ ውሂብ በGoogle መለያዎ ውስጥ ይቆያል።</translation>
@@ -119,7 +119,6 @@
 <translation id="5688047395118852662">ይህ ካርድ እንዴት ከChromium ምርጡን ማግኘት እንደሚችሉ ጥቆማዎችን ያሳይዎታል።</translation>
 <translation id="5700709190537129682">Chromium የእርስዎን የይለፍ ቃላት መፈተሽ አይችልም</translation>
 <translation id="5777187867430702742">የChromium ገፅ</translation>
-<translation id="584303319228224680">የእርስዎን ጥቅሎች Chromium ላይ በራስ ሰር ይከታተሏቸው</translation>
 <translation id="5889847953983052353">ሲበራ፦
 <ph name="BEGIN_INDENT" />  • እርስዎ Chromium በሚጠቀሙት መንገድ ለሚጠቀሙ ሰዎች የተሻለ እንዲሆን ያግዙ።<ph name="END_INDENT" />
 
@@ -159,6 +158,7 @@
 <translation id="6911341667534646387">በGoogle መለያዎ ውስጥ የChromium ውሂብን መጠቀምዎን ይቀጥሉ</translation>
 <translation id="7006920032187763988">በእርስዎ iPad ላይ ባሉ ሌሎች መተግበሪያዎች ውስጥ ወደ የይለፍ ቃል አስተዳዳሪ ያስቀመጧቸውን የይለፍ ቃላት መጠቀም ይችላሉ።</translation>
 <translation id="7018284295775193585">Chromium መዘምን አልቻለም</translation>
+<translation id="7025471822960602362">የታወቁ ጥቅሎችን Chromium ላይ ይከታተሉ</translation>
 <translation id="7045244423563602563">Chromiumን የራስዎ ያድርጉት</translation>
 <translation id="7055269218854630176">ድርጅትዎ <ph name="DOMAIN" />፣ የሚገቡበትን መለያ እና Chromium እንዴት ጥቅም ላይ እንደሚውል ያስተዳድራል። አስተዳዳሪዎ የተወሰኑ ባህሪያትን ማዋቀር ወይም መገደብ ይችላል።</translation>
 <translation id="7099326575020694068">Chromium ካሜራዎን በተከፈለ ዕይታ ሁነታ ላይ መጠቀም አይችልም</translation>

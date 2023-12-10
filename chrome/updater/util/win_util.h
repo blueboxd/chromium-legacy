@@ -122,28 +122,11 @@ class DynamicIIDsImpl : public internal::WrlRuntimeClass<Interface> {
   }
 
   IFACEMETHODIMP QueryInterface(REFIID riid, void** object) override {
-    const HRESULT hr = internal::WrlRuntimeClass<Interface>::QueryInterface(
+    return internal::WrlRuntimeClass<Interface>::QueryInterface(
         riid == (IsSystemInstall() ? iid_system : iid_user)
             ? __uuidof(Interface)
             : riid,
         object);
-    if (FAILED(hr) && (riid == iid_system || riid == iid_user)) {
-      [&]() {
-        static bool dumped_once = false;
-        if (dumped_once) {
-          return;
-        }
-        HRESULT local_hr = hr;
-        base::debug::Alias(&local_hr);
-        IID local_iid = riid;
-        base::debug::Alias(&local_iid);
-        bool local_is_system = IsSystemInstall();
-        base::debug::Alias(&local_is_system);
-        DUMP_WILL_BE_CHECK(false);
-        dumped_once = true;
-      }();
-    }
-    return hr;
   }
 };
 
@@ -362,8 +345,8 @@ bool CompareOSVersions(const OSVERSIONINFOEX& os, BYTE oper);
 // and cannot be reversed.
 bool EnableProcessHeapMetadataProtection();
 
-// Creates a unique temporary directory. The directory is created under
-// %ProgramFiles% if the caller is admin, so it is secure.
+// Creates a unique temporary directory. The directory is created under a secure
+// location if the caller is admin.
 absl::optional<base::ScopedTempDir> CreateSecureTempDir();
 
 // Signals the shutdown event that causes legacy GoogleUpdate processes to exit.
@@ -440,7 +423,7 @@ absl::optional<std::wstring> GetRegKeyContents(const std::wstring& reg_key);
 // operating system. The function assumes that the locale value for the calling
 // thread is set, otherwise, the function uses the user/system default LANGID,
 // or it defaults to US English.
-std::string GetTextForSystemError(int error);
+std::wstring GetTextForSystemError(int error);
 
 }  // namespace updater
 

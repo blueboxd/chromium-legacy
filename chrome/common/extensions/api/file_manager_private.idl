@@ -1078,6 +1078,9 @@ dictionary PolicyError {
   long policyFileCount;
   // The name of the first blocked file. Used for notifications.
   DOMString fileName;
+  // Normally the review button is only shown when `policyFileCount` is >1, this option allows to force
+  // the display of the review button irrespective of other conditions.
+  boolean alwaysShowReview;
 };
 
 // IO task state::PAUSED name conflict parameters, see file_manager::io_task::ConflictPauseParams.
@@ -1103,6 +1106,9 @@ dictionary PolicyPauseParams {
   long policyFileCount;
   // The name of the first file under warning restriction. Used for notifications.
   DOMString fileName;
+  // Normally the review button is only shown when `policyFileCount` is >1, this option allows to force
+  // the display of the review button irrespective of other conditions.
+  boolean alwaysShowReview;
 };
 
 // IO task state::PAUSED parameters, see file_manager::io_task::PauseParams.
@@ -1257,7 +1263,7 @@ dictionary ParsedTrashInfoFile {
 };
 
 // The current progress of the bulk pinning manager. This is a subset of the
-// Progress struct in chromeos/ash/components/drivefs/drivefs_pin_manager.h
+// Progress struct in chromeos/ash/components/drivefs/drivefs_pinning_manager.h
 dictionary BulkPinProgress {
   // The stage the bulk pin manager is in.
   BulkPinStage stage;
@@ -1284,6 +1290,10 @@ dictionary BulkPinProgress {
 
   // Estimated time remaining to pin all the `bytesToPin`.
   double remainingSeconds;
+
+  // Should the bulk-pinning manager actually pin files, or should it stop after
+  // checking the space requirements?
+  boolean shouldPin;
 
   // Has the bulk-pinning manager ever emptied its set of tracked items?
   boolean emptiedQueue;

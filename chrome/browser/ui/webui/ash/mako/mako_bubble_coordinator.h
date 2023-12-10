@@ -28,20 +28,28 @@ class MakoBubbleCoordinator {
   MakoBubbleCoordinator& operator=(const MakoBubbleCoordinator&) = delete;
   ~MakoBubbleCoordinator();
 
-  void ShowConsentUI(Profile* profile);
-  void ShowEditorUI(Profile* profile,
+  void LoadConsentUI(Profile* profile);
+  void LoadEditorUI(Profile* profile,
                     MakoEditorMode mode,
                     absl::optional<std::string_view> preset_query_id,
                     absl::optional<std::string_view> freeform_text);
+  void ShowUI();
   void CloseUI();
 
   bool IsShowingUI() const;
 
+  // Caches the caret bounds of the current text input client (if one is
+  // active). This should be called before showing the mako UI, while the text
+  // context for the mako UI is focused.
+  void CacheContextCaretBounds();
+
  private:
-  // Cached caret bounds to use as the mako UI anchor when there is no text
-  // input client (e.g. if focus is not regained after switching from the
-  // consent UI to the rewrite UI).
-  absl::optional<gfx::Rect> caret_bounds_;
+  // Cached context caret bounds at which to anchor the mako UI. This might not
+  // correspond to the most recent active text input client's caret bounds, e.g.
+  // if the mako UI was triggered from a freeform text input, the cached caret
+  // bounds should correspond to the original text context rather than the
+  // freeform input text bounds.
+  gfx::Rect context_caret_bounds_;
 
   // TODO(b/300554470): This doesn't seem like the right class to own the
   // contents wrapper and probably won't handle the bubble widget lifetimes

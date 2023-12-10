@@ -340,11 +340,8 @@ ThreadGroupImpl::ThreadGroupImpl(StringPiece histogram_label,
                                  StringPiece thread_group_label,
                                  ThreadType thread_type_hint,
                                  TrackedRef<TaskTracker> task_tracker,
-                                 TrackedRef<Delegate> delegate,
-                                 ThreadGroup* predecessor_thread_group)
-    : ThreadGroup(std::move(task_tracker),
-                  std::move(delegate),
-                  predecessor_thread_group),
+                                 TrackedRef<Delegate> delegate)
+    : ThreadGroup(std::move(task_tracker), std::move(delegate)),
       histogram_label_(histogram_label),
       thread_group_label_(thread_group_label),
       thread_type_hint_(thread_type_hint),
@@ -987,9 +984,9 @@ ThreadGroupImpl::CreateAndRegisterWorkerLockRequired(
   DCHECK_LT(workers_.size(), kMaxNumberOfWorkers);
   DCHECK(idle_workers_set_.IsEmpty());
 
-  // WorkerThread needs |lock_| as a predecessor for its thread lock
-  // because in WakeUpOneWorker, |lock_| is first acquired and then
-  // the thread lock is acquired when WakeUp is called on the worker.
+  // WorkerThread needs |lock_| as a predecessor for its thread lock because in
+  // GetWork(), |lock_| is first acquired and then the thread lock is acquired
+  // when GetLastUsedTime() is called on the worker by CanGetWorkLockRequired().
   scoped_refptr<WorkerThread> worker = MakeRefCounted<WorkerThread>(
       thread_type_hint_,
       std::make_unique<WorkerThreadDelegateImpl>(

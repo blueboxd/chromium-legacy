@@ -16,6 +16,7 @@ namespace {
 
 const base::Feature* kFeaturesExposedToJava[] = {
     &kMessagesForAndroidStackingAnimation,
+    &kMessagesForAndroidFullyVisibleCallback,
 };
 
 // static
@@ -53,7 +54,11 @@ BASE_FEATURE(kMessagesForAndroidSaveCard,
 
 BASE_FEATURE(kMessagesForAndroidStackingAnimation,
              "MessagesForAndroidStackingAnimation",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kMessagesForAndroidFullyVisibleCallback,
+             "MessagesForAndroidFullyVisibleCallback",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsAdsBlockedMessagesUiEnabled() {
   return base::FeatureList::IsEnabled(kMessagesForAndroidInfrastructure) &&
@@ -83,6 +88,11 @@ bool IsPermissionUpdateMessagesUiEnabled() {
 bool IsStackingAnimationEnabled() {
   return base::FeatureList::IsEnabled(kMessagesForAndroidInfrastructure) &&
          base::FeatureList::IsEnabled(kMessagesForAndroidStackingAnimation);
+}
+
+bool ISdFullyVisibleCallbackEnabled() {
+  return base::FeatureList::IsEnabled(kMessagesForAndroidInfrastructure) &&
+         base::FeatureList::IsEnabled(kMessagesForAndroidFullyVisibleCallback);
 }
 
 static jlong JNI_MessageFeatureMap_GetNativeMap(JNIEnv* env) {

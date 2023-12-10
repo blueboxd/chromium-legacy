@@ -50,7 +50,7 @@ class NGBlockLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
     NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
         {WritingMode::kHorizontalTb, TextDirection::kLtr},
         LogicalSize(LayoutUnit(), LayoutUnit()));
-    NGFragmentGeometry fragment_geometry = CalculateInitialFragmentGeometry(
+    FragmentGeometry fragment_geometry = CalculateInitialFragmentGeometry(
         space, node, /* break_token */ nullptr, /* is_intrinsic */ true);
 
     NGBlockLayoutAlgorithm algorithm({node, fragment_geometry, space});
@@ -60,7 +60,7 @@ class NGBlockLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
   const NGLayoutResult* RunCachedLayoutResult(const NGConstraintSpace& space,
                                               const NGBlockNode& node) {
     NGLayoutCacheStatus cache_status;
-    absl::optional<NGFragmentGeometry> initial_fragment_geometry;
+    absl::optional<FragmentGeometry> initial_fragment_geometry;
     return To<LayoutBlockFlow>(node.GetLayoutBox())
         ->CachedLayoutResult(space, nullptr, nullptr, nullptr,
                              &initial_fragment_geometry, &cache_status);
@@ -310,7 +310,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, LineOffsetCaching) {
 
   NGConstraintSpace space200 =
       create_space(LogicalSize(LayoutUnit(300), LayoutUnit(100)),
-                   NGBfcOffset(LayoutUnit(50), LayoutUnit()));
+                   BfcOffset(LayoutUnit(50), LayoutUnit()));
 
   const NGLayoutResult* result = nullptr;
   auto* box1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("box1"));

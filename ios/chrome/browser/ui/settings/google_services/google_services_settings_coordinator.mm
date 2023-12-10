@@ -16,10 +16,12 @@
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
+#import "ios/chrome/browser/shared/public/commands/browser_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/shared/public/commands/show_signin_command.h"
+#import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
@@ -28,10 +30,11 @@
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
-#import "ios/chrome/browser/ui/authentication/signout_action_sheet_coordinator.h"
+#import "ios/chrome/browser/ui/authentication/signout_action_sheet/signout_action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_mediator.h"
+#import "ios/chrome/browser/ui/settings/google_services/parcel_tracking_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_encryption_passphrase_table_view_controller.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
@@ -61,7 +64,9 @@ using signin_metrics::PromoAction;
     SignoutActionSheetCoordinator* signoutActionSheetCoordinator;
 @end
 
-@implementation GoogleServicesSettingsCoordinator
+@implementation GoogleServicesSettingsCoordinator {
+  ParcelTrackingSettingsCoordinator* _parcelTrackingSettingsCoordinator;
+}
 
 @synthesize baseNavigationController = _baseNavigationController;
 
@@ -95,9 +100,19 @@ using signin_metrics::PromoAction;
   self.mediator.commandHandler = self;
   viewController.modelDelegate = self.mediator;
   viewController.serviceDelegate = self.mediator;
-  viewController.dispatcher = static_cast<
-      id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>>(
-      self.browser->GetCommandDispatcher());
+
+  CommandDispatcher* dispatcher = self.browser->GetCommandDispatcher();
+  viewController.applicationHandler =
+      HandlerForProtocol(dispatcher, ApplicationCommands);
+  viewController.browserHandler =
+      HandlerForProtocol(dispatcher, BrowserCommands);
+  viewController.browsingDataHandler =
+      HandlerForProtocol(dispatcher, BrowsingDataCommands);
+  viewController.settingsHandler =
+      HandlerForProtocol(dispatcher, ApplicationSettingsCommands);
+  viewController.snackbarHandler =
+      HandlerForProtocol(dispatcher, SnackbarCommands);
+
   DCHECK(self.baseNavigationController);
   [self.baseNavigationController pushViewController:self.viewController
                                            animated:YES];
@@ -106,6 +121,8 @@ using signin_metrics::PromoAction;
 - (void)stop {
   [self.signOutCoordinator stop];
   _signOutCoordinator = nil;
+  [_parcelTrackingSettingsCoordinator stop];
+  _parcelTrackingSettingsCoordinator = nil;
 }
 
 #pragma mark - Private
@@ -197,6 +214,14 @@ using signin_metrics::PromoAction;
                 }
                  style:UIAlertActionStyleCancel];
   [self.signOutCoordinator start];
+}
+
+- (void)showParcelTrackingSettingsPage {
+  _parcelTrackingSettingsCoordinator =
+      [[ParcelTrackingSettingsCoordinator alloc]
+          initWithBaseNavigationController:_baseNavigationController
+                                   browser:self.browser];
+  [_parcelTrackingSettingsCoordinator start];
 }
 
 // Displays the option to keep or clear data for a syncing user.

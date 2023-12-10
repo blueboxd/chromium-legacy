@@ -431,6 +431,11 @@ void ClassicPendingScript::NotifyFinished(Resource* resource) {
 
 void ClassicPendingScript::NotifyCacheConsumeFinished() {
   CHECK_EQ(ready_state_, kWaitingForCacheConsumer);
+  if (IsDisposed()) {
+    // Silently ignore if `this` is already Dispose()d, because `this` is no
+    // longer used.
+    return;
+  }
   AdvanceReadyState(kReady);
 }
 
@@ -496,7 +501,7 @@ ClassicScript* ClassicPendingScript::GetSource() const {
                          TRACE_EVENT_FLAG_FLOW_IN, "not_streamed_reason",
                          classic_script_->NotStreamingReason());
 
-  return classic_script_;
+  return classic_script_.Get();
 }
 
 // static

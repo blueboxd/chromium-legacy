@@ -449,48 +449,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Autofill.FormEvents.CreditCard"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="AutofillSaveCreditCardPromptFromDynamicChangeForm"
-    separator=".">
-  <suffix name="FromDynamicChangeForm"
-      label="Prompt shown from dynamic change forms"/>
-  <affected-histogram name="Autofill.CreditCardInfoBar.Local"/>
-  <affected-histogram name="Autofill.CreditCardInfoBar.Server"/>
-  <affected-histogram
-      name="Autofill.SaveCreditCardPromptOffer.Local.FirstShow"/>
-  <affected-histogram name="Autofill.SaveCreditCardPromptOffer.Local.Reshows"/>
-  <affected-histogram
-      name="Autofill.SaveCreditCardPromptOffer.Upload.FirstShow"/>
-  <affected-histogram name="Autofill.SaveCreditCardPromptOffer.Upload.Reshows"/>
-  <affected-histogram
-      name="Autofill.SaveCreditCardPromptResult.Local.FirstShow"/>
-  <affected-histogram name="Autofill.SaveCreditCardPromptResult.Local.Reshows"/>
-  <affected-histogram
-      name="Autofill.SaveCreditCardPromptResult.Upload.FirstShow"/>
-  <affected-histogram
-      name="Autofill.SaveCreditCardPromptResult.Upload.Reshows"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="AutofillSaveCreditCardPromptFromNonFocusableForm"
-    separator=".">
-  <suffix name="FromNonFocusableForm"
-      label="Prompt shown from non-focusable forms"/>
-  <affected-histogram name="Autofill.CreditCardInfoBar.Local"/>
-  <affected-histogram name="Autofill.CreditCardInfoBar.Server"/>
-  <affected-histogram
-      name="Autofill.SaveCreditCardPromptOffer.Local.FirstShow"/>
-  <affected-histogram name="Autofill.SaveCreditCardPromptOffer.Local.Reshows"/>
-  <affected-histogram
-      name="Autofill.SaveCreditCardPromptOffer.Upload.FirstShow"/>
-  <affected-histogram name="Autofill.SaveCreditCardPromptOffer.Upload.Reshows"/>
-  <affected-histogram
-      name="Autofill.SaveCreditCardPromptResult.Local.FirstShow"/>
-  <affected-histogram name="Autofill.SaveCreditCardPromptResult.Local.Reshows"/>
-  <affected-histogram
-      name="Autofill.SaveCreditCardPromptResult.Upload.FirstShow"/>
-  <affected-histogram
-      name="Autofill.SaveCreditCardPromptResult.Upload.Reshows"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="AutofillSaveCreditCardPromptRequestingCardholderName"
     separator=".">
   <suffix name="RequestingCardholderName"
@@ -1028,11 +986,16 @@ chromium-metrics-reviews@google.com.
   <suffix name="Ask" label="Ask"/>
   <suffix name="Block" label="Block"/>
   <suffix name="DetectImportantContent" label="Detect important content"/>
+  <suffix name="DomainWildcardAllowThirdParty"
+      label="Third-party cookies allowed for a site group using a domain
+             wildcard"/>
   <suffix name="MaxRequester"
       label="Maximum number of exceptions per requester"/>
   <suffix name="MaxTopLevel"
       label="Maximum number of exceptions per top-level"/>
   <suffix name="SessionOnly" label="Session only"/>
+  <suffix name="TemporaryAllowThirdParty"
+      label="Third-party cookies temporarily allowed on a domain"/>
   <affected-histogram name="ContentSettings.Exceptions.cookies">
     <obsolete>
       Removed in M109. See ContentSettings.RegularProfile.Exceptions.cookies
@@ -1135,17 +1098,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram
       name="Search.ContextualSearchQuickActions.IntentResolution"/>
   <affected-histogram name="Search.ContextualSearchQuickActions.ResultsSeen"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="CORBProtectionDecision" separator=".">
-  <suffix name="BlockedAfterSniffingWithRangeSupport"
-      label="Here the CORB protection decision was kBlockedAfterSniffing."/>
-  <suffix name="BlockedWithRangeSupport"
-      label="Here the CORB protection decision was kBlock."/>
-  <affected-histogram
-      name="SiteIsolation.CORBProtection.CacheHeuristic.ProtectedMimeType"/>
-  <affected-histogram
-      name="SiteIsolation.CORBProtection.CORSHeuristic.ProtectedMimeType"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="Cras_ClientType" separator=".">
@@ -1959,15 +1911,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="ChromeOS.HardwareVerifier.Report"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="HeuristicType" separator="." ordering="prefix,2">
-  <suffix name="CacheHeuristic"
-      label="In this case the response satisfies the Cache heuristic."/>
-  <suffix name="CORSHeuristic"
-      label="In this case the response satisfies the CORS heuristic."/>
-  <affected-histogram
-      name="SiteIsolation.CORBProtection.ProtectedMimeType.BlockedWithoutSniffing.HasNoSniff"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="HiddenWhileFlushing" separator=".">
   <suffix name="HiddenWhileFlushing"
       label="Tab hidden while flushing FCP value."/>
@@ -2386,32 +2329,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Memory.PressureWindowDuration"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="MemoryFDsAllProcesses" separator="."
-    ordering="prefix">
-  <suffix name="Browser" label="Browser process"/>
-  <suffix name="Chrome" label="chrome:// renderer process"/>
-  <suffix name="Extension" label="Extension process"/>
-  <suffix name="Gpu" label="GPU process"/>
-  <suffix name="NativeClient" label="Native client process"/>
-  <suffix name="NativeClientBroker" label="Native client broker process"/>
-  <suffix name="PeperPlugin" label="Pepper plugin process"/>
-  <suffix name="PepperPluginBroker" label="Pepper plugin broker process"/>
-  <suffix name="Renderer" label="Renderer process"/>
-  <suffix name="RendererAll" label="Renderer process"/>
-  <suffix name="SandboxHelper" label="Sandbox helper process"/>
-  <suffix name="Utility" label="Utility process"/>
-  <suffix name="Zygote" label="Zygot process"/>
-  <affected-histogram name="Memory.OpenFDs"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="MemoryFDsBroswerGpuAndRendererProcess" separator="."
-    ordering="prefix">
-  <suffix name="Browser" label="Browser process"/>
-  <suffix name="Gpu" label="GPU process"/>
-  <suffix name="RendererAll" label="Renderer process"/>
-  <affected-histogram name="Memory.OpenFDsSoftLimit"/>
-</histogram_suffixes>
-
 <histogram_suffixes
     name="MemoryRendererHighestPrivateMemoryFootprintAfterFirstNavigationStart"
     separator=".">
@@ -2421,19 +2338,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="8to16min" label=""/>
   <affected-histogram
       name="Memory.Experimental.Renderer.HighestPrivateMemoryFootprint"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="MimeTypeBucket" separator=".">
-  <suffix name="OtherMimeType"
-      label="A MIME type that doesn't fall into either of the other two
-             categories."/>
-  <suffix name="ProtectedMimeType"
-      label="A MIME type we expect CORB to protect (i.e. JSON, HTML or XML)."/>
-  <suffix name="PublicMimeType"
-      label="A MIME type we consider public (i.e. javascript or an image
-             type)."/>
-  <affected-histogram name="SiteIsolation.CORBProtection.CacheHeuristic"/>
-  <affected-histogram name="SiteIsolation.CORBProtection.CORSHeuristic"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="MixedContentDownloadDownloadSecurity" separator=".">
@@ -5102,6 +5006,7 @@ chromium-metrics-reviews@google.com.
 </histogram_suffixes>
 
 <histogram_suffixes name="SigninInterceptType" separator=".">
+  <suffix name="ChromeSignin" label="ChromeSignin bubble."/>
   <suffix name="Enterprise" label="Enterprise bubble."/>
   <suffix name="EnterpriseForced" label="Enterprise dialog."/>
   <suffix name="MultiUser" label="MultiUser bubble."/>
@@ -5467,16 +5372,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="V8.WasmHugeFunctionSizeBytes"/>
   <affected-histogram name="V8.WasmInstantiateModuleMicroSeconds"/>
   <affected-histogram name="V8.WasmModuleSizeBytes"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="VideoCaptureFrameDrop" separator=".">
-  <suffix name="DeviceCapture" label=""/>
-  <suffix name="DisplayCapture" label=""/>
-  <suffix name="DisplayCaptureCurrentTab" label=""/>
-  <suffix name="GumDesktopCapture" label=""/>
-  <suffix name="GumTabCapture" label=""/>
-  <affected-histogram name="Media.VideoCapture.FrameDrop"/>
-  <affected-histogram name="Media.VideoCapture.MaxFrameDropExceeded"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="VideoFrameRateRange" separator=".">

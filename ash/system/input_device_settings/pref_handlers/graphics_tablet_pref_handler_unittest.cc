@@ -149,6 +149,33 @@ TEST_F(GraphicsTabletPrefHandlerTest,
 
   EXPECT_FALSE(HasLoginScreenGraphicsTabletButtonRemappingList(account_id_1));
   EXPECT_EQ(mojom::GraphicsTabletSettings::New(), settings);
+
+  // Update the button remappings pref dicts to mock adding new tablet
+  // and pen button remappings in the future.
+  std::vector<mojom::ButtonRemappingPtr> tablet_button_remappings;
+  std::vector<mojom::ButtonRemappingPtr> pen_button_remappings;
+  tablet_button_remappings.push_back(button_remapping1.Clone());
+  tablet_button_remappings.push_back(button_remapping2.Clone());
+  pen_button_remappings.push_back(button_remapping1.Clone());
+
+  known_user().SetPath(
+      account_id_1,
+      prefs::kGraphicsTabletLoginScreenTabletButtonRemappingListPref,
+      absl::optional<base::Value>(ConvertButtonRemappingArrayToList(
+          tablet_button_remappings,
+          mojom::CustomizationRestriction::kAllowCustomizations)));
+  known_user().SetPath(
+      account_id_1, prefs::kGraphicsTabletLoginScreenPenButtonRemappingListPref,
+      absl::optional<base::Value>(ConvertButtonRemappingArrayToList(
+          pen_button_remappings,
+          mojom::CustomizationRestriction::kAllowCustomizations)));
+
+  mojom::GraphicsTabletSettingsPtr updated_settings =
+      CallInitializeLoginScreenGraphicsTabletSettings(account_id_1,
+                                                      graphics_tablet);
+  EXPECT_EQ(tablet_button_remappings,
+            updated_settings->tablet_button_remappings);
+  EXPECT_EQ(pen_button_remappings, updated_settings->pen_button_remappings);
 }
 
 TEST_F(GraphicsTabletPrefHandlerTest,
@@ -345,11 +372,15 @@ TEST_F(GraphicsTabletPrefHandlerTest, InitializeSettings) {
   base::Value::Dict updated_graphics_tablet1_tablet_button_remappings_dict;
   updated_graphics_tablet1_tablet_button_remappings_dict.Set(
       kGraphicsTabletKey1,
-      ConvertButtonRemappingArrayToList(tablet_button_remappings));
+      ConvertButtonRemappingArrayToList(
+          tablet_button_remappings,
+          mojom::CustomizationRestriction::kAllowCustomizations));
   base::Value::Dict updated_graphics_tablet1_pen_button_remappings_dict;
   updated_graphics_tablet1_pen_button_remappings_dict.Set(
       kGraphicsTabletKey1,
-      ConvertButtonRemappingArrayToList(pen_button_remappings));
+      ConvertButtonRemappingArrayToList(
+          pen_button_remappings,
+          mojom::CustomizationRestriction::kAllowCustomizations));
 
   pref_service_->SetDict(
       prefs::kGraphicsTabletTabletButtonRemappingsDictPref,

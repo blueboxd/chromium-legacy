@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import '//components/autofill/ios/form_util/resources/fill_element_inference_util.js';
+import * as inferenceUtil from '//components/autofill/ios/form_util/resources/fill_element_inference_util.js';
 
 /**
  * Shared function for InferLabelFromPrevious() and InferLabelFromNext().
@@ -54,7 +54,7 @@ __gCrWeb.fill.inferLabelFromSibling = function(element, forward) {
         __gCrWeb.fill.hasTagName(sibling, 'strong') ||
         __gCrWeb.fill.hasTagName(sibling, 'span') ||
         __gCrWeb.fill.hasTagName(sibling, 'font')) {
-      const value = __gCrWeb.fill.findChildText(sibling);
+      const value = inferenceUtil.findChildText(sibling);
       // A text node's value will be empty if it is for a line break.
       const addSpace = nodeType === Node.TEXT_NODE && value.length === 0;
       if (forward) {
@@ -84,7 +84,7 @@ __gCrWeb.fill.inferLabelFromSibling = function(element, forward) {
     // We only expect <p> and <label> tags to contain the full label text.
     if (__gCrWeb.fill.hasTagName(sibling, 'p') ||
         __gCrWeb.fill.hasTagName(sibling, 'label')) {
-      inferredLabel = __gCrWeb.fill.findChildText(sibling);
+      inferredLabel = inferenceUtil.findChildText(sibling);
     }
     break;
   }
@@ -191,7 +191,7 @@ __gCrWeb.fill.inferLabelFromListItem = function(element) {
   }
 
   if (parentNode && __gCrWeb.fill.hasTagName(parentNode, 'li')) {
-    return __gCrWeb.fill.findChildText(parentNode);
+    return inferenceUtil.findChildText(parentNode);
   }
 
   return '';
@@ -234,7 +234,7 @@ __gCrWeb.fill.inferLabelFromTableColumn = function(element) {
   while (inferredLabel.length === 0 && previous) {
     if (__gCrWeb.fill.hasTagName(previous, 'td') ||
         __gCrWeb.fill.hasTagName(previous, 'th')) {
-      inferredLabel = __gCrWeb.fill.findChildText(previous);
+      inferredLabel = inferenceUtil.findChildText(previous);
     }
     previous = previous.previousSibling;
   }
@@ -350,7 +350,7 @@ __gCrWeb.fill.inferLabelFromTableRow = function(element) {
       prevRowIt = prevRowIt.nextSibling;
     }
     if (cellCount === prevRowCount && matchingCell) {
-      const inferredLabel = __gCrWeb.fill.findChildText(matchingCell);
+      const inferredLabel = inferenceUtil.findChildText(matchingCell);
       if (inferredLabel.length > 0) {
         return inferredLabel;
       }
@@ -364,7 +364,7 @@ __gCrWeb.fill.inferLabelFromTableRow = function(element) {
   let previous = parentNode.previousSibling;
   while (inferredLabel.length === 0 && previous) {
     if (__gCrWeb.fill.hasTagName(previous, 'tr')) {
-      inferredLabel = __gCrWeb.fill.findChildText(previous);
+      inferredLabel = inferenceUtil.findChildText(previous);
     }
     previous = previous.previousSibling;
   }
@@ -393,7 +393,7 @@ __gCrWeb.fill.inferLabelFromEnclosingLabel = function(element) {
     node = node.parentNode;
   }
   if (node) {
-    return __gCrWeb.fill.findChildText(node);
+    return inferenceUtil.findChildText(node);
   }
   return '';
 };
@@ -435,9 +435,9 @@ __gCrWeb.fill.inferLabelFromDivTable = function(element) {
     if (__gCrWeb.fill.hasTagName(node, 'div')) {
       if (lookingForParent) {
         inferredLabel =
-            __gCrWeb.fill.findChildTextWithIgnoreList(node, divsToSkip);
+            inferenceUtil.findChildTextWithIgnoreList(node, divsToSkip);
       } else {
-        inferredLabel = __gCrWeb.fill.findChildText(node);
+        inferredLabel = inferenceUtil.findChildText(node);
       }
       // Avoid sibling DIVs that contain autofillable fields.
       if (!lookingForParent && inferredLabel.length > 0) {
@@ -461,11 +461,11 @@ __gCrWeb.fill.inferLabelFromDivTable = function(element) {
     } else if (!lookingForParent) {
       // Infer a label from text nodes and unassigned <label> siblings.
       if (__gCrWeb.fill.hasTagName(node, 'label') && !node.control) {
-        inferredLabel = __gCrWeb.fill.findChildText(node);
+        inferredLabel = inferenceUtil.findChildText(node);
       } else if (node.nodeType === Node.TEXT_NODE) {
         inferredLabel = __gCrWeb.fill.nodeValue(node).trim();
       }
-    } else if (__gCrWeb.fill.isTraversableContainerElement(node)) {
+    } else if (inferenceUtil.isTraversableContainerElement(node)) {
       // If the element is in a non-div container, its label most likely is too.
       break;
     }
@@ -524,7 +524,7 @@ __gCrWeb.fill.inferLabelFromDefinitionList = function(element) {
     return '';
   }
 
-  return __gCrWeb.fill.findChildText(previous);
+  return inferenceUtil.findChildText(previous);
 };
 
 /**
@@ -542,31 +542,31 @@ __gCrWeb.fill.inferLabelForElement = function(element) {
   let inferredLabel;
   if (__gCrWeb.fill.isCheckableElement(element)) {
     inferredLabel = __gCrWeb.fill.inferLabelFromNext(element);
-    if (__gCrWeb.fill.IsLabelValid(inferredLabel)) {
+    if (inferenceUtil.isLabelValid(inferredLabel)) {
       return inferredLabel;
     }
   }
 
   inferredLabel = __gCrWeb.fill.inferLabelFromPrevious(element);
-  if (__gCrWeb.fill.IsLabelValid(inferredLabel)) {
+  if (inferenceUtil.isLabelValid(inferredLabel)) {
     return inferredLabel;
   }
 
   // If we didn't find a label, check for the placeholder case.
   inferredLabel = __gCrWeb.fill.inferLabelFromPlaceholder(element);
-  if (__gCrWeb.fill.IsLabelValid(inferredLabel)) {
+  if (inferenceUtil.isLabelValid(inferredLabel)) {
     return inferredLabel;
   }
 
   // If we didn't find a placeholder, check for the aria-label case.
   inferredLabel = __gCrWeb.fill.getAriaLabel(element);
-  if (__gCrWeb.fill.IsLabelValid(inferredLabel)) {
+  if (inferenceUtil.isLabelValid(inferredLabel)) {
     return inferredLabel;
   }
 
   // For all other searches that involve traversing up the tree, the search
   // order is based on which tag is the closest ancestor to |element|.
-  const tagNames = __gCrWeb.fill.ancestorTagNames(element);
+  const tagNames = inferenceUtil.ancestorTagNames(element);
   const seenTagNames = {};
   for (let index = 0; index < tagNames.length; ++index) {
     const tagName = tagNames[index];
@@ -581,7 +581,7 @@ __gCrWeb.fill.inferLabelForElement = function(element) {
       inferredLabel = __gCrWeb.fill.inferLabelFromDivTable(element);
     } else if (tagName === 'TD') {
       inferredLabel = __gCrWeb.fill.inferLabelFromTableColumn(element);
-      if (!__gCrWeb.fill.IsLabelValid(inferredLabel)) {
+      if (!inferenceUtil.isLabelValid(inferredLabel)) {
         inferredLabel = __gCrWeb.fill.inferLabelFromTableRow(element);
       }
     } else if (tagName === 'DD') {
@@ -592,13 +592,13 @@ __gCrWeb.fill.inferLabelForElement = function(element) {
       break;
     }
 
-    if (__gCrWeb.fill.IsLabelValid(inferredLabel)) {
+    if (inferenceUtil.isLabelValid(inferredLabel)) {
       return inferredLabel;
     }
   }
   // If we didn't find a label, check for the value attribute case.
   inferredLabel = __gCrWeb.fill.InferLabelFromValueAttr(element);
-  if (__gCrWeb.fill.IsLabelValid(inferredLabel)) {
+  if (inferenceUtil.isLabelValid(inferredLabel)) {
     return inferredLabel;
   }
 

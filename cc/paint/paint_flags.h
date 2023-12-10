@@ -48,10 +48,9 @@ class CC_PAINT_EXPORT PaintFlags {
     color_ = SkColor4f::FromColor(color);
   }
   ALWAYS_INLINE void setColor(SkColor4f color) { color_ = color; }
-  ALWAYS_INLINE uint8_t getAlpha() const {
-    return SkColorGetA(color_.toSkColor());
-  }
   ALWAYS_INLINE float getAlphaf() const { return color_.fA; }
+  ALWAYS_INLINE bool isFullyTransparent() const { return color_.fA == 0.0f; }
+  ALWAYS_INLINE bool isOpaque() const { return color_.fA >= 1.0f; }
   template <class F, class = std::enable_if_t<std::is_same_v<F, float>>>
   ALWAYS_INLINE void setAlphaf(F a) {
     color_.fA = a;
@@ -79,6 +78,18 @@ class CC_PAINT_EXPORT PaintFlags {
   }
   ALWAYS_INLINE FilterQuality getFilterQuality() const {
     return static_cast<FilterQuality>(bitfields_.filter_quality_);
+  }
+  enum class DynamicRangeLimit {
+    kStandard,
+    kHigh,
+    kConstrainedHigh,
+    kLast = kConstrainedHigh,
+  };
+  ALWAYS_INLINE void setDynamicRangeLimit(DynamicRangeLimit limit) {
+    bitfields_.dynamic_range_limit_ = static_cast<uint32_t>(limit);
+  }
+  ALWAYS_INLINE DynamicRangeLimit getDynamicRangeLimit() const {
+    return static_cast<DynamicRangeLimit>(bitfields_.dynamic_range_limit_);
   }
   ALWAYS_INLINE bool useDarkModeForImage() const {
     return bitfields_.use_dark_mode_for_image_;
@@ -213,6 +224,7 @@ class CC_PAINT_EXPORT PaintFlags {
     uint32_t join_type_ : 2;
     uint32_t style_ : 2;
     uint32_t filter_quality_ : 2;
+    uint32_t dynamic_range_limit_ : 2;
     // Specifies whether the compositor should use a dark mode filter when
     // rasterizing image on the draw op with this PaintFlags.
     uint32_t use_dark_mode_for_image_ : 1;

@@ -17,7 +17,7 @@
 #import "components/signin/public/base/signin_pref_names.h"
 #import "components/sync/base/features.h"
 #import "components/sync/test/mock_sync_service.h"
-#import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
@@ -78,7 +78,7 @@ class SettingsTableViewControllerTest : public ChromeTableViewControllerTest {
         AuthenticationServiceFactory::GetInstance(),
         AuthenticationServiceFactory::GetDefaultFactory());
     builder.AddTestingFactory(
-        IOSChromePasswordStoreFactory::GetInstance(),
+        IOSChromeProfilePasswordStoreFactory::GetInstance(),
         base::BindRepeating(
             &password_manager::BuildPasswordStore<
                 web::BrowserState, password_manager::TestPasswordStore>));
@@ -112,7 +112,7 @@ class SettingsTableViewControllerTest : public ChromeTableViewControllerTest {
 
     password_store_mock_ =
         base::WrapRefCounted(static_cast<password_manager::TestPasswordStore*>(
-            IOSChromePasswordStoreFactory::GetForBrowserState(
+            IOSChromeProfilePasswordStoreFactory::GetForBrowserState(
                 chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS)
                 .get()));
 
@@ -145,16 +145,15 @@ class SettingsTableViewControllerTest : public ChromeTableViewControllerTest {
   }
 
   ChromeTableViewController* InstantiateController() override {
-    id mockSnackbarCommandHandler =
-        OCMProtocolMock(@protocol(SnackbarCommands));
-
-    // Set up ApplicationCommands mock. Because ApplicationCommands conforms
-    // to ApplicationSettingsCommands, that needs to be mocked and dispatched
-    // as well.
+    // Create mock command handlers. These are just for initializing the view
+    // controller; because the handlers are local to this methdd, they will not
+    // exist during tests, so if the tests call any commands they will fail.
     id mockApplicationCommandHandler =
         OCMProtocolMock(@protocol(ApplicationCommands));
     id mockApplicationSettingsCommandHandler =
         OCMProtocolMock(@protocol(ApplicationSettingsCommands));
+    id mockSnackbarCommandHandler =
+        OCMProtocolMock(@protocol(SnackbarCommands));
 
     CommandDispatcher* dispatcher = browser_->GetCommandDispatcher();
     [dispatcher startDispatchingToTarget:mockSnackbarCommandHandler
@@ -166,15 +165,13 @@ class SettingsTableViewControllerTest : public ChromeTableViewControllerTest {
                      forProtocol:@protocol(ApplicationSettingsCommands)];
 
     SettingsTableViewController* controller =
-        [[SettingsTableViewController alloc]
-            initWithBrowser:browser_.get()
-                 dispatcher:static_cast<id<ApplicationCommands, BrowserCommands,
-                                           BrowsingDataCommands>>(
-                                browser_->GetCommandDispatcher())];
-    controller.applicationCommandsHandler = HandlerForProtocol(
-        browser_->GetCommandDispatcher(), ApplicationCommands);
-    controller.snackbarCommandsHandler =
-        HandlerForProtocol(browser_->GetCommandDispatcher(), SnackbarCommands);
+        [[SettingsTableViewController alloc] initWithBrowser:browser_.get()];
+    controller.applicationHandler =
+        HandlerForProtocol(dispatcher, ApplicationCommands);
+    controller.settingsHandler =
+        HandlerForProtocol(dispatcher, ApplicationSettingsCommands);
+    controller.snackbarHandler =
+        HandlerForProtocol(dispatcher, SnackbarCommands);
     return controller;
   }
 

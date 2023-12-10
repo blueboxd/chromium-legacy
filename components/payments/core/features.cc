@@ -57,10 +57,6 @@ BASE_FEATURE(kSecurePaymentConfirmationUseCredentialStoreAPIs,
 #endif
 );
 
-BASE_FEATURE(kSecurePaymentConfirmationExtensions,
-             "SecurePaymentConfirmationExtensions",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 #if !BUILDFLAG(IS_ANDROID)
 // The blink-side feature of the same name is disabled by default, and can be
 // enabled directly or via origin trial.
@@ -75,10 +71,6 @@ BASE_FEATURE(kPaymentHandlerWindowInTaskManager,
 
 BASE_FEATURE(kPaymentHandlerAlwaysRefreshIcon,
              "PaymentHandlerAlwaysRefreshIcon",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kPaymentHandlerRequireLinkHeader,
-             "PaymentHandlerRequireLinkHeader",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace features

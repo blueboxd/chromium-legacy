@@ -17,6 +17,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ResettersForTesting;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.shared_preferences.SharedPreferencesManager;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneShotCallback;
@@ -77,8 +78,9 @@ import org.chromium.chrome.browser.offlinepages.indicator.OfflineIndicatorContro
 import org.chromium.chrome.browser.offlinepages.indicator.OfflineIndicatorInProductHelpController;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxDialogController;
+import org.chromium.chrome.browser.privacy_sandbox.TrackingProtectionNoticeController;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.read_later.ReadLaterIPHController;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
@@ -491,8 +493,8 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                         return isShowingStartSurfaceHomepage();
                     }
                 },
-                mCompositorViewHolderSupplier.get()::addTouchEventObserver,
-                mCompositorViewHolderSupplier.get()::removeTouchEventObserver, mLayoutManager);
+                () -> mCompositorViewHolderSupplier.get(),
+                mLayoutManager);
         mRootUiTabObserver.swapToTab(mActivityTabProvider.get());
 
         if (!DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity)) {
@@ -652,27 +654,35 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
 
         boolean didTriggerPromo = false;
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_3)
-                || ChromeFeatureList.isEnabled(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)) {
-            String histogramName =
-                    "Startup.Android.PrivacySandbox.DialogNotShownDueToTabLaunchedFromExternalApp";
-            Tab tab = mActivityTabProvider.get();
-            boolean isTabLaunchedFromExternalApp =
-                    tab != null && tab.getLaunchType() == TabLaunchType.FROM_EXTERNAL_APP;
-            boolean shouldSuppressPSDialogForExternalAppLaunches =
-                    ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                            ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4,
-                            "suppress-dialog-for-external-app-launches", true);
-            boolean shouldSuppressPSDialog =
-                    isTabLaunchedFromExternalApp && shouldSuppressPSDialogForExternalAppLaunches;
+        String histogramName =
+                "Startup.Android.PrivacySandbox.DialogNotShownDueToTabLaunchedFromExternalApp";
+        Tab tab = mActivityTabProvider.get();
+        boolean isTabLaunchedFromExternalApp =
+                tab != null && tab.getLaunchType() == TabLaunchType.FROM_EXTERNAL_APP;
+        boolean shouldSuppressPSDialogForExternalAppLaunches =
+                ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                        ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4,
+                        "suppress-dialog-for-external-app-launches", true);
+        boolean shouldSuppressPSDialog =
+                isTabLaunchedFromExternalApp && shouldSuppressPSDialogForExternalAppLaunches;
 
-            if (!shouldSuppressPSDialog) {
-                didTriggerPromo = PrivacySandboxDialogController.maybeLaunchPrivacySandboxDialog(
-                        mActivity, new SettingsLauncherImpl(),
-                        mTabModelSelectorSupplier.get().isIncognitoSelected(),
-                        getBottomSheetController());
-            }
-            RecordHistogram.recordBooleanHistogram(histogramName, shouldSuppressPSDialog);
+        if (!shouldSuppressPSDialog) {
+            didTriggerPromo = PrivacySandboxDialogController.maybeLaunchPrivacySandboxDialog(
+                    mActivity, new SettingsLauncherImpl(),
+                    mTabModelSelectorSupplier.get().isIncognitoSelected(),
+                    getBottomSheetController());
+        }
+        RecordHistogram.recordBooleanHistogram(histogramName, shouldSuppressPSDialog);
+
+        if (!didTriggerPromo && TrackingProtectionNoticeController.shouldShowNotice()) {
+            TrackingProtectionNoticeController.create(
+                    mActivity,
+                    mActivityTabProvider,
+                    mMessageDispatcher,
+                    new SettingsLauncherImpl());
+            // Promo will be triggered eventually. We don't want for this promo to clash with other
+            // promos in the same run.
+            didTriggerPromo = true;
         }
 
         if (!didTriggerPromo) {
@@ -769,12 +779,10 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                         ChromeFeatureList.DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING)) {
             // TODO(crbug.com/1252965): Investigate locking feature engagement system during
             // "second run promos" to avoid !didTriggerPromo check.
-            Tab tab;
             WebContents webContents;
 
             Profile profile;
-            if ((tab = mActivityTabProvider.get()) != null
-                    && (webContents = tab.getWebContents()) != null) {
+            if (tab != null && (webContents = tab.getWebContents()) != null) {
                 profile = Profile.fromWebContents(webContents);
             } else {
                 profile = Profile.getLastUsedRegularProfile();
@@ -799,7 +807,6 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
 
         if (!didTriggerPromo && PageZoomCoordinator.shouldShowMenuItem()) {
             // Page Zoom IPH should only show if the menu item is visible, and not on NTP or CCT.
-            Tab tab = mActivityTabProvider.get();
             if (tab != null && tab.getWebContents() != null && !tab.isNativePage()) {
                 PageZoomIPHController mPageZoomIPHController = new PageZoomIPHController(mActivity,
                         mAppMenuCoordinator.getAppMenuHandler(),
@@ -921,7 +928,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                 return false;
             }
 
-            SharedPreferencesManager preferenceManager = SharedPreferencesManager.getInstance();
+            SharedPreferencesManager preferenceManager = ChromeSharedPreferences.getInstance();
             // Promos can only be shown when we start with ACTION_MAIN intent and
             // after FRE is complete. Native initialization can finish before the FRE flow is
             // complete, and this will only show promos on the second opportunity. This is

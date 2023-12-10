@@ -109,72 +109,25 @@ enum class Microsoft365Availability {
 
 // Opens the file specified by |url| in a new tab. |url| must be a
 // docs.google.com URL for an office file.
-fm_tasks::OfficeDriveOpenErrors OpenDriveUrl(const GURL& url) {
+OfficeDriveOpenErrors OpenDriveUrl(const GURL& url) {
   if (!url.is_valid()) {
     LOG(ERROR) << "Invalid URL";
-    return fm_tasks::OfficeDriveOpenErrors::kInvalidAlternateUrl;
+    return OfficeDriveOpenErrors::kInvalidAlternateUrl;
   }
   if (url.host() == "drive.google.com") {
     LOG(ERROR) << "URL was from drive.google.com";
-    return fm_tasks::OfficeDriveOpenErrors::kDriveAlternateUrl;
+    return OfficeDriveOpenErrors::kDriveAlternateUrl;
   }
   if (url.host() != "docs.google.com") {
     LOG(ERROR) << "URL was not from docs.google.com";
-    return fm_tasks::OfficeDriveOpenErrors::kUnexpectedAlternateUrl;
+    return OfficeDriveOpenErrors::kUnexpectedAlternateUrl;
   }
 
   ash::NewWindowDelegate::GetPrimary()->OpenUrl(
       net::AppendOrReplaceQueryParameter(url, "cros_files", "true"),
       ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction,
       ash::NewWindowDelegate::Disposition::kNewForegroundTab);
-  return fm_tasks::OfficeDriveOpenErrors::kSuccess;
-}
-
-// Logs UMA when the Drive task ends with an attempt to open a file.
-void LogGoogleDriveOpenResultUMA(OfficeTaskResult success_task_result,
-                                 fm_tasks::OfficeDriveOpenErrors open_result) {
-  UMA_HISTOGRAM_ENUMERATION(fm_tasks::kDriveErrorMetricName, open_result);
-  UMA_HISTOGRAM_ENUMERATION(
-      kGoogleDriveTaskResultMetricName,
-      open_result == fm_tasks::OfficeDriveOpenErrors::kSuccess
-          ? success_task_result
-          : OfficeTaskResult::kFailedToOpen);
-}
-
-// Open a hosted MS Office file e.g. .docx, from a url hosted in
-// DriveFS. Check the file was successfully uploaded to DriveFS.
-void OpenUploadedDriveUrl(const GURL& url, const OfficeTaskResult task_result) {
-  // TODO(b/296950967): This function logs both open result and task result (but
-  // only if open fails) metrics internally, pull them up to a higher level so
-  // all the metrics are logged in one place.
-  fm_tasks::OfficeDriveOpenErrors open_result = OpenDriveUrl(url);
-  LogGoogleDriveOpenResultUMA(task_result, open_result);
-}
-
-// Open an already hosted MS Office file e.g. .docx, from a url hosted in
-// DriveFS. Check there was no error retrieving the file's metadata.
-void OnGoogleDriveGetMetadata(drive::FileError error,
-                              drivefs::mojom::FileMetadataPtr metadata) {
-  fm_tasks::OfficeDriveOpenErrors open_result =
-      fm_tasks::OfficeDriveOpenErrors::kSuccess;
-  if (error == drive::FILE_ERROR_OK) {
-    GURL hosted_url(metadata->alternate_url);
-    open_result = OpenDriveUrl(hosted_url);
-  } else {
-    LOG(ERROR) << "Drive metadata error: " << error;
-    open_result = fm_tasks::OfficeDriveOpenErrors::kNoMetadata;
-  }
-  LogGoogleDriveOpenResultUMA(OfficeTaskResult::kOpened, open_result);
-}
-
-// Logs UMA when the OneDrive task ends with an attempt to open a file.
-void LogOneDriveOpenResultUMA(OfficeTaskResult success_task_result,
-                              OfficeOneDriveOpenErrors open_result) {
-  UMA_HISTOGRAM_ENUMERATION(fm_tasks::kOneDriveErrorMetricName, open_result);
-  UMA_HISTOGRAM_ENUMERATION(kOneDriveTaskResultMetricName,
-                            open_result == OfficeOneDriveOpenErrors::kSuccess
-                                ? success_task_result
-                                : OfficeTaskResult::kFailedToOpen);
+  return OfficeDriveOpenErrors::kSuccess;
 }
 
 // Handle system error notification "Sign in" click.
@@ -432,22 +385,27 @@ bool CloudOpenTask::Execute(
     Profile* profile,
     const std::vector<storage::FileSystemURL>& file_urls,
     const CloudProvider cloud_provider,
-    gfx::NativeWindow modal_parent) {
+    gfx::NativeWindow modal_parent,
+    std::unique_ptr<CloudOpenMetrics> cloud_open_metrics) {
   scoped_refptr<CloudOpenTask> upload_task = WrapRefCounted(
-      new CloudOpenTask(profile, file_urls, cloud_provider, modal_parent));
+      new CloudOpenTask(profile, file_urls, cloud_provider, modal_parent,
+                        std::move(cloud_open_metrics)));
   // Keep `upload_task` alive until `TaskFinished` executes.
   bool status = upload_task->ExecuteInternal();
   return status;
 }
 
-CloudOpenTask::CloudOpenTask(Profile* profile,
-                             std::vector<storage::FileSystemURL> file_urls,
-                             const CloudProvider cloud_provider,
-                             gfx::NativeWindow modal_parent)
+CloudOpenTask::CloudOpenTask(
+    Profile* profile,
+    std::vector<storage::FileSystemURL> file_urls,
+    const CloudProvider cloud_provider,
+    gfx::NativeWindow modal_parent,
+    std::unique_ptr<CloudOpenMetrics> cloud_open_metrics)
     : profile_(profile),
       file_urls_(file_urls),
       cloud_provider_(cloud_provider),
-      modal_parent_(modal_parent) {}
+      modal_parent_(modal_parent),
+      cloud_open_metrics_(std::move(cloud_open_metrics)) {}
 
 CloudOpenTask::~CloudOpenTask() = default;
 
@@ -484,47 +442,44 @@ bool CloudOpenTask::ExecuteInternal() {
 // the files before opening.
 void CloudOpenTask::OpenOrMoveFiles() {
   // Record the source volume type of the opened file.
-  int source_type;
+  OfficeFilesSourceVolume source_volume;
   if (UrlIsOnODFS(profile_, file_urls_.front())) {
-    source_type = static_cast<int>(OfficeFilesSourceVolume::kMicrosoftOneDrive);
+    source_volume = OfficeFilesSourceVolume::kMicrosoftOneDrive;
   } else {
     auto* volume_manager = file_manager::VolumeManager::Get(profile_);
     base::WeakPtr<file_manager::Volume> source =
         volume_manager->FindVolumeFromPath(file_urls_.front().path());
     if (source) {
-      source_type = source->type();
+      source_volume = VolumeTypeToSourceVolume(source->type());
     } else {
-      source_type = static_cast<int>(OfficeFilesSourceVolume::kUnknown);
+      source_volume = OfficeFilesSourceVolume::kUnknown;
     }
   }
-  if (cloud_provider_ == CloudProvider::kGoogleDrive) {
-    UMA_HISTOGRAM_SPARSE(kDriveOpenSourceVolumeMetric, source_type);
-  } else if (cloud_provider_ == CloudProvider::kOneDrive) {
-    UMA_HISTOGRAM_SPARSE(kOneDriveOpenSourceVolumeMetric, source_type);
-  }
+  cloud_open_metrics_->LogSourceVolume(source_volume);
 
   if (cloud_provider_ == CloudProvider::kGoogleDrive &&
       PathIsOnDriveFS(profile_, file_urls_.front().path())) {
     // The files are on Drive already.
     transfer_required_ = OfficeFilesTransferRequired::kNotRequired;
-    UMA_HISTOGRAM_ENUMERATION(kDriveTransferRequiredMetric,
-                              OfficeFilesTransferRequired::kNotRequired);
+    cloud_open_metrics_->LogTransferRequired(
+        OfficeFilesTransferRequired::kNotRequired);
     OpenAlreadyHostedDriveUrls();
   } else if (cloud_provider_ == CloudProvider::kOneDrive &&
              UrlIsOnODFS(profile_, file_urls_.front())) {
     // The files are on OneDrive already, selected from ODFS.
     transfer_required_ = OfficeFilesTransferRequired::kNotRequired;
-    UMA_HISTOGRAM_ENUMERATION(kOneDriveTransferRequiredMetric,
-                              OfficeFilesTransferRequired::kNotRequired);
+    cloud_open_metrics_->LogTransferRequired(
+        OfficeFilesTransferRequired::kNotRequired);
     OpenODFSUrls(OfficeTaskResult::kOpened);
   } else if (cloud_provider_ == CloudProvider::kOneDrive &&
              UrlIsOnAndroidOneDrive(profile_, file_urls_.front())) {
     // The files are on OneDrive already, selected from Android OneDrive.
     transfer_required_ = OfficeFilesTransferRequired::kNotRequired;
-    UMA_HISTOGRAM_ENUMERATION(kOneDriveTransferRequiredMetric,
-                              OfficeFilesTransferRequired::kNotRequired);
+    cloud_open_metrics_->LogTransferRequired(
+        OfficeFilesTransferRequired::kNotRequired);
     OpenAndroidOneDriveUrlsIfAccountMatchedODFS(
-        base::BindOnce(&LogOneDriveOpenResultUMA, OfficeTaskResult::kOpened));
+        base::BindOnce(&CloudOpenTask::LogOneDriveOpenResultUMA, this,
+                       OfficeTaskResult::kOpened));
   } else {
     // The files need to be moved.
     auto operation =
@@ -532,14 +487,7 @@ void CloudOpenTask::OpenOrMoveFiles() {
             ? OfficeFilesTransferRequired::kCopy
             : OfficeFilesTransferRequired::kMove;
     transfer_required_ = operation;
-    switch (cloud_provider_) {
-      case CloudProvider::kGoogleDrive:
-        UMA_HISTOGRAM_ENUMERATION(kDriveTransferRequiredMetric, operation);
-        break;
-      case CloudProvider::kOneDrive:
-        UMA_HISTOGRAM_ENUMERATION(kOneDriveTransferRequiredMetric, operation);
-        break;
-    }
+    cloud_open_metrics_->LogTransferRequired(operation);
     ConfirmMoveOrStartUpload();
   }
 }
@@ -552,17 +500,46 @@ void CloudOpenTask::OpenAlreadyHostedDriveUrls() {
     if (integration_service->GetRelativeDrivePath(file_url.path(),
                                                   &relative_path)) {
       integration_service->GetDriveFsInterface()->GetMetadata(
-          relative_path, base::BindOnce(&OnGoogleDriveGetMetadata));
+          relative_path,
+          base::BindOnce(&CloudOpenTask::OnGoogleDriveGetMetadata, this));
     } else {
       LOG(ERROR) << "Unexpected error obtaining the relative path ";
     }
   }
 }
 
+// Open an already hosted MS Office file e.g. .docx, from a url hosted in
+// DriveFS. Check there was no error retrieving the file's metadata.
+void CloudOpenTask::OnGoogleDriveGetMetadata(
+    drive::FileError error,
+    drivefs::mojom::FileMetadataPtr metadata) {
+  OfficeDriveOpenErrors open_result = OfficeDriveOpenErrors::kSuccess;
+  if (error == drive::FILE_ERROR_OK) {
+    GURL hosted_url(metadata->alternate_url);
+    open_result = OpenDriveUrl(hosted_url);
+  } else {
+    LOG(ERROR) << "Drive metadata error: " << error;
+    open_result = OfficeDriveOpenErrors::kNoMetadata;
+  }
+  LogGoogleDriveOpenResultUMA(OfficeTaskResult::kOpened, open_result);
+}
+
+// Open a hosted MS Office file e.g. .docx, from a url hosted in
+// DriveFS. Check the file was successfully uploaded to DriveFS.
+void CloudOpenTask::OpenUploadedDriveUrl(const GURL& url,
+                                         const OfficeTaskResult task_result) {
+  // TODO(b/296950967): This function logs both open result and task result (but
+  // only if open fails) metrics internally, pull them up to a higher level so
+  // all the metrics are logged in one place.
+  OfficeDriveOpenErrors open_result = OpenDriveUrl(url);
+  LogGoogleDriveOpenResultUMA(task_result, open_result);
+}
+
 void CloudOpenTask::OpenODFSUrls(const OfficeTaskResult task_result_uma) {
   for (const auto& file_url : file_urls_) {
     OpenODFSUrl(profile_, file_url,
-                base::BindOnce(&LogOneDriveOpenResultUMA, task_result_uma));
+                base::BindOnce(&CloudOpenTask::LogOneDriveOpenResultUMA, this,
+                               task_result_uma));
   }
 }
 
@@ -799,19 +776,26 @@ void CloudOpenTask::StartUpload() {
   DCHECK_EQ(pending_uploads_, 0UL);
   pending_uploads_ = file_urls_.size();
   upload_timer_ = base::ElapsedTimer();
+  // CloudOpenTask is the only owner of the `CloudOpenMetrics` object and will
+  // still be alive after the upload handler completes. Thus, pass a `SafeRef`
+  // of `CloudOpenMetrics` to the upload handler.
+  base::SafeRef<CloudOpenMetrics> cloud_open_metrics_safe_ref =
+      cloud_open_metrics_->GetSafeRef();
 
   if (cloud_provider_ == CloudProvider::kGoogleDrive) {
     for (const auto& file_url : file_urls_) {
       DriveUploadHandler::Upload(
           profile_, file_url,
-          base::BindOnce(&CloudOpenTask::FinishedDriveUpload, this));
+          base::BindOnce(&CloudOpenTask::FinishedDriveUpload, this),
+          cloud_open_metrics_safe_ref);
     }
   } else if (cloud_provider_ == CloudProvider::kOneDrive) {
     for (const auto& file_url : file_urls_) {
       OneDriveUploadHandler::Upload(
           profile_, file_url,
           base::BindOnce(&CloudOpenTask::FinishedOneDriveUpload, this,
-                         profile_->GetWeakPtr()));
+                         profile_->GetWeakPtr()),
+          cloud_open_metrics_safe_ref);
     }
   }
 }
@@ -830,8 +814,7 @@ void CloudOpenTask::FinishedDriveUpload(absl::optional<GURL> url,
     OpenUploadedDriveUrl(url.value(), task_result_uma);
   } else {
     has_upload_errors_ = true;
-    UMA_HISTOGRAM_ENUMERATION(kGoogleDriveTaskResultMetricName,
-                              OfficeTaskResult::kFailedToUpload);
+    cloud_open_metrics_->LogTaskResult(OfficeTaskResult::kFailedToUpload);
   }
   if (--pending_uploads_) {
     return;
@@ -859,11 +842,11 @@ void CloudOpenTask::FinishedOneDriveUpload(
             ? OfficeTaskResult::kCopied
             : OfficeTaskResult::kMoved;
     OpenODFSUrl(profile, url.value(),
-                base::BindOnce(&LogOneDriveOpenResultUMA, task_result_uma));
+                base::BindOnce(&CloudOpenTask::LogOneDriveOpenResultUMA, this,
+                               task_result_uma));
   } else {
     has_upload_errors_ = true;
-    UMA_HISTOGRAM_ENUMERATION(kOneDriveTaskResultMetricName,
-                              OfficeTaskResult::kFailedToUpload);
+    cloud_open_metrics_->LogTaskResult(OfficeTaskResult::kFailedToUpload);
   }
   if (--pending_uploads_) {
     return;
@@ -871,6 +854,28 @@ void CloudOpenTask::FinishedOneDriveUpload(
   if (!has_upload_errors_) {
     RecordUploadLatencyUMA();
   }
+}
+
+// Logs UMA when the Drive task ends with an attempt to open a file.
+void CloudOpenTask::LogGoogleDriveOpenResultUMA(
+    OfficeTaskResult success_task_result,
+    OfficeDriveOpenErrors open_result) {
+  cloud_open_metrics_->LogGoogleDriveOpenError(open_result);
+  cloud_open_metrics_->LogTaskResult(open_result ==
+                                             OfficeDriveOpenErrors::kSuccess
+                                         ? success_task_result
+                                         : OfficeTaskResult::kFailedToOpen);
+}
+
+// Logs UMA when the OneDrive task ends with an attempt to open a file.
+void CloudOpenTask::LogOneDriveOpenResultUMA(
+    OfficeTaskResult success_task_result,
+    OfficeOneDriveOpenErrors open_result) {
+  cloud_open_metrics_->LogOneDriveOpenError(open_result);
+  cloud_open_metrics_->LogTaskResult(open_result ==
+                                             OfficeOneDriveOpenErrors::kSuccess
+                                         ? success_task_result
+                                         : OfficeTaskResult::kFailedToOpen);
 }
 
 void CloudOpenTask::RecordUploadLatencyUMA() {
@@ -1106,11 +1111,11 @@ void CloudOpenTask::OnDialogComplete(const std::string& user_response) {
   } else if (user_response == kUserActionCancel) {
     // Do nothing.
   } else if (user_response == kUserActionCancelGoogleDrive) {
-    UMA_HISTOGRAM_ENUMERATION(kGoogleDriveTaskResultMetricName,
-                              OfficeTaskResult::kCancelledAtConfirmation);
+    cloud_open_metrics_->LogTaskResult(
+        OfficeTaskResult::kCancelledAtConfirmation);
   } else if (user_response == kUserActionCancelOneDrive) {
-    UMA_HISTOGRAM_ENUMERATION(kOneDriveTaskResultMetricName,
-                              OfficeTaskResult::kCancelledAtConfirmation);
+    cloud_open_metrics_->LogTaskResult(
+        OfficeTaskResult::kCancelledAtConfirmation);
   } else {
     LaunchLocalFileTask(user_response);
   }

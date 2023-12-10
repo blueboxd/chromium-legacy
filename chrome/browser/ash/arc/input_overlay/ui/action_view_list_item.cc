@@ -22,9 +22,7 @@ ActionViewListItem::ActionViewListItem(DisplayOverlayController* controller,
 ActionViewListItem::~ActionViewListItem() = default;
 
 void ActionViewListItem::OnActionNameUpdated() {
-  auto action_name = GetActionNameAtIndex(controller_->action_name_list(),
-                                          action_->name_label_index());
-  name_tag_->SetTitle(action_name);
+  NOTIMPLEMENTED();
 }
 
 void ActionViewListItem::ClickCallback() {
@@ -33,6 +31,10 @@ void ActionViewListItem::ClickCallback() {
 
 void ActionViewListItem::ShowEduNudgeForEditingTip() {
   labels_view_->ShowEduNudgeForEditingTip();
+}
+
+void ActionViewListItem::OnMouseEntered(const ui::MouseEvent& event) {
+  controller_->AddDeleteEditShortcutWidget(this);
 }
 
 }  // namespace arc::input_overlay

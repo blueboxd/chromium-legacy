@@ -1377,9 +1377,6 @@ Style notes:
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SWITCH_ACCESS" desc="The label used in the accessibility menu of the system tray to toggle Switch Access, a feature that allows the entire device to be controlled with as few as 1 switch or button.">
         Switch Access
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_ADDITIONAL_SETTINGS" desc="The sub-header label for additional setting in accessibility menu of system tray.">
-        Additional settings
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_MONO_AUDIO" desc="The label used in the additional settings of accessibility menu of the system tray to toggle on/off mono audio.">
         Mono audio
       </message>
@@ -2694,32 +2691,34 @@ Style notes:
         About <ph name="time_left">$1<ex>40 minutes</ex></ph> left (<ph name="percentage">$2<ex>56%</ex></ph>%).
 Connect your device to power.
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_LOW_BATTERY_MESSAGE_WITHOUT_TIME" translateable="false" desc="The label in the tray dialog to show the remaining battery power as a percent.">
-        About <ph name="percentage">$1<ex>56%</ex></ph>% left.
-Connect your device to power.
-      </message>
-      <message name="IDS_ASH_BATTERY_SAVER_DISABLED_TOAST_TEXT" translateable="false" desc="The toast message when battery saver mode is disabled.">
-        Battery Saver has been turned off
-      </message>
-      <message name="IDS_ASH_BATTERY_SAVER_ENABLED_TOAST_TEXT" translateable="false" desc="The toast message when battery saver mode is enabled.">
-        Battery Saver has been turned on
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_LOW_BATTERY_BSM_TITLE" translateable="false" desc="The title for the notification displayed when device battery level is low, and battery saver mode is enabled.">
+      <message name="IDS_ASH_STATUS_TRAY_LOW_BATTERY_BSM_AUTOENABLED_TITLE" desc="The title for the notification displayed when device battery level is low, and battery saver was just enabled.">
         Low battery. Battery Saver turned on.
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_LOW_BATTERY_BSM_MESSAGE" translateable="false" desc="The label in the tray dialog to show the remaining battery power as a percent, with additional text stating battery saver mode has been enabled.">
-        About <ph name="time_left">$1<ex>40 minutes</ex></ph> left (<ph name="percentage">$2<ex>56%</ex></ph>%).
+      <message name="IDS_ASH_STATUS_TRAY_LOW_BATTERY_BSM_AUTOENABLED_MESSAGE" desc="The notification body text stating features are limited because of battery saver, alongside the remaining battery percentage, and the estimated time remaining.">
+        <ph name="percentage">$1<ex>20%</ex></ph>% battery left (about <ph name="time_left">$2<ex>25 minutes</ex></ph>).
 Some features are limited to increase battery life.
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_LOW_BATTERY_BSM_MESSAGE_WITHOUT_TIME" translateable="false" desc="The notification body text stating features are limited because of battery saver, alongside the remaining battery percentage.">
-        About <ph name="percentage">$1<ex>56%</ex></ph>% left.
+      <message name="IDS_ASH_STATUS_TRAY_LOW_BATTERY_BSM_AUTOENABLED_MESSAGE_WITHOUT_TIME" desc="The notification body text stating features are limited because of battery saver, alongside the remaining battery percentage.">
+        <ph name="percentage">$1<ex>20%</ex></ph>% battery left.
 Some features are limited to increase battery life.
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_LOW_BATTERY_BSM_BUTTON_OPT_OUT" translateable="false" desc="The button text on the low power notification to disable battery saver.">
-        Turn off Battery Saver
+      <message name="IDS_ASH_STATUS_TRAY_LOW_BATTERY_BSM_GENERIC_MESSAGE" desc="The notification body text telling the user their battery is low using both percentage and time remaining estimates.">
+        <ph name="percentage">$1<ex>20%</ex></ph>% battery left (about <ph name="time_left">$2<ex>25 minutes</ex></ph>). Connect your device to power.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_LOW_BATTERY_BSM_GENERIC_MESSAGE_WITHOUT_TIME" desc="The notification body text telling the user their battery is low via percentage.">
+        <ph name="percentage">$1<ex>20%</ex></ph>% battery left. Connect your device to power.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_LOW_BATTERY_BSM_BUTTON_OPT_OUT" desc="The button text on the low power notification to disable battery saver.">
+        Turn off
       </message>
       <message name="IDS_ASH_STATUS_TRAY_LOW_BATTERY_BSM_BUTTON_OPT_IN" translateable="false" desc="The button text on the low power notification to enable battery saver.">
         Turn on Battery Saver
+      </message>
+      <message name="IDS_ASH_BATTERY_SAVER_DISABLED_TOAST_TEXT" desc="The toast message that appears battery saver is disabled, typically through user interaction like charger plug-in or pressing the notification disable button.">
+        Battery Saver turned off
+      </message>
+      <message name="IDS_ASH_BATTERY_SAVER_ENABLED_TOAST_TEXT" desc="The toast message when battery saver is enabled. This typically appears when there is no notification ">
+        Battery Saver turned on
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_TITLE" desc="The title displayed in a battery status notification.">Battery status</message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT" desc="The label in the tray dialog to show the remaining battery power as a percent.">
@@ -2748,6 +2747,12 @@ Some features are limited to increase battery life.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_CHARGING_ACCESSIBLE" desc="The message used by accessibility to show battery is being charged.">
         Battery at <ph name="percentage">$1<ex>56</ex></ph>% and charging.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_BSM_ON_ACCESSIBLE" desc="The message used by accessibility to show battery is discharging with battery saver enabled.">
+        Battery at <ph name="percentage">$1<ex>56</ex></ph> percent. Battery Saver is on.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_CHARGING_BSM_ON_ACCESSIBLE" desc="The message used by accessibility to show battery is being charged with battery saver enabled.">
+        Battery at <ph name="percentage">$1<ex>56</ex></ph>% and charging. Battery Saver is on.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING_ACCESSIBLE" desc="The message used by accessibility to show battery is calculating its time in short message.">
         Calculating battery time.
@@ -2995,7 +3000,7 @@ Some features are limited to increase battery life.
         This setting is managed by your administrator
       </message>
       <message name="IDS_ASH_HOTSPOT_DETAILED_VIEW_ON_NO_CONNECTED_DEVICES" desc="The subtext in the hotspot detailed view when hotspot is on and no devices connected to it.">
-        On, no devices connected
+        No devices connected
       </message>
       <message name="IDS_ASH_HOTSPOT_DETAILED_VIEW_TITLE" desc="The label in the hotspot detailed view for the Chromebook Hotspot.">
         <ph name="DEVICE_NAME">$1<ex>Chromebook</ex></ph> hotspot
@@ -3019,7 +3024,7 @@ Some features are limited to increase battery life.
         <ph name="DEVICE_NAME">$1<ex>Chromebook</ex></ph> hotspot is on, no devices connected
       </message>
       <message name="IDS_ASH_HOTSPOT_ON_TITLE" desc="Title used for the system notification shown when the hotspot is turned on.">
-        Hotspot is on
+        With hotspot on, Wi-Fi is off
       </message>
       <message name="IDS_ASH_HOTSPOT_ON_MESSAGE_MULTIPLE_CONNECTED_DEVICES" desc="Message displayed in the notification when hotspot is turned on and multiple devices are connected.">
         <ph name="DEVICECOUNT">$1</ph> devices connected
@@ -3028,16 +3033,16 @@ Some features are limited to increase battery life.
         1 device connected
       </message>
       <message name="IDS_ASH_HOTSPOT_ON_MESSAGE_NO_CONNECTED_DEVICES_NOTIFICATION" desc="Message displayed in the notification when hotspot is turned on and no devices are connected.">
-        No devices connected. WiFi will be turned off to start using Hotspot.
+        No devices connected. While using hotspot, Wi-Fi will stay off.
       </message>
       <message name="IDS_ASH_HOTSPOT_ON_MESSAGE_MULTIPLE_CONNECTED_DEVICES_NOTIFICATION" desc="Message displayed in the notification when hotspot is turned on and multiple devices are connected.">
-        <ph name="DEVICECOUNT">$1</ph> devices connected. WiFi will be turned off to start using Hotspot.
+        <ph name="DEVICECOUNT">$1</ph> devices connected. While using hotspot, Wi-Fi will stay off.
       </message>
       <message name="IDS_ASH_HOTSPOT_ON_MESSAGE_ONE_CONNECTED_DEVICE_NOTIFICATION" desc="Message displayed in the notification when hotspot is turned on and one device is connected.">
-        1 device connected. WiFi will be turned off to start using Hotspot.
+        1 device connected. While using hotspot, Wi-Fi will stay off.
       </message>
       <message name="IDS_ASH_TURN_OFF_HOTSPOT_LABEL" desc="The label for button used to turn off hotspot.">
-        Turn off
+        Turn off hotspot
       </message>
       <message name="IDS_ASH_HOTSPOT_OFF_TITLE" desc="Title used for the system notification shown when the hotspot is turned off.">
         Hotspot is off
@@ -3318,7 +3323,7 @@ Some features are limited to increase battery life.
       <message name="IDS_ASH_STATUS_TRAY_AUDIO" desc="The label used in audio detailed page bottom header of ash tray pop up.">
         Audio settings
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_AUDIO_QS_REVAMP" desc="The label used in audio detailed page bottom header of ash tray pop up.">
+      <message name="IDS_ASH_STATUS_TRAY_AUDIO_TITLE" desc="The label used in audio detailed page bottom header of ash tray pop up.">
         Audio
       </message>
       <message name="IDS_ASH_STATUS_TRAY_AUDIO_OUTPUT" desc="The label used in audio detailed page for audio output section of ash tray pop up.">
@@ -3614,8 +3619,8 @@ Some features are limited to increase battery life.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_WIFI" desc="The label used in the tray popup to separate Wi-Fi networks.">
         Wi-Fi
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_TETHER" desc="The label used in the tray popup to separate Instant Tethering networks.">
-        Instant Tethering
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_TETHER_HOSTS" desc="The label used in the tray popup to separate your tether devices.">
+        Your devices
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ADD_CONNECTION" desc="Title for control to add a new network connection." >
         Add connection
@@ -3743,9 +3748,6 @@ Some features are limited to increase battery life.
       <message name="IDS_SHORTCUT_TASK_MANAGER_OLD" desc="the old deprecated shortcut to open the task manager.">
         Shift+Esc
       </message>
-      <message name="IDS_SHORTCUT_TASK_MANAGER_NEW" desc="the new shortcut to open the task manager.">
-        search+esc
-      </message>
       <message name="IDS_SHORTCUT_IME_BUBBLE_OLD" desc="the old deprecated shortcut to show the input options menu bubble in the shelf.">
         Alt+Shift+K
       </message>
@@ -3754,10 +3756,6 @@ Some features are limited to increase battery life.
       </message>
       <message name="IDS_SHORTCUT_SHOW_SHORTCUT_VIEWER_NEW" desc="the new shortcut to open the shortcut viewer app.">
         ctrl+search+s
-      </message>
-      <message name="IDS_DEPRECATED_SHOW_TASK_MANAGER_MSG"
-               desc="Notification message to tell users about the deprecation of Shift+ESC shortcut to show the task manager.">
-        Open Task Manager app with "<ph name="NEW_SHORTCUT">$1<ex>Search+Esc</ex></ph>".
       </message>
       <message name="IDS_DEPRECATED_SHOW_SHORTCUT_VIEWER_MSG"
                desc="Notification message to tell users about the deprecation of Ctrl+Alt+/ shortcut to show the shortcut viewer app.">
@@ -3967,8 +3965,8 @@ Some features are limited to increase battery life.
       <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_SHOW_SHORTCUT_VIEWER" desc="Label for accelerator action - Open Keyboard shortcuts app.">
         Open Key Shortcuts app
       </message>
-      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_SHOW_STYLUS_TOOLS" desc="Label for accelerator action - Show stylus tools.">
-        Show stylus tools
+      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_TOGGLE_STYLUS_TOOLS" desc="Label for accelerator action - Show or hide the stylus tools.">
+        Toggle stylus tools
       </message>
       <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_SHOW_TASK_MANAGER" desc="Label for accelerator action - Open task manager.">
         Open task manager
@@ -5109,13 +5107,10 @@ Some features are limited to increase battery life.
 
       <!-- Notification -->
       <message name="IDS_ASH_NOTIFICATION_EXPAND_TOOLTIP" desc="The tooltip for the expand button, indicating action to expand the notification.">
-        Expand notification
+        Expand <ph name="NOTIFICATION_TITLE">$1<ex>Restore</ex></ph> notification
       </message>
       <message name="IDS_ASH_NOTIFICATION_COLLAPSE_TOOLTIP" desc="The tooltip for the expand button, indicating action to collapse the notification.">
-        Collapse notification
-      </message>
-      <message name="IDS_ASH_NOTIFICATION_EXPAND_DISABLED_TOOLTIP" desc="The tooltip for the expand button when it is disabled, indicating that user cannot expand the notification in this situation.">
-        You can't expand the notification while a panel is open. Close the panel below first.
+        Collapse <ph name="NOTIFICATION_TITLE">$1<ex>Restore</ex></ph> notification
       </message>
       <message name="IDS_ASH_NOTIFICATION_INLINE_REPLY_PLACEHOLDER" desc="The placeholder string for the textfield of an in-line reply notification.">
         Reply

@@ -50,8 +50,8 @@
 #include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/geometry/static_position.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_static_position.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_clipper.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_resource_info.h"
@@ -177,11 +177,11 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   // Returns |GetLayoutBox()| if it exists and has fragments.
   const LayoutBox* GetLayoutBoxWithBlockFragments() const;
 
-  PaintLayer* Parent() const { return parent_; }
-  PaintLayer* PreviousSibling() const { return previous_; }
-  PaintLayer* NextSibling() const { return next_; }
-  PaintLayer* FirstChild() const { return first_; }
-  PaintLayer* LastChild() const { return last_; }
+  PaintLayer* Parent() const { return parent_.Get(); }
+  PaintLayer* PreviousSibling() const { return previous_.Get(); }
+  PaintLayer* NextSibling() const { return next_.Get(); }
+  PaintLayer* FirstChild() const { return first_.Get(); }
+  PaintLayer* LastChild() const { return last_.Get(); }
 
   // TODO(wangxianzhu): Find a better name for it. 'paintContainer' might be
   // good but we can't use it for now because it conflicts with
@@ -267,8 +267,8 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
     static_block_position_ = position;
   }
 
-  using InlineEdge = NGLogicalStaticPosition::InlineEdge;
-  using BlockEdge = NGLogicalStaticPosition::BlockEdge;
+  using InlineEdge = LogicalStaticPosition::InlineEdge;
+  using BlockEdge = LogicalStaticPosition::BlockEdge;
   InlineEdge StaticInlineEdge() const {
     return static_cast<InlineEdge>(static_inline_edge_);
   }
@@ -276,15 +276,15 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
     return static_cast<BlockEdge>(static_block_edge_);
   }
 
-  void SetStaticPositionFromNG(const NGLogicalStaticPosition& position) {
+  void SetStaticPositionFromNG(const LogicalStaticPosition& position) {
     static_inline_position_ = position.offset.inline_offset;
     static_block_position_ = position.offset.block_offset;
     static_inline_edge_ = position.inline_edge;
     static_block_edge_ = position.block_edge;
   }
 
-  NGLogicalStaticPosition GetStaticPosition() const {
-    NGLogicalStaticPosition position;
+  LogicalStaticPosition GetStaticPosition() const {
+    LogicalStaticPosition position;
     position.offset.inline_offset = static_inline_position_;
     position.offset.block_offset = static_block_position_;
     position.inline_edge = StaticInlineEdge();
@@ -359,7 +359,7 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
     return has_filter_that_moves_pixels_;
   }
 
-  PaintLayerResourceInfo* ResourceInfo() const { return resource_info_; }
+  PaintLayerResourceInfo* ResourceInfo() const { return resource_info_.Get(); }
   PaintLayerResourceInfo& EnsureResourceInfo();
 
   // Filter reference box is the area over which the filter is computed, in the
@@ -526,6 +526,8 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
 
   void Trace(Visitor*) const override;
 
+  PhysicalRect LocalBoundingBoxIncludingSelfPaintingDescendants() const;
+
  private:
   void Update3DTransformedDescendantStatus();
 
@@ -666,7 +668,7 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
 
   // This is private because PaintLayerStackingNode is only for PaintLayer and
   // PaintLayerPaintOrderIterator.
-  PaintLayerStackingNode* StackingNode() const { return stacking_node_; }
+  PaintLayerStackingNode* StackingNode() const { return stacking_node_.Get(); }
 
   void SetNeedsReorderOverlayOverflowControls(bool);
 

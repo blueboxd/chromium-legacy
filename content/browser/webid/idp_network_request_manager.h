@@ -112,14 +112,18 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
     GURL metrics;
   };
 
+  struct CONTENT_EXPORT WellKnown {
+    WellKnown();
+    ~WellKnown();
+    WellKnown(const WellKnown&);
+    std::set<GURL> provider_urls;
+    GURL accounts;
+    GURL login_url;
+  };
+
   struct ClientMetadata {
     GURL privacy_policy_url;
     GURL terms_of_service_url;
-  };
-
-  struct IdentityCredentialTokenError {
-    std::string code;
-    GURL url;
   };
 
   struct CONTENT_EXPORT TokenResult {
@@ -159,7 +163,7 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
                               int response_code,
                               const std::string& mime_type)>;
   using FetchWellKnownCallback =
-      base::OnceCallback<void(FetchStatus, const std::set<GURL>&)>;
+      base::OnceCallback<void(FetchStatus, const WellKnown&)>;
   using FetchConfigCallback = base::OnceCallback<
       void(FetchStatus, Endpoints, IdentityProviderMetadata)>;
   using FetchClientMetadataCallback =
@@ -257,9 +261,15 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
       bool send_origin,
       bool follow_redirects = false) const;
 
+  enum class CredentialedResourceRequestType {
+    kNoOrigin,
+    kOriginWithoutCORS,
+    kOriginWithCORS
+  };
+
   std::unique_ptr<network::ResourceRequest> CreateCredentialedResourceRequest(
       const GURL& target_url,
-      bool send_origin) const;
+      CredentialedResourceRequestType type) const;
 
   url::Origin relying_party_origin_;
 

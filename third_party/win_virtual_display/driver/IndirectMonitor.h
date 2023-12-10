@@ -15,9 +15,9 @@
 #include "Edid.h"
 #include "public/properties.h"
 
-namespace Windows {
+namespace display::test {
 // Represents a virtual monitor, encapsulates an EDID and modes.
-struct IndirectSampleMonitor {
+struct IndirectMonitor {
   static constexpr size_t kModeListLength = 1;
   // Modified EDID from Dell S2719DGF
   std::array<unsigned char, Edid::kBlockSize> pEdidBlock = {
@@ -34,6 +34,6 @@ struct IndirectSampleMonitor {
       0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x00, 0x2C};
   std::vector<DriverProperties::MonitorMode> pModeList;
 };
-}  // namespace Windows
+}  // namespace display::test
 
 #endif  // THIRD_PARTY_WIN_VIRTUAL_DISPLAY_DRIVER_INDIRECTMONITOR_H_

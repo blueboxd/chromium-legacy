@@ -89,6 +89,11 @@ class HTMLTreeBuilder final : public GarbageCollected<HTMLTreeBuilder> {
     return IsParsingFragment() || IsParsingTemplateContents();
   }
 
+  void SetDOMPartsAllowedState(DOMPartsAllowed state) {
+    DCHECK(RuntimeEnabledFeatures::DOMPartsAPIEnabled());
+    tree_.SetDOMPartsAllowedState(state);
+  }
+
   void Detach();
 
   void ConstructTree(AtomicHTMLToken*);
@@ -227,7 +232,7 @@ class HTMLTreeBuilder final : public GarbageCollected<HTMLTreeBuilder> {
     FragmentParsingContext& operator=(const FragmentParsingContext&) = delete;
     void Init(DocumentFragment*, Element* context_element);
 
-    DocumentFragment* Fragment() const { return fragment_; }
+    DocumentFragment* Fragment() const { return fragment_.Get(); }
     Element* ContextElement() const {
       DCHECK(fragment_);
       return context_element_stack_item_->GetElement();

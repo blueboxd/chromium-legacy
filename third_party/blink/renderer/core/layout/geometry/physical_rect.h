@@ -19,7 +19,7 @@ class TextStream;
 
 namespace blink {
 
-struct NGPhysicalBoxStrut;
+struct PhysicalBoxStrut;
 
 // PhysicalRect is the position and size of a rect (typically a fragment)
 // relative to its parent rect in the physical coordinate system.
@@ -115,7 +115,7 @@ struct CORE_EXPORT PhysicalRect {
   void Intersect(const PhysicalRect&);
   bool InclusiveIntersect(const PhysicalRect&);
 
-  void Expand(const NGPhysicalBoxStrut&);
+  void Expand(const PhysicalBoxStrut&);
   void ExpandEdges(LayoutUnit top,
                    LayoutUnit right,
                    LayoutUnit bottom,
@@ -128,7 +128,7 @@ struct CORE_EXPORT PhysicalRect {
   void ExpandEdgesToPixelBoundaries();
   void Inflate(LayoutUnit d) { ExpandEdges(d, d, d, d); }
 
-  void Contract(const NGPhysicalBoxStrut&);
+  void Contract(const PhysicalBoxStrut&);
   void ContractEdges(LayoutUnit top,
                      LayoutUnit right,
                      LayoutUnit bottom,
@@ -176,10 +176,11 @@ struct CORE_EXPORT PhysicalRect {
 
   // Conversions from/to existing code. New code prefers type safety for
   // logical/physical distinctions.
-  constexpr explicit PhysicalRect(const LayoutRect& r)
+  constexpr explicit PhysicalRect(const DeprecatedLayoutRect& r)
       : offset(r.X(), r.Y()), size(r.Width(), r.Height()) {}
-  constexpr LayoutRect ToLayoutRect() const {
-    return LayoutRect(offset.left, offset.top, size.width, size.height);
+  constexpr DeprecatedLayoutRect ToLayoutRect() const {
+    return DeprecatedLayoutRect(offset.left, offset.top, size.width,
+                                size.height);
   }
 
   constexpr explicit operator gfx::RectF() const {

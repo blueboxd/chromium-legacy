@@ -191,7 +191,7 @@
 #endif
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-#include "content/renderer/renderer_thread_type_handler.h"
+#include "content/child/sandboxed_process_thread_type_handler.h"
 #endif
 
 #ifdef ENABLE_VTUNE_JIT_INTERFACE
@@ -603,7 +603,7 @@ void RenderThreadImpl::Init() {
 #endif
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-  RendererThreadTypeHandler::NotifyRenderThreadCreated();
+  SandboxedProcessThreadTypeHandler::NotifyMainChildThreadCreated();
 #endif
 
   cc::SetClientNameForMetrics("Renderer");
@@ -650,8 +650,14 @@ void RenderThreadImpl::Init() {
       discardable_memory_allocator_.get());
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-  render_message_filter()->SetThreadType(
-      ChildProcess::current()->io_thread_id(), base::ThreadType::kCompositing);
+  // The SandboxedProcessThreadTypeHandler isn't created in
+  // render_thread_impl_browsertest.cc, nor in --single-process mode.
+  if (SandboxedProcessThreadTypeHandler* sandboxed_process_thread_type_handler =
+          SandboxedProcessThreadTypeHandler::Get()) {
+    sandboxed_process_thread_type_handler->HandleThreadTypeChange(
+        ChildProcess::current()->io_thread_id(),
+        base::ThreadType::kCompositing);
+  }
 #endif
 
   process_foregrounded_count_ = 0;
@@ -1096,6 +1102,11 @@ RenderThreadImpl::GetVideoFrameCompositorContextProvider(
 
   bool support_locking = false;
   bool support_gles2_interface = true;
+  // Use RasterInterface if kRasterInterfaceInVideoResourceUpdater is enabled.
+  if (base::FeatureList::IsEnabled(
+          media::kRasterInterfaceInVideoResourceUpdater)) {
+    support_gles2_interface = false;
+  }
   bool support_raster_interface = true;
   bool support_oop_rasterization = false;
   bool support_grcontext = false;
@@ -1403,6 +1414,10 @@ void RenderThreadImpl::SetIsCrossOriginIsolated(bool value) {
   blink::SetIsCrossOriginIsolated(value);
 }
 
+void RenderThreadImpl::SetIsWebSecurityDisabled(bool value) {
+  blink::SetIsWebSecurityDisabled(value);
+}
+
 void RenderThreadImpl::SetIsIsolatedContext(bool value) {
   blink::SetIsIsolatedContext(value);
 }
@@ -1550,9 +1565,14 @@ void RenderThreadImpl::UpdateSystemColorInfo(
     blink::ColorProvidersChanged();
   }
 
-  bool did_system_color_info_change =
-      ui::NativeTheme::GetInstanceForWeb()->UpdateSystemColorInfo(
-          params->is_dark_mode, params->forced_colors, params->colors);
+  auto* native_theme = ui::NativeTheme::GetInstanceForWeb();
+
+  bool did_system_color_info_change = native_theme->UpdateSystemColorInfo(
+      params->is_dark_mode, params->forced_colors, params->colors);
+
+  did_system_color_info_change |=
+      native_theme->user_color() != params->accent_color;
+  native_theme->set_user_color(params->accent_color);
 
   if (did_system_color_info_change) {
     // Notify blink of system color info changes. These give blink the

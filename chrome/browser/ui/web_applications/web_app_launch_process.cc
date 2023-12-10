@@ -133,7 +133,7 @@ content::WebContents* WebAppLaunchProcess::Run() {
                   << params_->app_id;
   }
 #else
-  DCHECK(registrar_->IsUrlInAppExtendedScope(launch_url, params_->app_id));
+  CHECK(registrar_->IsUrlInAppExtendedScope(launch_url, params_->app_id));
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

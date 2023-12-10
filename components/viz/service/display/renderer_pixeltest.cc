@@ -2000,17 +2000,16 @@ class IntersectingVideoQuadPixelTest : public IntersectingQuadPixelTest {
     IntersectingQuadPixelTest::SetUp();
     constexpr bool kUseStreamVideoDrawQuad = false;
     constexpr bool kUseGpuMemoryBufferResources = false;
-    constexpr bool kUseR16Texture = false;
     constexpr int kMaxResourceSize = 10000;
 
     video_resource_updater_ = std::make_unique<media::VideoResourceUpdater>(
         this->child_context_provider_.get(), nullptr,
         this->child_resource_provider_.get(), kUseStreamVideoDrawQuad,
-        kUseGpuMemoryBufferResources, kUseR16Texture, kMaxResourceSize);
+        kUseGpuMemoryBufferResources, kMaxResourceSize);
     video_resource_updater2_ = std::make_unique<media::VideoResourceUpdater>(
         this->child_context_provider_.get(), nullptr,
         this->child_resource_provider_.get(), kUseStreamVideoDrawQuad,
-        kUseGpuMemoryBufferResources, kUseR16Texture, kMaxResourceSize);
+        kUseGpuMemoryBufferResources, kMaxResourceSize);
   }
 
   void TearDown() override {
@@ -2422,11 +2421,10 @@ class VideoRendererPixelTestBase : public VizPixelTest {
     VizPixelTest::SetUp();
     constexpr bool kUseStreamVideoDrawQuad = false;
     constexpr bool kUseGpuMemoryBufferResources = false;
-    constexpr bool kUseR16Texture = false;
     constexpr int kMaxResourceSize = 10000;
     video_resource_updater_ = std::make_unique<media::VideoResourceUpdater>(
         child_context_provider_.get(), nullptr, child_resource_provider_.get(),
-        kUseStreamVideoDrawQuad, kUseGpuMemoryBufferResources, kUseR16Texture,
+        kUseStreamVideoDrawQuad, kUseGpuMemoryBufferResources,
         kMaxResourceSize);
   }
 
@@ -5782,7 +5780,7 @@ class ColorTransformPixelTest
     gfx::ColorTransform::Options options;
     options.tone_map_pq_and_hlg_to_dst = true;
     gfx::ColorTransform::RuntimeOptions runtime_options;
-    runtime_options.sdr_max_luminance_nits =
+    runtime_options.dst_sdr_max_luminance_nits =
         gfx::ColorSpace::kDefaultSDRWhiteLevel;
     std::unique_ptr<gfx::ColorTransform> transform =
         gfx::ColorTransform::NewColorTransform(this->src_color_space_,

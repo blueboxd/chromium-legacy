@@ -14,7 +14,7 @@
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/ash/login/drive_pinning_screen_handler.h"
-#include "chromeos/ash/components/drivefs/drivefs_pin_manager.h"
+#include "chromeos/ash/components/drivefs/drivefs_pinning_manager.h"
 #include "components/drive/drive_pref_names.h"
 #include "ui/base/text/bytes_formatting.h"
 
@@ -24,7 +24,7 @@ namespace {
 constexpr const char kUserActionNext[] = "driveNext";
 constexpr const char kUserActionReturn[] = "return";
 
-using drivefs::pinning::PinManager;
+using drivefs::pinning::PinningManager;
 using drivefs::pinning::Progress;
 
 bool ShouldShowChoobeReturnButton(ChoobeFlowController* controller) {
@@ -43,11 +43,12 @@ void ReportScreenCompletedToChoobe(ChoobeFlowController* controller) {
       DrivePinningScreenView::kScreenId);
 }
 
-PinManager* GetPinManager() {
+PinningManager* GetPinningManager() {
   drive::DriveIntegrationService* const service =
       drive::DriveIntegrationServiceFactory::FindForProfile(
           ProfileManager::GetActiveUserProfile());
-  return service && service->IsMounted() ? service->GetPinManager() : nullptr;
+  return service && service->IsMounted() ? service->GetPinningManager()
+                                         : nullptr;
 }
 
 void RecordOOBEScreenSkippedMetric(drivefs::pinning::Stage stage) {
@@ -156,13 +157,10 @@ void DrivePinningScreen::CalculateRequiredSpace() {
     return;
   }
 
-  if (!service_observer_.IsObservingSource(service)) {
-    service_observer_.Reset();
-    service_observer_.Observe(service);
-  }
+  Observe(service);
 
-  PinManager* const pin_manager = GetPinManager();
-  if (!pin_manager) {
+  PinningManager* const pinning_manager = GetPinningManager();
+  if (!pinning_manager) {
     VLOG(1) << "No bulk-pinning manager";
     return;
   }
@@ -172,7 +170,7 @@ void DrivePinningScreen::CalculateRequiredSpace() {
   }
 
   RecordCHOOBEScreenBulkPinningInitializations(bulk_pinning_initializations_);
-  LOG_IF(ERROR, !pin_manager->CalculateRequiredSpace())
+  LOG_IF(ERROR, !pinning_manager->CalculateRequiredSpace())
       << "Cannot calculate required space";
 }
 
@@ -180,10 +178,6 @@ void DrivePinningScreen::OnProgressForTest(
     const drivefs::pinning::Progress& progress) {
   CHECK_IS_TEST();
   OnBulkPinProgress(progress);
-}
-
-void DrivePinningScreen::OnDriveIntegrationServiceDestroyed() {
-  service_observer_.Reset();
 }
 
 void DrivePinningScreen::OnBulkPinProgress(

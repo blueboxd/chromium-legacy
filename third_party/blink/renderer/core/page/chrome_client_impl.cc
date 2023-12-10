@@ -217,6 +217,13 @@ void ChromeClientImpl::SetWindowRect(const gfx::Rect& requested_rect,
                                                   adjusted_rect);
 }
 
+void ChromeClientImpl::SetResizable(bool resizable, LocalFrame& frame) {
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+  DCHECK(web_view_);
+  web_view_->SetResizable(resizable);
+#endif
+}
+
 gfx::Rect ChromeClientImpl::RootWindowRect(LocalFrame& frame) {
   // The WindowRect() for each WebFrameWidget will be the same rect of the top
   // level window.
@@ -322,15 +329,14 @@ void ChromeClientImpl::DidOverscroll(
       velocity_in_viewport);
 }
 
-void ChromeClientImpl::InjectGestureScrollEvent(
+void ChromeClientImpl::InjectScrollbarGestureScroll(
     LocalFrame& local_frame,
-    WebGestureDevice device,
     const gfx::Vector2dF& delta,
     ui::ScrollGranularity granularity,
     CompositorElementId scrollable_area_element_id,
     WebInputEvent::Type injected_type) {
-  local_frame.GetWidgetForLocalRoot()->InjectGestureScrollEvent(
-      device, delta, granularity, scrollable_area_element_id, injected_type);
+  local_frame.GetWidgetForLocalRoot()->InjectScrollbarGestureScroll(
+      delta, granularity, scrollable_area_element_id, injected_type);
 }
 
 void ChromeClientImpl::FinishScrollFocusedEditableIntoView(
@@ -737,12 +743,12 @@ DateTimeChooser* ChromeClientImpl::OpenDateTimeChooser(
   external_date_time_chooser_ =
       MakeGarbageCollected<ExternalDateTimeChooser>(picker_client);
   external_date_time_chooser_->OpenDateTimeChooser(frame, parameters);
-  return external_date_time_chooser_;
+  return external_date_time_chooser_.Get();
 }
 
 ExternalDateTimeChooser*
 ChromeClientImpl::GetExternalDateTimeChooserForTesting() {
-  return external_date_time_chooser_;
+  return external_date_time_chooser_.Get();
 }
 
 void ChromeClientImpl::OpenFileChooser(

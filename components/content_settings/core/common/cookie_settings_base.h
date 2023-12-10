@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/containers/fixed_flat_set.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_setting_override.h"
@@ -118,6 +119,16 @@ class CookieSettingsBase {
     bool is_explicit_setting_ = false;
   };
 
+  // Set of types relevant for CookieSettings.
+  using CookieSettingsTypeSet = base::fixed_flat_set<ContentSettingsType, 6>;
+
+  // ContentSettings listed in this set will be automatically synced to the
+  // CookieSettings instance in the network service.
+  // If some types should only be synced when a certain flag is enabled, please
+  // add your flag to IsContentSettingsTypeEnabled() in
+  // profile_network_context_service.cc.
+  static const CookieSettingsTypeSet& GetContentSettingsTypes();
+
   // Returns true if the cookie associated with |domain| should be deleted
   // on exit.
   // This uses domain matching as described in section 5.1.3 of RFC 6265 to
@@ -215,27 +226,11 @@ class CookieSettingsBase {
   // access.
   static bool IsValidSettingForLegacyAccess(ContentSetting setting);
 
-  bool ShouldConsider3pcdSupportSettings() const;
-
-  bool ShouldConsider3pcdMetadataGrantsSettings() const;
-
   // Returns a set of overrides that includes Storage Access API and Top-Level
   // Storage Access API overrides iff the config booleans indicate that Storage
   // Access API and Top-Level Storage Access API should unlock access to DOM
   // storage.
   net::CookieSettingOverrides SettingOverridesForStorage() const;
-
-  // Returns true iff the query should consider Storage Access API permission
-  // grants.
-  bool ShouldConsiderStorageAccessGrants(
-      net::CookieSettingOverrides overrides) const;
-
-  // Returns true iff the query should consider top-level Storage Access API
-  // permission grants. Note that this is handled similarly to storage access
-  // grants, but applies to subresources more broadly (at the top-level rather
-  // than only for a single frame).
-  bool ShouldConsiderTopLevelStorageAccessGrants(
-      net::CookieSettingOverrides overrides) const;
 
   // Controls whether Storage Access API grants allow access to unpartitioned
   // *storage*, in addition to unpartitioned cookies. This is static so that all
@@ -261,11 +256,16 @@ class CookieSettingsBase {
       net::CookieSettingOverrides overrides,
       SettingInfo* info) const;
 
+  // Returns true iff the query for third-party cookie access should consider
+  // grants awarded by the global allowlist.
+  bool ShouldConsider3pcdMetadataGrantsSettings() const;
+
  private:
   // Returns a content setting for the requested parameters and populates |info|
   // if not null. Implementations might only implement a subset of all
   // ContentSettingsTypes. Currently only COOKIES, TPCD_SUPPORT, STORAGE_ACCESS,
-  // TPCD_METADATA_GRANTS, and TOP_LEVEL_STORAGE_ACCESS are required.
+  // TPCD_METADATA_GRANTS, TPCD_HEURISTICS_GRANTS, and TOP_LEVEL_STORAGE_ACCESS
+  // are required.
   virtual ContentSetting GetContentSetting(
       const GURL& primary_url,
       const GURL& secondary_url,
@@ -274,6 +274,22 @@ class CookieSettingsBase {
 
   bool IsAllowedByStorageAccessGrant(const GURL& url,
                                      const GURL& first_party_url) const;
+
+  bool ShouldConsider3pcdSupportSettings() const;
+
+  bool ShouldConsider3pcdHeuristicsGrantsSettings() const;
+
+  // Returns true iff the query should consider Storage Access API permission
+  // grants.
+  bool ShouldConsiderStorageAccessGrants(
+      net::CookieSettingOverrides overrides) const;
+
+  // Returns true iff the query should consider top-level Storage Access API
+  // permission grants. Note that this is handled similarly to storage access
+  // grants, but applies to subresources more broadly (at the top-level rather
+  // than only for a single frame).
+  bool ShouldConsiderTopLevelStorageAccessGrants(
+      net::CookieSettingOverrides overrides) const;
 
   // Returns whether requests for |url| and |first_party_url| should always
   // be allowed. Called before checking other cookie settings.

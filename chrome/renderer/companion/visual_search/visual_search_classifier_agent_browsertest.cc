@@ -44,7 +44,7 @@ base::File LoadModelFile(const base::FilePath& model_file_path) {
 
 base::FilePath model_file_path() {
   base::FilePath source_root_dir;
-  base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root_dir);
+  base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &source_root_dir);
   return source_root_dir.AppendASCII("chrome")
       .AppendASCII("test")
       .AppendASCII("data")
@@ -54,7 +54,7 @@ base::FilePath model_file_path() {
 
 base::FilePath img_file_path() {
   base::FilePath source_root_dir;
-  base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root_dir);
+  base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &source_root_dir);
   return source_root_dir.AppendASCII("chrome")
       .AppendASCII("test")
       .AppendASCII("data")
@@ -145,8 +145,8 @@ class VisualSearchClassifierAgentTest : public ChromeRenderViewTest {
     std::vector<base::test::FeatureRef> disabled_features;
     base::FieldTrialParams params;
     params["max_visual_suggestions"] = "2";
-    enabled_features.emplace_back(
-        companion::visual_search::features::kVisualSearchSuggestions, params);
+    enabled_features.emplace_back(base::test::FeatureRefAndParams(
+        companion::visual_search::features::kVisualSearchSuggestions, params));
     enabled_features.emplace_back(base::test::FeatureRefAndParams(
         companion::visual_search::features::kVisualSearchSuggestionsAgent,
         /* params */ {}));
@@ -162,7 +162,7 @@ class VisualSearchClassifierAgentTest : public ChromeRenderViewTest {
   }
 
  protected:
-  raw_ptr<VisualSearchClassifierAgent, ExperimentalRenderer>
+  raw_ptr<VisualSearchClassifierAgent, DanglingUntriaged>
       agent_;  // Owned by RenderFrame
   base::HistogramTester histogram_tester_;
   TestVisualResultHandler test_handler_;

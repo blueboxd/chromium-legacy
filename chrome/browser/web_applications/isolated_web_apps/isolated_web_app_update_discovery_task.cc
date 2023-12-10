@@ -301,7 +301,7 @@ void IsolatedWebAppUpdateDiscoveryTask::OnWebBundleDownloaded(
   }
 
   command_scheduler_->PrepareAndStoreIsolatedWebAppUpdate(
-      WebApp::IsolationData::PendingUpdateInfo(
+      IsolatedWebAppUpdatePrepareAndStoreCommand::UpdateInfo(
           InstalledBundle({.path = download_path}), expected_version),
       url_info_,
       /*optional_keep_alive=*/nullptr,
@@ -311,9 +311,10 @@ void IsolatedWebAppUpdateDiscoveryTask::OnWebBundleDownloaded(
 }
 
 void IsolatedWebAppUpdateDiscoveryTask::OnUpdateDryRunDone(
-    base::expected<void, IsolatedWebAppUpdatePrepareAndStoreCommandError>
-        result) {
+    IsolatedWebAppUpdatePrepareAndStoreCommandResult result) {
   if (result.has_value()) {
+    debug_log_.Set("prepare_and_store_command_update_version",
+                   result->update_version.GetString());
     SucceedWith(Success::kUpdateFoundAndSavedInDatabase);
   } else {
     debug_log_.Set("prepare_and_store_command_error", result.error().message);

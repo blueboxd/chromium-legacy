@@ -273,6 +273,7 @@ constexpr auto kAshAcceleratorsWithoutLayout =
         AcceleratorAction::kTouchHudClear,
         AcceleratorAction::kTouchHudModeChange,
         AcceleratorAction::kVolumeMuteToggle,
+        AcceleratorAction::kUnpin,
     });
 
 // A fixed array of accelerator layouts used for categorization and styling of
@@ -426,10 +427,6 @@ constexpr AcceleratorLayoutDetails kAcceleratorLayouts[] = {
      mojom::AcceleratorCategory::kGeneral, mojom::AcceleratorSubcategory::kApps,
      /*locked=*/false, mojom::AcceleratorLayoutStyle::kDefault,
      mojom::AcceleratorSource::kAsh},
-    {AcceleratorAction::kUnpin, IDS_ASH_ACCELERATOR_DESCRIPTION_UNPIN,
-     mojom::AcceleratorCategory::kGeneral, mojom::AcceleratorSubcategory::kApps,
-     /*locked=*/false, mojom::AcceleratorLayoutStyle::kDefault,
-     mojom::AcceleratorSource::kAsh},
     {AcceleratorAction::kToggleResizeLockMenu,
      IDS_ASH_ACCELERATOR_DESCRIPTION_TOGGLE_RESIZE_LOCK_MENU,
      mojom::AcceleratorCategory::kGeneral, mojom::AcceleratorSubcategory::kApps,
@@ -534,8 +531,8 @@ constexpr AcceleratorLayoutDetails kAcceleratorLayouts[] = {
      mojom::AcceleratorSubcategory::kInputs,
      /*locked=*/false, mojom::AcceleratorLayoutStyle::kDefault,
      mojom::AcceleratorSource::kAsh},
-    {AcceleratorAction::kShowStylusTools,
-     IDS_ASH_ACCELERATOR_DESCRIPTION_SHOW_STYLUS_TOOLS,
+    {AcceleratorAction::kToggleStylusTools,
+     IDS_ASH_ACCELERATOR_DESCRIPTION_TOGGLE_STYLUS_TOOLS,
      mojom::AcceleratorCategory::kDevice,
      mojom::AcceleratorSubcategory::kInputs,
      /*locked=*/false, mojom::AcceleratorLayoutStyle::kDefault,

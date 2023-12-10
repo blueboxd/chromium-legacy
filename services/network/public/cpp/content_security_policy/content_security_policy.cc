@@ -482,10 +482,9 @@ bool ParsePath(base::StringPiece path, mojom::CSPSource* csp_source) {
     return false;
 
   url::RawCanonOutputT<char16_t> unescaped;
-  url::DecodeURLEscapeSequences(path.data(), path.size(),
-                                url::DecodeURLMode::kUTF8OrIsomorphic,
+  url::DecodeURLEscapeSequences(path, url::DecodeURLMode::kUTF8OrIsomorphic,
                                 &unescaped);
-  base::UTF16ToUTF8(unescaped.data(), unescaped.length(), &csp_source->path);
+  csp_source->path = base::UTF16ToUTF8(unescaped.view());
 
   return true;
 }
@@ -1600,11 +1599,6 @@ bool AllowsBlanketEnforcementOfRequiredCSP(
       response_url.SchemeIs(url::kDataScheme) || response_url.SchemeIsFile() ||
       response_url.SchemeIsFileSystem() || response_url.SchemeIsBlob()) {
     required_csp->self_origin = ComputeSelfOrigin(request_origin.GetURL());
-    return true;
-  }
-
-  if (request_origin.IsSameOriginWith(response_url)) {
-    required_csp->self_origin = ComputeSelfOrigin(response_url);
     return true;
   }
 

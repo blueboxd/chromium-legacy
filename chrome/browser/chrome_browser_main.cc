@@ -95,6 +95,7 @@
 #include "chrome/browser/tracing/trace_event_system_stats_monitor.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
+#include "chrome/browser/ui/actions/chrome_actions.h"
 #include "chrome/browser/ui/color/chrome_color_mixers.h"
 #include "chrome/browser/ui/javascript_dialogs/chrome_javascript_app_modal_dialog_view_factory.h"
 #include "chrome/browser/ui/profiles/profile_error_dialog.h"
@@ -122,6 +123,7 @@
 #include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "components/color/color_mixers.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/embedder_support/origin_trials/component_updater_utils.h"
 #include "components/embedder_support/origin_trials/origin_trials_settings_storage.h"
@@ -172,10 +174,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/first_party_sets_handler.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/content_client.h"
@@ -276,7 +274,6 @@
 #include "chrome/browser/first_run/upgrade_util_win.h"
 #include "chrome/browser/notifications/win/notification_launch_id.h"
 #include "chrome/browser/ui/network_profile_bubble.h"
-#include "chrome/browser/ui/views/try_chrome_dialog_win/try_chrome_dialog.h"
 #include "chrome/browser/win/browser_util.h"
 #include "chrome/browser/win/chrome_select_file_dialog_factory.h"
 #include "chrome/browser/win/parental_controls.h"
@@ -499,8 +496,7 @@ void ProcessSingletonNotificationCallbackImpl(
   }
 #endif
 
-  g_browser_process->platform_part()->PlatformSpecificCommandLineProcessing(
-      command_line);
+  g_browser_process->platform_part()->OnBrowserLaunch();
 
   StartupProfilePathInfo startup_profile_path_info =
       GetStartupProfilePath(current_directory, command_line,
@@ -517,8 +513,9 @@ void ProcessSingletonNotificationCallbackImpl(
       command_line, current_directory, startup_profile_path_info);
 
   // Record now as the last successful chrome start.
-  if (ShouldRecordActiveUse(command_line))
+  if constexpr (kShouldRecordActiveUse) {
     GoogleUpdateSettings::SetLastRunTime();
+  }
 }
 #endif  // BUILDFLAG(ENABLE_PROCESS_SINGLETON)
 
@@ -811,7 +808,11 @@ void ChromeBrowserMainParts::ToolkitInitialized() {
   // theme that, in turn, adds the GTK core color mixer; core mixers should all
   // be added before we add chrome mixers.
   ui::ColorProviderManager::Get().AppendColorProviderInitializer(
+      base::BindRepeating(color::AddComponentsColorMixers));
+  ui::ColorProviderManager::Get().AppendColorProviderInitializer(
       base::BindRepeating(AddChromeColorMixers));
+
+  InitializeActionIdStringMapping();
 }
 
 void ChromeBrowserMainParts::PreCreateMainMessageLoop() {
@@ -1507,55 +1508,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   }
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
-  // Handle special early return paths (which couldn't be processed even earlier
-  // as they require the process singleton to be held) first.
-
-  std::string try_chrome =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kTryChromeAgain);
-
-  // The TryChromeDialog may be aborted by a rendezvous from another browser
-  // process (e.g., a launch via Chrome's taskbar icon or some such). In this
-  // case, browser startup should continue without processing the original
-  // command line (the one with --try-chrome-again), but rather with the command
-  // line from the other process (handled in
-  // ProcessSingletonNotificationCallback thanks to the ProcessSingleton). The
-  // |process_command_line| variable is cleared in that particular case, leading
-  // to a bypass of the StartupBrowserCreator.
-  bool process_command_line = true;
-  if (!try_chrome.empty()) {
-#if BUILDFLAG(IS_WIN)
-    // Setup.exe has determined that we need to run a retention experiment
-    // and has lauched chrome to show the experiment UI. It is guaranteed that
-    // no other Chrome is currently running as the process singleton was
-    // successfully grabbed above.
-    int try_chrome_int;
-    base::StringToInt(try_chrome, &try_chrome_int);
-    TryChromeDialog::Result answer = TryChromeDialog::Show(
-        try_chrome_int,
-        base::BindRepeating(
-            &ChromeProcessSingleton::SetModalDialogNotificationHandler,
-            base::Unretained(ChromeProcessSingleton::GetInstance())));
-    switch (answer) {
-      case TryChromeDialog::NOT_NOW:
-        return chrome::RESULT_CODE_NORMAL_EXIT_CANCEL;
-      case TryChromeDialog::OPEN_CHROME_WELCOME:
-        browser_creator_->set_welcome_back_page(true);
-        break;
-      case TryChromeDialog::OPEN_CHROME_DEFAULT:
-        break;
-      case TryChromeDialog::OPEN_CHROME_DEFER:
-        process_command_line = false;
-        break;
-    }
-#else
-    // We don't support retention experiments on Mac or Linux.
-    return content::RESULT_CODE_NORMAL_EXIT;
-#endif  // BUILDFLAG(IS_WIN)
-  }
-#endif  // BUILDFLAG(ENABLE_PROCESS_SINGLETON)
-
 #if BUILDFLAG(IS_WIN)
   // Check if there is any machine level Chrome installed on the current
   // machine. If yes and the current Chrome process is user level, we do not
@@ -1761,15 +1713,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   // This step is costly and is already measured in
   // Startup.StartupBrowserCreator_Start.
-  // See the comment above for an explanation of |process_command_line|.
-  const bool started =
-#if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
-      !process_command_line ||
-#endif  // BUILDFLAG(ENABLE_PROCESS_SINGLETON)
-      browser_creator_->Start(*base::CommandLine::ForCurrentProcess(),
+  if (browser_creator_->Start(*base::CommandLine::ForCurrentProcess(),
                               base::FilePath(), profile_info,
-                              last_opened_profiles);
-  if (started) {
+                              last_opened_profiles)) {
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #if BUILDFLAG(IS_WIN) || (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
@@ -1792,8 +1738,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
     // Record now as the last successful chrome start.
-    if (ShouldRecordActiveUse(*base::CommandLine::ForCurrentProcess()))
+    if constexpr (kShouldRecordActiveUse) {
       GoogleUpdateSettings::SetLastRunTime();
+    }
 
     // Create the RunLoop for MainMessageLoopRun() to use and transfer
     // ownership of the browser's lifetime to the BrowserProcess.

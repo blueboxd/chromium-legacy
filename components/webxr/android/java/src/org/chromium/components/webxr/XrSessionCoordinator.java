@@ -11,12 +11,13 @@ import android.view.Surface;
 
 import androidx.annotation.IntDef;
 
+import org.jni_zero.CalledByNative;
+import org.jni_zero.JNINamespace;
+import org.jni_zero.NativeMethods;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -140,8 +141,12 @@ public class XrSessionCoordinator {
         // active session going on.
         assert (sActiveSessionInstance == null);
 
-        XrImmersiveOverlay.Delegate overlayDelegate = ArClassProvider.getOverlayDelegate(
-                compositorDelegateProvider.create(webContents), useOverlay, canRenderDomContent);
+        XrImmersiveOverlay.Delegate overlayDelegate =
+                ArClassProvider.getOverlayDelegate(
+                        compositorDelegateProvider.create(webContents),
+                        webContents,
+                        useOverlay,
+                        canRenderDomContent);
         startSession(SessionType.AR, overlayDelegate, webContents);
     }
 

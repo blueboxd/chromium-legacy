@@ -43,7 +43,6 @@
 namespace blink {
 
 class LayoutMultiColumnFlowThread;
-class NGPhysicalFragment;
 
 struct NGInlineNodeData;
 
@@ -74,15 +73,11 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
     return true;
   }
 
-  void ComputeVisualOverflow() override;
-
   bool CanContainFirstFormattedLine() const;
 
   void AddChild(LayoutObject* new_child,
                 LayoutObject* before_child = nullptr) override;
   void RemoveChild(LayoutObject*) override;
-
-  bool CreatesAnonymousWrapper() const override;
 
   void MoveAllChildrenIncludingFloatsTo(LayoutBlock* to_block,
                                         bool full_remove_insert);
@@ -92,7 +87,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   LayoutMultiColumnFlowThread* MultiColumnFlowThread() const {
     NOT_DESTROYED();
-    return multi_column_flow_thread_;
+    return multi_column_flow_thread_.Get();
   }
   void ResetMultiColumnFlowThread() {
     NOT_DESTROYED();
@@ -112,8 +107,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   bool IsInitialLetterBox() const override;
 
-  void AddVisualOverflowFromInlineChildren();
-
   // Return true if this object is allowed to establish a multicol container.
   virtual bool AllowsColumns() const;
 
@@ -126,15 +119,9 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   void SetShouldDoFullPaintInvalidationForFirstLine();
 
-  void RecalcInlineChildrenVisualOverflow();
-
   PositionWithAffinity PositionForPoint(const PhysicalOffset&) const override;
 
   bool ShouldMoveCaretToHorizontalBoundaryWhenPastTopOrBottom() const;
-
-  // These functions are only public so we can call it from NGBlockNode while
-  // we're still working on LayoutNG.
-  void AddVisualOverflowFromFloats(const NGPhysicalFragment& fragment);
 
   // Returns the associated `NGInlineNodeData`, or `nullptr` if `this` doesn't
   // have one (i.e., not an NG inline formatting context.)
@@ -190,9 +177,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   bool ShouldTruncateOverflowingText() const;
 
  private:
-  static void RecalcFloatingDescendantsVisualOverflow(
-      const NGPhysicalFragment& fragment);
-
   Member<LayoutMultiColumnFlowThread> multi_column_flow_thread_;
 
  protected:

@@ -35,7 +35,7 @@ BASE_FEATURE(kAdaptiveScreenBrightnessLogging,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 BASE_FEATURE(kAppManagementAppDetails,
              "AppManagementAppDetails",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -143,6 +143,12 @@ BASE_FEATURE(kCrOSEnableUSMUserService,
 BASE_FEATURE(kCrosCompUpdates,
              "CrosCompUpdates",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables the behaviour difference between web apps and browser created
+// shortcut backed by the web app system on Chrome OS.
+BASE_FEATURE(kCrosShortstand,
+             "CrosShortstand",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable project Crostini, Linux VMs on Chrome OS.
 BASE_FEATURE(kCrostini, "Crostini", base::FEATURE_DISABLED_BY_DEFAULT);
@@ -353,13 +359,8 @@ BASE_FEATURE(kKeepForceInstalledPreinstalledApps,
 // Controls if the 'launch anyways' button is shown.
 const base::FeatureParam<bool> kChromeAppsDeprecationHideLaunchAnyways{
     &kChromeAppsDeprecation, "HideLaunchAnyways", true};
-
-// Enables user link capturing on desktop platforms, i.e. Windows, Mac
-// Linux amd Fuchsia.
-BASE_FEATURE(kDesktopPWAsLinkCapturing,
-             "DesktopPWAsLinkCapturing",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) ||
+        // BUILDFLAG(IS_FUCHSIA)
 
 // Enables notification permission revocation for origins that may send
 // disruptive notifications.
@@ -431,6 +432,15 @@ BASE_FEATURE(kEnableNetworkServiceResourceBlockListInOtrSessions,
              "EnableNetworkServiceResourceBlockListInOtrSessions",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// When enabled, resource requests will be evaluated against the Network
+// Service's block list if the setting to block all third party cookies is
+// enabled. The block list is populated by the MaskedDomainList, so
+// "MaskedDomainList" will need to also be enabled for the block list to have
+// any contents.
+BASE_FEATURE(kEnableNetworkServiceResourceBlockListIfThirdPartyCookiesBlocked,
+             "EnableNetworkServiceResourceBlockListIfThirdPartyCookiesBlocked",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enable extended descriptions for key settings in Chrome settings.
 BASE_FEATURE(kExtendedSettingsDescriptions,
              "ExtendedSettingsDescriptions",
@@ -443,13 +453,6 @@ BASE_FEATURE(kExtensionDeferredIndividualSettings,
              "ExtensionDeferredIndividualSettings",
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
-
-// If enabled, this feature's |kExternalInstallDefaultButtonKey| field trial
-// parameter value controls which |ExternalInstallBubbleAlert| button is the
-// default.
-BASE_FEATURE(kExternalExtensionDefaultButtonControl,
-             "ExternalExtensionDefaultButtonControl",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 BASE_FEATURE(kFileTransferEnterpriseConnector,
@@ -499,6 +502,12 @@ BASE_FEATURE(kPrivacyGuideAndroid3,
 #if BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kPrivacyGuidePreloadAndroid,
              "PrivacyGuidePreloadAndroid",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
+#if !BUILDFLAG(IS_ANDROID)
+BASE_FEATURE(kCbdTimeframeRequired,
+             "CbdTimeframeRequired",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
@@ -749,9 +758,7 @@ BASE_FEATURE(kHttpsFirstModeV2ForTypicallySecureUsers,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables automatically upgrading main frame navigations to HTTPS.
-BASE_FEATURE(kHttpsUpgrades,
-             "HttpsUpgrades",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kHttpsUpgrades, "HttpsUpgrades", base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_MAC)
 // Enables immersive fullscreen. The tab strip and toolbar are placed underneath
@@ -1051,6 +1058,11 @@ BASE_FEATURE(kPrerenderFallbackToPreconnect,
 BASE_FEATURE(kPrintPreviewSetupAssistance,
              "PrintPreviewSetupAssistance",
              base::FEATURE_ENABLED_BY_DEFAULT);
+// Enables the observing of local printers to provide UI surfaces with live
+// updates.
+BASE_FEATURE(kLocalPrinterObserving,
+             "LocalPrinterObserving",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 #if BUILDFLAG(IS_ANDROID)

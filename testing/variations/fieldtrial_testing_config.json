@@ -5063,27 +5063,19 @@
             ]
         }
     ],
-    "DefaultBrowserPromotionImprovementsPhase1": [
+    "DefaultBrowserVideoPromo": [
         {
             "platforms": [
                 "ios"
             ],
             "experiments": [
                 {
-                    "name": "Launch_Group_B",
+                    "name": "Enabled_Single_Step",
                     "params": {
-                        "cooldown-days": "14",
-                        "default_browser_video_promo_variant": "generic_conditions_halfscreen_promo",
-                        "impression-limit": "3"
+                        "default_browser_video_promo_variant": "generic_conditions_fullscreen_promo"
                     },
                     "enable_features": [
-                        "DefaultBrowserVideoPromo",
-                        "NonModalDefaultBrowserPromoCooldownRefactor",
-                        "NonModalDefaultBrowserPromoImpressionLimit"
-                    ],
-                    "disable_features": [
-                        "DefaultBrowserGenericTailoredPromoTrain",
-                        "FullScreenPromoOnOmniboxCopyPaste"
+                        "DefaultBrowserVideoPromo"
                     ]
                 }
             ]

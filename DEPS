@@ -305,7 +305,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'src_internal_revision': '67bb9e05168bd89b8de81ffe487e8994ae756635',
+  'src_internal_revision': '364f1c4fb31acb72068be5310a4363f7316dca92',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
@@ -313,11 +313,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '5eefc590c868d8dfb411e53053c963fe42dcda74',
+  'v8_revision': '999a2ca2d915d01ff1d889a57f1e26907d6ea842',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '76ead87021b954ab670d0c1e682f4828cb6adf25',
+  'angle_revision': '4ae5f681dfe60bed7b083296ac97827b751f9226',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -400,7 +400,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '099860eb0f995fef1d97ecdbe3c354f0558bec3b',
+  'devtools_frontend_revision': 'a6c7f00333881a7ecf7044b725052ab0c8776d6f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -460,7 +460,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libavif
   # and whatever else without interference from each other.
-  'libavif_revision': '466d5e5f8889053115d445637ab8f6e0b3c70ed3',
+  'libavif_revision': '1a78d970b8315e7cc6a8601861ec75189c50c214',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libavifinfo
   # and whatever else without interference from each other.
@@ -840,7 +840,7 @@ deps = {
 
   'src/clank': {
     'url': Var('chrome_git') + '/clank/internal/apps.git' + '@' +
-    '9669bb2ad6885397db31bfd7b1e4226059ed4ee9',
+    '55a4bb6702abc4f1bd3b3714a059551652c1c24d',
     'condition': 'checkout_android and checkout_src_internal',
   },
 
@@ -1252,7 +1252,7 @@ deps = {
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
 
   'src/third_party/devtools-frontend-internal': {
-      'url': Var('chrome_git') + '/devtools/devtools-internal.git' + '@' + '37d29ab9e6ace7661a0ed5904080d7ccda86aee2',
+      'url': Var('chrome_git') + '/devtools/devtools-internal.git' + '@' + '16d84045884bddeb08df5a0e40df0936d498b03f',
     'condition': 'checkout_src_internal',
   },
 
@@ -4048,7 +4048,7 @@ deps = {
 
   'src/ios_internal':  {
       'url': Var('chrome_git') + '/chrome/ios_internal.git' + '@' +
-        '0c4b925d0604cf73782c925db32532e13b693944',
+        'f3245305b4a1cc8328a864d0b82275698aad07e1',
       'condition': 'checkout_ios and checkout_src_internal',
   },
 

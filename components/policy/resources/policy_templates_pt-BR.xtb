@@ -1640,6 +1640,7 @@ O recurso não vai estar disponível se a sincronização de senhas estiver desa
       Se a política for definida como "Desativada", esse recurso não estará disponível.</translation>
 <translation id="2342066287156668839">Ativar cota persistente.</translation>
 <translation id="2345547870894930157">Ativar DNS sobre HTTPS sem substituto inseguro</translation>
+<translation id="2347695338560092641">Drivers de impressão fora do processo são permitidos</translation>
 <translation id="234856189825555040">Esta política controla se os plug-ins do <ph name="PEPPER_NAME" /> podem
 usar o novo decodificador para se comunicar com os de hardware, em vez do decodificador
 de vídeo legado.
@@ -2686,7 +2687,7 @@ Se ela não for definida, o JavaScript será executado, mas os usuários poderã
       Para informações detalhadas sobre padrões de <ph name="URL_LABEL" /> válidos, consulte https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns (link em inglês). <ph name="WILDCARD_VALUE" /> não é um valor aceitável para esta política.</translation>
 <translation id="3207821022126246451">O WebRTC usará o TCP na interface pública e usará o UDP apenas se ele for compatível com um proxy configurado.</translation>
 <translation id="3207873329349672535">Esta política controla se haverá uma opção disponível ao usuário no menu do <ph name="PRODUCT_NAME" />, que permita a transmissão em dispositivos que não são exibidos no menu do <ph name="PRODUCT_NAME" />, usando o código de acesso ou QR exibido na tela desses aparelhos.
-      Por padrão, um usuário precisa inserir o código de acesso ou fazer a leitura do código QR novamente para iniciar a próxima sessão de transmissão, mas se a política <ph name="ACCESS_CODE_CAST_DEVICE_DURATION_POLICY_NAME" /> for definida com um valor diferente de zero (que é o padrão), o dispositivo de transmissão permanecerá na lista de aparelhos disponíveis até que o período especificado tenha expirado.
+      Por padrão, um usuário precisa inserir o código de acesso ou fazer a leitura do QR code novamente para iniciar a próxima sessão de transmissão, mas se a política <ph name="ACCESS_CODE_CAST_DEVICE_DURATION_POLICY_NAME" /> for definida com um valor diferente de zero (que é o padrão), o dispositivo de transmissão permanecerá na lista de aparelhos disponíveis até que o período especificado tenha expirado.
       Quando esta política for definida como "Ativada", os usuários terão a opção de selecionar dispositivos de transmissão usando um código de acesso ou QR.
       Se esta política for definida como "Desativada" ou deixada sem definição, os usuários não terão essa opção.</translation>
 <translation id="3208615748170745525">Dias a partir da descoberta da atualização.</translation>
@@ -2856,6 +2857,7 @@ Se a política for definida como falsa, as teclas vão funcionar como comandos d
 <translation id="3362584244602846824">Usar a transição rápida quando o ponto de acesso sem fio oferecer suporte para isso</translation>
 <translation id="3363360928811201045">Adicionar restrições em contas gerenciadas</translation>
 <translation id="3364400740222114778">Recuperação de conta</translation>
+<translation id="3366156659815091184">A impressão da plataforma usa o processo de serviço.</translation>
 <translation id="3367361756115023251">Permitir acesso root deste usuário aos contêineres do Crostini.
 
 Se a política for definida como verdadeira ou não for definida, o acesso root aos contêineres do Crostini será concedido ao usuário.
@@ -2945,7 +2947,7 @@ Se esta política for definida como desativada, o recurso de escrita preditiva n
 <translation id="3442589735857147823">Permitir que os usuários usem máquinas virtuais necessárias para os apps Linux</translation>
 <translation id="3450649825886735618">Não usar serviços da Web do Google para ajudar a solucionar erros de ortografia</translation>
 <translation id="3451422488938880786"> Permite ativar/desativar o remapeamento de atalhos de teclados internacionais</translation>
-<translation id="3451901387456196887">O usuário terá a opção de selecionar dispositivos de transmissão usando um código de acesso ou fazendo a leitura de um código QR no menu do <ph name="PRODUCT_NAME" />.</translation>
+<translation id="3451901387456196887">O usuário terá a opção de selecionar dispositivos de transmissão usando um código de acesso ou fazendo a leitura de um QR code no menu do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3456292544936505775">Essa política controla os períodos durante os quais o dispositivo <ph name="PRODUCT_OS_NAME" /> não tem permissão para procurar atualizações automaticamente.
       Isto é o que acontece quando ela é definida como uma lista não vazia de intervalos de tempo:
       Os dispositivos não podem procurar atualizações automaticamente durante os intervalos especificados. Os dispositivos que precisam de uma reversão empresarial ou que são mais antigos que a versão mínima do <ph name="PRODUCT_OS_NAME" /> não são afetados por esta política para evitar possíveis problemas de segurança. Além disso, a política não bloqueia verificações de atualização solicitadas por usuários ou administradores.
@@ -3620,7 +3622,7 @@ Essa política é temporária e será removida.</translation>
 <translation id="3956573780915784996">Permite que os usuários coletem o rastreamento de desempenho do sistema.</translation>
 <translation id="3956686688560604829">Usar a política SiteList do Internet Explorer para o Suporte a navegadores legados.</translation>
 <translation id="3958586912393694012">Permitir que o Smart Lock seja usado</translation>
-<translation id="3960728283243442805">O usuário não terá a opção de selecionar dispositivos de transmissão usando um código de acesso ou fazendo a leitura de um código QR no menu do <ph name="PRODUCT_NAME" />.</translation>
+<translation id="3960728283243442805">O usuário não terá a opção de selecionar dispositivos de transmissão usando um código de acesso ou fazendo a leitura de um QR code no menu do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3962445567482559878">Usa o modo EDU da experiência de integração do Assistente</translation>
 <translation id="396261881101930204">Ocultar do usuário as recomendações de mídia</translation>
 <translation id="3964298692570794635">Permitir conteúdo não seguro nesses sites</translation>
@@ -6820,10 +6822,10 @@ Mudanças na política são aplicadas apenas enquanto o ARC não está em execu�
 <translation id="6594372503585248865">Ativar IUs relacionadas à conexão no computador do host remoto quando uma conexão estiver ativa</translation>
 <translation id="65947892191748867">Desativar o consentimento de indicadores do dispositivo para usuários gerenciados em dispositivos não gerenciados</translation>
 <translation id="6596675965208703569">Esta política especifica por quanto tempo (em segundos) um dispositivo de transmissão que foi selecionado anteriormente por um código de acesso ou QR pode ser exibido no menu de aparelhos desse tipo no <ph name="PRODUCT_NAME" />.
-      O ciclo de vida de uma entrada começa na primeira vez que o código de acesso é inserido ou quando o código QR é lido pela primeira vez.
+      O ciclo de vida de uma entrada começa na primeira vez que o código de acesso é inserido ou quando o QR code é lido pela primeira vez.
       Durante esse período, o dispositivo de transmissão será exibido na lista do menu do <ph name="PRODUCT_NAME" />.
-      Após esse período, para usar o dispositivo de transmissão novamente, será necessário inserir o código de acesso ou ler o código QR de novo.
-      Por padrão, o período é de zero segundo, ou seja, os dispositivos de transmissão não serão exibidos no menu do <ph name="PRODUCT_NAME" />. Portanto, será necessário inserir o código de acesso ou ler o código QR novamente para iniciar uma nova sessão de transmissão.
+      Após esse período, para usar o dispositivo de transmissão novamente, será necessário inserir o código de acesso ou ler o QR code de novo.
+      Por padrão, o período é de zero segundo, ou seja, os dispositivos de transmissão não serão exibidos no menu do <ph name="PRODUCT_NAME" />. Portanto, será necessário inserir o código de acesso ou ler o QR code novamente para iniciar uma nova sessão de transmissão.
       Observe que esta política afeta apenas por quanto tempo um dispositivo de transmissão é exibido no menu do <ph name="PRODUCT_NAME" /> e não tem efeito nas sessões de transmissão em andamento que continuarão mesmo se o período expirar.
       Esta política não tem efeito a menos que a política <ph name="ACCESS_CODE_CAST_ENABLED_POLICY_NAME" /> esteja ativada.</translation>
 <translation id="6598235178374410284">Imagem do avatar do usuário</translation>
@@ -7255,6 +7257,13 @@ bloqueio dessas solicitações será aplicado.</translation>
 Se você definir a política, os usuários não poderão mudá-la. Se a política não for definida, a lupa será inicialmente desativada, mas os usuários poderão ativá-la quando quiserem.</translation>
 <translation id="6940243892299228102">Não permitir que os usuários usem modelos de espaço de trabalho</translation>
 <translation id="6943577887654905793">Nome de preferência Mac/Linux:</translation>
+<translation id="694602410134474029">Controla se o <ph name="PRODUCT_NAME" /> interage com os drivers de impressora de um processo de serviço separado. As chamadas de impressão da plataforma são feitas com base em um processo de serviço. Elas são usadas para consultar as impressoras disponíveis, acessar as configurações do driver de impressão e enviar documentos para impressoras locais. Remover essas chamadas do processo do navegador ajuda a melhorar a estabilidade e reduzir o comportamento congelado da interface na visualização da impressão.
+
+Se esta política for ativada ou deixada sem definição, o <ph name="PRODUCT_NAME" /> vai usar um processo de serviço separado para tarefas de impressão da plataforma.
+
+Se for desativada, o <ph name="PRODUCT_NAME" /> vai usar o processo do navegador para tarefas de impressão da plataforma.
+
+Esta política será removida após o lançamento do recurso de drivers de impressão fora de processo.</translation>
 <translation id="6946652757373377924">
       Esta política foi removida na versão M77.
       Ela se aplica à tela de login. Consulte também a política <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, que se aplica à sessão do usuário.
@@ -8182,6 +8191,7 @@ Quando ela for deixada sem definição, o renderizador de PDF será escolhido pe
       Recomendamos que os servidores migrem para pacotes de criptografia ECDHE. Se eles não estiverem disponíveis, garanta um pacote de criptografia com a troca de chaves RSA ativada.</translation>
 <translation id="7709470712369261710">Não permitir que os Serviços do Google forneçam descrições automáticas de imagens</translation>
 <translation id="7712109699186360774">Perguntar toda vez que um site quiser acessar minha câmera e/ou meu microfone</translation>
+<translation id="7712245244073542805">Impressão da plataforma pelo processo do navegador.</translation>
 <translation id="7713608076604149344">Restrições de downloads</translation>
 <translation id="7713845740295404764">Informar eventos de login/logout</translation>
 <translation id="7715711044277116530">Percentual pelo qual calcular o intervalo de escurecimento da tela no modo de apresentação</translation>

@@ -70,6 +70,22 @@
   },
   'LACROS_VERSION_SKEW_CANARY': {
     'identifier': 'Lacros version skew testing ash canary',
+    'description': 'Run with ash-chrome version 122.0.6177.0',
+    'args': [
+      '--ash-chrome-path-override=../../lacros_version_skew_tests_v122.0.6177.0/test_ash_chrome',
+    ],
+    'swarming': {
+      'cipd_packages': [
+        {
+          'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
+          'location': 'lacros_version_skew_tests_v122.0.6177.0',
+          'revision': 'version:122.0.6177.0',
+        },
+      ],
+    },
+  },
+  'LACROS_VERSION_SKEW_DEV': {
+    'identifier': 'Lacros version skew testing ash dev',
     'description': 'Run with ash-chrome version 121.0.6154.0',
     'args': [
       '--ash-chrome-path-override=../../lacros_version_skew_tests_v121.0.6154.0/test_ash_chrome',
@@ -84,50 +100,34 @@
       ],
     },
   },
-  'LACROS_VERSION_SKEW_DEV': {
-    'identifier': 'Lacros version skew testing ash dev',
-    'description': 'Run with ash-chrome version 121.0.6126.0',
-    'args': [
-      '--ash-chrome-path-override=../../lacros_version_skew_tests_v121.0.6126.0/test_ash_chrome',
-    ],
-    'swarming': {
-      'cipd_packages': [
-        {
-          'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
-          'location': 'lacros_version_skew_tests_v121.0.6126.0',
-          'revision': 'version:121.0.6126.0',
-        },
-      ],
-    },
-  },
   'LACROS_VERSION_SKEW_BETA': {
     'identifier': 'Lacros version skew testing ash beta',
-    'description': 'Run with ash-chrome version 120.0.6099.25',
+    'description': 'Run with ash-chrome version 120.0.6099.80',
     'args': [
-      '--ash-chrome-path-override=../../lacros_version_skew_tests_v120.0.6099.25/test_ash_chrome',
+      '--ash-chrome-path-override=../../lacros_version_skew_tests_v120.0.6099.80/test_ash_chrome',
     ],
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
-          'location': 'lacros_version_skew_tests_v120.0.6099.25',
-          'revision': 'version:120.0.6099.25',
+          'location': 'lacros_version_skew_tests_v120.0.6099.80',
+          'revision': 'version:120.0.6099.80',
         },
       ],
     },
   },
   'LACROS_VERSION_SKEW_STABLE': {
     'identifier': 'Lacros version skew testing ash stable',
-    'description': 'Run with ash-chrome version 119.0.6045.158',
+    'description': 'Run with ash-chrome version 119.0.6045.209',
     'args': [
-      '--ash-chrome-path-override=../../lacros_version_skew_tests_v119.0.6045.158/test_ash_chrome',
+      '--ash-chrome-path-override=../../lacros_version_skew_tests_v119.0.6045.209/test_ash_chrome',
     ],
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
-          'location': 'lacros_version_skew_tests_v119.0.6045.158',
-          'revision': 'version:119.0.6045.158',
+          'location': 'lacros_version_skew_tests_v119.0.6045.209',
+          'revision': 'version:119.0.6045.209',
         },
       ],
     },
@@ -437,7 +437,7 @@
     'enabled': False,
     'skylab': {
       'cros_board': 'brya',
-      'cros_img': 'brya-release/R121-15678.0.0',
+      'cros_img': 'brya-release/R121-15699.5.0',
       'dut_pool': 'chrome',
     },
   },
@@ -445,7 +445,7 @@
     'identifier': 'BRYA_RELEASE_BETA',
     'skylab': {
       'cros_board': 'brya',
-      'cros_img': 'brya-release/R120-15662.16.0',
+      'cros_img': 'brya-release/R120-15662.35.0',
       'dut_pool': 'chrome',
     },
   },
@@ -453,7 +453,7 @@
     'identifier': 'BRYA_RELEASE_STABLE',
     'skylab': {
       'cros_board': 'brya',
-      'cros_img': 'brya-release/R119-15633.44.0',
+      'cros_img': 'brya-release/R119-15633.65.0',
       'dut_pool': 'chrome',
     },
   },
@@ -469,21 +469,21 @@
     'enabled': False,
     'skylab': {
       'cros_board': 'dedede',
-      'cros_img': 'dedede-release/R121-15678.0.0',
+      'cros_img': 'dedede-release/R121-15699.5.0',
     },
   },
   'CROS_DEDEDE_RELEASE_BETA': {
     'identifier': 'DEDEDE_RELEASE_BETA',
     'skylab': {
       'cros_board': 'dedede',
-      'cros_img': 'dedede-release/R120-15662.16.0',
+      'cros_img': 'dedede-release/R120-15662.35.0',
     },
   },
   'CROS_DEDEDE_RELEASE_STABLE': {
     'identifier': 'DEDEDE_RELEASE_STABLE',
     'skylab': {
       'cros_board': 'dedede',
-      'cros_img': 'dedede-release/R119-15633.44.0',
+      'cros_img': 'dedede-release/R119-15633.65.0',
     },
   },
   'CROS_FIZZ_RELEASE_LKGM': {
@@ -499,7 +499,7 @@
     'enabled': False,
     'skylab': {
       'cros_board': 'fizz',
-      'cros_img': 'fizz-release/R121-15678.0.0',
+      'cros_img': 'fizz-release/R121-15699.5.0',
       'dut_pool': 'chrome',
     },
   },
@@ -507,7 +507,7 @@
     'identifier': 'FIZZ_RELEASE_BETA',
     'skylab': {
       'cros_board': 'fizz',
-      'cros_img': 'fizz-release/R120-15662.16.0',
+      'cros_img': 'fizz-release/R120-15662.35.0',
       'dut_pool': 'chrome',
     },
   },
@@ -515,7 +515,7 @@
     'identifier': 'FIZZ_RELEASE_STABLE',
     'skylab': {
       'cros_board': 'fizz',
-      'cros_img': 'fizz-release/R119-15633.44.0',
+      'cros_img': 'fizz-release/R119-15633.65.0',
       'dut_pool': 'chrome',
     },
   },
@@ -532,7 +532,7 @@
     'enabled': False,
     'skylab': {
       'cros_board': 'guybrush',
-      'cros_img': 'guybrush-release/R121-15678.0.0',
+      'cros_img': 'guybrush-release/R121-15694.0.0',
       'dut_pool': 'chrome',
     },
   },
@@ -540,7 +540,7 @@
     'identifier': 'GUYBRUSH_RELEASE_BETA',
     'skylab': {
       'cros_board': 'guybrush',
-      'cros_img': 'guybrush-release/R120-15662.16.0',
+      'cros_img': 'guybrush-release/R120-15662.35.0',
       'dut_pool': 'chrome',
     },
   },
@@ -548,7 +548,7 @@
     'identifier': 'GUYBRUSH_RELEASE_STABLE',
     'skylab': {
       'cros_board': 'guybrush',
-      'cros_img': 'guybrush-release/R119-15633.44.0',
+      'cros_img': 'guybrush-release/R119-15633.65.0',
       'dut_pool': 'chrome',
     },
   },
@@ -565,7 +565,7 @@
     'enabled': False,
     'skylab': {
       'cros_board': 'puff',
-      'cros_img': 'puff-release/R121-15678.0.0',
+      'cros_img': 'puff-release/R121-15699.5.0',
       'dut_pool': 'chrome',
     },
   },
@@ -573,7 +573,7 @@
     'identifier': 'PUFF_RELEASE_BETA',
     'skylab': {
       'cros_board': 'puff',
-      'cros_img': 'puff-release/R120-15662.16.0',
+      'cros_img': 'puff-release/R120-15662.35.0',
       'dut_pool': 'chrome',
     },
   },
@@ -581,7 +581,7 @@
     'identifier': 'PUFF_RELEASE_STABLE',
     'skylab': {
       'cros_board': 'puff',
-      'cros_img': 'puff-release/R118-15604.57.0',
+      'cros_img': 'puff-release/R119-15633.65.0',
       'dut_pool': 'chrome',
     },
   },
@@ -608,21 +608,21 @@
     'enabled': False,
     'skylab': {
       'cros_board': 'hana',
-      'cros_img': 'hana-release/R121-15678.0.0',
+      'cros_img': 'hana-release/R121-15699.5.0',
     },
   },
   'CROS_HANA_RELEASE_BETA': {
     'identifier': 'HANA_RELEASE_BETA',
     'skylab': {
       'cros_board': 'hana',
-      'cros_img': 'hana-release/R120-15662.16.0',
+      'cros_img': 'hana-release/R120-15662.35.0',
     },
   },
   'CROS_HANA_RELEASE_STABLE': {
     'identifier': 'HANA_RELEASE_STABLE',
     'skylab': {
       'cros_board': 'hana',
-      'cros_img': 'hana-release/R119-15633.44.0',
+      'cros_img': 'hana-release/R119-15633.65.0',
     },
   },
   'CROS_JACUZZI_RELEASE_LKGM': {
@@ -637,14 +637,14 @@
     'enabled': False,
     'skylab': {
       'cros_board': 'jacuzzi',
-      'cros_img': 'jacuzzi-release/R121-15678.0.0',
+      'cros_img': 'jacuzzi-release/R121-15699.5.0',
     },
   },
   'CROS_JACUZZI_RELEASE_BETA': {
     'identifier': 'JACUZZI_RELEASE_BETA',
     'skylab': {
       'cros_board': 'jacuzzi',
-      'cros_img': 'jacuzzi-release/R120-15662.16.0',
+      'cros_img': 'jacuzzi-release/R120-15662.35.0',
     },
   },
   'CROS_JACUZZI_RELEASE_CHROME_FROM_TLS_ASH_LKGM': {
@@ -658,7 +658,7 @@
     'identifier': 'JACUZZI_RELEASE_STABLE',
     'skylab': {
       'cros_board': 'jacuzzi',
-      'cros_img': 'jacuzzi-release/R119-15633.44.0',
+      'cros_img': 'jacuzzi-release/R119-15633.65.0',
     },
   },
   'CROS_JACUZZI_PUBLIC_LKGM': {
@@ -714,21 +714,21 @@
     'enabled': False,
     'skylab': {
       'cros_board': 'octopus',
-      'cros_img': 'octopus-release/R121-15678.0.0',
+      'cros_img': 'octopus-release/R121-15699.5.0',
     },
   },
   'CROS_OCTOPUS_RELEASE_BETA': {
     'identifier': 'OCTOPUS_RELEASE_BETA',
     'skylab': {
       'cros_board': 'octopus',
-      'cros_img': 'octopus-release/R120-15662.16.0',
+      'cros_img': 'octopus-release/R120-15662.35.0',
     },
   },
   'CROS_OCTOPUS_RELEASE_STABLE': {
     'identifier': 'OCTOPUS_RELEASE_STABLE',
     'skylab': {
       'cros_board': 'octopus',
-      'cros_img': 'octopus-release/R119-15633.44.0',
+      'cros_img': 'octopus-release/R119-15633.65.0',
     },
   },
   'CROS_STRONGBAD_RELEASE_LKGM': {
@@ -743,21 +743,21 @@
     'enabled': False,
     'skylab': {
       'cros_board': 'strongbad',
-      'cros_img': 'strongbad-release/R121-15678.0.0',
+      'cros_img': 'strongbad-release/R121-15699.5.0',
     },
   },
   'CROS_STRONGBAD_RELEASE_BETA': {
     'identifier': 'STRONGBAD_RELEASE_BETA',
     'skylab': {
       'cros_board': 'strongbad',
-      'cros_img': 'strongbad-release/R120-15662.16.0',
+      'cros_img': 'strongbad-release/R120-15662.35.0',
     },
   },
   'CROS_STRONGBAD_RELEASE_STABLE': {
     'identifier': 'STRONGBAD_RELEASE_STABLE',
     'skylab': {
       'cros_board': 'strongbad',
-      'cros_img': 'strongbad-release/R119-15633.44.0',
+      'cros_img': 'strongbad-release/R119-15633.65.0',
     },
   },
   'CROS_TROGDOR_RELEASE_ASH_LKGM': {

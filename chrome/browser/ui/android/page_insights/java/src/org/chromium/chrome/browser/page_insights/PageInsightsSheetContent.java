@@ -45,9 +45,12 @@ public class PageInsightsSheetContent implements BottomSheetContent, View.OnLayo
     static final String PAGE_INSIGHTS_PEEK_WITH_PRIVACY_HEIGHT_RATIO_PARAM =
             "page_insights_peek_with_privacy_height_ratio";
 
-    interface OnBottomSheetTapHandler {
+    interface OnBottomSheetTouchHandler {
         /** Returns true if the tap has been handled. */
-        boolean handle();
+        boolean handleTap();
+
+        /** Returns true if touch events should be intercepted. */
+        boolean shouldInterceptTouchEvents();
     }
 
     interface OnBackPressHandler {
@@ -82,6 +85,7 @@ public class PageInsightsSheetContent implements BottomSheetContent, View.OnLayo
     private int mFullScreenHeight;
     private Callback<View> mOnPrivacyNoticeLinkClickCallback;
     private boolean mShouldHavePeekState;
+    private boolean mSwipeToDismissEnabled;
     @Nullable private RecyclerView mCurrentRecyclerView;
 
     /**
@@ -90,7 +94,7 @@ public class PageInsightsSheetContent implements BottomSheetContent, View.OnLayo
      * @param context An Android context.
      * @param layoutView the top-level view for the Window
      * @param onPrivacyNoticeLinkClickCallback callback for use on privacy notice
-     * @param onBottomSheetTapHandler handler for taps on bottom sheet
+     * @param onBottomSheetTouchHandler handler for touches on bottom sheet
      */
     public PageInsightsSheetContent(
             Context context,
@@ -98,7 +102,7 @@ public class PageInsightsSheetContent implements BottomSheetContent, View.OnLayo
             Callback<View> onPrivacyNoticeLinkClickCallback,
             OnBackPressHandler onBackPressHandler,
             ObservableSupplierImpl<Boolean> willHandleBackPressSupplier,
-            OnBottomSheetTapHandler onBottomSheetTapHandler) {
+            OnBottomSheetTouchHandler onBottomSheetTouchHandler) {
         mFullHeightRatio =
                 (float)
                         ChromeFeatureList.getFieldTrialParamByFeatureAsDouble(
@@ -127,12 +131,12 @@ public class PageInsightsSheetContent implements BottomSheetContent, View.OnLayo
                 R.layout.page_insights_sheet_content, null);
 
         // TODO(b/306377148): Remove this once a solution is built into bottom sheet infra.
-        TapInterceptingLinearLayout contentContainer =
-                (TapInterceptingLinearLayout)
+        TouchInterceptingLinearLayout contentContainer =
+                (TouchInterceptingLinearLayout)
                         mSheetContentView.findViewById(R.id.page_insights_content_container);
-        contentContainer.setOnTapHandler(onBottomSheetTapHandler);
-        contentContainer.setOnClickListener((view) -> onBottomSheetTapHandler.handle());
-        mToolbarView.setOnClickListener((view) -> onBottomSheetTapHandler.handle());
+        contentContainer.setOnTouchHandler(onBottomSheetTouchHandler);
+        contentContainer.setOnClickListener((view) -> onBottomSheetTouchHandler.handleTap());
+        mToolbarView.setOnClickListener((view) -> onBottomSheetTouchHandler.handleTap());
 
         mContext = context;
         mOnPrivacyNoticeLinkClickCallback = onPrivacyNoticeLinkClickCallback;
@@ -218,8 +222,7 @@ public class PageInsightsSheetContent implements BottomSheetContent, View.OnLayo
 
     @Override
     public boolean swipeToDismissEnabled() {
-        // Swiping down hard/tapping on scrim closes the sheet.
-        return true;
+        return mSwipeToDismissEnabled;
     }
 
     @Override
@@ -362,6 +365,14 @@ public class PageInsightsSheetContent implements BottomSheetContent, View.OnLayo
         if (privacyCard != null) {
             privacyCard.setBackgroundTintList(ColorStateList.valueOf(color));
         }
+    }
+
+    void setShouldHavePeekState(boolean shouldHavePeekState) {
+        mShouldHavePeekState = shouldHavePeekState;
+    }
+
+    void setSwipeToDismissEnabled(boolean swipeToDismissEnabled) {
+        mSwipeToDismissEnabled = swipeToDismissEnabled;
     }
 
     private void updateContentDimensions() {

@@ -112,7 +112,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />hesabınızdaki Chrome ver
 <translation id="1509960214886564027">Birçok sitedeki özellikler çalışmayabilir</translation>
 <translation id="152234381334907219">Hiç Kaydedilmeyecekler</translation>
 <translation id="1523341279170789507">Tüm Çerezlere İzin Ver</translation>
-<translation id="1524563461097350801">Hayır, teşekkürler</translation>
+<translation id="1524563461097350801">Hayır, Teşekkürler</translation>
 <translation id="1535268707340844072">Geçerli ayarlarınız bazı sitelerin bozulmasına neden olabilir. Çerezlerin tüm siteler için nasıl yönetileceğini <ph name="BEGIN_LINK" />Çerez Ayarları<ph name="END_LINK" /> sayfasından öğrenebilirsiniz.</translation>
 <translation id="1540800554400757039">Adres 1</translation>
 <translation id="1545749641540134597">QR Kodunu Tara</translation>
@@ -225,7 +225,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />hesabınızdaki Chrome ver
 <translation id="214201757571129614">Oturum aç…</translation>
 <translation id="2148716181193084225">Bugün</translation>
 <translation id="2149973817440762519">Yer İşaretini Düzenle</translation>
-<translation id="2155145621546387786">Chrome'u paylaşın</translation>
+<translation id="2155145621546387786">Chrome'u Paylaş</translation>
 <translation id="2175927920773552910">QR Kodu</translation>
 <translation id="2178545675770638239">Şifreyi seçin</translation>
 <translation id="2195124168004379331">Tarayıcınız İyi Durumda</translation>
@@ -522,7 +522,7 @@ Arama geçmişinizi silmek için arama motorunuzun bununla ilgili talimatların�
 <translation id="3708944822379815019">{COUNT,plural, =1{{COUNT} şifre yalnızca bu cihaza kaydedilir. Diğer cihazlarınızda kullanmak için Google Hesabınıza ({EMAIL}) kaydedin.}other{{COUNT} şifre yalnızca bu cihaza kaydedilir. Diğer cihazlarınızda kullanmak için Google Hesabınıza ({EMAIL}) kaydedin.}}</translation>
 <translation id="3709582977625132201">Okunmadı Olarak İşaretle</translation>
 <translation id="371230970611282515">Tehlikeli etkinlikleri meydana gelmeden önce tahmin ederek sizi uyarır.</translation>
-<translation id="371398631992790800">Yer İşaretlerini gizle</translation>
+<translation id="371398631992790800">Yer İşaretleri'ni Gizle</translation>
 <translation id="37207012422556617">Trend Olan Aramalar</translation>
 <translation id="3725081662140949903">Başkalarının şifrenizi kullanmasını engellemek için <ph name="APP" /> uygulamasını açıp şifrenizi değiştirin</translation>
 <translation id="3740397331642243698">Girilen URL'leri Google Chrome'da Gizli modda açar.</translation>
@@ -733,7 +733,7 @@ Arama geçmişinizi silmek için arama motorunuzun bununla ilgili talimatların�
 <translation id="4850886885716139402">Görüntüle</translation>
 <translation id="4854345657858711387">Şifre Kodu Ayarlayın</translation>
 <translation id="4856498338299082007">Google Hesabınızda</translation>
-<translation id="4856841893565072365">Akıllı Sıralama Menü Çubuğu</translation>
+<translation id="4856841893565072365">Menü Çubuğunu Akıllı Sırala</translation>
 <translation id="4860895144060829044">Telefon et</translation>
 <translation id="4872323082491632254">Şifreleri Kontrol Edin</translation>
 <translation id="4881695831933465202">Aç</translation>
@@ -1155,7 +1155,7 @@ Gizli moddayken siteler, örneğin reklamları kişiselleştirmek amacıyla fark
 <translation id="6930799952781667037">Bu dile değiştirmek için dokunun.</translation>
 <translation id="6939941780796374211">Şifre Seçenekleri</translation>
 <translation id="6944369514868857500">Başka Hesap Seç</translation>
-<translation id="6944935964236827145">Çeviriyi gizle</translation>
+<translation id="6944935964236827145">Çevir'i Gizle</translation>
 <translation id="6945221475159498467">Seç</translation>
 <translation id="6965382102122355670">Tamam</translation>
 <translation id="6973630695168034713">Klasörler</translation>
@@ -1251,7 +1251,7 @@ Gizli moddayken siteler, örneğin reklamları kişiselleştirmek amacıyla fark
 <translation id="7527917367892640435">Kargo Halihazırda Takip Ediliyor</translation>
 <translation id="7531345132340165516">Geçerli Site</translation>
 <translation id="7537586195939242955">Maalesef Pass'iniz şu anda Passbook'a yüklenemiyor.</translation>
-<translation id="754655535278952384"><ph name="TIME" /> işaretlendi</translation>
+<translation id="754655535278952384"><ph name="TIME" /> kontrol edildi</translation>
 <translation id="7552154146060018538"><ph name="SOURCE_DEVICE" /> Cihazında Kullanılan Son Sekme</translation>
 <translation id="7553234618121028547">Özelliği kapatmak için <ph name="BEGIN_LINK" />Ayarlar<ph name="END_LINK" />'ı açıp Şifre Seçenekleri bölümüne gidin.</translation>
 <translation id="7554645225856321710">Tümünü Kapat</translation>
@@ -1375,7 +1375,7 @@ Siteler, örneğin reklamları kişiselleştirmek amacıyla farklı sitelerde ta
 <translation id="8136856065410661948">Bu bilgiler, Chrome ve Google Lens'ten alınan etkinlikleri Apple Takvim'de oluşturmak için kullanılır.</translation>
 <translation id="8156478151976189188">Şifre Senkronizasyonu Çalışmıyor</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> hesap</translation>
-<translation id="8159358225423560600">az önce</translation>
+<translation id="8159358225423560600">Az önce</translation>
 <translation id="8173034266693057059">Uzunluk</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8182037667962849780">{count,plural, =1{{website_1} için}=2{{website_1}, {website_2} için}=3{{website_1}, {website_2} ve 1 diğer site için}other{{website_1}, {website_2} ve {more_count} diğer site için}}</translation>
@@ -1450,7 +1450,7 @@ Verileriniz <ph name="TIME" /> tarihinde parolanızla şifrelendi. Chrome verile
 <translation id="854938212724803178">Güvenliği ihlal edilmiş 1 şifreniz var. Güvende kalmak için sorunu hemen giderin.</translation>
 <translation id="8556590991644167667">{count,plural, =1{{count} uyarıyı kapattınız}other{{count} uyarıyı kapattınız}}</translation>
 <translation id="8558480467877843976">Artık mesajlardaki, dokümanlardaki ve diğer uygulamalardaki bağlantılara göz attığınızda veya dokunduğunuzda Chrome'u kullanabilirsiniz.</translation>
-<translation id="8560253818350321773">Sık kullanılan öğeleri önce göster.</translation>
+<translation id="8560253818350321773">Sık kullanılan öğeleri üstte gösterir.</translation>
 <translation id="8588404856427128947">Kapalı</translation>
 <translation id="8591976964826315682">Gizli modda üçüncü taraf çerezlerini engelle</translation>
 <translation id="8593565399399144771">Buradan yeni bir sekme açabilirsiniz.</translation>
@@ -1526,7 +1526,7 @@ Verileriniz <ph name="TIME" /> tarihinde parolanızla şifrelendi. Chrome verile
 <translation id="894191600409472540">Güçlü şifreler oluşturun</translation>
 <translation id="8952559610785099500">Şifre Ekleyin</translation>
 <translation id="8953046091948372197">Şifreleriniz burada gösterilir</translation>
-<translation id="895541991026785598">Sorun Bildirin</translation>
+<translation id="895541991026785598">Sorun Bildir</translation>
 <translation id="8961757677053809960">Uyarı yok sayılsın mı?</translation>
 <translation id="8971545611707025079">Tekrar Kontrol Et</translation>
 <translation id="8974714402877957201">1. iPad ayarlarını açın</translation>

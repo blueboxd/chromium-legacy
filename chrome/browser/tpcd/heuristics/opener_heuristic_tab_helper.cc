@@ -193,6 +193,7 @@ void OpenerHeuristicTabHelper::PopupObserver::EmitPastInteractionIfReady() {
   }
 
   MaybeCreateOpenerHeuristicGrant(
+      initial_url_,
       tpcd::experiment::kTpcdWritePopupPastInteractionHeuristicsGrants.Get());
 
   auto has_iframe = GetOpenerHasSameSiteIframe(initial_url_);
@@ -260,13 +261,14 @@ void OpenerHeuristicTabHelper::PopupObserver::FrameReceivedUserActivation(
     return;
   }
 
+  const GURL& interaction_url = render_frame_host->GetLastCommittedURL();
   MaybeCreateOpenerHeuristicGrant(
+      interaction_url,
       tpcd::experiment::kTpcdWritePopupCurrentInteractionHeuristicsGrants
           .Get());
 
   auto time_since_committed = GetClock()->Now() - *commit_time_;
-  auto has_iframe =
-      GetOpenerHasSameSiteIframe(render_frame_host->GetLastCommittedURL());
+  auto has_iframe = GetOpenerHasSameSiteIframe(interaction_url);
   ukm::builders::OpenerHeuristic_PopupInteraction(
       render_frame_host->GetPageUkmSourceId())
       .SetSecondsSinceCommitted(Bucketize3PCDHeuristicTimeDelta(
@@ -279,7 +281,7 @@ void OpenerHeuristicTabHelper::PopupObserver::FrameReceivedUserActivation(
 
   interaction_reported_ = true;
 
-  EmitTopLevel(render_frame_host->GetLastCommittedURL(), has_iframe,
+  EmitTopLevel(interaction_url, has_iframe,
                /*is_current_interaction=*/true);
 }
 
@@ -345,11 +347,21 @@ void OpenerHeuristicTabHelper::PopupObserver::EmitTopLevel(
     const GURL& popup_url,
     OptionalBool has_iframe,
     bool is_current_interaction) {
+  uint64_t access_id = base::RandUint64();
+
+  if (DIPSService* dips =
+          DIPSService::Get(web_contents()->GetBrowserContext())) {
+    dips->storage()
+        ->AsyncCall(&DIPSStorage::WritePopup)
+        .WithArgs(GetSiteForDIPS(opener_url_), GetSiteForDIPS(popup_url),
+                  access_id,
+                  /*popup_time=*/GetClock()->Now(), is_current_interaction)
+        .Then(base::BindOnce([](bool succeeded) { DCHECK(succeeded); }));
+  }
+
   if (toplevel_reported_) {
     return;
   }
-
-  uint64_t access_id = base::RandUint64();
 
   ukm::builders::OpenerHeuristic_TopLevel(opener_source_id_)
       .SetAccessId(access_id)
@@ -360,23 +372,10 @@ void OpenerHeuristicTabHelper::PopupObserver::EmitTopLevel(
       .Record(ukm::UkmRecorder::Get());
 
   toplevel_reported_ = true;
-
-  DIPSService* dips = DIPSService::Get(web_contents()->GetBrowserContext());
-  if (!dips) {
-    // If DIPS is disabled, we can't look up past popup events.
-    // TODO(rtarpine): consider falling back to SiteEngagementService.
-    return;
-  }
-
-  dips->storage()
-      ->AsyncCall(&DIPSStorage::WritePopup)
-      .WithArgs(GetSiteForDIPS(opener_url_), GetSiteForDIPS(popup_url),
-                access_id,
-                /*popup_time=*/GetClock()->Now(), is_current_interaction)
-      .Then(base::BindOnce([](bool succeeded) { DCHECK(succeeded); }));
 }
 
 void OpenerHeuristicTabHelper::PopupObserver::MaybeCreateOpenerHeuristicGrant(
+    const GURL& url,
     base::TimeDelta grant_duration) {
   if (!grant_duration.is_positive()) {
     return;
@@ -387,8 +386,8 @@ void OpenerHeuristicTabHelper::PopupObserver::MaybeCreateOpenerHeuristicGrant(
     return;
   }
 
-  cookie_settings_->SetTemporaryCookieGrantForHeuristic(
-      initial_url_, opener_url_, grant_duration);
+  cookie_settings_->SetTemporaryCookieGrantForHeuristic(url, opener_url_,
+                                                        grant_duration);
 }
 
 OptionalBool

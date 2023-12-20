@@ -560,7 +560,7 @@ Informationen zum Löschen deines Suchverlaufs findest du in der Anleitung deine
 <translation id="3904829425754749514">Deine Organisation hat die Synchronisierung deaktiviert. Du siehst weiterhin deine Lesezeichen, den Verlauf, deine Passwörter und andere Einstellungen auf diesem Gerät. Änderungen werden aber nicht mehr mit deinem Konto synchronisiert.</translation>
 <translation id="3909222758573607742">Die Passwörter und anderen Elemente werden im Konto gespeichert</translation>
 <translation id="3913386780052199712">In Chrome angemeldet</translation>
-<translation id="3915450441834151894">Websiteinformationen</translation>
+<translation id="3915450441834151894">Websitein­formationen</translation>
 <translation id="3918585468378680136">Warten auf Paketstatus</translation>
 <translation id="3922310737605261887">Nach kopiertem Text suchen</translation>
 <translation id="3928666092801078803">Daten zusammenführen</translation>
@@ -763,7 +763,7 @@ Informationen zum Löschen deines Suchverlaufs findest du in der Anleitung deine
 <translation id="5017828934289857214">Später erinnern</translation>
 <translation id="5037676449506322593">Alles auswählen</translation>
 <translation id="5039804452771397117">Zulassen</translation>
-<translation id="5050294464480863218">Wichtige Punkte</translation>
+<translation id="5050294464480863218">Wichtige Hinweise</translation>
 <translation id="5050810143224996149">Passwort teilen</translation>
 <translation id="5056446788882570708">Probleme <ph name="TIME" /> gefunden.</translation>
 <translation id="5059136629401106827">Ok</translation>
@@ -1450,7 +1450,7 @@ Deine Daten wurden am <ph name="TIME" /> mit deiner Passphrase verschlüsselt. G
 <translation id="854938212724803178">Du hast 1 gehacktes Passwort. Ändere es jetzt, um dich bestmöglich zu schützen.</translation>
 <translation id="8556590991644167667">{count,plural, =1{Du hast {count} Warnung geschlossen}other{Du hast {count} Warnungen geschlossen}}</translation>
 <translation id="8558480467877843976">Du kannst jetzt Chrome jederzeit nutzen, wenn du surfst oder auf Links in Nachrichten, Dokumenten und anderen Apps tippst.</translation>
-<translation id="8560253818350321773">Zeigt häufig verwendete Elemente zuerst an.</translation>
+<translation id="8560253818350321773">Häufig verwendete Elemente zuerst anzeigen</translation>
 <translation id="8588404856427128947">Aus</translation>
 <translation id="8591976964826315682">Drittanbieter-Cookies im Inkognitomodus blockieren</translation>
 <translation id="8593565399399144771">Hier kannst du einen neuen Tab öffnen.</translation>
@@ -1525,7 +1525,7 @@ Deine Daten wurden am <ph name="TIME" /> mit deiner Passphrase verschlüsselt. G
 <translation id="8928133177108699615">Computer</translation>
 <translation id="894191600409472540">Erstelle starke Passwörter</translation>
 <translation id="8952559610785099500">Passwort hinzufügen</translation>
-<translation id="8953046091948372197">Hier werden deine Lesezeichen angezeigt</translation>
+<translation id="8953046091948372197">Hier werden deine Passwörter angezeigt</translation>
 <translation id="895541991026785598">Problem melden</translation>
 <translation id="8961757677053809960">Warnung schließen?</translation>
 <translation id="8971545611707025079">Wiederholen</translation>

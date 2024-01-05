@@ -5,7 +5,9 @@
 ; --- The contents of common.sb implicitly included here. ---
 
 ; Allow cf prefs to work.
-(allow user-preference-read)
+(if (>= os-version 1009)
+  (allow user-preference-read)
+)
 
 (allow-cvms-blobs)
 

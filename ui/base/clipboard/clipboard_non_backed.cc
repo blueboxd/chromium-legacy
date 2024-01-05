@@ -958,14 +958,9 @@ void ClipboardNonBacked::WriteBitmap(const SkBitmap& bitmap) {
 }
 
 void ClipboardNonBacked::WriteData(const ClipboardFormatType& format,
-<<<<<<< HEAD
                                    const char* data_data,
                                    size_t data_len) {
   ClipboardDataBuilder::WriteData(format.GetName(), data_data, data_len);
-=======
-                                   base::span<const uint8_t> data) {
-  ClipboardDataBuilder::WriteData(format, data);
->>>>>>> origin/main
 }
 
 const ClipboardInternal& ClipboardNonBacked::GetInternalClipboard(

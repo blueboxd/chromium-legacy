@@ -206,6 +206,19 @@ std::string ClipboardData::GetWebCustomData() const {
   return GetCustomData(ClipboardFormatType::WebCustomDataType());
 }
 
+void ClipboardData::SetCustomData(const std::string& data_format,
+                                  const std::string& data_data) {
+  if (data_data.size() == 0) {
+    custom_data_data_.clear();
+    custom_data_format_.clear();
+    return;
+  }
+  custom_data_data_ = data_data;
+  custom_data_format_ = data_format;
+
+  format_ |= static_cast<int>(ClipboardInternalFormat::kCustom);
+}
+
 void ClipboardData::SetCustomData(const ClipboardFormatType& format,
                                   const std::string& data) {
   custom_data_[format] = data;

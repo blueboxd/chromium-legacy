@@ -573,25 +573,27 @@ NativeThemeMac::NativeThemeMac(bool should_only_use_dark_colors,
     : NativeThemeBase(should_only_use_dark_colors,
                       ui::SystemTheme::kDefault,
                       theme_to_update) {
-  if (!should_only_use_dark_colors)
-    InitializeDarkModeStateAndObserver();
-  }
+  if (@available(macOS 10.9, *)) {
+    if (!should_only_use_dark_colors) {
+      InitializeDarkModeStateAndObserver();
+    }
 
-  if (theme_to_update) {
-    theme_to_update->set_use_dark_colors(IsDarkMode());
-    theme_to_update->set_preferred_color_scheme(
-        CalculatePreferredColorScheme());
-    theme_to_update->SetPreferredContrast(CalculatePreferredContrast());
-    theme_to_update->set_prefers_reduced_transparency(
-        PrefersReducedTransparency());
-    theme_to_update->set_inverted_colors(InvertedColors());
+    if (theme_to_update) {
+      theme_to_update->set_use_dark_colors(IsDarkMode());
+      theme_to_update->set_preferred_color_scheme(
+          CalculatePreferredColorScheme());
+      theme_to_update->SetPreferredContrast(CalculatePreferredContrast());
+      theme_to_update->set_prefers_reduced_transparency(
+          PrefersReducedTransparency());
+      theme_to_update->set_inverted_colors(InvertedColors());
 
-    // Observe caption style changes.
-    CFNotificationCenterAddObserver(
-        CFNotificationCenterGetLocalCenter(), this,
-        CaptionSettingsChangedNotificationCallback,
-        kMACaptionAppearanceSettingsChangedNotification, nullptr,
-        CFNotificationSuspensionBehaviorDeliverImmediately);
+      // Observe caption style changes.
+      CFNotificationCenterAddObserver(
+          CFNotificationCenterGetLocalCenter(), this,
+          CaptionSettingsChangedNotificationCallback,
+          kMACaptionAppearanceSettingsChangedNotification, nullptr,
+          CFNotificationSuspensionBehaviorDeliverImmediately);
+    }
   }
 }
 

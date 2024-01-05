@@ -146,6 +146,8 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardData {
   std::string GetCustomData(const ClipboardFormatType& data_format) const;
   // Returns the ClipboardFormatType::WebCustomDataType() pickle.
   std::string GetWebCustomData() const;
+  void SetCustomData(const std::string& data_format,
+                     const std::string& data_data);
   void SetCustomData(const ClipboardFormatType& format,
                      const std::string& data);
 
@@ -206,6 +208,10 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardData {
   //    encoded to PNG. SetPngDataAfterEncoding() was called to indicate that
   //    this member is the decoded version of `maybe_png_`.
   absl::optional<SkBitmap> maybe_bitmap_ = absl::nullopt;
+
+  // Data with custom format.
+  std::string custom_data_format_;
+  std::string custom_data_data_;
 
   // Custom Data keyed by format.
   std::map<ClipboardFormatType, std::string> custom_data_;

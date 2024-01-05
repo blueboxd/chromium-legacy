@@ -54,6 +54,9 @@ component("native_theme") {
       "AppKit.framework",
       "CoreText.framework",
     ]
+    weak_frameworks =[
+      "MediaAccessibility.framework",
+    ]
     sources += [
       "caption_style_mac.mm",
       "native_theme_mac.h",

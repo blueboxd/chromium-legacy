@@ -107,7 +107,7 @@ Para mudar essa configuração, <ph name="BEGIN_LINK" />limpe os dados do Chrome
 <translation id="1492417797159476138">Você já salvou este nome de usuário para este site</translation>
 <translation id="1497590942294823549">Menu → Gerenciador de senhas</translation>
 <translation id="1498283581832036924">Sua conta de <ph name="WEBSITE" /> não será excluída.</translation>
-<translation id="1506063256525392513">Esse app permite que você tire fotos, faça upload delas e leia códigos QR</translation>
+<translation id="1506063256525392513">Esse app permite que você tire fotos, faça upload delas e leia QR codes</translation>
 <translation id="1509486075633541495">Fazer login no site</translation>
 <translation id="1509960214886564027">Os recursos de muitos sites podem apresentar falhas</translation>
 <translation id="152234381334907219">Nunca salvas</translation>
@@ -1237,7 +1237,7 @@ Na navegação anônima, eles não podem usar cookies para ver suas atividades d
 <translation id="7466693328838535498">Na caixa "Widgets da Pesquisa", digite "Chrome".</translation>
 <translation id="746684838091935575">3. Selecione o Chrome</translation>
 <translation id="7472734401283673885">Nome da empresa</translation>
-<translation id="7473891865547856676">Agora não</translation>
+<translation id="7473891865547856676">Agora Não</translation>
 <translation id="7488874549363591659">Entregue</translation>
 <translation id="7491131399623468277">Acessar os Ajustes…</translation>
 <translation id="7492574581995589075">Sua organização desativou a capacidade de usar e salvar dados do Chrome na Conta do Google. Novos favoritos, senhas e outros itens serão salvos apenas neste dispositivo.</translation>

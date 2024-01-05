@@ -463,7 +463,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="186539747722034544">Kabel- og satellitudbydere</translation>
 <translation id="1870473978371099486">Private undervisningstjenester</translation>
 <translation id="1871208020102129563">Proxy er indstillet til at bruge faste proxyservere, ikke webadresser til .pac-scripts.</translation>
-<translation id="1871284979644508959">Skal udfyldes</translation>
+<translation id="1871284979644508959">Påkrævet</translation>
 <translation id="1871739799120352748">Prisen er høj</translation>
 <translation id="1873899211667975540">Rockmusik</translation>
 <translation id="1874224422119691492">Du kan ændre, om du vil bruge din skærmlås til at udfylde adgangskoder, i <ph name="SETTINGS" /></translation>
@@ -625,7 +625,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="22081806969704220">Bakke 3</translation>
 <translation id="2210794033760923560">Upload rapport</translation>
 <translation id="2212735316055980242">Politikken blev ikke fundet</translation>
-<translation id="2213606439339815911">Indlæg hentes...</translation>
+<translation id="2213606439339815911">Opslag hentes...</translation>
 <translation id="2213612003795704869">Siden er udskrevet</translation>
 <translation id="2215632862494199917">Biludstillinger</translation>
 <translation id="2215727959747642672">Filredigering</translation>
@@ -858,7 +858,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="2705137772291741111">Den gemte (cachelagrede) kopi af dette website kunne ikke læses.</translation>
 <translation id="2709516037105925701">Autofyld</translation>
 <translation id="2713444072780614174">Hvid</translation>
-<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" /> – tryk på Tab-tasten efterfulgt af Enter for at administrere oplysninger om dine betalinger og betalingskort i Chrome-indstillingerne</translation>
+<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" /> – tryk på Tab-tasten efterfulgt af Enter for at administrere oplysninger om dine betalinger og kreditkort i Chrome-indstillingerne</translation>
 <translation id="2715808615350965923">Super A</translation>
 <translation id="271663710482723385">Tryk på |<ph name="ACCELERATOR1" />| + |<ph name="ACCELERATOR2" />| for at afslutte visning i fuld skærm</translation>
 <translation id="2717336592027046789">Papirrulle</translation>
@@ -2120,7 +2120,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="5284295735376057059">Dokumentegenskaber</translation>
 <translation id="528468243742722775">Afslut</translation>
 <translation id="5285570108065881030">Se alle gemte adgangskoder</translation>
-<translation id="5287456746628258573">Dette website benytter en forældet sikkerhedskonfiguration, der muligvis afslører dine oplysninger (f.eks. adgangskoder eller betalingskortnumre), når de sendes til dette website.</translation>
+<translation id="5287456746628258573">Dette website benytter en forældet sikkerhedskonfiguration, der muligvis afslører dine oplysninger (f.eks. adgangskoder eller kreditkortnumre), når de sendes til dette website.</translation>
 <translation id="5288108484102287882">Validering af politikværdier har genereret advarsler</translation>
 <translation id="5288393065350884210">Revision og audit</translation>
 <translation id="5289384342738547352">Håndtering af flere dokumenter</translation>
@@ -2741,7 +2741,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="6557715786897013164">14 x 17 tommer</translation>
 <translation id="6560786330438719938">Apps, der er installeret eller afinstalleret, og hvor ofte de bruges</translation>
 <translation id="6567084950885568327">Styring og omprogrammering af MIDI-enheder</translation>
-<translation id="6568793038316600992">Knappen Administrer betalingsmetoder, aktivér for at administrere dine betalinger og betalingskortoplysninger i Chrome-indstillingerne</translation>
+<translation id="6568793038316600992">Knappen Administrer betalingsmetoder, aktivér for at administrere dine betalinger og kreditkortoplysninger i Chrome-indstillingerne</translation>
 <translation id="6569060085658103619">Du ser en udvidelsesside</translation>
 <translation id="6569366777234823130">Drama</translation>
 <translation id="6573200754375280815">To huller i højre side</translation>
@@ -2854,7 +2854,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="6799145206637008376">Angiv det virtuelle korts CVC</translation>
 <translation id="6805030849054648206">Konvolut B6/C4</translation>
 <translation id="6807791860691150411">Uddannelse</translation>
-<translation id="681021252041861472">Skal udfyldes</translation>
+<translation id="681021252041861472">Påkrævet</translation>
 <translation id="6810899417690483278">Tilpasnings-id</translation>
 <translation id="6816109178681043245">Sportsudstyr</translation>
 <translation id="6817217109584391709">JavaScript</translation>
@@ -3467,7 +3467,7 @@ Yderligere oplysninger:
 <translation id="7966803981046576691">Jobkontotype</translation>
 <translation id="7967636097426665267">Kommunikationsudstyr</translation>
 <translation id="79682505114836835">Værdien "<ph name="VALUE" />" er en ugyldig hex-farve.</translation>
-<translation id="7968982339740310781">Se info</translation>
+<translation id="7968982339740310781">Se oplysninger</translation>
 <translation id="7976214039405368314">For mange anmodninger</translation>
 <translation id="7977538094055660992">Outputenhed</translation>
 <translation id="7979595116210197019">Fødevareindustri</translation>
@@ -3866,7 +3866,7 @@ Yderligere oplysninger:
 <translation id="8757526089434340176">Der er et tilgængeligt Google Pay-tilbud</translation>
 <translation id="8758885506338294482">Videospilkonkurrencer (e-sport)</translation>
 <translation id="8759274551635299824">Kortet er udløbet</translation>
-<translation id="87601671197631245">Dette website benytter en forældet sikkerhedskonfiguration, der muligvis afslører dine oplysninger (f.eks. adgangskoder, meddelelser eller betalingskort), når de sendes til dette website.</translation>
+<translation id="87601671197631245">Dette website benytter en forældet sikkerhedskonfiguration, der muligvis afslører dine oplysninger (f.eks. adgangskoder, meddelelser eller kreditkort), når de sendes til dette website.</translation>
 <translation id="8761567432415473239">Beskyttet browsing i Google har for nylig <ph name="BEGIN_LINK" />fundet skadelige programmer<ph name="END_LINK" /> på <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB-enhed</translation>
 <translation id="8763986294015493060">Luk alle inkognitovinduer, der i øjeblikket er åbne</translation>
@@ -4072,7 +4072,7 @@ Yderligere oplysninger:
 <translation id="9174623988242579721">Ombyggede biler og sportsvogne</translation>
 <translation id="9174917557437862841">Knap til faneskift. Tryk på Enter for at skifte til denne fane</translation>
 <translation id="9177283544810807743">Denne PDF er ikke tilgængelig. Udtrækning af tekst, leveret af Googles AI</translation>
-<translation id="9179703756951298733">Administrer dine betalings- og kortoplysninger i Chrome-indstillingerne</translation>
+<translation id="9179703756951298733">Administrer dine betalings- og kreditkortoplysninger i Chrome-indstillingerne</translation>
 <translation id="9179907736442194268">Få underretninger via mail, hvis prisen falder på et website</translation>
 <translation id="9183302530794969518">Google Docs</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> anvender en ikke-understøttet protokol.</translation>

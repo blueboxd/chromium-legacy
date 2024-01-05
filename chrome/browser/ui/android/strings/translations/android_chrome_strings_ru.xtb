@@ -34,7 +34,7 @@
 <translation id="1150263420752757504">Приложение "<ph name="APP_NAME" />" откроется в Chrome. Продолжая, вы принимаете <ph name="BEGIN_LINK1" />Условия использования Google<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Дополнительные условия использования Chrome и Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="115483310321669804">Использовать пароль <ph name="PASSWORD" /></translation>
 <translation id="1173894706177603556">Переименовать</translation>
-<translation id="1174479719160874822">Chrome будет запрашивать мобильный сайт при обнаружении узкого экрана</translation>
+<translation id="1174479719160874822">Если экран узкий, Chrome будет запрашивать мобильный сайт.</translation>
 <translation id="1177863135347784049">Персонализированные</translation>
 <translation id="1181037720776840403">Удалить</translation>
 <translation id="1181366777303791449"><ph name="MAIN_FRAME_ETLD_PLUS_ONE" /></translation>
@@ -51,7 +51,7 @@
 <translation id="1239792311949352652">Поделиться этой страницей. Чтобы изменить функцию кнопки, перейдите в настройки.</translation>
 <translation id="1240190568154816272">Советы по работе с Chrome</translation>
 <translation id="1240288207750131269">Выполняется загрузка пакета "<ph name="LANG" />"…</translation>
-<translation id="1240903469550363138">Чтобы продолжить, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> передаст ваше имя, адрес электронной почты и фото профиля на этот сайт. Ознакомьтесь с его <ph name="BEGIN_LINK1" />политикой конфиденциальности<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />условиями использования<ph name="END_LINK2" />.</translation>
+<translation id="1240903469550363138">Чтобы продолжить, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> передаст этому сайту ваше имя, адрес электронной почты и фото профиля. Ознакомьтесь с его <ph name="BEGIN_LINK1" />политикой конфиденциальности<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />условиями использования<ph name="END_LINK2" />.</translation>
 <translation id="124116460088058876">Другие языки</translation>
 <translation id="1241792820757384812">Ваши пароли будут удалены из Google Менеджера паролей в <ph name="CHROME_CHANNEL" />. Файл с паролями, который вы скачали, останется.</translation>
 <translation id="1242883863226959074">устройстве</translation>
@@ -183,7 +183,7 @@
 <translation id="1974060860693918893">Дополнительные</translation>
 <translation id="1984417487208496350">Защита отключена (не рекомендуется)</translation>
 <translation id="1986685561493779662">Это имя уже используется.</translation>
-<translation id="1995884366040846621">Чтобы продолжить, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> передаст ваше имя, адрес электронной почты и фото профиля на этот сайт. Ознакомьтесь с его <ph name="BEGIN_LINK1" />политикой конфиденциальности<ph name="END_LINK1" />.</translation>
+<translation id="1995884366040846621">Чтобы продолжить, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> передаст этому сайту ваше имя, адрес электронной почты и фото профиля. Ознакомьтесь с его <ph name="BEGIN_LINK1" />политикой конфиденциальности<ph name="END_LINK1" />.</translation>
 <translation id="200114059308480249">Учитывать контекст в поиске Google?</translation>
 <translation id="2009341475524975924">Для оценки эффективности рекламы сайты могут обмениваться некоторыми типами данных, например информацией о времени суток, когда вам было показано объявление.</translation>
 <translation id="201060170519281460">Блокировка профиля защищает ваши данные в автомобиле, включая пароли, транзакции и другие сведения.</translation>
@@ -254,7 +254,7 @@
 <translation id="2390510615457643724">Снова скачать файл "<ph name="FILE_NAME" />" (<ph name="FILE_SIZE" />)?</translation>
 <translation id="2394602618534698961">Здесь появляются скачанные файлы.</translation>
 <translation id="2410754283952462441">Выберите аккаунт</translation>
-<translation id="2414886740292270097">Темная</translation>
+<translation id="2414886740292270097">Тёмная</translation>
 <translation id="2421705177906985956">Пока сайтов нет.</translation>
 <translation id="2426805022920575512">Сменить аккаунт</translation>
 <translation id="2433507940547922241">Внешний вид</translation>
@@ -647,6 +647,7 @@
 <translation id="4452411734226507615">Закрыть вкладку "<ph name="TAB_TITLE" />"</translation>
 <translation id="4452548195519783679">Закладка добавлена в папку "<ph name="FOLDER_NAME" />"</translation>
 <translation id="4461614516424362539">Вы можете использовать этот телефон как электронный ключ на устройствах, привязанных с помощью QR-кода. Если устройство удалено из списка связанных, на нем нужно будет снова отсканировать QR-код.</translation>
+<translation id="4478161224666880173">Вы можете использовать аккаунт <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> на этом сайте. Чтобы продолжить, войдите в аккаунт <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" />.</translation>
 <translation id="4479972344484327217">Установка модуля "<ph name="MODULE" />" для Chrome…</translation>
 <translation id="4484496141267039529">Нет подключения. Повторите попытку позже.</translation>
 <translation id="4487967297491345095">Все данные приложения Chrome, включая файлы, настройки, аккаунты и базы данных, будут безвозвратно удалены.</translation>
@@ -834,7 +835,7 @@
 <translation id="5368227114232678694">Чтобы анонимно работать в интернете на этом устройстве, воспользуйтесь режимом инкогнито.</translation>
 <translation id="5375577065097716013">Найти через Google Объектив <ph name="BEGIN_NEW" />Новинка<ph name="END_NEW" /></translation>
 <translation id="539881862970320163">Предложен надежный пароль. Клавиатура скрыта.</translation>
-<translation id="5401851137404501592">Чтобы продолжить, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> передаст ваше имя, адрес электронной почты и фото профиля на этот сайт.</translation>
+<translation id="5401851137404501592">Чтобы продолжить, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> передаст этому сайту ваше имя, адрес электронной почты и фото профиля.</translation>
 <translation id="5409881200985013443">Отправить код <ph name="ONE_TIME_CODE" /> на устройство "<ph name="CLIENT_NAME" />"?</translation>
 <translation id="5414836363063783498">Проверка…</translation>
 <translation id="5423934151118863508">Здесь появятся страницы, которые вы чаще всего просматриваете.</translation>

@@ -183,7 +183,7 @@
 <translation id="4149890623864272035">Вы действительно хотите удалить все локальные данные этого сайта, включая файлы cookie, и сбросить все его разрешения?</translation>
 <translation id="4149994727733219643">Упрощенный просмотр веб-страниц</translation>
 <translation id="4151930093518524179">Масштаб по умолчанию</translation>
-<translation id="4165986682804962316">Настройки сайта</translation>
+<translation id="4165986682804962316">Настройки сайтов</translation>
 <translation id="4169549551965910670">Выполнено подключение к USB-устройству</translation>
 <translation id="4194328954146351878">Запрашивать для сайтов разрешение на доступ к информации и ее изменение через NFC (рекомендуется)</translation>
 <translation id="4200726100658658164">Открыть настройки геолокации</translation>
@@ -251,7 +251,7 @@
 <translation id="5389626883706033615">Сайтам запрещено запрашивать разрешение на использование сохраненной информации о вас</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(и ещё 1)}one{(и ещё #)}few{(и ещё #)}many{(и ещё #)}other{(и ещё #)}}</translation>
 <translation id="5403592356182871684">Имена</translation>
-<translation id="5438097262470833822">Будут отозваны разрешения для <ph name="WEBSITE" />.</translation>
+<translation id="5438097262470833822">Будут сброшены разрешения для <ph name="WEBSITE" />.</translation>
 <translation id="5489227211564503167">Просмотрено <ph name="ELAPSED_TIME" /> из <ph name="TOTAL_TIME" />.</translation>
 <translation id="5502860503640766021">Разрешено: <ph name="PERMISSION_1" />. Заблокировано: <ph name="PERMISSION_2" />.</translation>
 <translation id="5505264765875738116">Сайты не могут запрашивать разрешения на отправку уведомлений</translation>
@@ -314,7 +314,7 @@
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Запретить сайтам использовать устройство и данные виртуальной реальности</translation>
 <translation id="6447842834002726250">Файлы сookie</translation>
-<translation id="6500423977866688905">Запросите мобильную версию, если окно вытянутое</translation>
+<translation id="6500423977866688905">Запрашивать мобильную версию, если окно узкое</translation>
 <translation id="6527303717912515753">Поделиться</translation>
 <translation id="652937045869844725">Попробуйте разрешить сторонние файлы cookie. Это снизит вашу защиту, зато функции сайта, скорее всего, будут работать.</translation>
 <translation id="6545864417968258051">Поиск Bluetooth-устройств</translation>
@@ -330,7 +330,7 @@
 <translation id="6697925417670533197">Текущие скачивания</translation>
 <translation id="6722828510648505498">Вы можете запретить предложения войти в аккаунт от сервисов подтверждения личности.</translation>
 <translation id="6746124502594467657">Переместить вниз</translation>
-<translation id="6749077623962119521">Отозвать разрешения?</translation>
+<translation id="6749077623962119521">Сбросить разрешения?</translation>
 <translation id="6766622839693428701">Проведите вниз, чтобы закрыть панель.</translation>
 <translation id="6787751205395685251">Выберите значение для сайта <ph name="SITE_NAME" />.</translation>
 <translation id="6790428901817661496">Воспроизвести</translation>

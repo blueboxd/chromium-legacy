@@ -1629,7 +1629,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2233502537820838181">&amp;Več informacij</translation>
 <translation id="223356358902285214">Dejavnost v spletu in aplikacijah</translation>
 <translation id="2234827758954819389">Vodnik po zasebnosti</translation>
-<translation id="2234876718134438132">Sinhroniz. in Googlove storitve</translation>
+<translation id="2234876718134438132">Sinhronizacija in Googlove storitve</translation>
 <translation id="2235344399760031203">Piškotki drugih spletnih mest so blokirani</translation>
 <translation id="2238379619048995541">Podatki o stanju frekvence</translation>
 <translation id="2241053333139545397">Branje in spreminjanje vaših podatkov na več spletnih mestih</translation>
@@ -3592,7 +3592,7 @@ Domena <ph name="DOMAIN" /> zahteva, da je pametna kartica vstavljena.</translat
 <translation id="3774059845329307709">Serijska številka</translation>
 <translation id="3774166835015494435">Nedavne fotografije in obvestila</translation>
 <translation id="3775432569830822555">Strežniško potrdilo SSL</translation>
-<translation id="3775705724665058594">Pošiljanje v naprave</translation>
+<translation id="3775705724665058594">Pošiljanje v vaše naprave</translation>
 <translation id="3776508619697147021">Spletna mesta lahko zahtevajo samodejno prenašanje več datotek.</translation>
 <translation id="3776796446459804932">Ta razširitev krši pravilnik Spletne trgovine Chrome.</translation>
 <translation id="3777483481409781352">Mobilne naprave ni bilo mogoče aktivirati</translation>
@@ -5364,7 +5364,7 @@ Za pomanjšavo pritisnite Ctrl + Alt + tipko za zmanjšanje svetlosti.</translat
 <translation id="5199729219167945352">Poskusi</translation>
 <translation id="5203035663139409780">Omogočeno je urejanje datotek ali map v napravi</translation>
 <translation id="5203920255089865054">{NUM_EXTENSIONS,plural, =1{Kliknite, če si želite ogledati razširitev}one{Kliknite, če si želite ogledati te razširitve}two{Kliknite, če si želite ogledati te razširitve}few{Kliknite, če si želite ogledati te razširitve}other{Kliknite, če si želite ogledati te razširitve}}</translation>
-<translation id="5204249655833504508">Tablični računalnik za risanje</translation>
+<translation id="5204249655833504508">Grafična tablica</translation>
 <translation id="5204673965307125349">Opravite postopek »powerwash« v napravi in poskusite znova.</translation>
 <translation id="5204967432542742771">Vnesite geslo</translation>
 <translation id="5205484256512407285">Za prenos ne uporabite prenosa podatkov v mobilnem omrežju.</translation>
@@ -9259,7 +9259,7 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8295450130892483256">Namestitev Microsofta 365</translation>
 <translation id="8297292446125062288">Nastavitve vnosne naprave</translation>
 <translation id="8298429963694909221">Zdaj lahko obvestila iz telefona prejemate v napravi <ph name="DEVICE_TYPE" />. Če obvestila opustite v napravi <ph name="DEVICE_TYPE" />, jih opustite tudi v telefonu. Preverite, ali imate telefon v bližini ter ima vklopljeno povezavo Bluetooth in omrežje Wi-Fi.</translation>
-<translation id="829923460755755423">Dodajanje bližnjice Googlovemu upravitelju gesel</translation>
+<translation id="829923460755755423">Dodajanje bližnjice do Googlovega upravitelja gesel</translation>
 <translation id="8299319456683969623">Trenutno ste brez povezave.</translation>
 <translation id="8300011035382349091">Urejanje zaznamka za ta zavihek</translation>
 <translation id="8300374739238450534">Polnočno modra</translation>

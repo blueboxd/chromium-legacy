@@ -365,7 +365,7 @@ Heslá si môžete kedykoľvek skontrolovať v službe <ph name="GOOGLE_PASSWOR
 <translation id="1277020343994096713">Vytvorte si nový PIN, ktorý je odlišný od vášho súčasného</translation>
 <translation id="1277597051786235230">&amp;Hľadať <ph name="SEARCH_TERMS" /> na novej karte vo vyhľadávači <ph name="SEARCH_ENGINE" /></translation>
 <translation id="1278859221870828664">Kontrola aplikácií a hier služby Google Play</translation>
-<translation id="127946606521051357">Zariadenie nablízku zdieľa</translation>
+<translation id="127946606521051357">Zariadenie v okolí chce zdieľať obsah</translation>
 <translation id="1280965841156951489">Upraviť súbory</translation>
 <translation id="1281746473742296584">{NUM_OF_FILES,plural, =1{Súbor sa nedá otvoriť}few{Súbory sa nedajú otvoriť}many{Can't open files}other{Súbory sa nedajú otvoriť}}</translation>
 <translation id="1282311502488501110">Neprihlasovať sa</translation>
@@ -4083,7 +4083,7 @@ Môže to zahŕňať informácie o nainštalovanom softvéri, súboroch, prehli
 <translation id="4159784952369912983">Purpurová</translation>
 <translation id="4163560723127662357">Neznáma klávesnica</translation>
 <translation id="4165942112764990069"><ph name="USER_EMAIL" /> nepatrí platnej organizácii. Kontaktujte svojho správcu. Ak ste správca, môžete nastaviť organizáciu na g.co/ChromeEnterpriseAccount</translation>
-<translation id="4165986682804962316">Nastavenia webu</translation>
+<translation id="4165986682804962316">Nastavenia webov</translation>
 <translation id="4167212649627589331"><ph name="APP_NAME" /> sa pokúša získať prístup k zariadeniu <ph name="DEVICE_NAME" />. Ak ho chcete povoliť, vypnite prepínač ochrany súkromia v zariadení <ph name="DEVICE_NAME" />.</translation>
 <translation id="4167393659000039775">Google nezodpovedá za stratu údajov. <ph name="DEVICE_OS" /> nemusí fungovať v necertifikovaných modeloch. Viac sa dozviete na g.co/flex/InstallGuide.</translation>
 <translation id="4167924027691268367">Ďalšie akcie pre odkaz <ph name="SHORTCUT_TITLE" /></translation>

@@ -313,11 +313,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '999a2ca2d915d01ff1d889a57f1e26907d6ea842',
+  'v8_revision': 'c21e8fe0c5b245c6b9e3928836a89e1407d18f2a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '4ae5f681dfe60bed7b083296ac97827b751f9226',
+  'angle_revision': '6fff8ebc937f07e31473ac014a55f662248ab39a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -440,7 +440,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'acee31423468efdb650be9dc9172b30cc2015a4e',
+  'dawn_revision': 'c7ed440d75861649d8a1ef4b775384f31211d902',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -840,7 +840,7 @@ deps = {
 
   'src/clank': {
     'url': Var('chrome_git') + '/clank/internal/apps.git' + '@' +
-    '55a4bb6702abc4f1bd3b3714a059551652c1c24d',
+    '2ee7059d3b86f7e3c3eb5b32624f474b512f9075',
     'condition': 'checkout_android and checkout_src_internal',
   },
 
@@ -1807,7 +1807,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/google/snappy.git' + '@' + 'c9f9edf6d75bb065fa47468bf035e051a57bec7c',
 
   'src/third_party/sqlite/src':
-    Var('chromium_git') + '/chromium/deps/sqlite.git' + '@' + 'ca75d938c18c99dc33b769fbdac8fc4c71befa33',
+    Var('chromium_git') + '/chromium/deps/sqlite.git' + '@' + 'cd9486849ba3c3ec753f556fd29c0aabee122a28',
 
   'src/third_party/sqlite4java': {
       'packages': [
@@ -4048,7 +4048,7 @@ deps = {
 
   'src/ios_internal':  {
       'url': Var('chrome_git') + '/chrome/ios_internal.git' + '@' +
-        'f3245305b4a1cc8328a864d0b82275698aad07e1',
+        '33d855b58c4d84c19e6820bb8ffdfca31b07bf7f',
       'condition': 'checkout_ios and checkout_src_internal',
   },
 

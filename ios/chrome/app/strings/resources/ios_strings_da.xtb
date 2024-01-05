@@ -19,7 +19,7 @@
 <translation id="1069154182096085577">Adgangskoden findes allerede</translation>
 <translation id="1076421457278169141">Koden er scannet</translation>
 <translation id="1076785341346483463">Synkroniser med managerstyret konto</translation>
-<translation id="1084365883616172403">Indlæg delt på Facebook.</translation>
+<translation id="1084365883616172403">Opslag delt på Facebook.</translation>
 <translation id="1085696779717592361">Brug Chrome som standard</translation>
 <translation id="1103523840287552314">Oversæt altid <ph name="LANGUAGE" /></translation>
 <translation id="110724200315609752">Skift til åbent vindue</translation>
@@ -298,7 +298,7 @@ Websites kan ikke bruge cookies til at se din browseraktivitet på forskellige w
 <translation id="2556092377360758201">Ingen beskyttelse (anbefales ikke)</translation>
 <translation id="2562041823070056534">Sender til <ph name="DEVICE_NAME" />...</translation>
 <translation id="2576499762020411840">Brug og gem adgangskoder på din Google-konto</translation>
-<translation id="2577522251608256362">Lokalområde</translation>
+<translation id="2577522251608256362">Kvarter</translation>
 <translation id="2578571896248130439">Send webside</translation>
 <translation id="2584132361465095047">Tilføj konto...</translation>
 <translation id="2587010742985678408">{count,plural, =0{Ingen kompromitterede adgangskoder}=1{{count} kompromitteret adgangskode}one{{count} kompromitteret adgangskode}other{{count} kompromitterede adgangskoder}}</translation>
@@ -737,7 +737,7 @@ Se din søgemaskines vejledning i, hvordan du sletter din søgehistorik, hvis de
 <translation id="4860895144060829044">Ring op</translation>
 <translation id="4872323082491632254">Tjek adgangskoder</translation>
 <translation id="4881695831933465202">Åbn</translation>
-<translation id="488785315393301722">Se info</translation>
+<translation id="488785315393301722">Se oplysninger</translation>
 <translation id="4894963374040315706">Det giver dig mulighed for at søge ved hjælp af stemmen</translation>
 <translation id="489903206070130262">Din seneste åbne fane</translation>
 <translation id="4901778704868714008">Gem...</translation>
@@ -770,7 +770,7 @@ Se din søgemaskines vejledning i, hvordan du sletter din søgehistorik, hvis de
 <translation id="5062321486222145940">Installer Google Drev</translation>
 <translation id="5083464117946352670">Kan ikke fastslå filstørrelse.</translation>
 <translation id="5090832849094901128">Fjernelse af denne adgangskode sletter ikke din konto på <ph name="WEBSITE" />.</translation>
-<translation id="5094827893301452931">Indlæg delt på Twitter.</translation>
+<translation id="5094827893301452931">Opslag delt på Twitter.</translation>
 <translation id="5100848274708256363">Bliv medlem af en familiegruppe</translation>
 <translation id="5100969332803472179">Skjul Føj til Bogmærker</translation>
 <translation id="5109892411553231226">Administrer betalingsmetoder</translation>
@@ -973,7 +973,7 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="6127379762771434464">Elementet blev fjernet</translation>
 <translation id="6136914049981179737">Sek. siden</translation>
 <translation id="6144589619057374135">Åbn ${url} i inkognito</translation>
-<translation id="6149061208933997199">Brug adgangskoden</translation>
+<translation id="6149061208933997199">Brug adgangskode</translation>
 <translation id="6152406514676263192">Synkroniser for at få det mest relevante indhold baseret på dine interesser.</translation>
 <translation id="6159839020698489198">valgfrit</translation>
 <translation id="6170450281939467187">Oversættelsen mislykkedes</translation>
@@ -1032,7 +1032,7 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="6387994324662817823">Adgangskoder gemmes kun i Adgangskodeadministrator på denne enhed.</translation>
 <translation id="6389470377220713856">Navn på kort</translation>
 <translation id="6406506848690869874">Synkronisering</translation>
-<translation id="6410390304316730527">Beskyttet browsing beskytter dig mod hackere, som kan narre dig til at gøre uhensigtsmæssige ting, f.eks. at installere skadelig software eller afsløre personlige oplysninger som adgangskoder, telefonnumre eller betalingskortnumre. Hvis du deaktivere funktionen, skal du være ekstra forsigtig, når du besøger websites, du ikke kender eller har tillid til.</translation>
+<translation id="6410390304316730527">Beskyttet browsing beskytter dig mod hackere, som kan narre dig til at gøre uhensigtsmæssige ting, f.eks. at installere skadelig software eller afsløre personlige oplysninger som adgangskoder, telefonnumre eller kreditkortnumre. Hvis du deaktivere funktionen, skal du være ekstra forsigtig, når du besøger websites, du ikke kender eller har tillid til.</translation>
 <translation id="6410883413783534063">Åbn faner for at besøge forskellige sider på samme tid</translation>
 <translation id="6418346271604475326">Forbereder PDF</translation>
 <translation id="6429213933892582367">Åbn Valgmuligheder for adgangskoder</translation>
@@ -1137,7 +1137,7 @@ Når du er i Inkognito, kan websites ikke bruge cookies til at se din browserhis
 <translation id="6851516051005285358">Vis computerversion</translation>
 <translation id="6852222216891664518">Luk fastgjort fane</translation>
 <translation id="6858855187367714033">Scannet</translation>
-<translation id="6859944681507688231">Aktivér kameraet i Indstillinger for at scanne en QR-kode eller et betalingskort.</translation>
+<translation id="6859944681507688231">Aktivér kameraet i Indstillinger for at scanne en QR-kode eller et kreditkort.</translation>
 <translation id="6867369562105931222">adgangskode</translation>
 <translation id="686899695320434745">Adresser krypteres ikke med din adgangssætning. Dette giver dig mulighed for at bruge dem i andre Google-tjenester.</translation>
 <translation id="6869389390665537774">Du kan se de sider, du har besøgt, eller rydde dem fra din historik</translation>
@@ -1445,7 +1445,7 @@ Dine data blev krypteret med din adgangssætning <ph name="TIME" />. Angiv adgan
 <translation id="8532105204136943229">Udløbsår</translation>
 <translation id="8533166274275423134">Blev åbnet et andet sted</translation>
 <translation id="8533670235862049797">Beskyttet browsing er aktiveret</translation>
-<translation id="8534481786647257214">Indlæg delt på Google+.</translation>
+<translation id="8534481786647257214">Opslag delt på Google+.</translation>
 <translation id="8548878600947630424">Find på siden...</translation>
 <translation id="854938212724803178">Du har 1 kompromitteret adgangskode. Løs problemet nu for at forblive beskyttet.</translation>
 <translation id="8556590991644167667">{count,plural, =1{Du har afvist {count} advarsel}one{Du har afvist {count} advarsel}other{Du har afvist {count} advarsler}}</translation>

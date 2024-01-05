@@ -266,7 +266,7 @@
 <translation id="1197935538609051549">無効にする</translation>
 <translation id="1198066799963193307">ロービジョン音声ツール</translation>
 <translation id="119944043368869598">すべて削除</translation>
-<translation id="1199814941632954229">次の証明書プロフィールに対する証明書を準備しています</translation>
+<translation id="1199814941632954229">次の証明書プロファイルに対する証明書を準備しています</translation>
 <translation id="120069043972472860">視聴不能</translation>
 <translation id="1201402288615127009">次へ</translation>
 <translation id="1201564082781748151">パスワードを忘れてもローカルデータを復元できます</translation>
@@ -7321,7 +7321,7 @@
 <translation id="6810613314571580006">保存されている認証情報を使用してウェブサイトに自動的にログインします。この機能が無効になっている場合は、ウェブサイトにログインするときに毎回確認を求められます。</translation>
 <translation id="6810768462515084623">パスワードの有効期限が切れているようです。別のデバイスで新しいパスワードを設定して、もう一度お試しください。</translation>
 <translation id="6811034713472274749">ページを表示できます</translation>
-<translation id="6811151703183939603">重め</translation>
+<translation id="6811151703183939603">重い</translation>
 <translation id="6811332638216701903">DHCP ホスト名</translation>
 <translation id="6811792477922751991">ランチャーキーを使用してファンクション キーの動作を変更する</translation>
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME" /> を root で実行することはできません。</translation>

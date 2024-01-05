@@ -600,7 +600,7 @@
 <translation id="3454555520521576458">قابل تغییر اندازه</translation>
 <translation id="3455468639467374593">الگو، <ph name="TEMPLATE_NAME" /></translation>
 <translation id="3456931972722214204">یک دستگاه به نقطه اتصال <ph name="DEVICE_NAME" /> متصل است</translation>
-<translation id="346243998268439747">بازنشانی بزرگ‌نمایی</translation>
+<translation id="346243998268439747">بازنشانی سطح بزرگ‌نمایی</translation>
 <translation id="3465223694362104965">از آخرین باری که به سیستم وارد شدید، صفحه‌کلید دیگری به این دستگاه متصل شده است. قبل از استفاده از این صفحه‌کلید، مطمئن شوید به آن اعتماد دارید.</translation>
 <translation id="3465356146291925647">تحت‌مدیریت سرپرست</translation>
 <translation id="347117769229524881"><ph name="MODIFIER_ONE" /><ph name="MODIFIER_TWO" /><ph name="KEY_ONE" /> سپس <ph name="KEY_TWO" /> یا <ph name="KEY_THREE" /></translation>
@@ -823,7 +823,7 @@
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> به پوشه <ph name="FOLDER_NAME" /> منتقل شد.</translation>
 <translation id="4302592941791324970">موجود نیست</translation>
 <translation id="4303223480529385476">بزرگ کردن ناحیه نشانگر وضعیت</translation>
-<translation id="4305133312001648038">بازنشاندن میزان بزرگ‌نمایی در صفحه</translation>
+<translation id="4305133312001648038">بازنشاندن سطح بزرگ‌نمایی در صفحه</translation>
 <translation id="4307713728991152670">راه‌اندازی مشاهده عکس‌ها، رسانه‌ها، و برنامه‌های جدید تلفن</translation>
 <translation id="4312840429157639164">دوربین به گوشه بالا سمت راست چسبید. تداخلی با سطح سیستم روی داد.</translation>
 <translation id="4316910396681052118">همه برنامه‌ها</translation>
@@ -1134,7 +1134,7 @@
 <translation id="5551456515017410630">باز کردن/ بستن تقویم</translation>
 <translation id="5551974246223970793">رفتن به مورد منطبق بعدی در جستجو هنگام جستجوی صفحه</translation>
 <translation id="5555639311269196631">خاموش کردن نقطه اتصال</translation>
-<translation id="5558091555391176027">روشن/خاموش کردن «هم‌رسانی با اطراف» با میزان بالای نمایان بودن</translation>
+<translation id="5558091555391176027">روشن/خاموش کردن «هم‌رسانی با اطراف» با میزان بالای رؤیت‌پذیری</translation>
 <translation id="556042886152191864">دکمه</translation>
 <translation id="5570122939431135380">باز کردن برگه جدید در پنجره ناشناس جدید</translation>
 <translation id="5571066253365925590">بلوتوث فعال شد</translation>
@@ -1247,12 +1247,12 @@
 <translation id="6012623610530968780">صفحه <ph name="SELECTED_PAGE" /> از <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="601304062528754300">برجسته کردن مورد بعدی در قفسه</translation>
 <translation id="6015573907265691211">علامت‌گذاری به‌عنوان تکمیل‌شده</translation>
-<translation id="6018164090099858612">خروج از حالت آینه</translation>
+<translation id="6018164090099858612">خروج از حالت قرینه</translation>
 <translation id="6019566113895157499">میان‌برهای مهم</translation>
 <translation id="602001110135236999">پیمایش به چپ</translation>
 <translation id="6020147141355393792">راه‌اندازی مشاهده برنامه‌ها و اعلان‌های تلفن</translation>
 <translation id="6022924867608035986">پاک کردن نوشتار چارگوش جستجو</translation>
-<translation id="602472752137106327">نمایش پنجره‌ها از همه میزکارها، دکمه رادیو انتخاب شد</translation>
+<translation id="602472752137106327">نمایش پنجره‌ها از همه میزکارها، دکمه رادیویی انتخاب شد</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" />، <ph name="CONNECTION_STATUS" />، قدرت سیگنال <ph name="SIGNAL_STRENGTH" />، تحت‌مدیریت سرپرست</translation>
 <translation id="6027518778343897451">‏رویدادی برای <ph name="CURRENT_MONTH_DAY" /> ثبت نشده است. روی «ورود» ضربه بزنید تا «تقویم Google» در مرورگر باز شود.</translation>
 <translation id="6030495522958826102">منو به گوشه راست پایین صفحه منتقل شد.</translation>
@@ -1843,7 +1843,7 @@
 <translation id="8511123073331775246">ایجاد میزکار جدید</translation>
 <translation id="85123341071060231">‏بلوتوث Chromebook خاموش است. برای باز کردن قفل Chromebook، گذرواژه را وارد کنید.</translation>
 <translation id="8513108775083588393">چرخش خودکار</translation>
-<translation id="851458219935658693">نمایش پنجره‌ها از میزکار فعلی، دکمه رادیو انتخاب شد</translation>
+<translation id="851458219935658693">نمایش پنجره‌ها از میزکار فعلی، دکمه رادیویی انتخاب شد</translation>
 <translation id="8517041960877371778">ممکن است وقتی <ph name="DEVICE_TYPE" /> شما خاموش است، شارژ نشود.</translation>
 <translation id="852060496139946719">{NUM_APPS,plural, =1{ورودی میکروفون را <ph name="APP_NAME" /> کنترل می‌کند}one{ورودی میکروفون را # برنامه کنترل می‌کند}other{ورودی میکروفون را # برنامه کنترل می‌کند}}</translation>
 <translation id="8535393432370007982">واگرد کردن مرتب‌سازی براساس رنگ</translation>

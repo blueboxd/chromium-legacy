@@ -392,82 +392,6 @@ class AutofillExternalDelegateCardsFromAccountTest
   }
 };
 
-TEST_F(AutofillExternalDelegateUnitTest, GetPopupTypeForCreditCardForm) {
-  FormData form =
-      CreateTestCreditCardFormData(/*is_https=*/true, /*use_month_type=*/false);
-  manager().OnFormsSeen({form}, {});
-
-  for (const FormFieldData& field : form.fields) {
-    external_delegate().OnQuery(form, field, gfx::RectF(),
-                                kDefaultTriggerSource);
-    EXPECT_EQ(PopupType::kCreditCards, external_delegate().GetPopupType());
-  }
-}
-
-TEST_F(AutofillExternalDelegateUnitTest, GetPopupTypeForAddressForm) {
-  FormData form = CreateTestAddressFormData();
-  manager().OnFormsSeen({form}, {});
-
-  for (const FormFieldData& field : form.fields) {
-    external_delegate().OnQuery(form, field, gfx::RectF(),
-                                kDefaultTriggerSource);
-    EXPECT_EQ(PopupType::kAddresses, external_delegate().GetPopupType());
-  }
-}
-
-TEST_F(AutofillExternalDelegateUnitTest,
-       GetPopupTypeForAddressManualFallback_AddressForm) {
-  FormData form = CreateTestAddressFormData();
-  manager().OnFormsSeen({form}, {});
-
-  for (const FormFieldData& field : form.fields) {
-    external_delegate().OnQuery(
-        form, field, gfx::RectF(),
-        AutofillSuggestionTriggerSource::kManualFallbackAddress);
-    EXPECT_EQ(PopupType::kAddresses, external_delegate().GetPopupType());
-  }
-}
-
-TEST_F(AutofillExternalDelegateUnitTest,
-       GetPopupTypeForAddressManualFallback_CreditCardForm) {
-  FormData form = CreateTestCreditCardFormData(/*is_https=*/true,
-                                               /*use_month_type=*/false);
-  manager().OnFormsSeen({form}, {});
-
-  for (const FormFieldData& field : form.fields) {
-    external_delegate().OnQuery(
-        form, field, gfx::RectF(),
-        AutofillSuggestionTriggerSource::kManualFallbackAddress);
-    EXPECT_EQ(PopupType::kAddresses, external_delegate().GetPopupType());
-  }
-}
-
-TEST_F(AutofillExternalDelegateUnitTest,
-       GetPopupTypeForAddressManualFallback_UnclassifiedForm) {
-  FormData form = CreateTestUnclassifiedFormData();
-  manager().OnFormsSeen({form}, {});
-
-  for (const FormFieldData& field : form.fields) {
-    external_delegate().OnQuery(
-        form, field, gfx::RectF(),
-        AutofillSuggestionTriggerSource::kManualFallbackAddress);
-    EXPECT_EQ(PopupType::kAddresses, external_delegate().GetPopupType());
-  }
-}
-
-TEST_F(AutofillExternalDelegateUnitTest,
-       GetPopupTypeForPaymentsManualFallback_AddressForm) {
-  FormData form = CreateTestAddressFormData();
-  manager().OnFormsSeen({form}, {});
-
-  for (const FormFieldData& field : form.fields) {
-    external_delegate().OnQuery(
-        form, field, gfx::RectF(),
-        AutofillSuggestionTriggerSource::kManualFallbackPayments);
-    EXPECT_EQ(PopupType::kCreditCards, external_delegate().GetPopupType());
-  }
-}
-
 TEST_F(AutofillExternalDelegateUnitTest, GetMainFillingProduct) {
   IssueOnQuery();
 
@@ -564,33 +488,6 @@ TEST_F(AutofillExternalDelegateUnitTest, GetMainFillingProduct) {
   EXPECT_EQ(external_delegate().GetMainFillingProduct(), FillingProduct::kNone);
 }
 
-TEST_F(AutofillExternalDelegateUnitTest,
-       GetPopupTypeForPaymentsManualFallback_CreditCardForm) {
-  FormData form = CreateTestCreditCardFormData(/*is_https=*/true,
-                                               /*use_month_type=*/false);
-  manager().OnFormsSeen({form}, {});
-
-  for (const FormFieldData& field : form.fields) {
-    external_delegate().OnQuery(
-        form, field, gfx::RectF(),
-        AutofillSuggestionTriggerSource::kManualFallbackPayments);
-    EXPECT_EQ(PopupType::kCreditCards, external_delegate().GetPopupType());
-  }
-}
-
-TEST_F(AutofillExternalDelegateUnitTest,
-       GetPopupTypeForPaymentsManualFallback_UnclassifiedForm) {
-  FormData form = CreateTestUnclassifiedFormData();
-  manager().OnFormsSeen({form}, {});
-
-  for (const FormFieldData& field : form.fields) {
-    external_delegate().OnQuery(
-        form, field, gfx::RectF(),
-        AutofillSuggestionTriggerSource::kManualFallbackPayments);
-    EXPECT_EQ(PopupType::kCreditCards, external_delegate().GetPopupType());
-  }
-}
-
 // Test that the address editor is not shown if there's no Autofill profile with
 // the provided GUID.
 TEST_F(AutofillExternalDelegateUnitTest, ShowEditorForNonexistingProfile) {
@@ -643,6 +540,37 @@ TEST_F(AutofillExternalDelegateUnitTest, UserCancelsEditing) {
                             queried_form_triggering_field_id_,
                             AutofillSuggestionTriggerSource::
                                 kShowPromptAfterDialogClosedNonManualFallback));
+
+  auto suggestion = Suggestion(PopupItemId::kEditAddressProfile);
+  suggestion.payload = Suggestion::Guid(profile.guid());
+  external_delegate().DidAcceptSuggestion(suggestion,
+                                          SuggestionPosition{.row = 0});
+  histogram.ExpectUniqueSample("Autofill.ExtendedMenu.EditAddress", 0, 1);
+}
+
+// Test that the manual fallback is re-triggered after user closes the edit
+// address profile dialog.
+TEST_F(AutofillExternalDelegateUnitTest, UserCancelsEditing_ManualFallback) {
+  IssueOnQuery(AutofillSuggestionTriggerSource::kManualFallbackAddress);
+
+  base::HistogramTester histogram;
+  const AutofillProfile profile = test::GetFullProfile();
+  pdm().AddProfile(profile);
+  EXPECT_CALL(client(), ShowEditAddressProfileDialog(profile, _))
+      .WillOnce([](auto profile, auto save_prompt_callback) {
+        std::move(save_prompt_callback)
+            .Run(AutofillClient::SaveAddressProfileOfferUserDecision::
+                     kEditDeclined,
+                 profile);
+      });
+  // No changes should be saved when user cancels editing.
+  EXPECT_CALL(pdm(), AddObserver).Times(0);
+  EXPECT_CALL(pdm(), UpdateProfile).Times(0);
+  // The Autofill popup must be reopened when editor dialog is closed.
+  EXPECT_CALL(driver(),
+              RendererShouldTriggerSuggestions(
+                  queried_form_triggering_field_id_,
+                  AutofillSuggestionTriggerSource::kManualFallbackAddress));
 
   auto suggestion = Suggestion(PopupItemId::kEditAddressProfile);
   suggestion.payload = Suggestion::Guid(profile.guid());
@@ -792,6 +720,35 @@ TEST_F(AutofillExternalDelegateUnitTest, UserCancelsDeletion) {
                             queried_form_triggering_field_id_,
                             AutofillSuggestionTriggerSource::
                                 kShowPromptAfterDialogClosedNonManualFallback));
+  auto suggestion = Suggestion(PopupItemId::kDeleteAddressProfile);
+  suggestion.payload = Suggestion::Guid(profile.guid());
+
+  external_delegate().DidAcceptSuggestion(suggestion,
+                                          SuggestionPosition{.row = 0});
+  histogram.ExpectUniqueSample("Autofill.ProfileDeleted.ExtendedMenu", 0, 1);
+  histogram.ExpectUniqueSample("Autofill.ProfileDeleted.Any", 0, 1);
+}
+
+// Test that the manual fallback is re-triggered after user closes the edit
+// address profile dialog.
+TEST_F(AutofillExternalDelegateUnitTest, UserCancelsDeletion_ManualFallback) {
+  IssueOnQuery(AutofillSuggestionTriggerSource::kManualFallbackAddress);
+
+  base::HistogramTester histogram;
+  const AutofillProfile profile = test::GetFullProfile();
+  pdm().AddProfile(profile);
+  EXPECT_CALL(client(), ShowDeleteAddressProfileDialog(profile, _))
+      .WillOnce([](auto profile, auto delete_dialog_callback) {
+        std::move(delete_dialog_callback).Run(/*user_accepted_delete=*/false);
+      });
+  // Address profile must remain intact if user cancels deletion process.
+  EXPECT_CALL(pdm(), AddObserver).Times(0);
+  EXPECT_CALL(pdm(), RemoveByGUID).Times(0);
+  // The Autofill popup must be reopened when the delete dialog is closed.
+  EXPECT_CALL(driver(),
+              RendererShouldTriggerSuggestions(
+                  queried_form_triggering_field_id_,
+                  AutofillSuggestionTriggerSource::kManualFallbackAddress));
   auto suggestion = Suggestion(PopupItemId::kDeleteAddressProfile);
   suggestion.payload = Suggestion::Guid(profile.guid());
 

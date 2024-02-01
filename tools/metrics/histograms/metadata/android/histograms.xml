@@ -4304,7 +4304,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Android.ThumbnailCache.InMemoryCacheEntries"
     units="thumbnails" expires_after="2024-06-30">
   <owner>ckitagawa@chromium.org</owner>
-  <owner>dtrainor@chromium.com</owner>
+  <owner>dtrainor@chromium.org</owner>
   <summary>
     Records the number of entries for the in-memory ETC1 and bitmap thumbnail
     cache. Recorded on a Poisson distributed frequency with a mean of 5 minutes
@@ -4315,7 +4315,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Android.ThumbnailCache.InMemoryCacheSize" units="KiB"
     expires_after="2024-06-30">
   <owner>ckitagawa@chromium.org</owner>
-  <owner>dtrainor@chromium.com</owner>
+  <owner>dtrainor@chromium.org</owner>
   <summary>
     Records the in-memory ETC1 and bitmap thumbnail cache size in KiB. Recorded
     on a Poisson distributed frequency with a mean of 5 minutes starting 1
@@ -4944,6 +4944,20 @@ chromium-metrics-reviews@google.com.
     detected developer mode is enabled (see
     &quot;Android.WebView.DevUi.DeveloperModeEnabled&quot;). If developer mode
     is disabled, we will not toggle any flags through this mechanism.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.FileChooserResultOutsideAppDataDir"
+    enum="Boolean" expires_after="2024-12-15">
+  <owner>alibu@chromium.org</owner>
+  <owner>bewise@chromium.org</owner>
+  <owner>peconn@chromium.org</owner>
+  <owner>thomasbull@chromium.org</owner>
+  <summary>
+    Records how often the onShowFileChooser returns files outside of the app's
+    own data directory (excluding WebView resources and assets, and URIs that
+    don't use the 'file:' schema). Recorded once per file selected when the
+    dialog closes.
   </summary>
 </histogram>
 
